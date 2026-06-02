@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2654 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2657 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Network/Process capability gating (hybrid POLA)**: once a program opts into
+  the capability discipline (some `grant` in scope), a `Network`/`NetworkSecure`/
+  `Process` operation now requires the matching capability granted, else
+  `CapabilityViolation`. Mirrors the opt-in `T_Require` rule (no grants anywhere
+  ⇒ permissive, so existing programs are unaffected — 0 breakage, differential
+  30/30). A function declaring `kesan Rangkaian`/`kesan Proses` auto-grants it in
+  its body, so effect-honest code keeps working. +3 tests (ungated network op
+  rejected; granted accepted; no-capability permissive). File I/O stays at
+  effect+taint (not capability-gated) per the hybrid policy.
 - **Numeric tower, first slice — typed integer-literal suffixes**: the lexer now
   recognizes decimal width suffixes (`u8/u16/u32/u64/i8/i16/i32/i64`) and
   **range-validates them at lex time** — `256u8`, `300i8`, `4294967296u32` are

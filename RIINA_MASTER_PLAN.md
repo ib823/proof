@@ -2205,7 +2205,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 |---|---|---|
 | Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core`; per-primitive KATs + negative tests + a consolidated independent KAT-audit manifest (2026-06-02) | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
 | File I/O with effect tracking | `Effect::FileSystem` tracked on all `fail_*`/`file_*` builtins; **content-read hardened 2026-06-02**: `file_read`/`file_read_lines` now typed `String → Tainted<String, FileSystem>` (untrusted path rejected = path-traversal prevention; untrusted contents must be sanitized before any sink) +3 tests. Remaining: precise types for write/append/exists/size/list (multi-arg) + a Coq read/write-effect model | Implement + Coq model for read/write effects |
-| Networking (TCP/TLS/HTTP, effect-typed) | None | Implement; capability-gated |
+| Networking (TCP/TLS/HTTP, effect-typed) | HTTP builtins effect-typed (`Effect::Network`); **capability-gated 2026-06-02 (hybrid POLA)**: once a program opts into the capability discipline (some grant in scope), a `Network`/`NetworkSecure`/`Process` operation requires the matching capability granted — mirrors the opt-in `T_Require` rule (no grants ⇒ permissive, so existing programs unaffected) +3 tests. Remaining: real TCP/TLS impls + a Coq network-effect model | Implement; capability-gated |
 | Time / random / OS interface | Unclear | All effect-typed |
 | Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |
 | Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |

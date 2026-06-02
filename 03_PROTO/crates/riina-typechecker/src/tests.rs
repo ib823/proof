@@ -5020,4 +5020,50 @@ mod gate_b_parity {
         assert_eq!(ty, Ty::Int);
         assert_eq!(eff, Effect::Read.join(Effect::Write));
     }
+
+    // ── Gate C (hybrid POLA): Network/Process capability gating ──
+    // Once a program opts into the capability discipline (some grant in scope), a
+    // Network operation requires the Network capability granted (mirrors
+    // T_Require). With no grants at all, the discipline is not opted into and the
+    // call stays permissive — so existing programs are unaffected.
+    fn builtins_ctx() -> TypingContext {
+        crate::register_builtin_types(&crate::Context::new()).to_typing_context()
+    }
+
+    fn http_get_call() -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("http_get".into())),
+            Box::new(Expr::String("https://example.test".into())),
+        )
+    }
+
+    #[test]
+    fn network_op_without_grant_in_capability_scope_is_rejected() {
+        // grant Write in (http_get "…") — Network is not granted ⇒ rejected.
+        let mut ctx = builtins_ctx();
+        let expr = Expr::Grant(Effect::Write, Box::new(http_get_call()));
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::CapabilityViolation { required, .. }) => {
+                assert_eq!(required, Effect::Network);
+            }
+            other => panic!("expected CapabilityViolation for ungated network op, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn network_op_with_grant_is_accepted() {
+        // grant Rangkaian in (http_get "…") — the matching grant authorizes it.
+        let mut ctx = builtins_ctx();
+        let expr = Expr::Grant(Effect::Network, Box::new(http_get_call()));
+        type_check_full(&mut ctx, &expr).expect("granted network op must typecheck");
+    }
+
+    #[test]
+    fn network_op_without_any_capabilities_is_permissive() {
+        // No grants anywhere ⇒ capability discipline not opted into ⇒ allowed
+        // (consistent with the opt-in T_Require semantics).
+        let mut ctx = builtins_ctx();
+        type_check_full(&mut ctx, &http_get_call())
+            .expect("network op without any capability discipline stays permissive");
+    }
 }

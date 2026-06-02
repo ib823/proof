@@ -2761,6 +2761,26 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     if !types_compatible(&arg_ty, &t2) {
                         return Err(sink_argument_error(*arg_ty, t2));
                     }
+                    // Gate C (hybrid POLA): once a program opts into the
+                    // capability discipline (granted set non-empty), an
+                    // ambient-authority Network/Process operation requires the
+                    // matching capability to be granted in scope. Mirrors the
+                    // opt-in `T_Require` rule; a function declaring
+                    // `kesan Rangkaian`/`kesan Proses` auto-grants it in its body,
+                    // so well-formed effect-honest code is unaffected.
+                    if matches!(
+                        fn_eff,
+                        Effect::Network | Effect::NetworkSecure | Effect::Process
+                    ) && !ctx.granted.is_empty()
+                        && !ctx.granted.contains(&fn_eff)
+                    {
+                        return Err(TypeError::CapabilityViolation {
+                            required: fn_eff,
+                            message: format!(
+                                "{fn_eff:?} operation requires a granted {fn_eff:?} capability in scope"
+                            ),
+                        });
+                    }
                     let total_eff = eff1.join(eff2).join(fn_eff);
                     Ok((*ret_ty, total_eff))
                 }
