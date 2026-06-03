@@ -46,7 +46,7 @@ theorem counts as "verified theorems."
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
 - Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +
   5 tooling crates, 0 external runtime deps (proto). This part is solid.
-- Examples: 155 .rii files, of which 51 currently pass `riinac check` (all 20 of
+- Examples: 156 .rii files, of which 52 currently pass `riinac check` (all 21 of
   `00_basics/`); the shipped parser accepts a narrower grammar than some examples
   assume — see `07_EXAMPLES/README.md`.
 
@@ -68,7 +68,7 @@ Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (ne
 - [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
 - [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
 - [Language Specs](04_SPECS/): Formal specifications
-- [Examples](07_EXAMPLES/): 155 example .rii files
+- [Examples](07_EXAMPLES/): 156 example .rii files
 - [Formal Proofs](02_FORMAL/coq/): Coq proof library
 - [llms-full.txt](llms-full.txt): Complete language specification for LLMs
 

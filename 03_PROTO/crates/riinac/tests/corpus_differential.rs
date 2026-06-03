@@ -11,9 +11,11 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-02: of 155 examples, 30 build+run in both backends and
-//! **all 30 are byte-equal** (`KNOWN_DIVERGENT` is empty); the rest don't
-//! compile/run under one or both backends. Re-verified across a wasmtime
+//! Measured 2026-06-03: of 156 examples, 31 build+run in both backends and
+//! **all 31 are byte-equal** (`KNOWN_DIVERGENT` is empty); the rest don't
+//! compile/run under one or both backends. The 31st is `00_basics/sized_integers`
+//! — numeric-tower width-masked `u8`/`u16` arithmetic, byte-identical across
+//! backends and the interpreter (44/255/0). Re-verified across a wasmtime
 //! major-version jump: identical result under **wasmtime 27.0.0 and 45.0.0**
 //! (the byte-equality is robust to the runtime version). (30 equal is up from 10
 //! over the session: the `main.return_ty` lowering fix, WASM `ke_teks`/
@@ -35,7 +37,7 @@ use std::process::Command;
 /// should remove the corresponding entries here.
 /// Examples whose two backends are known to differ, with the reason. The
 /// differential test tolerates these (so it tracks them without failing) but
-/// fails on any *new* divergence. **Empty as of 2026-06-02** — all 30
+/// fails on any *new* divergence. **Empty as of 2026-06-03** — all 31
 /// dual-backend examples are byte-equal.
 const KNOWN_DIVERGENT: &[&str] = &[];
 

@@ -1,0 +1,27 @@
+/// SIZED_INTEGERS.RII - Numeric tower: fixed-width integers
+/// Menunjukkan integer bersaiz tetap dengan limpahan bermodulo lebar bit
+/// Demonstrates: width-suffixed literals (200u8), wrapping overflow at the bit
+/// width. `u8` arithmetic wraps modulo 256, `u16` modulo 65536 — identical under
+/// the C and WASM backends and the interpreter.
+
+fungsi utama() -> Nombor kesan Tulis {
+    /// u8 limpahan / overflow: 200 + 100 = 300 ≡ 44 (mod 256)
+    biar a = 200u8 + 100u8;
+    cetak("a = ");
+    cetak(a);
+    cetak("\n");
+
+    /// u8 limpahan bawah / underflow: 0 - 1 ≡ 255 (mod 256)
+    biar b = 0u8 - 1u8;
+    cetak("b = ");
+    cetak(b);
+    cetak("\n");
+
+    /// u16 limpahan / overflow: 65535 + 1 ≡ 0 (mod 65536)
+    biar c = 65535u16 + 1u16;
+    cetak("c = ");
+    cetak(c);
+    cetak("\n");
+
+    pulang 0;
+}

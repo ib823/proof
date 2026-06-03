@@ -265,7 +265,11 @@ impl WasmBackend {
                 .unwrap_or(Ty::Unit);
             match main_ret {
                 Ty::Unit => { /* no echo */ }
-                Ty::Int | Ty::CInt => wasm_echo_int(&mut trampoline_code, 0, 1, 2),
+                // A sized integer (`Ty::IntN`) echoes like a plain int — the i32
+                // cell already holds the width-masked value (numeric tower).
+                Ty::Int | Ty::CInt | Ty::IntN { .. } => {
+                    wasm_echo_int(&mut trampoline_code, 0, 1, 2);
+                }
                 Ty::Bool => {
                     wasm_local(&mut trampoline_code, Op::LocalGet, 0);
                     trampoline_code.push(Op::If as u8);
@@ -1145,6 +1149,22 @@ impl WasmBackend {
                     BinOp::And => code.push(Op::I32And as u8),
                     BinOp::Or => code.push(Op::I32Or as u8),
                 }
+                // Numeric tower: mask an arithmetic result that types as a sized
+                // integer narrower than the i32 cell to its width (`& (2^bits-1)`),
+                // so compiled overflow wraps modulo 2^bits like the interpreter and
+                // the C backend. Operands are already in-range (every sized value
+                // comes from a masked literal or a masked arithmetic result), so
+                // masking the result suffices. Comparisons type as `Bool`, so they
+                // are not masked.
+                if let Some(r) = result.as_ref() {
+                    if let Some(Ty::IntN { bits, .. }) = ctx.var_to_ty.get(r) {
+                        if *bits < 32 {
+                            code.push(Op::I32Const as u8);
+                            wasm_encode::encode_sleb128((1i64 << bits) - 1, code);
+                            code.push(Op::I32And as u8);
+                        }
+                    }
+                }
             }
             Instruction::UnaryOp(op, operand) => match op {
                 UnaryOp::Not => {
@@ -1415,7 +1435,10 @@ impl WasmBackend {
             Instruction::BuiltinCall { name, arg } => {
                 // Route builtins: cetakln/cetak → WASI fd_write(stdout)
                 if name == "cetakln" || name == "cetak" {
-                    if matches!(ctx.var_to_ty.get(arg), Some(Ty::Int) | Some(Ty::CInt)) {
+                    if matches!(
+                        ctx.var_to_ty.get(arg),
+                        Some(Ty::Int) | Some(Ty::CInt) | Some(Ty::IntN { .. })
+                    ) {
                         // Integer argument: convert to decimal ASCII (itoa) and
                         // write via WASI fd_write. (C uses a runtime-tagged
                         // riina_format; WASM values are untagged i32, so we
@@ -1481,8 +1504,8 @@ impl WasmBackend {
                     wasm_encode::encode_sleb128(0, code);
                 } else if name == "ke_teks" || name == "nombor_ke_teks" {
                     match ctx.var_to_ty.get(arg) {
-                        Some(Ty::Int | Ty::CInt) => {
-                            // Int → heap string.
+                        Some(Ty::Int | Ty::CInt | Ty::IntN { .. }) => {
+                            // Int (or sized int) → heap string.
                             Self::emit_ke_teks(arg, ctx, code);
                         }
                         Some(Ty::String | Ty::Element | Ty::Color | Ty::UIStyle) => {
@@ -1900,6 +1923,58 @@ mod tests {
         assert!(
             output.primary.windows(1).any(|w| w[0] == 0x6F),
             "WASM binary should contain I32RemS opcode (0x6F)"
+        );
+    }
+
+    /// The width-mask byte sequence for a u8 result: `i32.const 255` (0x41 0xFF
+    /// 0x01) followed by `i32.and` (0x71).
+    const U8_MASK_SEQ: [u8; 4] = [0x41, 0xFF, 0x01, 0x71];
+
+    #[test]
+    fn numeric_tower_wasm_masks_sized_arithmetic() {
+        // A BinOp whose result types as u8 is masked to 8 bits in WASM.
+        let (v0, v1, v2) = (VarId::new(0), VarId::new(1), VarId::new(2));
+        let sized_add = AnnotatedInstr {
+            instr: Instruction::BinOp(BinOp::Add, v0, v1),
+            result: v2,
+            ty: riina_types::Ty::IntN {
+                bits: 8,
+                signed: false,
+            },
+            effect: riina_types::Effect::Pure,
+            security: riina_types::SecurityLevel::Public,
+        };
+        let program = make_program(
+            vec![
+                ann(Instruction::Const(Constant::Int(200)), v0),
+                ann(Instruction::Const(Constant::Int(100)), v1),
+                sized_add,
+            ],
+            v2,
+        );
+        let out = WasmBackend::new(Target::Wasm32).emit(&program).unwrap();
+        assert!(
+            out.primary.windows(4).any(|w| w == U8_MASK_SEQ),
+            "u8 arithmetic must be masked with `i32.const 255; i32.and` in WASM"
+        );
+    }
+
+    #[test]
+    fn numeric_tower_wasm_does_not_mask_plain_int() {
+        // Plain `Int` arithmetic (via `ann`, which annotates `Ty::Int`) is unmasked.
+        let (v0, v1, v2) = (VarId::new(0), VarId::new(1), VarId::new(2));
+        let program = make_program(
+            vec![
+                ann(Instruction::Const(Constant::Int(200)), v0),
+                ann(Instruction::Const(Constant::Int(100)), v1),
+                ann(Instruction::BinOp(BinOp::Add, v0, v1), v2),
+            ],
+            v2,
+        );
+        let out = WasmBackend::new(Target::Wasm32).emit(&program).unwrap();
+        assert!(
+            !out.primary.windows(4).any(|w| w == U8_MASK_SEQ),
+            "plain Int arithmetic must not be width-masked"
         );
     }
 

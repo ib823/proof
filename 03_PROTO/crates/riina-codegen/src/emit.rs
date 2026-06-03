@@ -416,6 +416,17 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
+        // Numeric tower: reduce a boxed integer to its declared bit width
+        // (`Ty::IntN`). Add/Sub/Mul/Div/Mod whose result types as a sized integer
+        // are wrapped through this so compiled arithmetic overflows modulo 2^bits,
+        // matching the interpreter. `bits >= 64` is the identity.
+        self.writeln("static riina_value_t* riina_trunc(riina_value_t* v, unsigned bits) {");
+        self.writeln("    if (bits >= 64) return v;");
+        self.writeln("    uint64_t mask = ((uint64_t)1 << bits) - 1u;");
+        self.writeln("    return riina_int(v->data.int_val & mask);");
+        self.writeln("}");
+        self.writeln("");
+
         // String
         self.writeln("static riina_value_t* riina_string(const char* s) {");
         self.writeln("    riina_value_t* v = riina_alloc();");
@@ -2969,11 +2980,17 @@ impl CEmitter {
                     BinOp::And => "riina_binop_and",
                     BinOp::Or => "riina_binop_or",
                 };
-                self.writeln(&format!(
-                    "{result} = {func}({}, {});",
-                    self.var_name(lhs),
-                    self.var_name(rhs)
-                ));
+                let call = format!("{func}({}, {})", self.var_name(lhs), self.var_name(rhs));
+                // Numeric tower: a result that types as a sized integer is wrapped
+                // to its width so compiled arithmetic overflows modulo 2^bits.
+                // Comparisons type as `Bool` (not `IntN`), so they are unaffected.
+                let rhs_expr = match instr.ty {
+                    Ty::IntN { bits, .. } if bits < 64 => {
+                        format!("riina_trunc({call}, {bits})")
+                    }
+                    _ => call,
+                };
+                self.writeln(&format!("{result} = {rhs_expr};"));
             }
 
             Instruction::UnaryOp(op, operand) => {
@@ -3552,6 +3569,50 @@ mod tests {
         let code = compile_and_emit(&Expr::Unit).unwrap();
         assert!(code.contains("riina_unit()"));
         assert!(code.contains("int main(void)"));
+    }
+
+    #[test]
+    fn numeric_tower_sized_arithmetic_emits_width_mask() {
+        // `200u8 + 100u8` types as u8, so the C emit wraps the result to 8 bits
+        // (`riina_trunc(..., 8)`) — compiled overflow then matches the interpreter.
+        let expr = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(Expr::IntN {
+                value: 200,
+                bits: 8,
+                signed: false,
+            }),
+            Box::new(Expr::IntN {
+                value: 100,
+                bits: 8,
+                signed: false,
+            }),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            code.contains("static riina_value_t* riina_trunc"),
+            "the width-truncation runtime helper must be emitted"
+        );
+        assert!(
+            code.contains("riina_trunc(riina_binop_add("),
+            "the u8 addition must be width-masked:\n{code}"
+        );
+        assert!(code.contains(", 8)"), "the 8-bit width must appear in the mask");
+    }
+
+    #[test]
+    fn numeric_tower_unsized_arithmetic_is_not_masked() {
+        // Plain `Int` arithmetic is unaffected — no truncation call is emitted.
+        let expr = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(Expr::Int(200)),
+            Box::new(Expr::Int(100)),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            !code.contains("riina_trunc(riina_binop_add("),
+            "plain Int addition must not be width-masked"
+        );
     }
 
     #[test]
