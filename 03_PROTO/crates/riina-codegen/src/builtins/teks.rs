@@ -427,4 +427,95 @@ mod tests {
             ])
         );
     }
+
+    // ── Property tests: the string builtins satisfy the laws proven in
+    // `02_FORMAL/coq/foundations/VerifiedString.v` (repeat length, split/join
+    // round-trip) plus the Unicode-faithful idempotence of case-folding and trim
+    // (deliberately not modelled in Coq — see the note in that file).
+
+    fn str_val(v: Value) -> String {
+        match v {
+            Value::String(x) => x,
+            o => panic!("expected String, got {o:?}"),
+        }
+    }
+    fn call1(name: &str, arg: &str) -> String {
+        str_val(apply(name, &Value::String(arg.to_string())).unwrap().unwrap())
+    }
+    fn repeat(text: &str, n: u64) -> String {
+        let arg = Value::Pair(
+            Box::new(Value::String(text.to_string())),
+            Box::new(Value::Int(n)),
+        );
+        str_val(apply("teks_ulang", &arg).unwrap().unwrap())
+    }
+    fn join(sep: &str, list: Value) -> String {
+        let arg = Value::Pair(Box::new(Value::String(sep.to_string())), Box::new(list));
+        str_val(apply("teks_cantum", &arg).unwrap().unwrap())
+    }
+
+    #[test]
+    fn prop_str_repeat_length_and_shape() {
+        // VerifiedString.v: srepeat_zero / srepeat_one / srepeat_succ / srepeat_length.
+        for text in ["", "a", "xyz", "héllo"] {
+            let base = text.chars().count();
+            assert_eq!(repeat(text, 0), "", "repeat _ 0 = empty");
+            assert_eq!(repeat(text, 1), text, "repeat s 1 = s");
+            for n in 0..6u64 {
+                let r = repeat(text, n);
+                assert_eq!(
+                    r.chars().count(),
+                    (n as usize) * base,
+                    "repeat length law for {text:?} * {n}"
+                );
+                if n > 0 {
+                    assert_eq!(r, format!("{text}{}", repeat(text, n - 1)), "repeat succ shape");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn prop_str_split_join_roundtrip() {
+        // VerifiedString.v: sjoin_split — join d (split d s) = s, for non-empty d.
+        let cases = [
+            ("a,b,c", ","),
+            ("", ","),
+            ("a", ","),
+            (",", ","),
+            ("a,,b", ","),
+            ("a::b::c", "::"),
+            ("hello world", " "),
+            ("trailing,", ","),
+            (",lead", ","),
+        ];
+        for (text, delim) in cases {
+            let parts = apply("teks_belah", &pair_s(text, delim)).unwrap().unwrap();
+            assert_eq!(
+                join(delim, parts),
+                text,
+                "split/join round-trip for {text:?} on {delim:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn prop_str_case_folding_is_idempotent() {
+        // Unicode-faithful idempotence (NOT modelled in Coq — `to_uppercase` is
+        // not length-preserving, e.g. ß ⇒ SS, so the check lives here).
+        for text in ["", "Hello", "WORLD", "MiXeD123", "héllo", "ÄÖÜ", "ß"] {
+            let up = call1("teks_huruf_besar", text);
+            assert_eq!(call1("teks_huruf_besar", &up), up, "to_upper idempotent on {text:?}");
+            let lo = call1("teks_huruf_kecil", text);
+            assert_eq!(call1("teks_huruf_kecil", &lo), lo, "to_lower idempotent on {text:?}");
+        }
+    }
+
+    #[test]
+    fn prop_str_trim_is_idempotent() {
+        for text in ["", "  ", "x", "  x  ", "\t a b \n", "no_pad"] {
+            let t = call1("teks_potong", text);
+            assert_eq!(call1("teks_potong", &t), t, "trim idempotent on {text:?}");
+        }
+    }
 }

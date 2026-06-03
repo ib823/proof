@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,426 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2699 Rust tests
+**Verification:** 12,437 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2703 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Strings — verified core string algorithms**: new Coq model
+  `02_FORMAL/coq/foundations/VerifiedString.v` (11 Qed, 0 Admitted/Axiom/Abort;
+  active build 312→313 files, 12,426→12,437 Qed) models a string as a list of
+  code units and proves the **repeat length law** (`|repeat s n| = n·|s|`, with
+  the zero/one/succ shapes for `str_repeat`/`teks_ulang`) and the
+  **split/join round-trip** (`join sep (split sep s) = s` for `str_split`+
+  `str_join`/`teks_belah`+`teks_cantum`). Case-folding is deliberately *not*
+  modelled (Rust's Unicode `to_uppercase` is not length-preserving — ß⇒SS — so a
+  length-preserving char map would be an unsound model). +4 Rust property tests in
+  `teks.rs` on the running builtins: repeat length/shape, split/join round-trip
+  (single- and multi-char delimiters, empty/trailing/consecutive-separator edge
+  cases), and the Unicode-faithful idempotence of `to_upper`/`to_lower`/`trim`.
+  Mirrors `VerifiedList.v`/`VerifiedMapSet.v`. `cargo test --all` 2703/0, clippy 0;
+  differential unchanged (32/32).
 - **Filesystem taint discipline ⇄ Coq proof (parity bridge)**: connected the
   prototype's file-I/O type discipline to the mechanized taint calculus. Every
   file builtin types its path as a plain `String`, so a `Tainted` (untrusted)
@@ -488,7 +502,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,426 Qed proofs
+- Active Coq build now at 12,437 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

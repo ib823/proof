@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 312 active files, 12,426 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 313 active files, 12,437 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate (`Foundations/Syntax.lean` = 187 errors, reproduced this session). See `02_FORMAL/lean/COMPILATION_STATUS.md`. **W4.4 version-bump attempt (2026-06-01):** tried bumping to Lean **4.30.0** (latest; plan estimated 4.29) — **blocked in this environment**: `elan` cannot fetch/parse `release.lean-lang.org` (network policy returns HTML, not the release manifest: "Unexpected character: H"), so only the pre-installed 4.16.0 toolchain is usable. Deferred — and per the Batch-2 finding, a version bump is the wrong lever anyway: the lane needs **elaboration fixes** (a real port), not a newer toolchain, which would only be stricter. The lane has **no external deps** (self-contained lakefile), so when a port is undertaken the toolchain itself is not the blocker. | Generated (not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep). `metrics.json` records `smokeBuildOk:false` / `compiledLemmas:0` — the `RIINA_CORE` smoke theory is **not currently verified**, and could not be re-checked 2026-06-01 (Isabelle download 403 in this environment). 12,931 = raw grep, unverified | Generated (smoke unverified) |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with **25** Z3-verified security-lattice properties (re-verified 2026-06-01 under Z3 4.8.12 AND 4.15.3: 25 unsat in both). "12,405" = raw corpus-wide asserts; rest generated. (The prior "11,843 verified" figure was a counting error.) | Smoke-verified |
@@ -225,13 +225,13 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 12,426 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 12,437 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | Parameter (active build) | 30 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, an opaque *function* not a proposition; implementation in `riina-core`, TCB until Verus harness). The former 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos`) were eliminated: `NANOS_PER_SEC` is now a concrete `Definition` (`1000*1000*1000`, sealed `Opaque` for proof performance) and `NANOS_PER_SEC_pos` a proved `Qed` lemma — removed from the TCB. All 30 remaining are part of the TCB. Audit-docs.sh pins this count. |
 | .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 13,184 minus active 12,426 |
+| Qed (archive) | 758 | Total 13,195 minus active 12,437 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` (last verified upstream; container lacks Rocq) |
 
@@ -442,7 +442,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(12,426 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(12,437 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -1022,7 +1022,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 12,426 |
+| Qed | 12,437 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |
@@ -2208,7 +2208,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Networking (TCP/TLS/HTTP, effect-typed) | HTTP builtins effect-typed (`Effect::Network`); **capability-gated 2026-06-02 (hybrid POLA)**: once a program opts into the capability discipline (some grant in scope), a `Network`/`NetworkSecure`/`Process` operation requires the matching capability granted — mirrors the opt-in `T_Require` rule (no grants ⇒ permissive, so existing programs unaffected). **Effect-set landed 2026-06-02 — gating extended soundly to Crypto/Random/System**: `TopLevelDecl::Function` now carries an `effect_set: Vec<Effect>` (the components of a compound `kesan (A,B,C)`, which the lossy lattice `effect` join collapses), and `check_program` grants *every* component — so a compound-effect function (e.g. `crypto_ops.rii`) authorizes all its declared ambient ops and the earlier false-positive is gone (differential restored 30/30). The App-rule gate now covers Network/NetworkSecure/Process/Crypto/Random/System. +6 tests (network ×3, random ×2, compound-grants-all-components ×1). Remaining: real TCP/TLS impls + a Coq network-effect model | Implement; capability-gated |
 | Time / random / OS interface | **Time precise-typed 2026-06-03**: the 6 `masa_*`/`time_*` builtins were `Fn(Any,Any,Time)`; now sound + precise (clocks `Unit→Int`; `masa_tidur` `Int→Unit`; `masa_format`/`masa_urai` `(value,format)`-pair → `String`/`Int`), so misuse is rejected (`masa_tidur("x")` is a type error) and `Effect::Time` is tracked on the applied builtins (+2 tests). Random already `Int→Int` (`Effect::Random`). Remaining: OS/system builtins precision; the `()` zero-arg-thunk runtime materialisation (a bare builtin `Var` evaluates to its `Builtin`, like `baca_garisan`) — a separate codebase-wide item | All effect-typed |
 | Collections (Vec, Map, Set) | **Verified core list algorithms landed 2026-06-03**: Coq `foundations/VerifiedList.v` (17 Qed) proves, for the `senarai.rs` list builtins, insertion-sort correctness (`list_sort` = ascending permutation + sorted + idempotent), reverse-involutive, the length laws (reverse/concat/map), and de-dup invariants (`NoDup` + set-preservation for `list_unique`); +4 Rust property tests assert the same invariants on the running impl (dependency-free seeded sweep of 200 random lists). **Map & Set landed 2026-06-03**: Coq `foundations/VerifiedMapSet.v` (14 Qed) proves the partial-map laws for the `peta.rs` `BTreeMap` builtins (get-after-insert, insert-other, insert-shadow, remove-eq) and the set membership algebra for the `set.rs` builtins (insert/remove/union/intersect membership + no-dup invariant); +4 Rust property tests. Remaining: benchmarks (criterion) | Benchmarks + verified core algorithms |
-| Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |
+| Strings (Unicode-correct, confusables, NFC) | **Verified core string algorithms landed 2026-06-03**: Coq `foundations/VerifiedString.v` (11 Qed) proves the repeat length law and the split/join round-trip (`join sep (split sep s) = s`) for the `teks.rs` builtins; +4 Rust property tests (repeat, split/join round-trip, Unicode-faithful case-fold/trim idempotence). Remaining: NFC normalization + confusables (a multi-session Unicode-data effort, UAX#15/UTS#39) | Normalization spec + tests |
 | Async runtime | Spec-only (JALINAN) | Phase 6 deliverable |
 | Numeric tower (BigInt, decimal, fixed-point) | **Four slices landed (2026-06-02 → 06-03).** (1) Typed integer-literal suffixes (`u8…i64`) lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (additive — 1-site ripple; `Ty::Int`/`Nombor` stays default); usable on fn params/returns; `IntN`↔`Int` interoperate, distinct widths incompatible +2 tests. (3) **Sized literals + width-aware arithmetic (2026-06-03)**: the lexer suffix `42u8` now becomes a distinct `Expr::IntN { value, bits, signed }` literal (additive; ~700 `Int(_)` sites untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts, `u8 + u16` rejected); the interpreter gained `Value::IntN` — `+`/`-`/`*` wrap modulo 2^bits, division/modulo/comparison/display are signedness-aware (two's complement); content-hash mixes value+width. (4) **Width-correct C/WASM codegen (2026-06-03)**: C wraps sized arithmetic via a `riina_trunc` runtime helper; WASM masks with `i32.const (2^bits-1); i32.and` and routes `Ty::IntN` through its int-print/`ke_teks`/echo dispatch. New example `00_basics/sized_integers.rii` (u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0) — **differential 30→31/31 byte-equal**. +16 tests (slices 3–4). (5) **Coq numeric model (2026-06-03)** `foundations/SizedInt.v` (8 Qed): width-`bits` arithmetic as residues in `Z/2^bits Z`; ring homomorphism `wrapU_add/_sub/_mul` (why the three backends agree) + `land_ones_is_wrapU` (the `& (2^bits-1)` mask = `mod 2^bits`). (6) **Signed sized-int codegen (2026-06-03)**: compiled C+WASM are now signedness-correct for signed `Ty::IntN`, matching the interpreter — C tags values with `int_signed_bits` and sign-extends in format/compare/div via `riina_sext`; WASM sign-extends sub-i32 operands (`i32.extend8_s`/`extend16_s`) for div/mod/compare and prints signed (sign-extend + leading `-`). New example `00_basics/signed_integers.rii` (i8 → `-128`/`-5`/`-64`) byte-identical across all three paths — **differential 31→32/32 byte-equal**; +2 codegen tests. All gated on signed `IntN`, so unsigned/plain stay byte-identical. (7) **wasm32 64-bit handling (2026-06-03)**: the WASM backend holds integers in a 32-bit cell, so a value `>= 2^32` now produces a **clean compile error** (was an invalid `i32.const` that only failed at `wasmtime` load); the full unsigned 32-bit range incl. `[2^31, 2^32)` is representable via the wrapped bit pattern (`sized_integers.rii` gained a u32-wrap case `4e9+1e9≡705032704`, byte-equal across interp/C/WASM) +2 tests. `cargo test --all` 2686/0. **Remaining**: true 64-bit WASM (an i32→i64 backend refactor — pointers must stay i32 for wasm32 addressing, so it needs a mixed i32/i64 representation threaded through signatures/locals/arithmetic/calls; multi-session, C already handles 64-bit), and BigInt/decimal/fixed-point (a multi-session feature) | Required for finance use cases |
 
@@ -2391,11 +2391,11 @@ A session entering the codebase MUST:
 ### Session Handoff Snapshot (last updated 2026-06-03, third session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2699 / 0**, `cargo clippy`
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2703 / 0**, `cargo clippy`
 0 warnings, WASM/C `corpus_differential` **32/32** byte-equal (both-ran 32), **157** example
-`.rii` files, Coq active **312 files / 12,426 Qed / 0 Admitted / 0 Axiom / 0 Abort**
+`.rii` files, Coq active **313 files / 12,437 Qed / 0 Admitted / 0 Axiom / 0 Abort**
 (grep-verified; the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
-`metrics.json` is refreshed live-accurate (tests 2699 `full_cargo_test`, Qed 12,426) — the
+`metrics.json` is refreshed live-accurate (tests 2703 `full_cargo_test`, Qed 12,437) — the
 non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
 here; counts preserved, not re-derived).
 
@@ -2444,6 +2444,13 @@ here; counts preserved, not re-derived).
    cannot be reused as a path; rejection is source-agnostic). Taint-source taxonomy verified: the
    6 core `TaintSource` variants ≡ Coq `taint_source` (+6 product sources, source-agnostic).
    `cargo test --all` 2699/0. The POSIX model `VerifiedFileSystem.v` stays the complementary target.
+10. **Strings — verified core string algorithms** — Coq `foundations/VerifiedString.v` (11 Qed;
+   active 312→313 files, 12,426→12,437 Qed): the repeat length law (`|repeat s n| = n·|s|`) and
+   the split/join round-trip (`join sep (split sep s) = s`) for the `teks.rs` builtins; +4 Rust
+   property tests on the running builtins (repeat, round-trip, Unicode-faithful case-fold/trim
+   idempotence). Case-folding is left to the tests, not Coq (Rust `to_uppercase` isn't
+   length-preserving). `cargo test --all` 2703/0. Remaining for the strings row: NFC/confusables
+   (multi-session Unicode-data effort).
 The numeric tower is now **complete for fixed-width ints up to 32 bits** (unsigned + signed,
 all three execution paths, with a Coq model); 64-bit is native-only (WASM rejects it cleanly).
 The Coq read/write model `VerifiedFileSystem.v` (109 Qed) already exists — do not duplicate.
