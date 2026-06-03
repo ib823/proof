@@ -977,9 +977,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // ── File I/O builtins (fail) — Effect::FileSystem ──
     // Content-reading builtins are hardened (Gate C stdlib hardening): the path
     // must be a `String`, so a `Tainted` untrusted path is rejected at the I/O
-    // boundary (path-traversal prevention, Coq `path_traversal_impossible`); and
-    // the returned contents are `Tainted<String, FileSystem>` — an untrusted
-    // source that must be sanitized before reaching any sink (Coq taint safety).
+    // boundary (path-traversal prevention, Coq `TaintSystemCorrectness.v`
+    // `file_path_traversal_impossible` — the filesystem corollary of
+    // `path_traversal_impossible`); and the returned contents are
+    // `Tainted<String, FileSystem>` — an untrusted source that must be sanitized
+    // before reaching any sink (Coq taint safety). The prototype↔Coq parity is
+    // exercised by `taint_path_traversal_prevention_parity_all_file_ops`.
     for (bm, en) in &[("fail_baca", "file_read"), ("fail_baca_baris", "file_read_lines")] {
         let ty = Ty::Fn(
             Box::new(Ty::String),

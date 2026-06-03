@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 312 active files, 12,425 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 312 active files, 12,426 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate (`Foundations/Syntax.lean` = 187 errors, reproduced this session). See `02_FORMAL/lean/COMPILATION_STATUS.md`. **W4.4 version-bump attempt (2026-06-01):** tried bumping to Lean **4.30.0** (latest; plan estimated 4.29) — **blocked in this environment**: `elan` cannot fetch/parse `release.lean-lang.org` (network policy returns HTML, not the release manifest: "Unexpected character: H"), so only the pre-installed 4.16.0 toolchain is usable. Deferred — and per the Batch-2 finding, a version bump is the wrong lever anyway: the lane needs **elaboration fixes** (a real port), not a newer toolchain, which would only be stricter. The lane has **no external deps** (self-contained lakefile), so when a port is undertaken the toolchain itself is not the blocker. | Generated (not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep). `metrics.json` records `smokeBuildOk:false` / `compiledLemmas:0` — the `RIINA_CORE` smoke theory is **not currently verified**, and could not be re-checked 2026-06-01 (Isabelle download 403 in this environment). 12,931 = raw grep, unverified | Generated (smoke unverified) |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with **25** Z3-verified security-lattice properties (re-verified 2026-06-01 under Z3 4.8.12 AND 4.15.3: 25 unsat in both). "12,405" = raw corpus-wide asserts; rest generated. (The prior "11,843 verified" figure was a counting error.) | Smoke-verified |
@@ -225,13 +225,13 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 12,425 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 12,426 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | Parameter (active build) | 30 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, an opaque *function* not a proposition; implementation in `riina-core`, TCB until Verus harness). The former 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos`) were eliminated: `NANOS_PER_SEC` is now a concrete `Definition` (`1000*1000*1000`, sealed `Opaque` for proof performance) and `NANOS_PER_SEC_pos` a proved `Qed` lemma — removed from the TCB. All 30 remaining are part of the TCB. Audit-docs.sh pins this count. |
 | .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 13,183 minus active 12,425 |
+| Qed (archive) | 758 | Total 13,184 minus active 12,426 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` (last verified upstream; container lacks Rocq) |
 
@@ -442,7 +442,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(12,425 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(12,426 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -1022,7 +1022,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 12,425 |
+| Qed | 12,426 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |
@@ -2204,7 +2204,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Module | Current | Required |
 |---|---|---|
 | Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core`; per-primitive KATs + negative tests + a consolidated independent KAT-audit manifest (2026-06-02) | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
-| File I/O with effect tracking | `Effect::FileSystem` tracked on all `fail_*`/`file_*` builtins; **path hardening 2026-06-02**: `file_read`/`file_read_lines` typed `String → Tainted<String, FileSystem>` (untrusted path rejected; contents tainted), and the single-path ops `file_exists`/`file_delete`/`file_size`/`file_list_dir` take a `String` path (tainted path rejected) with **precise result types** (`exists`→Bool, `delete`→Unit, `size`→Int; `list_dir`→Any) +5 tests. **Coq read/write model already exists (verified 2026-06-02)**: `domains/VerifiedFileSystem.v` (active, 109 Qed — access control `can_read`/`can_write`, `no_read_without_perm`/`no_write_without_perm`, crash-consistency, atomic writes) + `TaintSystemCorrectness.v` `path_traversal_impossible`. Remaining: precise types for the multi-arg `file_write`/`file_append`, and connecting the VFS model to RIINA's `Effect::FileSystem` type discipline | Implement + Coq model for read/write effects |
+| File I/O with effect tracking | `Effect::FileSystem` tracked on all `fail_*`/`file_*` builtins; **path hardening 2026-06-02**: `file_read`/`file_read_lines` typed `String → Tainted<String, FileSystem>` (untrusted path rejected; contents tainted), and the single-path ops `file_exists`/`file_delete`/`file_size`/`file_list_dir` take a `String` path (tainted path rejected) with **precise result types** (`exists`→Bool, `delete`→Unit, `size`→Int; `list_dir`→Any) +5 tests. **Coq read/write model already exists (verified 2026-06-02)**: `domains/VerifiedFileSystem.v` (active, 109 Qed — access control `can_read`/`can_write`, `no_read_without_perm`/`no_write_without_perm`, crash-consistency, atomic writes) + `TaintSystemCorrectness.v` `path_traversal_impossible`. **Taint bridge done 2026-06-03**: `file_write`/`file_append` are precise (`(String,String)→Unit`), and the file-op path-safety discipline is now tied to Coq via the named corollary `file_path_traversal_impossible` + 3 typechecker parity tests (all 8 ops reject a tainted path; `file_read` result is `Tainted<_,FileSystem>` & can't be reused as a path; source-agnostic). Remaining: realising the VFS **access-control** model (permissions/journaling/quotas) in the prototype's I/O | Implement + Coq model for read/write effects |
 | Networking (TCP/TLS/HTTP, effect-typed) | HTTP builtins effect-typed (`Effect::Network`); **capability-gated 2026-06-02 (hybrid POLA)**: once a program opts into the capability discipline (some grant in scope), a `Network`/`NetworkSecure`/`Process` operation requires the matching capability granted — mirrors the opt-in `T_Require` rule (no grants ⇒ permissive, so existing programs unaffected). **Effect-set landed 2026-06-02 — gating extended soundly to Crypto/Random/System**: `TopLevelDecl::Function` now carries an `effect_set: Vec<Effect>` (the components of a compound `kesan (A,B,C)`, which the lossy lattice `effect` join collapses), and `check_program` grants *every* component — so a compound-effect function (e.g. `crypto_ops.rii`) authorizes all its declared ambient ops and the earlier false-positive is gone (differential restored 30/30). The App-rule gate now covers Network/NetworkSecure/Process/Crypto/Random/System. +6 tests (network ×3, random ×2, compound-grants-all-components ×1). Remaining: real TCP/TLS impls + a Coq network-effect model | Implement; capability-gated |
 | Time / random / OS interface | **Time precise-typed 2026-06-03**: the 6 `masa_*`/`time_*` builtins were `Fn(Any,Any,Time)`; now sound + precise (clocks `Unit→Int`; `masa_tidur` `Int→Unit`; `masa_format`/`masa_urai` `(value,format)`-pair → `String`/`Int`), so misuse is rejected (`masa_tidur("x")` is a type error) and `Effect::Time` is tracked on the applied builtins (+2 tests). Random already `Int→Int` (`Effect::Random`). Remaining: OS/system builtins precision; the `()` zero-arg-thunk runtime materialisation (a bare builtin `Var` evaluates to its `Builtin`, like `baca_garisan`) — a separate codebase-wide item | All effect-typed |
 | Collections (Vec, Map, Set) | **Verified core list algorithms landed 2026-06-03**: Coq `foundations/VerifiedList.v` (17 Qed) proves, for the `senarai.rs` list builtins, insertion-sort correctness (`list_sort` = ascending permutation + sorted + idempotent), reverse-involutive, the length laws (reverse/concat/map), and de-dup invariants (`NoDup` + set-preservation for `list_unique`); +4 Rust property tests assert the same invariants on the running impl (dependency-free seeded sweep of 200 random lists). **Map & Set landed 2026-06-03**: Coq `foundations/VerifiedMapSet.v` (14 Qed) proves the partial-map laws for the `peta.rs` `BTreeMap` builtins (get-after-insert, insert-other, insert-shadow, remove-eq) and the set membership algebra for the `set.rs` builtins (insert/remove/union/intersect membership + no-dup invariant); +4 Rust property tests. Remaining: benchmarks (criterion) | Benchmarks + verified core algorithms |
@@ -2391,11 +2391,11 @@ A session entering the codebase MUST:
 ### Session Handoff Snapshot (last updated 2026-06-03, third session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2696 / 0**, `cargo clippy`
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2699 / 0**, `cargo clippy`
 0 warnings, WASM/C `corpus_differential` **32/32** byte-equal (both-ran 32), **157** example
-`.rii` files, Coq active **312 files / 12,425 Qed / 0 Admitted / 0 Axiom / 0 Abort**
+`.rii` files, Coq active **312 files / 12,426 Qed / 0 Admitted / 0 Axiom / 0 Abort**
 (grep-verified; the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
-`metrics.json` is refreshed live-accurate (tests 2696 `full_cargo_test`, Qed 12,425) — the
+`metrics.json` is refreshed live-accurate (tests 2699 `full_cargo_test`, Qed 12,426) — the
 non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
 here; counts preserved, not re-derived).
 
@@ -2436,6 +2436,14 @@ here; counts preserved, not re-derived).
    for the `set.rs` builtins (insert/remove/union/intersect + no-dup invariant); +4 Rust
    property tests on the running builtins. Completes the "Vec, Map, Set" row. `cargo test --all`
    2696/0.
+9. **Filesystem taint discipline ⇄ Coq parity bridge** — connected the prototype's file-I/O type
+   discipline to `TaintSystemCorrectness.v`: every file builtin types its path as `String`,
+   realising `path_traversal_impossible`. Added the named corollary `file_path_traversal_impossible`
+   (+1 Qed; active 12,425→12,426) the prototype cites + 3 typechecker parity tests (all 8 file ops
+   reject a tainted path / accept a clean one; a `file_read` result is `Tainted<_, FileSystem>` and
+   cannot be reused as a path; rejection is source-agnostic). Taint-source taxonomy verified: the
+   6 core `TaintSource` variants ≡ Coq `taint_source` (+6 product sources, source-agnostic).
+   `cargo test --all` 2699/0. The POSIX model `VerifiedFileSystem.v` stays the complementary target.
 The numeric tower is now **complete for fixed-width ints up to 32 bits** (unsigned + signed,
 all three execution paths, with a Coq model); 64-bit is native-only (WASM rejects it cleanly).
 The Coq read/write model `VerifiedFileSystem.v` (109 Qed) already exists — do not duplicate.
@@ -2450,10 +2458,12 @@ The Coq read/write model `VerifiedFileSystem.v` (109 Qed) already exists — do 
    silently under WASM (documented). Consider before starting.
 2. **BigInt / decimal / fixed-point** — a genuine multi-session feature: new `Ty` variants +
    an arbitrary-precision runtime (both backends) + codegen + a Coq model. Required for finance.
-3. **Connect `VerifiedFileSystem.v` (109 Qed) to `Effect::FileSystem`** — tie the mechanized
-   read/write model to the prototype's I/O type discipline (a parity-style follow-up). Also the
-   stdlib rows still "Partial": collections (verified core algos + benches), strings (NFC/
-   confusables), time/random/OS effect-typing.
+3. **Realise `VerifiedFileSystem.v`'s POSIX model in the prototype** — the taint/path-safety
+   bridge is **done** (`file_path_traversal_impossible` ⇄ file-op `String` paths, parity-tested
+   2026-06-03). The remaining, deeper connection is the **access-control** model (permissions
+   `can_read`/`can_write`, journaling, quotas) which the prototype's capability+taint I/O does not
+   yet enforce. Also the stdlib rows still "Partial": strings (NFC/confusables — a multi-session
+   Unicode-data effort), collections benchmarks (criterion harness), OS effect-typing.
 4. **Gate D1 (earn the prover lanes)** or other gates (E test-infra, F reproducibility, G
    security posture) — see their Part 11 sections; mostly multi-session.
 5. **Owner-gated (not a session task):** external crypto audit (REQ-28, Gate C/G exit); a

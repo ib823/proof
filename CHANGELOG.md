@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,425 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2696 Rust tests
+**Verification:** 12,426 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2699 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Filesystem taint discipline ⇄ Coq proof (parity bridge)**: connected the
+  prototype's file-I/O type discipline to the mechanized taint calculus. Every
+  file builtin types its path as a plain `String`, so a `Tainted` (untrusted)
+  path is a type error — the concrete realisation of `TaintSystemCorrectness.v`
+  `path_traversal_impossible`. Added a named filesystem corollary
+  `file_path_traversal_impossible` (+1 Qed → active 12,425→12,426) that the
+  prototype cites, and +3 typechecker parity tests mirroring the theorem on the
+  *running* typechecker: all 8 file ops reject a tainted path and accept a clean
+  one; a `file_read` result is `Tainted<_, FileSystem>` and cannot be reused as a
+  path (end-to-end); and rejection is source-agnostic (a `NetworkExternal`-tainted
+  `http_body` is rejected too, matching the theorem's `forall src`). Verified the
+  taint-source taxonomy: the prototype's 6 core `TaintSource` variants match the
+  Coq `taint_source` exactly (the +6 RIINA-product sources are handled by the same
+  source-agnostic rejection). `cargo test --all` 2699/0, clippy 0. NB: the
+  complementary POSIX-correctness model `VerifiedFileSystem.v` (109 Qed —
+  permissions/journaling/quotas) remains the deeper target the prototype's I/O
+  does not yet realise.
 - **Collections — verified Map & Set algebra** (completes the "Collections →
   verified core algorithms" Gate C row alongside `VerifiedList.v`): new Coq model
   `02_FORMAL/coq/foundations/VerifiedMapSet.v` (14 Qed, 0 Admitted/Axiom/Abort;
@@ -471,7 +488,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,425 Qed proofs
+- Active Coq build now at 12,426 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

@@ -2844,6 +2844,122 @@ mod formalized_tests {
         );
     }
 
+    // ── Filesystem taint discipline ⇄ Coq `TaintSystemCorrectness.v` ──
+    // These mirror, on the running typechecker, the mechanized theorem
+    //   `path_traversal_impossible : forall Γ e T src,
+    //      has_type Γ e (TTainted T src) -> ~ has_type Γ (EUseSink SanPathSanitize e) T`
+    // i.e. a tainted value cannot reach a path sink. The prototype realises this
+    // by typing every file-op path as a plain `String`, so a `Tainted` path is a
+    // type error — across ALL file builtins, not just `file_write`.
+
+    /// A tainted value: the contents of an untrusted file
+    /// (`Tainted<String, FileSystem>` — a taint *source*).
+    fn tainted_fs_value() -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("file_read".to_string())),
+            Box::new(Expr::String("untrusted.txt".to_string())),
+        )
+    }
+
+    #[test]
+    fn taint_path_traversal_prevention_parity_all_file_ops() {
+        let ctx = register_builtin_types(&Context::new());
+        // Single-path ops: a tainted path is rejected; a clean `String` is accepted
+        // (and the op is a FileSystem effect).
+        for op in [
+            "file_read",
+            "file_read_lines",
+            "file_exists",
+            "file_delete",
+            "file_size",
+            "file_list_dir",
+        ] {
+            let bad = Expr::App(Box::new(Expr::Var(op.to_string())), Box::new(tainted_fs_value()));
+            assert!(
+                matches!(type_check(&ctx, &bad), Err(TypeError::TypeMismatch { .. })),
+                "{op}: a tainted path must be rejected (Coq path_traversal_impossible)"
+            );
+            let good = Expr::App(
+                Box::new(Expr::Var(op.to_string())),
+                Box::new(Expr::String("safe.txt".to_string())),
+            );
+            let (_, eff) = type_check(&ctx, &good)
+                .unwrap_or_else(|e| panic!("{op}: a clean String path must typecheck: {e:?}"));
+            assert_eq!(eff, Effect::FileSystem, "{op} is a FileSystem effect");
+        }
+        // Pair-path ops (write/append): a tainted path component is rejected.
+        for op in ["file_write", "file_append"] {
+            let bad = Expr::App(
+                Box::new(Expr::Var(op.to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(tainted_fs_value()),
+                    Box::new(Expr::String("data".to_string())),
+                )),
+            );
+            assert!(
+                matches!(type_check(&ctx, &bad), Err(TypeError::TypeMismatch { .. })),
+                "{op}: a tainted path must be rejected (Coq path_traversal_impossible)"
+            );
+            let good = Expr::App(
+                Box::new(Expr::Var(op.to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::String("safe.txt".to_string())),
+                    Box::new(Expr::String("data".to_string())),
+                )),
+            );
+            let (_, eff) = type_check(&ctx, &good)
+                .unwrap_or_else(|e| panic!("{op}: a clean (path,data) must typecheck: {e:?}"));
+            assert_eq!(eff, Effect::FileSystem, "{op} is a FileSystem effect");
+        }
+    }
+
+    #[test]
+    fn taint_file_read_result_is_a_source_and_cannot_be_reused_as_a_path() {
+        // file_read returns `Tainted<String, FileSystem>`, so its result cannot be
+        // fed back as a path — the end-to-end realisation of the theorem
+        // (read-an-untrusted-path → path sink is un-typeable).
+        let ctx = register_builtin_types(&Context::new());
+        let (ty, _) = type_check(&ctx, &tainted_fs_value()).unwrap();
+        assert!(
+            matches!(ty, Ty::Tainted(_, riina_types::TaintSource::FileSystem)),
+            "file_read result must be Tainted<_, FileSystem>, got {ty:?}"
+        );
+        let reuse = Expr::App(
+            Box::new(Expr::Var("file_exists".to_string())),
+            Box::new(tainted_fs_value()),
+        );
+        assert!(
+            matches!(type_check(&ctx, &reuse), Err(TypeError::TypeMismatch { .. })),
+            "a tainted file_read result must not be usable as a path"
+        );
+    }
+
+    #[test]
+    fn taint_path_sink_rejection_is_source_agnostic() {
+        // The Coq theorem is `forall src` — rejection does not depend on the taint
+        // *source*. The prototype matches: a `NetworkExternal`-tainted value
+        // (`http_body`) is rejected as a file path just like a `FileSystem` one.
+        let ctx = register_builtin_types(&Context::new());
+        let net_tainted = Expr::App(
+            Box::new(Expr::Var("http_body".to_string())),
+            Box::new(Expr::String("req".to_string())),
+        );
+        // sanity: it really is a different-source tainted value
+        let (ty, _) = type_check(&ctx, &net_tainted).unwrap();
+        assert!(
+            matches!(ty, Ty::Tainted(_, riina_types::TaintSource::NetworkExternal)),
+            "http_body must be Tainted<_, NetworkExternal>, got {ty:?}"
+        );
+        let bad = Expr::App(
+            Box::new(Expr::Var("file_exists".to_string())),
+            Box::new(net_tainted),
+        );
+        assert!(
+            matches!(type_check(&ctx, &bad), Err(TypeError::TypeMismatch { .. })),
+            "a tainted path is rejected regardless of its source"
+        );
+    }
+
     #[test]
     fn test_time_builtins_have_precise_types_and_track_effect() {
         // The applied time builtins are sound and track Effect::Time: sleep takes
