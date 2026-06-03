@@ -215,6 +215,138 @@ impl Journal {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// Directory structure & integrity  (Coq §5)
+// ════════════════════════════════════════════════════════════════════════════
+
+/// Directory entry — Coq `DirEntry`. `name` is a name-hash; by the Coq
+/// convention `0` denotes the parent link (`..`) and `1` the self link (`.`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirEntry {
+    pub name: u64,
+    pub inode: u64,
+    pub is_dir: bool,
+}
+
+/// Directory with a parent link — Coq `Directory`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Directory {
+    pub inode: u64,
+    pub parent: u64,
+    pub entries: Vec<DirEntry>,
+}
+
+impl Directory {
+    /// Coq `dir_no_self_cycle` — a directory is not its own parent.
+    #[must_use]
+    pub fn no_self_cycle(&self) -> bool {
+        self.inode != self.parent
+    }
+
+    /// Coq `dir_has_parent_link` — a `..` entry (name-hash 0) → parent inode.
+    #[must_use]
+    pub fn has_parent_link(&self) -> bool {
+        self.entries
+            .iter()
+            .any(|e| e.name == 0 && e.inode == self.parent)
+    }
+
+    /// Coq `dir_has_dot_entry` — a `.` entry (name-hash 1) → self inode.
+    #[must_use]
+    pub fn has_dot_entry(&self) -> bool {
+        self.entries
+            .iter()
+            .any(|e| e.name == 1 && e.inode == self.inode)
+    }
+
+    /// Coq `dir_integrity` — no self-cycle ∧ has `..` ∧ has `.`.
+    #[must_use]
+    pub fn integrity(&self) -> bool {
+        self.no_self_cycle() && self.has_parent_link() && self.has_dot_entry()
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Crash consistency & recovery  (Coq §7)
+// ════════════════════════════════════════════════════════════════════════════
+
+/// Filesystem lifecycle state — Coq `FSState`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FsState {
+    Clean,
+    Mounting,
+    Recovering,
+    Online,
+    Error,
+}
+
+/// Post-crash filesystem state — Coq `CrashState`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CrashState {
+    pub journal: Journal,
+    pub fs_state: FsState,
+    pub last_checkpoint: u64,
+    pub recovery_needed: bool,
+}
+
+impl CrashState {
+    /// Coq `recovery_complete` — Online/Clean with no recovery pending.
+    #[must_use]
+    pub fn recovery_complete(&self) -> bool {
+        matches!(self.fs_state, FsState::Online | FsState::Clean) && !self.recovery_needed
+    }
+
+    /// Coq `crash_safe` — the journal is consistent (VFS_082).
+    #[must_use]
+    pub fn crash_safe(&self) -> bool {
+        self.journal.consistent()
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// File-operation atomicity  (Coq §8)
+// ════════════════════════════════════════════════════════════════════════════
+
+/// A filesystem operation — Coq `FileOp`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FileOp {
+    Create { parent: u64, inode: u64 },
+    Delete { parent: u64, inode: u64 },
+    Rename { src_parent: u64, src: u64, dst_parent: u64, dst: u64 },
+    Write { inode: u64, offset: u64, size: u64 },
+    Read { inode: u64, offset: u64, size: u64 },
+}
+
+/// Operation outcome — Coq `OpResult`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OpResult {
+    Success,
+    Failure,
+    Partial,
+}
+
+/// An operation paired with its result and (optional) journal entry — Coq `AtomicOp`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AtomicOp {
+    pub operation: FileOp,
+    pub result: OpResult,
+    pub journal_entry: Option<JournalOp>,
+}
+
+impl AtomicOp {
+    /// Coq `op_is_atomic` — succeeds or fails completely, never partial.
+    #[must_use]
+    pub fn is_atomic(&self) -> bool {
+        matches!(self.result, OpResult::Success | OpResult::Failure)
+    }
+
+    /// Coq `op_is_journaled` — has a journal entry.
+    #[must_use]
+    pub fn is_journaled(&self) -> bool {
+        self.journal_entry.is_some()
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // Enforcing in-memory VFS
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -549,6 +681,107 @@ mod tests {
         };
         // A still-pending transaction is not complete ⇒ journal inconsistent.
         assert!(!pending.consistent());
+    }
+
+    // ── Directory integrity parity (Coq §5) ──────────────────────────────────
+
+    #[test]
+    fn vfs_063_empty_dir_lacks_integrity() {
+        // VFS_063: a directory with no `.`/`..` entries fails integrity.
+        let d = Directory {
+            inode: 5,
+            parent: 2,
+            entries: Vec::new(),
+        };
+        assert!(d.no_self_cycle());
+        assert!(!d.has_parent_link());
+        assert!(!d.has_dot_entry());
+        assert!(!d.integrity());
+    }
+
+    #[test]
+    fn vfs_064_wellformed_dir_has_integrity() {
+        // VFS_064: a directory with `..`→parent (name 0) and `.`→self (name 1)
+        // and no self-cycle satisfies dir_integrity.
+        let d = Directory {
+            inode: 5,
+            parent: 2,
+            entries: vec![
+                DirEntry { name: 0, inode: 2, is_dir: true }, // ..
+                DirEntry { name: 1, inode: 5, is_dir: true }, // .
+            ],
+        };
+        assert!(d.integrity());
+        // Self-cycle (inode == parent) breaks integrity even with the entries.
+        let cyclic = Directory {
+            inode: 5,
+            parent: 5,
+            entries: d.entries.clone(),
+        };
+        assert!(!cyclic.no_self_cycle());
+        assert!(!cyclic.integrity());
+    }
+
+    // ── Crash consistency parity (Coq §7) ────────────────────────────────────
+
+    #[test]
+    fn vfs_082_083_crash_safe_iff_journal_consistent() {
+        // VFS_082/083: crash safety is exactly journal consistency.
+        let safe = CrashState {
+            journal: Journal::default(),
+            fs_state: FsState::Online,
+            last_checkpoint: 0,
+            recovery_needed: false,
+        };
+        assert!(safe.crash_safe());
+        assert!(safe.recovery_complete());
+
+        let unsafe_state = CrashState {
+            journal: Journal {
+                transactions: vec![Transaction {
+                    id: 1,
+                    ops: vec![JournalOp::Create(1)],
+                    state: TxnState::Pending,
+                }],
+                head: 1,
+                tail: 0,
+            },
+            fs_state: FsState::Recovering,
+            last_checkpoint: 0,
+            recovery_needed: true,
+        };
+        assert!(!unsafe_state.crash_safe());
+        // Recovering with recovery pending is not complete.
+        assert!(!unsafe_state.recovery_complete());
+    }
+
+    // ── Atomic-operation parity (Coq §8) ─────────────────────────────────────
+
+    #[test]
+    fn op_is_atomic_for_success_and_failure_not_partial() {
+        let base = FileOp::Write {
+            inode: 1,
+            offset: 0,
+            size: 4,
+        };
+        let success = AtomicOp {
+            operation: base,
+            result: OpResult::Success,
+            journal_entry: Some(JournalOp::Write { block: 1, data: 4 }),
+        };
+        let failure = AtomicOp {
+            operation: base,
+            result: OpResult::Failure,
+            journal_entry: None,
+        };
+        let partial = AtomicOp {
+            operation: base,
+            result: OpResult::Partial,
+            journal_entry: None,
+        };
+        assert!(success.is_atomic() && success.is_journaled());
+        assert!(failure.is_atomic() && !failure.is_journaled());
+        assert!(!partial.is_atomic());
     }
 
     // ── End-to-end enforcement: the predicates actually gate the I/O ─────────
