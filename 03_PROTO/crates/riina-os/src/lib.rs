@@ -6,3 +6,4 @@ pub mod capability;
 pub mod syscall;
 pub mod ipc;
 pub mod memory;
+pub mod vfs;
