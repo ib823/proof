@@ -123,37 +123,52 @@ fn count_files_with_ext(dir: &Path, ext: &str) -> u32 {
 // Toolchain detection
 // ---------------------------------------------------------------------------
 
-/// Detect `coqc`: `$COQBIN` env → OPAM paths → `which coqc`.
+/// Detect the Coq prover binary: `$COQBIN` env → OPAM switch paths → `PATH`.
+///
+/// Accepts the modern Rocq 9.x `rocq` binary as well as the legacy `coqc`.
+/// Rocq 9.2 — the toolchain this repo requires (the corpus uses `From Stdlib`)
+/// — ships `rocq` and has dropped the standalone `coqc`; the Coq `Makefile`
+/// drives every compile through `$(COQBIN)rocq compile`, so what matters here
+/// is finding *a* prover binary whose parent directory becomes `COQBIN`.
+/// `coqc` is probed first to preserve behaviour on Coq 8.x / compat installs.
 fn detect_coqc() -> ToolStatus {
+    const PROVER_BINS: [&str; 2] = ["coqc", "rocq"];
+
     // 1. COQBIN environment variable
     if let Ok(coqbin) = std::env::var("COQBIN") {
-        let p = PathBuf::from(&coqbin).join("coqc");
-        if p.exists() {
-            return ToolStatus::Found(p);
+        for bin in PROVER_BINS {
+            let p = PathBuf::from(&coqbin).join(bin);
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
         }
     }
 
-    // 2. OPAM default switch paths
+    // 2. OPAM switch paths
     if let Ok(home) = std::env::var("HOME") {
         let opam_base = PathBuf::from(&home).join(".opam");
         if opam_base.is_dir() {
             if let Ok(entries) = fs::read_dir(&opam_base) {
                 for entry in entries.flatten() {
-                    let candidate = entry.path().join("bin").join("coqc");
-                    if candidate.exists() {
-                        return ToolStatus::Found(candidate);
+                    for bin in PROVER_BINS {
+                        let candidate = entry.path().join("bin").join(bin);
+                        if candidate.exists() {
+                            return ToolStatus::Found(candidate);
+                        }
                     }
                 }
             }
         }
     }
 
-    // 3. which coqc
-    if let Some(p) = which_tool("coqc") {
-        return ToolStatus::Found(p);
+    // 3. which coqc / rocq
+    for bin in PROVER_BINS {
+        if let Some(p) = which_tool(bin) {
+            return ToolStatus::Found(p);
+        }
     }
 
-    ToolStatus::NotFound("coqc not found (set COQBIN or install via opam)".into())
+    ToolStatus::NotFound("coqc/rocq not found (set COQBIN or install Rocq via opam)".into())
 }
 
 /// Detect `lake` (Lean 4 build tool): `$ELAN_HOME` → `~/.elan/bin/lake` → `which lake`.
@@ -3016,7 +3031,7 @@ fn primary_verifier_result(status: ToolStatus) -> CheckResult {
             name: "Primary Verifier (Coq) Present".into(),
             passed: true,
             blocking: true,
-            details: format!("coqc available at {}", p.display()),
+            details: format!("Coq/Rocq prover available at {}", p.display()),
         },
         ToolStatus::NotFound(msg) => CheckResult {
             name: "Primary Verifier (Coq) Present".into(),
