@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,386 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,386 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate (`Foundations/Syntax.lean` = 187 errors, reproduced this session). See `02_FORMAL/lean/COMPILATION_STATUS.md`. **W4.4 version-bump attempt (2026-06-01):** tried bumping to Lean **4.30.0** (latest; plan estimated 4.29) — **blocked in this environment**: `elan` cannot fetch/parse `release.lean-lang.org` (network policy returns HTML, not the release manifest: "Unexpected character: H"), so only the pre-installed 4.16.0 toolchain is usable. Deferred — and per the Batch-2 finding, a version bump is the wrong lever anyway: the lane needs **elaboration fixes** (a real port), not a newer toolchain, which would only be stricter. The lane has **no external deps** (self-contained lakefile), so when a port is undertaken the toolchain itself is not the blocker. | Generated (not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep). `metrics.json` records `smokeBuildOk:false` / `compiledLemmas:0` — the `RIINA_CORE` smoke theory is **not currently verified**, and could not be re-checked 2026-06-01 (Isabelle download 403 in this environment). 12,931 = raw grep, unverified | Generated (smoke unverified) |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with **25** Z3-verified security-lattice properties (re-verified 2026-06-01 under Z3 4.8.12 AND 4.15.3: 25 unsat in both). "12,405" = raw corpus-wide asserts; rest generated. (The prior "11,843 verified" figure was a counting error.) | Smoke-verified |
@@ -323,7 +323,7 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 2,479 passing, 0 failed, 3 ignored |
+| Tests (03_PROTO/) | 2,664 passing, 0 failed, 3 ignored |
 | Tests (05_TOOLING/) | 256 passing, 0 failed, 2 ignored (incl. 8 consolidated crypto KAT-audit-manifest tests, 2026-06-02) |
 | Crates (03_PROTO) | 19 |
 | Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
@@ -2372,6 +2372,40 @@ A session entering the codebase MUST:
 4. If the gate has no TODO REQs left, re-run the gate's verification commands. If all pass,
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
+
+### Session Handoff Snapshot (last updated 2026-06-02)
+
+**Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2664 / 0**, `cargo clippy`
+0 warnings, WASM/C `corpus_differential` **30/30** byte-equal, Coq active **309 .vo /
+12,386 Qed / 0 Admitted / 0 Axiom / 0 Abort**, `audit-docs.sh` 0 discrepancies.
+
+**Gate C landed this session** (see CHANGELOG `[Unreleased] 2026-06-02 — Gate C`): crypto
+KAT-audit manifest (`05_TOOLING/.../tests/kat_audit.rs`); file-I/O hardening (taint-typed
+reads + `String` paths + precise result types); Network/Process **and** Crypto/Random/System
+capability gating (opt-in POLA); **effect-set** on function decls (`effect_set: Vec<Effect>`,
+makes compound-effect gating sound); numeric tower **two slices** (lexed+range-validated int
+suffixes; distinct sized types `Ty::IntN { bits, signed }` on fn params/returns). The Coq
+read/write model already exists (`VerifiedFileSystem.v`, 109 Qed — do not duplicate).
+
+**Highest-priority Gate C next steps** (all bounded follow-ups, P0):
+1. **Numeric tower — width-aware arithmetic + codegen**: wrap/checked overflow at the bit
+   width for `Ty::IntN`; connect the lexer suffix `42u8` to an `IntN` literal (needs an
+   `Expr::Int` width field); width-correct C/WASM emission. Then BigInt/decimal/fixed-point.
+2. **Multi-arg file builtins** `file_write`/`file_append` precise types (path `String` + data),
+   and connect `VerifiedFileSystem.v` to RIINA's `Effect::FileSystem` type discipline.
+3. **Owner-gated (cannot be done by a session):** external crypto audit budget (REQ-28 exit
+   criterion — audit-prep KAT manifest is ready); broader I/O capability-grant policy.
+
+**Environment is ephemeral — a fresh container must re-provision before `verify --full`:**
+- Rust 1.94.1 (present). Rocq **9.1.1** via opam: `apt install opam`; `opam switch create
+  rocq ocaml-system.4.14.1`; `opam install coq.9.1.1` (NOT 8.21.0 — `install_coq.sh` label is
+  stale); **`export COQBIN=$(dirname $(which coqc))/`** — required or the pre-push
+  `verify --full` Coq `make` subprocess can't resolve the split `Stdlib`.
+- `wasmtime` 45.0.0 (official release binary → `/usr/local/bin`) + `cc` for the differential.
+- Optional full prover lanes: `scripts/provision-smoke-toolchains.sh` (Isabelle/F*/TLA+/Alloy)
+  + elan for Lean v4.16.0; Lean/Isabelle remain `generated` (Gate D), not mechanized.
+- **Commit serially** — concurrent `cargo test` pre-commit hook runs race and spuriously fail.
 
 ---
 
