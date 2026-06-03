@@ -425,4 +425,108 @@ mod tests {
             ])
         );
     }
+
+    // ── Property tests: the list builtins satisfy the invariants proven in
+    // `02_FORMAL/coq/foundations/VerifiedList.v` (sort = ascending permutation,
+    // reverse involutive, unique = de-dup preserving the set, concat length).
+    // Dependency-free: a seeded LCG sweeps many random integer lists, with values
+    // in a narrow range so duplicates are common.
+
+    fn int_list(xs: &[u64]) -> Value {
+        Value::List(xs.iter().map(|&n| Value::Int(n)).collect())
+    }
+
+    fn ints_of(v: &Value) -> Vec<u64> {
+        match v {
+            Value::List(items) => items
+                .iter()
+                .map(|x| match x {
+                    Value::Int(n) => *n,
+                    other => panic!("expected Int element, got {other:?}"),
+                })
+                .collect(),
+            other => panic!("expected List, got {other:?}"),
+        }
+    }
+
+    fn lcg(state: &mut u64) -> u64 {
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
+        *state >> 33
+    }
+
+    fn random_lists() -> Vec<Vec<u64>> {
+        let mut state: u64 = 0x9E37_79B9_7F4A_7C15;
+        let mut lists = Vec::new();
+        for _ in 0..200 {
+            let len = (lcg(&mut state) % 12) as usize; // 0..=11 elements
+            let l: Vec<u64> = (0..len).map(|_| lcg(&mut state) % 10).collect();
+            lists.push(l);
+        }
+        lists
+    }
+
+    #[test]
+    fn prop_sort_is_ascending_permutation_and_idempotent() {
+        // VerifiedList.v: isort_permutation + isort_sorted + isort_idempotent.
+        for l in random_lists() {
+            let out = apply("senarai_susun", &int_list(&l)).unwrap().unwrap();
+            let got = ints_of(&out);
+            let mut expect = l.clone();
+            expect.sort_unstable();
+            assert_eq!(got, expect, "sort must be the ascending permutation of {l:?}");
+            let out2 = apply("senarai_susun", &out).unwrap().unwrap();
+            assert_eq!(ints_of(&out2), got, "sort must be idempotent");
+        }
+    }
+
+    #[test]
+    fn prop_reverse_is_involutive_and_length_preserving() {
+        // VerifiedList.v: reverse_involutive + reverse_length.
+        for l in random_lists() {
+            let r = apply("senarai_balik", &int_list(&l)).unwrap().unwrap();
+            let mut expect = l.clone();
+            expect.reverse();
+            assert_eq!(ints_of(&r), expect, "reverse of {l:?}");
+            let rr = apply("senarai_balik", &r).unwrap().unwrap();
+            assert_eq!(ints_of(&rr), l, "reverse must be involutive");
+        }
+    }
+
+    #[test]
+    fn prop_unique_dedups_preserves_set_and_is_idempotent() {
+        // VerifiedList.v: unique_no_duplicates + unique_preserves_membership.
+        use std::collections::BTreeSet;
+        for l in random_lists() {
+            let u = apply("senarai_unik", &int_list(&l)).unwrap().unwrap();
+            let got = ints_of(&u);
+            let set: BTreeSet<u64> = got.iter().copied().collect();
+            assert_eq!(set.len(), got.len(), "unique output {got:?} has duplicates");
+            let in_set: BTreeSet<u64> = l.iter().copied().collect();
+            assert_eq!(set, in_set, "unique must preserve the element set of {l:?}");
+            // exact prototype semantics: keep the first occurrence, in order
+            let mut seen = BTreeSet::new();
+            let first_occ: Vec<u64> = l.iter().copied().filter(|n| seen.insert(*n)).collect();
+            assert_eq!(got, first_occ, "unique must keep first occurrences in order");
+            let uu = apply("senarai_unik", &u).unwrap().unwrap();
+            assert_eq!(ints_of(&uu), got, "unique must be idempotent");
+        }
+    }
+
+    #[test]
+    fn prop_concat_length_is_sum_of_lengths() {
+        // VerifiedList.v: concat_length.
+        let lists = random_lists();
+        for w in lists.windows(2) {
+            let (a, b) = (&w[0], &w[1]);
+            let arg = Value::Pair(Box::new(int_list(a)), Box::new(int_list(b)));
+            let c = apply("senarai_sambung", &arg).unwrap().unwrap();
+            let got = ints_of(&c);
+            assert_eq!(got.len(), a.len() + b.len(), "concat length = |a| + |b|");
+            let mut expect = a.clone();
+            expect.extend_from_slice(b);
+            assert_eq!(got, expect, "concat must be a ++ b");
+        }
+    }
 }
