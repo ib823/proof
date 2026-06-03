@@ -759,6 +759,10 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         Ty::Unit => out.push_str("()"),
         Ty::Bool => out.push_str("Benar"),
         Ty::Int => out.push_str("Nombor"),
+        Ty::IntN { bits, signed } => {
+            out.push(if *signed { 'i' } else { 'u' });
+            out.push_str(&bits.to_string());
+        }
         Ty::String => out.push_str("Teks"),
         Ty::Bytes => out.push_str("Bait"),
         Ty::Fn(param, ret, eff) => {

@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2662 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2664 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Numeric tower — distinct sized integer types**: added `Ty::IntN { bits,
+  signed }` *additively* (a 1-site match ripple, not 434 — `Ty` matches use
+  wildcards; `Ty::Int`/`Nombor` stays the default). The type parser accepts
+  `u8`…`i64`; sized types work on function params/returns (`fungsi id8(x: u8) ->
+  u8 { x }` types as `IntN{8,false}`); `IntN`↔`Int` interoperate (a plain literal
+  initialises a sized binding) while distinct widths are incompatible (`u8` body
+  vs `u16` return ⇒ `AnnotationMismatch`). Codegen treats `IntN` as
+  representationally-`Int`, so the lowered IR / differential are unchanged (30/30).
+  +2 tests. (Width-aware arithmetic, the lexer-suffix→`IntN`-literal connection,
+  and a Coq numeric model are later slices.)
 - **Effect-set on function declarations → sound multi-capability gating**:
   `TopLevelDecl::Function` now carries `effect_set: Vec<Effect>` — the *components*
   of a compound `kesan (A, B, C)` (the lattice `effect` field is the lossy max-join).

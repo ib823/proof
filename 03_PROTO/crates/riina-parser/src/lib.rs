@@ -2722,6 +2722,15 @@ impl<'a> Parser<'a> {
                 match s.as_str() {
                     // Primitives
                     "Int" | "Nombor" => Ok(Ty::Int),
+                    // Sized integer types (numeric-tower slice).
+                    "u8" => Ok(Ty::IntN { bits: 8, signed: false }),
+                    "u16" => Ok(Ty::IntN { bits: 16, signed: false }),
+                    "u32" => Ok(Ty::IntN { bits: 32, signed: false }),
+                    "u64" => Ok(Ty::IntN { bits: 64, signed: false }),
+                    "i8" => Ok(Ty::IntN { bits: 8, signed: true }),
+                    "i16" => Ok(Ty::IntN { bits: 16, signed: true }),
+                    "i32" => Ok(Ty::IntN { bits: 32, signed: true }),
+                    "i64" => Ok(Ty::IntN { bits: 64, signed: true }),
                     "Bool" | "Benar" => Ok(Ty::Bool),
                     "Unit" => Ok(Ty::Unit),
                     "String" | "Teks" => Ok(Ty::String),

@@ -524,7 +524,13 @@ pub enum Ty {
     // Primitive types
     Unit,
     Bool,
+    /// The default integer type (`Nombor`) — an unbounded machine integer.
     Int,
+    /// A sized integer type (numeric-tower slice): `bits` ∈ {8,16,32,64},
+    /// `signed` distinguishes `iN` from `uN` (e.g. `u8` = `{bits:8, signed:false}`).
+    /// Representationally compatible with `Int` for codegen; width-aware
+    /// arithmetic semantics are a later numeric-tower phase.
+    IntN { bits: u8, signed: bool },
     String,
     Bytes,
     // Function types

@@ -2337,6 +2337,18 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
         return true;
     }
 
+    // Sized integers interoperate with the default `Int` (numeric-tower slice):
+    // a plain integer literal may initialize a sized binding, and a sized value
+    // may be used where `Int` is expected. Same-width/signedness is the exact
+    // match above; differing sized types stay incompatible. Width-aware
+    // narrowing/overflow checking is a later numeric-tower phase.
+    if matches!(
+        (expected, found),
+        (Ty::Int, Ty::IntN { .. }) | (Ty::IntN { .. }, Ty::Int)
+    ) {
+        return true;
+    }
+
     // ════════════════════════════════════════════════════════════════════
     // DOMAIN SECURITY: Taint Checking
     // ════════════════════════════════════════════════════════════════════

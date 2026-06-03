@@ -698,4 +698,23 @@ mod tests {
         ))
         .expect("a compound-effect function may call its declared ambient op");
     }
+
+    // ── Numeric tower: distinct sized integer types ──
+    #[test]
+    fn check_program_sized_int_function_typechecks() {
+        // A function with a sized-integer (u8) parameter and return type
+        // type-checks; a plain integer literal is an accepted argument
+        // (IntN ↔ Int compatibility), and the program's type is the sized type.
+        let (_, ty, _) =
+            check_program(&parse_program("fungsi id8(x: u8) -> u8 { x }\nid8(5)")).unwrap();
+        assert_eq!(ty, riina_types::Ty::IntN { bits: 8, signed: false });
+    }
+
+    #[test]
+    fn check_program_distinct_int_widths_are_incompatible() {
+        // u8 and u16 are *distinct* types — a u8 body cannot satisfy a u16 return.
+        let err =
+            check_program(&parse_program("fungsi bad(x: u8) -> u16 { x }\nbad(5)")).unwrap_err();
+        assert!(matches!(err, TypeError::AnnotationMismatch { .. }));
+    }
 }
