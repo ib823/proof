@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2682 Rust tests
+**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2684 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Numeric tower — signed sized-int codegen (C + WASM)**: compiled output is now
+  signedness-correct for signed `Ty::IntN`, matching the interpreter. The C value
+  carries an `int_signed_bits` tag (0 for plain/unsigned ⇒ unchanged unsigned
+  semantics, byte-identical; N ⇒ sign-extend on format/compare/div); `riina_trunc`
+  tags signed results, and `riina_format`/`riina_binop_{lt,le,gt,ge,div,mod}` plus
+  the result-echo sign-extend via `riina_sext`. The WASM backend sign-extends
+  signed sub-i32 operands before `i32.div_s`/`i32.rem_s`/comparisons
+  (`i32.extend8_s`/`extend16_s`) and prints signed (sign-extend + leading `-`) in
+  the itoa for `cetak` and the result-echo. New example
+  `00_basics/signed_integers.rii` (i8 overflow/underflow/signed-division →
+  `-128`/`-5`/`-64`) is byte-identical across C, WASM, and the interpreter —
+  **corpus differential 31→32/32 byte-equal**. +2 codegen tests (C tag/helpers,
+  WASM operand sign-extension). All paths gated on signed `IntN`, so the 31
+  existing examples stay byte-identical. `cargo test --all` 2684/0, clippy 0.
 - **Numeric tower — Coq model** (`02_FORMAL/coq/foundations/SizedInt.v`, 8 Qed,
   0 Admitted/Axiom/Abort): a foundational model of fixed-width (`Ty::IntN`)
   arithmetic as residues in `Z / 2^bits Z`. Proves the ring homomorphism

@@ -266,9 +266,13 @@ impl WasmBackend {
             match main_ret {
                 Ty::Unit => { /* no echo */ }
                 // A sized integer (`Ty::IntN`) echoes like a plain int — the i32
-                // cell already holds the width-masked value (numeric tower).
-                Ty::Int | Ty::CInt | Ty::IntN { .. } => {
-                    wasm_echo_int(&mut trampoline_code, 0, 1, 2);
+                // cell holds the width-masked value (numeric tower). A *signed*
+                // sized result echoes signed (sign-extend + leading '-'); local 3
+                // is the sign flag.
+                Ty::Int | Ty::CInt => wasm_echo_int(&mut trampoline_code, 0, 1, 2, 3, None),
+                Ty::IntN { bits, signed } => {
+                    let sb = if signed && bits <= 32 { Some(bits) } else { None };
+                    wasm_echo_int(&mut trampoline_code, 0, 1, 2, 3, sb);
                 }
                 Ty::Bool => {
                     wasm_local(&mut trampoline_code, Op::LocalGet, 0);
@@ -292,8 +296,8 @@ impl WasmBackend {
             }
 
             module.codes.push(FuncBody {
-                // locals 0 = main result, 1/2 = itoa scratch
-                locals: vec![(3, ValType::I32)],
+                // locals 0 = main result, 1/2 = itoa scratch, 3 = signed-echo flag
+                locals: vec![(4, ValType::I32)],
                 code: trampoline_code,
             });
 
@@ -729,7 +733,7 @@ impl WasmBackend {
     /// WASI `fd_write`. Digits are written backwards into heap scratch
     /// (`heap_ptr+16..heap_ptr+48`); the iovec lives at `heap_ptr` and
     /// `nwritten` at `heap_ptr+8`, matching the string path's scratch layout.
-    fn emit_print_int(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
+    fn emit_print_int(arg: &VarId, signed_bits: Option<u8>, ctx: &EmitCtx, code: &mut Vec<u8>) {
         let set_v = |c: &mut Vec<u8>| {
             c.push(Op::LocalSet as u8);
             wasm_encode::encode_uleb128(ctx.itoa_v as u64, c);
@@ -737,6 +741,17 @@ impl WasmBackend {
         let get_v = |c: &mut Vec<u8>| {
             c.push(Op::LocalGet as u8);
             wasm_encode::encode_uleb128(ctx.itoa_v as u64, c);
+        };
+        // Numeric tower: scratch holds "value was negative" for a signed sized int
+        // (free here — the string-builtin scratch locals are not used while printing
+        // an integer). Used to prepend '-' after the magnitude is rendered.
+        let set_neg = |c: &mut Vec<u8>| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(ctx.scratch as u64, c);
+        };
+        let get_neg = |c: &mut Vec<u8>| {
+            c.push(Op::LocalGet as u8);
+            wasm_encode::encode_uleb128(ctx.scratch as u64, c);
         };
         let set_p = |c: &mut Vec<u8>| {
             c.push(Op::LocalSet as u8);
@@ -758,6 +773,28 @@ impl WasmBackend {
         // $v = arg
         Self::emit_local_get(arg, ctx.var_map, code);
         set_v(code);
+        // Signed sized int: sign-extend to a full i32, record the sign, and print
+        // the magnitude (the unsigned loop below) with a '-' prepended afterwards.
+        if let Some(bits) = signed_bits {
+            // $v = sext($v, bits)
+            get_v(code);
+            emit_sext_i32(bits, code);
+            set_v(code);
+            // $neg = ($v < 0)
+            get_v(code);
+            i32c(code, 0);
+            code.push(Op::I32LtS as u8);
+            set_neg(code);
+            // if $neg { $v = 0 - $v }
+            get_neg(code);
+            code.push(Op::If as u8);
+            code.push(0x40);
+            i32c(code, 0);
+            get_v(code);
+            code.push(Op::I32Sub as u8);
+            set_v(code);
+            code.push(Op::End as u8);
+        }
         // $p = heap_ptr + 48  (one past the digit buffer; we write backwards)
         heap(code);
         i32c(code, 48);
@@ -794,6 +831,24 @@ impl WasmBackend {
             wasm_encode::encode_uleb128(0, code);
         }
         code.push(Op::End as u8);
+
+        // Signed & negative: prepend '-' (ASCII 45) before the rendered magnitude.
+        if signed_bits.is_some() {
+            get_neg(code);
+            code.push(Op::If as u8);
+            code.push(0x40);
+            // p = p - 1; mem[p] = '-'
+            get_p(code);
+            i32c(code, 1);
+            code.push(Op::I32Sub as u8);
+            set_p(code);
+            get_p(code);
+            i32c(code, 45);
+            code.push(Op::I32Store8 as u8);
+            code.push(0x00);
+            code.push(0x00);
+            code.push(Op::End as u8);
+        }
 
         // iovec.ptr = $p   → store at heap_ptr[0]
         heap(code);
@@ -1132,8 +1187,30 @@ impl WasmBackend {
                 Self::emit_str_add(lhs, rhs, ctx, code);
             }
             Instruction::BinOp(op, lhs, rhs) => {
+                // Numeric tower: division/modulo/comparison of a *signed* sized int
+                // (`Ty::IntN{signed}`) narrower than i32 must sign-extend its
+                // operands first — the cell holds the width-masked (unsigned-range)
+                // bits, so e.g. an i8 `-1` is stored as 255 and `I32LtS` would treat
+                // it as +255. Add/Sub/Mul are bit-identical signed/unsigned (the
+                // result mask below suffices); Eq/Ne compare equal bit patterns.
+                let needs_signed_operands = matches!(
+                    op,
+                    BinOp::Div | BinOp::Mod | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
+                );
+                let lext = needs_signed_operands
+                    .then(|| signed_subi32_width(ctx.var_to_ty.get(lhs)))
+                    .flatten();
+                let rext = needs_signed_operands
+                    .then(|| signed_subi32_width(ctx.var_to_ty.get(rhs)))
+                    .flatten();
                 Self::emit_local_get(lhs, ctx.var_map, code);
+                if let Some(b) = lext {
+                    emit_sext_i32(b, code);
+                }
                 Self::emit_local_get(rhs, ctx.var_map, code);
+                if let Some(b) = rext {
+                    emit_sext_i32(b, code);
+                }
                 match op {
                     BinOp::Add => code.push(Op::I32Add as u8),
                     BinOp::Sub => code.push(Op::I32Sub as u8),
@@ -1442,8 +1519,16 @@ impl WasmBackend {
                         // Integer argument: convert to decimal ASCII (itoa) and
                         // write via WASI fd_write. (C uses a runtime-tagged
                         // riina_format; WASM values are untagged i32, so we
-                        // dispatch on the static IR type here.)
-                        Self::emit_print_int(arg, ctx, code);
+                        // dispatch on the static IR type here.) A signed sized int
+                        // (i8/i16/i32) prints signed (sign-extend + leading '-').
+                        let signed_bits = match ctx.var_to_ty.get(arg) {
+                            Some(Ty::IntN {
+                                bits,
+                                signed: true,
+                            }) if *bits <= 32 => Some(*bits),
+                            _ => None,
+                        };
+                        Self::emit_print_int(arg, signed_bits, ctx, code);
                     } else {
                         // String pointer (len-prefixed in data section):
                         // Layout: [len:u32][bytes...]. fd_write needs an iovec
@@ -1672,6 +1757,28 @@ fn wasm_i32c(code: &mut Vec<u8>, n: i64) {
     code.push(Op::I32Const as u8);
     wasm_encode::encode_sleb128(n, code);
 }
+
+/// Numeric tower: the width of a *signed* `Ty::IntN` narrower than the i32 cell
+/// (so it needs sign extension), else `None`. Width 32 already fills the cell.
+fn signed_subi32_width(ty: Option<&Ty>) -> Option<u8> {
+    match ty {
+        Some(Ty::IntN {
+            bits,
+            signed: true,
+        }) if *bits < 32 => Some(*bits),
+        _ => None,
+    }
+}
+
+/// Sign-extend the top-of-stack i32 from `bits` (8 or 16) to a full i32 via the
+/// standardized sign-extension operators. Width 32/64 needs nothing.
+fn emit_sext_i32(bits: u8, code: &mut Vec<u8>) {
+    match bits {
+        8 => code.push(Op::I32Extend8S as u8),
+        16 => code.push(Op::I32Extend16S as u8),
+        _ => {}
+    }
+}
 fn wasm_local(code: &mut Vec<u8>, op: Op, idx: u32) {
     code.push(op as u8);
     wasm_encode::encode_uleb128(idx as u64, code);
@@ -1739,10 +1846,28 @@ fn wasm_echo_strptr(code: &mut Vec<u8>, ptr_local: u32) {
 }
 /// Write the unsigned integer in local `v_local` as decimal ASCII + newline.
 /// `tv`/`tp` are scratch i32 locals.
-fn wasm_echo_int(code: &mut Vec<u8>, v_local: u32, tv: u32, tp: u32) {
+fn wasm_echo_int(code: &mut Vec<u8>, v_local: u32, tv: u32, tp: u32, neg: u32, signed_bits: Option<u8>) {
     // $v = v_local
     wasm_local(code, Op::LocalGet, v_local);
     wasm_local(code, Op::LocalSet, tv);
+    // Signed sized int: sign-extend, record the sign, print magnitude + '-'.
+    if let Some(bits) = signed_bits {
+        wasm_local(code, Op::LocalGet, tv);
+        emit_sext_i32(bits, code);
+        wasm_local(code, Op::LocalSet, tv);
+        wasm_local(code, Op::LocalGet, tv);
+        wasm_i32c(code, 0);
+        code.push(Op::I32LtS as u8);
+        wasm_local(code, Op::LocalSet, neg);
+        wasm_local(code, Op::LocalGet, neg);
+        code.push(Op::If as u8);
+        code.push(0x40);
+        wasm_i32c(code, 0);
+        wasm_local(code, Op::LocalGet, tv);
+        code.push(Op::I32Sub as u8);
+        wasm_local(code, Op::LocalSet, tv);
+        code.push(Op::End as u8);
+    }
     // mem[heap+48] = '\n'
     wasm_heap(code);
     wasm_i32c(code, 48);
@@ -1780,6 +1905,22 @@ fn wasm_echo_int(code: &mut Vec<u8>, v_local: u32, tv: u32, tp: u32) {
     code.push(Op::BrIf as u8);
     wasm_encode::encode_uleb128(0, code);
     code.push(Op::End as u8);
+    // Signed & negative: prepend '-' (ASCII 45) before the magnitude.
+    if signed_bits.is_some() {
+        wasm_local(code, Op::LocalGet, neg);
+        code.push(Op::If as u8);
+        code.push(0x40);
+        wasm_local(code, Op::LocalGet, tp);
+        wasm_i32c(code, 1);
+        code.push(Op::I32Sub as u8);
+        wasm_local(code, Op::LocalSet, tp);
+        wasm_local(code, Op::LocalGet, tp);
+        wasm_i32c(code, 45);
+        code.push(Op::I32Store8 as u8);
+        code.push(0x00);
+        code.push(0x00);
+        code.push(Op::End as u8);
+    }
     // iovec.ptr = $p
     wasm_heap(code);
     wasm_local(code, Op::LocalGet, tp);
@@ -1975,6 +2116,56 @@ mod tests {
         assert!(
             !out.primary.windows(4).any(|w| w == U8_MASK_SEQ),
             "plain Int arithmetic must not be width-masked"
+        );
+    }
+
+    #[test]
+    fn numeric_tower_wasm_sign_extends_signed_division() {
+        // Signed i8 division must sign-extend its operands to a full i32 before
+        // `i32.div_s` (the cell holds the width-masked bits), via `i32.extend8_s`
+        // (0xC0). Add/Sub/Mul and unsigned ops do not.
+        let (v0, v1, v2) = (VarId::new(0), VarId::new(1), VarId::new(2));
+        let i8s = riina_types::Ty::IntN {
+            bits: 8,
+            signed: true,
+        };
+        let mk = |instr, result, ty| AnnotatedInstr {
+            instr,
+            result,
+            ty,
+            effect: riina_types::Effect::Pure,
+            security: riina_types::SecurityLevel::Public,
+        };
+        let signed = make_program(
+            vec![
+                mk(Instruction::Const(Constant::Int(200)), v0, i8s.clone()),
+                mk(Instruction::Const(Constant::Int(2)), v1, i8s.clone()),
+                mk(Instruction::BinOp(BinOp::Div, v0, v1), v2, i8s.clone()),
+            ],
+            v2,
+        );
+        let out = WasmBackend::new(Target::Wasm32).emit(&signed).unwrap();
+        assert!(
+            out.primary.contains(&(Op::I32Extend8S as u8)),
+            "signed i8 division must sign-extend operands (i32.extend8_s = 0xC0)"
+        );
+        // The unsigned u8 counterpart does not sign-extend.
+        let u8t = riina_types::Ty::IntN {
+            bits: 8,
+            signed: false,
+        };
+        let unsigned = make_program(
+            vec![
+                mk(Instruction::Const(Constant::Int(200)), v0, u8t.clone()),
+                mk(Instruction::Const(Constant::Int(2)), v1, u8t.clone()),
+                mk(Instruction::BinOp(BinOp::Div, v0, v1), v2, u8t.clone()),
+            ],
+            v2,
+        );
+        let out_u = WasmBackend::new(Target::Wasm32).emit(&unsigned).unwrap();
+        assert!(
+            !out_u.primary.contains(&(Op::I32Extend8S as u8)),
+            "unsigned u8 division must not sign-extend"
         );
     }
 

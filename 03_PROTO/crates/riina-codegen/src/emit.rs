@@ -322,6 +322,10 @@ impl CEmitter {
         self.writeln("struct riina_value {");
         self.writeln("    riina_tag_t tag;");
         self.writeln("    riina_security_level_t security;");
+        self.writeln("    /* Numeric tower: for a signed sized int (Ty::IntN{signed}) this is the");
+        self.writeln("       bit width (8/16/32/64) so format/compare/div sign-extend; 0 for plain");
+        self.writeln("       or unsigned ints, which keep unsigned semantics (zeroed by calloc). */");
+        self.writeln("    uint8_t int_signed_bits;");
         self.writeln("    union {");
         self.writeln("        /* RIINA_TAG_UNIT: no data */");
         self.writeln("        bool bool_val;              /* RIINA_TAG_BOOL */");
@@ -416,14 +420,45 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
-        // Numeric tower: reduce a boxed integer to its declared bit width
-        // (`Ty::IntN`). Add/Sub/Mul/Div/Mod whose result types as a sized integer
-        // are wrapped through this so compiled arithmetic overflows modulo 2^bits,
-        // matching the interpreter. `bits >= 64` is the identity.
-        self.writeln("static riina_value_t* riina_trunc(riina_value_t* v, unsigned bits) {");
-        self.writeln("    if (bits >= 64) return v;");
-        self.writeln("    uint64_t mask = ((uint64_t)1 << bits) - 1u;");
-        self.writeln("    return riina_int(v->data.int_val & mask);");
+        // Numeric tower: sign-extend a width-`bits` two's-complement bit pattern
+        // to int64 (identity for bits 0/>=64). Used by signed format/compare/div.
+        self.writeln("static int64_t riina_sext(uint64_t v, unsigned bits) {");
+        self.writeln("    if (bits == 0 || bits >= 64) return (int64_t)v;");
+        self.writeln("    unsigned sh = 64u - bits;");
+        self.writeln("    return ((int64_t)(v << sh)) >> sh;");
+        self.writeln("}");
+        self.writeln("");
+
+        // A sized integer: tags the value with its signed width (so signed values
+        // sign-extend on display/compare/div). Unsigned ⇒ tag 0 ⇒ unsigned semantics.
+        self.writeln(
+            "static riina_value_t* riina_int_sized(uint64_t n, unsigned bits, int is_signed) {",
+        );
+        self.writeln("    riina_value_t* v = riina_int(n);");
+        self.writeln("    if (is_signed) v->int_signed_bits = (uint8_t)bits;");
+        self.writeln("    return v;");
+        self.writeln("}");
+        self.writeln("");
+
+        // The signed width governing a binary op: the signed operand's width (0 if
+        // neither is a signed sized int ⇒ the unsigned path).
+        self.writeln(
+            "static unsigned riina_swidth(riina_value_t* a, riina_value_t* b) {",
+        );
+        self.writeln("    return a->int_signed_bits ? a->int_signed_bits : b->int_signed_bits;");
+        self.writeln("}");
+        self.writeln("");
+
+        // Reduce a boxed integer to its declared bit width (`Ty::IntN`).
+        // Add/Sub/Mul/Div/Mod whose result types as a sized integer are wrapped
+        // through this so compiled arithmetic overflows modulo 2^bits, matching the
+        // interpreter; a signed result is tagged so it later prints/compares signed.
+        self.writeln(
+            "static riina_value_t* riina_trunc(riina_value_t* v, unsigned bits, int is_signed) {",
+        );
+        self.writeln("    uint64_t masked = (bits >= 64) ? v->data.int_val");
+        self.writeln("                                   : (v->data.int_val & (((uint64_t)1 << bits) - 1u));");
+        self.writeln("    return riina_int_sized(masked, bits, is_signed);");
         self.writeln("}");
         self.writeln("");
 
@@ -747,6 +782,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: division by zero\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_int_sized((uint64_t)(riina_sext(a->data.int_val, w) / riina_sext(b->data.int_val, w)), w, 1);");
         self.writeln("    return riina_int(a->data.int_val / b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -760,6 +797,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: modulo by zero\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_int_sized((uint64_t)(riina_sext(a->data.int_val, w) % riina_sext(b->data.int_val, w)), w, 1);");
         self.writeln("    return riina_int(a->data.int_val % b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -796,6 +835,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: lt on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) < riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val < b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -805,6 +846,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: le on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) <= riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val <= b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -814,6 +857,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: gt on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) > riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val > b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -823,6 +868,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: ge on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) >= riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val >= b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -954,7 +1001,10 @@ impl CEmitter {
             "        case RIINA_TAG_BOOL: return v->data.bool_val ? \"betul\" : \"salah\";",
         );
         self.writeln("        case RIINA_TAG_INT:");
-        self.writeln("            snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)v->data.int_val);");
+        self.writeln("            if (v->int_signed_bits)");
+        self.writeln("                snprintf(buf, sizeof(buf), \"%lld\", (long long)riina_sext(v->data.int_val, v->int_signed_bits));");
+        self.writeln("            else");
+        self.writeln("                snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)v->data.int_val);");
         self.writeln("            return buf;");
         self.writeln("        case RIINA_TAG_STRING: return v->data.string_val.data;");
         self.writeln("        default: return \"<value>\";");
@@ -2982,11 +3032,13 @@ impl CEmitter {
                 };
                 let call = format!("{func}({}, {})", self.var_name(lhs), self.var_name(rhs));
                 // Numeric tower: a result that types as a sized integer is wrapped
-                // to its width so compiled arithmetic overflows modulo 2^bits.
-                // Comparisons type as `Bool` (not `IntN`), so they are unaffected.
+                // to its width so compiled arithmetic overflows modulo 2^bits, and a
+                // signed result is tagged so it later prints/compares/divides signed.
+                // Unsigned narrower-than-64 wraps; unsigned 64-bit needs nothing;
+                // signed any-width is tagged. Comparisons type as `Bool`, untouched.
                 let rhs_expr = match instr.ty {
-                    Ty::IntN { bits, .. } if bits < 64 => {
-                        format!("riina_trunc({call}, {bits})")
+                    Ty::IntN { bits, signed } if signed || bits < 64 => {
+                        format!("riina_trunc({call}, {bits}, {})", i32::from(signed))
                     }
                     _ => call,
                 };
@@ -3441,7 +3493,10 @@ impl CEmitter {
         self.writeln("    printf(\"%s\\n\", result->data.bool_val ? \"true\" : \"false\");");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_INT:");
-        self.writeln("    printf(\"%llu\\n\", (unsigned long long)result->data.int_val);");
+        self.writeln("    if (result->int_signed_bits)");
+        self.writeln("        printf(\"%lld\\n\", (long long)riina_sext(result->data.int_val, result->int_signed_bits));");
+        self.writeln("    else");
+        self.writeln("        printf(\"%llu\\n\", (unsigned long long)result->data.int_val);");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_STRING:");
         if main_return_ty == Ty::Element {
@@ -3597,7 +3652,10 @@ mod tests {
             code.contains("riina_trunc(riina_binop_add("),
             "the u8 addition must be width-masked:\n{code}"
         );
-        assert!(code.contains(", 8)"), "the 8-bit width must appear in the mask");
+        assert!(
+            code.contains(", 8, 0)"),
+            "the 8-bit unsigned width (bits=8, signed=0) must appear in the mask"
+        );
     }
 
     #[test]
@@ -3613,6 +3671,29 @@ mod tests {
             !code.contains("riina_trunc(riina_binop_add("),
             "plain Int addition must not be width-masked"
         );
+    }
+
+    #[test]
+    fn numeric_tower_signed_arithmetic_tags_and_emits_helpers() {
+        // `0i8 - 5i8` types as signed i8, so the result is wrapped *and tagged*
+        // signed (`riina_trunc(.., 8, 1)`), and the signed runtime helpers exist.
+        let s8 = |value| {
+            Box::new(Expr::IntN {
+                value,
+                bits: 8,
+                signed: true,
+            })
+        };
+        let expr = Expr::BinOp(riina_types::BinOp::Sub, s8(0), s8(5));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            code.contains("riina_trunc(riina_binop_sub(") && code.contains(", 8, 1)"),
+            "signed i8 subtraction must be tagged signed (bits=8, signed=1):\n{code}"
+        );
+        // The signed runtime path is emitted: sign extension + signed display.
+        assert!(code.contains("int_signed_bits"), "value carries a signed-width tag");
+        assert!(code.contains("riina_sext"), "sign-extension helper emitted");
+        assert!(code.contains("%lld"), "signed values format with %lld");
     }
 
     #[test]

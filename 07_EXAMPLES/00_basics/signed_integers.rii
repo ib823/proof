@@ -1,0 +1,21 @@
+/// SIGNED_INTEGERS.RII - Numeric tower: signed fixed-width integers
+/// Menunjukkan integer bertanda (i8) dengan aritmetik dua-pelengkap
+/// Demonstrates: signed sized integers — overflow wraps to a negative value,
+/// signed division truncates toward zero, signed comparison respects the sign.
+/// Byte-identical across the C and WASM backends and the interpreter.
+
+fungsi utama() -> Nombor kesan Tulis {
+    /// i8 limpahan / overflow: 127 + 1 wraps to -128 (mod 256, two's complement)
+    biar a = 127i8 + 1i8;
+    cetak("a = "); cetak(a); cetak("\n");
+
+    /// i8 limpahan bawah / underflow: 0 - 5 = -5
+    biar b = 0i8 - 5i8;
+    cetak("b = "); cetak(b); cetak("\n");
+
+    /// pembahagian bertanda / signed division: -128 / 2 = -64
+    biar c = (127i8 + 1i8) / 2i8;
+    cetak("c = "); cetak(c); cetak("\n");
+
+    pulang 0;
+}

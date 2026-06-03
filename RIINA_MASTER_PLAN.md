@@ -328,7 +328,7 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 | Crates (03_PROTO) | 19 |
 | Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
 | Clippy | Clean |
-| Example .rii files | 156 |
+| Example .rii files | 157 |
 
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords
@@ -2210,7 +2210,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |
 | Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |
 | Async runtime | Spec-only (JALINAN) | Phase 6 deliverable |
-| Numeric tower (BigInt, decimal, fixed-point) | **Four slices landed (2026-06-02 → 06-03).** (1) Typed integer-literal suffixes (`u8…i64`) lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (additive — 1-site ripple; `Ty::Int`/`Nombor` stays default); usable on fn params/returns; `IntN`↔`Int` interoperate, distinct widths incompatible +2 tests. (3) **Sized literals + width-aware arithmetic (2026-06-03)**: the lexer suffix `42u8` now becomes a distinct `Expr::IntN { value, bits, signed }` literal (additive; ~700 `Int(_)` sites untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts, `u8 + u16` rejected); the interpreter gained `Value::IntN` — `+`/`-`/`*` wrap modulo 2^bits, division/modulo/comparison/display are signedness-aware (two's complement); content-hash mixes value+width. (4) **Width-correct C/WASM codegen (2026-06-03)**: C wraps sized arithmetic via a `riina_trunc` runtime helper; WASM masks with `i32.const (2^bits-1); i32.and` and routes `Ty::IntN` through its int-print/`ke_teks`/echo dispatch. New example `00_basics/sized_integers.rii` (u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0) — **differential 30→31/31 byte-equal**. +16 tests (slices 3–4). `cargo test --all` 2680/0. Remaining: signed display/comparison in *compiled* output (interpreter already signed-correct), >32-bit widths on the WASM i32 cell, BigInt/decimal/fixed-point, and a Coq numeric model | Required for finance use cases |
+| Numeric tower (BigInt, decimal, fixed-point) | **Four slices landed (2026-06-02 → 06-03).** (1) Typed integer-literal suffixes (`u8…i64`) lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (additive — 1-site ripple; `Ty::Int`/`Nombor` stays default); usable on fn params/returns; `IntN`↔`Int` interoperate, distinct widths incompatible +2 tests. (3) **Sized literals + width-aware arithmetic (2026-06-03)**: the lexer suffix `42u8` now becomes a distinct `Expr::IntN { value, bits, signed }` literal (additive; ~700 `Int(_)` sites untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts, `u8 + u16` rejected); the interpreter gained `Value::IntN` — `+`/`-`/`*` wrap modulo 2^bits, division/modulo/comparison/display are signedness-aware (two's complement); content-hash mixes value+width. (4) **Width-correct C/WASM codegen (2026-06-03)**: C wraps sized arithmetic via a `riina_trunc` runtime helper; WASM masks with `i32.const (2^bits-1); i32.and` and routes `Ty::IntN` through its int-print/`ke_teks`/echo dispatch. New example `00_basics/sized_integers.rii` (u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0) — **differential 30→31/31 byte-equal**. +16 tests (slices 3–4). (5) **Coq numeric model (2026-06-03)** `foundations/SizedInt.v` (8 Qed): width-`bits` arithmetic as residues in `Z/2^bits Z`; ring homomorphism `wrapU_add/_sub/_mul` (why the three backends agree) + `land_ones_is_wrapU` (the `& (2^bits-1)` mask = `mod 2^bits`). (6) **Signed sized-int codegen (2026-06-03)**: compiled C+WASM are now signedness-correct for signed `Ty::IntN`, matching the interpreter — C tags values with `int_signed_bits` and sign-extends in format/compare/div via `riina_sext`; WASM sign-extends sub-i32 operands (`i32.extend8_s`/`extend16_s`) for div/mod/compare and prints signed (sign-extend + leading `-`). New example `00_basics/signed_integers.rii` (i8 → `-128`/`-5`/`-64`) byte-identical across all three paths — **differential 31→32/32 byte-equal**; +2 codegen tests. All gated on signed `IntN`, so unsigned/plain stay byte-identical. `cargo test --all` 2684/0. **Remaining**: >32-bit widths on the WASM i32 cell (u64/i64 truncate — C is fine), and BigInt/decimal/fixed-point (a multi-session feature) | Required for finance use cases |
 
 **Exit criteria:** external crypto audit clean; ≥1 non-trivial sample app shipping on stdlib.
 
@@ -2388,55 +2388,50 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-03, second session)
+### Session Handoff Snapshot (last updated 2026-06-03, third session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2682 / 0**, `cargo clippy`
-0 warnings, WASM/C `corpus_differential` **31/31** byte-equal (both-ran 31), **156** example
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2684 / 0**, `cargo clippy`
+0 warnings, WASM/C `corpus_differential` **32/32** byte-equal (both-ran 32), **157** example
 `.rii` files, Coq active **310 files / 12,394 Qed / 0 Admitted / 0 Axiom / 0 Abort**
 (grep-verified; the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
-`metrics.json` was refreshed by a full `generate-metrics.sh` this session, so its published
-counts are now live-accurate (tests 2682 `full_cargo_test`, Qed 12,394) — the non-Coq prover
-lanes carry a `missing_or_stale` provenance label (their toolchains are not provisioned here;
-counts preserved, not re-derived).
+`metrics.json` is refreshed live-accurate (tests 2684 `full_cargo_test`, Qed 12,394) — the
+non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
+here; counts preserved, not re-derived).
 
-**Gate C landed this session (2026-06-03, second session):**
-1. **Multi-arg `file_write`/`file_append` precise types** — `Fn(Any,Any,FileSystem)` ⇒
-   `Fn(Prod(String,String), Unit, FileSystem)`: tainted path rejected (path-traversal), data
-   `String`, result `Unit`. +2 tests.
-2. **Coq numeric-tower model** `02_FORMAL/coq/foundations/SizedInt.v` (8 Qed, 0 Admitted) — the
-   numeric tower's first formal backing: width-`bits` arithmetic as residues in `Z/2^bits Z`;
-   the ring homomorphism `wrapU_add/_sub/_mul` (why the interpreter/C/WASM agree), and
-   `land_ones_is_wrapU` (the backends' `& (2^bits-1)` = `mod 2^bits`). Registered in
-   `_CoqProject`; counts re-derived 309→310 files, 12,386→12,394 Qed.
-(Prior session 2026-06-03 had landed numeric-tower slices 1–4: lexed suffixes, distinct
-`Ty::IntN`, sized literals + width-aware interpreter, width-correct C/WASM codegen — differential
-30→31. Earlier 2026-06-02: crypto KAT manifest, file-I/O hardening, capability gating,
-effect-set on fn decls.) The Coq read/write model already exists (`VerifiedFileSystem.v`, 109
-Qed — do not duplicate).
+**Gate C landed this session (2026-06-03, third):**
+1. **Gate D2 — prover-honesty retraction (DONE)**: the social card `og-image.svg` no longer
+   says "10 independent provers"; each generated lane `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,
+   kani,tv}/` carries a `GENERATED-CORPUS-NOT-VERIFIED.md` notice. (README/website/metrics were
+   already honest.) Gate D Path D1 — *earning* the lanes — remains open.
+2. **Multi-arg `file_write`/`file_append` precise types** — `Fn(Prod(String,String), Unit,
+   FileSystem)`: tainted path rejected (path-traversal), result `Unit`. +2 tests.
+3. **Coq numeric-tower model** `foundations/SizedInt.v` (8 Qed): width-`bits` arithmetic in
+   `Z/2^bits Z`; `wrapU_add/_sub/_mul` (why the three backends agree) + `land_ones_is_wrapU`.
+4. **Signed sized-int codegen (C + WASM)** — compiled output is now signedness-correct for
+   signed `Ty::IntN`, matching the interpreter. C tags values with `int_signed_bits` (0 ⇒
+   unchanged unsigned semantics) and sign-extends format/compare/div via `riina_sext`; WASM
+   sign-extends sub-i32 operands (`i32.extend8_s/16_s`) for div/mod/compare and prints signed
+   (sign-extend + leading `-`). New example `00_basics/signed_integers.rii` (i8 →
+   `-128`/`-5`/`-64`) byte-identical across interp/C/WASM — **differential 31→32**. +2 tests.
+The numeric tower is now **complete for fixed-width ints** (unsigned + signed, all three
+execution paths, with a Coq model). The Coq read/write model `VerifiedFileSystem.v` (109 Qed)
+already exists — do not duplicate.
 
-**Highest-priority Gate C next steps** (with scoping; the easy bounded threads are done):
-1. **Signed sized-int display/comparison/div-mod in COMPILED output** — *architecturally
-   significant, surface before doing*. The interpreter is already fully signedness-correct, but
-   compiled output is not: the C backend boxes ints as an **untyped `uint64_t`** and prints
-   `%llu` (and `riina_binop_lt`/`div` are unsigned); the WASM backend uses signed-i32 ops on the
-   masked (unsigned) bits. To make a *signed* sized value print/compare/divide like the
-   interpreter, the **runtime value must carry `(bits, signed)`**. Plan: (C) add a `signed_bits`
-   field to `riina_value` defaulting to **0** (so plain/unsigned ints stay byte-identical — the
-   differential cannot regress), set it in the sized-literal ctor + `riina_trunc(.., signed)`,
-   and branch on it in `riina_format`/comparison/div-mod; **must zero-init it in `riina_alloc`**
-   or printing breaks. (WASM) sign-extend the i32 from `bits` at the comparison/print/echo sites
-   (`ctx.var_to_ty` is available there, as the mask already uses). Validate with a *signed*
-   corpus example byte-equal across interp/C/WASM (differential 31→32).
-2. **>32-bit WASM widths (u64/i64)** — the WASM backend is i32-celled; real 64-bit needs i64
-   threading through the emitter. Sizable; today u64/i64 sized arithmetic truncates to 32 bits
-   under WASM (C is fine). Tracked, not a clean session slice.
-3. **BigInt / decimal / fixed-point** — a genuine multi-session feature: new `Ty` variants +
+**Highest-priority Gate C next steps** (bounded threads largely done; what's left is bigger):
+1. **>32-bit WASM widths (u64/i64)** — the WASM backend is i32-celled; real 64-bit needs i64
+   threading through the emitter (C already handles 64-bit). Today u64/i64 sized arithmetic
+   truncates to 32 bits under WASM. The natural next numeric-tower slice.
+2. **BigInt / decimal / fixed-point** — a genuine multi-session feature: new `Ty` variants +
    an arbitrary-precision runtime (both backends) + codegen + a Coq model. Required for finance.
-4. **Connect `VerifiedFileSystem.v` (109 Qed) to `Effect::FileSystem`** — tie the mechanized
-   read/write model to the prototype's I/O type discipline (a parity-style follow-up).
-5. **Owner-gated (not a session task):** external crypto audit budget (REQ-28 exit criterion —
-   audit-prep KAT manifest is ready); broader I/O capability-grant policy.
+3. **Connect `VerifiedFileSystem.v` (109 Qed) to `Effect::FileSystem`** — tie the mechanized
+   read/write model to the prototype's I/O type discipline (a parity-style follow-up). Also the
+   stdlib rows still "Partial": collections (verified core algos + benches), strings (NFC/
+   confusables), time/random/OS effect-typing.
+4. **Gate D1 (earn the prover lanes)** or other gates (E test-infra, F reproducibility, G
+   security posture) — see their Part 11 sections; mostly multi-session.
+5. **Owner-gated (not a session task):** external crypto audit (REQ-28, Gate C/G exit); a
+   certification target (Gate H); license + ≥3 maintainers (Gate J).
 
 **Environment is ephemeral — a fresh container must re-provision before `verify --full`:**
 - Rust 1.94.1 (present). Rocq **9.1.1** via opam: `apt install opam`; `opam switch create

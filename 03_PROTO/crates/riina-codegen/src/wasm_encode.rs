@@ -86,6 +86,10 @@ pub enum Op {
     I32RemU = 0x70,
     I32And = 0x71,
     I32Or = 0x72,
+    // Sign-extension operators (standardized; supported by wasmtime). Used by the
+    // numeric tower to sign-extend a width-8/16 signed `Ty::IntN` to full i32.
+    I32Extend8S = 0xC0,
+    I32Extend16S = 0xC1,
     I64Add = 0x7C,
     I64Sub = 0x7D,
     I64Mul = 0x7E,
