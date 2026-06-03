@@ -107,6 +107,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   suite 2646 → 2649; differential unchanged 30/30.
 
 ### Changed
+- **Gate D2 — prover-honesty retraction (DONE)**: no marketing claim survives
+  unproven. README (lines 86/242/393) and the website body were already honest
+  ("Coq is the only mechanized lane", "9 other lanes generated/smoke-only — not
+  independent verification"); the last overclaim, the social card
+  `website/public/og-image.svg` ("10 independent provers"), is now
+  "Coq-mechanized core · 9 generated lanes". Each generated lane
+  `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,kani,tv}/` now carries a visible
+  `GENERATED-CORPUS-NOT-VERIFIED.md` notice (corpus is machine-generated from the
+  Coq tree, not independent verification; Coq is the only mechanized lane;
+  `metrics.json` `claimLevels` is the source of truth). Marking, not moving, so the
+  openly-tracked counts don't shift (`.md` isn't counted by the prover globs). Gate
+  D Path D1 (earning the lanes) remains open; the honesty obligation is met.
 - **Active gate marker advanced B → C** (Part 11). Gate B (Compiler Enforcement
   Parity) exit criteria verified by command: 0 `todo!()`/`unimplemented!()` outside
   tests; every compiler-enforceable Coq security property has pos+neg Rust tests;

@@ -2226,12 +2226,27 @@ Today's "10 provers" marketing must either be earned (D1) or retracted (D2).
 - Isabelle: ≥20 theories building under `isabelle build`
 - Verus/Kani/TV: real harnesses for `03_PROTO` Rust code (not generated stubs)
 
-**Path D2 — Retract the marketing** (1 day):
-- Website + README: change "10 independent verification engines" → honest tier list
-- Move all generated placeholder files in `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,kani,tv}/` to `99_ARCHIVE/` OR mark each with a `GENERATED-CORPUS-NOT-VERIFIED` header
-- `metrics.json` already tracks `quarantined: true` honestly — keep that as source of truth
+**Path D2 — Retract the marketing** (1 day) — **DONE 2026-06-03:**
+- Website + README: change "10 independent verification engines" → honest tier list.
+  **Done** — README (`Coq mechanized; 9 other lanes generated/smoke-only (not independent
+  verification)`, lines 86/242/393) and the website body (`Coq is the only mechanized lane`,
+  `prover lanes (1 mechanized, rest generated)`, `not independent re-verification`) were already
+  honest; the last overclaim, the social card `website/public/og-image.svg` (`10 independent
+  provers`), is now `Coq-mechanized core · 9 generated lanes`.
+- Move generated placeholders to `99_ARCHIVE/` OR mark with a `GENERATED-CORPUS-NOT-VERIFIED`
+  header. **Done via marking** (not moving — moving would shift the openly-tracked counts and
+  break references): each of `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,kani,tv}/` now carries a
+  visible `GENERATED-CORPUS-NOT-VERIFIED.md` notice stating the corpus is machine-generated from
+  the Coq tree, not independent verification, with Coq as the only mechanized lane and
+  `metrics.json` `claimLevels` as the source of truth. (`.md` is not counted by the
+  extension-specific prover globs, so no count moved.)
+- `metrics.json` already tracks `quarantined: true` honestly — kept as source of truth (all 9
+  non-Coq lanes `generated`, Coq `mechanized`).
 
-**Recommendation:** D2 immediately (single-day credibility fix), then D1 incrementally.
+**Path D1 — earn it** remains open (the 6–12-month industrialization above); REQ-29 is not
+closed by D2 alone, but the *honesty* obligation (no marketing claim survives unproven) is met.
+
+**Recommendation:** ~~D2 immediately~~ (done), then D1 incrementally.
 
 ### Gate E — Test Infrastructure & Benchmarks (owns REQ-30)
 

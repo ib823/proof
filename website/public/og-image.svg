@@ -34,10 +34,10 @@
   <!-- Stats bar -->
   <rect x="80" y="380" width="1040" height="1" fill="#27272a"/>
   <text x="80" y="430" fill="#8b8b95" font-family="monospace" font-size="18" letter-spacing="1">
-    10 independent provers
+    Coq-mechanized core  ·  9 generated lanes
   </text>
   <text x="80" y="460" fill="#8b8b95" font-family="monospace" font-size="18" letter-spacing="1">
-    0 admitted  |  0 axioms  |  mathematically proven
+    0 admitted  |  0 axioms  |  machine-checked (Coq)
   </text>
   <!-- Proof symbols -->
   <text x="80" y="540" fill="#22d3ee" font-family="monospace" font-size="16" opacity="0.4">
