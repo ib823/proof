@@ -158,4 +158,111 @@ mod tests {
             Some(Value::List(vec![Value::Int(2), Value::Int(3)]))
         );
     }
+
+    // ── Property tests: the set builtins satisfy the membership algebra proven
+    // in `02_FORMAL/coq/foundations/VerifiedMapSet.v` (insert/remove/union/
+    // intersect membership + the no-duplicate invariant). Dependency-free LCG.
+
+    fn lcg(state: &mut u64) -> u64 {
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
+        *state >> 33
+    }
+    fn ints_of(v: &Value) -> Vec<u64> {
+        match v {
+            Value::List(items) => items
+                .iter()
+                .map(|x| match x {
+                    Value::Int(n) => *n,
+                    o => panic!("expected Int, got {o:?}"),
+                })
+                .collect(),
+            o => panic!("expected List, got {o:?}"),
+        }
+    }
+    fn contains(s: &Value, x: u64) -> bool {
+        matches!(
+            apply(
+                "set_mengandungi",
+                &Value::Pair(Box::new(s.clone()), Box::new(Value::Int(x))),
+            ),
+            Ok(Some(Value::Bool(true)))
+        )
+    }
+    fn no_dups(v: &Value) -> bool {
+        let xs = ints_of(v);
+        let set: std::collections::BTreeSet<u64> = xs.iter().copied().collect();
+        set.len() == xs.len()
+    }
+    /// A proper (de-duplicated) set built through `set_insert`.
+    fn random_set(state: &mut u64) -> Value {
+        let len = (lcg(state) % 8) as usize;
+        let mut s = apply("set_baru", &Value::Unit).unwrap().unwrap();
+        for _ in 0..len {
+            let x = lcg(state) % 10;
+            s = apply("set_letak", &Value::Pair(Box::new(s), Box::new(Value::Int(x))))
+                .unwrap()
+                .unwrap();
+        }
+        s
+    }
+
+    #[test]
+    fn prop_set_union_intersect_membership_and_nodup() {
+        let mut state: u64 = 0xDEAD_BEEF_1234_5678;
+        for _ in 0..150 {
+            let a = random_set(&mut state);
+            let b = random_set(&mut state);
+            let u = apply(
+                "set_kesatuan",
+                &Value::Pair(Box::new(a.clone()), Box::new(b.clone())),
+            )
+            .unwrap()
+            .unwrap();
+            let i = apply(
+                "set_persilangan",
+                &Value::Pair(Box::new(a.clone()), Box::new(b.clone())),
+            )
+            .unwrap()
+            .unwrap();
+            for x in 0..10u64 {
+                assert_eq!(
+                    contains(&u, x),
+                    contains(&a, x) || contains(&b, x),
+                    "union membership"
+                );
+                assert_eq!(
+                    contains(&i, x),
+                    contains(&a, x) && contains(&b, x),
+                    "intersect membership"
+                );
+            }
+            assert!(no_dups(&u), "union has no duplicates");
+            assert!(no_dups(&i), "intersect has no duplicates");
+        }
+    }
+
+    #[test]
+    fn prop_set_insert_remove_membership_and_nodup() {
+        let mut state: u64 = 0x0BAD_F00D_CAFE_0001;
+        for _ in 0..150 {
+            let s = random_set(&mut state);
+            let x = lcg(&mut state) % 12; // sometimes 10/11 → a fresh element
+            let ins = apply("set_letak", &Value::Pair(Box::new(s.clone()), Box::new(Value::Int(x))))
+                .unwrap()
+                .unwrap();
+            assert!(contains(&ins, x), "insert adds x (set_insert_membership)");
+            assert!(no_dups(&ins), "insert preserves no-duplicates (set_insert_nodup)");
+            let rem = apply("set_buang", &Value::Pair(Box::new(s.clone()), Box::new(Value::Int(x))))
+                .unwrap()
+                .unwrap();
+            assert!(!contains(&rem, x), "remove deletes x (set_remove_absent)");
+            for y in 0..12u64 {
+                if y != x {
+                    assert_eq!(contains(&rem, y), contains(&s, y), "remove keeps other members");
+                }
+            }
+        }
+    }
 }

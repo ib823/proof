@@ -203,4 +203,86 @@ mod tests {
             Some(Value::Int(1))
         );
     }
+
+    // ── Property tests: the map builtins satisfy the partial-map laws proven in
+    // `02_FORMAL/coq/foundations/VerifiedMapSet.v` (get-after-insert, insert
+    // shadows and leaves other keys untouched, remove deletes exactly one key).
+
+    fn map_insert(m: Value, k: &str, v: u64) -> Value {
+        let kv = Value::Pair(
+            Box::new(Value::String(k.to_string())),
+            Box::new(Value::Int(v)),
+        );
+        apply("peta_letak", &Value::Pair(Box::new(m), Box::new(kv)))
+            .unwrap()
+            .unwrap()
+    }
+    fn map_get(m: &Value, k: &str) -> Option<u64> {
+        match apply(
+            "peta_dapat",
+            &Value::Pair(Box::new(m.clone()), Box::new(Value::String(k.to_string()))),
+        ) {
+            Ok(Some(Value::Int(n))) => Some(n),
+            _ => None,
+        }
+    }
+    fn map_contains(m: &Value, k: &str) -> bool {
+        matches!(
+            apply(
+                "peta_mengandungi",
+                &Value::Pair(Box::new(m.clone()), Box::new(Value::String(k.to_string()))),
+            ),
+            Ok(Some(Value::Bool(true)))
+        )
+    }
+    fn map_len(m: &Value) -> u64 {
+        match apply("peta_panjang", m) {
+            Ok(Some(Value::Int(n))) => n,
+            _ => panic!("map_len"),
+        }
+    }
+
+    #[test]
+    fn prop_map_get_after_insert_and_shadow() {
+        let mut m = apply("peta_baru", &Value::Unit).unwrap().unwrap();
+        for i in 0..20u64 {
+            m = map_insert(m, &format!("k{i}"), i * 7);
+            assert_eq!(map_get(&m, &format!("k{i}")), Some(i * 7), "get-after-insert");
+        }
+        // insert never disturbs an earlier key (map_insert_other)
+        for i in 0..20u64 {
+            assert_eq!(
+                map_get(&m, &format!("k{i}")),
+                Some(i * 7),
+                "other keys preserved"
+            );
+        }
+        // a re-insert shadows the value without growing the map (map_insert_shadow)
+        let before = map_len(&m);
+        m = map_insert(m, "k5", 999);
+        assert_eq!(map_get(&m, "k5"), Some(999), "insert shadows");
+        assert_eq!(map_len(&m), before, "shadow doesn't grow the map");
+    }
+
+    #[test]
+    fn prop_map_contains_and_remove() {
+        let mut m = apply("peta_baru", &Value::Unit).unwrap().unwrap();
+        m = map_insert(m, "a", 1);
+        m = map_insert(m, "b", 2);
+        assert!(map_contains(&m, "a") && map_contains(&m, "b"));
+        assert!(!map_contains(&m, "z"), "absent key is not contained");
+        let before = map_len(&m);
+        m = apply(
+            "peta_buang",
+            &Value::Pair(Box::new(m), Box::new(Value::String("a".to_string()))),
+        )
+        .unwrap()
+        .unwrap();
+        assert!(!map_contains(&m, "a"), "remove deletes the key (map_remove_eq)");
+        assert!(
+            map_contains(&m, "b"),
+            "remove leaves other keys (map_remove_other)"
+        );
+        assert_eq!(map_len(&m), before - 1);
+    }
 }
