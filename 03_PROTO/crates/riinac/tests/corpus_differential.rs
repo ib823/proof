@@ -11,11 +11,15 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-03: of 156 examples, 31 build+run in both backends and
-//! **all 31 are byte-equal** (`KNOWN_DIVERGENT` is empty); the rest don't
-//! compile/run under one or both backends. The 31st is `00_basics/sized_integers`
-//! — numeric-tower width-masked `u8`/`u16` arithmetic, byte-identical across
-//! backends and the interpreter (44/255/0). Re-verified across a wasmtime
+//! Measured 2026-06-03: of 157 examples, 32 build+run in both backends and
+//! **all 32 are byte-equal** (`KNOWN_DIVERGENT` is empty); the rest don't
+//! compile/run under one or both backends. The numeric-tower pair is
+//! `00_basics/sized_integers` (width-masked u8/u16 + full-u32-range wrap →
+//! 44/255/0/705032704) and `00_basics/signed_integers` (signed i8 two's-complement
+//! → -128/-5/-64), both byte-identical across the C, WASM, and interpreter paths.
+//! NB: the wasm32 backend uses a 32-bit value cell, so a true 64-bit value
+//! (`>= 2^32`) is a clean compile error there (not a divergence); C handles it.
+//! Re-verified across a wasmtime
 //! major-version jump: identical result under **wasmtime 27.0.0 and 45.0.0**
 //! (the byte-equality is robust to the runtime version). (30 equal is up from 10
 //! over the session: the `main.return_ty` lowering fix, WASM `ke_teks`/
@@ -37,7 +41,7 @@ use std::process::Command;
 /// should remove the corresponding entries here.
 /// Examples whose two backends are known to differ, with the reason. The
 /// differential test tolerates these (so it tracks them without failing) but
-/// fails on any *new* divergence. **Empty as of 2026-06-03** — all 31
+/// fails on any *new* divergence. **Empty as of 2026-06-03** — all 32
 /// dual-backend examples are byte-equal.
 const KNOWN_DIVERGENT: &[&str] = &[];
 

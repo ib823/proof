@@ -2210,7 +2210,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |
 | Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |
 | Async runtime | Spec-only (JALINAN) | Phase 6 deliverable |
-| Numeric tower (BigInt, decimal, fixed-point) | **Four slices landed (2026-06-02 → 06-03).** (1) Typed integer-literal suffixes (`u8…i64`) lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (additive — 1-site ripple; `Ty::Int`/`Nombor` stays default); usable on fn params/returns; `IntN`↔`Int` interoperate, distinct widths incompatible +2 tests. (3) **Sized literals + width-aware arithmetic (2026-06-03)**: the lexer suffix `42u8` now becomes a distinct `Expr::IntN { value, bits, signed }` literal (additive; ~700 `Int(_)` sites untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts, `u8 + u16` rejected); the interpreter gained `Value::IntN` — `+`/`-`/`*` wrap modulo 2^bits, division/modulo/comparison/display are signedness-aware (two's complement); content-hash mixes value+width. (4) **Width-correct C/WASM codegen (2026-06-03)**: C wraps sized arithmetic via a `riina_trunc` runtime helper; WASM masks with `i32.const (2^bits-1); i32.and` and routes `Ty::IntN` through its int-print/`ke_teks`/echo dispatch. New example `00_basics/sized_integers.rii` (u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0) — **differential 30→31/31 byte-equal**. +16 tests (slices 3–4). (5) **Coq numeric model (2026-06-03)** `foundations/SizedInt.v` (8 Qed): width-`bits` arithmetic as residues in `Z/2^bits Z`; ring homomorphism `wrapU_add/_sub/_mul` (why the three backends agree) + `land_ones_is_wrapU` (the `& (2^bits-1)` mask = `mod 2^bits`). (6) **Signed sized-int codegen (2026-06-03)**: compiled C+WASM are now signedness-correct for signed `Ty::IntN`, matching the interpreter — C tags values with `int_signed_bits` and sign-extends in format/compare/div via `riina_sext`; WASM sign-extends sub-i32 operands (`i32.extend8_s`/`extend16_s`) for div/mod/compare and prints signed (sign-extend + leading `-`). New example `00_basics/signed_integers.rii` (i8 → `-128`/`-5`/`-64`) byte-identical across all three paths — **differential 31→32/32 byte-equal**; +2 codegen tests. All gated on signed `IntN`, so unsigned/plain stay byte-identical. `cargo test --all` 2684/0. **Remaining**: >32-bit widths on the WASM i32 cell (u64/i64 truncate — C is fine), and BigInt/decimal/fixed-point (a multi-session feature) | Required for finance use cases |
+| Numeric tower (BigInt, decimal, fixed-point) | **Four slices landed (2026-06-02 → 06-03).** (1) Typed integer-literal suffixes (`u8…i64`) lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (additive — 1-site ripple; `Ty::Int`/`Nombor` stays default); usable on fn params/returns; `IntN`↔`Int` interoperate, distinct widths incompatible +2 tests. (3) **Sized literals + width-aware arithmetic (2026-06-03)**: the lexer suffix `42u8` now becomes a distinct `Expr::IntN { value, bits, signed }` literal (additive; ~700 `Int(_)` sites untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts, `u8 + u16` rejected); the interpreter gained `Value::IntN` — `+`/`-`/`*` wrap modulo 2^bits, division/modulo/comparison/display are signedness-aware (two's complement); content-hash mixes value+width. (4) **Width-correct C/WASM codegen (2026-06-03)**: C wraps sized arithmetic via a `riina_trunc` runtime helper; WASM masks with `i32.const (2^bits-1); i32.and` and routes `Ty::IntN` through its int-print/`ke_teks`/echo dispatch. New example `00_basics/sized_integers.rii` (u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0) — **differential 30→31/31 byte-equal**. +16 tests (slices 3–4). (5) **Coq numeric model (2026-06-03)** `foundations/SizedInt.v` (8 Qed): width-`bits` arithmetic as residues in `Z/2^bits Z`; ring homomorphism `wrapU_add/_sub/_mul` (why the three backends agree) + `land_ones_is_wrapU` (the `& (2^bits-1)` mask = `mod 2^bits`). (6) **Signed sized-int codegen (2026-06-03)**: compiled C+WASM are now signedness-correct for signed `Ty::IntN`, matching the interpreter — C tags values with `int_signed_bits` and sign-extends in format/compare/div via `riina_sext`; WASM sign-extends sub-i32 operands (`i32.extend8_s`/`extend16_s`) for div/mod/compare and prints signed (sign-extend + leading `-`). New example `00_basics/signed_integers.rii` (i8 → `-128`/`-5`/`-64`) byte-identical across all three paths — **differential 31→32/32 byte-equal**; +2 codegen tests. All gated on signed `IntN`, so unsigned/plain stay byte-identical. (7) **wasm32 64-bit handling (2026-06-03)**: the WASM backend holds integers in a 32-bit cell, so a value `>= 2^32` now produces a **clean compile error** (was an invalid `i32.const` that only failed at `wasmtime` load); the full unsigned 32-bit range incl. `[2^31, 2^32)` is representable via the wrapped bit pattern (`sized_integers.rii` gained a u32-wrap case `4e9+1e9≡705032704`, byte-equal across interp/C/WASM) +2 tests. `cargo test --all` 2686/0. **Remaining**: true 64-bit WASM (an i32→i64 backend refactor — pointers must stay i32 for wasm32 addressing, so it needs a mixed i32/i64 representation threaded through signatures/locals/arithmetic/calls; multi-session, C already handles 64-bit), and BigInt/decimal/fixed-point (a multi-session feature) | Required for finance use cases |
 
 **Exit criteria:** external crypto audit clean; ≥1 non-trivial sample app shipping on stdlib.
 
@@ -2391,11 +2391,11 @@ A session entering the codebase MUST:
 ### Session Handoff Snapshot (last updated 2026-06-03, third session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2684 / 0**, `cargo clippy`
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2686 / 0**, `cargo clippy`
 0 warnings, WASM/C `corpus_differential` **32/32** byte-equal (both-ran 32), **157** example
 `.rii` files, Coq active **310 files / 12,394 Qed / 0 Admitted / 0 Axiom / 0 Abort**
 (grep-verified; the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
-`metrics.json` is refreshed live-accurate (tests 2684 `full_cargo_test`, Qed 12,394) — the
+`metrics.json` is refreshed live-accurate (tests 2686 `full_cargo_test`, Qed 12,394) — the
 non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
 here; counts preserved, not re-derived).
 
@@ -2414,14 +2414,23 @@ here; counts preserved, not re-derived).
    sign-extends sub-i32 operands (`i32.extend8_s/16_s`) for div/mod/compare and prints signed
    (sign-extend + leading `-`). New example `00_basics/signed_integers.rii` (i8 →
    `-128`/`-5`/`-64`) byte-identical across interp/C/WASM — **differential 31→32**. +2 tests.
-The numeric tower is now **complete for fixed-width ints** (unsigned + signed, all three
-execution paths, with a Coq model). The Coq read/write model `VerifiedFileSystem.v` (109 Qed)
-already exists — do not duplicate.
+5. **wasm32 64-bit handling (graceful)** — a value `>= 2^32` on `--target wasm32` is now a
+   clean compile error (was an invalid `i32.const` that only failed at `wasmtime` load); the
+   full unsigned 32-bit range incl. `[2^31, 2^32)` is now representable (`sized_integers.rii`
+   gained a u32-wrap case). +2 tests. (User chose this bounded "graceful error + docs" path
+   over the full i32→i64 refactor.)
+The numeric tower is now **complete for fixed-width ints up to 32 bits** (unsigned + signed,
+all three execution paths, with a Coq model); 64-bit is native-only (WASM rejects it cleanly).
+The Coq read/write model `VerifiedFileSystem.v` (109 Qed) already exists — do not duplicate.
 
-**Highest-priority Gate C next steps** (bounded threads largely done; what's left is bigger):
-1. **>32-bit WASM widths (u64/i64)** — the WASM backend is i32-celled; real 64-bit needs i64
-   threading through the emitter (C already handles 64-bit). Today u64/i64 sized arithmetic
-   truncates to 32 bits under WASM. The natural next numeric-tower slice.
+**Highest-priority Gate C next steps** (bounded threads done; what's left is bigger):
+1. **True 64-bit WASM (i32→i64 backend refactor)** — the WASM backend is entirely i32 (0 i64
+   uses); pointers must stay i32 for wasm32 addressing, so 64-bit ints need a **mixed i32/i64
+   representation** threaded through function signatures, locals, arithmetic, print, and
+   call-boundary conversions. **Multi-session, high regression risk** — not a clean single push
+   (a half-done refactor can't pass `verify --full`). C already handles 64-bit. Today wasm32
+   rejects `>= 2^32` cleanly; sub-32-bit arithmetic that overflows 32 bits still truncates
+   silently under WASM (documented). Consider before starting.
 2. **BigInt / decimal / fixed-point** — a genuine multi-session feature: new `Ty` variants +
    an arbitrary-precision runtime (both backends) + codegen + a Coq model. Required for finance.
 3. **Connect `VerifiedFileSystem.v` (109 Qed) to `Effect::FileSystem`** — tie the mechanized

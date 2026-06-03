@@ -23,5 +23,12 @@ fungsi utama() -> Nombor kesan Tulis {
     cetak(c);
     cetak("\n");
 
+    /// u32 julat penuh / full 32-bit range: operands in [2^31, 2^32) are valid
+    /// even on the wasm32 i32 cell; 4e9 + 1e9 ≡ 705032704 (mod 2^32)
+    biar d = 4000000000u32 + 1000000000u32;
+    cetak("d = ");
+    cetak(d);
+    cetak("\n");
+
     pulang 0;
 }

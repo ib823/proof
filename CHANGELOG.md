@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2684 Rust tests
+**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2686 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Numeric tower — wasm32 64-bit handling (graceful + full u32)**: the WASM
+  backend holds integers in a 32-bit cell, so a value `>= 2^32` (true u64/i64)
+  previously emitted an out-of-range `i32.const` — `riinac build --target wasm32`
+  silently produced an **invalid** `.wasm` that only failed cryptically at
+  `wasmtime` load time. Now it is a **clean compile error** (`wasm32 target cannot
+  represent the 64-bit integer N …`). Separately, the full unsigned **32-bit range
+  including `[2^31, 2^32)`** (e.g. `4000000000u32`) is now representable — encoded
+  as the wrapped i32 bit pattern — where it also used to emit invalid bytecode;
+  `sized_integers.rii` gained a u32-wrap case (`4e9 + 1e9 ≡ 705032704`,
+  byte-identical across interp/C/WASM). +2 tests (64-bit rejection; full-u32
+  acceptance). Values `< 2^31` are byte-identical, so the differential is
+  unchanged (32/32). True 64-bit WASM support (an i32→i64 backend refactor) stays
+  a tracked multi-session item. `cargo test --all` 2686/0.
 - **Numeric tower — signed sized-int codegen (C + WASM)**: compiled output is now
   signedness-correct for signed `Ty::IntN`, matching the interpreter. The C value
   carries an `int_signed_bits` tag (0 for plain/unsigned ⇒ unchanged unsigned

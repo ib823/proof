@@ -1140,8 +1140,23 @@ impl WasmBackend {
                         wasm_encode::encode_sleb128(if *b { 1 } else { 0 }, code);
                     }
                     Constant::Int(n) => {
+                        // wasm32 holds integers in a 32-bit value cell. The full
+                        // unsigned 32-bit range (incl. [2^31, 2^32)) is encoded as
+                        // the wrapped i32 bit pattern; a true 64-bit value (>= 2^32)
+                        // cannot be represented, so it is a clean compile error
+                        // rather than an invalid `i32.const` (which would only fail,
+                        // cryptically, at wasmtime load time). See the wasm32
+                        // limitation note in RIINA_MASTER_PLAN.md Gate C numeric tower.
+                        if *n > u64::from(u32::MAX) {
+                            return Err(crate::Error::InvalidOperation(format!(
+                                "wasm32 target cannot represent the 64-bit integer {n}: it \
+                                 exceeds the 32-bit value cell (max {}). Use the native \
+                                 target, or keep integer values within 32 bits.",
+                                u32::MAX
+                            )));
+                        }
                         code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(*n as i64, code);
+                        wasm_encode::encode_sleb128(i64::from(*n as u32 as i32), code);
                     }
                     Constant::String(s) => {
                         // Push pointer to string in data section (points to length prefix)
@@ -2167,6 +2182,38 @@ mod tests {
             !out_u.primary.contains(&(Op::I32Extend8S as u8)),
             "unsigned u8 division must not sign-extend"
         );
+    }
+
+    #[test]
+    fn numeric_tower_wasm_rejects_64bit_constant() {
+        // A value that exceeds the 32-bit cell is a clean compile error, not the
+        // invalid `i32.const` that previously only failed at wasmtime load time.
+        let v0 = VarId::new(0);
+        let program = make_program(
+            vec![ann(Instruction::Const(Constant::Int(5_000_000_000)), v0)],
+            v0,
+        );
+        let err = WasmBackend::new(Target::Wasm32).emit(&program).unwrap_err();
+        let msg = format!("{err:?}");
+        assert!(
+            msg.contains("wasm32") && msg.contains("5000000000"),
+            "expected a clear 64-bit rejection, got: {msg}"
+        );
+    }
+
+    #[test]
+    fn numeric_tower_wasm_accepts_full_u32_range() {
+        // The full unsigned 32-bit range, including [2^31, 2^32), is representable
+        // (encoded as the wrapped i32 bit pattern) — these used to emit an invalid
+        // `i32.const`.
+        let v0 = VarId::new(0);
+        for n in [3_000_000_000u64, u64::from(u32::MAX)] {
+            let program = make_program(vec![ann(Instruction::Const(Constant::Int(n)), v0)], v0);
+            assert!(
+                WasmBackend::new(Target::Wasm32).emit(&program).is_ok(),
+                "u32 value {n} must be representable on wasm32"
+            );
+        }
     }
 
     #[test]
