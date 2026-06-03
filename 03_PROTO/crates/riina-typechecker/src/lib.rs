@@ -1021,16 +1021,44 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         c = c.extend(en.to_string(), ty);
     }
 
-    // ── Time builtins (masa) — Effect::Time ──
-    for (bm, en) in &[
-        ("masa_sekarang", "time_now"),
-        ("masa_sekarang_ms", "time_now_ms"),
-        ("masa_format", "time_format"),
-        ("masa_urai", "time_parse"),
-        ("masa_tidur", "time_sleep"),
-        ("masa_jam", "time_clock"),
+    // ── Time builtins (masa) — precise types matching the runtime
+    // (`riina-codegen/src/builtins/masa.rs` + the C emit). Was `Any → Any` (the
+    // "Time interface — Unclear" stdlib row). The clocks are `Unit -> Int`
+    // (the runtime value is a `Builtin`, i.e. a function, so this is sound — a
+    // bare `Int` would type-check programs the untyped interpreter then rejects);
+    // `sleep` takes a millisecond `Int`; `format`/`parse` take a `(value, format)`
+    // pair. The `()` zero-arg-thunk *materialisation* at runtime is a separate,
+    // codebase-wide item (the interpreter evaluates a bare builtin `Var` to its
+    // `Builtin` value, like `baca_garisan`).
+    let unit_to_int = || Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time);
+    for (bm, en, ty) in [
+        ("masa_sekarang", "time_now", unit_to_int()),
+        ("masa_sekarang_ms", "time_now_ms", unit_to_int()),
+        ("masa_jam", "time_clock", unit_to_int()),
+        (
+            "masa_tidur",
+            "time_sleep",
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Time),
+        ),
+        (
+            "masa_format",
+            "time_format",
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Time,
+            ),
+        ),
+        (
+            "masa_urai",
+            "time_parse",
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::Int),
+                Effect::Time,
+            ),
+        ),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Time);
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }

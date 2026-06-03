@@ -2206,7 +2206,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core`; per-primitive KATs + negative tests + a consolidated independent KAT-audit manifest (2026-06-02) | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
 | File I/O with effect tracking | `Effect::FileSystem` tracked on all `fail_*`/`file_*` builtins; **path hardening 2026-06-02**: `file_read`/`file_read_lines` typed `String → Tainted<String, FileSystem>` (untrusted path rejected; contents tainted), and the single-path ops `file_exists`/`file_delete`/`file_size`/`file_list_dir` take a `String` path (tainted path rejected) with **precise result types** (`exists`→Bool, `delete`→Unit, `size`→Int; `list_dir`→Any) +5 tests. **Coq read/write model already exists (verified 2026-06-02)**: `domains/VerifiedFileSystem.v` (active, 109 Qed — access control `can_read`/`can_write`, `no_read_without_perm`/`no_write_without_perm`, crash-consistency, atomic writes) + `TaintSystemCorrectness.v` `path_traversal_impossible`. Remaining: precise types for the multi-arg `file_write`/`file_append`, and connecting the VFS model to RIINA's `Effect::FileSystem` type discipline | Implement + Coq model for read/write effects |
 | Networking (TCP/TLS/HTTP, effect-typed) | HTTP builtins effect-typed (`Effect::Network`); **capability-gated 2026-06-02 (hybrid POLA)**: once a program opts into the capability discipline (some grant in scope), a `Network`/`NetworkSecure`/`Process` operation requires the matching capability granted — mirrors the opt-in `T_Require` rule (no grants ⇒ permissive, so existing programs unaffected). **Effect-set landed 2026-06-02 — gating extended soundly to Crypto/Random/System**: `TopLevelDecl::Function` now carries an `effect_set: Vec<Effect>` (the components of a compound `kesan (A,B,C)`, which the lossy lattice `effect` join collapses), and `check_program` grants *every* component — so a compound-effect function (e.g. `crypto_ops.rii`) authorizes all its declared ambient ops and the earlier false-positive is gone (differential restored 30/30). The App-rule gate now covers Network/NetworkSecure/Process/Crypto/Random/System. +6 tests (network ×3, random ×2, compound-grants-all-components ×1). Remaining: real TCP/TLS impls + a Coq network-effect model | Implement; capability-gated |
-| Time / random / OS interface | Unclear | All effect-typed |
+| Time / random / OS interface | **Time precise-typed 2026-06-03**: the 6 `masa_*`/`time_*` builtins were `Fn(Any,Any,Time)`; now sound + precise (clocks `Unit→Int`; `masa_tidur` `Int→Unit`; `masa_format`/`masa_urai` `(value,format)`-pair → `String`/`Int`), so misuse is rejected (`masa_tidur("x")` is a type error) and `Effect::Time` is tracked on the applied builtins (+2 tests). Random already `Int→Int` (`Effect::Random`). Remaining: OS/system builtins precision; the `()` zero-arg-thunk runtime materialisation (a bare builtin `Var` evaluates to its `Builtin`, like `baca_garisan`) — a separate codebase-wide item | All effect-typed |
 | Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |
 | Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |
 | Async runtime | Spec-only (JALINAN) | Phase 6 deliverable |
@@ -2391,11 +2391,11 @@ A session entering the codebase MUST:
 ### Session Handoff Snapshot (last updated 2026-06-03, third session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2686 / 0**, `cargo clippy`
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2688 / 0**, `cargo clippy`
 0 warnings, WASM/C `corpus_differential` **32/32** byte-equal (both-ran 32), **157** example
 `.rii` files, Coq active **310 files / 12,394 Qed / 0 Admitted / 0 Axiom / 0 Abort**
 (grep-verified; the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
-`metrics.json` is refreshed live-accurate (tests 2686 `full_cargo_test`, Qed 12,394) — the
+`metrics.json` is refreshed live-accurate (tests 2688 `full_cargo_test`, Qed 12,394) — the
 non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
 here; counts preserved, not re-derived).
 

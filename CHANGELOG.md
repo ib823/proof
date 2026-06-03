@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2686 Rust tests
+**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2688 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Time stdlib builtins — precise types** (the "Time interface — Unclear" Gate C
+  row): the six `masa_*`/`time_*` builtins were typed `Fn(Any, Any, Time)`. They
+  are now sound and precise, matching the runtime (`builtins/masa.rs` + the C
+  emit): the clocks (`masa_sekarang`/`_ms`/`masa_jam`) are `Unit -> Int` (the
+  runtime value is a `Builtin` function, so this is sound — a bare `Int` would
+  type-check programs the untyped interpreter then rejects); `masa_tidur` (sleep)
+  is `Int -> Unit`; `masa_format`/`masa_urai` take a `(value, format)` pair ->
+  `String`/`Int`. The applied builtins now reject misuse (`masa_tidur("x")` is a
+  type error, was accepted under `Any -> Any`) and track `Effect::Time`
+  end-to-end (verified by running `masa_format((123, "iso"))` -> "123"). +2 tests.
+  The `()` zero-arg-thunk *runtime materialisation* (a bare builtin `Var`
+  evaluates to its `Builtin` value, like `baca_garisan`) is a separate,
+  codebase-wide item. Typecheck-only, so the differential is unchanged (32/32);
+  `cargo test --all` 2688/0.
 - **Numeric tower — wasm32 64-bit handling (graceful + full u32)**: the WASM
   backend holds integers in a 32-bit cell, so a value `>= 2^32` (true u64/i64)
   previously emitted an out-of-range `i32.const` — `riinac build --target wasm32`

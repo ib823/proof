@@ -2844,6 +2844,58 @@ mod formalized_tests {
         );
     }
 
+    #[test]
+    fn test_time_builtins_have_precise_types_and_track_effect() {
+        // The applied time builtins are sound and track Effect::Time: sleep takes
+        // a millisecond Int -> Unit; format/parse take a (value, format) pair.
+        let ctx = register_builtin_types(&Context::new());
+        let int = || Box::new(Expr::Int(1));
+        let s = |x: &str| Box::new(Expr::String(x.to_string()));
+        for (name, arg, expect) in [
+            ("masa_tidur", Expr::Int(0), Ty::Unit),
+            ("time_sleep", Expr::Int(0), Ty::Unit),
+            (
+                "masa_format",
+                Expr::Pair(int(), s("iso")),
+                Ty::String,
+            ),
+            (
+                "masa_urai",
+                Expr::Pair(s("1"), s("iso")),
+                Ty::Int,
+            ),
+        ] {
+            let call = Expr::App(Box::new(Expr::Var(name.to_string())), Box::new(arg));
+            let (ty, eff) =
+                type_check(&ctx, &call).unwrap_or_else(|e| panic!("{name} should typecheck: {e:?}"));
+            assert_eq!(ty, expect, "{name} result type");
+            assert_eq!(eff, Effect::Time, "{name} effect");
+        }
+        // The zero-arg clocks are soundly typed as `Unit -> Int` (the runtime value
+        // is a `Builtin` function), not a bare `Int`.
+        let (ty, _) = type_check(&ctx, &Expr::Var("masa_sekarang".to_string())).unwrap();
+        assert_eq!(
+            ty,
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time),
+            "a clock is a Unit -> Int function"
+        );
+    }
+
+    #[test]
+    fn test_time_sleep_rejects_non_int() {
+        // Precise typing catches misuse: `masa_tidur("x")` is a type error (was
+        // accepted under the old `Any -> Any` typing).
+        let ctx = register_builtin_types(&Context::new());
+        let call = Expr::App(
+            Box::new(Expr::Var("masa_tidur".to_string())),
+            Box::new(Expr::String("x".to_string())),
+        );
+        assert!(
+            matches!(type_check(&ctx, &call), Err(TypeError::TypeMismatch { .. })),
+            "masa_tidur of a String must be rejected"
+        );
+    }
+
     // ── 6c: SSRF (CWE-918) ──
 
     #[test]
