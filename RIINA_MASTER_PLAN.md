@@ -323,7 +323,7 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 2,664 passing, 0 failed, 3 ignored |
+| Tests (03_PROTO/) | 2,729 passing, 0 failed, 3 ignored (2026-06-03: +2 zero-arg-thunk, +18 VFS access-control/model-port) |
 | Tests (05_TOOLING/) | 256 passing, 0 failed, 2 ignored (incl. 8 consolidated crypto KAT-audit-manifest tests, 2026-06-02) |
 | Crates (03_PROTO) | 19 |
 | Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
