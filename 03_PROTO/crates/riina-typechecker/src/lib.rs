@@ -2776,19 +2776,22 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     // `T_Require` rule; a function declaring `kesan Rangkaian`/
                     // `kesan Proses` auto-grants it in its body.
                     //
-                    // Scope note: gating is limited to Network/Process on purpose.
-                    // A function's declared effect is a *single* `Effect`, so a
-                    // compound declaration like `kesan (Kripto, Tulis, Rawak)`
-                    // collapses to one value and `with_grant` authorizes only that
-                    // component. Gating Crypto/Random/System would therefore
-                    // false-positive on legitimate compound-effect functions
-                    // (e.g. `crypto_ops.rii`). Sound multi-capability gating needs
-                    // the `granted` set to capture *all* components of a compound
-                    // effect (an effect-set representation) — tracked as future
-                    // effect-system work. File I/O stays at effect+taint typing.
+                    // The gated set covers the reach-extending effects
+                    // (Network/Process) and the secret/entropy/OS effects
+                    // (Crypto/Random/System). This is now *sound* for compound
+                    // declarations: a function declaring `kesan (Kripto, Tulis,
+                    // Rawak)` grants every component (via `effect_set` on the
+                    // function decl), so a legitimate compound-effect function
+                    // (e.g. `crypto_ops.rii`) is no longer a false positive. File
+                    // I/O stays at effect+taint typing (not capability-gated).
                     if matches!(
                         fn_eff,
-                        Effect::Network | Effect::NetworkSecure | Effect::Process
+                        Effect::Network
+                            | Effect::NetworkSecure
+                            | Effect::Process
+                            | Effect::Crypto
+                            | Effect::Random
+                            | Effect::System
                     ) && !ctx.granted.is_empty()
                         && !ctx.granted.contains(&fn_eff)
                     {

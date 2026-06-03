@@ -455,6 +455,7 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 params,
                 return_ty,
                 effect,
+                effect_set,
                 body,
             } => {
                 let fn_ty = declared_function_type(params, return_ty, *effect);
@@ -462,9 +463,15 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 for (param_name, param_ty) in params {
                     body_ctx = body_ctx.extend_gamma(param_name.clone(), param_ty.clone());
                 }
-                // Function's declared effect grants capabilities within its body
-                // A function with `kesan Rangkaian` can use `require Rangkaian`
-                body_ctx = body_ctx.with_grant(*effect);
+                // The function's declared effect grants capabilities within its
+                // body (a function with `kesan Rangkaian` can use `require
+                // Rangkaian`). Grant *every* declared component, not just the
+                // lossy lattice join: a compound `kesan (A, B, C)` grants all of
+                // A, B, C, which is what makes capability-gating sound for
+                // compound-effect functions.
+                for e in effect_set {
+                    body_ctx = body_ctx.with_grant(*e);
+                }
 
                 let (body_ty, body_eff) = type_check_full(&mut body_ctx, body)?;
                 if !types_compatible(return_ty, &body_ty) {
@@ -676,5 +683,19 @@ mod tests {
         // A pure module-level binding is accepted (the purity guard does not fire).
         check_program(&parse_program("biar selamat = 1;\nselamat"))
             .expect("a pure top-level binding must typecheck");
+    }
+
+    // ── Effect-set: a compound declared effect grants ALL its components ──
+    #[test]
+    fn check_program_compound_effect_grants_all_components() {
+        // Regression for the effect-set fix: a function declaring `kesan (Rawak,
+        // Tulis)` grants BOTH Random and Write, so the capability-gated `rawak`
+        // (Effect::Random) call inside it is authorized. Before the fix the
+        // compound collapsed to a single effect and this was a false-positive
+        // CapabilityViolation.
+        check_program(&parse_program(
+            "fungsi hitung() -> Nombor kesan (Rawak, Tulis) { random(10) }\nhitung()",
+        ))
+        .expect("a compound-effect function may call its declared ambient op");
     }
 }

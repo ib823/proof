@@ -675,7 +675,16 @@ pub enum TopLevelDecl {
         name: Ident,
         params: Vec<(Ident, Ty)>,
         return_ty: Ty,
+        /// The function's effect as a single lattice value (the join of the
+        /// declared components) — used for effect propagation and codegen.
         effect: Effect,
+        /// The *components* of a compound declared effect (`kesan (A, B, C)` ⇒
+        /// `[A, B, C]`). The lattice `effect` field is lossy (it collapses a
+        /// compound to the max-level component), so this preserves the full set
+        /// for capability granting: each component is granted in the body, which
+        /// makes capability-gating sound for compound-effect functions. For a
+        /// single declared effect this is a one-element vector.
+        effect_set: Vec<Effect>,
         body: Box<Expr>,
     },
     /// biar name = expr;
@@ -795,6 +804,7 @@ impl Program {
                 return_ty,
                 effect,
                 body,
+                ..
             } => desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit)),
             TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                 desugar_extern_block(edecls, Expr::Unit)
@@ -837,6 +847,7 @@ impl Program {
                     return_ty,
                     effect,
                     body,
+                    ..
                 } => desugar_function(name, params, return_ty, effect, body, Box::new(result)),
                 TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                     desugar_extern_block(edecls, result)

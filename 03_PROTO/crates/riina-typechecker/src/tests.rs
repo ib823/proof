@@ -5107,4 +5107,31 @@ mod gate_b_parity {
         type_check_full(&mut ctx, &http_get_call())
             .expect("network op without any capability discipline stays permissive");
     }
+
+    // Crypto/Random/System are gated by the same opt-in mechanism (now sound for
+    // compound declared effects via `effect_set`). `random` carries
+    // `Effect::Random`; exercise the gate through it.
+    fn random_call() -> Expr {
+        Expr::App(Box::new(Expr::Var("random".into())), Box::new(Expr::Int(10)))
+    }
+
+    #[test]
+    fn random_op_without_grant_in_capability_scope_is_rejected() {
+        // grant Write in (random 10) — Random is not granted ⇒ rejected.
+        let mut ctx = builtins_ctx();
+        let expr = Expr::Grant(Effect::Write, Box::new(random_call()));
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::CapabilityViolation { required, .. }) => {
+                assert_eq!(required, Effect::Random);
+            }
+            other => panic!("expected CapabilityViolation for ungated random op, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn random_op_with_grant_is_accepted() {
+        let mut ctx = builtins_ctx();
+        let expr = Expr::Grant(Effect::Random, Box::new(random_call()));
+        type_check_full(&mut ctx, &expr).expect("granted random op must typecheck");
+    }
 }

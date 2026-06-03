@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2659 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2662 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Effect-set on function declarations → sound multi-capability gating**:
+  `TopLevelDecl::Function` now carries `effect_set: Vec<Effect>` — the *components*
+  of a compound `kesan (A, B, C)` (the lattice `effect` field is the lossy max-join).
+  `check_program` grants **every** component in the body, so a compound-effect
+  function authorizes all its declared ambient ops. This makes the opt-in
+  capability gate **sound for compound effects**, so it is now extended from
+  Network/Process to also cover **Crypto/Random/System** (the earlier `crypto_ops.rii`
+  false-positive is resolved; differential restored 30/30). Codegen-transparent
+  (typecheck-only; the lowered IR is unchanged). +6 tests (network ×3, random ×2,
+  compound-grants-all-components ×1). Parser threads the components through
+  `parse_effect_annotation` → `(Effect, Vec<Effect>)`.
 - **Single-path file ops — precise result types**: `file_exists`→`Bool`,
   `file_delete`→`Unit`, `file_size`→`Int` (`file_list_dir` stays `Any`), atop the
   `String`-path hardening. +1 test; differential 30/30.

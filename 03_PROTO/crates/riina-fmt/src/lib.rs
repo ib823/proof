@@ -63,6 +63,7 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
             return_ty,
             effect,
             body,
+            ..
         } => {
             indent(out, level, cfg);
             out.push_str("fungsi ");

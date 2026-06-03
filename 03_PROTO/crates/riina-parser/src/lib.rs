@@ -412,12 +412,13 @@ impl<'a> Parser<'a> {
         };
 
         // Optional effect annotation
-        let effect = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
-            self.consume(TokenKind::KwEffect)?;
-            self.parse_effect_annotation()?
-        } else {
-            Effect::Pure
-        };
+        let (effect, effect_set) =
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
+                self.consume(TokenKind::KwEffect)?;
+                self.parse_effect_annotation()?
+            } else {
+                (Effect::Pure, vec![Effect::Pure])
+            };
 
         // Body in braces
         self.consume(TokenKind::LBrace)?;
@@ -429,6 +430,7 @@ impl<'a> Parser<'a> {
             params,
             return_ty,
             effect,
+            effect_set,
             body: Box::new(body),
         })
     }
@@ -547,6 +549,7 @@ impl<'a> Parser<'a> {
                     return_ty,
                     effect,
                     body,
+                    ..
                 } => (name, params, return_ty, effect, body),
                 _ => unreachable!("parse_function_decl returns Function"),
             };
@@ -2680,7 +2683,8 @@ impl<'a> Parser<'a> {
     fn parse_optional_fn_effect(&mut self) -> Result<Effect, ParseError> {
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
             self.consume(TokenKind::KwEffect)?;
-            self.parse_effect_annotation()
+            // Function-type effects only need the joined lattice value.
+            self.parse_effect_annotation().map(|(eff, _)| eff)
         } else {
             Ok(Effect::Pure)
         }
@@ -2964,27 +2968,36 @@ impl<'a> Parser<'a> {
     /// or a parenthesized list (`kesan (Kripto, MasaTetap)`). A list is combined
     /// with `Effect::join` into the dominant effect, since the effect model has
     /// no effect-rows yet. An empty `()` is `Pure`.
-    fn parse_effect_annotation(&mut self) -> Result<Effect, ParseError> {
+    /// Parse an effect annotation, returning both the joined lattice `Effect`
+    /// (for propagation/codegen) and the *components* of a compound annotation
+    /// (for capability granting — the join is lossy). A single effect yields a
+    /// one-element component vector.
+    fn parse_effect_annotation(&mut self) -> Result<(Effect, Vec<Effect>), ParseError> {
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
             self.consume(TokenKind::LParen)?;
             if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
                 self.consume(TokenKind::RParen)?;
-                return Ok(Effect::Pure);
+                return Ok((Effect::Pure, vec![Effect::Pure]));
             }
             // A parenthesized effect set may be separated by `,` or `|`
-            // (`kesan (Bersih | SistemFail)`); both denote the joined effect.
-            let mut eff = self.parse_effect()?;
+            // (`kesan (Bersih | SistemFail)`); the components are preserved.
+            let first = self.parse_effect()?;
+            let mut eff = first;
+            let mut set = vec![first];
             while matches!(
                 self.peek().map(|t| &t.kind),
                 Some(TokenKind::Comma) | Some(TokenKind::Or)
             ) {
                 self.next();
-                eff = eff.join(self.parse_effect()?);
+                let e = self.parse_effect()?;
+                eff = eff.join(e);
+                set.push(e);
             }
             self.consume(TokenKind::RParen)?;
-            Ok(eff)
+            Ok((eff, set))
         } else {
-            self.parse_effect()
+            let e = self.parse_effect()?;
+            Ok((e, vec![e]))
         }
     }
 
