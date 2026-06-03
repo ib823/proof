@@ -10,6 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Numeric tower — sized-integer literals + width-aware arithmetic + codegen**
+  (completes two of the three "later slices" the distinct-sized-types entry below
+  noted): the lexed width suffix `42u8` now becomes a distinct
+  `Expr::IntN { value, bits, signed }` literal (additive variant — the ~700
+  existing `Int(_)` sites are untouched), typed as `Ty::IntN`. Arithmetic
+  propagates the width (a plain `Int` adapts; `u8 + u16` is rejected). The
+  interpreter gained `Value::IntN`: `+`/`-`/`*` wrap modulo 2^bits, and
+  division/modulo/comparison/display are signedness-aware (two's complement).
+  Width-correct codegen: the C backend wraps sized arithmetic through a new
+  `riina_trunc` runtime helper, and the WASM backend masks with
+  `i32.const (2^bits-1); i32.and` (and routes `Ty::IntN` through its
+  int-print/`ke_teks`/result-echo dispatch, which previously only matched
+  `Ty::Int`). New example `00_basics/sized_integers.rii` (u8/u16 overflow) is
+  byte-identical across C, WASM, and the interpreter (44/255/0) — the corpus
+  differential rose 30→**31/31 byte-equal** (156 examples). +16 tests (parser AST
+  shape, typecheck width propagation + mixed-width rejection, interpreter
+  wrap/signed-division/signed-comparison, and C + WASM byte-level mask, positive +
+  negative). `cargo test --all` 2680/0, clippy 0. Remaining numeric-tower work:
+  signed display/comparison in *compiled* output (the interpreter is already
+  signed-correct), >32-bit widths on the WASM i32 cell, and a Coq numeric model.
 - **Numeric tower — distinct sized integer types**: added `Ty::IntN { bits,
   signed }` *additively* (a 1-site match ripple, not 434 — `Ty` matches use
   wildcards; `Ty::Int`/`Nombor` stays the default). The type parser accepts

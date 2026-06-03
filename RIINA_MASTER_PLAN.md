@@ -328,7 +328,7 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 | Crates (03_PROTO) | 19 |
 | Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
 | Clippy | Clean |
-| Example .rii files | 155 |
+| Example .rii files | 156 |
 
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords
@@ -2210,7 +2210,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |
 | Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |
 | Async runtime | Spec-only (JALINAN) | Phase 6 deliverable |
-| Numeric tower (BigInt, decimal, fixed-point) | **Two slices landed 2026-06-02.** (1) Typed integer-literal suffixes (`u8…i64`) are lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors; non-width trailing runs untouched) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (added *additively* — only a 1-site match ripple, not 434, since `Ty` matches use wildcards; `Ty::Int`/`Nombor` stays the default). The type parser accepts `u8`…`i64`; sized types are usable on function params/returns (`fungsi id8(x: u8) -> u8 { x }` types as `IntN{8,false}`); `IntN`↔`Int` interoperate (a plain literal initialises a sized binding) while distinct widths are incompatible (`u8` body vs `u16` return ⇒ `AnnotationMismatch`); codegen treats `IntN` as representationally-`Int` so the differential is unchanged (30/30) +2 tests. Remaining (next slices): width-aware arithmetic (wrap/checked overflow at the bit width), connecting the lexer suffix `42u8` to an `IntN` literal (needs an `Expr::Int` width), codegen width-semantics, BigInt/decimal/fixed-point, and a Coq numeric model | Required for finance use cases |
+| Numeric tower (BigInt, decimal, fixed-point) | **Four slices landed (2026-06-02 → 06-03).** (1) Typed integer-literal suffixes (`u8…i64`) lexed + **range-validated at lex time** (`256u8`/`300i8` are compile errors) +5 lexer tests. (2) **Distinct sized-integer types** `Ty::IntN { bits, signed }` (additive — 1-site ripple; `Ty::Int`/`Nombor` stays default); usable on fn params/returns; `IntN`↔`Int` interoperate, distinct widths incompatible +2 tests. (3) **Sized literals + width-aware arithmetic (2026-06-03)**: the lexer suffix `42u8` now becomes a distinct `Expr::IntN { value, bits, signed }` literal (additive; ~700 `Int(_)` sites untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts, `u8 + u16` rejected); the interpreter gained `Value::IntN` — `+`/`-`/`*` wrap modulo 2^bits, division/modulo/comparison/display are signedness-aware (two's complement); content-hash mixes value+width. (4) **Width-correct C/WASM codegen (2026-06-03)**: C wraps sized arithmetic via a `riina_trunc` runtime helper; WASM masks with `i32.const (2^bits-1); i32.and` and routes `Ty::IntN` through its int-print/`ke_teks`/echo dispatch. New example `00_basics/sized_integers.rii` (u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0) — **differential 30→31/31 byte-equal**. +16 tests (slices 3–4). `cargo test --all` 2680/0. Remaining: signed display/comparison in *compiled* output (interpreter already signed-correct), >32-bit widths on the WASM i32 cell, BigInt/decimal/fixed-point, and a Coq numeric model | Required for finance use cases |
 
 **Exit criteria:** external crypto audit clean; ≥1 non-trivial sample app shipping on stdlib.
 
@@ -2373,27 +2373,39 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-02)
+### Session Handoff Snapshot (last updated 2026-06-03)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2664 / 0**, `cargo clippy`
-0 warnings, WASM/C `corpus_differential` **30/30** byte-equal, Coq active **309 .vo /
-12,386 Qed / 0 Admitted / 0 Axiom / 0 Abort**, `audit-docs.sh` 0 discrepancies.
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2680 / 0** (live count from
+running the suite; `metrics.json` still publishes the cached-verified **2664** — it refreshes
+only on a full `generate-metrics.sh`, which the per-commit hook runs in fast/cached mode),
+`cargo clippy` 0 warnings, WASM/C `corpus_differential` **31/31** byte-equal (both-ran 30→31),
+**156** example `.rii` files, Coq active **unchanged — no Coq files touched this session**:
+0 Admitted / 0 Axiom / 0 Abort in active scope (grep-verified); 309 .vo / 12,386 Qed from the
+last full build (the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
 
-**Gate C landed this session** (see CHANGELOG `[Unreleased] 2026-06-02 — Gate C`): crypto
-KAT-audit manifest (`05_TOOLING/.../tests/kat_audit.rs`); file-I/O hardening (taint-typed
-reads + `String` paths + precise result types); Network/Process **and** Crypto/Random/System
-capability gating (opt-in POLA); **effect-set** on function decls (`effect_set: Vec<Effect>`,
-makes compound-effect gating sound); numeric tower **two slices** (lexed+range-validated int
-suffixes; distinct sized types `Ty::IntN { bits, signed }` on fn params/returns). The Coq
-read/write model already exists (`VerifiedFileSystem.v`, 109 Qed — do not duplicate).
+**Gate C landed this session (2026-06-03)** — numeric tower **slices 3–4** completed (see
+CHANGELOG `[Unreleased]` top entry): (3) the lexer suffix `42u8` now becomes a distinct
+`Expr::IntN { value, bits, signed }` literal (additive variant — ~700 `Int(_)` sites
+untouched) typed as `Ty::IntN`; arithmetic propagates the width (plain `Int` adapts,
+`u8 + u16` rejected); the interpreter gained `Value::IntN` with width-aware wrap and
+signedness-aware division/modulo/comparison/display. (4) width-correct C/WASM codegen — C uses
+a `riina_trunc` runtime helper, WASM masks with `i32.and (2^bits-1)` and routes `Ty::IntN`
+through its int print/`ke_teks`/echo dispatch; new example `00_basics/sized_integers.rii`
+(u8/u16 overflow) is byte-identical across C, WASM, and the interpreter (44/255/0). Earlier
+this gate (2026-06-02): crypto KAT-audit manifest; file-I/O hardening; capability gating;
+effect-set on fn decls; numeric-tower slices 1–2. The Coq read/write model already exists
+(`VerifiedFileSystem.v`, 109 Qed — do not duplicate).
 
-**Highest-priority Gate C next steps** (all bounded follow-ups, P0):
-1. **Numeric tower — width-aware arithmetic + codegen**: wrap/checked overflow at the bit
-   width for `Ty::IntN`; connect the lexer suffix `42u8` to an `IntN` literal (needs an
-   `Expr::Int` width field); width-correct C/WASM emission. Then BigInt/decimal/fixed-point.
-2. **Multi-arg file builtins** `file_write`/`file_append` precise types (path `String` + data),
-   and connect `VerifiedFileSystem.v` to RIINA's `Effect::FileSystem` type discipline.
+**Highest-priority Gate C next steps** (bounded follow-ups, P0):
+1. **Multi-arg file builtins** `file_write`/`file_append` precise types (path `String` + data),
+   and connect `VerifiedFileSystem.v` to RIINA's `Effect::FileSystem` type discipline. (Now
+   the top remaining bounded thread — the numeric-tower arithmetic/codegen thread is done.)
+2. **Numeric tower — remaining slices**: signed sized-int *display/comparison* in **compiled**
+   output (the interpreter is already signedness-correct; C prints the unsigned interpretation
+   and WASM uses signed i32 ops, so a signed corpus example would diverge — make both
+   sign-aware), >32-bit widths on the WASM i32 cell (u64/i64 truncate today), then
+   BigInt/decimal/fixed-point, and a Coq numeric model.
 3. **Owner-gated (cannot be done by a session):** external crypto audit budget (REQ-28 exit
    criterion — audit-prep KAT manifest is ready); broader I/O capability-grant policy.
 
