@@ -34,6 +34,13 @@ riina-typechecker = { path = "../riina-typechecker" }
 # No feature flags - ZERO LAZINESS means we include EVERYTHING
 # All backends (interpreter, C emission) are always available
 
+# Verified-stdlib micro-benchmarks (Gate C / Gate E). `harness = false` means
+# the bench provides its own `fn main()` — a hand-written timing loop — so NO
+# third-party benchmarking crate is pulled in (Law 8 holds for 03_PROTO).
+[[bench]]
+name = "stdlib_bench"
+harness = false
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
 unsafe_code = "forbid"
