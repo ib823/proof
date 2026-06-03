@@ -138,9 +138,12 @@ fn summarize_branching(
 
 fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
     match expr {
-        Expr::Unit | Expr::Bool(_) | Expr::Int(_) | Expr::String(_) | Expr::Loc(_) => {
-            ExprSummary::default()
-        }
+        Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::IntN { .. }
+        | Expr::String(_)
+        | Expr::Loc(_) => ExprSummary::default(),
         Expr::Var(name) => match env.get(name) {
             Some(callable) if callable.remaining_arity == 0 => ExprSummary {
                 exec: ExecSummary {

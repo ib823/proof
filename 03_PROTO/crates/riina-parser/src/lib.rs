@@ -175,6 +175,24 @@ struct MatchArm {
     body: Expr,
 }
 
+/// Map a lexed integer width suffix (`u8`..`u64`, `i8`..`i64`) to its
+/// `(bits, signed)`. The lexer (`peek_int_suffix`) only ever attaches one of
+/// these eight suffixes and already range-checked the magnitude, so this is the
+/// total inverse used when building a sized-integer literal (`Expr::IntN`).
+fn int_suffix_to_width(suffix: &str) -> Option<(u8, bool)> {
+    match suffix {
+        "u8" => Some((8, false)),
+        "u16" => Some((16, false)),
+        "u32" => Some((32, false)),
+        "u64" => Some((64, false)),
+        "i8" => Some((8, true)),
+        "i16" => Some((16, true)),
+        "i32" => Some((32, true)),
+        "i64" => Some((64, true)),
+        _ => None,
+    }
+}
+
 impl<'a> Parser<'a> {
     pub fn new(source: &'a str) -> Self {
         Self {
@@ -1661,9 +1679,26 @@ impl<'a> Parser<'a> {
             Some(TokenKind::LBrace) if self.looks_like_record_literal() => {
                 self.parse_record_literal_body(String::new())
             }
-            Some(TokenKind::LiteralInt(s, _)) => {
+            Some(TokenKind::LiteralInt(s, suffix)) => {
                 self.next();
-                Ok(Expr::Int(s.parse().unwrap_or(0)))
+                // Strip digit separators (`1_000`). When a width suffix is present
+                // the lexer guarantees a decimal magnitude and has already
+                // range-checked it, so a sized literal becomes `Expr::IntN`;
+                // otherwise it stays the default `Expr::Int` (`Ty::Int`).
+                let value: u64 = s
+                    .chars()
+                    .filter(|c| *c != '_')
+                    .collect::<String>()
+                    .parse()
+                    .unwrap_or(0);
+                match suffix.as_deref().and_then(int_suffix_to_width) {
+                    Some((bits, signed)) => Ok(Expr::IntN {
+                        value,
+                        bits,
+                        signed,
+                    }),
+                    None => Ok(Expr::Int(value)),
+                }
             }
             Some(TokenKind::LiteralBool(b)) => {
                 self.next();

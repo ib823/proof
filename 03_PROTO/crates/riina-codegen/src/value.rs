@@ -191,6 +191,14 @@ pub enum Value {
     /// Corresponds to Coq `VInt n`.
     Int(u64),
 
+    /// Sized integer value: the runtime counterpart of `Expr::IntN`. Carries the
+    /// bit width and signedness so the interpreter wraps arithmetic at the
+    /// declared width (8/16/32/64) rather than at 64 bits. `value` is the raw
+    /// two's-complement bit pattern already reduced modulo `2^bits`; the `signed`
+    /// flag selects signed interpretation for division/modulo/comparison/display.
+    /// Numeric-tower extension — not in the Coq core (which models a single `VInt`).
+    IntN { value: u64, bits: u8, signed: bool },
+
     /// String value
     ///
     /// Corresponds to Coq `VString s`.
@@ -777,6 +785,18 @@ impl std::fmt::Display for Value {
             Self::Unit => write!(f, "()"),
             Self::Bool(b) => write!(f, "{b}"),
             Self::Int(n) => write!(f, "{n}"),
+            Self::IntN {
+                value,
+                bits,
+                signed,
+            } => {
+                if *signed {
+                    let shift = 64 - u32::from(*bits);
+                    write!(f, "{}", ((value << shift) as i64) >> shift)
+                } else {
+                    write!(f, "{value}")
+                }
+            }
             Self::String(s) => write!(f, "\"{s}\""),
             Self::Pair(a, b) => write!(f, "({a}, {b})"),
             Self::Sum(Sum::Left(v)) => write!(f, "inl {v}"),

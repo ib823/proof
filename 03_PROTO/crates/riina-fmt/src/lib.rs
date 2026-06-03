@@ -164,6 +164,13 @@ fn fmt_record_inline(out: &mut String, name: &str, fields: &[(String, Expr)], cf
     out.push_str(" }");
 }
 
+/// Reconstruct the width suffix for a sized integer literal (`Expr::IntN`), e.g.
+/// `(8, false)` ⇒ `"u8"`, `(32, true)` ⇒ `"i32"`, so formatting round-trips the
+/// source token.
+fn int_width_suffix(bits: u8, signed: bool) -> String {
+    format!("{}{bits}", if signed { "i" } else { "u" })
+}
+
 fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
     match expr {
         Expr::Unit => {
@@ -177,6 +184,14 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
         Expr::Int(n) => {
             indent(out, level, cfg);
             out.push_str(&n.to_string());
+        }
+        Expr::IntN {
+            value,
+            bits,
+            signed,
+        } => {
+            indent(out, level, cfg);
+            out.push_str(&format!("{value}{}", int_width_suffix(*bits, *signed)));
         }
         Expr::String(s) => {
             indent(out, level, cfg);
@@ -469,6 +484,11 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         Expr::Unit => out.push_str("()"),
         Expr::Bool(b) => out.push_str(if *b { "betul" } else { "salah" }),
         Expr::Int(n) => out.push_str(&n.to_string()),
+        Expr::IntN {
+            value,
+            bits,
+            signed,
+        } => out.push_str(&format!("{value}{}", int_width_suffix(*bits, *signed))),
         Expr::String(s) => {
             out.push('"');
             for c in s.chars() {

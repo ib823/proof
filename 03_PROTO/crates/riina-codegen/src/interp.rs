@@ -418,6 +418,18 @@ impl Interpreter {
             // E_Int: eval ρ σ (EInt n) σ (VInt n)
             Expr::Int(n) => Ok(Value::Int(*n)),
 
+            // Sized integer literal: reduce the magnitude modulo 2^bits and carry
+            // the width so arithmetic on it wraps at that width (numeric tower).
+            Expr::IntN {
+                value,
+                bits,
+                signed,
+            } => Ok(Value::IntN {
+                value: mask_width(*value, *bits),
+                bits: *bits,
+                signed: *signed,
+            }),
+
             // E_String: eval ρ σ (EString s) σ (VString s)
             Expr::String(s) => Ok(Value::String(s.clone())),
 
@@ -1040,6 +1052,16 @@ impl Interpreter {
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.eval_with_env(env, lhs)?;
                 let r = self.eval_with_env(env, rhs)?;
+                // Numeric tower: if either operand is a sized integer, arithmetic
+                // and comparisons wrap/interpret at that width (a plain `Int`
+                // literal adapts to the sized operand). Falls through to the
+                // unsized arms below only for non-integer ops (And/Or) or operand
+                // shapes this path does not handle.
+                if matches!(l, Value::IntN { .. }) || matches!(r, Value::IntN { .. }) {
+                    if let Some(result) = eval_sized_int_binop(*op, &l, &r) {
+                        return result;
+                    }
+                }
                 match (op, &l, &r) {
                     (BinOp::Add, Value::Int(a), Value::Int(b)) => {
                         Ok(Value::Int(a.wrapping_add(*b)))
@@ -1094,6 +1116,104 @@ impl Interpreter {
     }
 }
 
+/// Reduce a value modulo `2^bits` (the raw two's-complement bit pattern of a
+/// width-`bits` integer). `bits` is one of 8/16/32/64; width 64 is identity.
+fn mask_width(value: u64, bits: u8) -> u64 {
+    if bits >= 64 {
+        value
+    } else {
+        value & ((1u64 << bits) - 1)
+    }
+}
+
+/// Interpret a width-`bits` two's-complement bit pattern as a signed `i64`
+/// (sign-extending from bit `bits-1`). Used for signed division/modulo,
+/// comparison, and display of `Value::IntN`.
+fn sext_width(value: u64, bits: u8) -> i64 {
+    if bits >= 64 {
+        value as i64
+    } else {
+        let shift = 64 - u32::from(bits);
+        ((value << shift) as i64) >> shift
+    }
+}
+
+/// Extract an integer operand: its raw bits plus, for a sized value, its
+/// `(bits, signed)`. Returns `None` for non-integers.
+fn as_int_operand(v: &Value) -> Option<(u64, Option<(u8, bool)>)> {
+    match v {
+        Value::Int(n) => Some((*n, None)),
+        Value::IntN {
+            value,
+            bits,
+            signed,
+        } => Some((*value, Some((*bits, *signed)))),
+        _ => None,
+    }
+}
+
+/// Width-aware integer binop for the numeric tower. Called when at least one
+/// operand is a `Value::IntN`. The sized operand fixes the width; a plain `Int`
+/// operand is reduced to that width. Add/Sub/Mul wrap modulo `2^bits`;
+/// Div/Mod/comparison respect signedness. Returns `None` for non-integer
+/// operands or the boolean-only `And`/`Or` (so the caller's unsized arms — and
+/// their generic type-mismatch error — still apply).
+fn eval_sized_int_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
+    let (a_raw, aw) = as_int_operand(l)?;
+    let (b_raw, bw) = as_int_operand(r)?;
+    let (bits, signed) = aw.or(bw)?; // at least one operand is sized (caller guard)
+    let a = mask_width(a_raw, bits);
+    let b = mask_width(b_raw, bits);
+    let sized = |v: u64| Value::IntN {
+        value: mask_width(v, bits),
+        bits,
+        signed,
+    };
+    let res = match op {
+        BinOp::Add => Ok(sized(a.wrapping_add(b))),
+        BinOp::Sub => Ok(sized(a.wrapping_sub(b))),
+        BinOp::Mul => Ok(sized(a.wrapping_mul(b))),
+        BinOp::Div => {
+            if b == 0 {
+                return Some(Err(Error::DivisionByZero));
+            }
+            if signed {
+                Ok(sized(sext_width(a, bits).wrapping_div(sext_width(b, bits)) as u64))
+            } else {
+                Ok(sized(a / b))
+            }
+        }
+        BinOp::Mod => {
+            if b == 0 {
+                return Some(Err(Error::DivisionByZero));
+            }
+            if signed {
+                Ok(sized(sext_width(a, bits).wrapping_rem(sext_width(b, bits)) as u64))
+            } else {
+                Ok(sized(a % b))
+            }
+        }
+        BinOp::Eq => Ok(Value::Bool(a == b)),
+        BinOp::Ne => Ok(Value::Bool(a != b)),
+        BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
+            let ord = if signed {
+                sext_width(a, bits).cmp(&sext_width(b, bits))
+            } else {
+                a.cmp(&b)
+            };
+            let truth = match op {
+                BinOp::Lt => ord.is_lt(),
+                BinOp::Le => ord.is_le(),
+                BinOp::Gt => ord.is_gt(),
+                _ => ord.is_ge(),
+            };
+            Ok(Value::Bool(truth))
+        }
+        BinOp::And | BinOp::Or => return None, // boolean-only operators
+    };
+    Some(res)
+}
+
 /// FNV-1a hash: feed bytes from a Value into the running hash state.
 fn fnv1a_feed(hash: &mut u64, val: &Value) {
     const FNV_PRIME: u64 = 1_099_511_628_211;
@@ -1109,6 +1229,24 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
                 *hash = hash.wrapping_mul(FNV_PRIME);
                 n >>= 8;
             }
+        }
+        Value::IntN {
+            value,
+            bits,
+            signed,
+        } => {
+            // Feed the value bytes like `Int`, then the width/signedness so
+            // distinct sized types (e.g. `42u8` vs `42u16`) hash distinctly.
+            let mut n = *value;
+            for _ in 0..8 {
+                *hash ^= n & 0xff;
+                *hash = hash.wrapping_mul(FNV_PRIME);
+                n >>= 8;
+            }
+            *hash ^= u64::from(*bits);
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            *hash ^= u64::from(*signed);
+            *hash = hash.wrapping_mul(FNV_PRIME);
         }
         Value::String(s) => {
             for b in s.bytes() {
@@ -2783,5 +2921,78 @@ mod tests {
     fn test_top_level_return() {
         // A `pulang` at top level (outside any function) yields its value.
         assert_eq!(run_src("pulang 42"), Value::Int(42));
+    }
+
+    // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──
+
+    fn iu(value: u64, bits: u8) -> Value {
+        Value::IntN {
+            value,
+            bits,
+            signed: false,
+        }
+    }
+    fn is(value: u64, bits: u8) -> Value {
+        Value::IntN {
+            value,
+            bits,
+            signed: true,
+        }
+    }
+
+    #[test]
+    fn numeric_tower_sized_literal_evaluates_with_width() {
+        assert_eq!(run_src("pulang 42u8"), iu(42, 8));
+        assert_eq!(run_src("pulang 1000u16"), iu(1000, 16));
+    }
+
+    #[test]
+    fn numeric_tower_unsigned_arithmetic_wraps_at_width() {
+        // 200 + 100 = 300 ≡ 44 (mod 2^8)
+        assert_eq!(run_src("pulang 200u8 + 100u8"), iu(44, 8));
+        // 0 - 1 underflows to 255
+        assert_eq!(run_src("pulang 0u8 - 1u8"), iu(255, 8));
+        // u16 boundary
+        assert_eq!(run_src("pulang 65535u16 + 1u16"), iu(0, 16));
+        // u32 wrap: (4e9 + 1e9) mod 2^32 = 705_032_704
+        assert_eq!(
+            run_src("pulang 4000000000u32 + 1000000000u32"),
+            iu(705_032_704, 32)
+        );
+    }
+
+    #[test]
+    fn numeric_tower_signed_overflow_wraps_to_negative() {
+        // 127 + 1 overflows i8 to -128 (two's-complement bit pattern 0x80 = 128)
+        let v = run_src("pulang 127i8 + 1i8");
+        assert_eq!(v, is(128, 8));
+        assert_eq!(format!("{v}"), "-128");
+    }
+
+    #[test]
+    fn numeric_tower_signed_division_truncates_toward_zero() {
+        // (127i8 + 1i8) = -128; -128 / 2 = -64 (bit pattern 0xC0 = 192)
+        let v = run_src("pulang (127i8 + 1i8) / 2i8");
+        assert_eq!(v, is(192, 8));
+        assert_eq!(format!("{v}"), "-64");
+    }
+
+    #[test]
+    fn numeric_tower_signed_comparison_respects_sign() {
+        // -128 < 5 is true (an unsigned compare of 128 vs 5 would be false)
+        assert_eq!(run_src("pulang (127i8 + 1i8) < 5i8"), Value::Bool(true));
+    }
+
+    #[test]
+    fn numeric_tower_plain_int_operand_adapts_to_width() {
+        // The plain `Int` literal `10` adopts the u8 width: 260 ≡ 4 (mod 2^8)
+        assert_eq!(run_src("pulang 250u8 + 10"), iu(4, 8));
+    }
+
+    #[test]
+    fn numeric_tower_display_is_signedness_aware() {
+        assert_eq!(format!("{}", iu(255, 8)), "255");
+        assert_eq!(format!("{}", is(128, 8)), "-128");
+        assert_eq!(format!("{}", is(7, 32)), "7");
     }
 }

@@ -34,6 +34,43 @@ fn test_parse_literals() {
 }
 
 #[test]
+fn test_parse_sized_int_literals() {
+    // Width suffixes produce the distinct `Expr::IntN` literal (numeric tower).
+    let cases = [
+        ("42u8", 42, 8, false),
+        ("255u8", 255, 8, false),
+        ("1000u16", 1000, 16, false),
+        ("7i32", 7, 32, true),
+        ("9000000000i64", 9_000_000_000, 64, true),
+    ];
+    for (src, value, bits, signed) in cases {
+        let mut p = Parser::new(src);
+        assert_eq!(
+            p.parse_expr().unwrap(),
+            Expr::IntN {
+                value,
+                bits,
+                signed
+            },
+            "{src} should parse as a sized integer literal"
+        );
+    }
+    // Digit separators are stripped before the value is parsed.
+    let mut p = Parser::new("1_000u32");
+    assert_eq!(
+        p.parse_expr().unwrap(),
+        Expr::IntN {
+            value: 1000,
+            bits: 32,
+            signed: false
+        }
+    );
+    // No suffix still parses as the default unsized `Expr::Int`.
+    let mut p = Parser::new("42");
+    assert_eq!(p.parse_expr().unwrap(), Expr::Int(42));
+}
+
+#[test]
 fn test_parse_int_zero() {
     // Input: Zero integer
     // Expected: Expr::Int(0)

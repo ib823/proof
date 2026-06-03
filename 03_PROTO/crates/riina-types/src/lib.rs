@@ -875,6 +875,14 @@ pub enum Expr {
     Unit,
     Bool(bool),
     Int(u64), // Using u64 to represent nat/int
+    /// Sized integer literal: `42u8`, `7i32`. The numeric-tower counterpart of
+    /// `Int`, carrying the bit width and signedness so it types as the distinct
+    /// `Ty::IntN { bits, signed }` (not the default `Ty::Int`) and so arithmetic
+    /// wraps at the declared width. `value` holds the lexed magnitude already
+    /// reduced modulo `2^bits` (a leading `-` is a separate unary-minus token, so
+    /// `-128i8` is `Neg(IntN{value:128,..})`). Kept as an additive variant so the
+    /// hundreds of existing `Int(_)` sites are untouched.
+    IntN { value: u64, bits: u8, signed: bool },
     String(String),
     Var(Ident),
 

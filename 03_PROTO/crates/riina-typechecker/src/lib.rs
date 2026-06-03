@@ -2536,6 +2536,54 @@ fn strip_constant_time(ty: &Ty) -> (&Ty, bool) {
     }
 }
 
+/// Result type of integer arithmetic over two operand types (numeric tower).
+///
+/// A sized operand (`Ty::IntN`) makes the result that same sized type, so the
+/// width propagates through `+`/`-`/`*`/`/`/`%` and the codegen/interpreter can
+/// wrap at the declared width. A plain `Int` literal adapts to the sized operand
+/// (`x: u8 + 1` is `u8`). Two sized operands must agree on width **and**
+/// signedness — `u8 + u16` is rejected (returns `None`), unlike the looser
+/// `Int`↔`IntN` initialiser compatibility, because silent width mixing would
+/// lose bits. Returns `None` when either operand is not an integer.
+fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
+    match (a, b) {
+        (
+            Ty::IntN {
+                bits: b1,
+                signed: s1,
+            },
+            Ty::IntN {
+                bits: b2,
+                signed: s2,
+            },
+        ) => (b1 == b2 && s1 == s2).then_some(Ty::IntN {
+            bits: *b1,
+            signed: *s1,
+        }),
+        (Ty::IntN { bits, signed }, Ty::Int) | (Ty::Int, Ty::IntN { bits, signed }) => {
+            Some(Ty::IntN {
+                bits: *bits,
+                signed: *signed,
+            })
+        }
+        (Ty::Int, Ty::Int) => Some(Ty::Int),
+        _ => None,
+    }
+}
+
+/// True when both operands are sized integers (`Ty::IntN`) but disagree on width
+/// or signedness (e.g. `u8` and `u16`). Such a mix is rejected by arithmetic to
+/// avoid silently dropping bits; a sized type mixed with a plain `Int` is fine.
+fn mixed_int_width(a: &Ty, b: &Ty) -> bool {
+    matches!(
+        (a, b),
+        (
+            Ty::IntN { bits: b1, signed: s1 },
+            Ty::IntN { bits: b2, signed: s2 },
+        ) if b1 != b2 || s1 != s2
+    )
+}
+
 // ============================================================================
 // SESSION TYPE HELPERS (JALINAN Phase 6)
 // ============================================================================
@@ -2701,6 +2749,15 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::Unit => Ok((Ty::Unit, Effect::Pure)),
         Expr::Bool(_) => Ok((Ty::Bool, Effect::Pure)),
         Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
+        // Sized integer literal `42u8` types as the distinct `Ty::IntN`, not the
+        // default `Ty::Int` (numeric tower).
+        Expr::IntN { bits, signed, .. } => Ok((
+            Ty::IntN {
+                bits: *bits,
+                signed: *signed,
+            },
+            Effect::Pure,
+        )),
         Expr::String(_) => Ok((Ty::String, Effect::Pure)),
 
         // List literal `[e1, e2, ...]`: every element must share a type; the
@@ -3314,7 +3371,19 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     } else if types_compatible(&Ty::Int, inner1)
                         && types_compatible(&Ty::Int, inner2)
                     {
-                        Ok((label_result(Ty::Int), eff))
+                        // Numeric tower: a sized operand propagates its width to the
+                        // result; a plain `Int` literal adapts. Two sized operands of
+                        // different width/signedness are rejected (silent bit loss).
+                        if mixed_int_width(inner1, inner2) {
+                            return Err(TypeError::TypeMismatch {
+                                expected: inner1.clone(),
+                                found: inner2.clone(),
+                            });
+                        }
+                        Ok((
+                            label_result(int_arith_result(inner1, inner2).unwrap_or(Ty::Int)),
+                            eff,
+                        ))
                     } else if types_compatible(&Ty::String, inner1)
                         && types_compatible(&Ty::String, inner2)
                     {
@@ -3363,7 +3432,18 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                             found: inner2.clone(),
                         });
                     }
-                    Ok((label_result(Ty::Int), eff))
+                    // Numeric tower: reject mixing two different sized widths;
+                    // otherwise propagate the sized width (a plain `Int` adapts).
+                    if mixed_int_width(inner1, inner2) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: inner1.clone(),
+                            found: inner2.clone(),
+                        });
+                    }
+                    Ok((
+                        label_result(int_arith_result(inner1, inner2).unwrap_or(Ty::Int)),
+                        eff,
+                    ))
                 }
                 BinOp::Eq | BinOp::Ne => {
                     if !types_compatible(inner1, inner2) {
@@ -3689,6 +3769,14 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         Expr::Unit => Ok((Ty::Unit, Effect::Pure)),
         Expr::Bool(_) => Ok((Ty::Bool, Effect::Pure)),
         Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
+        // Sized integer literal `42u8` types as the distinct `Ty::IntN` (numeric tower).
+        Expr::IntN { bits, signed, .. } => Ok((
+            Ty::IntN {
+                bits: *bits,
+                signed: *signed,
+            },
+            Effect::Pure,
+        )),
         Expr::String(_) => Ok((Ty::String, Effect::Pure)),
         // List literal `[e1, ...]` — all elements share a type; result `List<T>`.
         Expr::ListLit(elems) => {

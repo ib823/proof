@@ -221,9 +221,12 @@ impl VarEnv {
 /// A variable is free if it is referenced but not bound within the expression.
 fn free_vars(expr: &Expr) -> HashSet<Ident> {
     match expr {
-        Expr::Unit | Expr::Bool(_) | Expr::Int(_) | Expr::String(_) | Expr::Loc(_) => {
-            HashSet::new()
-        }
+        Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::IntN { .. }
+        | Expr::String(_)
+        | Expr::Loc(_) => HashSet::new(),
         Expr::Var(name) => {
             let mut s = HashSet::new();
             s.insert(name.clone());
@@ -692,6 +695,10 @@ impl Lower {
             Expr::Unit => Ty::Unit,
             Expr::Bool(_) => Ty::Bool,
             Expr::Int(_) => Ty::Int,
+            Expr::IntN { bits, signed, .. } => Ty::IntN {
+                bits: *bits,
+                signed: *signed,
+            },
             Expr::String(_) => Ty::String,
             Expr::Pair(e1, e2) => {
                 Ty::Prod(Box::new(self.infer_type(e1)), Box::new(self.infer_type(e2)))
@@ -758,7 +765,19 @@ impl Lower {
             Expr::Loc(_) => Ty::Unit, // Runtime-only; actual type from store
             Expr::BinOp(op, lhs, rhs) => {
                 let base = match op {
-                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => Ty::Int,
+                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
+                        // Numeric tower: a sized operand propagates its width to the
+                        // result so the emitter masks arithmetic at that width
+                        // (mirrors the typechecker's `int_arith_result`). A plain
+                        // `Int` operand adapts; mismatched sized widths are already
+                        // rejected by the typechecker before lowering.
+                        match (self.infer_type(lhs), self.infer_type(rhs)) {
+                            (Ty::IntN { bits, signed }, _) | (_, Ty::IntN { bits, signed }) => {
+                                Ty::IntN { bits, signed }
+                            }
+                            _ => Ty::Int,
+                        }
+                    }
                     BinOp::Eq
                     | BinOp::Ne
                     | BinOp::Lt
@@ -847,9 +866,12 @@ impl Lower {
     /// Infer the effect of an expression
     fn infer_effect(&self, expr: &Expr) -> Effect {
         match expr {
-            Expr::Unit | Expr::Bool(_) | Expr::Int(_) | Expr::String(_) | Expr::Var(_) => {
-                Effect::Pure
-            }
+            Expr::Unit
+            | Expr::Bool(_)
+            | Expr::Int(_)
+            | Expr::IntN { .. }
+            | Expr::String(_)
+            | Expr::Var(_) => Effect::Pure,
             Expr::Lam(_, _, _) => Effect::Pure,
             Expr::LetRec(_, _, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
             Expr::Pair(e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
@@ -1055,6 +1077,30 @@ impl Lower {
                 SecurityLevel::Public,
                 Effect::Pure,
             )),
+
+            // Sized integer literal: emit the (in-range) magnitude as a plain int
+            // constant but annotate the instruction with the distinct `Ty::IntN`
+            // so the emitter masks arithmetic on it at the declared width.
+            Expr::IntN {
+                value,
+                bits,
+                signed,
+            } => {
+                let masked = if *bits >= 64 {
+                    *value
+                } else {
+                    *value & ((1u64 << *bits) - 1)
+                };
+                Ok(self.emit(
+                    Instruction::Const(Constant::Int(masked)),
+                    Ty::IntN {
+                        bits: *bits,
+                        signed: *signed,
+                    },
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
 
             Expr::String(s) => Ok(self.emit(
                 Instruction::Const(Constant::String(s.clone())),

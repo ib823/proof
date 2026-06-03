@@ -904,6 +904,114 @@ mod formalized_tests {
         );
     }
 
+    // ── Numeric tower: sized integer literals & width-aware arithmetic ──
+
+    fn u8n(value: u64) -> Expr {
+        Expr::IntN {
+            value,
+            bits: 8,
+            signed: false,
+        }
+    }
+
+    #[test]
+    fn numeric_tower_sized_literal_types_as_intn() {
+        let mut ctx = TypingContext::new();
+        // `42u8` types as the distinct sized type, not the default `Ty::Int`.
+        assert_eq!(
+            type_check_full(&mut ctx, &u8n(42)).unwrap(),
+            (
+                Ty::IntN {
+                    bits: 8,
+                    signed: false
+                },
+                Effect::Pure
+            )
+        );
+        assert_eq!(
+            type_check_full(
+                &mut ctx,
+                &Expr::IntN {
+                    value: 7,
+                    bits: 32,
+                    signed: true
+                }
+            )
+            .unwrap(),
+            (
+                Ty::IntN {
+                    bits: 32,
+                    signed: true
+                },
+                Effect::Pure
+            )
+        );
+    }
+
+    #[test]
+    fn numeric_tower_arithmetic_propagates_width() {
+        let mut ctx = TypingContext::new();
+        // `200u8 + 100u8` stays `u8` (width propagates through arithmetic).
+        for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div, BinOp::Mod] {
+            let e = Expr::BinOp(op, Box::new(u8n(200)), Box::new(u8n(100)));
+            assert_eq!(
+                type_check_full(&mut ctx, &e).unwrap().0,
+                Ty::IntN {
+                    bits: 8,
+                    signed: false
+                },
+                "operator {op:?} should preserve the u8 width"
+            );
+        }
+    }
+
+    #[test]
+    fn numeric_tower_plain_int_adapts_to_sized() {
+        let mut ctx = TypingContext::new();
+        // A plain `Int` literal mixed with a sized operand adopts the width.
+        let lhs = Expr::BinOp(BinOp::Add, Box::new(u8n(200)), Box::new(Expr::Int(100)));
+        let rhs = Expr::BinOp(BinOp::Add, Box::new(Expr::Int(100)), Box::new(u8n(200)));
+        for e in [lhs, rhs] {
+            assert_eq!(
+                type_check_full(&mut ctx, &e).unwrap().0,
+                Ty::IntN {
+                    bits: 8,
+                    signed: false
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn numeric_tower_mixed_widths_are_rejected() {
+        let mut ctx = TypingContext::new();
+        // `u8 + u16` must be rejected — silent bit mixing is unsound.
+        let e = Expr::BinOp(
+            BinOp::Add,
+            Box::new(u8n(200)),
+            Box::new(Expr::IntN {
+                value: 100,
+                bits: 16,
+                signed: false,
+            }),
+        );
+        assert!(matches!(
+            type_check_full(&mut ctx, &e),
+            Err(crate::TypeError::TypeMismatch { .. })
+        ));
+        // Same width but different signedness is also a mix.
+        let e2 = Expr::BinOp(
+            BinOp::Mul,
+            Box::new(u8n(5)),
+            Box::new(Expr::IntN {
+                value: 5,
+                bits: 8,
+                signed: true,
+            }),
+        );
+        assert!(type_check_full(&mut ctx, &e2).is_err());
+    }
+
     #[test]
     fn test_full_var() {
         let mut ctx = TypingContext::new();

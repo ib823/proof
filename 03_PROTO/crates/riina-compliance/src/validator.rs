@@ -27,6 +27,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         Expr::Unit
         | Expr::Bool(_)
         | Expr::Int(_)
+        | Expr::IntN { .. }
         | Expr::String(_)
         | Expr::Var(_)
         | Expr::Loc(_) => {}
