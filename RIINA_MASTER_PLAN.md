@@ -2399,7 +2399,15 @@ Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2709 / 0**, `car
 non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
 here; counts preserved, not re-derived).
 
-**Gate C landed this session (2026-06-03, third):**
+**Gate C status (2026-06-03):** stdlib hardening is largely complete — the numeric tower
+(to 32-bit, both signednesses, C/WASM/interp + a Coq model), **collections** (list/map/set),
+**strings** (core algorithms), **math**, **time**, **file-I/O taint**, and **OS/system**
+effect-typing are all **verified or audited** (each backed by a Coq model and/or
+property/parity tests). What remains is genuinely multi-session: NFC/confusables, true-64-bit
+WASM, and BigInt/decimal (see *Next steps*). New sessions: read the snapshot above, then pick a
+*Next step* — don't redo the landed items below.
+
+**Gate C work landed across the day's sessions (2026-06-03):**
 1. **Gate D2 — prover-honesty retraction (DONE)**: the social card `og-image.svg` no longer
    says "10 independent provers"; each generated lane `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,
    kani,tv}/` carries a `GENERATED-CORPUS-NOT-VERIFIED.md` notice. (README/website/metrics were
@@ -2485,7 +2493,8 @@ The Coq read/write model `VerifiedFileSystem.v` (109 Qed) already exists — do 
    2026-06-03). The remaining, deeper connection is the **access-control** model (permissions
    `can_read`/`can_write`, journaling, quotas) which the prototype's capability+taint I/O does not
    yet enforce. Also the stdlib rows still "Partial": strings (NFC/confusables — a multi-session
-   Unicode-data effort), collections benchmarks (criterion harness), OS effect-typing.
+   Unicode-data effort) and collections benchmarks (a criterion harness; the repo has no bench
+   infra yet, and benchmarks are not a verification gate).
 4. **Gate D1 (earn the prover lanes)** or other gates (E test-infra, F reproducibility, G
    security posture) — see their Part 11 sections; mostly multi-session.
 5. **Owner-gated (not a session task):** external crypto audit (REQ-28, Gate C/G exit); a
