@@ -21,7 +21,7 @@ other lanes were machine-GENERATED from the Coq sources (via
 unproven placeholders or single small smoke artifacts. Do NOT cite their raw
 theorem counts as "verified theorems."
 
-- Coq: 12,437 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 313 active .v files.
+- Coq: 12,456 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 314 active .v files.
   Caveat: 32 active `Parameter` declarations are logically equivalent to axioms
   (the propositional ones model the trusted hardware interface) — these are the de-facto trusted assumptions.
 - Lean 4: 12,576 theorem/lemma declarations, but **only 215 across 7 files

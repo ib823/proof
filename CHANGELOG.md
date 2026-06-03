@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,437 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2703 Rust tests
+**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2706 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Math — verified laws for the numeric builtins**: new Coq model
+  `02_FORMAL/coq/foundations/VerifiedMath.v` (19 Qed, 0 Admitted/Axiom/Abort;
+  active build 313→314 files, 12,437→12,456 Qed) proves, over `nat`, the laws of
+  the `matematik.rs` builtins: **min/max** (commutativity, idempotence, the order
+  bounds, and `min a b + max a b = a + b`), **gcd** (divides both, commutative,
+  `gcd a 0 = a`), and **pow** (`b^0=1`, `b^1=b`, `b^(m+n)=b^m·b^n`). `abs`
+  (identity on unsigned `Nombor`) and `sqrt` (an `f64` floor) are intentionally
+  not modelled. +3 Rust property tests in `matematik.rs` confirm the running
+  `min`/`max`/`gcd`/`lcm`/`pow`/`abs`/`rem` builtins compute exactly those `Nat`
+  functions over a seeded sweep, plus the composite identities `min+max=a+b` and
+  `gcd·lcm=a·b`. Mirrors `VerifiedList.v`/`VerifiedMapSet.v`/`VerifiedString.v`.
+  `cargo test --all` 2706/0, clippy 0; differential unchanged (32/32).
 - **Strings — verified core string algorithms**: new Coq model
   `02_FORMAL/coq/foundations/VerifiedString.v` (11 Qed, 0 Admitted/Axiom/Abort;
   active build 312→313 files, 12,426→12,437 Qed) models a string as a list of
@@ -502,7 +514,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,437 Qed proofs
+- Active Coq build now at 12,456 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

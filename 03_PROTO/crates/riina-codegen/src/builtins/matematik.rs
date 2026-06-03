@@ -213,4 +213,92 @@ mod tests {
             _ => panic!("expected int"),
         }
     }
+
+    // ── Property tests: the math builtins satisfy the laws proven in
+    // `02_FORMAL/coq/foundations/VerifiedMath.v`, and the running impls compute
+    // exactly the `Nat` functions whose laws are proved there. Dependency-free LCG.
+
+    fn lcg(state: &mut u64) -> u64 {
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
+        *state >> 33
+    }
+    fn int_of(v: Value) -> u64 {
+        match v {
+            Value::Int(n) => n,
+            o => panic!("expected Int, got {o:?}"),
+        }
+    }
+    fn call2(name: &str, a: u64, b: u64) -> u64 {
+        int_of(apply(name, &pair_i(a, b)).unwrap().unwrap())
+    }
+    fn call1(name: &str, a: u64) -> u64 {
+        int_of(apply(name, &Value::Int(a)).unwrap().unwrap())
+    }
+
+    #[test]
+    fn prop_min_max_laws() {
+        // VerifiedMath.v: min_comm/max_comm, the order bounds, min_max_sum.
+        let mut st: u64 = 0x1234_5678_9ABC_DEF0;
+        for _ in 0..300 {
+            let a = lcg(&mut st) % 1000;
+            let b = lcg(&mut st) % 1000;
+            let mn = call2("minimum", a, b);
+            let mx = call2("maksimum", a, b);
+            assert_eq!(mn, a.min(b), "min computes Nat.min");
+            assert_eq!(mx, a.max(b), "max computes Nat.max");
+            assert!(mn <= a && mn <= b && a <= mx && b <= mx, "order bounds");
+            assert_eq!(mn + mx, a + b, "min_max_sum");
+            assert_eq!(call2("minimum", a, b), call2("minimum", b, a), "min_comm");
+            assert_eq!(call2("maksimum", a, b), call2("maksimum", b, a), "max_comm");
+        }
+    }
+
+    #[test]
+    fn prop_gcd_lcm_laws() {
+        // VerifiedMath.v: gcd divides both, gcd_comm, gcd_zero_right; + gcd·lcm = a·b.
+        fn rust_gcd(mut a: u64, mut b: u64) -> u64 {
+            while b != 0 {
+                let t = b;
+                b = a % b;
+                a = t;
+            }
+            a
+        }
+        let mut st: u64 = 0xCAFE_BABE_0000_0001;
+        for _ in 0..300 {
+            let a = lcg(&mut st) % 500 + 1;
+            let b = lcg(&mut st) % 500 + 1;
+            let g = call2("gcd", a, b);
+            assert_eq!(g, rust_gcd(a, b), "gcd computes the Euclidean gcd");
+            assert_eq!(a % g, 0, "gcd divides a");
+            assert_eq!(b % g, 0, "gcd divides b");
+            assert_eq!(call2("gcd", a, b), call2("gcd", b, a), "gcd_comm");
+            assert_eq!(call2("gcd", a, 0), a, "gcd_zero_right");
+            assert_eq!(g * call2("lcm", a, b), a * b, "gcd·lcm = a·b");
+        }
+    }
+
+    #[test]
+    fn prop_pow_abs_rem_laws() {
+        // VerifiedMath.v: pow_zero/pow_one/pow_add; + abs identity & rem = a%b.
+        let mut st: u64 = 0x0F0F_0F0F_F0F0_F0F0;
+        for _ in 0..200 {
+            let base = lcg(&mut st) % 10;
+            let m = lcg(&mut st) % 6;
+            let n = lcg(&mut st) % 6;
+            assert_eq!(call2("kuasa", base, 0), 1, "pow_zero");
+            assert_eq!(call2("kuasa", base, 1), base, "pow_one");
+            assert_eq!(
+                call2("kuasa", base, m + n),
+                call2("kuasa", base, m) * call2("kuasa", base, n),
+                "pow_add"
+            );
+            let x = lcg(&mut st);
+            assert_eq!(call1("mutlak", x), x, "abs is identity on u64");
+            let d = lcg(&mut st) % 100 + 1;
+            assert_eq!(call2("baki", x, d), x % d, "rem = a % b");
+        }
+    }
 }

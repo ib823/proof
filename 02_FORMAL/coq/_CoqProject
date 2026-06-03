@@ -10,6 +10,7 @@ foundations/SizedInt.v
 foundations/VerifiedList.v
 foundations/VerifiedMapSet.v
 foundations/VerifiedString.v
+foundations/VerifiedMath.v
 
 # Type System
 type_system/Progress.v
