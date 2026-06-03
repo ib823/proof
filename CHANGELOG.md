@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2706 Rust tests
+**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2709 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **OS/system effect-typing audit ⇄ Coq injection-prevention parity**: audited the
+  system builtins and confirmed the taint→sanitize→sink discipline is sound and
+  precise — inputs (`read_line`) are `System` + `Tainted<_, UserInput>`,
+  sanitizers (`sanitize_*`) are **`Pure`** (`Tainted → Sanitized<_, k>`), and
+  sinks (`sql_execute`/`js_eval`/`shell_exec`/`ldap_search`) are `System` and
+  *require* their specific `Sanitized<_, k>`. +3 typechecker tests lock this in,
+  mirroring the Coq `TaintSystemCorrectness.v` `{sql,command,ldap,xss_js}_
+  injection_impossible` theorems on the running typechecker: every sink rejects a
+  tainted argument (`TaintViolation`), a wrongly-sanitised one (`SanitizerMismatch`)
+  and a raw `String` (`TypeMismatch`), and accepts only its matching sanitiser's
+  output; the read→sanitise→sink pipeline composes while skipping the sanitiser is
+  a `TaintViolation`. The taint-source taxonomy was already verified against the
+  Coq model (FS slice). No code change — the effect-typing was already correct;
+  the value is the regression-proofing parity suite. `cargo test --all` 2709/0,
+  clippy 0; differential unchanged (32/32).
 - **Math — verified laws for the numeric builtins**: new Coq model
   `02_FORMAL/coq/foundations/VerifiedMath.v` (19 Qed, 0 Admitted/Axiom/Abort;
   active build 313→314 files, 12,437→12,456 Qed) proves, over `nat`, the laws of

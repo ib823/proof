@@ -2960,6 +2960,120 @@ mod formalized_tests {
         );
     }
 
+    // ── OS/system effect-typing audit ⇄ Coq injection-prevention theorems ──
+    // The system builtins implement a taint → sanitize → sink pipeline:
+    //   * inputs (`read_line`)          : Effect::System, result Tainted<_, _>
+    //   * sanitizers (`sanitize_*`)     : Effect::Pure, Tainted → Sanitized<_, k>
+    //   * sinks (`sql_execute`, …)      : Effect::System, REQUIRE Sanitized<_, k>
+    // These tests assert that discipline on the running typechecker, mirroring the
+    // mechanized `TaintSystemCorrectness.v` theorems {sql,command,ldap,xss_js}_
+    // injection_impossible (a tainted/unsanitised value cannot reach a sink).
+
+    fn read_line_tainted() -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        )
+    }
+    fn sanitize_with(name: &str) -> Expr {
+        Expr::App(
+            Box::new(Expr::Var(name.to_string())),
+            Box::new(read_line_tainted()),
+        )
+    }
+
+    #[test]
+    fn taint_injection_prevention_parity_all_sinks() {
+        let ctx = register_builtin_types(&Context::new());
+        // (sink, matching sanitizer, a NON-matching sanitizer)
+        let sinks = [
+            ("sql_execute", "sanitize_sql", "sanitize_command"),
+            ("js_eval", "sanitize_js", "sanitize_sql"),
+            ("shell_exec", "sanitize_command", "sanitize_sql"),
+            ("ldap_search", "sanitize_ldap", "sanitize_sql"),
+        ];
+        for (sink, ok_san, wrong_san) in sinks {
+            let app = |arg: Expr| Expr::App(Box::new(Expr::Var(sink.to_string())), Box::new(arg));
+            // tainted → sink: rejected as a TaintViolation (injection_impossible)
+            assert!(
+                matches!(type_check(&ctx, &app(read_line_tainted())), Err(TypeError::TaintViolation { .. })),
+                "{sink}: tainted input must be a TaintViolation (injection_impossible)"
+            );
+            // raw String → sink: rejected (a sink requires Sanitized, not a bare String)
+            assert!(
+                matches!(type_check(&ctx, &app(Expr::String("raw".to_string()))), Err(TypeError::TypeMismatch { .. })),
+                "{sink}: a raw String must be rejected"
+            );
+            // wrong sanitizer → sink: rejected as a SanitizerMismatch (each sink needs ITS sanitizer)
+            assert!(
+                matches!(type_check(&ctx, &app(sanitize_with(wrong_san))), Err(TypeError::SanitizerMismatch { .. })),
+                "{sink}: a {wrong_san} value must be a SanitizerMismatch"
+            );
+            // matching sanitizer → sink: accepted, and the sink is a System effect
+            let (_, eff) = type_check(&ctx, &app(sanitize_with(ok_san)))
+                .unwrap_or_else(|e| panic!("{sink}: {ok_san} output must be accepted: {e:?}"));
+            assert_eq!(eff, Effect::System, "{sink} is a System effect");
+        }
+    }
+
+    #[test]
+    fn taint_sanitizers_are_pure_and_well_typed() {
+        let ctx = register_builtin_types(&Context::new());
+        let cases = [
+            ("sanitize_sql", riina_types::Sanitizer::SqlParam),
+            ("sanitize_command", riina_types::Sanitizer::CommandEscape),
+            ("sanitize_ldap", riina_types::Sanitizer::LdapEscape),
+            ("sanitize_js", riina_types::Sanitizer::JsEscape),
+        ];
+        for (name, expect) in cases {
+            // Inspect the builtin's own function type: its *latent* effect is Pure
+            // (the effect of an application would also join the argument's effect).
+            let (ty, _) = type_check(&ctx, &Expr::Var(name.to_string())).unwrap();
+            match ty {
+                Ty::Fn(_, result, latent) => {
+                    assert_eq!(latent, Effect::Pure, "{name} must be a Pure transformation");
+                    assert!(
+                        matches!(*result, Ty::Sanitized(_, ref s) if *s == expect),
+                        "{name} -> Sanitized<_, {expect:?}>, got {result:?}"
+                    );
+                }
+                other => panic!("{name} should be a function, got {other:?}"),
+            }
+            // And it does accept a tainted input (Tainted -> Sanitized).
+            assert!(type_check(&ctx, &sanitize_with(name)).is_ok(), "{name} accepts tainted input");
+        }
+    }
+
+    #[test]
+    fn taint_input_is_system_tainted_and_the_pipeline_composes() {
+        let ctx = register_builtin_types(&Context::new());
+        // read_line: System effect, Tainted<_, UserInput>.
+        let (ty, eff) = type_check(&ctx, &read_line_tainted()).unwrap();
+        assert_eq!(eff, Effect::System, "read_line is a System effect");
+        assert!(
+            matches!(ty, Ty::Tainted(_, riina_types::TaintSource::UserInput)),
+            "read_line -> Tainted<_, UserInput>, got {ty:?}"
+        );
+        // End-to-end: read → sanitize → sink typechecks…
+        let pipeline = Expr::App(
+            Box::new(Expr::Var("sql_execute".to_string())),
+            Box::new(sanitize_with("sanitize_sql")),
+        );
+        assert!(
+            type_check(&ctx, &pipeline).is_ok(),
+            "read -> sanitize -> sink pipeline must typecheck"
+        );
+        // …but skipping the sanitizer is rejected.
+        let skip = Expr::App(
+            Box::new(Expr::Var("sql_execute".to_string())),
+            Box::new(read_line_tainted()),
+        );
+        assert!(
+            matches!(type_check(&ctx, &skip), Err(TypeError::TaintViolation { .. })),
+            "skipping the sanitizer must be rejected (TaintViolation)"
+        );
+    }
+
     #[test]
     fn test_time_builtins_have_precise_types_and_track_effect() {
         // The applied time builtins are sound and track Effect::Time: sleep takes
