@@ -233,7 +233,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
 | Qed (archive) | 758 | Total 13,214 minus active 12,456 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
-| Compilation | PASSES | `cd 02_FORMAL/coq && make` (last verified upstream; container lacks Rocq) |
+| Compilation | PASSES | `make -C 02_FORMAL/coq` — **machine-checked in-container 2026-06-03 on Rocq 9.2** (rocq-core 9.2.0 + rocq-stdlib 9.1.0 via opam): 314 `.vo` compiled (176s under `riinac verify --full`), 0 Admitted / 0 Axiom. (The `coqc`→`rocq` rename is handled: `riinac verify` now detects the `rocq` binary.) |
 
 **Quality tiers (honest):**
 
@@ -2388,24 +2388,35 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-03, third session)
+### Session Handoff Snapshot (last updated 2026-06-03, fourth session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2709 / 0**, `cargo clippy`
-0 warnings, WASM/C `corpus_differential` **32/32** byte-equal (both-ran 32), **157** example
-`.rii` files, Coq active **314 files / 12,456 Qed / 0 Admitted / 0 Axiom / 0 Abort**
-(grep-verified; the pre-push `verify --full` rebuilds Coq). `audit-docs.sh` 0 discrepancies.
-`metrics.json` is refreshed live-accurate (tests 2709 `full_cargo_test`, Qed 12,456) — the
-non-Coq prover lanes carry a `missing_or_stale` provenance label (toolchains not provisioned
-here; counts preserved, not re-derived).
+Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2729 / 0 / 3 ignored**
+(05_TOOLING **256 / 0**), `cargo clippy --all-targets` 0 warnings (both workspaces), WASM/C
+`corpus_differential` byte-equal, **157** example `.rii` files, Coq active **314 files /
+12,456 Qed / 0 Admitted / 0 Axiom / 0 Abort** — **machine-checked in-container 2026-06-03 on
+Rocq 9.2** (rocq-core 9.2.0 + rocq-stdlib 9.1.0 via opam; 314 `.vo` in 176s under the pre-push
+`verify --full`, which now detects the `rocq` binary). `audit-docs.sh` 0 discrepancies.
+`metrics.json` tests = **2729** (`cached_verified`). The smoke toolchains (F*/TLA2Tools/Alloy/
+Isabelle) WERE provisioned this session and their smoke artifacts pass, but the published
+metrics keep the canonical Gate-D "generated/smoke-only" claim values (do NOT commit a regen
+that flips `smokeBuildOk` true on the strength of local provisioning).
 
 **Gate C status (2026-06-03):** stdlib hardening is largely complete — the numeric tower
 (to 32-bit, both signednesses, C/WASM/interp + a Coq model), **collections** (list/map/set),
 **strings** (core algorithms), **math**, **time**, **file-I/O taint**, and **OS/system**
 effect-typing are all **verified or audited** (each backed by a Coq model and/or
-property/parity tests). What remains is genuinely multi-session: NFC/confusables, true-64-bit
-WASM, and BigInt/decimal (see *Next steps*). New sessions: read the snapshot above, then pick a
-*Next step* — don't redo the landed items below.
+property/parity tests). **Fourth session (2026-06-03) added:** (a) **zero-arg-thunk runtime
+materialisation** (`baca_garisan`/`baca_baris`/`read_line` now materialise to their `Builtin`
+instead of `UnboundVariable`); (b) a **dependency-free stdlib benchmark suite**
+(`riina-codegen/benches/stdlib_bench.rs`, Law-8 compliant — no criterion; `reports/stdlib_bench.md`),
+which surfaced `set_kesatuan`/`persilangan` scaling ~O(n²); (c) the **VFS access-control model
+realised in the prototype** (`riina-os/src/vfs.rs` — a 1:1 port of `VerifiedFileSystem.v`
+access-control/quota/journal/directory/crash/atomic predicates + an enforcing in-memory
+`VirtualFs`, 18 parity tests ⇄ VFS_031..083). What remains is genuinely multi-session:
+NFC/confusables, true-64-bit WASM, BigInt/decimal, wiring `VirtualFs` into the surface `file_*`
+builtins, and a faster set union (needs `Value: Eq+Hash`). New sessions: read the snapshot
+above, then pick a *Next step* — don't redo the landed items below.
 
 **Gate C work landed across the day's sessions (2026-06-03):**
 1. **Gate D2 — prover-honesty retraction (DONE)**: the social card `og-image.svg` no longer
