@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,386 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 310 active files, 12,394 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate (`Foundations/Syntax.lean` = 187 errors, reproduced this session). See `02_FORMAL/lean/COMPILATION_STATUS.md`. **W4.4 version-bump attempt (2026-06-01):** tried bumping to Lean **4.30.0** (latest; plan estimated 4.29) — **blocked in this environment**: `elan` cannot fetch/parse `release.lean-lang.org` (network policy returns HTML, not the release manifest: "Unexpected character: H"), so only the pre-installed 4.16.0 toolchain is usable. Deferred — and per the Batch-2 finding, a version bump is the wrong lever anyway: the lane needs **elaboration fixes** (a real port), not a newer toolchain, which would only be stricter. The lane has **no external deps** (self-contained lakefile), so when a port is undertaken the toolchain itself is not the blocker. | Generated (not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep). `metrics.json` records `smokeBuildOk:false` / `compiledLemmas:0` — the `RIINA_CORE` smoke theory is **not currently verified**, and could not be re-checked 2026-06-01 (Isabelle download 403 in this environment). 12,931 = raw grep, unverified | Generated (smoke unverified) |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with **25** Z3-verified security-lattice properties (re-verified 2026-06-01 under Z3 4.8.12 AND 4.15.3: 25 unsat in both). "12,405" = raw corpus-wide asserts; rest generated. (The prior "11,843 verified" figure was a counting error.) | Smoke-verified |
@@ -225,13 +225,13 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 12,386 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 12,394 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | Parameter (active build) | 30 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, an opaque *function* not a proposition; implementation in `riina-core`, TCB until Verus harness). The former 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos`) were eliminated: `NANOS_PER_SEC` is now a concrete `Definition` (`1000*1000*1000`, sealed `Opaque` for proof performance) and `NANOS_PER_SEC_pos` a proved `Qed` lemma — removed from the TCB. All 30 remaining are part of the TCB. Audit-docs.sh pins this count. |
 | .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 13,144 minus active 12,386 |
+| Qed (archive) | 758 | Total 13,152 minus active 12,394 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` (last verified upstream; container lacks Rocq) |
 
@@ -442,7 +442,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(12,386 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(12,394 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -1022,7 +1022,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 12,386 |
+| Qed | 12,394 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |

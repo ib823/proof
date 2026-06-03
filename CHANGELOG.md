@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2664 Rust tests
+**Verification:** 12,394 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2682 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Numeric tower — Coq model** (`02_FORMAL/coq/foundations/SizedInt.v`, 8 Qed,
+  0 Admitted/Axiom/Abort): a foundational model of fixed-width (`Ty::IntN`)
+  arithmetic as residues in `Z / 2^bits Z`. Proves the ring homomorphism
+  `wrapU_add`/`_sub`/`_mul` (reducing operands vs. only the result agree — the
+  soundness fact the interpreter, C, and WASM backends rely on to compute the
+  same width-`bits` value), `wrapU_idemp`/`wrapU_range`, that the backends'
+  emitted bit-mask equals modular reduction (`land_ones_is_wrapU`:
+  `Z.land x (2^bits-1) = x mod 2^bits`), and the signed reinterpretation
+  (`toSigned`). Stdlib-backed; active Coq build now 310 files / 12,394 Qed.
+- **Multi-arg `file_write`/`file_append` — precise types**: the `(path, data)`
+  pair builtins were `Fn(Any, Any, FileSystem)`; now
+  `Fn(Prod(String, String), Unit, FileSystem)` — a `Tainted` untrusted path is
+  rejected (path-traversal prevention, like the single-path ops), data is a
+  `String` (declassify tainted content before a file sink), result `Unit`.
+  +2 tests (pair/Unit/effect; tainted-path rejection).
 - **Numeric tower — sized-integer literals + width-aware arithmetic + codegen**
   (completes two of the three "later slices" the distinct-sized-types entry below
   noted): the lexed width suffix `42u8` now becomes a distinct
