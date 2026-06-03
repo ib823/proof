@@ -36,6 +36,19 @@ pub fn register_builtins(env: &Env) -> Env {
     );
     e = e.extend("println".to_string(), Value::Builtin("cetakln".to_string()));
 
+    // Input-source thunks. A zero-arg call like `baca_garisan()` parses to a
+    // bare `Var` (the empty `()` is a no-op suffix — see the parser note in
+    // `riina-parser`), and the typechecker binds the thunk to its result type
+    // (`baca_garisan : Teks`) or to `Unit -> Tainted<Teks>` (`baca_baris` /
+    // `read_line`). Register them here so the bare `Var` *materialises* to its
+    // `Builtin` value at runtime instead of raising `UnboundVariable` — the
+    // zero-arg-thunk materialisation tracked under the Gate C "OS/system" row.
+    // (Like the `masa_*` clocks, the runtime value is the `Builtin` itself; the
+    // C/WASM backends likewise carry no side-effecting input read yet.)
+    for nm in ["baca_garisan", "baca_baris", "read_line"] {
+        e = e.extend(nm.to_string(), Value::Builtin(nm.to_string()));
+    }
+
     // String operations (existing)
     e = e.extend(
         "gabung_teks".to_string(),

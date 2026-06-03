@@ -2917,6 +2917,35 @@ mod tests {
         assert_eq!(v, Value::Int(55));
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // ZERO-ARG THUNK MATERIALISATION (Gate C "OS/system" row)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_zero_arg_thunk_materialises_to_builtin() {
+        // A bare input-source `Var` must resolve to its `Builtin` value rather
+        // than raising `UnboundVariable`. Previously `baca_garisan` was typed
+        // (`Teks`) but never registered in the interpreter env, so any
+        // reference crashed at runtime.
+        let mut interp = Interpreter::new();
+        let env = crate::builtins::register_builtins(&Env::new());
+        for nm in ["baca_garisan", "baca_baris", "read_line"] {
+            assert_eq!(
+                interp.eval_with_env(&env, &Expr::Var(nm.to_string())),
+                Ok(Value::Builtin(nm.to_string())),
+                "input-source thunk `{nm}` should materialise to its Builtin",
+            );
+        }
+    }
+
+    #[test]
+    fn test_zero_arg_call_baca_garisan_parses_and_evaluates() {
+        // End-to-end: the surface zero-arg call `baca_garisan()` (the `()` is a
+        // no-op suffix the parser drops) evaluates without `UnboundVariable`.
+        let v = run_src("baca_garisan()");
+        assert_eq!(v, Value::Builtin("baca_garisan".to_string()));
+    }
+
     #[test]
     fn test_top_level_return() {
         // A `pulang` at top level (outside any function) yields its value.
