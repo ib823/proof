@@ -391,7 +391,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,386 Qed proofs
+- Active Coq build now at 12,394 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)
