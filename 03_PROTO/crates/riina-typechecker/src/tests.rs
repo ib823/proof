@@ -2802,6 +2802,48 @@ mod formalized_tests {
         }
     }
 
+    #[test]
+    fn test_file_write_append_take_string_pair_and_return_unit() {
+        // Multi-arg `file_write`/`file_append` take a `(path, data)` pair of
+        // `String`s and return `Unit` with the FileSystem effect.
+        let ctx = register_builtin_types(&Context::new());
+        for name in ["file_write", "file_append", "fail_tulis", "fail_tambah"] {
+            let call = Expr::App(
+                Box::new(Expr::Var(name.to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::String("out.txt".to_string())),
+                    Box::new(Expr::String("data".to_string())),
+                )),
+            );
+            let (ty, eff) = type_check(&ctx, &call)
+                .unwrap_or_else(|e| panic!("{name}((String,String)) should typecheck: {e:?}"));
+            assert_eq!(ty, Ty::Unit, "{name} result type");
+            assert_eq!(eff, Effect::FileSystem, "{name} effect");
+        }
+    }
+
+    #[test]
+    fn test_file_write_rejects_tainted_path() {
+        // Path-traversal prevention: an untrusted (tainted) path in the
+        // `(path, data)` pair is rejected, just like the single-path ops.
+        let ctx = register_builtin_types(&Context::new());
+        let tainted_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        );
+        let call = Expr::App(
+            Box::new(Expr::Var("file_write".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(tainted_path),
+                Box::new(Expr::String("data".to_string())),
+            )),
+        );
+        assert!(
+            matches!(type_check(&ctx, &call), Err(TypeError::TypeMismatch { .. })),
+            "a tainted path to file_write must be rejected (path traversal)"
+        );
+    }
+
     // ── 6c: SSRF (CWE-918) ──
 
     #[test]

@@ -1006,9 +1006,17 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
-    // Write/append take (path, data) — multi-arg; precise typing is a later slice.
+    // Write/append take a `(path, data)` pair (the runtime `extract_pair_strings`
+    // and the C `(Teks, Teks) -> ()` shape). Precise typing: the **path** is a
+    // plain `String` so a `Tainted` untrusted path is rejected (path-traversal
+    // prevention, like the single-path ops), the **data** is a `String` (declassify
+    // tainted content before writing it to a sink), and the result is `Unit`.
     for (bm, en) in &[("fail_tulis", "file_write"), ("fail_tambah", "file_append")] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::FileSystem);
+        let ty = Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+            Box::new(Ty::Unit),
+            Effect::FileSystem,
+        );
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
