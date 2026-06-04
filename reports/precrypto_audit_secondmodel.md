@@ -148,10 +148,15 @@ Reductions (`montgomery_reduce`/`reduce32`/`caddq`/`freeze`) are branchless/CT.
   A **reference-equivalence test** (3000 random polys × 5 bounds + boundaries) proves
   the rewrite changed only timing, not behavior — the safety net for the missing ACVP.
 - **⚑ NOT FIPS 203 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
-  the Headline Finding above). `G(d)` should be `G(d ‖ k)` (fixes ρ); t̂ still diverges,
-  so sampling/NTT/encoding also differ from FIPS 203. Roundtrip passes only because the
-  impl is self-consistent. Needs an atomic, output-breaking FIPS 203 reconciliation; the
-  ignored `kat_ml_kem_768_keygen_acvp_fips203` is the oracle.
+  the Headline Finding above). `G(d)` should be `G(d ‖ k)` (fixes ρ); t̂ still diverges.
+  **Localized 2026-06-04 (intermediate comparison):** with ρ/σ correct and the A-sampler
+  + samplers verified FIPS-correct, RIINA's computed t̂ is still *fundamentally* different
+  from NIST — t̂[0..6] maps to `[737,2104,85,1554,3304,2117]` vs NIST
+  `[1832,2364,1911,1048,3000,32]` — i.e. the divergence is in the **core transform
+  (NTT/basemul/zeta Montgomery representation), not just encoding**. So the reconciliation
+  is a byte-exact reimplementation of the lattice core, verified against the full ACVP
+  suites (keyGen → encapDecap), **not** a localized patch. Output-breaking; the ignored
+  `kat_ml_kem_768_keygen_acvp_fips203` is the oracle. (`G(d‖k)` confirmed as step 1.)
 - **⚑ NOT FIPS 204 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
   the Headline Finding). keyGen hashes `H(ξ)` but FIPS 204 requires `H(ξ ‖ k ‖ ℓ)`
   (fixing aligns ρ exactly with NIST); pk still diverges, so the rest of the pipeline
