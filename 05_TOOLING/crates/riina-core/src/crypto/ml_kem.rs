@@ -2,15 +2,24 @@
 
 //! ML-KEM-768 (Module-Lattice Key Encapsulation Mechanism) Implementation
 //!
-//! This module implements ML-KEM-768 as specified in FIPS 203 (August 2024).
-//! ML-KEM is a post-quantum key encapsulation mechanism based on the
-//! Module Learning With Errors (MLWE) problem.
+//! This module implements ML-KEM-768 (FIPS 203). It is a post-quantum key
+//! encapsulation mechanism based on the Module Learning With Errors (MLWE)
+//! problem.
 //!
-//! # FIPS 203 Compliance
+//! # FIPS 203 status (2026-06-04, NIST ACVP)
 //!
-//! This implementation follows FIPS 203 "Module-Lattice-Based Key-Encapsulation
-//! Mechanism Standard" exactly. Every constant, algorithm, and data structure
-//! is derived directly from the specification.
+//! - **KeyGen — COMPLIANT.** `ML-KEM.KeyGen` (and the inner `K-PKE.KeyGen`) are
+//!   byte-exact against an authentic NIST ACVP-Server vector; see the passing
+//!   `kat_ml_kem_768_keygen_acvp_fips203`. The reconciliation fixed `G(d) ->
+//!   G(d ‖ k)`, added `poly_tomont` after the Â∘ŝ basemul-accumulate, and fixed
+//!   the matrix sampler (`sample_ntt`) which had been reading a zero-initialised
+//!   buffer on its first iteration (Â was silently all-zeros).
+//! - **Encaps/Decaps — FO transform reconciliation pending.** The K-PKE core
+//!   (encrypt/decrypt) now uses the FIPS-correct matrix sampler, but the
+//!   Fujisaki–Okamoto wrapper still follows the pre-final Kyber draft (it applies
+//!   `KDF(K ‖ H(c))` and hashes `H(c)` for implicit rejection, whereas FIPS 203
+//!   returns `K` directly and rejects with `J(z ‖ c)`). Tracked against an ACVP
+//!   encapDecap vector. See `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
@@ -26,7 +35,7 @@
 //!
 //! # Implementation Notes
 //!
-//! - Number Theoretic Transform (NTT) over Z_q[X]/(X^256 + 1) where q = 3329
+//! - Number Theoretic Transform (NTT) over `Z_q[X]/(X^256 + 1)` where q = 3329
 //! - NTT uses ζ = 17 as primitive 512th root of unity mod q
 //! - Barrett reduction for efficient modular arithmetic
 //! - Centered binomial distribution sampling using PRF
@@ -35,7 +44,7 @@
 //!
 //! # References
 //!
-//! - FIPS 203: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
+//! - FIPS 203: <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf>
 
 use crate::crypto::keccak::{Sha3_256, Sha3_512, Shake128, Shake256};
 use crate::crypto::{CryptoError, CryptoResult, Kem};
@@ -89,7 +98,7 @@ pub const SHARED_SECRET_SIZE: usize = 32;
 /// Zetas in Montgomery domain (R = 2^16)
 ///
 /// These are derived from the Kyber reference implementation.
-/// zetas[i] = ζ^(BitRev_7(i)) * 2^16 mod q in signed representation [-q/2, q/2)
+/// `zetas[i] = ζ^(BitRev_7(i)) * 2^16 mod q` in signed representation `[-q/2, q/2)`
 /// Converted to signed i16 for use with Montgomery arithmetic.
 ///
 /// Source: pq-crystals/kyber reference implementation
@@ -154,9 +163,11 @@ fn cond_sub_q(a: i16) -> i16 {
 #[inline]
 fn to_positive(a: i16) -> u16 {
     let mut r = a % (params::Q as i16);
-    if r < 0 {
-        r += params::Q as i16;
-    }
+    // Branchless "add q iff negative" (same mask trick as cond_sub_q). The
+    // previous `if r < 0` branched on the sign of a secret-derived coefficient
+    // (this feeds `compress`, which runs on m'-derived polys during decaps).
+    // `r >> 15` is -1 when r < 0 and 0 otherwise.
+    r += (r >> 15) & (params::Q as i16);
     r as u16
 }
 
@@ -184,7 +195,7 @@ fn fqmul(a: i16, b: i16) -> i16 {
 // Polynomial Type
 // =============================================================================
 
-/// Polynomial in Z_q[X]/(X^256 + 1)
+/// Polynomial in `Z_q[X]/(X^256 + 1)`
 ///
 /// Coefficients are stored in [0, q) in standard representation,
 /// or in Montgomery form when in NTT domain.
@@ -208,6 +219,17 @@ impl Poly {
         for coeff in &mut self.coeffs {
             *coeff = barrett_reduce(*coeff);
             *coeff = cond_sub_q(*coeff);
+        }
+    }
+
+    /// Convert to Montgomery domain (multiply each coefficient by R, the
+    /// standard `poly_tomont`): `montgomery_reduce(c * (R^2 mod q))`, with
+    /// `R^2 mod q = 2^32 mod 3329 = 1353`. Used after basemul-accumulate in
+    /// keygen to undo the R^(-1) that fqmul introduces (FIPS 203 / Kyber ref).
+    pub fn to_mont(&mut self) {
+        const R2_MOD_Q: i16 = 1353; // 2^32 mod q
+        for coeff in &mut self.coeffs {
+            *coeff = fqmul(*coeff, R2_MOD_Q);
         }
     }
 
@@ -294,7 +316,7 @@ impl Poly {
     /// in the NTT domain.
     ///
     /// The NTT representation uses pairs of coefficients representing
-    /// elements in Z_q[X]/(X^2 - zeta) for different zeta values.
+    /// elements in `Z_q[X]/(X^2 - zeta)` for different zeta values.
     ///
     /// Algorithm 11 from FIPS 203
     pub fn pointwise_mul(&mut self, a: &Poly, b: &Poly) {
@@ -522,8 +544,10 @@ impl Poly {
         for i in 0..32 {
             for j in 0..8 {
                 let c = cond_sub_q(barrett_reduce(self.coeffs[8 * i + j]));
-                // Compress to 1 bit: round(2c/q)
-                let c_abs = if c < 0 { c + params::Q as i16 } else { c } as u32;
+                // Compress to 1 bit: round(2c/q). Branchless absolute-into-[0,q):
+                // the previous `if c < 0` branched on the sign of a secret message
+                // coefficient during decaps decryption. `c >> 15` is -1 iff c < 0.
+                let c_abs = u32::from((c + ((c >> 15) & params::Q as i16)) as u16);
                 let bit = (((c_abs << 1) + params::Q32 / 2) / params::Q32) & 1;
                 msg[i] |= (bit as u8) << j;
             }
@@ -576,7 +600,7 @@ impl PolyVec {
         }
     }
 
-    /// Inner product: result = sum_i(a[i] * b[i]) in NTT domain
+    /// Inner product: `result = sum_i(a[i] * b[i])` in NTT domain
     pub fn pointwise_acc(&self, other: &PolyVec) -> Poly {
         let mut result = Poly::zero();
         let mut temp = Poly::zero();
@@ -627,6 +651,13 @@ impl PolyVec {
     pub fn reduce(&mut self) {
         for poly in &mut self.polys {
             poly.reduce();
+        }
+    }
+
+    /// Convert all polynomials to Montgomery domain (`poly_tomont` per poly).
+    pub fn to_mont(&mut self) {
+        for poly in &mut self.polys {
+            poly.to_mont();
         }
     }
 }
@@ -687,12 +718,15 @@ impl PolyMat {
 ///
 /// Algorithm 6 from FIPS 203
 fn sample_ntt(poly: &mut Poly, xof: &mut Shake128) {
-    let mut buf = [0u8; 3 * 168]; // 3 blocks for efficiency
-    let mut idx = 0usize;
+    let mut buf = [0u8; 3 * 168]; // 3 SHAKE128 blocks (rate 168) per refill
+    // Prime `idx` past the end so the first loop iteration squeezes the XOF
+    // before any read. Starting at 0 would read the zero-initialised buffer for
+    // the first 168 attempts (the whole polynomial), yielding an all-zero Â.
+    let mut idx = buf.len();
     let mut j = 0usize;
 
     while j < params::N {
-        // Refill buffer if needed
+        // Refill buffer if fewer than 3 bytes remain (also primes the first read)
         if idx + 3 > buf.len() {
             xof.squeeze(&mut buf);
             idx = 0;
@@ -743,8 +777,12 @@ fn sample_noise(poly: &mut Poly, seed: &[u8; 32], nonce: u8, eta: usize) {
 ///
 /// Algorithm 12 from FIPS 203
 fn k_pke_keygen(d: &[u8; 32], ek: &mut [u8; PUBLIC_KEY_SIZE], dk: &mut [u8; 1152]) {
-    // (ρ, σ) = G(d)
-    let g_output = Sha3_512::hash(d);
+    // (ρ, σ) = G(d ‖ k)  — FIPS 203 Alg. 13: the module-dimension byte k is a
+    // parameter-set domain separator (omitted by the pre-final Kyber draft).
+    let mut g_input = [0u8; 33];
+    g_input[..32].copy_from_slice(d);
+    g_input[32] = params::K as u8;
+    let g_output = Sha3_512::hash(&g_input);
     let rho: [u8; 32] = g_output[..32].try_into().unwrap();
     let sigma: [u8; 32] = g_output[32..64].try_into().unwrap();
 
@@ -765,8 +803,13 @@ fn k_pke_keygen(d: &[u8; 32], ek: &mut [u8; PUBLIC_KEY_SIZE], dk: &mut [u8; 1152
     s.ntt();
     e.ntt();
 
-    // t̂ = Â·ŝ + ê
+    // t̂ = Â·ŝ + ê. basemul (fqmul) carries an R^(-1) Montgomery factor; FIPS 203 /
+    // the Kyber reference applies `poly_tomont` (×R, i.e. ×R^2 mod q via Montgomery)
+    // after the basemul-accumulate and BEFORE adding ê, so t̂ is in standard domain
+    // for ByteEncode. (Keygen has no inverse-NTT, so unlike encrypt/decrypt — whose
+    // inv_ntt already folds in the tomont via F=1441 — this conversion is explicit.)
     let mut t_hat = a_hat.mul_vec(&s);
+    t_hat.to_mont();
     t_hat.add(&e);
     t_hat.reduce();
 
@@ -969,7 +1012,7 @@ impl MlKem768DecapsulationKey {
         let dk_pke: &[u8; 1152] = self.bytes[..1152].try_into().unwrap();
         let ek: [u8; PUBLIC_KEY_SIZE] = self.bytes[1152..2336].try_into().unwrap();
         let h_ek: [u8; 32] = self.bytes[2336..2368].try_into().unwrap();
-        let z: [u8; 32] = self.bytes[2368..2400].try_into().unwrap();
+        let mut z: [u8; 32] = self.bytes[2368..2400].try_into().unwrap();
 
         // m' = K-PKE.Decrypt(dk, c)
         let mut m_prime = [0u8; 32];
@@ -979,9 +1022,9 @@ impl MlKem768DecapsulationKey {
         let mut g_input = [0u8; 64];
         g_input[..32].copy_from_slice(&m_prime);
         g_input[32..64].copy_from_slice(&h_ek);
-        let g_output = Sha3_512::hash(&g_input);
-        let k_prime: [u8; 32] = g_output[..32].try_into().unwrap();
-        let r_prime: [u8; 32] = g_output[32..64].try_into().unwrap();
+        let mut g_output = Sha3_512::hash(&g_input);
+        let mut k_prime: [u8; 32] = g_output[..32].try_into().unwrap();
+        let mut r_prime: [u8; 32] = g_output[32..64].try_into().unwrap();
 
         // H(c)
         let h_c = Sha3_256::hash(ciphertext);
@@ -1024,9 +1067,20 @@ impl MlKem768DecapsulationKey {
             ss[i] = (ss_valid[i] & mask) | (ss_reject[i] & !mask);
         }
 
-        // Zeroize temporaries
+        // Zeroize all secret intermediates: the decrypted message, the G input/
+        // output, the candidate key K' and randomness r', the implicit-rejection
+        // key z, and both candidate shared secrets + their KDF inputs. `ss` is the
+        // returned value; the public hashes h_ek/h_c need no scrubbing.
         m_prime.zeroize();
         g_input.zeroize();
+        g_output.zeroize();
+        k_prime.zeroize();
+        r_prime.zeroize();
+        z.zeroize();
+        ss_valid.zeroize();
+        ss_reject.zeroize();
+        kdf_input_valid.zeroize();
+        kdf_input_reject.zeroize();
 
         Ok(ss)
     }
@@ -1223,6 +1277,8 @@ impl Kem for MlKem768 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
 
     #[test]
     fn test_ml_kem_768_sizes() {
