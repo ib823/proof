@@ -16,25 +16,37 @@ Method per primitive: read the file + dependencies, run its tests/KATs, analyze
 correctness, constant-time (relative to RIINA's leakage contract, excluding
 DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 
-> ## ⚑ HEADLINE FINDING — RIINA's PQC (ML-KEM **and** ML-DSA) is NOT FIPS-final
-> Authentic **NIST ACVP keyGen vectors** (vendored under `tests/vectors/`) show that
-> **neither** ML-KEM-768 nor ML-DSA-65 reproduces NIST's keys — both follow the
+> ## ⚑ HEADLINE FINDING — RIINA's PQC followed pre-final drafts, not FIPS 203/204
+> Authentic **NIST ACVP keyGen vectors** (vendored under `tests/vectors/`) showed that
+> **neither** ML-KEM-768 nor ML-DSA-65 reproduced NIST's keys — both followed the
 > **pre-final Kyber/Dilithium drafts, not FIPS 203/204**. Identical pattern, confirmed
 > by comparing intermediates against the vectors:
-> - **ML-KEM:** `K-PKE.KeyGen` uses `G(d)` instead of FIPS 203 `G(d ‖ k)`; adding the
->   domain-separator byte makes **ρ match NIST exactly**, but **t̂ still diverges**.
-> - **ML-DSA:** keyGen uses `H(ξ)` instead of FIPS 204 `H(ξ ‖ k ‖ ℓ)`; adding the
+> - **ML-KEM:** `K-PKE.KeyGen` used `G(d)` instead of FIPS 203 `G(d ‖ k)`; adding the
+>   domain-separator byte makes **ρ match NIST exactly**, but **t̂ still diverged**.
+> - **ML-DSA:** keyGen used `H(ξ)` instead of FIPS 204 `H(ξ ‖ k ‖ ℓ)`; adding the
 >   dimension bytes makes **ρ match NIST exactly**, but **pk still diverges**.
 >
 > So in *both* primitives the missing FIPS-final parameter-set domain separator is the
-> first delta, and *both* have further sampling/NTT/encoding deltas. The existing
-> roundtrip tests pass only because each implementation is **self-consistent**; they
+> first delta, and *both* had further sampling/NTT/encoding deltas. The existing
+> roundtrip tests passed only because each implementation is **self-consistent**; they
 > cannot detect non-interoperability. **Fixing this is output-breaking** (every key,
 > ciphertext, signature, and shared secret changes) and must be a deliberate, atomic
-> FIPS 203/204 reconciliation. The two ignored ACVP KATs are the oracles. This is the
+> FIPS 203/204 reconciliation. The two ACVP KATs are the oracles. This is the
 > single most important result of the pre-audit — exactly what ACVP testing and an
-> external audit (REQ-28) exist to catch — and it means the repo's "FIPS 203/204"
-> claim must be corrected until reconciled.
+> external audit (REQ-28) exist to catch.
+>
+> ### ✅ UPDATE 2026-06-04 — ML-KEM-768 RECONCILED to FIPS 203 (byte-exact)
+> ML-KEM is now **byte-exact against authentic NIST ACVP-Server vectors** for keyGen,
+> encaps, and decaps (`kat_ml_kem_768_keygen_acvp_fips203`,
+> `kat_ml_kem_768_encaps_decaps_acvp_fips203`, both passing/un-ignored). Beyond the
+> `G(d) → G(d ‖ k)` domain separator, the divergence root cause was a sampler bug:
+> `sample_ntt` read its **zero-initialised buffer on the first iteration**, so the
+> matrix Â was silently all-zeros and t̂ collapsed to ê (which is exactly why ŝ/dk
+> matched NIST while t̂/ek did not). Also added `poly_tomont` after the Â∘ŝ
+> basemul-accumulate, and reconciled the FO transform to FIPS 203 (shared secret `K`
+> returned directly from `G`; implicit rejection `K̄ = J(z ‖ c)` over the full
+> ciphertext). **ML-DSA-65 remains on the pre-final Dilithium draft** — FIPS 204
+> reconciliation pending (`kat_ml_dsa_65_keygen_acvp_fips204` still the ignored oracle).
 
 ---
 
@@ -44,7 +56,7 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 |---|---|---|---|---|
 | `aes.rs` | KATs green (FIPS 197 C.3) | 4 (1 High, 1 Med, 2 Low) | CT barrier on `ct_lookup`; zeroize working state; +exhaustive `ct_lookup` test | raw-API visibility (Low); AESAVS/Monte-Carlo vectors (Low) |
 | `constant_time.rs` | tests green | 1 (broken CT primitive) | `ct_select` made branchless; `ct_lt_u8` tightened; +tests | — |
-| `ml_kem.rs` (FIPS 203) | roundtrip green; **ACVP keyGen FAILS** | **1 Critical (not FIPS 203)** + 2 Med CT/hygiene | decaps CT branches + zeroization (CT verified) | **⚑ NOT FIPS 203 — draft Kyber; output-breaking reconciliation needed** |
+| `ml_kem.rs` (FIPS 203) | **ACVP keyGen + encapDecap byte-exact (green)** | 1 Critical (was not FIPS 203) + 2 Med CT/hygiene | **FIPS 203 reconciliation (sampler/tomont/domain-sep/FO)**; decaps CT branches + zeroization (CT verified) | **✅ FIPS 203 COMPLIANT** |
 | `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
 | `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
 | `ml_dsa.rs` (FIPS 204) | roundtrip green; **ACVP keyGen FAILS** | **1 Critical (not FIPS 204)** + 1 Med CT | `check_norm` CT (poly+vec) + equivalence test | **⚑ NOT FIPS 204 — draft Dilithium; output-breaking reconciliation needed** |
@@ -98,10 +110,18 @@ both candidates always computed. Reductions (`barrett_reduce`, `cond_sub_q`,
 - **Decaps secret intermediates unscrubbed (Medium → fixed).** Only `m_prime`/`g_input`
   were zeroized. **Fixed:** also `ss_valid`/`ss_reject`/`k_prime`/`r_prime`/`g_output`/
   `z`/KDF inputs.
-- **No NIST ACVP / FIPS 203 KAT vectors (Medium → OPEN).** Tests are roundtrip/self-
-  consistency only; they would pass on a self-consistent but non-compliant impl. Top
-  correctness-assurance follow-up: add ACVP ML-KEM-768 KATs (and likewise across the
-  suite). This needs official vectors and could not be done in-session.
+- **No NIST ACVP / FIPS 203 KAT vectors (Medium → FIXED).** Roundtrip-only tests would
+  pass on a self-consistent but non-compliant impl — and did. **Fixed:** vendored
+  authentic NIST ACVP-Server keyGen + encapDecap vectors (with source URL + file
+  SHA-256) and added byte-exact KATs. These caught the all-zero-Â sampler bug and now
+  guard FIPS 203 compliance permanently.
+- **⚑ NOT FIPS 203 (Critical → FIXED).** The keyGen ACVP vector failed: `G(d)` vs
+  `G(d ‖ k)`, a missing `poly_tomont` after the Â∘ŝ basemul-accumulate, and — the root
+  cause — `sample_ntt` reading its zero-initialised buffer on the first iteration (Â was
+  silently all-zeros, so t̂ collapsed to ê). The FO transform also followed the draft.
+  **Fixed:** all of the above; ML-KEM-768 keyGen/encaps/decaps are now byte-exact
+  against NIST ACVP (the implicit-rejection FO change also updated the decaps
+  zeroization set: `ss_valid`/valid-KDF input replaced by the direct `K'` and `j_input`).
 
 ## X25519 (`x25519.rs` + `montgomery.rs` + `field25519.rs`) — second-model pass
 
@@ -147,16 +167,17 @@ Reductions (`montgomery_reduce`/`reduce32`/`caddq`/`freeze`) are branchless/CT.
   OR-accumulate over all coefficients, and a non-short-circuiting `&=` over polys.
   A **reference-equivalence test** (3000 random polys × 5 bounds + boundaries) proves
   the rewrite changed only timing, not behavior — the safety net for the missing ACVP.
-- **⚑ NOT FIPS 203 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
-  the Headline Finding above). `G(d)` should be `G(d ‖ k)` (fixes ρ); t̂ still diverges.
-  **Localized 2026-06-04 (intermediate comparison):** with ρ/σ correct and the A-sampler
-  + samplers verified FIPS-correct, RIINA's computed t̂ is still *fundamentally* different
-  from NIST — t̂[0..6] maps to `[737,2104,85,1554,3304,2117]` vs NIST
-  `[1832,2364,1911,1048,3000,32]` — i.e. the divergence is in the **core transform
-  (NTT/basemul/zeta Montgomery representation), not just encoding**. So the reconciliation
-  is a byte-exact reimplementation of the lattice core, verified against the full ACVP
-  suites (keyGen → encapDecap), **not** a localized patch. Output-breaking; the ignored
-  `kat_ml_kem_768_keygen_acvp_fips203` is the oracle. (`G(d‖k)` confirmed as step 1.)
+- **⚑ ML-KEM FIPS 203 (Critical → FIXED 2026-06-04; see ML-KEM section + Headline
+  UPDATE).** *Recorded for the audit trail because the earlier diagnosis was wrong:* the
+  in-progress hypothesis was that t̂[0..6] = `[737,2104,85,1554,3304,2117]` vs NIST
+  `[1832,2364,1911,1048,3000,32]` meant the bug lived in the **core transform
+  (NTT/basemul/zeta Montgomery representation)**. It did **not**. The NTT/basemul/tomont
+  were correct; the actual root cause was `sample_ntt` reading its **zero-initialised
+  buffer on the first iteration**, so the matrix Â was all-zeros and t̂ collapsed to ê
+  (hence ŝ/dk matched while t̂/ek didn't, and `poly_tomont` — which was genuinely also
+  missing — changed nothing because `tomont(0)=0`). Lesson: an all-zeros operand can
+  masquerade as a "deep core" divergence; check operand *content*, not just transforms.
+  Now byte-exact against ACVP keyGen + encapDecap.
 - **⚑ NOT FIPS 204 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
   the Headline Finding). keyGen hashes `H(ξ)` but FIPS 204 requires `H(ξ ‖ k ‖ ℓ)`
   (fixing aligns ρ exactly with NIST); pk still diverges, so the rest of the pipeline
@@ -188,10 +209,10 @@ hash cores) and well-tested:
 - **SHA-2 / SHA-3:** no `unsafe`, no secret branches. Added **SHA3-256/512 FIPS 202 KATs**
   to the consolidated manifest (`tests/kat_audit.rs`) — was the one missing family there.
 
-**Net KAT status:** every primitive except **ML-KEM** and **ML-DSA** now has an
-authoritative FIPS/RFC KAT (SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519). ML-KEM-768
-(FIPS 203) and ML-DSA-65 (FIPS 204) remain on roundtrip-only tests and need NIST ACVP
-JSON vectors — the precisely-scoped job for Codex's Task 1.
+**Net KAT status:** every primitive except **ML-DSA** now has an authoritative FIPS/RFC
+KAT (SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519, plus **ML-KEM-768 keyGen + encapDecap
+byte-exact against NIST ACVP**). Only ML-DSA-65 (FIPS 204) remains on roundtrip-only
+tests with an ignored ACVP keyGen oracle — the FIPS 204 reconciliation is the next job.
 
 ---
 
