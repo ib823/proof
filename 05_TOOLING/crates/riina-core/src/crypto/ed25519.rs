@@ -291,6 +291,15 @@ impl EdwardsPoint {
         let x_sign = (y_bytes[31] >> 7) & 1;
         y_bytes[31] &= 0x7f;
 
+        // RFC 8032 §5.1.3 step 1: the y-coordinate is recovered by clearing the
+        // sign bit; if the resulting 255-bit value is >= p the encoding is
+        // non-canonical and decoding MUST fail. `FieldElement::from_bytes` would
+        // otherwise silently reduce it mod p, accepting a second valid encoding of
+        // the same curve point (a malleability gap for keys/commitments).
+        if !is_canonical_y(&y_bytes) {
+            return Err(CryptoError::InvalidSignature);
+        }
+
         let y = FieldElement::from_bytes(&y_bytes);
 
         // Compute x² = (y² - 1) / (d*y² + 1)
@@ -315,6 +324,14 @@ impl EdwardsPoint {
             x
         };
 
+        // RFC 8032 §5.1.3 step 3: if x = 0 and the sign bit x_0 = 1, the encoding
+        // is non-canonical (there is no "negative zero" to request); decoding MUST
+        // fail. Without this, the two-torsion point (0, 1)/(0, -1) family admits a
+        // bogus second encoding.
+        if x.is_zero() && x_sign == 1 {
+            return Err(CryptoError::InvalidSignature);
+        }
+
         // Verify the point is on the curve (defensive check)
         // -x² + y² = 1 + d*x²*y²
         let x2 = x.square();
@@ -332,6 +349,30 @@ impl EdwardsPoint {
             t: x * y,
         })
     }
+}
+
+/// p = 2^255 - 19 (the field modulus) in little-endian bytes.
+const P_BYTES: [u8; 32] = [
+    0xed, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f,
+];
+
+/// Returns `true` iff the little-endian value in `y_bytes` (sign bit already
+/// cleared, so a 255-bit number) is canonical: strictly less than p = 2^255 - 19.
+///
+/// RFC 8032 §5.1.3 requires rejecting a point encoding whose recovered
+/// y-coordinate is >= p; otherwise the same curve point has multiple valid
+/// encodings (a malleability gap, since `FieldElement::from_bytes` reduces mod p
+/// silently). Branchless multi-precision compare: compute `y_bytes - p`
+/// propagating the borrow LSB->MSB; the final borrow out of the top byte is 1
+/// exactly when `y_bytes < p` (mirrors `is_scalar_valid`'s `s < L` check).
+fn is_canonical_y(y_bytes: &[u8; 32]) -> bool {
+    let mut borrow = 0i16;
+    for i in 0..32 {
+        let diff = i16::from(y_bytes[i]) - i16::from(P_BYTES[i]) - borrow;
+        borrow = (diff >> 15) & 1;
+    }
+    borrow == 1
 }
 
 /// Compute sqrt(u/v) using the Ed25519 formula
@@ -1561,5 +1602,110 @@ mod tests {
         // Verify the signature
         let result = keypair.public_key().verify(&[0x72], &signature);
         assert!(result.is_ok());
+    }
+
+    // ── RFC 8032 §5.1.3 strict point-decoding (canonicality) ──────────────────
+
+    #[test]
+    fn test_is_canonical_y_boundaries() {
+        // p - 1 (largest canonical value) → canonical.
+        let mut p_minus_1 = P_BYTES;
+        p_minus_1[0] -= 1; // 0xed → 0xec, i.e. p-1
+        assert!(is_canonical_y(&p_minus_1), "p-1 must be canonical");
+
+        // p, p+1 → non-canonical (>= p).
+        assert!(!is_canonical_y(&P_BYTES), "p must be non-canonical");
+        let mut p_plus_1 = P_BYTES;
+        p_plus_1[0] += 1; // 0xed → 0xee, i.e. p+1
+        assert!(!is_canonical_y(&p_plus_1), "p+1 must be non-canonical");
+
+        // 2^255 - 1 (all 255 bits set) → non-canonical.
+        let mut max = [0xffu8; 32];
+        max[31] = 0x7f;
+        assert!(!is_canonical_y(&max), "2^255-1 must be non-canonical");
+
+        // 0, 1, and the basepoint y are canonical.
+        assert!(is_canonical_y(&[0u8; 32]), "0 must be canonical");
+        let mut one = [0u8; 32];
+        one[0] = 1;
+        assert!(is_canonical_y(&one), "1 must be canonical");
+        assert!(
+            is_canonical_y(&basepoint().compress()),
+            "basepoint y must be canonical"
+        );
+    }
+
+    #[test]
+    fn test_decompress_rejects_noncanonical_y() {
+        // y ≡ 1 (mod p) encoded non-canonically as p+1 = 2^255 - 18 (sign bit 0).
+        // This reduces to the identity (0, 1); the canonical encoding [1,0,..,0]
+        // must still decode, but the non-canonical one must be rejected.
+        let mut one_canonical = [0u8; 32];
+        one_canonical[0] = 1;
+        assert!(
+            EdwardsPoint::decompress(&one_canonical).is_ok(),
+            "canonical y=1 must decode"
+        );
+
+        let mut p_plus_1 = P_BYTES; // sign bit (bit 255) already 0 here
+        p_plus_1[0] += 1; // 0xed → 0xee  ⇒  value = p+1 ≡ 1
+        assert!(
+            EdwardsPoint::decompress(&p_plus_1).is_err(),
+            "non-canonical y (>= p) must be rejected"
+        );
+    }
+
+    #[test]
+    fn test_decompress_rejects_x_zero_with_sign_set() {
+        // y = 1 gives x = 0. With the sign bit cleared this is the identity and
+        // must decode; with the sign bit set the encoding is non-canonical and
+        // RFC 8032 requires decode failure.
+        let mut y1_sign0 = [0u8; 32];
+        y1_sign0[0] = 1;
+        assert!(
+            EdwardsPoint::decompress(&y1_sign0).is_ok(),
+            "(x=0, sign=0) is the identity and must decode"
+        );
+
+        let mut y1_sign1 = y1_sign0;
+        y1_sign1[31] |= 0x80; // request the "negative" sign of x=0
+        assert!(
+            EdwardsPoint::decompress(&y1_sign1).is_err(),
+            "(x=0, sign=1) must be rejected as non-canonical"
+        );
+    }
+
+    #[test]
+    fn test_verify_rejects_malleable_s_plus_l() {
+        // Non-malleability: a forged signature (R, s+L) is congruent to (R, s)
+        // mod L and would satisfy the group equation, but RFC 8032 mandates the
+        // strict `0 <= s < L` check, which must reject it.
+        let seed: [u8; 32] = [
+            0x9d, 0x61, 0xb1, 0x9d, 0xef, 0xfd, 0x5a, 0x60, 0xba, 0x84, 0x4a, 0xf4, 0x92, 0xec,
+            0x2c, 0xc4, 0x44, 0x49, 0xc5, 0x69, 0x7b, 0x32, 0x69, 0x19, 0x70, 0x3b, 0xac, 0x03,
+            0x1c, 0xae, 0x7f, 0x60,
+        ];
+        let keypair = Ed25519SigningKey::from_seed(&seed);
+        let msg = b"riina malleability check";
+        let signature = keypair.sign(msg);
+        assert!(
+            keypair.public_key().verify(msg, &signature).is_ok(),
+            "honest signature must verify"
+        );
+
+        // s' = s + L (little-endian add; s < L so the sum stays within 32 bytes).
+        let mut malleable = signature;
+        let mut carry: u16 = 0;
+        for i in 0..32 {
+            carry += u16::from(signature[32 + i]) + u16::from(L_BYTES[i]);
+            malleable[32 + i] = carry as u8;
+            carry >>= 8;
+        }
+        assert_eq!(carry, 0, "s + L must not overflow 32 bytes");
+        assert_ne!(malleable, signature, "s+L must differ from s");
+        assert!(
+            keypair.public_key().verify(msg, &malleable).is_err(),
+            "s >= L (malleable) must be rejected"
+        );
     }
 }

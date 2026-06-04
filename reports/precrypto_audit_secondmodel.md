@@ -64,8 +64,8 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `aes.rs` | KATs green (FIPS 197 C.3) | 4 (1 High, 1 Med, 2 Low) | CT barrier on `ct_lookup`; zeroize working state; +exhaustive `ct_lookup` test | raw-API visibility (Low); AESAVS/Monte-Carlo vectors (Low) |
 | `constant_time.rs` | tests green | 1 (broken CT primitive) | `ct_select` made branchless; `ct_lt_u8` tightened; +tests | — |
 | `ml_kem.rs` (FIPS 203) | **ACVP keyGen + encapDecap byte-exact (green)** | 1 Critical (was not FIPS 203) + 2 Med CT/hygiene | **FIPS 203 reconciliation (sampler/tomont/domain-sep/FO)**; decaps CT branches + zeroization (CT verified) | **✅ FIPS 203 COMPLIANT** |
-| `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
-| `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
+| `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT**; **deep-pass 2026-06-04: confirmed clean (high-bit handled via field reduce, clamping, all-zero rejection) + added the missing negative test for the contributory all-zero rejection** | — |
+| `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** + 2 strict-decode (deep-pass) | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check; **deep-pass 2026-06-04: non-canonical `y >= p` decode + `x=0`/sign=1 decode now rejected (RFC 8032 §5.1.3)** | small-order/cofactor accept (RFC 8032 cofactorless, low priority); `from_bytes_mod_order` "just copy" (info, benign — clamped/pre-validated at all call sites) |
 | `ml_dsa.rs` (FIPS 204) | **ACVP keyGen + sigGen + sigVer byte/behaviour-exact (green)** | 1 Critical (was not FIPS 204) + 1 Med CT | **FIPS 204 reconciliation (H‖k‖l / ExpandS rejection / ExpandA 23-bit / det. rnd)**; `check_norm` CT (poly+vec) + equivalence test | **✅ FIPS 204 COMPLIANT** |
 | `gcm.rs`/`ghash.rs` | NIST GCM KATs green | **none** (clean) | — | nonce-reuse is caller's responsibility (documented); SP 800-38D length limits not enforced (unreachable) |
 | `sha2`/`keccak`/`hmac`/`hkdf` | KATs green (+SHA-3 added) | **none** (clean) | added SHA3-256/512 FIPS 202 KATs to the manifest | — |
@@ -262,3 +262,71 @@ The remaining correctness-assurance work is machine-level constant-time evidence
 Findings are leads requiring human verification; expect false positives and misses. The
 ACVP byte-exactness now gives an external auditor a reproducible correctness baseline,
 which is precisely what makes REQ-28 tractable and cheap to commission.**
+
+---
+
+## Deep-pass 2026-06-04 (third pass) — Ed25519 RFC 8032 strict point-decoding + X25519 confirm
+
+Dedicated per-primitive deep pass over `ed25519.rs` / `x25519.rs` (the items left open
+by the second-model pass). Method unchanged: read the file + dependencies, run the KATs,
+and reason about correctness / malleability / canonicality at source level.
+
+### Ed25519 — two RFC 8032 §5.1.3 strict-decode gaps (fixed)
+
+`EdwardsPoint::decompress` accepted **non-canonical point encodings** that RFC 8032
+§5.1.3 requires rejecting. Both are malleability gaps (a single curve point with more
+than one valid 32-byte encoding) rather than forgeries, but both are explicit decode
+rules and matter for any consensus/fingerprint use of an Ed25519 public key, and for
+strict-verification interop:
+
+1. **Non-canonical `y >= p` accepted (fixed).** After clearing the sign bit, the code
+   passed the 255-bit `y_bytes` straight to `FieldElement::from_bytes`, which **masks
+   bit 255 and reduces mod p silently** — so an encoding with `y ∈ [p, 2^255)` decoded
+   to the same point as its canonical `y - p` form. RFC 8032 step 1: "if the resulting
+   value is >= p, decoding fails." **Fixed:** added `is_canonical_y` (branchless
+   `y_bytes - p` borrow check, mirroring `is_scalar_valid`'s `s < L`) and reject before
+   `from_bytes`.
+2. **`x = 0` with sign bit set accepted (fixed).** RFC 8032 step 3: "if x = 0 and x_0 =
+   1, decoding fails" (there is no negative zero). The code computed `x = 0`, saw the
+   requested sign differed, negated (`-0 = 0`), and accepted. **Fixed:** reject when
+   `x.is_zero() && x_sign == 1`.
+
+Both fixes are **behaviour-preserving for every canonical input** — all RFC 8032 test
+vectors, the sign/verify roundtrips and the basepoint/identity compression tests are
+unchanged — they only *add* rejections for non-canonical encodings. New negative tests:
+`test_decompress_rejects_noncanonical_y`, `test_decompress_rejects_x_zero_with_sign_set`,
+`test_is_canonical_y_boundaries`.
+
+Also added `test_verify_rejects_malleable_s_plus_l`: an end-to-end check that a forged
+`(R, s + L)` (congruent to a valid signature mod L) is rejected by the `0 <= s < L`
+gate — exercising the second-model `is_scalar_valid` borrow fix through `verify`, which
+previously had only a unit test on the helper.
+
+Still open (unchanged, low priority): no small-order/cofactor rejection of `A`/`R`
+(RFC 8032 permits cofactorless verification; RIINA's `verify` already uses the strict
+`s*B - k*A == R` byte-equality form, which is the cofactorless-strict variant).
+
+### X25519 — confirmed clean; added the missing contributory-rejection test
+
+Re-reviewed `x25519.rs` + `montgomery::x25519`/`x25519_base`. **No defects.** The
+RFC 7748 "mask the most significant bit" requirement is subsumed by
+`FieldElement::from_bytes` reducing the u-coordinate mod p; scalar clamping is correct;
+the all-zero (small-order) shared-secret rejection is present on both the standalone
+`x25519` and `X25519KeyPair::diffie_hellman`. The only coverage gap was that **no test
+actually triggered** that rejection. **Added** `test_x25519_rejects_low_order_zero_output`
+(peer `u = 0`, the order-2 point → clamped scalar sends it to the identity → all-zero
+output → `Err`), covering the contributory-behavior guard on both APIs.
+
+### GCM — confirmed clean (no change)
+
+Reconfirmed the second-model finding: CT bitwise GHASH (no H-table), CT tag compare,
+verify-before-release, 96-bit nonce enforced. The one documented open item — SP 800-38D
+§5.2.1.1 input length limits (plaintext `<= 2^39-256` bits, AAD `<= 2^64-1` bits) — is
+**deliberately not enforced**: the bound is ~64 GiB of plaintext in a single buffer
+(practically unreachable) and a guard for it could not be exercised by a unit test, so
+adding an untestable branch was judged net-negative versus documenting the limit here.
+
+**Net:** Ed25519 decode is now RFC 8032 §5.1.3-strict; X25519 and GCM confirmed clean.
+`05_TOOLING` `cargo test --all` 280 → **285 / 0 / 0** (+5 tests), `kat_audit` **23 / 0**,
+clippy clean. Machine-level CT evidence (dudect/ctgrind) and the formal-equivalence proof
+remain the open crypto threads; REQ-28 (external audit) is still owner-gated.
