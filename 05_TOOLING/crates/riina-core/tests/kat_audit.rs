@@ -25,7 +25,7 @@ use riina_core::crypto::keccak::{Sha3_256, Sha3_512};
 use riina_core::crypto::ml_kem::{
     MlKem768DecapsulationKey, MlKem768EncapsulationKey, MlKem768KeyPair,
 };
-use riina_core::crypto::ml_dsa::{MlDsa65KeyPair, MlDsa65SigningKey, MlDsa65VerifyingKey};
+use riina_core::crypto::ml_dsa::{MlDsa65KeyPair, MlDsa65SigningKey, MlDsa65VerifyingKey, PreHash};
 use riina_core::crypto::sha2::{Sha256, Sha512};
 use riina_core::crypto::x25519::x25519;
 
@@ -237,6 +237,48 @@ fn kat_ml_dsa_65_sigver_acvp_fips204() {
     case("valid");
     case("badcommit");
     case("badmsg");
+}
+
+#[test]
+fn kat_ml_dsa_65_external_acvp_fips204() {
+    // FIPS 204 external/"pure", pre-hash (HashML-DSA), and hedged signing — all
+    // byte-exact against authentic NIST ACVP vectors (same source file as the
+    // internal sigGen vector). Also checks the external verify path + domain
+    // separation (an external signature must NOT verify under the internal API).
+    let data = include_str!("vectors/mldsa65_siggen_acvp.txt");
+    let det = [0u8; 32];
+    let sk = |k: &str| MlDsa65SigningKey::from_bytes(&hexn::<4032>(kv(data, k))).expect("sk");
+
+    // External "pure" interface, deterministic (rnd = 0).
+    let ext_msg = hex(kv(data, "ext_message"));
+    let ext_ctx = hex(kv(data, "ext_context"));
+    let ext_sig = sk("ext_sk")
+        .sign_with_context(&ext_msg, &ext_ctx, &det)
+        .expect("external sign");
+    assert_eq!(ext_sig.to_vec(), hex(kv(data, "ext_signature")), "external pure signature mismatch");
+    // The matching public key is in the secret key (rho||K||tr||s1||s2||t0 -> derive vk).
+    let vk = MlDsa65SigningKey::from_bytes(&hexn::<4032>(kv(data, "ext_sk")))
+        .unwrap()
+        .verifying_key();
+    assert!(vk.verify_with_context(&ext_msg, &ext_ctx, &ext_sig).is_ok(), "external verify must accept");
+    assert!(vk.verify(&ext_msg, &ext_sig).is_err(), "internal verify must reject an external signature");
+
+    // Internal hedged signing: the randomizer is supplied by the vector.
+    let hedged_sig = sk("hedged_sk")
+        .sign_hedged(&hex(kv(data, "hedged_message")), &hexn::<32>(kv(data, "hedged_rnd")))
+        .expect("hedged sign");
+    assert_eq!(hedged_sig.to_vec(), hex(kv(data, "hedged_signature")), "hedged signature mismatch");
+
+    // Pre-hash (HashML-DSA), deterministic: SHA2-256 and SHAKE-256.
+    let ph256 = sk("ph256_sk")
+        .sign_prehash(&hex(kv(data, "ph256_message")), &hex(kv(data, "ph256_context")), PreHash::Sha256, &det)
+        .expect("prehash sha256 sign");
+    assert_eq!(ph256.to_vec(), hex(kv(data, "ph256_signature")), "pre-hash SHA2-256 signature mismatch");
+
+    let phshake = sk("phshake_sk")
+        .sign_prehash(&hex(kv(data, "phshake_message")), &hex(kv(data, "phshake_context")), PreHash::Shake256, &det)
+        .expect("prehash shake256 sign");
+    assert_eq!(phshake.to_vec(), hex(kv(data, "phshake_signature")), "pre-hash SHAKE-256 signature mismatch");
 }
 
 // ── HMAC-SHA256 — RFC 4231 ───────────────────────────────────────────────────
