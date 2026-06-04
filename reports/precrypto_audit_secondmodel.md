@@ -219,28 +219,46 @@ hash cores) and well-tested:
   to the consolidated manifest (`tests/kat_audit.rs`) — was the one missing family there.
 
 **Net KAT status:** **every primitive now has an authoritative FIPS/RFC KAT** —
-SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519, plus **ML-KEM-768 (FIPS 203) keyGen +
-encapDecap** and **ML-DSA-65 (FIPS 204) keyGen + sigGen + sigVer**, all byte/behaviour-exact
-against authentic NIST ACVP vectors. `kat_audit` has **0 ignored tests**. The remaining
-correctness-assurance work is machine-level constant-time evidence (dudect/asm), then the
-external audit (REQ-28).
+SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519, plus **ML-KEM-768 (FIPS 203)** and
+**ML-DSA-65 (FIPS 204)** byte/behaviour-exact against authentic NIST ACVP. Beyond the
+representative KATs, the PQC oracle is now **swept in full for the implemented parameter
+sets** (115 ACVP cases: ML-KEM-768 keyGen ×25 / encaps ×25 / decaps ×10; ML-DSA-65 keyGen
+×25 / sigGen ×15 / sigVer ×15), the **ML-DSA external/pre-hash/hedged interfaces** are
+ACVP-verified (pure, HashML-DSA for shipped hashes, deterministic=false), and **ML-KEM
+key-validity checks** (FIPS 203 §7.2/§7.3) are covered. `kat_audit` has **0 ignored tests**.
+The remaining correctness-assurance work is machine-level constant-time evidence
+(dudect/ctgrind/asm), then the external audit (REQ-28).
 
 ---
 
 ## Highest-value open items (priority order)
 
 1. ~~**NIST ACVP/CAVP KAT vectors across the suite**~~ **(DONE 2026-06-04)** — the PQC gap
-   is closed: ML-KEM-768 (keyGen + encapDecap) and ML-DSA-65 (keyGen + sigGen + sigVer)
-   are byte/behaviour-exact vs authentic NIST ACVP, alongside the existing
-   SHA/HMAC/HKDF/AES/GCM/X25519/Ed25519 KATs. Residual nicety: AESAVS Monte-Carlo (item 4).
-2. **Machine-level CT verification** — emitted-asm inspection + dudect/ctgrind for the
-   AES S-box, ML-KEM/ML-DSA reductions/NTT, and the curve ladders, per target+toolchain.
-3. **Remaining primitive passes** — `ml_dsa.rs` (rejection-sampling timing must leak
-   only randomness, not the signing key), `gcm.rs`/`ghash.rs` (GHASH CT, nonce-reuse
-   resistance, tag-compare CT, SP 800-38D limits), `ed25519.rs` (canonical S / S<L
-   malleability, small-order handling, its own `ct_select` on the secret scalar path),
-   `x25519.rs` (clamping, all-zero/low-order rejection, CT ladder).
-4. **AES**: AESAVS vectors; decide raw-block visibility.
+   is closed and then some: ML-KEM-768 and ML-DSA-65 are byte/behaviour-exact vs authentic
+   NIST ACVP for keyGen/encapDecap and keyGen/sigGen/sigVer, the **full vector sets** for
+   the implemented parameter sets are swept (115 cases), the **ML-DSA external + pre-hash +
+   hedged interfaces** are ACVP-verified, and the **ML-KEM §7.2/§7.3 key-validity checks**
+   are in place. Remaining ACVP nicety: AESAVS Monte-Carlo (item 4); and the 6 pre-hash
+   variants whose hashes RIINA doesn't yet ship (SHA-224/384, SHA-512/224, SHA-512/256,
+   SHA3-224/384) — these need those hashes added first.
+2. **Machine-level CT verification (next correctness item)** — emitted-asm inspection +
+   dudect/ctgrind for the AES S-box, ML-KEM/ML-DSA reductions/NTT/samplers, and the curve
+   ladders, per target+toolchain. *Status:* the code already follows CT discipline by
+   construction (branchless selects, no secret-dependent branches — verified by inspection
+   in this pre-audit), but statistical timing evidence needs a controlled host (stable
+   clock, pinned core); it is deliberately **not** faked as a unit-test in CI, where the
+   measurement would be noise. This is a scoped harness build-out, not a code patch.
+3. **Remaining primitive passes** — `gcm.rs`/`ghash.rs`, `ed25519.rs`, `x25519.rs` deep
+   CT/malleability passes (ML-DSA rejection-sampling timing now leaks only randomness, not
+   the key — confirmed FIPS-204-correct).
+4. **AES**: AESAVS Monte-Carlo vectors; decide raw-block visibility.
+5. **Formal equivalence (the repo's north star)** — the ACVP byte-exact reference + vendored
+   vectors are the anchor for an eventual proof that the Rust matches a formal spec
+   (Coq/F* extraction or a refinement argument), turning "tested-correct" into
+   "proven-correct". The F* `CryptographicSecurityActive` lane is still smoke-only; this is
+   a major separate effort, now well-anchored.
 
 **AI-ASSISTED PRE-AUDIT — NOT an independent external audit (REQ-28 remains open).
-Findings are leads requiring human verification; expect false positives and misses.**
+Findings are leads requiring human verification; expect false positives and misses. The
+ACVP byte-exactness now gives an external auditor a reproducible correctness baseline,
+which is precisely what makes REQ-28 tractable and cheap to commission.**

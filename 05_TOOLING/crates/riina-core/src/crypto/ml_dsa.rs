@@ -22,9 +22,13 @@
 //! - Sign: `ρ'' = H(K ‖ rnd ‖ μ)` with `rnd = 0^32` for deterministic signing
 //!   (the draft hashed `H(K ‖ μ)` with no `rnd`).
 //!
-//! Sign/Verify are tested via the internal interface (μ = H(tr ‖ M)); the
-//! external-interface message prefix and pre-hash variants are not yet wired.
-//! See `reports/precrypto_audit_secondmodel.md`.
+//! All FIPS 204 interfaces are wired and ACVP-verified: the internal interface
+//! (`sign`/`verify`, μ = H(tr ‖ M)), the external "pure" interface
+//! (`sign_with_context`/`verify_with_context`, M' = 0x00 ‖ |ctx| ‖ ctx ‖ M), the
+//! pre-hash interface (`sign_prehash`/`verify_prehash`, HashML-DSA — for the
+//! hashes `riina-core` ships: SHA2-256/512, SHA3-256/512, SHAKE-128/256), and
+//! hedged signing (`sign_hedged`, real `rnd`). See
+//! `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
