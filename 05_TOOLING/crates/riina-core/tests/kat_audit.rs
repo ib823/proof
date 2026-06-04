@@ -25,7 +25,7 @@ use riina_core::crypto::keccak::{Sha3_256, Sha3_512};
 use riina_core::crypto::ml_kem::{
     MlKem768DecapsulationKey, MlKem768EncapsulationKey, MlKem768KeyPair,
 };
-use riina_core::crypto::ml_dsa::MlDsa65KeyPair;
+use riina_core::crypto::ml_dsa::{MlDsa65KeyPair, MlDsa65SigningKey, MlDsa65VerifyingKey};
 use riina_core::crypto::sha2::{Sha256, Sha512};
 use riina_core::crypto::x25519::x25519;
 
@@ -198,6 +198,44 @@ fn kat_ml_dsa_65_keygen_acvp_fips204() {
         hex(kv(data, "sk")),
         "sk does not match the ACVP expected secret key"
     );
+}
+
+#[test]
+fn kat_ml_dsa_65_siggen_acvp_fips204() {
+    // FIPS 204 deterministic, internal-interface signing (Sign_internal with
+    // rnd = 0^32, mu = H(tr || M)), byte-exact against an authentic NIST ACVP
+    // vector. Source URL + file SHA-256 are in the vendored file header.
+    let data = include_str!("vectors/mldsa65_siggen_acvp.txt");
+    let sk_bytes: [u8; 4032] = hexn(kv(data, "sk"));
+    let message = hex(kv(data, "message"));
+    let sk = MlDsa65SigningKey::from_bytes(&sk_bytes).expect("sk decode");
+    let sig = sk.sign(&message).expect("ML-DSA-65 sign");
+    assert_eq!(
+        sig.to_vec(),
+        hex(kv(data, "signature")),
+        "signature does not match the ACVP expected signature"
+    );
+}
+
+#[test]
+fn kat_ml_dsa_65_sigver_acvp_fips204() {
+    // FIPS 204 verification (internal interface) against authentic NIST ACVP
+    // vectors: one valid signature must verify, and tampered cases (modified
+    // commitment c̃, modified message) must be rejected. Source + SHA-256 in the
+    // vendored file header.
+    let data = include_str!("vectors/mldsa65_sigver_acvp.txt");
+    let case = |prefix: &str| {
+        let pk: [u8; 1952] = hexn(kv(data, &format!("{prefix}_pk")));
+        let message = hex(kv(data, &format!("{prefix}_message")));
+        let sig: [u8; 3309] = hexn(kv(data, &format!("{prefix}_signature")));
+        let want_ok = kv(data, &format!("{prefix}_pass")) == "1";
+        let vk = MlDsa65VerifyingKey::from_bytes(&pk).expect("pk decode");
+        let got_ok = vk.verify(&message, &sig).is_ok();
+        assert_eq!(got_ok, want_ok, "sigVer case '{prefix}': got ok={got_ok}, want {want_ok}");
+    };
+    case("valid");
+    case("badcommit");
+    case("badmsg");
 }
 
 // ── HMAC-SHA256 — RFC 4231 ───────────────────────────────────────────────────
