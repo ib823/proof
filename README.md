@@ -299,7 +299,7 @@ The `05_TOOLING/` workspace contains 35,000+ lines of hand-written cryptographic
 
 - **Symmetric:** AES-256, SHA-256 (FIPS 180-4), HMAC, ChaCha20-Poly1305
 - **Asymmetric:** X25519, Ed25519 (interfaces + partial implementations)
-- **Post-quantum:** **ML-KEM-768 — ✅ FIPS 203 compliant** (byte-exact against authentic NIST ACVP keyGen + encapDecap vectors). **ML-DSA-65 — ⚠️ still on the pre-final Dilithium draft, NOT yet FIPS 204 compliant** (NIST ACVP keyGen vector fails; FIPS 204 reconciliation pending — see `reports/precrypto_audit_secondmodel.md`)
+- **Post-quantum:** **ML-KEM-768 — ✅ FIPS 203 compliant** (byte-exact vs authentic NIST ACVP keyGen + encapDecap) and **ML-DSA-65 — ✅ FIPS 204 compliant** (byte/behaviour-exact vs NIST ACVP keyGen + sigGen + sigVer). Hand-rolled, zero external crypto deps — see `reports/precrypto_audit_secondmodel.md`
 - **Zero external crypto dependencies** — everything auditable from source
 
 ---
