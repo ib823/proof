@@ -1,11 +1,38 @@
 # Changelog
 
-**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2709 Rust tests
+**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-04 — Post-quantum FIPS 203/204 reconciliation (NIST ACVP byte-exact)
+
+### Added (PQC — ML-KEM-768 → FIPS 203 + ML-DSA-65 → FIPS 204; authentic NIST ACVP, byte/behaviour-exact)
+- **ML-KEM-768 → FIPS 203 (keyGen + encaps + decaps), byte-exact vs authentic NIST ACVP-Server vectors.**
+  The keygen divergence's root cause was `sample_ntt` reading its zero-initialised buffer on the first
+  iteration — the matrix `Â` was silently all-zeros, so `t̂ = Â∘ŝ + ê` collapsed to `ê` (this is exactly why
+  `ŝ`/`dk` matched NIST while `t̂`/`ek` did not). Also `G(d)`→`G(d‖k)`, `poly_tomont` after the `Â∘ŝ`
+  basemul-accumulate, and the FO transform (`K` straight from `G`; implicit reject `J(z‖c)` over the full
+  ciphertext). Added the §7.2/§7.3 key-validity checks (decap-key hash check: the embedded `H(ek)` must equal
+  `SHA3-256(ek)`). KATs: `kat_ml_kem_768_keygen_acvp_fips203`, `kat_ml_kem_768_encaps_decaps_acvp_fips203`.
+- **ML-DSA-65 → FIPS 204 (keyGen + sigGen + sigVer + all interfaces), byte/behaviour-exact vs NIST ACVP.**
+  Fixes: `H(ξ)`→`H(ξ‖k‖ℓ)`; ExpandS centered-binomial → FIPS 204 `RejBoundedPoly`/`CoeffFromHalfByte`;
+  ExpandA Kyber 12-bit → Dilithium 23-bit `CoeffFromThreeBytes`; deterministic `ρ''=H(K‖0³²‖μ)`. The internal,
+  external "pure" (`sign_with_context`), pre-hash / HashML-DSA (`sign_prehash`, for the shipped hashes), and
+  **hedged** (`sign_hedged` — now actually consumes `rnd`, was a stub) interfaces are all ACVP-verified.
+  KATs: `kat_ml_dsa_65_{keygen,siggen,sigver}_acvp_fips204`.
+- **Full ACVP vector sweeps for the implemented parameter sets (115 cases):** ML-KEM-768 keyGen ×25 /
+  encaps ×25 / decaps ×10; ML-DSA-65 keyGen ×25 / sigGen ×15 / sigVer ×15. Every vendored vector carries its
+  source URL + file SHA-256.
+- **`kat_audit`: 23 passed, 0 ignored** (was 2 ignored) — every primitive now has an authoritative FIPS/RFC
+  KAT. `05_TOOLING` `cargo test --all` **280 / 0 / 0**; `03_PROTO` unchanged at **2729 / 0 / 3 ignored**.
+- Pre-audit CT/correctness hardening (Codex + second-model passes): Ed25519 `ct_select` (secret-scalar path)
+  and `is_scalar_valid` (reversed subtraction borrow) fixes; ML-DSA `check_norm` made constant-time; AES
+  `ct_lookup` CT barrier; `constant_time::ct_select` made branchless. See `reports/precrypto_audit_secondmodel.md`.
+- **Release:** `VERSION` → **0.3.0**, tag **`v0.3.0`**. (A historical `[0.3.0] — 2026-03-19` entry already
+  exists below; reconciling the release numbering is deferred to a dedicated release-management pass.)
 
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 

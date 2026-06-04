@@ -219,7 +219,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-05-17 by running commands listed in Part 0.**
+**Last verified: 2026-06-04 (Rust workspaces re-run this session); Coq build machine-checked 2026-06-03 in-container on Rocq 9.2 (see Compilation row). Run the commands listed in Part 0 to re-verify.**
 
 ### Coq (Primary Prover)
 
@@ -324,7 +324,7 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 | Metric | Value |
 |--------|-------|
 | Tests (03_PROTO/) | 2,729 passing, 0 failed, 3 ignored (2026-06-03: +2 zero-arg-thunk, +18 VFS access-control/model-port) |
-| Tests (05_TOOLING/) | 256 passing, 0 failed, 2 ignored (incl. 8 consolidated crypto KAT-audit-manifest tests, 2026-06-02) |
+| Tests (05_TOOLING/) | 280 passing, 0 failed, 0 ignored (incl. the ML-KEM-768/ML-DSA-65 NIST ACVP KAT sweeps + ML-DSA interface tests; `kat_audit` 23/0-ignored, 2026-06-04) |
 | Crates (03_PROTO) | 19 |
 | Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
 | Clippy | Clean |
@@ -2388,11 +2388,11 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-03, fourth session)
+### Session Handoff Snapshot (last updated 2026-06-04, fifth session)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
 Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2729 / 0 / 3 ignored**
-(05_TOOLING **256 / 0**), `cargo clippy --all-targets` 0 warnings (both workspaces), WASM/C
+(05_TOOLING **280 / 0**), `cargo clippy --all-targets` 0 warnings (both workspaces), WASM/C
 `corpus_differential` byte-equal, **157** example `.rii` files, Coq active **314 files /
 12,456 Qed / 0 Admitted / 0 Axiom / 0 Abort** — **machine-checked in-container 2026-06-03 on
 Rocq 9.2** (rocq-core 9.2.0 + rocq-stdlib 9.1.0 via opam; 314 `.vo` in 176s under the pre-push
@@ -2401,6 +2401,18 @@ Rocq 9.2** (rocq-core 9.2.0 + rocq-stdlib 9.1.0 via opam; 314 `.vo` in 176s unde
 Isabelle) WERE provisioned this session and their smoke artifacts pass, but the published
 metrics keep the canonical Gate-D "generated/smoke-only" claim values (do NOT commit a regen
 that flips `smokeBuildOk` true on the strength of local provisioning).
+
+**Fifth session (2026-06-04) — PQC FIPS 203/204 reconciliation (the headline pre-audit finding):**
+ML-KEM-768 (FIPS 203: keyGen + encaps + decaps) and ML-DSA-65 (FIPS 204: keyGen + sigGen + sigVer,
+plus the internal / external-"pure" / pre-hash / hedged interfaces) are now **byte/behaviour-exact vs
+authentic NIST ACVP** — 115-case vector sweeps, `kat_audit` **23 / 0-ignored**, 05_TOOLING **280 / 0 / 0**;
+the ML-KEM §7.2/§7.3 key-validity checks were added (decap-key hash check). `VERSION` is **0.3.0** and tag
+**`v0.3.0`** is pushed; the public branch was re-synced. **Next steps (do not redo the landed items):** the
+machine-level constant-time evidence (dudect/ctgrind/asm — the code is CT-by-construction, but statistical
+evidence needs a controlled host and is deliberately not faked in CI); the `gcm`/`ed25519`/`x25519` deep
+pre-audit passes; the north-star **formal-equivalence proof** anchored on the now-ACVP-exact reference; then
+**REQ-28** (external crypto audit, P0). Full detail is in the Part 11 Gate C row and
+`reports/precrypto_audit_secondmodel.md`.
 
 **Gate C status (2026-06-03):** stdlib hardening is largely complete — the numeric tower
 (to 32-bit, both signednesses, C/WASM/interp + a Coq model), **collections** (list/map/set),
