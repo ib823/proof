@@ -2,21 +2,24 @@
 
 //! ML-KEM-768 (Module-Lattice Key Encapsulation Mechanism) Implementation
 //!
-//! This module implements ML-KEM-768 based on the pre-final Kyber (round-3) draft.
-//! ML-KEM is a post-quantum key encapsulation mechanism based on the
-//! Module Learning With Errors (MLWE) problem.
+//! This module implements ML-KEM-768 (FIPS 203). It is a post-quantum key
+//! encapsulation mechanism based on the Module Learning With Errors (MLWE)
+//! problem.
 //!
-//! # FIPS 203 status — NOT YET COMPLIANT (2026-06-04, NIST ACVP pre-audit)
+//! # FIPS 203 status (2026-06-04, NIST ACVP)
 //!
-//! This implementation does **not** match the final FIPS 203 standard: an
-//! authentic NIST ACVP keyGen vector fails. Confirmed deltas include
-//! `K-PKE.KeyGen` hashing `G(d)` instead of FIPS 203's `G(d ‖ k)` (the
-//! parameter-set domain separator), plus further sampling/NTT/encoding
-//! differences. It is *self-consistent* (its own keygen/encaps/decaps
-//! interoperate) but is **not interoperable** with FIPS-203-compliant
-//! implementations. An (output-breaking) FIPS 203 reconciliation is pending —
-//! see `reports/precrypto_audit_secondmodel.md` and the ignored
-//! `kat_ml_kem_768_keygen_acvp_fips203`.
+//! - **KeyGen — COMPLIANT.** `ML-KEM.KeyGen` (and the inner `K-PKE.KeyGen`) are
+//!   byte-exact against an authentic NIST ACVP-Server vector; see the passing
+//!   `kat_ml_kem_768_keygen_acvp_fips203`. The reconciliation fixed `G(d) ->
+//!   G(d ‖ k)`, added `poly_tomont` after the Â∘ŝ basemul-accumulate, and fixed
+//!   the matrix sampler (`sample_ntt`) which had been reading a zero-initialised
+//!   buffer on its first iteration (Â was silently all-zeros).
+//! - **Encaps/Decaps — FO transform reconciliation pending.** The K-PKE core
+//!   (encrypt/decrypt) now uses the FIPS-correct matrix sampler, but the
+//!   Fujisaki–Okamoto wrapper still follows the pre-final Kyber draft (it applies
+//!   `KDF(K ‖ H(c))` and hashes `H(c)` for implicit rejection, whereas FIPS 203
+//!   returns `K` directly and rejects with `J(z ‖ c)`). Tracked against an ACVP
+//!   encapDecap vector. See `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
@@ -216,6 +219,17 @@ impl Poly {
         for coeff in &mut self.coeffs {
             *coeff = barrett_reduce(*coeff);
             *coeff = cond_sub_q(*coeff);
+        }
+    }
+
+    /// Convert to Montgomery domain (multiply each coefficient by R, the
+    /// standard `poly_tomont`): `montgomery_reduce(c * (R^2 mod q))`, with
+    /// `R^2 mod q = 2^32 mod 3329 = 1353`. Used after basemul-accumulate in
+    /// keygen to undo the R^(-1) that fqmul introduces (FIPS 203 / Kyber ref).
+    pub fn to_mont(&mut self) {
+        const R2_MOD_Q: i16 = 1353; // 2^32 mod q
+        for coeff in &mut self.coeffs {
+            *coeff = fqmul(*coeff, R2_MOD_Q);
         }
     }
 
@@ -639,6 +653,13 @@ impl PolyVec {
             poly.reduce();
         }
     }
+
+    /// Convert all polynomials to Montgomery domain (`poly_tomont` per poly).
+    pub fn to_mont(&mut self) {
+        for poly in &mut self.polys {
+            poly.to_mont();
+        }
+    }
 }
 
 impl Drop for PolyVec {
@@ -697,12 +718,15 @@ impl PolyMat {
 ///
 /// Algorithm 6 from FIPS 203
 fn sample_ntt(poly: &mut Poly, xof: &mut Shake128) {
-    let mut buf = [0u8; 3 * 168]; // 3 blocks for efficiency
-    let mut idx = 0usize;
+    let mut buf = [0u8; 3 * 168]; // 3 SHAKE128 blocks (rate 168) per refill
+    // Prime `idx` past the end so the first loop iteration squeezes the XOF
+    // before any read. Starting at 0 would read the zero-initialised buffer for
+    // the first 168 attempts (the whole polynomial), yielding an all-zero Â.
+    let mut idx = buf.len();
     let mut j = 0usize;
 
     while j < params::N {
-        // Refill buffer if needed
+        // Refill buffer if fewer than 3 bytes remain (also primes the first read)
         if idx + 3 > buf.len() {
             xof.squeeze(&mut buf);
             idx = 0;
@@ -753,16 +777,12 @@ fn sample_noise(poly: &mut Poly, seed: &[u8; 32], nonce: u8, eta: usize) {
 ///
 /// Algorithm 12 from FIPS 203
 fn k_pke_keygen(d: &[u8; 32], ek: &mut [u8; PUBLIC_KEY_SIZE], dk: &mut [u8; 1152]) {
-    // (ρ, σ) = G(d)
-    //
-    // NON-COMPLIANCE (2026-06-04, NIST ACVP pre-audit): FIPS 203 Alg. 13 requires
-    // G(d ‖ k) — the module-dimension byte k as a parameter-set domain separator.
-    // Adding it makes ρ match the NIST ACVP keyGen vector, but t̂ still diverges,
-    // so RIINA's ML-KEM has further pre-final-Kyber-vs-FIPS-203 deltas in the
-    // sampling/NTT/encoding pipeline. Left as-is (self-consistent draft Kyber)
-    // pending a complete, atomic FIPS 203 reconciliation — see
-    // reports/precrypto_audit_secondmodel.md and the (ignored) ACVP keyGen KAT.
-    let g_output = Sha3_512::hash(d);
+    // (ρ, σ) = G(d ‖ k)  — FIPS 203 Alg. 13: the module-dimension byte k is a
+    // parameter-set domain separator (omitted by the pre-final Kyber draft).
+    let mut g_input = [0u8; 33];
+    g_input[..32].copy_from_slice(d);
+    g_input[32] = params::K as u8;
+    let g_output = Sha3_512::hash(&g_input);
     let rho: [u8; 32] = g_output[..32].try_into().unwrap();
     let sigma: [u8; 32] = g_output[32..64].try_into().unwrap();
 
@@ -783,8 +803,13 @@ fn k_pke_keygen(d: &[u8; 32], ek: &mut [u8; PUBLIC_KEY_SIZE], dk: &mut [u8; 1152
     s.ntt();
     e.ntt();
 
-    // t̂ = Â·ŝ + ê
+    // t̂ = Â·ŝ + ê. basemul (fqmul) carries an R^(-1) Montgomery factor; FIPS 203 /
+    // the Kyber reference applies `poly_tomont` (×R, i.e. ×R^2 mod q via Montgomery)
+    // after the basemul-accumulate and BEFORE adding ê, so t̂ is in standard domain
+    // for ByteEncode. (Keygen has no inverse-NTT, so unlike encrypt/decrypt — whose
+    // inv_ntt already folds in the tomont via F=1441 — this conversion is explicit.)
     let mut t_hat = a_hat.mul_vec(&s);
+    t_hat.to_mont();
     t_hat.add(&e);
     t_hat.reduce();
 
@@ -1252,6 +1277,8 @@ impl Kem for MlKem768 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
 
     #[test]
     fn test_ml_kem_768_sizes() {

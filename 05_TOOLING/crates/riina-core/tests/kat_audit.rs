@@ -106,12 +106,14 @@ fn kat_sha3_512_fips202_abc() {
 // ── ML-KEM-768 — NIST ACVP (FIPS 203) ────────────────────────────────────────
 
 #[test]
-#[ignore = "FINDING: RIINA ML-KEM is pre-final Kyber draft, not FIPS 203 (G(d) vs \
-            G(d||k) aligns rho but t_hat still diverges -> sampling/NTT/encoding \
-            deltas). This authentic NIST ACVP vector is the oracle for the FIPS \
-            203 reconciliation; un-ignore once ML-KEM is made compliant. See \
-            reports/precrypto_audit_secondmodel.md."]
 fn kat_ml_kem_768_keygen_acvp_fips203() {
+    // FIPS 203 COMPLIANT (byte-exact against this authentic NIST ACVP vector).
+    // Reconciliation deltas that were fixed: (1) G(d) -> G(d||k) parameter-set
+    // domain separator; (2) `poly_tomont` after the Â∘ŝ basemul-accumulate (the
+    // R^(-1) from fqmul); (3) the root cause that masked everything else -- the
+    // matrix sampler `sample_ntt` read its zero-initialised buffer on the first
+    // iteration (Â was silently all-zeros, so t_hat collapsed to ê and tomont
+    // had nothing to scale). See reports/precrypto_audit_secondmodel.md.
     // Authentic NIST ACVP-Server vector (FIPS 203). Source URL + file SHA-256 are
     // in the header of the vendored file. ACVP keyGen supplies d and z; RIINA's
     // generate() consumes randomness = d || z and must reproduce ek and dk.
