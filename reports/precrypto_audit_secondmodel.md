@@ -35,18 +35,25 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 > single most important result of the pre-audit — exactly what ACVP testing and an
 > external audit (REQ-28) exist to catch.
 >
-> ### ✅ UPDATE 2026-06-04 — ML-KEM-768 RECONCILED to FIPS 203 (byte-exact)
-> ML-KEM is now **byte-exact against authentic NIST ACVP-Server vectors** for keyGen,
-> encaps, and decaps (`kat_ml_kem_768_keygen_acvp_fips203`,
-> `kat_ml_kem_768_encaps_decaps_acvp_fips203`, both passing/un-ignored). Beyond the
-> `G(d) → G(d ‖ k)` domain separator, the divergence root cause was a sampler bug:
+> ### ✅ UPDATE 2026-06-04 — BOTH PQC primitives RECONCILED (byte-exact vs NIST ACVP)
+> **ML-KEM-768 → FIPS 203** for keyGen, encaps, and decaps
+> (`kat_ml_kem_768_keygen_acvp_fips203`, `kat_ml_kem_768_encaps_decaps_acvp_fips203`).
+> Beyond the `G(d) → G(d ‖ k)` domain separator, the root cause was a sampler bug:
 > `sample_ntt` read its **zero-initialised buffer on the first iteration**, so the
-> matrix Â was silently all-zeros and t̂ collapsed to ê (which is exactly why ŝ/dk
-> matched NIST while t̂/ek did not). Also added `poly_tomont` after the Â∘ŝ
-> basemul-accumulate, and reconciled the FO transform to FIPS 203 (shared secret `K`
-> returned directly from `G`; implicit rejection `K̄ = J(z ‖ c)` over the full
-> ciphertext). **ML-DSA-65 remains on the pre-final Dilithium draft** — FIPS 204
-> reconciliation pending (`kat_ml_dsa_65_keygen_acvp_fips204` still the ignored oracle).
+> matrix Â was silently all-zeros and t̂ collapsed to ê (exactly why ŝ/dk matched NIST
+> while t̂/ek did not). Also added `poly_tomont` after the Â∘ŝ basemul-accumulate and
+> reconciled the FO transform (shared secret `K` from `G` directly; implicit rejection
+> `K̄ = J(z ‖ c)` over the full ciphertext).
+>
+> **ML-DSA-65 → FIPS 204** for keyGen, sigGen, and sigVer
+> (`kat_ml_dsa_65_keygen_acvp_fips204`, `kat_ml_dsa_65_siggen_acvp_fips204`,
+> `kat_ml_dsa_65_sigver_acvp_fips204`). Fixes: (1) `H(ξ) → H(ξ ‖ k ‖ ℓ)`; (2) ExpandS
+> (`sample_eta`) was a centered binomial distribution (ML-KEM style) — replaced with
+> FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte` rejection sampling); (3) ExpandA
+> (`sample_uniform_ntt`) used the Kyber two-12-bit byte extraction — replaced with
+> Dilithium's one-23-bit `CoeffFromThreeBytes` (this was making Â, hence t/pk, diverge);
+> (4) deterministic signing `ρ'' = H(K ‖ 0^32 ‖ μ)` (the draft omitted `rnd`).
+> **All ACVP KATs pass; `kat_audit` now has 0 ignored tests.**
 
 ---
 
@@ -59,7 +66,7 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `ml_kem.rs` (FIPS 203) | **ACVP keyGen + encapDecap byte-exact (green)** | 1 Critical (was not FIPS 203) + 2 Med CT/hygiene | **FIPS 203 reconciliation (sampler/tomont/domain-sep/FO)**; decaps CT branches + zeroization (CT verified) | **✅ FIPS 203 COMPLIANT** |
 | `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
 | `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
-| `ml_dsa.rs` (FIPS 204) | roundtrip green; **ACVP keyGen FAILS** | **1 Critical (not FIPS 204)** + 1 Med CT | `check_norm` CT (poly+vec) + equivalence test | **⚑ NOT FIPS 204 — draft Dilithium; output-breaking reconciliation needed** |
+| `ml_dsa.rs` (FIPS 204) | **ACVP keyGen + sigGen + sigVer byte/behaviour-exact (green)** | 1 Critical (was not FIPS 204) + 1 Med CT | **FIPS 204 reconciliation (H‖k‖l / ExpandS rejection / ExpandA 23-bit / det. rnd)**; `check_norm` CT (poly+vec) + equivalence test | **✅ FIPS 204 COMPLIANT** |
 | `gcm.rs`/`ghash.rs` | NIST GCM KATs green | **none** (clean) | — | nonce-reuse is caller's responsibility (documented); SP 800-38D length limits not enforced (unreachable) |
 | `sha2`/`keccak`/`hmac`/`hkdf` | KATs green (+SHA-3 added) | **none** (clean) | added SHA3-256/512 FIPS 202 KATs to the manifest | — |
 
@@ -178,11 +185,13 @@ Reductions (`montgomery_reduce`/`reduce32`/`caddq`/`freeze`) are branchless/CT.
   missing — changed nothing because `tomont(0)=0`). Lesson: an all-zeros operand can
   masquerade as a "deep core" divergence; check operand *content*, not just transforms.
   Now byte-exact against ACVP keyGen + encapDecap.
-- **⚑ NOT FIPS 204 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
-  the Headline Finding). keyGen hashes `H(ξ)` but FIPS 204 requires `H(ξ ‖ k ‖ ℓ)`
-  (fixing aligns ρ exactly with NIST); pk still diverges, so the rest of the pipeline
-  differs too — same draft-vs-final pattern as ML-KEM. Needs an atomic, output-breaking
-  FIPS 204 reconciliation; the ignored `kat_ml_dsa_65_keygen_acvp_fips204` is the oracle.
+- **⚑ NOT FIPS 204 (Critical → FIXED 2026-06-04):** keyGen, sigGen, and sigVer are now
+  byte/behaviour-exact vs authentic NIST ACVP. Beyond `H(ξ) → H(ξ ‖ k ‖ ℓ)` (which
+  aligned ρ), the pk divergence had two sampler root causes — ExpandS used a centered
+  binomial distribution instead of FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte`), and
+  ExpandA used the Kyber two-12-bit byte extraction instead of Dilithium's one-23-bit
+  `CoeffFromThreeBytes`. Signing additionally needed the deterministic randomizer
+  `ρ'' = H(K ‖ 0^32 ‖ μ)`. Guards: `kat_ml_dsa_65_{keygen,siggen,sigver}_acvp_fips204`.
 - Open: `decompose`/`make_hint`/`sample_in_ball` CT and encodings were not deeply audited
   this pass. The sign loop's iteration count is inherently `y`-dependent (acceptable).
 
@@ -209,17 +218,21 @@ hash cores) and well-tested:
 - **SHA-2 / SHA-3:** no `unsafe`, no secret branches. Added **SHA3-256/512 FIPS 202 KATs**
   to the consolidated manifest (`tests/kat_audit.rs`) — was the one missing family there.
 
-**Net KAT status:** every primitive except **ML-DSA** now has an authoritative FIPS/RFC
-KAT (SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519, plus **ML-KEM-768 keyGen + encapDecap
-byte-exact against NIST ACVP**). Only ML-DSA-65 (FIPS 204) remains on roundtrip-only
-tests with an ignored ACVP keyGen oracle — the FIPS 204 reconciliation is the next job.
+**Net KAT status:** **every primitive now has an authoritative FIPS/RFC KAT** —
+SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519, plus **ML-KEM-768 (FIPS 203) keyGen +
+encapDecap** and **ML-DSA-65 (FIPS 204) keyGen + sigGen + sigVer**, all byte/behaviour-exact
+against authentic NIST ACVP vectors. `kat_audit` has **0 ignored tests**. The remaining
+correctness-assurance work is machine-level constant-time evidence (dudect/asm), then the
+external audit (REQ-28).
 
 ---
 
 ## Highest-value open items (priority order)
 
-1. **NIST ACVP/CAVP KAT vectors across the suite** (esp. ML-KEM, ML-DSA, the SHA/HMAC/
-   HKDF/GCM families) — the biggest correctness-assurance gap for hand-rolled crypto.
+1. ~~**NIST ACVP/CAVP KAT vectors across the suite**~~ **(DONE 2026-06-04)** — the PQC gap
+   is closed: ML-KEM-768 (keyGen + encapDecap) and ML-DSA-65 (keyGen + sigGen + sigVer)
+   are byte/behaviour-exact vs authentic NIST ACVP, alongside the existing
+   SHA/HMAC/HKDF/AES/GCM/X25519/Ed25519 KATs. Residual nicety: AESAVS Monte-Carlo (item 4).
 2. **Machine-level CT verification** — emitted-asm inspection + dudect/ctgrind for the
    AES S-box, ML-KEM/ML-DSA reductions/NTT, and the curve ladders, per target+toolchain.
 3. **Remaining primitive passes** — `ml_dsa.rs` (rejection-sampling timing must leak
