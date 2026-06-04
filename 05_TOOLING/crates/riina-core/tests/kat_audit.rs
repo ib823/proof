@@ -22,7 +22,9 @@ use riina_core::crypto::gcm::{Aes256Gcm, TAG_SIZE};
 use riina_core::crypto::hkdf::HkdfSha256;
 use riina_core::crypto::hmac::HmacSha256;
 use riina_core::crypto::keccak::{Sha3_256, Sha3_512};
-use riina_core::crypto::ml_kem::MlKem768KeyPair;
+use riina_core::crypto::ml_kem::{
+    MlKem768DecapsulationKey, MlKem768EncapsulationKey, MlKem768KeyPair,
+};
 use riina_core::crypto::ml_dsa::MlDsa65KeyPair;
 use riina_core::crypto::sha2::{Sha256, Sha512};
 use riina_core::crypto::x25519::x25519;
@@ -132,6 +134,43 @@ fn kat_ml_kem_768_keygen_acvp_fips203() {
         kp.decapsulation_key().as_bytes().to_vec(),
         hex(kv(data, "dk")),
         "dk does not match the ACVP expected secret key"
+    );
+}
+
+#[test]
+fn kat_ml_kem_768_encaps_decaps_acvp_fips203() {
+    // FIPS 203 COMPLIANT (byte-exact against authentic NIST ACVP-Server vectors).
+    // Source URL + file SHA-256 are in the vendored file header. Exercises both
+    // FO-transform branches: encapsulation, valid decapsulation (returns K'), and
+    // implicit rejection on a modified ciphertext (returns J(z || c)).
+    let data = include_str!("vectors/mlkem768_encapdecap_acvp.txt");
+
+    // Encapsulation AFT: given ek and m, reproduce ciphertext c and shared secret K.
+    let ek_bytes: [u8; 1184] = hexn(kv(data, "enc_ek"));
+    let m: [u8; 32] = hexn(kv(data, "enc_m"));
+    let ek = MlKem768EncapsulationKey::from_bytes(&ek_bytes).expect("ek decode");
+    let (ct, ss) = ek.encapsulate(&m).expect("encapsulate");
+    assert_eq!(ct.to_vec(), hex(kv(data, "enc_c")), "encaps ciphertext mismatch");
+    assert_eq!(ss.to_vec(), hex(kv(data, "enc_k")), "encaps shared secret mismatch");
+
+    // Valid decapsulation VAL: given dk and c, reproduce K' directly.
+    let dk_v: [u8; 2400] = hexn(kv(data, "dec_valid_dk"));
+    let c_v: [u8; 1088] = hexn(kv(data, "dec_valid_c"));
+    let dk_valid = MlKem768DecapsulationKey::from_bytes(&dk_v).expect("dk decode");
+    assert_eq!(
+        dk_valid.decapsulate(&c_v).expect("decaps").to_vec(),
+        hex(kv(data, "dec_valid_k")),
+        "valid decaps shared secret mismatch"
+    );
+
+    // Implicit-rejection VAL: modified ciphertext -> shared secret = J(z || c).
+    let dk_r: [u8; 2400] = hexn(kv(data, "dec_reject_dk"));
+    let c_r: [u8; 1088] = hexn(kv(data, "dec_reject_c"));
+    let dk_reject = MlKem768DecapsulationKey::from_bytes(&dk_r).expect("dk decode");
+    assert_eq!(
+        dk_reject.decapsulate(&c_r).expect("decaps").to_vec(),
+        hex(kv(data, "dec_reject_k")),
+        "implicit-rejection shared secret mismatch"
     );
 }
 

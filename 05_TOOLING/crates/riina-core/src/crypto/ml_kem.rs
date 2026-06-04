@@ -6,20 +6,24 @@
 //! encapsulation mechanism based on the Module Learning With Errors (MLWE)
 //! problem.
 //!
-//! # FIPS 203 status (2026-06-04, NIST ACVP)
+//! # FIPS 203 status — COMPLIANT (2026-06-04, NIST ACVP byte-exact)
 //!
-//! - **KeyGen — COMPLIANT.** `ML-KEM.KeyGen` (and the inner `K-PKE.KeyGen`) are
-//!   byte-exact against an authentic NIST ACVP-Server vector; see the passing
-//!   `kat_ml_kem_768_keygen_acvp_fips203`. The reconciliation fixed `G(d) ->
-//!   G(d ‖ k)`, added `poly_tomont` after the Â∘ŝ basemul-accumulate, and fixed
-//!   the matrix sampler (`sample_ntt`) which had been reading a zero-initialised
-//!   buffer on its first iteration (Â was silently all-zeros).
-//! - **Encaps/Decaps — FO transform reconciliation pending.** The K-PKE core
-//!   (encrypt/decrypt) now uses the FIPS-correct matrix sampler, but the
-//!   Fujisaki–Okamoto wrapper still follows the pre-final Kyber draft (it applies
-//!   `KDF(K ‖ H(c))` and hashes `H(c)` for implicit rejection, whereas FIPS 203
-//!   returns `K` directly and rejects with `J(z ‖ c)`). Tracked against an ACVP
-//!   encapDecap vector. See `reports/precrypto_audit_secondmodel.md`.
+//! `ML-KEM.KeyGen`, `ML-KEM.Encaps`, and `ML-KEM.Decaps` are byte-exact against
+//! authentic NIST ACVP-Server vectors (keyGen and encapDecap, incl. the
+//! implicit-rejection path); see the passing `kat_ml_kem_768_keygen_acvp_fips203`
+//! and `kat_ml_kem_768_encaps_decaps_acvp_fips203`. The reconciliation away from
+//! the pre-final Kyber draft fixed:
+//!
+//! - `K-PKE.KeyGen`: `G(d)` -> `G(d ‖ k)` (parameter-set domain separator);
+//!   `poly_tomont` after the Â∘ŝ basemul-accumulate (undo fqmul's `R^(-1)`).
+//! - `sample_ntt` (the root cause): the matrix sampler read its zero-initialised
+//!   buffer on the first iteration, so Â was silently all-zeros. This made
+//!   `t_hat` collapse to `ê` while leaving `ŝ`/`dk` correct.
+//! - FO transform: FIPS 203 returns the shared secret `K` straight from
+//!   `G(m ‖ H(ek))` (the draft applied an extra `KDF(K ‖ H(c))`), and rejects
+//!   with `K̄ = J(z ‖ c)` over the full ciphertext (the draft used `H(c)`).
+//!
+//! See `reports/precrypto_audit_secondmodel.md` for the audit trail.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
@@ -950,31 +954,25 @@ impl MlKem768EncapsulationKey {
         random: &[u8; 32],
     ) -> CryptoResult<([u8; CIPHERTEXT_SIZE], [u8; SHARED_SECRET_SIZE])> {
         let mut ct = [0u8; CIPHERTEXT_SIZE];
-        let mut ss = [0u8; SHARED_SECRET_SIZE];
 
         // H(ek)
         let h_ek = Sha3_256::hash(&self.bytes);
 
-        // (K, r) = G(m || H(ek))
+        // (K, r) = G(m || H(ek))  — FIPS 203 Alg. 17, line 1
         let mut g_input = [0u8; 64];
         g_input[..32].copy_from_slice(random);
         g_input[32..64].copy_from_slice(&h_ek);
         let g_output = Sha3_512::hash(&g_input);
-        let k: [u8; 32] = g_output[..32].try_into().unwrap();
         let r: [u8; 32] = g_output[32..64].try_into().unwrap();
 
         // c = K-PKE.Encrypt(ek, m, r)
         k_pke_encrypt(&self.bytes, random, &r, &mut ct);
 
-        // K = KDF(K || H(c)) - using SHAKE256 for KDF
-        let h_c = Sha3_256::hash(&ct);
-        let mut kdf_input = [0u8; 64];
-        kdf_input[..32].copy_from_slice(&k);
-        kdf_input[32..64].copy_from_slice(&h_c);
-
-        let mut kdf = Shake256::new();
-        kdf.update(&kdf_input);
-        kdf.squeeze(&mut ss);
+        // FIPS 203 Alg. 17, line 3: the shared secret K is the first 32 bytes of
+        // G(m || H(ek)) returned directly. (The pre-final Kyber draft applied an
+        // extra KDF = SHAKE256(K || H(c)); FIPS 203 removed it.)
+        let mut ss = [0u8; SHARED_SECRET_SIZE];
+        ss.copy_from_slice(&g_output[..32]);
 
         Ok((ct, ss))
     }
@@ -1018,7 +1016,7 @@ impl MlKem768DecapsulationKey {
         let mut m_prime = [0u8; 32];
         k_pke_decrypt(dk_pke, ciphertext, &mut m_prime);
 
-        // (K', r') = G(m' || H(ek))
+        // (K', r') = G(m' || h)  — h = H(ek), stored in dk (FIPS 203 Alg. 18, line 6)
         let mut g_input = [0u8; 64];
         g_input[..32].copy_from_slice(&m_prime);
         g_input[32..64].copy_from_slice(&h_ek);
@@ -1026,61 +1024,49 @@ impl MlKem768DecapsulationKey {
         let mut k_prime: [u8; 32] = g_output[..32].try_into().unwrap();
         let mut r_prime: [u8; 32] = g_output[32..64].try_into().unwrap();
 
-        // H(c)
-        let h_c = Sha3_256::hash(ciphertext);
+        // Implicit-rejection key K_bar = J(z || c) = SHAKE256(z || c), over the
+        // FULL ciphertext (FIPS 203 Alg. 18, line 7). The pre-final Kyber draft
+        // hashed SHAKE256(z || H(c)) instead.
+        let mut j_input = [0u8; 32 + CIPHERTEXT_SIZE];
+        j_input[..32].copy_from_slice(&z);
+        j_input[32..].copy_from_slice(ciphertext);
+        let mut ss_reject = [0u8; 32];
+        let mut j = Shake256::new();
+        j.update(&j_input);
+        j.squeeze(&mut ss_reject);
 
         // c' = K-PKE.Encrypt(ek, m', r')
         let mut ct_prime = [0u8; CIPHERTEXT_SIZE];
         k_pke_encrypt(&ek, &m_prime, &r_prime, &mut ct_prime);
 
-        // Constant-time comparison: if c == c' then K = K' else K = KDF(z || H(c))
+        // Constant-time comparison of c vs c'
         let mut diff = 0u8;
         for i in 0..CIPHERTEXT_SIZE {
             diff |= ciphertext[i] ^ ct_prime[i];
         }
-
         // mask = 0xFF if equal, 0x00 if different
         let mask = (((diff as i16) - 1) >> 8) as u8;
 
-        // Select between K' (valid) and KDF(z || H(c)) (implicit rejection)
-        let mut kdf_input_reject = [0u8; 64];
-        kdf_input_reject[..32].copy_from_slice(&z);
-        kdf_input_reject[32..64].copy_from_slice(&h_c);
-
-        let mut ss_reject = [0u8; 32];
-        let mut kdf = Shake256::new();
-        kdf.update(&kdf_input_reject);
-        kdf.squeeze(&mut ss_reject);
-
-        // KDF for valid case
-        let mut kdf_input_valid = [0u8; 64];
-        kdf_input_valid[..32].copy_from_slice(&k_prime);
-        kdf_input_valid[32..64].copy_from_slice(&h_c);
-
-        let mut ss_valid = [0u8; 32];
-        let mut kdf2 = Shake256::new();
-        kdf2.update(&kdf_input_valid);
-        kdf2.squeeze(&mut ss_valid);
-
-        // Constant-time select
+        // FIPS 203 Alg. 18, lines 9-10: the valid shared secret is K' returned
+        // directly; on ciphertext mismatch it is replaced by K_bar (implicit
+        // rejection). Selection is constant-time. (The draft applied an extra
+        // KDF = SHAKE256(K' || H(c)) to the valid branch; FIPS 203 removed it.)
         for i in 0..32 {
-            ss[i] = (ss_valid[i] & mask) | (ss_reject[i] & !mask);
+            ss[i] = (k_prime[i] & mask) | (ss_reject[i] & !mask);
         }
 
         // Zeroize all secret intermediates: the decrypted message, the G input/
         // output, the candidate key K' and randomness r', the implicit-rejection
-        // key z, and both candidate shared secrets + their KDF inputs. `ss` is the
-        // returned value; the public hashes h_ek/h_c need no scrubbing.
+        // key z and its J input, and the rejection shared secret. `ss` is the
+        // returned value; the public hash h_ek needs no scrubbing.
         m_prime.zeroize();
         g_input.zeroize();
         g_output.zeroize();
         k_prime.zeroize();
         r_prime.zeroize();
         z.zeroize();
-        ss_valid.zeroize();
         ss_reject.zeroize();
-        kdf_input_valid.zeroize();
-        kdf_input_reject.zeroize();
+        j_input.zeroize();
 
         Ok(ss)
     }
