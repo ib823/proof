@@ -55,6 +55,30 @@ fn kv<'a>(data: &'a str, key: &str) -> &'a str {
         .unwrap_or_else(|| panic!("vector key not found: {key}"))
 }
 
+/// Iterate the data rows of a "sweep" vector file (one ACVP test per line,
+/// whitespace-separated hex fields); `#` lines and blanks are skipped.
+fn sweep_rows(data: &str) -> impl Iterator<Item = Vec<&str>> {
+    data.lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .map(|l| l.split_whitespace().collect())
+}
+
+/// Hex-decode a sweep field, treating `-` as the empty byte string.
+fn field(s: &str) -> Vec<u8> {
+    if s == "-" {
+        Vec::new()
+    } else {
+        hex(s)
+    }
+}
+
+fn arr<const N: usize>(s: &str) -> [u8; N] {
+    field(s).try_into().unwrap_or_else(|v: Vec<u8>| {
+        panic!("expected {N} bytes, got {}", v.len())
+    })
+}
+
 // ── SHA-2 — FIPS 180-4 ──────────────────────────────────────────────────────
 
 #[test]
@@ -307,6 +331,86 @@ fn kat_ml_dsa_65_external_acvp_fips204() {
         .sign_prehash(&hex(kv(data, "phshake_message")), &hex(kv(data, "phshake_context")), PreHash::Shake256, &det)
         .expect("prehash shake256 sign");
     assert_eq!(phshake.to_vec(), hex(kv(data, "phshake_signature")), "pre-hash SHAKE-256 signature mismatch");
+}
+
+// ── Full ACVP sweeps (all ML-KEM-768 / ML-DSA-65 cases) ──────────────────────
+// Breadth guards: the representative KATs above prove correctness; these iterate
+// every test in the implemented-parameter-set groups of the authentic NIST ACVP
+// vector files (RIINA only implements ML-KEM-768 / ML-DSA-65, so other parameter
+// sets are out of scope). Each file's source URL + SHA-256 are in its header.
+
+#[test]
+fn kat_ml_kem_768_keygen_sweep_acvp() {
+    let mut n = 0;
+    for r in sweep_rows(include_str!("vectors/mlkem768_keygen_all.txt")) {
+        let mut random = [0u8; 64];
+        random[..32].copy_from_slice(&field(r[0]));
+        random[32..].copy_from_slice(&field(r[1]));
+        let kp = MlKem768KeyPair::generate(&random).expect("keygen");
+        assert_eq!(kp.encapsulation_key().as_bytes().to_vec(), field(r[2]), "ek case {n}");
+        assert_eq!(kp.decapsulation_key().as_bytes().to_vec(), field(r[3]), "dk case {n}");
+        n += 1;
+    }
+    assert_eq!(n, 25);
+}
+
+#[test]
+fn kat_ml_kem_768_encaps_sweep_acvp() {
+    let mut n = 0;
+    for r in sweep_rows(include_str!("vectors/mlkem768_encaps_all.txt")) {
+        let ek = MlKem768EncapsulationKey::from_bytes(&arr::<1184>(r[0])).expect("ek");
+        let (ct, ss) = ek.encapsulate(&arr::<32>(r[1])).expect("encaps");
+        assert_eq!(ct.to_vec(), field(r[2]), "c case {n}");
+        assert_eq!(ss.to_vec(), field(r[3]), "k case {n}");
+        n += 1;
+    }
+    assert_eq!(n, 25);
+}
+
+#[test]
+fn kat_ml_kem_768_decaps_sweep_acvp() {
+    let mut n = 0;
+    for r in sweep_rows(include_str!("vectors/mlkem768_decaps_all.txt")) {
+        let dk = MlKem768DecapsulationKey::from_bytes(&arr::<2400>(r[0])).expect("dk");
+        assert_eq!(dk.decapsulate(&arr::<1088>(r[1])).expect("decaps").to_vec(), field(r[2]), "k case {n}");
+        n += 1;
+    }
+    assert_eq!(n, 10);
+}
+
+#[test]
+fn kat_ml_dsa_65_keygen_sweep_acvp() {
+    let mut n = 0;
+    for r in sweep_rows(include_str!("vectors/mldsa65_keygen_all.txt")) {
+        let kp = MlDsa65KeyPair::generate(&arr::<32>(r[0])).expect("keygen");
+        assert_eq!(kp.verifying_key().as_bytes().to_vec(), field(r[1]), "pk case {n}");
+        assert_eq!(kp.signing_key().as_bytes().to_vec(), field(r[2]), "sk case {n}");
+        n += 1;
+    }
+    assert_eq!(n, 25);
+}
+
+#[test]
+fn kat_ml_dsa_65_siggen_sweep_acvp() {
+    let mut n = 0;
+    for r in sweep_rows(include_str!("vectors/mldsa65_siggen_all.txt")) {
+        let sk = MlDsa65SigningKey::from_bytes(&arr::<4032>(r[0])).expect("sk");
+        assert_eq!(sk.sign(&field(r[1])).expect("sign").to_vec(), field(r[2]), "sig case {n}");
+        n += 1;
+    }
+    assert_eq!(n, 15);
+}
+
+#[test]
+fn kat_ml_dsa_65_sigver_sweep_acvp() {
+    let mut n = 0;
+    for r in sweep_rows(include_str!("vectors/mldsa65_sigver_all.txt")) {
+        let vk = MlDsa65VerifyingKey::from_bytes(&arr::<1952>(r[0])).expect("pk");
+        let got_ok = vk.verify(&field(r[1]), &arr::<3309>(r[2])).is_ok();
+        assert_eq!(got_ok, r[3] == "1", "verify case {n} (reason index {})", r[3]);
+        n += 1;
+    }
+    assert_eq!(n, 15);
 }
 
 // ── HMAC-SHA256 — RFC 4231 ───────────────────────────────────────────────────
