@@ -748,6 +748,14 @@ fn sample_noise(poly: &mut Poly, seed: &[u8; 32], nonce: u8, eta: usize) {
 /// Algorithm 12 from FIPS 203
 fn k_pke_keygen(d: &[u8; 32], ek: &mut [u8; PUBLIC_KEY_SIZE], dk: &mut [u8; 1152]) {
     // (ρ, σ) = G(d)
+    //
+    // NON-COMPLIANCE (2026-06-04, NIST ACVP pre-audit): FIPS 203 Alg. 13 requires
+    // G(d ‖ k) — the module-dimension byte k as a parameter-set domain separator.
+    // Adding it makes ρ match the NIST ACVP keyGen vector, but t̂ still diverges,
+    // so RIINA's ML-KEM has further pre-final-Kyber-vs-FIPS-203 deltas in the
+    // sampling/NTT/encoding pipeline. Left as-is (self-consistent draft Kyber)
+    // pending a complete, atomic FIPS 203 reconciliation — see
+    // reports/precrypto_audit_secondmodel.md and the (ignored) ACVP keyGen KAT.
     let g_output = Sha3_512::hash(d);
     let rho: [u8; 32] = g_output[..32].try_into().unwrap();
     let sigma: [u8; 32] = g_output[32..64].try_into().unwrap();

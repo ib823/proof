@@ -22,6 +22,7 @@ use riina_core::crypto::gcm::{Aes256Gcm, TAG_SIZE};
 use riina_core::crypto::hkdf::HkdfSha256;
 use riina_core::crypto::hmac::HmacSha256;
 use riina_core::crypto::keccak::{Sha3_256, Sha3_512};
+use riina_core::crypto::ml_kem::MlKem768KeyPair;
 use riina_core::crypto::sha2::{Sha256, Sha512};
 use riina_core::crypto::x25519::x25519;
 
@@ -41,6 +42,14 @@ fn hexn<const N: usize>(s: &str) -> [u8; N] {
     let mut a = [0u8; N];
     a.copy_from_slice(&v);
     a
+}
+
+/// Look up `key=value` in a vendored vector file (lines beginning `#` are comments).
+fn kv<'a>(data: &'a str, key: &str) -> &'a str {
+    let prefix = format!("{key}=");
+    data.lines()
+        .find_map(|l| l.trim().strip_prefix(&prefix))
+        .unwrap_or_else(|| panic!("vector key not found: {key}"))
 }
 
 // ── SHA-2 — FIPS 180-4 ──────────────────────────────────────────────────────
@@ -90,6 +99,36 @@ fn kat_sha3_512_fips202_abc() {
             "b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e\
              10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0"
         )
+    );
+}
+
+// ── ML-KEM-768 — NIST ACVP (FIPS 203) ────────────────────────────────────────
+
+#[test]
+#[ignore = "FINDING: RIINA ML-KEM is pre-final Kyber draft, not FIPS 203 (G(d) vs \
+            G(d||k) aligns rho but t_hat still diverges -> sampling/NTT/encoding \
+            deltas). This authentic NIST ACVP vector is the oracle for the FIPS \
+            203 reconciliation; un-ignore once ML-KEM is made compliant. See \
+            reports/precrypto_audit_secondmodel.md."]
+fn kat_ml_kem_768_keygen_acvp_fips203() {
+    // Authentic NIST ACVP-Server vector (FIPS 203). Source URL + file SHA-256 are
+    // in the header of the vendored file. ACVP keyGen supplies d and z; RIINA's
+    // generate() consumes randomness = d || z and must reproduce ek and dk.
+    let data = include_str!("vectors/mlkem768_keygen_acvp.txt");
+    let mut random = [0u8; 64];
+    random[..32].copy_from_slice(&hexn::<32>(kv(data, "d")));
+    random[32..].copy_from_slice(&hexn::<32>(kv(data, "z")));
+
+    let kp = MlKem768KeyPair::generate(&random).expect("ML-KEM-768 keygen");
+    assert_eq!(
+        kp.encapsulation_key().as_bytes().to_vec(),
+        hex(kv(data, "ek")),
+        "ek does not match the ACVP expected public key"
+    );
+    assert_eq!(
+        kp.decapsulation_key().as_bytes().to_vec(),
+        hex(kv(data, "dk")),
+        "dk does not match the ACVP expected secret key"
     );
 }
 

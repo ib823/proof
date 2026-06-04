@@ -16,6 +16,21 @@ Method per primitive: read the file + dependencies, run its tests/KATs, analyze
 correctness, constant-time (relative to RIINA's leakage contract, excluding
 DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 
+> ## ⚑ HEADLINE FINDING — ML-KEM is NOT FIPS 203 compliant
+> An authentic **NIST ACVP keyGen vector** (now vendored at
+> `tests/vectors/mlkem768_keygen_acvp.txt`) shows RIINA's ML-KEM-768 keygen does
+> **not** reproduce NIST's public/secret key — it follows the **pre-final Kyber
+> draft, not FIPS 203**. Confirmed deltas: (1) `K-PKE.KeyGen` uses `G(d)` instead
+> of FIPS 203's `G(d ‖ k)` domain separator — fixing that makes **ρ match NIST
+> exactly**, but (2) **t̂ still diverges**, so the sampling/NTT/encoding pipeline
+> has further draft-vs-final differences. The existing roundtrip tests pass only
+> because the implementation is *self-consistent*; they cannot detect
+> non-interoperability. **This is output-breaking to fix** (all ML-KEM keys/
+> ciphertexts/shared-secrets change) and warrants a deliberate, atomic FIPS 203
+> reconciliation (and the same ACVP check applied to ML-DSA). The ignored ACVP KAT
+> is the oracle. This is the single most important result of the pre-audit, and is
+> exactly what an external audit (REQ-28) and proper ACVP testing exist to catch.
+
 ---
 
 ## Status summary
@@ -24,7 +39,7 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 |---|---|---|---|---|
 | `aes.rs` | KATs green (FIPS 197 C.3) | 4 (1 High, 1 Med, 2 Low) | CT barrier on `ct_lookup`; zeroize working state; +exhaustive `ct_lookup` test | raw-API visibility (Low); AESAVS/Monte-Carlo vectors (Low) |
 | `constant_time.rs` | tests green | 1 (broken CT primitive) | `ct_select` made branchless; `ct_lt_u8` tightened; +tests | — |
-| `ml_kem.rs` (FIPS 203) | roundtrip/implicit-reject green | 3 (2 Med CT/hygiene, 1 Med tests) | decaps CT branches (`to_positive`/`encode_message`); decaps secret zeroization | **no NIST ACVP KATs** |
+| `ml_kem.rs` (FIPS 203) | roundtrip green; **ACVP keyGen FAILS** | **1 Critical (not FIPS 203)** + 2 Med CT/hygiene | decaps CT branches + zeroization (CT verified) | **⚑ NOT FIPS 203 — draft Kyber; output-breaking reconciliation needed** |
 | `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
 | `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
 | `ml_dsa.rs` (FIPS 204) | sign/verify roundtrip green | 1 Med (CT) | `check_norm` rejection-bound made constant-time (poly + vec level) + equivalence test | no ACVP KATs; decompose/make_hint/sample_in_ball CT deeper review |
@@ -127,6 +142,11 @@ Reductions (`montgomery_reduce`/`reduce32`/`caddq`/`freeze`) are branchless/CT.
   OR-accumulate over all coefficients, and a non-short-circuiting `&=` over polys.
   A **reference-equivalence test** (3000 random polys × 5 bounds + boundaries) proves
   the rewrite changed only timing, not behavior — the safety net for the missing ACVP.
+- **⚑ NOT FIPS 203 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
+  the Headline Finding above). `G(d)` should be `G(d ‖ k)` (fixes ρ); t̂ still diverges,
+  so sampling/NTT/encoding also differ from FIPS 203. Roundtrip passes only because the
+  impl is self-consistent. Needs an atomic, output-breaking FIPS 203 reconciliation; the
+  ignored `kat_ml_kem_768_keygen_acvp_fips203` is the oracle.
 - Open: no FIPS 204 ACVP KATs (roundtrip only); `decompose`/`make_hint`/`sample_in_ball`
   CT and encodings were not deeply audited this pass. The sign loop's iteration count is
   inherently `y`-dependent (acceptable).
