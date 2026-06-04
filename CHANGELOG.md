@@ -7,6 +7,29 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2026-06-04 — Ed25519/X25519 deep pre-audit pass (RFC 8032 §5.1.3 strict decode)
+
+### Security (Gate C crypto-audit prep — `05_TOOLING/crates/riina-core`)
+- **Ed25519 point decoding is now RFC 8032 §5.1.3-strict.** `EdwardsPoint::decompress` previously
+  accepted two non-canonical encodings (point-encoding malleability — one curve point with multiple
+  valid 32-byte encodings):
+  - a **non-canonical y-coordinate `y >= p`**, which `FieldElement::from_bytes` silently reduced
+    mod p (now rejected via a branchless `is_canonical_y` = `y < p`, mirroring the `s < L` check);
+  - **`x = 0` with the sign bit set** (negating zero yields zero), which the standard requires
+    rejecting (no "negative zero").
+
+  Both rejections are **purely additive** — every canonical input (all RFC 8032 test vectors, the
+  sign/verify roundtrips, basepoint/identity compression) is unchanged.
+- Added an end-to-end **`(R, s + L)` malleability-rejection** test through `verify`, exercising the
+  `0 <= s < L` gate (the second-model `is_scalar_valid` borrow fix previously had only a
+  helper-level unit test).
+- **X25519 + GCM re-reviewed, confirmed clean.** Added the previously-missing X25519 contributory
+  **all-zero (small-order) shared-secret rejection** test (`u = 0`). GCM SP 800-38D length limits
+  remain deliberately unenforced (unreachable ~64 GiB / untestable; documented).
+- `05_TOOLING` `cargo test --all` **280 → 285 / 0 / 0** (+5), `kat_audit` **23 / 0 ignored**,
+  clippy clean. Coq/`03_PROTO` unchanged (314 files / 12,456 Qed; 2729 / 0 / 3). Detail in
+  `reports/precrypto_audit_secondmodel.md` §Deep-pass 2026-06-04.
+
 ## [Unreleased] — 2026-06-04 — Post-quantum FIPS 203/204 reconciliation (NIST ACVP byte-exact)
 
 ### Added (PQC — ML-KEM-768 → FIPS 203 + ML-DSA-65 → FIPS 204; authentic NIST ACVP, byte/behaviour-exact)
