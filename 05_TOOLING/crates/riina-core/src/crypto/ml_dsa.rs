@@ -2,19 +2,26 @@
 
 //! ML-DSA-65 (Module-Lattice Digital Signature Algorithm) Implementation
 //!
-//! This module implements ML-DSA-65 based on the pre-final Dilithium (round-3) draft.
-//! ML-DSA is a post-quantum digital signature scheme based on the
-//! Module Learning With Errors (MLWE) and Module Short Integer Solution (MSIS) problems.
+//! This module implements ML-DSA-65 (FIPS 204). It is a post-quantum digital
+//! signature scheme based on the Module Learning With Errors (MLWE) and Module
+//! Short Integer Solution (MSIS) problems.
 //!
-//! # FIPS 204 status — NOT YET COMPLIANT (2026-06-04, NIST ACVP pre-audit)
+//! # FIPS 204 status (2026-06-04, NIST ACVP)
 //!
-//! This implementation does **not** match the final FIPS 204 standard: an
-//! authentic NIST ACVP keyGen vector fails. keyGen hashes `H(ξ)` instead of FIPS
-//! 204's `H(ξ ‖ k ‖ ℓ)` (the parameter-set domain separator), plus further
-//! deltas — the same draft-vs-final pattern as ML-KEM. Self-consistent but not
-//! interoperable with FIPS-204-compliant implementations. See
-//! `reports/precrypto_audit_secondmodel.md` and the ignored
-//! `kat_ml_dsa_65_keygen_acvp_fips204`.
+//! - **KeyGen — COMPLIANT.** `ML-DSA.KeyGen` is byte-exact against an authentic
+//!   NIST ACVP-Server vector; see the passing `kat_ml_dsa_65_keygen_acvp_fips204`.
+//!   The reconciliation away from the pre-final Dilithium draft fixed: (1) `H(ξ)`
+//!   -> `H(ξ ‖ k ‖ ℓ)` (parameter-set domain separator); (2) `ExpandS`
+//!   (`sample_eta`) was a centered binomial distribution (ML-KEM style) instead
+//!   of FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte` rejection sampling); (3)
+//!   `ExpandA` (`sample_uniform_ntt`) used the Kyber two-12-bit byte extraction
+//!   instead of Dilithium's one-23-bit `CoeffFromThreeBytes`.
+//! - **Sign/Verify — ACVP reconciliation pending.** The signing/verification core
+//!   now uses the FIPS-correct `ExpandA`, and the self-consistent sign->verify
+//!   roundtrip passes, but it has not yet been checked against NIST ACVP
+//!   sigGen/sigVer vectors (the FO/Fiat-Shamir details — μ derivation, c̃ length,
+//!   ExpandMask, rejection bounds — still need ACVP confirmation). See
+//!   `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
@@ -552,20 +559,15 @@ fn sample_uniform_ntt(poly: &mut Poly, seed: &[u8; 32], row: u8, col: u8) {
             idx = 0;
         }
 
-        let b0 = buf[idx] as u32;
-        let b1 = buf[idx + 1] as u32;
-        let b2 = buf[idx + 2] as u32;
+        // FIPS 204 Alg. 30 RejNTTPoly / CoeffFromThreeBytes: Dilithium reads ONE
+        // 23-bit coefficient per 3 bytes (q ~ 2^23). The Kyber-style two-12-bit
+        // extraction is wrong here and was making A diverge from NIST.
+        let t = (buf[idx] as u32) | ((buf[idx + 1] as u32) << 8) | ((buf[idx + 2] as u32) << 16);
+        let t = t & 0x7F_FFFF; // low 23 bits
         idx += 3;
 
-        let d1 = b0 | ((b1 & 0x0F) << 8);
-        let d2 = (b1 >> 4) | (b2 << 4);
-
-        if d1 < params::Q {
-            poly.coeffs[j] = d1 as i32;
-            j += 1;
-        }
-        if j < params::N && d2 < params::Q {
-            poly.coeffs[j] = d2 as i32;
+        if t < params::Q {
+            poly.coeffs[j] = t as i32;
             j += 1;
         }
     }
@@ -580,69 +582,58 @@ fn expand_matrix(mat: &mut PolyMatKL, rho: &[u8; 32]) {
     }
 }
 
-/// Sample eta-bounded polynomial from SHAKE256 (CBD-like)
+/// Sample an eta-bounded polynomial (FIPS 204 Alg. 31, RejBoundedPoly).
+///
+/// `PRF = SHAKE256(seed || IntegerToBytes(nonce, 2))`, streamed one block at a
+/// time. Each byte yields two half-bytes (low first); `CoeffFromHalfByte` maps a
+/// half-byte to a coefficient or rejects it:
+///   - eta = 4: accept `z < 9`  -> `4 - z`        (coeff in [-4, 4])
+///   - eta = 2: accept `z < 15` -> `2 - (z mod 5)` (coeff in [-2, 2])
+///
+/// This is rejection sampling from nibbles — NOT a centered binomial
+/// distribution (that is ML-KEM). The earlier CBD implementation produced a
+/// different (non-FIPS-204) secret distribution, which is why pk diverged from
+/// the NIST ACVP vector even after the H domain separator was applied.
 fn sample_eta(poly: &mut Poly, seed: &[u8; 64], nonce: u16) {
-    let eta = params::ETA;
-    let prf_len = if eta == 2 { 128 } else { 192 }; // n/4 * eta bytes for eta=4 -> n*eta/2 = 512. Actually eta=4 uses 128+256...
-                                                    // For Dilithium eta=4: 256 * 4 / 4 = 256 bytes, but ref uses SHAKE256(seed||nonce) with 136*2 = 272 bytes
-                                                    // Actually: each coefficient uses 2*eta bits. For eta=4: 8 bits per coeff, 256 bytes total.
-                                                    // But the reference uses STREAM256_BLOCKBYTES = 136. We need ceil(256*eta/2 / 8) bytes.
-                                                    // For eta=4: 256 coeffs, each needs 4+4=8 bits, so 256 bytes.
-    let needed = params::N; // For eta=4, we need 256 bytes (1 byte per coefficient)
-
-    let mut buf = [0u8; 512]; // enough
     let mut prf = Shake256::new();
     prf.update(seed);
     prf.update(&nonce.to_le_bytes());
-    prf.squeeze(&mut buf[..needed]);
 
-    if eta == 4 {
-        // Each byte encodes 2 coefficients:
-        // a = popcount(low nibble first 4 bits), b = popcount(high nibble first 4 bits)
-        // Actually for eta=4: we need 4 bits for each half. Sample two values from [0,eta] using CBD.
-        // CBD_eta for eta=4: take 2*eta = 8 bits, split into two 4-bit halves
-        // a_i = sum of first eta bits, b_i = sum of next eta bits, coeff = a_i - b_i
-        for i in 0..params::N / 2 {
-            let byte = buf[i];
-            let lo = byte & 0x0F;
-            let hi = byte >> 4;
-            // popcount of 4 bits
-            let a0 = (lo & 1) + ((lo >> 1) & 1) + ((lo >> 2) & 1) + ((lo >> 3) & 1);
-            let b0 = (hi & 1) + ((hi >> 1) & 1) + ((hi >> 2) & 1) + ((hi >> 3) & 1);
-            // Wait, this gives coefficients in [-4,4] but we only get 128 coefficients from 128 bytes.
-            // We need 256 coefficients. Let me reconsider.
-            // For eta=4: we need 8 bits per coefficient (4+4), so 256 bytes for 256 coefficients.
-            // Each coefficient: take first 4 bits as a, next 4 bits as b, coeff = popcount(a) - popcount(b)
-            // But 4 bits can only have popcount [0..4], so coeff in [-4, 4]. That's eta=4. Good.
-            // But we need 8 bits per coefficient = 1 byte per coefficient.
-            let _ = (a0, b0);
-        }
+    let mut buf = [0u8; 136]; // one SHAKE256 block (rate = 136)
+    prf.squeeze(&mut buf);
+    let mut pos = 0usize;
+    let mut j = 0usize;
 
-        // Actually, each coefficient needs 8 bits (2*eta = 2*4 = 8). So 1 byte per coefficient.
-        for i in 0..params::N {
-            let byte = buf[i];
-            let a_bits = byte & 0x0F; // first 4 bits
-            let b_bits = byte >> 4; // next 4 bits
-            let a: i32 =
-                ((a_bits & 1) + ((a_bits >> 1) & 1) + ((a_bits >> 2) & 1) + ((a_bits >> 3) & 1))
-                    as i32;
-            let b: i32 =
-                ((b_bits & 1) + ((b_bits >> 1) & 1) + ((b_bits >> 2) & 1) + ((b_bits >> 3) & 1))
-                    as i32;
-            poly.coeffs[i] = a - b;
+    while j < params::N {
+        if pos >= buf.len() {
+            prf.squeeze(&mut buf);
+            pos = 0;
         }
-    } else if eta == 2 {
-        // 4 bits per coefficient (2+2), 2 coefficients per byte
-        for i in 0..params::N / 2 {
-            let byte = buf[i];
-            let lo = byte & 0x0F;
-            let hi = byte >> 4;
-            let a0 = (lo & 1) + ((lo >> 1) & 1);
-            let b0 = ((lo >> 2) & 1) + ((lo >> 3) & 1);
-            let a1 = (hi & 1) + ((hi >> 1) & 1);
-            let b1 = ((hi >> 2) & 1) + ((hi >> 3) & 1);
-            poly.coeffs[2 * i] = (a0 as i32) - (b0 as i32);
-            poly.coeffs[2 * i + 1] = (a1 as i32) - (b1 as i32);
+        let byte = buf[pos];
+        pos += 1;
+
+        for z in [(byte & 0x0F) as i32, (byte >> 4) as i32] {
+            if j >= params::N {
+                break;
+            }
+            let coeff = if params::ETA == 4 {
+                if z < 9 {
+                    Some(4 - z)
+                } else {
+                    None
+                }
+            } else {
+                // eta == 2
+                if z < 15 {
+                    Some(2 - (z % 5))
+                } else {
+                    None
+                }
+            };
+            if let Some(c) = coeff {
+                poly.coeffs[j] = c;
+                j += 1;
+            }
         }
     }
 }
@@ -1432,19 +1423,15 @@ pub struct MlDsa65KeyPair {
 impl MlDsa65KeyPair {
     /// Generate a new key pair (FIPS 204 Algorithm 1)
     pub fn generate(random: &[u8; 32]) -> CryptoResult<Self> {
-        // (rho, rho', K) = H(random)
-        //
-        // NON-COMPLIANCE (2026-06-04, NIST ACVP pre-audit): FIPS 204 Alg. 6 hashes
-        // H(xi || k || l) — the dimension bytes k,l as a parameter-set domain
-        // separator. Adding `h.update(&[K as u8, L as u8])` makes rho match the
-        // NIST ACVP keyGen vector exactly, but pk still diverges, so (like ML-KEM)
-        // RIINA's ML-DSA has further pre-final-Dilithium-vs-FIPS-204 deltas. Left
-        // as draft Dilithium pending an atomic FIPS 204 reconciliation — see
-        // reports/precrypto_audit_secondmodel.md and the ignored ACVP keyGen KAT.
+        // (rho, rho', K) = H(xi || IntegerToBytes(k,1) || IntegerToBytes(l,1))
+        // — FIPS 204 Alg. 6, line 1. The dimension bytes (k, l) are the
+        // parameter-set domain separator (the pre-final Dilithium draft hashed
+        // H(xi) only). For ML-DSA-65, (k, l) = (6, 5).
         let mut seed_buf = [0u8; 128]; // rho(32) + rho'(64) + K(32)
         {
             let mut h = Shake256::new();
             h.update(random);
+            h.update(&[params::K as u8, params::L as u8]);
             h.squeeze(&mut seed_buf);
         }
         let rho: [u8; 32] = seed_buf[0..32].try_into().unwrap();
