@@ -27,7 +27,9 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `ml_kem.rs` (FIPS 203) | roundtrip/implicit-reject green | 3 (2 Med CT/hygiene, 1 Med tests) | decaps CT branches (`to_positive`/`encode_message`); decaps secret zeroization | **no NIST ACVP KATs** |
 | `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
 | `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
-| `ml_dsa.rs`, `gcm.rs`/`ghash.rs`, `sha2/keccak/hmac/hkdf` | — | not yet passed | — | full passes pending |
+| `ml_dsa.rs` (FIPS 204) | sign/verify roundtrip green | 1 Med (CT) | `check_norm` rejection-bound made constant-time (poly + vec level) + equivalence test | no ACVP KATs; decompose/make_hint/sample_in_ball CT deeper review |
+| `gcm.rs`/`ghash.rs` | NIST GCM KATs green | **none** (clean) | — | nonce-reuse is caller's responsibility (documented); SP 800-38D length limits not enforced (unreachable) |
+| `sha2/keccak/hmac/hkdf` | — | not yet passed | — | full passes pending |
 
 ---
 
@@ -113,6 +115,33 @@ RFC 8032 #1/#2 pass, but two serious LIVE defects were found and fixed:
 - Open (not fixed): no small-order/cofactor rejection of `A`/`R` (RFC 8032 allows
   cofactorless, so low priority); `Scalar::from_bytes_mod_order` "just copy" comment is
   misleading but benign in context (reduction happens in `scalar_mul`/`scalar_add`).
+
+## ML-DSA (`ml_dsa.rs`, FIPS 204) — second-model pass
+
+Reductions (`montgomery_reduce`/`reduce32`/`caddq`/`freeze`) are branchless/CT.
+- **Rejection-bound check not constant-time (Med → fixed).** `Poly::check_norm` had
+  secret-dependent branches and an **early `return false`** at the first out-of-bound
+  coefficient; it runs on `z = y + c*s1` during signing, so the exit position leaked
+  info about `z`/`s1` (the classic ML-DSA leak). `PolyVecK/L::check_norm` used `.all()`
+  (short-circuits at the first failing poly). **Fixed:** branchless centered-abs +
+  OR-accumulate over all coefficients, and a non-short-circuiting `&=` over polys.
+  A **reference-equivalence test** (3000 random polys × 5 bounds + boundaries) proves
+  the rewrite changed only timing, not behavior — the safety net for the missing ACVP.
+- Open: no FIPS 204 ACVP KATs (roundtrip only); `decompose`/`make_hint`/`sample_in_ball`
+  CT and encodings were not deeply audited this pass. The sign loop's iteration count is
+  inherently `y`-dependent (acceptable).
+
+## AES-GCM (`gcm.rs` + `ghash.rs`) — second-model pass — **clean**
+
+No defects found; the hard parts are right:
+- **GHASH `gf128_mul` is constant-time** — bitwise shift-and-XOR with mask-based
+  conditional add/reduction, all 128 bits processed, **no table** (so the secret hash
+  key H does not leak via cache timing).
+- **Tag compare is constant-time** (`constant_time_eq`: XOR-accumulate, no early exit).
+- **Verify-before-release**: decrypt computes the expected tag, checks it, and only
+  runs GCTR decryption on success — no plaintext is produced before authentication.
+- Minor/info: 96-bit nonce enforced; nonce-reuse is the caller's responsibility (clearly
+  documented); SP 800-38D max-length limits aren't enforced (practically unreachable).
 
 ---
 
