@@ -304,6 +304,21 @@ impl FieldElement {
         }
     }
 
+    /// Constant-time select: returns `a` if `choice == 0`, `b` if `choice == 1`.
+    ///
+    /// Branchless: `a ^ (mask & (a ^ b))` per limb, with `mask` = all-ones when
+    /// `choice == 1`. No branch depends on `choice` or on the secret operands.
+    #[must_use]
+    pub fn conditional_select(a: &Self, b: &Self, choice: u8) -> Self {
+        debug_assert!(choice == 0 || choice == 1, "choice must be 0 or 1");
+        let mask = -(i64::from(choice)); // 0 or -1 (all bits set)
+        let mut limbs = [0i64; 5];
+        for i in 0..5 {
+            limbs[i] = a.limbs[i] ^ (mask & (a.limbs[i] ^ b.limbs[i]));
+        }
+        Self { limbs }
+    }
+
     /// Constant-time equality check.
     ///
     /// Returns 1 if self == other, 0 otherwise.
@@ -637,5 +652,16 @@ mod tests {
         a.conditional_swap(&mut b, 1);
         assert_eq!(a.ct_eq(&orig_b), 1);
         assert_eq!(b.ct_eq(&orig_a), 1);
+    }
+
+    #[test]
+    fn test_conditional_select() {
+        let a = FieldElement::from_i64(12345);
+        let b = FieldElement::from_i64(67890);
+        // choice 0 -> a, choice 1 -> b (the branchless select used by the
+        // Ed25519 scalar-mult ladder on the secret scalar bit).
+        assert_eq!(FieldElement::conditional_select(&a, &b, 0).ct_eq(&a), 1);
+        assert_eq!(FieldElement::conditional_select(&a, &b, 1).ct_eq(&b), 1);
+        assert_eq!(FieldElement::conditional_select(&a, &b, 0).ct_eq(&b), 0);
     }
 }

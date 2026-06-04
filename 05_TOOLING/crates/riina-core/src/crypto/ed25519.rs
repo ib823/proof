@@ -241,19 +241,19 @@ impl EdwardsPoint {
         result
     }
 
-    /// Constant-time selection: returns a if choice == 0, b if choice == 1
+    /// Constant-time selection: returns `a` if `choice == 0`, `b` if `choice == 1`.
+    ///
+    /// Branchless per-coordinate select (FieldElement::conditional_select). This
+    /// is on the SECRET scalar-bit path in `scalar_mul` (signing/keygen), so the
+    /// previous `if choice == 1 { b } else { a }` was a secret-dependent branch
+    /// leaking the private scalar bits via timing. Now constant-time.
     fn ct_select(a: &Self, b: &Self, choice: u8) -> Self {
         debug_assert!(choice == 0 || choice == 1);
-
-        // Convert choice to mask: 0 -> 0x00...00, 1 -> 0xff...ff
-        let mask = -(choice as i64);
-
-        // We need to implement ct_select for FieldElement
-        // For now, use conditional logic (TODO: make this truly constant-time)
-        if choice == 1 {
-            *b
-        } else {
-            *a
+        Self {
+            x: FieldElement::conditional_select(&a.x, &b.x, choice),
+            y: FieldElement::conditional_select(&a.y, &b.y, choice),
+            z: FieldElement::conditional_select(&a.z, &b.z, choice),
+            t: FieldElement::conditional_select(&a.t, &b.t, choice),
         }
     }
 
@@ -1180,15 +1180,25 @@ impl Ed25519VerifyingKey {
     }
 }
 
-/// Check if a scalar is valid (< L)
+/// Check if a scalar is canonical: `bytes < L` (the Ed25519 group order).
+///
+/// Enforces non-malleability (RFC 8032 requires `0 <= s < L`). Implemented as a
+/// multi-precision subtraction `bytes - L` with the borrow propagated LSB->MSB
+/// (the bytes are little-endian); the final borrow out of the most-significant
+/// byte is 1 exactly when `bytes < L`. Branchless (the borrow bit is the sign of
+/// each i16 difference) — `bytes` here is the public signature scalar, but the
+/// constant-time form keeps the intent honest.
+///
+/// NOTE: a previous version iterated MSB->LSB, which propagated the borrow the
+/// wrong way and mis-classified scalars needing a cross-byte borrow (e.g. L-238)
+/// — both rejecting valid signatures and risking acceptance of malleable s >= L.
 fn is_scalar_valid(bytes: &[u8; 32]) -> bool {
-    // Compare with L in constant time
     let mut borrow = 0i16;
-    for i in (0..32).rev() {
+    for i in 0..32 {
         let diff = i16::from(bytes[i]) - i16::from(L_BYTES[i]) - borrow;
-        borrow = if diff < 0 { 1 } else { 0 };
+        borrow = (diff >> 15) & 1; // 1 iff diff < 0
     }
-    // If borrow == 1, bytes < L, which is valid
+    // Final borrow == 1  <=>  bytes < L.
     borrow == 1
 }
 
@@ -1268,6 +1278,28 @@ impl Signature for Ed25519 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_is_scalar_valid_borrow_propagation() {
+        // s == L is NOT < L (canonical-S boundary).
+        assert!(!is_scalar_valid(&L_BYTES));
+        // 0 < L.
+        assert!(is_scalar_valid(&[0u8; 32]));
+        // L - 1 < L.
+        let mut l_minus_1 = L_BYTES;
+        l_minus_1[0] -= 1;
+        assert!(is_scalar_valid(&l_minus_1));
+        // Cross-byte borrow: L with byte0 += 18 and byte1 -= 1  ==  L - 238 < L.
+        // Only a correct LSB->MSB borrow chain classifies this as < L.
+        let mut borrow_case = L_BYTES;
+        borrow_case[0] = 0xff; // 0xed + 18
+        borrow_case[1] = 0xd2; // 0xd3 - 1
+        assert!(is_scalar_valid(&borrow_case), "L-238 must be < L");
+        // Clearly >= L must be rejected (top byte 0x10 -> 0x11).
+        let mut too_big = L_BYTES;
+        too_big[31] = 0x11;
+        assert!(!is_scalar_valid(&too_big), "value > L must be rejected");
+    }
 
     #[test]
     fn test_ed25519_key_generation() {
