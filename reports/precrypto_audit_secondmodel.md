@@ -1,0 +1,98 @@
+# RIINA `riina-core` — Second-Model Crypto Pre-Audit (Cross-Check)
+
+**What this is.** An independent, second-model (Claude) pre-audit pass over the
+hand-rolled crypto in `05_TOOLING/crates/riina-core`, run on the actual checked-out
+code (not a ZIP) with the KATs **executed** (`cargo test -p riina-core`). It both
+cross-checks the external Codex AES pre-audit and extends to new primitives. Where
+findings were clear and the fix was behavior-preserving, they were fixed in-session
+(commits noted); riskier/unverifiable items are recorded, not fixed.
+
+**What this is NOT.** Not the REQ-28 external audit (independent accredited firm).
+Findings are leads; CT findings reasoned at source level — machine-level constant-
+timeness still needs emitted-asm/dudect/ctgrind on each target. Expect false
+positives and, especially, **false negatives**.
+
+Method per primitive: read the file + dependencies, run its tests/KATs, analyze
+correctness, constant-time (relative to RIINA's leakage contract, excluding
+DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
+
+---
+
+## Status summary
+
+| Primitive | Pass | Findings | Fixed this session | Open |
+|---|---|---|---|---|
+| `aes.rs` | KATs green (FIPS 197 C.3) | 4 (1 High, 1 Med, 2 Low) | CT barrier on `ct_lookup`; zeroize working state; +exhaustive `ct_lookup` test | raw-API visibility (Low); AESAVS/Monte-Carlo vectors (Low) |
+| `constant_time.rs` | tests green | 1 (broken CT primitive) | `ct_select` made branchless; `ct_lt_u8` tightened; +tests | — |
+| `ml_kem.rs` (FIPS 203) | roundtrip/implicit-reject green | 3 (2 Med CT/hygiene, 1 Med tests) | decaps CT branches (`to_positive`/`encode_message`); decaps secret zeroization | **no NIST ACVP KATs** |
+| `ml_dsa.rs`, `gcm.rs`/`ghash.rs`, `ed25519.rs`, `x25519.rs`, `sha2/keccak/hmac/hkdf` | — | not yet passed | — | full passes pending |
+
+---
+
+## AES (`aes.rs`) — cross-check of the Codex report
+
+Codex's report was **accurate** (line refs matched, no hallucinations). All 4
+findings confirmed against the code. Correctness, which Codex could not run, was
+**executed here: FIPS 197 C.3 encrypt+decrypt + GCM KATs pass.**
+
+- **#1 S-box CT not compiler-enforced (High → fixed/contingent).** `ct_lookup`'s
+  masked 256-entry scan had no optimization barrier; the doc overclaimed an absolute
+  CT guarantee. **Fixed:** `core::hint::black_box` barriers on index+result; doc made
+  honest (source-level, contract-relative). Residual: confirm on emitted asm/dudect.
+- **#2 Uncleared secret stack state (Medium → fixed).** `encrypt_block`/`decrypt_block`
+  left the working `state` (on decrypt, the plaintext) unscrubbed. **Fixed:** volatile
+  `state.zeroize()`. Residual (noted in code): transient ShiftRows/MixColumns byte
+  copies remain.
+- **#3 Raw block API public (Low, open).** Confirmed `pub`; misuse-resistance issue
+  (CWE-327 is mis-mapped — AES isn't broken). Consider `pub(crate)`/`hazmat`.
+- **#4 Thin tests (Low, partially addressed).** Added an exhaustive `ct_lookup ==
+  table[index]` + involution test; still want AESAVS/Monte-Carlo vectors.
+
+## `constant_time.rs` — new finding (Codex was scoped to aes.rs)
+
+- **`ct_select` was not constant-time (fixed).** It computed a mask, ignored it, and
+  did `if choice { a } else { b }` behind a `// TODO`. **Exposure was low (dead code):**
+  the only `ct_select` call (ed25519:236) resolves to ed25519's *own* method, not this
+  one. Still a latent trap in a `pub` "constant-time" API. **Fixed:** branchless
+  `(a & mask) | (b & !mask)`; `ct_lt_u8` switched to borrow-based; added the missing
+  tests (exhaustive). NOTE: ed25519's own `ct_select` on the secret scalar-bit path is
+  a separate item for the ed25519 pass.
+
+## ML-KEM (`ml_kem.rs`, FIPS 203) — second-model pass
+
+**Positive (verified):** the IND-CCA2 implicit-rejection core is **correct and
+constant-time** — `c==c'` compared by `|=` accumulation over all bytes, mask
+`(((diff as i16)-1)>>8)` = 0xFF iff equal, shared secret selected branchlessly with
+both candidates always computed. Reductions (`barrett_reduce`, `cond_sub_q`,
+`montgomery_reduce`, `fqmul`) are branchless. `Drop` zeroizes the key bytes.
+
+- **Secret-dependent branches on the decaps path (Medium → fixed).** `to_positive`
+  (`if r<0`, feeds `compress` on m'-derived polys) and `encode_message` (`if c<0`,
+  extracts decrypted m') branched on the sign of secret coefficients. **Fixed:**
+  branchless `x += (x>>15) & q` (mirrors `cond_sub_q`); algebraically identical,
+  roundtrip/decaps tests stay green.
+- **Decaps secret intermediates unscrubbed (Medium → fixed).** Only `m_prime`/`g_input`
+  were zeroized. **Fixed:** also `ss_valid`/`ss_reject`/`k_prime`/`r_prime`/`g_output`/
+  `z`/KDF inputs.
+- **No NIST ACVP / FIPS 203 KAT vectors (Medium → OPEN).** Tests are roundtrip/self-
+  consistency only; they would pass on a self-consistent but non-compliant impl. Top
+  correctness-assurance follow-up: add ACVP ML-KEM-768 KATs (and likewise across the
+  suite). This needs official vectors and could not be done in-session.
+
+---
+
+## Highest-value open items (priority order)
+
+1. **NIST ACVP/CAVP KAT vectors across the suite** (esp. ML-KEM, ML-DSA, the SHA/HMAC/
+   HKDF/GCM families) — the biggest correctness-assurance gap for hand-rolled crypto.
+2. **Machine-level CT verification** — emitted-asm inspection + dudect/ctgrind for the
+   AES S-box, ML-KEM/ML-DSA reductions/NTT, and the curve ladders, per target+toolchain.
+3. **Remaining primitive passes** — `ml_dsa.rs` (rejection-sampling timing must leak
+   only randomness, not the signing key), `gcm.rs`/`ghash.rs` (GHASH CT, nonce-reuse
+   resistance, tag-compare CT, SP 800-38D limits), `ed25519.rs` (canonical S / S<L
+   malleability, small-order handling, its own `ct_select` on the secret scalar path),
+   `x25519.rs` (clamping, all-zero/low-order rejection, CT ladder).
+4. **AES**: AESAVS vectors; decide raw-block visibility.
+
+**AI-ASSISTED PRE-AUDIT — NOT an independent external audit (REQ-28 remains open).
+Findings are leads requiring human verification; expect false positives and misses.**
