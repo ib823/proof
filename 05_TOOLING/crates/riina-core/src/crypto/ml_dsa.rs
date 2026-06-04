@@ -6,22 +6,25 @@
 //! signature scheme based on the Module Learning With Errors (MLWE) and Module
 //! Short Integer Solution (MSIS) problems.
 //!
-//! # FIPS 204 status (2026-06-04, NIST ACVP)
+//! # FIPS 204 status — COMPLIANT (2026-06-04, NIST ACVP byte-exact)
 //!
-//! - **KeyGen — COMPLIANT.** `ML-DSA.KeyGen` is byte-exact against an authentic
-//!   NIST ACVP-Server vector; see the passing `kat_ml_dsa_65_keygen_acvp_fips204`.
-//!   The reconciliation away from the pre-final Dilithium draft fixed: (1) `H(ξ)`
-//!   -> `H(ξ ‖ k ‖ ℓ)` (parameter-set domain separator); (2) `ExpandS`
-//!   (`sample_eta`) was a centered binomial distribution (ML-KEM style) instead
-//!   of FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte` rejection sampling); (3)
-//!   `ExpandA` (`sample_uniform_ntt`) used the Kyber two-12-bit byte extraction
-//!   instead of Dilithium's one-23-bit `CoeffFromThreeBytes`.
-//! - **Sign/Verify — ACVP reconciliation pending.** The signing/verification core
-//!   now uses the FIPS-correct `ExpandA`, and the self-consistent sign->verify
-//!   roundtrip passes, but it has not yet been checked against NIST ACVP
-//!   sigGen/sigVer vectors (the FO/Fiat-Shamir details — μ derivation, c̃ length,
-//!   ExpandMask, rejection bounds — still need ACVP confirmation). See
-//!   `reports/precrypto_audit_secondmodel.md`.
+//! `ML-DSA.KeyGen`, `ML-DSA.Sign` (deterministic, internal interface), and
+//! `ML-DSA.Verify` are byte/behaviour-exact against authentic NIST ACVP-Server
+//! vectors; see the passing `kat_ml_dsa_65_keygen_acvp_fips204`,
+//! `kat_ml_dsa_65_siggen_acvp_fips204`, and `kat_ml_dsa_65_sigver_acvp_fips204`.
+//! The reconciliation away from the pre-final Dilithium draft fixed:
+//!
+//! - KeyGen: (1) `H(ξ)` -> `H(ξ ‖ k ‖ ℓ)` (parameter-set domain separator); (2)
+//!   `ExpandS` (`sample_eta`) was a centered binomial distribution (ML-KEM style)
+//!   instead of FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte` rejection
+//!   sampling); (3) `ExpandA` (`sample_uniform_ntt`) used the Kyber two-12-bit
+//!   byte extraction instead of Dilithium's one-23-bit `CoeffFromThreeBytes`.
+//! - Sign: `ρ'' = H(K ‖ rnd ‖ μ)` with `rnd = 0^32` for deterministic signing
+//!   (the draft hashed `H(K ‖ μ)` with no `rnd`).
+//!
+//! Sign/Verify are tested via the internal interface (μ = H(tr ‖ M)); the
+//! external-interface message prefix and pre-hash variants are not yet wired.
+//! See `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
@@ -47,7 +50,8 @@
 //! - SHAKE128/SHAKE256 for PRF, XOF, and hashing
 //! - Key generation, signing, and verification
 
-use crate::crypto::keccak::{Shake128, Shake256};
+use crate::crypto::keccak::{Sha3_256, Sha3_512, Shake128, Shake256};
+use crate::crypto::sha2::{Sha256, Sha512};
 use crate::crypto::{CryptoError, CryptoResult, Signature};
 use crate::zeroize::Zeroize;
 
@@ -991,6 +995,87 @@ const SIG_H_OFFSET: usize = SIG_Z_OFFSET + params::L * 640;
 // Key Types and Algorithms
 // =============================================================================
 
+/// Pre-hash function for HashML-DSA (FIPS 204 external pre-hash interface).
+///
+/// Only the hashes that `riina-core` ships are provided. The DER OID and the
+/// digest length follow FIPS 204 (SHAKE-128 → 256 bits, SHAKE-256 → 512 bits).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PreHash {
+    /// SHA2-256
+    Sha256,
+    /// SHA2-512
+    Sha512,
+    /// SHA3-256
+    Sha3_256,
+    /// SHA3-512
+    Sha3_512,
+    /// SHAKE-128 (256-bit digest)
+    Shake128,
+    /// SHAKE-256 (512-bit digest)
+    Shake256,
+}
+
+impl PreHash {
+    /// DER-encoded OID of the hash (FIPS 204 / NIST hash-algorithm OIDs).
+    fn oid(self) -> &'static [u8] {
+        match self {
+            PreHash::Sha256 => &[0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01],
+            PreHash::Sha512 => &[0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03],
+            PreHash::Sha3_256 => &[0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x08],
+            PreHash::Sha3_512 => &[0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0A],
+            PreHash::Shake128 => &[0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0B],
+            PreHash::Shake256 => &[0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x0C],
+        }
+    }
+
+    /// Write `PH(message)` into `out`, returning the digest length in bytes.
+    fn hash(self, message: &[u8], out: &mut [u8; 64]) -> usize {
+        match self {
+            PreHash::Sha256 => {
+                out[..32].copy_from_slice(&Sha256::hash(message));
+                32
+            }
+            PreHash::Sha512 => {
+                out[..64].copy_from_slice(&Sha512::hash(message));
+                64
+            }
+            PreHash::Sha3_256 => {
+                out[..32].copy_from_slice(&Sha3_256::hash(message));
+                32
+            }
+            PreHash::Sha3_512 => {
+                out[..64].copy_from_slice(&Sha3_512::hash(message));
+                64
+            }
+            PreHash::Shake128 => {
+                let mut x = Shake128::new();
+                x.update(message);
+                x.squeeze(&mut out[..32]);
+                32
+            }
+            PreHash::Shake256 => {
+                let mut x = Shake256::new();
+                x.update(message);
+                x.squeeze(&mut out[..64]);
+                64
+            }
+        }
+    }
+}
+
+/// Write the FIPS 204 message-representative prefix `domain || |ctx| || ctx` into
+/// `buf` and return its length. `domain` is 0 for the pure interface and 1 for
+/// the pre-hash interface. Rejects contexts longer than 255 bytes.
+fn encode_msg_prefix(buf: &mut [u8], domain: u8, ctx: &[u8]) -> CryptoResult<usize> {
+    if ctx.len() > 255 {
+        return Err(CryptoError::InvalidInputLength);
+    }
+    buf[0] = domain;
+    buf[1] = ctx.len() as u8;
+    buf[2..2 + ctx.len()].copy_from_slice(ctx);
+    Ok(2 + ctx.len())
+}
+
 /// ML-DSA-65 signing key
 pub struct MlDsa65SigningKey {
     bytes: [u8; SECRET_KEY_SIZE],
@@ -1008,8 +1093,54 @@ impl MlDsa65SigningKey {
         &self.bytes
     }
 
-    /// Sign a message (deterministic, FIPS 204 Algorithm 2)
+    /// Sign with the FIPS 204 *internal* interface (no M' prefix), deterministic
+    /// (rnd = 0^32). This is what `MlDsa65KeyPair::sign` and the ACVP internal,
+    /// deterministic vectors use.
     pub fn sign(&self, message: &[u8]) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
+        self.sign_internal(&[], message, &[0u8; 32])
+    }
+
+    /// FIPS 204 ML-DSA.Sign — external ("pure") interface with a context string
+    /// (`context.len() <= 255`). `M' = (0x00 || |ctx| || ctx) || M`. Deterministic
+    /// when `random` is all-zero, hedged otherwise.
+    pub fn sign_with_context(
+        &self,
+        message: &[u8],
+        context: &[u8],
+        random: &[u8; 32],
+    ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
+        let mut prefix = [0u8; 257];
+        let n = encode_msg_prefix(&mut prefix, 0, context)?;
+        self.sign_internal(&prefix[..n], message, random)
+    }
+
+    /// FIPS 204 HashML-DSA.Sign — external pre-hash interface. `M' = (0x01 || |ctx|
+    /// || ctx || OID(PH)) || PH(M)`. Only the hashes RIINA ships are supported.
+    pub fn sign_prehash(
+        &self,
+        message: &[u8],
+        context: &[u8],
+        ph: PreHash,
+        random: &[u8; 32],
+    ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
+        let mut prefix = [0u8; 257 + 11]; // 2 + 255 ctx + 11-byte OID
+        let n = encode_msg_prefix(&mut prefix, 1, context)?;
+        let oid = ph.oid();
+        prefix[n..n + oid.len()].copy_from_slice(oid);
+        let mut digest = [0u8; 64];
+        let dlen = ph.hash(message, &mut digest);
+        self.sign_internal(&prefix[..n + oid.len()], &digest[..dlen], random)
+    }
+
+    /// FIPS 204 internal signing core. `ctx_prefix` is the M' domain prefix (empty
+    /// for the internal interface); `rnd` is the per-signature randomizer (0^32 =
+    /// deterministic).
+    fn sign_internal(
+        &self,
+        ctx_prefix: &[u8],
+        message: &[u8],
+        rnd: &[u8; 32],
+    ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
         // Parse secret key
         let rho: [u8; 32] = self.bytes[SK_RHO_OFFSET..SK_RHO_OFFSET + 32]
             .try_into()
@@ -1051,20 +1182,25 @@ impl MlDsa65SigningKey {
         let mut t0_hat = t0.clone();
         t0_hat.ntt();
 
-        // mu = CRH(tr || M) = SHAKE256(tr || M, 64)
+        // mu = H(tr || M') = SHAKE256(tr || ctx_prefix || M, 64). For the internal
+        // interface ctx_prefix is empty; the external interface supplies the FIPS
+        // 204 message-representative prefix (0/1 || |ctx| || ctx [|| OID]).
         let mut mu = [0u8; 64];
         {
             let mut h = Shake256::new();
             h.update(&tr);
+            h.update(ctx_prefix);
             h.update(message);
             h.squeeze(&mut mu);
         }
 
-        // rho' = CRH(K || mu) (deterministic signing)
+        // rho'' = H(K || rnd || mu, 64) — FIPS 204 Alg. 7, line 6. rnd = 0^32 for
+        // deterministic signing; the pre-final Dilithium draft hashed H(K || mu).
         let mut rho_prime = [0u8; 64];
         {
             let mut h = Shake256::new();
             h.update(&key_k);
+            h.update(rnd);
             h.update(&mu);
             h.squeeze(&mut rho_prime);
         }
@@ -1212,17 +1348,16 @@ impl MlDsa65SigningKey {
         }
     }
 
-    /// Sign with hedged randomness
+    /// FIPS 204 hedged signing (internal interface): the 32-byte `random` is used
+    /// directly as `rnd` in `rho'' = H(K || rnd || mu)` (deterministic mode passes
+    /// 0^32). Previously this delegated to deterministic signing and ignored
+    /// `random`; it now actually mixes the randomizer in.
     pub fn sign_hedged(
         &self,
         message: &[u8],
         random: &[u8; 32],
     ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
-        // In hedged mode, replace K with H(K || random) in rho' computation
-        // For now, use deterministic signing (the hedged variant just provides
-        // side-channel protection by mixing in randomness)
-        let _ = random;
-        self.sign(message)
+        self.sign_internal(&[], message, random)
     }
 
     /// Get the verification key
@@ -1305,8 +1440,49 @@ impl MlDsa65VerifyingKey {
         &self.bytes
     }
 
-    /// Verify a signature (FIPS 204 Algorithm 3)
+    /// Verify with the FIPS 204 *internal* interface (no M' prefix). Matches
+    /// `MlDsa65KeyPair::verify` and the ACVP internal vectors.
     pub fn verify(&self, message: &[u8], signature: &[u8; SIGNATURE_SIZE]) -> CryptoResult<()> {
+        self.verify_internal(&[], message, signature)
+    }
+
+    /// FIPS 204 ML-DSA.Verify — external ("pure") interface with a context string.
+    pub fn verify_with_context(
+        &self,
+        message: &[u8],
+        context: &[u8],
+        signature: &[u8; SIGNATURE_SIZE],
+    ) -> CryptoResult<()> {
+        let mut prefix = [0u8; 257];
+        let n = encode_msg_prefix(&mut prefix, 0, context)?;
+        self.verify_internal(&prefix[..n], message, signature)
+    }
+
+    /// FIPS 204 HashML-DSA.Verify — external pre-hash interface.
+    pub fn verify_prehash(
+        &self,
+        message: &[u8],
+        context: &[u8],
+        ph: PreHash,
+        signature: &[u8; SIGNATURE_SIZE],
+    ) -> CryptoResult<()> {
+        let mut prefix = [0u8; 257 + 11];
+        let n = encode_msg_prefix(&mut prefix, 1, context)?;
+        let oid = ph.oid();
+        prefix[n..n + oid.len()].copy_from_slice(oid);
+        let mut digest = [0u8; 64];
+        let dlen = ph.hash(message, &mut digest);
+        self.verify_internal(&prefix[..n + oid.len()], &digest[..dlen], signature)
+    }
+
+    /// FIPS 204 internal verification core. `ctx_prefix` is the M' domain prefix
+    /// (empty for the internal interface).
+    fn verify_internal(
+        &self,
+        ctx_prefix: &[u8],
+        message: &[u8],
+        signature: &[u8; SIGNATURE_SIZE],
+    ) -> CryptoResult<()> {
         let rho: [u8; 32] = self.bytes[PK_RHO_OFFSET..PK_RHO_OFFSET + 32]
             .try_into()
             .unwrap();
@@ -1346,11 +1522,12 @@ impl MlDsa65VerifyingKey {
             hasher.squeeze(&mut tr);
         }
 
-        // mu = CRH(tr || M)
+        // mu = H(tr || M') = SHAKE256(tr || ctx_prefix || M, 64)
         let mut mu = [0u8; 64];
         {
             let mut hasher = Shake256::new();
             hasher.update(&tr);
+            hasher.update(ctx_prefix);
             hasher.update(message);
             hasher.squeeze(&mut mu);
         }
