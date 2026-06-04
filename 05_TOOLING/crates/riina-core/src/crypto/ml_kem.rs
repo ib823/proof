@@ -985,8 +985,21 @@ pub struct MlKem768DecapsulationKey {
 }
 
 impl MlKem768DecapsulationKey {
-    /// Create from bytes
+    /// Create from bytes, performing the FIPS 203 §7.3 decapsulation-key **hash
+    /// check**: the `H(ek)` embedded in `dk` (bytes `2336..2368`) must equal
+    /// `SHA3-256(ek)` (bytes `1152..2336`). This rejects a corrupted or forged
+    /// decapsulation key (the NIST ACVP `decapsulationKeyCheck` "modified H" cases).
+    /// The length is enforced by the `[u8; SECRET_KEY_SIZE]` type. The comparison
+    /// is constant-time for hygiene, though `dk`/`H(ek)` are not themselves secret.
     pub fn from_bytes(bytes: &[u8; SECRET_KEY_SIZE]) -> CryptoResult<Self> {
+        let h_ek = Sha3_256::hash(&bytes[1152..2336]);
+        let mut diff = 0u8;
+        for i in 0..32 {
+            diff |= h_ek[i] ^ bytes[2336 + i];
+        }
+        if diff != 0 {
+            return Err(CryptoError::InvalidKeyLength);
+        }
         Ok(Self { bytes: *bytes })
     }
 

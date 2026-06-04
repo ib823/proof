@@ -174,6 +174,34 @@ fn kat_ml_kem_768_encaps_decaps_acvp_fips203() {
     );
 }
 
+#[test]
+fn kat_ml_kem_768_keycheck_acvp_fips203() {
+    // FIPS 203 key-validity checks against authentic NIST ACVP vectors.
+    let data = include_str!("vectors/mlkem768_keycheck_acvp.txt");
+
+    // decapsulationKeyCheck (§7.3 hash check): from_bytes accepts a valid dk and
+    // rejects one whose embedded H(ek) was modified.
+    let dk_ok = MlKem768DecapsulationKey::from_bytes(&hexn::<2400>(kv(data, "dk_valid"))).is_ok();
+    assert_eq!(dk_ok, kv(data, "dk_valid_pass") == "1", "valid dk must be accepted");
+    let dk_bad = MlKem768DecapsulationKey::from_bytes(&hexn::<2400>(kv(data, "dk_modh"))).is_ok();
+    assert_eq!(dk_bad, kv(data, "dk_modh_pass") == "1", "modified-H dk must be rejected");
+
+    // encapsulationKeyCheck (§7.2): a valid 1184-byte ek is accepted (length is
+    // enforced by the array type; the modulus check lives in from_bytes).
+    let ek_ok = MlKem768EncapsulationKey::from_bytes(&hexn::<1184>(kv(data, "ek_valid"))).is_ok();
+    assert_eq!(ek_ok, kv(data, "ek_valid_pass") == "1", "valid ek must be accepted");
+
+    // §7.2 modulus check: force the first 12-bit coefficient to 0xFFF (4095 >= q)
+    // and confirm rejection.
+    let mut bad_ek = hexn::<1184>(kv(data, "ek_valid"));
+    bad_ek[0] = 0xFF;
+    bad_ek[1] = 0xFF;
+    assert!(
+        MlKem768EncapsulationKey::from_bytes(&bad_ek).is_err(),
+        "ek with an out-of-range coefficient must be rejected"
+    );
+}
+
 // ── ML-DSA-65 — NIST ACVP (FIPS 204) ─────────────────────────────────────────
 
 #[test]
