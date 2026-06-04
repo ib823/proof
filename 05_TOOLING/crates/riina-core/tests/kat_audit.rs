@@ -177,14 +177,15 @@ fn kat_ml_kem_768_encaps_decaps_acvp_fips203() {
 // ── ML-DSA-65 — NIST ACVP (FIPS 204) ─────────────────────────────────────────
 
 #[test]
-#[ignore = "FINDING: RIINA ML-DSA is pre-final Dilithium draft, not FIPS 204 \
-            (H(xi) vs H(xi||k||l) aligns rho but the rest still diverges -> same \
-            pattern as ML-KEM). Authentic NIST ACVP oracle for the FIPS 204 \
-            reconciliation; un-ignore once compliant. See \
-            reports/precrypto_audit_secondmodel.md."]
 fn kat_ml_dsa_65_keygen_acvp_fips204() {
-    // Authentic NIST ACVP-Server vector (FIPS 204). ACVP keyGen supplies the
-    // 32-byte seed ξ; RIINA's generate(ξ) must reproduce pk and sk.
+    // FIPS 204 COMPLIANT (byte-exact against this authentic NIST ACVP vector).
+    // Reconciliation deltas that were fixed: (1) H(xi) -> H(xi || k || l)
+    // parameter-set domain separator; (2) ExpandS sample_eta was a centered
+    // binomial distribution (ML-KEM style) instead of FIPS 204 RejBoundedPoly
+    // (CoeffFromHalfByte rejection sampling); (3) ExpandA sample_uniform_ntt used
+    // the Kyber two-12-bit byte extraction instead of Dilithium's one-23-bit
+    // CoeffFromThreeBytes. ACVP keyGen supplies the 32-byte seed xi; generate(xi)
+    // reproduces pk and sk. See reports/precrypto_audit_secondmodel.md.
     let data = include_str!("vectors/mldsa65_keygen_acvp.txt");
     let seed = hexn::<32>(kv(data, "seed"));
     let kp = MlDsa65KeyPair::generate(&seed).expect("ML-DSA-65 keygen");

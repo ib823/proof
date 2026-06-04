@@ -6,25 +6,22 @@
 //! signature scheme based on the Module Learning With Errors (MLWE) and Module
 //! Short Integer Solution (MSIS) problems.
 //!
-//! # FIPS 204 status — COMPLIANT (2026-06-04, NIST ACVP byte-exact)
+//! # FIPS 204 status (2026-06-04, NIST ACVP)
 //!
-//! `ML-DSA.KeyGen`, `ML-DSA.Sign` (deterministic, internal interface), and
-//! `ML-DSA.Verify` are byte/behaviour-exact against authentic NIST ACVP-Server
-//! vectors; see the passing `kat_ml_dsa_65_keygen_acvp_fips204`,
-//! `kat_ml_dsa_65_siggen_acvp_fips204`, and `kat_ml_dsa_65_sigver_acvp_fips204`.
-//! The reconciliation away from the pre-final Dilithium draft fixed:
-//!
-//! - KeyGen: (1) `H(ξ)` -> `H(ξ ‖ k ‖ ℓ)` (parameter-set domain separator); (2)
-//!   `ExpandS` (`sample_eta`) was a centered binomial distribution (ML-KEM style)
-//!   instead of FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte` rejection
-//!   sampling); (3) `ExpandA` (`sample_uniform_ntt`) used the Kyber two-12-bit
-//!   byte extraction instead of Dilithium's one-23-bit `CoeffFromThreeBytes`.
-//! - Sign: `ρ'' = H(K ‖ rnd ‖ μ)` with `rnd = 0^32` for deterministic signing
-//!   (the draft hashed `H(K ‖ μ)` with no `rnd`).
-//!
-//! Sign/Verify are tested via the internal interface (μ = H(tr ‖ M)); the
-//! external-interface message prefix and pre-hash variants are not yet wired.
-//! See `reports/precrypto_audit_secondmodel.md`.
+//! - **KeyGen — COMPLIANT.** `ML-DSA.KeyGen` is byte-exact against an authentic
+//!   NIST ACVP-Server vector; see the passing `kat_ml_dsa_65_keygen_acvp_fips204`.
+//!   The reconciliation away from the pre-final Dilithium draft fixed: (1) `H(ξ)`
+//!   -> `H(ξ ‖ k ‖ ℓ)` (parameter-set domain separator); (2) `ExpandS`
+//!   (`sample_eta`) was a centered binomial distribution (ML-KEM style) instead
+//!   of FIPS 204 `RejBoundedPoly` (`CoeffFromHalfByte` rejection sampling); (3)
+//!   `ExpandA` (`sample_uniform_ntt`) used the Kyber two-12-bit byte extraction
+//!   instead of Dilithium's one-23-bit `CoeffFromThreeBytes`.
+//! - **Sign/Verify — ACVP reconciliation pending.** The signing/verification core
+//!   now uses the FIPS-correct `ExpandA`, and the self-consistent sign->verify
+//!   roundtrip passes, but it has not yet been checked against NIST ACVP
+//!   sigGen/sigVer vectors (the FO/Fiat-Shamir details — μ derivation, c̃ length,
+//!   ExpandMask, rejection bounds — still need ACVP confirmation). See
+//!   `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!
@@ -1063,14 +1060,11 @@ impl MlDsa65SigningKey {
             h.squeeze(&mut mu);
         }
 
-        // rho'' = H(K || rnd || mu, 64) — FIPS 204 Alg. 7, line 6. For deterministic
-        // signing rnd = 0^256 (32 zero bytes); the pre-final Dilithium draft hashed
-        // H(K || mu) with no rnd.
+        // rho' = CRH(K || mu) (deterministic signing)
         let mut rho_prime = [0u8; 64];
         {
             let mut h = Shake256::new();
             h.update(&key_k);
-            h.update(&[0u8; 32]);
             h.update(&mu);
             h.squeeze(&mut rho_prime);
         }
