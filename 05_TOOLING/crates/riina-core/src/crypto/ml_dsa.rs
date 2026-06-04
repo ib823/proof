@@ -1423,7 +1423,14 @@ impl MlDsa65KeyPair {
     /// Generate a new key pair (FIPS 204 Algorithm 1)
     pub fn generate(random: &[u8; 32]) -> CryptoResult<Self> {
         // (rho, rho', K) = H(random)
-        // Use SHAKE256 to expand random into the needed seeds
+        //
+        // NON-COMPLIANCE (2026-06-04, NIST ACVP pre-audit): FIPS 204 Alg. 6 hashes
+        // H(xi || k || l) — the dimension bytes k,l as a parameter-set domain
+        // separator. Adding `h.update(&[K as u8, L as u8])` makes rho match the
+        // NIST ACVP keyGen vector exactly, but pk still diverges, so (like ML-KEM)
+        // RIINA's ML-DSA has further pre-final-Dilithium-vs-FIPS-204 deltas. Left
+        // as draft Dilithium pending an atomic FIPS 204 reconciliation — see
+        // reports/precrypto_audit_secondmodel.md and the ignored ACVP keyGen KAT.
         let mut seed_buf = [0u8; 128]; // rho(32) + rho'(64) + K(32)
         {
             let mut h = Shake256::new();

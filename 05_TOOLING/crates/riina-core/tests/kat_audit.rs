@@ -23,6 +23,7 @@ use riina_core::crypto::hkdf::HkdfSha256;
 use riina_core::crypto::hmac::HmacSha256;
 use riina_core::crypto::keccak::{Sha3_256, Sha3_512};
 use riina_core::crypto::ml_kem::MlKem768KeyPair;
+use riina_core::crypto::ml_dsa::MlDsa65KeyPair;
 use riina_core::crypto::sha2::{Sha256, Sha512};
 use riina_core::crypto::x25519::x25519;
 
@@ -129,6 +130,32 @@ fn kat_ml_kem_768_keygen_acvp_fips203() {
         kp.decapsulation_key().as_bytes().to_vec(),
         hex(kv(data, "dk")),
         "dk does not match the ACVP expected secret key"
+    );
+}
+
+// ── ML-DSA-65 — NIST ACVP (FIPS 204) ─────────────────────────────────────────
+
+#[test]
+#[ignore = "FINDING: RIINA ML-DSA is pre-final Dilithium draft, not FIPS 204 \
+            (H(xi) vs H(xi||k||l) aligns rho but the rest still diverges -> same \
+            pattern as ML-KEM). Authentic NIST ACVP oracle for the FIPS 204 \
+            reconciliation; un-ignore once compliant. See \
+            reports/precrypto_audit_secondmodel.md."]
+fn kat_ml_dsa_65_keygen_acvp_fips204() {
+    // Authentic NIST ACVP-Server vector (FIPS 204). ACVP keyGen supplies the
+    // 32-byte seed ξ; RIINA's generate(ξ) must reproduce pk and sk.
+    let data = include_str!("vectors/mldsa65_keygen_acvp.txt");
+    let seed = hexn::<32>(kv(data, "seed"));
+    let kp = MlDsa65KeyPair::generate(&seed).expect("ML-DSA-65 keygen");
+    assert_eq!(
+        kp.verifying_key().as_bytes().to_vec(),
+        hex(kv(data, "pk")),
+        "pk does not match the ACVP expected public key"
+    );
+    assert_eq!(
+        kp.signing_key().as_bytes().to_vec(),
+        hex(kv(data, "sk")),
+        "sk does not match the ACVP expected secret key"
     );
 }
 

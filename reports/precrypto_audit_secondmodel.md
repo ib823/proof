@@ -16,20 +16,25 @@ Method per primitive: read the file + dependencies, run its tests/KATs, analyze
 correctness, constant-time (relative to RIINA's leakage contract, excluding
 DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 
-> ## ⚑ HEADLINE FINDING — ML-KEM is NOT FIPS 203 compliant
-> An authentic **NIST ACVP keyGen vector** (now vendored at
-> `tests/vectors/mlkem768_keygen_acvp.txt`) shows RIINA's ML-KEM-768 keygen does
-> **not** reproduce NIST's public/secret key — it follows the **pre-final Kyber
-> draft, not FIPS 203**. Confirmed deltas: (1) `K-PKE.KeyGen` uses `G(d)` instead
-> of FIPS 203's `G(d ‖ k)` domain separator — fixing that makes **ρ match NIST
-> exactly**, but (2) **t̂ still diverges**, so the sampling/NTT/encoding pipeline
-> has further draft-vs-final differences. The existing roundtrip tests pass only
-> because the implementation is *self-consistent*; they cannot detect
-> non-interoperability. **This is output-breaking to fix** (all ML-KEM keys/
-> ciphertexts/shared-secrets change) and warrants a deliberate, atomic FIPS 203
-> reconciliation (and the same ACVP check applied to ML-DSA). The ignored ACVP KAT
-> is the oracle. This is the single most important result of the pre-audit, and is
-> exactly what an external audit (REQ-28) and proper ACVP testing exist to catch.
+> ## ⚑ HEADLINE FINDING — RIINA's PQC (ML-KEM **and** ML-DSA) is NOT FIPS-final
+> Authentic **NIST ACVP keyGen vectors** (vendored under `tests/vectors/`) show that
+> **neither** ML-KEM-768 nor ML-DSA-65 reproduces NIST's keys — both follow the
+> **pre-final Kyber/Dilithium drafts, not FIPS 203/204**. Identical pattern, confirmed
+> by comparing intermediates against the vectors:
+> - **ML-KEM:** `K-PKE.KeyGen` uses `G(d)` instead of FIPS 203 `G(d ‖ k)`; adding the
+>   domain-separator byte makes **ρ match NIST exactly**, but **t̂ still diverges**.
+> - **ML-DSA:** keyGen uses `H(ξ)` instead of FIPS 204 `H(ξ ‖ k ‖ ℓ)`; adding the
+>   dimension bytes makes **ρ match NIST exactly**, but **pk still diverges**.
+>
+> So in *both* primitives the missing FIPS-final parameter-set domain separator is the
+> first delta, and *both* have further sampling/NTT/encoding deltas. The existing
+> roundtrip tests pass only because each implementation is **self-consistent**; they
+> cannot detect non-interoperability. **Fixing this is output-breaking** (every key,
+> ciphertext, signature, and shared secret changes) and must be a deliberate, atomic
+> FIPS 203/204 reconciliation. The two ignored ACVP KATs are the oracles. This is the
+> single most important result of the pre-audit — exactly what ACVP testing and an
+> external audit (REQ-28) exist to catch — and it means the repo's "FIPS 203/204"
+> claim must be corrected until reconciled.
 
 ---
 
@@ -42,7 +47,7 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `ml_kem.rs` (FIPS 203) | roundtrip green; **ACVP keyGen FAILS** | **1 Critical (not FIPS 203)** + 2 Med CT/hygiene | decaps CT branches + zeroization (CT verified) | **⚑ NOT FIPS 203 — draft Kyber; output-breaking reconciliation needed** |
 | `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
 | `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
-| `ml_dsa.rs` (FIPS 204) | sign/verify roundtrip green | 1 Med (CT) | `check_norm` rejection-bound made constant-time (poly + vec level) + equivalence test | no ACVP KATs; decompose/make_hint/sample_in_ball CT deeper review |
+| `ml_dsa.rs` (FIPS 204) | roundtrip green; **ACVP keyGen FAILS** | **1 Critical (not FIPS 204)** + 1 Med CT | `check_norm` CT (poly+vec) + equivalence test | **⚑ NOT FIPS 204 — draft Dilithium; output-breaking reconciliation needed** |
 | `gcm.rs`/`ghash.rs` | NIST GCM KATs green | **none** (clean) | — | nonce-reuse is caller's responsibility (documented); SP 800-38D length limits not enforced (unreachable) |
 | `sha2`/`keccak`/`hmac`/`hkdf` | KATs green (+SHA-3 added) | **none** (clean) | added SHA3-256/512 FIPS 202 KATs to the manifest | — |
 
@@ -147,9 +152,13 @@ Reductions (`montgomery_reduce`/`reduce32`/`caddq`/`freeze`) are branchless/CT.
   so sampling/NTT/encoding also differ from FIPS 203. Roundtrip passes only because the
   impl is self-consistent. Needs an atomic, output-breaking FIPS 203 reconciliation; the
   ignored `kat_ml_kem_768_keygen_acvp_fips203` is the oracle.
-- Open: no FIPS 204 ACVP KATs (roundtrip only); `decompose`/`make_hint`/`sample_in_ball`
-  CT and encodings were not deeply audited this pass. The sign loop's iteration count is
-  inherently `y`-dependent (acceptable).
+- **⚑ NOT FIPS 204 (Critical, open):** the vendored NIST ACVP keyGen vector fails (see
+  the Headline Finding). keyGen hashes `H(ξ)` but FIPS 204 requires `H(ξ ‖ k ‖ ℓ)`
+  (fixing aligns ρ exactly with NIST); pk still diverges, so the rest of the pipeline
+  differs too — same draft-vs-final pattern as ML-KEM. Needs an atomic, output-breaking
+  FIPS 204 reconciliation; the ignored `kat_ml_dsa_65_keygen_acvp_fips204` is the oracle.
+- Open: `decompose`/`make_hint`/`sample_in_ball` CT and encodings were not deeply audited
+  this pass. The sign loop's iteration count is inherently `y`-dependent (acceptable).
 
 ## AES-GCM (`gcm.rs` + `ghash.rs`) — second-model pass — **clean**
 
