@@ -25,7 +25,9 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `aes.rs` | KATs green (FIPS 197 C.3) | 4 (1 High, 1 Med, 2 Low) | CT barrier on `ct_lookup`; zeroize working state; +exhaustive `ct_lookup` test | raw-API visibility (Low); AESAVS/Monte-Carlo vectors (Low) |
 | `constant_time.rs` | tests green | 1 (broken CT primitive) | `ct_select` made branchless; `ct_lt_u8` tightened; +tests | — |
 | `ml_kem.rs` (FIPS 203) | roundtrip/implicit-reject green | 3 (2 Med CT/hygiene, 1 Med tests) | decaps CT branches (`to_positive`/`encode_message`); decaps secret zeroization | **no NIST ACVP KATs** |
-| `ml_dsa.rs`, `gcm.rs`/`ghash.rs`, `ed25519.rs`, `x25519.rs`, `sha2/keccak/hmac/hkdf` | — | not yet passed | — | full passes pending |
+| `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
+| `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
+| `ml_dsa.rs`, `gcm.rs`/`ghash.rs`, `sha2/keccak/hmac/hkdf` | — | not yet passed | — | full passes pending |
 
 ---
 
@@ -78,6 +80,39 @@ both candidates always computed. Reductions (`barrett_reduce`, `cond_sub_q`,
   consistency only; they would pass on a self-consistent but non-compliant impl. Top
   correctness-assurance follow-up: add ACVP ML-KEM-768 KATs (and likewise across the
   suite). This needs official vectors and could not be done in-session.
+
+## X25519 (`x25519.rs` + `montgomery.rs` + `field25519.rs`) — second-model pass
+
+**The implementation is correct and constant-time** — the only issue was misleading
+test hygiene that made it *look* unvalidated.
+- **Disabled/bogus KATs (fixed, test-only).** `x25519::test_x25519_rfc7748_vector1`
+  was `#[ignore]`'d ("pending invert validation") but actually passes;
+  `montgomery::test_rfc7748_vector2_basepoint` was ignored as a "basepoint encoding
+  issue" but in fact asserted a **non-RFC (bogus) expected value** for `scalar1*9`.
+  Resolved with the authoritative RFC 7748 §6.1 Diffie-Hellman vectors (a→KA, b→KB,
+  shared-secret agreement) + un-ignoring vector-1 + replacing the bogus test. All green.
+- **Verified positive:** Montgomery ladder runs all 255 bits with a branchless
+  `conditional_swap` (`mask = -swap`); `FieldElement::invert` is Fermat `a^(p-2)`
+  (CT); `ct_eq`/`is_zero` branchless; clamping + all-zero (small-order) output
+  rejection present.
+
+## Ed25519 (`ed25519.rs` + `field25519.rs`) — second-model pass — **2 High, both live**
+
+RFC 8032 #1/#2 pass, but two serious LIVE defects were found and fixed:
+- **`EdwardsPoint::ct_select` not constant-time (High → fixed).** Same broken pattern
+  as the dead `constant_time::ct_select`, but **live**: called by `scalar_mul` on the
+  **secret** scalar bit during `sign`/keygen, with `if choice==1 {b} else {a}` behind a
+  `// TODO`. A timing leak of the private scalar / nonce bits (key-recovery class).
+  **Fixed:** branchless `FieldElement::conditional_select` selecting all four extended
+  coordinates; RFC 8032 vectors unchanged.
+- **`is_scalar_valid` (s<L) reversed borrow (High → fixed).** The non-malleability
+  check subtracted `bytes - L` propagating the borrow **MSB→LSB**, mis-classifying any
+  scalar needing a cross-byte borrow (**proven**: L-238 reported as ≥ L). Impact: valid
+  signatures wrongly rejected (interop) **and** malleable `s ≥ L` could be wrongly
+  accepted (defeating the check). **Fixed:** LSB→MSB, branchless; +regression test.
+- Open (not fixed): no small-order/cofactor rejection of `A`/`R` (RFC 8032 allows
+  cofactorless, so low priority); `Scalar::from_bytes_mod_order` "just copy" comment is
+  misleading but benign in context (reduction happens in `scalar_mul`/`scalar_add`).
 
 ---
 
