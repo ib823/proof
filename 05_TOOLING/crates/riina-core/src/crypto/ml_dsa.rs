@@ -2,9 +2,19 @@
 
 //! ML-DSA-65 (Module-Lattice Digital Signature Algorithm) Implementation
 //!
-//! This module implements ML-DSA-65 as specified in FIPS 204.
+//! This module implements ML-DSA-65 based on the pre-final Dilithium (round-3) draft.
 //! ML-DSA is a post-quantum digital signature scheme based on the
 //! Module Learning With Errors (MLWE) and Module Short Integer Solution (MSIS) problems.
+//!
+//! # FIPS 204 status — NOT YET COMPLIANT (2026-06-04, NIST ACVP pre-audit)
+//!
+//! This implementation does **not** match the final FIPS 204 standard: an
+//! authentic NIST ACVP keyGen vector fails. keyGen hashes `H(ξ)` instead of FIPS
+//! 204's `H(ξ ‖ k ‖ ℓ)` (the parameter-set domain separator), plus further
+//! deltas — the same draft-vs-final pattern as ML-KEM. Self-consistent but not
+//! interoperable with FIPS-204-compliant implementations. See
+//! `reports/precrypto_audit_secondmodel.md` and the ignored
+//! `kat_ml_dsa_65_keygen_acvp_fips204`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!

@@ -2,15 +2,21 @@
 
 //! ML-KEM-768 (Module-Lattice Key Encapsulation Mechanism) Implementation
 //!
-//! This module implements ML-KEM-768 as specified in FIPS 203 (August 2024).
+//! This module implements ML-KEM-768 based on the pre-final Kyber (round-3) draft.
 //! ML-KEM is a post-quantum key encapsulation mechanism based on the
 //! Module Learning With Errors (MLWE) problem.
 //!
-//! # FIPS 203 Compliance
+//! # FIPS 203 status — NOT YET COMPLIANT (2026-06-04, NIST ACVP pre-audit)
 //!
-//! This implementation follows FIPS 203 "Module-Lattice-Based Key-Encapsulation
-//! Mechanism Standard" exactly. Every constant, algorithm, and data structure
-//! is derived directly from the specification.
+//! This implementation does **not** match the final FIPS 203 standard: an
+//! authentic NIST ACVP keyGen vector fails. Confirmed deltas include
+//! `K-PKE.KeyGen` hashing `G(d)` instead of FIPS 203's `G(d ‖ k)` (the
+//! parameter-set domain separator), plus further sampling/NTT/encoding
+//! differences. It is *self-consistent* (its own keygen/encaps/decaps
+//! interoperate) but is **not interoperable** with FIPS-203-compliant
+//! implementations. An (output-breaking) FIPS 203 reconciliation is pending —
+//! see `reports/precrypto_audit_secondmodel.md` and the ignored
+//! `kat_ml_kem_768_keygen_acvp_fips203`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
 //!

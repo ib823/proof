@@ -1202,7 +1202,7 @@ Source: `04_SPECS/requirements/RIINA_EXHAUSTIVE_GAP_ANALYSIS_v1_0_0.md`
 | Financial (PCI-DSS, SOX) | Compliant | Verified |
 | Healthcare (HIPAA) | Compliant | Verified |
 | Privacy (GDPR, CCPA) | Ready | Verified |
-| Quantum threats | Post-quantum from day 1 (ML-KEM, ML-DSA) | Verified |
+| Quantum threats | Post-quantum from day 1 (ML-KEM, ML-DSA) | Implemented but **NOT FIPS 203/204** (pre-final Kyber/Dilithium draft — see 2026-06-04 ACVP Headline Finding); reconciliation pending |
 | AI/ML threats | Type-safe LLM integration, IFC, taint tracking | Verified |
 | Supply chain | Hermetic builds, DDC, reproducible compilation | Verified |
 
