@@ -154,9 +154,11 @@ fn cond_sub_q(a: i16) -> i16 {
 #[inline]
 fn to_positive(a: i16) -> u16 {
     let mut r = a % (params::Q as i16);
-    if r < 0 {
-        r += params::Q as i16;
-    }
+    // Branchless "add q iff negative" (same mask trick as cond_sub_q). The
+    // previous `if r < 0` branched on the sign of a secret-derived coefficient
+    // (this feeds `compress`, which runs on m'-derived polys during decaps).
+    // `r >> 15` is -1 when r < 0 and 0 otherwise.
+    r += (r >> 15) & (params::Q as i16);
     r as u16
 }
 
@@ -522,8 +524,10 @@ impl Poly {
         for i in 0..32 {
             for j in 0..8 {
                 let c = cond_sub_q(barrett_reduce(self.coeffs[8 * i + j]));
-                // Compress to 1 bit: round(2c/q)
-                let c_abs = if c < 0 { c + params::Q as i16 } else { c } as u32;
+                // Compress to 1 bit: round(2c/q). Branchless absolute-into-[0,q):
+                // the previous `if c < 0` branched on the sign of a secret message
+                // coefficient during decaps decryption. `c >> 15` is -1 iff c < 0.
+                let c_abs = u32::from((c + ((c >> 15) & params::Q as i16)) as u16);
                 let bit = (((c_abs << 1) + params::Q32 / 2) / params::Q32) & 1;
                 msg[i] |= (bit as u8) << j;
             }
@@ -969,7 +973,7 @@ impl MlKem768DecapsulationKey {
         let dk_pke: &[u8; 1152] = self.bytes[..1152].try_into().unwrap();
         let ek: [u8; PUBLIC_KEY_SIZE] = self.bytes[1152..2336].try_into().unwrap();
         let h_ek: [u8; 32] = self.bytes[2336..2368].try_into().unwrap();
-        let z: [u8; 32] = self.bytes[2368..2400].try_into().unwrap();
+        let mut z: [u8; 32] = self.bytes[2368..2400].try_into().unwrap();
 
         // m' = K-PKE.Decrypt(dk, c)
         let mut m_prime = [0u8; 32];
@@ -979,9 +983,9 @@ impl MlKem768DecapsulationKey {
         let mut g_input = [0u8; 64];
         g_input[..32].copy_from_slice(&m_prime);
         g_input[32..64].copy_from_slice(&h_ek);
-        let g_output = Sha3_512::hash(&g_input);
-        let k_prime: [u8; 32] = g_output[..32].try_into().unwrap();
-        let r_prime: [u8; 32] = g_output[32..64].try_into().unwrap();
+        let mut g_output = Sha3_512::hash(&g_input);
+        let mut k_prime: [u8; 32] = g_output[..32].try_into().unwrap();
+        let mut r_prime: [u8; 32] = g_output[32..64].try_into().unwrap();
 
         // H(c)
         let h_c = Sha3_256::hash(ciphertext);
@@ -1024,9 +1028,20 @@ impl MlKem768DecapsulationKey {
             ss[i] = (ss_valid[i] & mask) | (ss_reject[i] & !mask);
         }
 
-        // Zeroize temporaries
+        // Zeroize all secret intermediates: the decrypted message, the G input/
+        // output, the candidate key K' and randomness r', the implicit-rejection
+        // key z, and both candidate shared secrets + their KDF inputs. `ss` is the
+        // returned value; the public hashes h_ek/h_c need no scrubbing.
         m_prime.zeroize();
         g_input.zeroize();
+        g_output.zeroize();
+        k_prime.zeroize();
+        r_prime.zeroize();
+        z.zeroize();
+        ss_valid.zeroize();
+        ss_reject.zeroize();
+        kdf_input_valid.zeroize();
+        kdf_input_reject.zeroize();
 
         Ok(ss)
     }
