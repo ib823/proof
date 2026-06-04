@@ -21,6 +21,7 @@ use riina_core::crypto::ed25519::Ed25519SigningKey;
 use riina_core::crypto::gcm::{Aes256Gcm, TAG_SIZE};
 use riina_core::crypto::hkdf::HkdfSha256;
 use riina_core::crypto::hmac::HmacSha256;
+use riina_core::crypto::keccak::{Sha3_256, Sha3_512};
 use riina_core::crypto::sha2::{Sha256, Sha512};
 use riina_core::crypto::x25519::x25519;
 
@@ -63,6 +64,31 @@ fn kat_sha512_fips180_4_abc() {
         hex(
             "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a\
              2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
+        )
+    );
+}
+
+// ── SHA-3 — FIPS 202 ─────────────────────────────────────────────────────────
+
+#[test]
+fn kat_sha3_256_fips202_abc() {
+    // FIPS 202 / NIST CAVP example: SHA3-256("abc")
+    let got = Sha3_256::hash(b"abc");
+    assert_eq!(
+        got.to_vec(),
+        hex("3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532")
+    );
+}
+
+#[test]
+fn kat_sha3_512_fips202_abc() {
+    // FIPS 202 / NIST CAVP example: SHA3-512("abc")
+    let got = Sha3_512::hash(b"abc");
+    assert_eq!(
+        got.to_vec(),
+        hex(
+            "b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e\
+             10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0"
         )
     );
 }

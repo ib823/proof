@@ -29,7 +29,7 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
 | `ml_dsa.rs` (FIPS 204) | sign/verify roundtrip green | 1 Med (CT) | `check_norm` rejection-bound made constant-time (poly + vec level) + equivalence test | no ACVP KATs; decompose/make_hint/sample_in_ball CT deeper review |
 | `gcm.rs`/`ghash.rs` | NIST GCM KATs green | **none** (clean) | — | nonce-reuse is caller's responsibility (documented); SP 800-38D length limits not enforced (unreachable) |
-| `sha2/keccak/hmac/hkdf` | — | not yet passed | — | full passes pending |
+| `sha2`/`keccak`/`hmac`/`hkdf` | KATs green (+SHA-3 added) | **none** (clean) | added SHA3-256/512 FIPS 202 KATs to the manifest | — |
 
 ---
 
@@ -142,6 +142,22 @@ No defects found; the hard parts are right:
   runs GCTR decryption on success — no plaintext is produced before authentication.
 - Minor/info: 96-bit nonce enforced; nonce-reuse is the caller's responsibility (clearly
   documented); SP 800-38D max-length limits aren't enforced (practically unreachable).
+
+## SHA-2 / SHA-3 / HMAC / HKDF — second-model pass — **clean**
+
+No defects; this family is inherently constant-time (no secret-dependent branches in the
+hash cores) and well-tested:
+- **HMAC-SHA256:** the one `unsafe` (`ManuallyDrop::take` in `finalize`) is sound (single
+  use in a by-value `finalize`; `Drop` only zeroizes keys); `verify` is constant-time
+  (`ct_eq`); full RFC 4231 case set (1,2,3,4,6,7).
+- **HKDF-SHA256:** correct RFC 5869 extract/expand (counter bounded <= 255), zeroizes PRK/T.
+- **SHA-2 / SHA-3:** no `unsafe`, no secret branches. Added **SHA3-256/512 FIPS 202 KATs**
+  to the consolidated manifest (`tests/kat_audit.rs`) — was the one missing family there.
+
+**Net KAT status:** every primitive except **ML-KEM** and **ML-DSA** now has an
+authoritative FIPS/RFC KAT (SHA-2/SHA-3/HMAC/HKDF/AES/GCM/X25519/Ed25519). ML-KEM-768
+(FIPS 203) and ML-DSA-65 (FIPS 204) remain on roundtrip-only tests and need NIST ACVP
+JSON vectors — the precisely-scoped job for Codex's Task 1.
 
 ---
 
