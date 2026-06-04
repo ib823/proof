@@ -4,17 +4,23 @@
 //!
 //! This module implements AES-256 (Rijndael with 256-bit key and 128-bit block).
 //!
-//! # Constant-Time Guarantees (Law 3)
+//! # Constant-Time Discipline (Law 3) — best-effort, contract-relative
 //!
-//! This implementation uses constant-time table lookups to prevent timing attacks.
-//! All table accesses read the entire table and select the result using bitwise
-//! operations, ensuring no timing variation based on the index.
+//! Table lookups read the ENTIRE table and select the result with bitwise masks,
+//! plus an optimization barrier (`core::hint::black_box`) to discourage the
+//! compiler from recognising the masked scan and lowering it back to a
+//! secret-indexed load. This is a SOURCE-LEVEL discipline, NOT a machine-level
+//! proof: constant-timeness must still be confirmed on emitted assembly and via
+//! dudect/ctgrind per target+toolchain. The guarantee is stated relative to
+//! RIINA's hardware-software leakage contract and EXCLUDES DMP/GoFetch-class
+//! data-memory-dependent-prefetcher leakage.
 //!
 //! # Security Notes
 //!
-//! - Key schedule is computed on construction and zeroized on drop
-//! - All intermediate state is zeroized after use
-//! - No secret-dependent branches or memory accesses
+//! - The key schedule is zeroized on drop; the working `state` is zeroized after
+//!   each block operation. NOTE: transient per-transform byte copies inside
+//!   ShiftRows/MixColumns are short-lived but not individually scrubbed.
+//! - No secret-dependent branches in source (see the CT caveat above re: codegen).
 
 use crate::zeroize::Zeroize;
 
@@ -84,6 +90,11 @@ const RCON: [u8; 11] = [
 /// the correct one, ensuring no timing variation based on the index.
 #[inline]
 fn ct_lookup(table: &[u8; 256], index: u8) -> u8 {
+    // Optimization barrier: treat the index as opaque so the optimizer cannot
+    // prove which entry matches and rewrite this masked scan into `table[index]`
+    // (a secret-indexed load → cache-timing leak). Best-effort source discipline,
+    // not a machine-level proof — verify on emitted asm / via dudect per target.
+    let index = core::hint::black_box(index);
     let mut result: u8 = 0;
     for (i, &value) in table.iter().enumerate() {
         // Create a mask that is 0xFF when i == index, 0x00 otherwise
@@ -92,7 +103,7 @@ fn ct_lookup(table: &[u8; 256], index: u8) -> u8 {
         let eq = ct_eq_byte(i_byte, index);
         result |= value & eq;
     }
-    result
+    core::hint::black_box(result)
 }
 
 /// Constant-time byte equality
@@ -160,6 +171,10 @@ impl Aes256 {
         add_round_key(&mut state, &self.round_keys[NR * NB..(NR + 1) * NB]);
 
         state_to_block(&state, block);
+        // Scrub the working state (round intermediates / last-round bytes) from
+        // the stack; `block` already holds the output. Uses the volatile zeroize
+        // so the clear is not optimized away (Law 4 / secret hygiene).
+        state.zeroize();
     }
 
     /// Decrypt a single 16-byte block in place
@@ -183,6 +198,9 @@ impl Aes256 {
         add_round_key(&mut state, &self.round_keys[0..NB]);
 
         state_to_block(&state, block);
+        // Scrub the working state — on decrypt this final state IS the plaintext,
+        // so clearing it after writing `block` removes a secret stack copy.
+        state.zeroize();
     }
 }
 
@@ -553,6 +571,21 @@ mod tests {
         // Test inverse
         assert_eq!(ct_lookup(&INV_SBOX, 0x63), 0x00);
         assert_eq!(ct_lookup(&INV_SBOX, 0x7c), 0x01);
+    }
+
+    /// Exhaustive: the constant-time scan must equal `table[index]` for EVERY
+    /// byte (a drop-in for the indexed load it replaces), and SBOX/INV_SBOX must
+    /// be true inverses across the whole range. Also a regression guard for the
+    /// `black_box` constant-time barrier in `ct_lookup`.
+    #[test]
+    fn test_ct_lookup_exhaustive_matches_indexed_load_and_inverts() {
+        for i in 0..=255u8 {
+            let idx = i as usize;
+            assert_eq!(ct_lookup(&SBOX, i), SBOX[idx], "SBOX mismatch at {i}");
+            assert_eq!(ct_lookup(&INV_SBOX, i), INV_SBOX[idx], "INV_SBOX mismatch at {i}");
+            // S-box composed with its inverse is the identity.
+            assert_eq!(ct_lookup(&INV_SBOX, ct_lookup(&SBOX, i)), i, "not an involution at {i}");
+        }
     }
 
     /// Test GF(2^8) multiplication
