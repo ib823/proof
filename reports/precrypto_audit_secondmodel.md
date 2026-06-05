@@ -440,3 +440,28 @@ attempted rather than admitted). Remaining formal-equivalence work (multi-sessio
 SHA-2/SHA-3 round bit-ops, and the curve25519 field arithmetic. The methodology (faithful `Z`
 model + `bits_inj'`/`btauto` algebra + `vm_compute` KAT + a Rust parity test) now exists to
 replicate.
+
+### GHASH fold (second primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/GHASH.v` (imports `GF128`; active build 315 -> 316 files, 12,485 ->
+12,506 Qed, 0 Admitted/Axiom/Abort) lifts the multiply to the **full GHASH hash**. It models
+`Ghash::update_block`'s recurrence `acc := (acc XOR block) * H` as a `fold_left` (`ghash`) and
+proves, all `Qed`:
+
+- **`ghash_linear`** — GHASH_H is GF(2)-linear in the (equal-length) block message:
+  `GHASH_H(X (+) Y) = GHASH_H(X) (+) GHASH_H(Y)`. This *is* the almost-XOR-universal structure
+  GCM's authentication security rests on (forging the tag means colliding this hash).
+- **`ghash_cons` / `ghash_horner_two`** — the Horner / polynomial form
+  `GHASH_H(B1..Bm) = (+)_i B_i * H^(m-i+1)` (proved via an accumulator-shift lemma over the fold).
+
+Executable `vm_compute` KATs (`ghash_kat_1`, `ghash_kat_2`, and `ghash_kat_horner` which closes
+by the *proven* `ghash_horner_two`) feed the Rust parity test
+`crypto::ghash::tests::test_ghash_fold_matches_coq_model` (a `Ghash::new`/`update_block`
+sequence), byte-identical (05_TOOLING 286 -> 287).
+
+A Coq-specific lesson worth recording for the lane: because `gf_mul` is a 128-step fixpoint, any
+`simpl`/`cbn` that reduces a goal containing it makes the **Qed-time kernel conversion** (which
+ignores `Opaque`) expand the fixpoint symbolically and diverge. The fix that makes the lane
+scalable: keep `gf_mul`/`ghash_step` `Opaque` and rewrite structure with generic `Qed`-opaque
+lemmas (`fold_left_cons`/`zip_xor_cons`/...) so the kernel treats them as black boxes; concrete
+KATs still go through `vm_compute`.

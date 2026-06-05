@@ -1,11 +1,24 @@
 # Changelog
 
-**Verification:** 12,485 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,506 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-05 — Formal-equivalence proof, second primitive: full GHASH fold
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/GHASH.v`** (imports `GF128`; active build 315 → 316 files,
+  12,485 → 12,506 Qed, 0 Admitted/Axiom/Abort). Models `Ghash::update_block`'s recurrence as a
+  `fold_left` and proves GHASH is a **GF(2)-linear polynomial hash**: `ghash_linear`
+  (`GHASH_H(X⊕Y) = GHASH_H(X)⊕GHASH_H(Y)`, the almost-XOR-universal property GCM auth rests on)
+  and `ghash_cons`/`ghash_horner_two` (the Horner form `⊕ᵢ Bᵢ·H^(m-i+1)`).
+- **Coq ⇄ Rust bridge** `crypto::ghash::tests::test_ghash_fold_matches_coq_model`: a
+  `Ghash::new`/`update_block` sequence asserted byte-identical to the model's `vm_compute`
+  (05_TOOLING 286 → **287 / 0 / 0**). Detail in `reports/precrypto_audit_secondmodel.md`
+  §Formal equivalence 2026-06-05.
 
 ## [Unreleased] — 2026-06-05 — Formal-equivalence proof, first primitive: GHASH GF(2^128)
 
@@ -616,7 +629,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,485 Qed proofs
+- Active Coq build now at 12,506 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)
