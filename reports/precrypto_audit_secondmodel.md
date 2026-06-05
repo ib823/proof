@@ -631,22 +631,46 @@ the instant an undefined (secret-derived) value reaches a conditional branch or 
   ABI), **not** the `crabgrind`/`cc` crates. Driver: `scripts/ct-structural-check.sh`.
 - **Self-test (validated):** the *baseline* (no secret) yields 0 errors and a *positive control* (a
   genuine secret-indexed table load) is detected — so the probe has real detection power here.
-- **Results (per primitive):**
+- **Results (per primitive), after triage + fixes — all clean:**
 
   | Primitive | memcheck errors | secret-dependent jumps | verdict |
   |---|---|---|---|
   | AES-256 (key→schedule→encrypt) | 0 | 0 | **structurally CT-clean** |
   | `ct_eq_bytes` | 0 | 0 | **structurally CT-clean** |
-  | X25519 (scalar→`x25519_base`) | flagged | 6 | triage |
-  | Ed25519 (seed→`sign`) | flagged | 4 | triage |
+  | X25519 (scalar→`x25519_base`) | 0 | 0 | **structurally CT-clean** |
+  | Ed25519 (seed→`sign`) | 0 | 0 | **structurally CT-clean** |
 
-  AES and `ct_eq` are clean: the masked-scan S-box (`ct_lookup`) and the byte compare perform **no
-  secret branch/index**. The X25519/Ed25519 flags need asm-level triage: memcheck flags constant-time
-  `cmov`/masked-select identically to a real branch, so most flags are expected (the source field ops
-  are constant-*count* loops — no data-dependent branch in source); a flagged real `jcc`-on-secret
-  would be a compiler-lowered select or an output-encode check. **Action:** per-site triage of the
-  X25519/Ed25519 `jcc` sites + a memcheck suppression file to reach a green CI gate — a bounded task
-  suited to the controlled-host certification window or the external audit.
+### Triage + fixes (2026-06-05) — green gate via real fixes, zero suppressions
+
+X25519 and Ed25519 initially flagged ~1000 sites each (memcheck-capped). Each was triaged at the asm
+level (non-PIE build + `addr2line`/`objdump` to classify `cmov`/`set` = CT vs `jcc`-on-secret = leak)
+and **fixed at the source** — no suppression file was needed. The driver is now a CI gate (exits
+non-zero on any regression). What the triage found, and the fix for each:
+
+1. **Overflow-check branches (the bulk).** `[profile.release] overflow-checks = true` inserted
+   `jo`/`jc`→panic branches on the overflow flag of *secret* limb arithmetic in `FieldElement::mul`
+   and `reduce`. **Fix:** `[profile.release.package.riina-core] overflow-checks = false` (the crypto
+   is wrapping by design and verified by KATs + the Coq proofs; overflow checks stay on for the rest
+   of the workspace).
+2. **Compiler-defeated constant-time selects.** `FieldElement::reduce` and `ct_eq` are written
+   branchless (mask select, arithmetic-shift borrow) but LLVM (opt-3 + fat LTO) lowered the selects
+   back into `js` branches. **Fix:** `core::hint::black_box` barriers on the masks (same discipline as
+   `aes::ct_lookup`), keeping them branchless.
+3. **X25519 contributory `is_zero` branch.** `to_affine`'s `if z.is_zero()` branched on the result Z.
+   **Fix:** a branchless `u_coordinate_ct` computing `X·Z⁻¹` directly (with `invert(0)=0` made a
+   documented total-function convention), so the identity case yields the all-zero (rejected) output
+   with no branch — behaviour-identical (the low-order-rejection test still passes).
+4. **⚑ A genuine variable-time leak — `ed25519::scalar_mul`.** The carry-propagation loop was
+   `while carry > 0 && k < 64` — a **data-dependent trip count** on the secret scalar product, in the
+   signing path. **Fix:** a fixed `for k in (i+32)..64` (once carry is 0 the iterations are no-ops, so
+   the result is identical and the timing no longer depends on the carry chain). A real CT hardening,
+   not just a tooling artifact.
+5. **Ed25519 `scalar_reduce`.** An `if d < 0 { borrow = -1 }` (despite a "constant time" comment) plus
+   a compiler-derived sign branch on the final `d`. **Fix:** branchless `d & 0xff` / `d >> 8` borrow
+   and a `black_box(borrow) as u8` mask.
+
+All fixes are behaviour-preserving: the full `riina-core` suite (KATs, RFC vectors, the formal-
+equivalence bridges) stays green, the 05_TOOLING workspace is **294 / 0**, clippy clean.
 
 ## Timing CT certification 2026-06-05 — turnkey harness + host grading
 
