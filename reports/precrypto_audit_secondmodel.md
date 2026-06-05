@@ -617,3 +617,84 @@ SHA3-256/Keccak, the Curve25519 field, the ML-KEM NTT, and the X25519 ladder (th
 + SHA-3 + ECC [field + ladder] + PQC cores of Law-2 crypto). The crypto formal-equivalence lane now
 covers every symmetric/field/ECC/post-quantum core of the suite. Remaining: machine-level CT on a
 controlled host; then REQ-28.
+
+## Structural CT verification 2026-06-05 (ctgrind / Valgrind secret-poisoning)
+
+Constant-time is two claims; this addresses the **structural** one — *no secret-dependent branch
+and no secret-dependent memory address* — which is **deterministic and host-noise-immune** (it does
+not measure time, so the shared/virtualised in-container CPU is fine). Technique: mark each crypto
+secret "undefined" via a Valgrind memcheck client request (ctgrind, A. Langley); memcheck then errors
+the instant an undefined (secret-derived) value reaches a conditional branch or a memory address.
+
+- **Harness:** `05_TOOLING/crates/riina-core/examples/ctgrind_ct.rs` — dependency-free (Law 8): the
+  client request is issued with a small `core::arch::asm!` sequence (the documented x86-64 Valgrind
+  ABI), **not** the `crabgrind`/`cc` crates. Driver: `scripts/ct-structural-check.sh`.
+- **Self-test (validated):** the *baseline* (no secret) yields 0 errors and a *positive control* (a
+  genuine secret-indexed table load) is detected — so the probe has real detection power here.
+- **Results (per primitive):**
+
+  | Primitive | memcheck errors | secret-dependent jumps | verdict |
+  |---|---|---|---|
+  | AES-256 (key→schedule→encrypt) | 0 | 0 | **structurally CT-clean** |
+  | `ct_eq_bytes` | 0 | 0 | **structurally CT-clean** |
+  | X25519 (scalar→`x25519_base`) | flagged | 6 | triage |
+  | Ed25519 (seed→`sign`) | flagged | 4 | triage |
+
+  AES and `ct_eq` are clean: the masked-scan S-box (`ct_lookup`) and the byte compare perform **no
+  secret branch/index**. The X25519/Ed25519 flags need asm-level triage: memcheck flags constant-time
+  `cmov`/masked-select identically to a real branch, so most flags are expected (the source field ops
+  are constant-*count* loops — no data-dependent branch in source); a flagged real `jcc`-on-secret
+  would be a compiler-lowered select or an output-encode check. **Action:** per-site triage of the
+  X25519/Ed25519 `jcc` sites + a memcheck suppression file to reach a green CI gate — a bounded task
+  suited to the controlled-host certification window or the external audit.
+
+## Timing CT certification 2026-06-05 — turnkey harness + host grading
+
+The **timing** half (data-independent-timing / TVLA) genuinely needs a controlled host. It is now
+**push-button**: `scripts/ct-timing-certify.sh` wraps the existing `examples/dudect_ct.rs`, **grades
+the host**, runs the probe pinned (`taskset`), applies |t| > 4.5, and writes an archivable report to
+`reports/ct_evidence/` (git-ignored — a host-specific runtime artifact).
+
+- **Host grading:** detects virtualisation/steal-time, `constant_tsc`/`nonstop_tsc`, governor, turbo,
+  SMT, and `isolcpus`; prints **CERTIFICATION-GRADE** only when all hold, else **INDICATIVE** with the
+  exact gaps. In-container it correctly reports INDICATIVE (docker, hypervisor flag, no isolcpus).
+- **Controlled-host runbook (in the script header):** `isolcpus/nohz_full/rcu_nocbs=<C>`,
+  `governor=performance`, Intel `no_turbo=1` (AMD: CPB off), `smt=off`, then
+  `CT_CORE=<C> CT_SCALE=50 bash scripts/ct-timing-certify.sh`. Any spare dedicated Linux box (even a
+  laptop with `isolcpus`) qualifies — the only owner action left is to run it there.
+- **Indicative in-container reading (scale 1):** positive control flagged (|t|≈65000 — detection
+  validated); AES, `ct_eq`, Ed25519, X25519 all low-|t| no-leak; AES-GCM and ML-KEM-decaps flag with
+  small |t| (≈38, ≈21) — the documented fixed-vs-random microarch artifacts of a shared vCPU
+  (`ghash::gf128_mul` is branchless; ML-KEM CT branches were removed), to vanish on a quiet core.
+
+Together the two lanes are complementary: structural (deterministic, here) + timing (needs the host).
+
+## Audit-readiness dossier (REQ-28)
+
+REQ-28 — the external crypto audit (NCC Group / Trail of Bits / Cure53 grade) — is an owner decision
+(commission + budget + firm). This dossier maximises its value and minimises billable ramp-up.
+
+- **Scope:** `05_TOOLING/crates/riina-core` — AES-256, AES-256-GCM/GHASH, SHA-256/512, SHA3-256/512,
+  HMAC, HKDF, X25519, Ed25519, ML-KEM-768 (FIPS 203), ML-DSA-65 (FIPS 204), the hybrid KEM. Pure-Rust,
+  **zero third-party runtime deps** (Law 8).
+- **Evidence inventory (auditor entry points):**
+  - *Known-answer tests:* `tests/kat_audit.rs` — one command (`cargo test -p riina-core --test
+    kat_audit`) re-verifying every primitive against an independently transcribed FIPS/RFC vector,
+    plus full NIST ACVP sweeps for ML-KEM-768 / ML-DSA-65 (0 ignored).
+  - *Formal equivalence (the differentiator):* `02_FORMAL/coq/crypto/` — **9 mechanized Coq⇄Rust
+    proofs** (GHASH×2, AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT,
+    X25519 ladder), each with a byte-identical Rust bridge test; 0 Admitted/Axiom/Abort.
+  - *Constant-time evidence:* structural (`ct-structural-check.sh`, deterministic) + timing
+    (`ct-timing-certify.sh`, controlled-host) — see the two sections above.
+  - *Threat model:* `01_RESEARCH/MASTER_THREAT_MODEL.md`. *Disclosure:* `SECURITY.md` (coordinated
+    disclosure). *`unsafe` inventory:* 5 in `riina-core/src` + the 7 in `03_PROTO`
+    (`riina-arena`/`riina-wasm`/`riina-lexer`) — each to be presented with its invariant.
+  - *Reproducible verification:* `riinac verify --full` (rebuilds Coq, re-derives every published
+    metric, runs the KAT + security gates) is the single source of truth.
+- **Known limitations / explicit out-of-scope:** DMP/GoFetch-class data-memory-dependent-prefetcher
+  leakage (needs DIT/blinding — Phase 7/9); the X25519/Ed25519 structural-CT triage items above; PQC
+  is parameter-set-specific (ML-KEM-768 / ML-DSA-65 only). State these up front so they are not
+  re-discovered on billable time.
+- **Engagement note:** a focused crypto-core audit is typically ~2–4 weeks; firms that leverage
+  mechanized proofs (e.g. Trail of Bits) can use the formal-equivalence lane directly. The
+  commissioning decision remains the owner's.
