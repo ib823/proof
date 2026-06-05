@@ -676,6 +676,30 @@ impl Default for Sha3_512 {
 mod tests {
     use super::*;
 
+    /// Coq ⇄ Rust formal-equivalence bridge for SHA3-256.
+    ///
+    /// `02_FORMAL/coq/crypto/Keccak.v` is a faithful Coq model of Keccak-f[1600]
+    /// (θ/ρ/π/χ/ι, the RC/ROTATION/PI_LANE tables) and the SHA3-256 sponge, and
+    /// proves by `vm_compute` the FIPS 202 digests for "" and "abc". This asserts
+    /// the Rust `Sha3_256::hash` returns those byte-identical digests.
+    #[test]
+    fn test_sha3_256_matches_coq_model() {
+        // Coq `sha3_256_empty` (vm_compute).
+        let empty: [u8; 32] = [
+            0xa7, 0xff, 0xc6, 0xf8, 0xbf, 0x1e, 0xd7, 0x66, 0x51, 0xc1, 0x47, 0x56, 0xa0, 0x61,
+            0xd6, 0x62, 0xf5, 0x80, 0xff, 0x4d, 0xe4, 0x3b, 0x49, 0xfa, 0x82, 0xd8, 0x0a, 0x4b,
+            0x80, 0xf8, 0x43, 0x4a,
+        ];
+        assert_eq!(Sha3_256::hash(b""), empty, "SHA3-256(\"\") must match the Coq model");
+        // Coq `sha3_256_abc` (vm_compute).
+        let abc: [u8; 32] = [
+            0x3a, 0x98, 0x5d, 0xa7, 0x4f, 0xe2, 0x25, 0xb2, 0x04, 0x5c, 0x17, 0x2d, 0x6b, 0xd3,
+            0x90, 0xbd, 0x85, 0x5f, 0x08, 0x6e, 0x3e, 0x9d, 0x52, 0x5b, 0x46, 0xbf, 0xe2, 0x45,
+            0x11, 0x43, 0x15, 0x32,
+        ];
+        assert_eq!(Sha3_256::hash(b"abc"), abc, "SHA3-256(abc) must match the Coq model");
+    }
+
     // =========================================================================
     // Keccak-f[1600] Permutation Tests
     // =========================================================================
