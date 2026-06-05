@@ -465,3 +465,31 @@ ignores `Opaque`) expand the fixpoint symbolically and diverge. The fix that mak
 scalable: keep `gf_mul`/`ghash_step` `Opaque` and rewrite structure with generic `Qed`-opaque
 lemmas (`fold_left_cons`/`zip_xor_cons`/...) so the kernel treats them as black boxes; concrete
 KATs still go through `vm_compute`.
+
+### AES GF(2^8) & S-box (third primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/AESField.v` (active build 316 -> 317 files, 12,506 -> 12,511 Qed, 0
+Admitted/Axiom/Abort) models AES's field arithmetic — `xtime` (x2 mod the Rijndael polynomial
+0x11b) and `gf_mul` (russian-peasant), faithful to `aes.rs` — and tackles the most error-prone
+part of any AES: the two magic 256-byte S-box tables. The `SBOX`/`INV_SBOX` tables are
+transcribed verbatim from `aes.rs` and proved, **over all 256 bytes by `vm_compute`** (concrete
+reduction — no symbolic fixpoint blow-up), to be the genuine mathematical construction:
+
+- **`sbox_eq_construction`** — `SBOX[a] = affine(a^254)` for every byte, where `a^254` is the
+  GF(2^8) multiplicative inverse and `affine` is the AES affine map. I.e. the shipped table *is*
+  the real AES S-box, not a mistyped table.
+- **`gf_inv_correct`** — `a · a^254 = 1` for all `a != 0` (255 cases): `a^254` really is the
+  inverse.
+- **`sbox_inv_sbox_id` / `inv_sbox_sbox_id`** — `SBOX` and `INV_SBOX` are mutual inverses (so the
+  S-box is a bijection and decryption inverts encryption at the substitution step).
+- **`gmul_kat`** — the FIPS 197 §4.2 worked example `0x57 · 0x83 = 0xc1`.
+
+Rust bridge `crypto::aes::tests::test_sbox_matches_coq_model` recomputes the S-box from
+`gf_mul`+affine in Rust and asserts it equals the shipped `SBOX` (and that `INV_SBOX` inverts it),
+mirroring the Coq construction. This finite-`vm_compute` style sidesteps the Qed-kernel-conversion
+issue entirely and is the template for the remaining table/field primitives.
+
+**Lane status:** three primitives now model-proven + implementation-cross-checked — GHASH's
+GF(2^128) multiply, the full GHASH fold, and AES's GF(2^8)/S-box (the GCM + AES cores of Law-2
+crypto). Remaining: SHA-2/3 bit-ops, the curve25519 field; then machine-level CT on a controlled
+host; then REQ-28.
