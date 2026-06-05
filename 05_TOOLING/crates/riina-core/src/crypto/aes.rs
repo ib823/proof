@@ -533,6 +533,47 @@ mod tests {
         assert_eq!(gf_mul(0x57, 0x83), 0xc1);
     }
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the *whole* AES-256 cipher.
+    ///
+    /// `02_FORMAL/coq/crypto/AES.v` models the full key schedule + 14 rounds
+    /// (SubBytes/ShiftRows/MixColumns/AddRoundKey) and the inverse cipher at the
+    /// byte level — reusing the proven `aes_sbox`/`gmul` from `AESField.v` — and
+    /// proves by `vm_compute` that it reproduces the FIPS-197 Appendix C.3 vector:
+    /// `aes256_encrypt_fips197` and `aes256_decrypt_fips197`. This asserts the
+    /// shipping `Aes256` (u32-state impl) produces the byte-identical ciphertext
+    /// and recovers the plaintext on those exact vectors — so the full block
+    /// transform, not just the S-box, is cross-checked against the Coq model.
+    #[test]
+    fn test_aes256_matches_coq_model() {
+        // The exact vectors AES.v proves (FIPS-197 C.3).
+        let key: [u8; 32] = [
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
+            0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
+            0x1c, 0x1d, 0x1e, 0x1f,
+        ];
+        let plaintext: [u8; 16] = [
+            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd,
+            0xee, 0xff,
+        ];
+        let coq_ciphertext: [u8; 16] = [
+            0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf, 0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49,
+            0x60, 0x89,
+        ];
+
+        let cipher = Aes256::new(&key);
+        let mut block = plaintext;
+        cipher.encrypt_block(&mut block);
+        assert_eq!(block, coq_ciphertext, "encrypt must match Coq aes256_encrypt_fips197");
+        cipher.decrypt_block(&mut block);
+        assert_eq!(block, plaintext, "decrypt must match Coq aes256_decrypt_fips197");
+
+        // The first/last schedule words AES.v's ks_first_word/ks_eighth_word pin.
+        let mut round_keys = [0u32; EXPANDED_KEY_WORDS];
+        key_expansion(&key, &mut round_keys);
+        assert_eq!(round_keys[0], 0x0001_0203, "w[0] must match Coq ks_first_word");
+        assert_eq!(round_keys[7], 0x1c1d_1e1f, "w[7] must match Coq ks_eighth_word");
+    }
+
     /// FIPS 197 Appendix C.3 - AES-256 test vector
     #[test]
     fn test_aes256_fips197() {
