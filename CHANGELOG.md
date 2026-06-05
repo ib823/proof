@@ -1,11 +1,28 @@
 # Changelog
 
-**Verification:** 12,531 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-05 — Formal-equivalence proof, ninth primitive: X25519 Montgomery ladder
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/X25519.v`** (active build 322 → 323 files, 12,531 →
+  12,533 Qed, 0 Admitted/Axiom/Abort). Models `montgomery.rs`'s X25519 scalar multiplication over
+  GF(2^255-19) (the field whose multiply `Field25519.v` proves correct mod p): the Montgomery
+  ladder (`double` xDBL + `diff_add` xADD + the conditional-swap structure, a24=121666), scalar
+  clamping, and the little-endian decode/encode with the bit-255 mask. Proves by `vm_compute` that
+  the modelled `x25519` reproduces the **RFC 7748** §5.2 Test Vector 1 and §6.1 basepoint
+  (Alice's public key) **byte-for-byte** (`x25519_rfc7748_vector1`, `x25519_rfc7748_basepoint`).
+- **Coq ⇄ Rust bridge** `crypto::montgomery::tests::test_x25519_matches_coq_model`: the shipping
+  `x25519`/`x25519_base` produce the identical bytes on those exact vectors (05_TOOLING 293 →
+  **294 / 0 / 0**). Nine formal-equivalence primitives now landed (GHASH ×2, AES S-box, full
+  AES-256 cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, **X25519 ladder** — the GCM +
+  AES + SHA-2 + SHA-3 + ECC (field + ladder) + PQC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
 ## [Unreleased] — 2026-06-05 — Formal-equivalence proof, eighth primitive: ML-KEM (Kyber) NTT
 
@@ -722,7 +739,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,531 Qed proofs
+- Active Coq build now at 12,533 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

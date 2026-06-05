@@ -1,6 +1,6 @@
 # Contributing to RIINA™
 
-**Verification:** 12,531 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 

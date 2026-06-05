@@ -588,9 +588,32 @@ and that the Montgomery R-factor / F-scaling compensation is exact. The bridge
 `crypto::ml_kem::tests::test_ntt_matches_coq_model` runs the shipping `Poly` through the identical
 pipeline and asserts the byte-identical `to_positive` outputs.
 
-**Lane status:** eight primitives now model-proven + implementation-cross-checked — GHASH's
+### X25519 Montgomery ladder (ninth primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/X25519.v` (active build 322 -> 323 files, 12,531 -> 12,533 Qed, 0
+Admitted/Axiom/Abort) climbs from the Curve25519 *field* (sixth primitive) to the *group operation*
+built on it: the X25519 scalar multiplication of `montgomery.rs`. The model is over GF(p),
+p = 2^255-19 (residues in [0,p) — the field whose radix-2^51 multiply `Field25519.v` proves equals
+this mod p), and transcribes the ladder exactly from the Rust:
+
+- **`double` (xDBL)**: `A=X+Z; B=X-Z; AA=A²; BB=B²; C=AA-BB; X'=AA·BB; Z'=C·(BB + 121666·C)`.
+- **`diff_add` (xADD)**: `DA=(Xq-Zq)(Xp+Zp); CB=(Xq+Zq)(Xp-Zp); X'=(DA+CB)²; Z'=u·(DA-CB)²`.
+- **`scalar_mul`**: `r0=(1:0)`, `r1=(u:1)`; for bit i = 254..0: cswap(bit); `(r0,r1) =
+  (double r0, diff_add r0 r1 u)`; cswap(bit); return `r0`. Plus the scalar clamp
+  (`k[0]&=0xF8; k[31]&=127; k[31]|=64`), the little-endian / bit-255-masked u-coordinate decode, and
+  the `x0·z0^(p-2)` (Fermat inverse) + little-endian encode of the output.
+
+The theorems prove by `vm_compute` that the modelled `x25519` reproduces the **RFC 7748** §5.2 Test
+Vector 1 (`x25519_rfc7748_vector1`) and the §6.1 basepoint — Alice's public key `X25519(a, 9)`
+(`x25519_rfc7748_basepoint`) — **byte-for-byte**. The bridge
+`crypto::montgomery::tests::test_x25519_matches_coq_model` runs the shipping `x25519`/`x25519_base`
+on the identical vectors and asserts the same bytes. (The field elements are plain residues here;
+the implementation's radix-2^51 limb multiply is the part `Field25519.v` separately proves correct
+mod p — so field-level and ladder-level results compose.)
+
+**Lane status:** nine primitives now model-proven + implementation-cross-checked — GHASH's
 GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, the full AES-256 cipher, SHA-256,
-SHA3-256/Keccak, the Curve25519 field, and the ML-KEM NTT (the GCM + AES + SHA-2 + SHA-3 + ECC +
-PQC cores of Law-2 crypto). The crypto formal-equivalence lane now spans every symmetric/field core
-plus the post-quantum transform, with AES proven end-to-end. Remaining algebra target: the X25519
-Montgomery ladder; then machine-level CT on a controlled host; then REQ-28.
+SHA3-256/Keccak, the Curve25519 field, the ML-KEM NTT, and the X25519 ladder (the GCM + AES + SHA-2
++ SHA-3 + ECC [field + ladder] + PQC cores of Law-2 crypto). The crypto formal-equivalence lane now
+covers every symmetric/field/ECC/post-quantum core of the suite. Remaining: machine-level CT on a
+controlled host; then REQ-28.
