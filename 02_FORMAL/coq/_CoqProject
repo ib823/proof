@@ -21,6 +21,7 @@ crypto/SHA256.v
 crypto/Keccak.v
 crypto/Field25519.v
 crypto/NTT.v
+crypto/X25519.v
 
 # Type System
 type_system/Progress.v
