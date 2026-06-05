@@ -716,9 +716,57 @@ REQ-28 — the external crypto audit (NCC Group / Trail of Bits / Cure53 grade) 
   - *Reproducible verification:* `riinac verify --full` (rebuilds Coq, re-derives every published
     metric, runs the KAT + security gates) is the single source of truth.
 - **Known limitations / explicit out-of-scope:** DMP/GoFetch-class data-memory-dependent-prefetcher
-  leakage (needs DIT/blinding — Phase 7/9); the X25519/Ed25519 structural-CT triage items above; PQC
+  leakage (needs DIT/blinding — Phase 7/9); the controlled-host *timing* certification is not yet run
+  (the *structural* CT lane is green and a CI gate, but data-independent-timing must still be
+  confirmed on metal — `scripts/ct-timing-certify.sh`); PQC
   is parameter-set-specific (ML-KEM-768 / ML-DSA-65 only). State these up front so they are not
   re-discovered on billable time.
 - **Engagement note:** a focused crypto-core audit is typically ~2–4 weeks; firms that leverage
   mechanized proofs (e.g. Trail of Bits) can use the formal-equivalence lane directly. The
   commissioning decision remains the owner's.
+
+### Controlled-host timing certification — runbook (the one owner-gated run)
+
+The structural CT lane is green and gated in CI (`ct-structural`, deterministic, hosted runner). The
+*timing* lane needs a non-virtualised, quiet, isolated core — the only step that cannot run in the
+container/CI. It is now a ~10-minute task on any real metal:
+
+1. **Pick a box** (any one is fine): a spare laptop/desktop you own ($0), or a **bare-metal cloud
+   instance** — AWS `*.metal`, Equinix Metal, Hetzner/OVH dedicated (these report `virt=none`; a
+   normal VM never qualifies). Hourly bare-metal cloud is ~$1–2.
+2. **Prep:** `sudo CT_CORE=2 bash scripts/ct-host-prep.sh` (sets governor=performance, turbo off, SMT
+   off; prints the `isolcpus=2 nohz_full=2 rcu_nocbs=2` line). Add that to GRUB, `update-grub`, reboot.
+3. **Certify:** `CT_CORE=2 CT_SCALE=50 bash scripts/ct-timing-certify.sh`. It re-grades the host
+   (must read CERTIFICATION-GRADE), runs the dudect/TVLA probe pinned, requires the positive control
+   to flag (detection power) and every primitive to stay under |t| < 4.5, and archives the report.
+4. **(Optional, continuous)** register a self-hosted runner labelled `ct-metal` on that box; the
+   `.github/workflows/ct-timing.yml` workflow then runs the certification on demand and uploads the
+   evidence artifact. An agent (Claude Code or other) given `root` on the box can drive steps 2–3
+   end-to-end.
+
+### External audit — ready-to-send RFP / scope-of-work
+
+> **RIINA `riina-core` cryptography — request for security audit.** We seek a fixed-scope review of
+> a pure-Rust, zero-third-party-dependency cryptography crate: AES-256 + AES-256-GCM/GHASH,
+> SHA-256/512, SHA3-256/512, HMAC, HKDF, X25519, Ed25519, ML-KEM-768 (FIPS 203), ML-DSA-65 (FIPS 204),
+> and a hybrid KEM. **In scope:** functional correctness vs FIPS/RFC + NIST ACVP; constant-time /
+> side-channel review (we provide a green deterministic structural-CT lane and a controlled-host
+> dudect/TVLA timing report); API misuse-resistance; the documented `unsafe` blocks. **Out of scope
+> (stated up front):** DMP/GoFetch microarchitectural prefetcher leakage; PQC parameter sets beyond
+> 768/65. **We provide:** an independently-transcribed KAT manifest (`cargo test -p riina-core --test
+> kat_audit`), **9 mechanized Coq⇄Rust formal-equivalence proofs** with byte-identical bridge tests,
+> the CT evidence + harnesses, a threat model, and a one-command reproducible verification
+> (`riinac verify --full`). **Deliverable:** a report graded to NCC/ToB/Cure53 standard, 0 findings ≥
+> Medium as the bar. Please quote scope, timeline, and team.
+
+### Firm shortlist
+
+| Firm | Fit for this engagement | Rough cost / timeline* |
+|---|---|---|
+| **Trail of Bits** | Strongest fit — actively uses/automates formal methods (can consume the Coq lane directly); deep Rust + crypto + PQC practice. | ~$40–90k, 3–5 wk |
+| **NCC Group (Crypto Services)** | Large dedicated crypto-audit practice; many public protocol/library reports; PQC experience. | ~$35–80k, 2–4 wk |
+| **Cure53** | Fast, focused, cost-effective for a bounded library scope; strong report quality; lighter on heavy formal-methods integration. | ~$20–45k, 1.5–3 wk |
+
+*Indicative only — actual quotes depend on final scope and current availability; get fixed bids from
+all three. The mechanized-proof + green-structural-CT package should reduce ramp-up (hence cost) at
+any of them. Commissioning (firm choice, contract, budget) is the owner's decision.
