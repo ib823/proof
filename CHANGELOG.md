@@ -1,11 +1,31 @@
 # Changelog
 
-**Verification:** 12,528 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,531 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-05 — Formal-equivalence proof, eighth primitive: ML-KEM (Kyber) NTT
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/NTT.v`** (active build 321 → 322 files, 12,528 →
+  12,531 Qed, 0 Admitted/Axiom/Abort). The post-quantum arithmetic core: a model of `ml_kem.rs`'s
+  number-theoretic transform faithful to the *exact integer semantics* — i16 two's-complement
+  wrapping, Montgomery reduction (R=2^16, q=3329, q⁻¹=−3327), Barrett reduction, the 128-entry
+  `ZETAS` table, the Cooley-Tukey forward + Gentleman-Sande inverse butterfly network, the F=1441
+  inverse-NTT scaling, and the degree-1 `basemul`. Proves by `vm_compute` that the pipeline
+  ML-KEM uses — `ntt`, `ntt`, pointwise-multiply, `inv_ntt`, `reduce` — computes the polynomial
+  product in `Z_q[X]/(X²⁵⁶+1)`: `ntt_mul_one` (1·1=1), `ntt_mul_1plusX_squared` (the genuine
+  convolution (1+X)²=1+2X+X²), and `ntt_mul_negacyclic_wrap` (X²⁵⁵·X = X²⁵⁶ ≡ q−1, the negacyclic
+  reduction the NTT encodes).
+- **Coq ⇄ Rust bridge** `crypto::ml_kem::tests::test_ntt_matches_coq_model`: the shipping `Poly`
+  (ntt/pointwise_mul/inv_ntt/reduce) produces the byte-identical `to_positive` outputs on those
+  three vectors (05_TOOLING 292 → **293 / 0 / 0**). Eight formal-equivalence primitives now landed
+  (GHASH ×2, AES S-box, full AES-256 cipher, SHA-256, SHA3-256, Curve25519 field, **ML-KEM NTT** —
+  the GCM + AES + SHA-2 + SHA-3 + ECC + PQC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
 ## [Unreleased] — 2026-06-05 — Formal-equivalence proof, seventh primitive: full AES-256 cipher
 
@@ -702,7 +722,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,528 Qed proofs
+- Active Coq build now at 12,531 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

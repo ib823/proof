@@ -562,9 +562,35 @@ shipping `Aes256` (the optimized `u32`-state impl) is byte-identical on those ex
 is verified from "the S-box is the genuine construction" all the way up to "the entire AES-256 block
 transform is the real AES".
 
-**Lane status:** seven primitives now model-proven + implementation-cross-checked — GHASH's
+### ML-KEM (Kyber) NTT (eighth primitive — the post-quantum core, 2026-06-05)
+
+`02_FORMAL/coq/crypto/NTT.v` (active build 321 -> 322 files, 12,528 -> 12,531 Qed, 0
+Admitted/Axiom/Abort) takes the formal-equivalence lane into post-quantum territory: the
+number-theoretic transform that is the arithmetic engine of ML-KEM-768 (`ml_kem.rs`). Unlike a
+math-level NTT, this model is faithful to the **exact integer semantics of the implementation**:
+
+- **i16 two's-complement wrapping** (`wrap16`, used by every `add16`/`sub16` and the `as i16`
+  truncations), **Montgomery reduction** (`montgomery_reduce`, R=2^16, q=3329, q⁻¹=−3327, the
+  arithmetic `>> 16` modelled as floor division), **Barrett reduction** (BARRETT_V=20159), and the
+  128-entry **`ZETAS`** table transcribed verbatim (bit-reversed, Montgomery form).
+- The **Cooley-Tukey forward** butterflies (`ntt`, 7 layers len 128→2, zeta index 1→127) and the
+  **Gentleman-Sande inverse** butterflies (`inv_ntt`, len 2→128, zeta 127→1) + the F=1441 scaling,
+  modelled as block-structured list transforms; and the degree-1 **`basemul`** (`pointwise_mul`,
+  pairs mod X²−ζ and X²+ζ).
+
+The theorems prove, by `vm_compute`, that the way ML-KEM *actually uses* the NTT —
+`ntt a`, `ntt b`, pointwise-multiply, `inv_ntt`, `reduce` — computes the polynomial product in
+`Z_q[X]/(X²⁵⁶+1)` (exactly what the Rust `test_ntt_multiply_roundtrip` checks): `ntt_mul_one`
+(`1·1 = 1`), `ntt_mul_1plusX_squared` (the genuine convolution `(1+X)² = 1 + 2X + X²`), and
+`ntt_mul_negacyclic_wrap` (`X²⁵⁵·X = X²⁵⁶ ≡ q−1`, the negacyclic reduction the transform encodes).
+That the exact products come out — `1`, `[1,2,1,…]`, `q−1` — confirms both the model's faithfulness
+and that the Montgomery R-factor / F-scaling compensation is exact. The bridge
+`crypto::ml_kem::tests::test_ntt_matches_coq_model` runs the shipping `Poly` through the identical
+pipeline and asserts the byte-identical `to_positive` outputs.
+
+**Lane status:** eight primitives now model-proven + implementation-cross-checked — GHASH's
 GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, the full AES-256 cipher, SHA-256,
-SHA3-256/Keccak, and the Curve25519 field (the GCM + AES + SHA-2 + SHA-3 + ECC cores of Law-2
-crypto). The crypto formal-equivalence lane now spans every symmetric/field core of the suite, with
-AES proven end-to-end. Remaining algebra targets: the ML-KEM/ML-DSA NTT and the X25519 ladder; then
-machine-level CT on a controlled host; then REQ-28.
+SHA3-256/Keccak, the Curve25519 field, and the ML-KEM NTT (the GCM + AES + SHA-2 + SHA-3 + ECC +
+PQC cores of Law-2 crypto). The crypto formal-equivalence lane now spans every symmetric/field core
+plus the post-quantum transform, with AES proven end-to-end. Remaining algebra target: the X25519
+Montgomery ladder; then machine-level CT on a controlled host; then REQ-28.
