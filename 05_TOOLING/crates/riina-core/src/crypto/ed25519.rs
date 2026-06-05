@@ -1464,32 +1464,13 @@ mod tests {
         ]);
 
         let d = curve_d();
-        eprintln!("d: {:02x?}", d.to_bytes());
-
         let y2 = by.square();
-        eprintln!("y²: {:02x?}", y2.to_bytes());
 
-        // From curve equation -x² + y² = 1 + d·x²·y²
-        // => y² - 1 = x²(1 + d·y²)
-        // => x² = (y² - 1) / (1 + d·y²)
-        // But actually for -x² + y² = 1 + d·x²·y²:
-        // y² - 1 = x² + d·x²·y²
-        // y² - 1 = x²(1 + d·y²)
-        // x² = (y² - 1) / (1 + d·y²)
-
+        // From the curve equation  -x² + y² = 1 + d·x²·y²:
+        //   y² - 1 = x²(1 + d·y²)  =>  x² = (y² - 1) / (1 + d·y²)
         let numerator = y2 - FieldElement::ONE;
-        eprintln!("y² - 1: {:02x?}", numerator.to_bytes());
-
-        let d_times_y2 = d * y2;
-        eprintln!("d*y²: {:02x?}", d_times_y2.to_bytes());
-
-        let denominator = FieldElement::ONE + d_times_y2;
-        eprintln!("1 + d*y²: {:02x?}", denominator.to_bytes());
-
-        let denom_inv = denominator.invert();
-        eprintln!("(1 + d*y²)^-1: {:02x?}", denom_inv.to_bytes());
-
-        let x2_computed = numerator * denom_inv;
+        let denominator = FieldElement::ONE + d * y2;
+        let x2_computed = numerator * denominator.invert();
 
         // Expected x
         let bx = FieldElement::from_bytes(&[
@@ -1498,20 +1479,11 @@ mod tests {
             0xd3, 0x36, 0x69, 0x21,
         ]);
         let x2_expected = bx.square();
-
-        let x2_computed_bytes = x2_computed.to_bytes();
-        let x2_expected_bytes = x2_expected.to_bytes();
-        eprintln!("x² computed: {:02x?}", x2_computed_bytes);
-        eprintln!("x² expected: {:02x?}", x2_expected_bytes);
-
         assert_eq!(x2_computed.ct_eq(&x2_expected), 1, "x² mismatch!");
 
-        // Now verify the curve equation
+        // Now verify the curve equation directly.
         let lhs = y2 - x2_expected;
         let rhs = FieldElement::ONE + d * x2_expected * y2;
-        eprintln!("LHS (y²-x²): {:02x?}", lhs.to_bytes());
-        eprintln!("RHS (1+dx²y²): {:02x?}", rhs.to_bytes());
-
         assert_eq!(lhs.ct_eq(&rhs), 1, "Basepoint not on curve!");
     }
 

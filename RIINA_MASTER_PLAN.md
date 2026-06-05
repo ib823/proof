@@ -2388,22 +2388,57 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-05, eighth session)
+### Session Handoff Snapshot (last updated 2026-06-05, ninth session — conclusion)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-Verified baseline at handoff: `cargo test --all` (03_PROTO) = **2729 / 0 / 3 ignored**
-(05_TOOLING **291 / 0**), `cargo clippy --all-targets` 0 warnings (both workspaces), WASM/C
-`corpus_differential` byte-equal, **157** example `.rii` files, Coq active **323 files /
-12,533 Qed / 0 Admitted / 0 Axiom / 0 Abort** — **machine-checked in-container 2026-06-05 on
-Rocq 9.1.1** (`apt install opam ocaml`; `opam switch create rocq ocaml-system.4.14.1`; `opam
-install coq.9.1.1`; 315 `.vo` built under the pre-push `verify --full`, which detects the
-`rocq` binary). `audit-docs.sh` 0 discrepancies. `metrics.json` tests = **2729**
-(`cached_verified`); `qedActive` patched **12,456 → 12,533** + `filesActive` **314 → 323** for
-the new `crypto/GF128.v`, smoke/test/prover fields left at their canonical baseline (do NOT
-wholesale-regen `metrics.json` in a fresh container — `generate-metrics.sh` degrades
-`testsEstimated`/noncoq sources). The smoke toolchains (F*/TLA2Tools/Alloy/Isabelle) are **not**
-provisioned in a fresh container; keep the canonical Gate-D "generated/smoke-only" claim values
-(do NOT flip `smokeBuildOk` true).
+**Verified baseline at handoff (all re-run by command this session):** `cargo test` (03_PROTO)
+= **2730 / 0 / 3 ignored**, (05_TOOLING **294 / 0**), `cargo clippy --all-targets` **0 warnings**
+(both workspaces), Coq active **323 files / 12,533 Qed / 0 Admitted / 0 Axiom / 0 Abort** (Rocq
+9.1.1; pre-push `verify --full` builds 323 `.vo` + a Metrics-Accuracy gate that pins
+`qedActive`=live Qed), `audit-docs.sh` **0 discrepancies**, the **structural-CT gate green**
+(`scripts/ct-structural-check.sh` → AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job).
+Clean tree, pushed to `claude/eloquent-shannon-DLxVj`. `metrics.json`: `tests`/`testsVerified`
+= **2730**, `qedActive` **12,533**, `filesActive` **323**.
+
+**⚠ Operational do-NOTs (preserve these):** do NOT wholesale-regen `metrics.json` in a fresh
+container — `generate-metrics.sh` degrades `testsEstimated`/`rust.testsSource`/
+`nonCoqMechanization.source` (revert those 3 after running it); the banner Rust count is
+`rust.testsVerified` (fast-mode preserves it — bump it, not just `tests`). The smoke toolchains
+(F*/TLA2Tools/Alloy/Isabelle) are **not** provisioned in a fresh container; keep the canonical
+Gate-D "generated/smoke-only" values (do NOT flip `smokeBuildOk` true). After a `verify --full`
+push, restore `VERIFICATION_MANIFEST.md` (it regenerates the `--full` manifest).
+
+**Landed since the eighth-session formal-equivalence start (this session):**
+- **Formal-equivalence lane COMPLETE — 9 primitives** (`02_FORMAL/coq/crypto/`): GF128, GHASH,
+  AESField, **AES** (full cipher), SHA256, Keccak, Field25519, **NTT** (ML-KEM), **X25519** (ladder)
+  — every symmetric/field/ECC/PQC core, each with a byte-identical `*_matches_coq_model` Rust bridge.
+- **Set union/intersect** O(n·m)→O(n+m) (`SetKey` index, behaviour-preserving).
+- **Constant-time hardening** — the ctgrind structural lane found + drove **5 real fixes, zero
+  suppressions**, incl. a **genuine variable-time leak in `ed25519::scalar_mul`** (data-dependent
+  carry loop → fixed trip count). All 4 covered primitives now CT-clean and CI-gated.
+- **CT/audit prep** — `ct-timing-certify.sh` (host-graded dudect) + `ct-host-prep.sh` +
+  `.github/workflows/{verify.yml ct-structural job, ct-timing.yml}`, the REQ-28 dossier + a
+  ready-to-send RFP + firm shortlist (`reports/precrypto_audit_secondmodel.md`).
+
+**Pending-items audit (2026-06-05) — what a new session can pick up:**
+- *Gate C crypto:* only **owner-gated** items remain — run the timing certification on real metal
+  (prep is one command, see the Gate C crypto row), then commission **REQ-28** (external audit; RFP
+  ready). Nothing more to do in-repo on the crypto lane.
+- *Gate C stdlib (in-repo, tractable next work):* NFC normalization + confusables for strings
+  (UAX#15/UTS#39); BigInt/decimal/fixed-point + true 64-bit WASM (i32→i64 backend); wire the
+  verified `VirtualFs` to the `file_*` builtins (path→inode→uid map); the ~84 typed-but-unimplemented
+  security builtins (`sanitize_*`/`sql_*`/…) lack interpreter impls; real TCP/TLS + a Coq
+  network-effect model. Each is self-contained and several are formal-model-friendly.
+- *Gate D:* D2 (retract marketing) DONE; **D1** (industrialize the 8 generated/smoke prover lanes
+  into real proofs) is the open 6–12-month item.
+- *Gates E/F/G/I:* test-infra (fuzzing/coverage/perf-bot), reproducibility (nix/SBOM/signed releases/
+  SLSA), security-posture (OSS-Fuzz, unsafe design docs; side-channel review tooling now exists),
+  human docs (getting-started, language reference, proof guide) — largely open.
+- *Gates H/J (owner decisions):* a compliance certification target (DO-178C/CC/etc.); the
+  license/governance decisions (REQ-35/36).
+- **Recommended next** (highest in-repo value, continues the verified-core ethos): a Gate C stdlib
+  row — the **numeric tower / 64-bit WASM** or **NFC strings** (both self-contained, both extend the
+  Coq `foundations/` proofs), or Gate I **human docs** for adoption.
 
 **Eighth session (2026-06-05) — north-star FORMAL-EQUIVALENCE proof (GHASH GF(2^128) multiply +
 full GHASH fold):** opened the Coq crypto lane (`02_FORMAL/coq/crypto/GF128.v`, new
