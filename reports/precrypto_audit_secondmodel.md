@@ -489,7 +489,20 @@ Rust bridge `crypto::aes::tests::test_sbox_matches_coq_model` recomputes the S-b
 mirroring the Coq construction. This finite-`vm_compute` style sidesteps the Qed-kernel-conversion
 issue entirely and is the template for the remaining table/field primitives.
 
-**Lane status:** three primitives now model-proven + implementation-cross-checked — GHASH's
-GF(2^128) multiply, the full GHASH fold, and AES's GF(2^8)/S-box (the GCM + AES cores of Law-2
-crypto). Remaining: SHA-2/3 bit-ops, the curve25519 field; then machine-level CT on a controlled
-host; then REQ-28.
+### SHA-256 (fourth primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/SHA256.v` (active build 317 -> 318 files, 12,511 -> 12,513 Qed, 0
+Admitted/Axiom/Abort) is a faithful Coq model of `sha2.rs`: the 32-bit word ops, the round
+functions (`ch`/`maj`/Σ0/Σ1/σ0/σ1), the message schedule, the 64-round compression with the
+Davies-Meyer feed-forward, the constants `H0`/`K`, and single-block padding. SHA-256 is a hash —
+designed to have no exploitable algebra — so the content here is *executable* equivalence rather
+than structural theorems: the model is run by `vm_compute` and proven to reproduce the FIPS 180-4
+known-answer digests for `"abc"` (`sha256_abc`) and `""` (`sha256_empty`). The Rust parity test
+`crypto::sha2::tests::test_sha256_matches_coq_model` asserts `Sha256::hash` returns those
+byte-identical digests, so the Coq spec, the FIPS vectors, and the shipped implementation all
+agree.
+
+**Lane status:** four primitives now model-proven + implementation-cross-checked — GHASH's
+GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, and SHA-256 (the GCM + AES + hash
+cores of Law-2 crypto). Remaining: SHA-3/Keccak, the curve25519 field; then machine-level CT on a
+controlled host; then REQ-28.
