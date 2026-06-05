@@ -569,6 +569,38 @@ impl Eq for FieldElement {}
 mod tests {
     use super::*;
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the GF(2^255-19) field multiply.
+    ///
+    /// `02_FORMAL/coq/crypto/Field25519.v` models the radix-2^51 limb arithmetic
+    /// and proves (by `ring` + modular arithmetic) the deep theorem
+    /// `mul_correct_mod`: the schoolbook + `2^255 ≡ 19` fold computes `a*b mod p`.
+    /// This confirms the *full* Rust `Mul` (including carry propagation, which
+    /// preserves the value mod p) on concrete vectors, one of which exercises the
+    /// reduction.
+    #[test]
+    fn test_mul_matches_coq_model() {
+        // (p-1)^2 ≡ 1 (mod p).
+        let pm1: [u8; 32] = [
+            0xec, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0x7f,
+        ];
+        let mut one = [0u8; 32];
+        one[0] = 1;
+        let a = FieldElement::from_bytes(&pm1);
+        assert_eq!((a * a).to_bytes(), one, "(p-1)^2 must be 1 (mod p) — Coq pm1_squared_is_one");
+
+        // 2^254 * 4 = 2^256 ≡ 38 (mod p) — exercises the 2^255 ≡ 19 fold.
+        let mut two254 = [0u8; 32];
+        two254[31] = 0x40;
+        let mut four = [0u8; 32];
+        four[0] = 4;
+        let mut thirty_eight = [0u8; 32];
+        thirty_eight[0] = 0x26;
+        let prod = FieldElement::from_bytes(&two254) * FieldElement::from_bytes(&four);
+        assert_eq!(prod.to_bytes(), thirty_eight, "2^254*4 must reduce to 38 (mod p)");
+    }
+
     #[test]
     fn test_zero_and_one() {
         let zero = FieldElement::ZERO;

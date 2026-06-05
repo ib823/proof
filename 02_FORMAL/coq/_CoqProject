@@ -18,6 +18,7 @@ crypto/GHASH.v
 crypto/AESField.v
 crypto/SHA256.v
 crypto/Keccak.v
+crypto/Field25519.v
 
 # Type System
 type_system/Progress.v
