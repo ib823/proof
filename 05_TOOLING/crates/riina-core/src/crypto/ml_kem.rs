@@ -1386,6 +1386,58 @@ mod tests {
         }
     }
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the ML-KEM (Kyber) NTT.
+    ///
+    /// `02_FORMAL/coq/crypto/NTT.v` models the NTT core faithful to the exact
+    /// integer arithmetic here — i16 wrapping, Montgomery/Barrett reduction, the
+    /// 128-entry `ZETAS` table, the CT/GS butterfly network, the F=1441 scaling,
+    /// and the degree-1 basemul — and proves by `vm_compute` that the
+    /// `ntt → pointwise_mul → inv_ntt → reduce` pipeline computes the polynomial
+    /// product in `Z_q[X]/(X^256+1)` (theorems `ntt_mul_one`,
+    /// `ntt_mul_1plusX_squared`, `ntt_mul_negacyclic_wrap`). This runs the
+    /// shipping `Poly` through that pipeline on the same inputs and asserts the
+    /// byte-identical `to_positive` outputs the Coq proves.
+    #[test]
+    fn test_ntt_matches_coq_model() {
+        fn kyber_mul(a_c: &[(usize, i16)], b_c: &[(usize, i16)]) -> [u16; params::N] {
+            let mut a = Poly::zero();
+            for &(i, v) in a_c {
+                a.coeffs[i] = v;
+            }
+            let mut b = Poly::zero();
+            for &(i, v) in b_c {
+                b.coeffs[i] = v;
+            }
+            a.ntt();
+            b.ntt();
+            let mut c = Poly::zero();
+            c.pointwise_mul(&a, &b);
+            c.inv_ntt();
+            c.reduce();
+            let mut out = [0u16; params::N];
+            for (i, o) in out.iter_mut().enumerate() {
+                *o = to_positive(c.coeffs[i]);
+            }
+            out
+        }
+        fn expect(pairs: &[(usize, u16)]) -> [u16; params::N] {
+            let mut e = [0u16; params::N];
+            for &(i, v) in pairs {
+                e[i] = v;
+            }
+            e
+        }
+        // 1 * 1 = 1  (Coq ntt_mul_one)
+        assert_eq!(kyber_mul(&[(0, 1)], &[(0, 1)]), expect(&[(0, 1)]));
+        // (1 + X)^2 = 1 + 2X + X^2  (Coq ntt_mul_1plusX_squared)
+        assert_eq!(
+            kyber_mul(&[(0, 1), (1, 1)], &[(0, 1), (1, 1)]),
+            expect(&[(0, 1), (1, 2), (2, 1)])
+        );
+        // X^255 * X = X^256 = -1 = q-1 at degree 0  (Coq ntt_mul_negacyclic_wrap)
+        assert_eq!(kyber_mul(&[(255, 1)], &[(1, 1)]), expect(&[(0, params::Q - 1)]));
+    }
+
     #[test]
     fn test_poly_compress_decompress() {
         let mut poly = Poly::zero();

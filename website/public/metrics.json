@@ -1,24 +1,24 @@
 {
-  "generated": "2026-06-05T13:59:23Z",
-  "generatedHuman": "June 05, 2026 at 13:59 UTC",
+  "generated": "2026-06-05T14:15:45Z",
+  "generatedHuman": "June 05, 2026 at 14:15 UTC",
   "version": "0.3.0",
   "session": 0,
   "git": {
-    "commit": "ebee897",
+    "commit": "2a68612",
     "branch": "claude/eloquent-shannon-DLxVj"
   },
   "proofs": {
-    "qedActive": 12528,
+    "qedActive": 12531,
     "qedDeprecated": 758,
-    "qedTotal": 13286,
+    "qedTotal": 13289,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 361,
-    "filesActive": 321,
+    "filesTotal": 362,
+    "filesActive": 322,
     "domains": 252,
     "prover": "Rocq 9.2"
   },
@@ -127,7 +127,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 10745,
-    "totalProofsAllProvers": 74371,
+    "totalProofsAllProvers": 74374,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -173,7 +173,7 @@
     },
     "coqTiers": {
       "core": 1690,
-      "domain": 10838,
+      "domain": 10841,
       "domainTrivial": 1950
     }
   },
