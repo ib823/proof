@@ -75,12 +75,16 @@ are reproducible run to run on a given machine.
 
 ## Findings (durable, hardware-independent)
 
-1. **`set_kesatuan` (union) scales ~O(n²)** — ~30 µs at n=64 but ~42 ms at
-   n=8192 (a 64× input grows runtime ~1270×). The `set.rs` union does a
-   linear membership check per element over a `Vec`-backed set. This is the
-   clearest optimization target (a `BTreeSet`/`HashSet`-backed union would be
-   O(n log n)). The *verified* correctness (`VerifiedMapSet.v`) is unaffected —
-   this is a performance, not soundness, note.
+1. **`set_kesatuan` (union) scaled ~O(n²)** — ~30 µs at n=64 but ~42 ms at
+   n=8192 (a 64× input grew runtime ~1270×). The `set.rs` union did a
+   linear membership check per element over a `Vec`-backed set. **RESOLVED
+   2026-06-05**: `set_kesatuan`/`set_persilangan` now build a hashable `SetKey`
+   index over the scalar element variants for O(1) membership (O(n·m) → O(n+m)),
+   with an exact `Vec::contains` fallback for compound values (`Pair`/`List`/
+   `Closure`/`Ref`, which aren't `Ord`/`Hash` — so a `BTreeSet<Value>` was not
+   viable). The change is behaviour-preserving (identical elements/order/no-dup),
+   so the *verified* correctness (`VerifiedMapSet.v`) still describes the running
+   code; locked by the `opt_union_intersect_equal_naive_reference` guard test.
 2. **Read-only ops on large inputs are clone-dominated.** `peta_dapat` at
    n=8192 (≈732 µs) ≈ the `Map` clone baseline (≈733 µs); `senarai_mengandungi`
    at n=8192 (≈235 µs) ≈ the `List` clone baseline (≈242 µs). The public

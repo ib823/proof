@@ -7,6 +7,20 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2026-06-05 — Gate C: set union/intersect O(n·m) → O(n+m)
+
+### Changed (Gate C / Standard Library Hardening — Collections)
+- **`set_kesatuan`/`set_persilangan` perf** (`03_PROTO/crates/riina-codegen/src/builtins/set.rs`):
+  the benchmark (`reports/stdlib_bench.md`) flagged the set union/intersect as ~O(n·m) — a linear
+  `Vec::contains` membership scan per element (~42 ms at n=8192). They now build a hashable
+  `SetKey` index over the scalar element variants (Int/Bool/String/IntN/Unit/Color/Hash/ActorRef)
+  for O(1) membership — **O(n·m) → O(n+m)** for the common scalar set — with an exact
+  `Vec::contains` fallback for compound/opaque values (`Pair`/`List`/`Closure`/`Ref`, which aren't
+  `Ord`/`Hash`, so a `BTreeSet<Value>` was not viable). Behaviour-preserving (identical elements,
+  order, no-dup), so the `VerifiedMapSet.v` membership + no-dup proofs still describe the running
+  code; locked by the new `opt_union_intersect_equal_naive_reference` guard (200 mixed-type rounds,
+  incl. unkeyable elements, asserting fast-path == naive reference). 03_PROTO 2729 → **2730 / 0**.
+
 ## [Unreleased] — 2026-06-05 — Formal-equivalence proof, ninth primitive: X25519 Montgomery ladder
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
