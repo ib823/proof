@@ -12,6 +12,9 @@ foundations/VerifiedMapSet.v
 foundations/VerifiedString.v
 foundations/VerifiedMath.v
 
+# Crypto (formal-equivalence proofs anchored on riina-core)
+crypto/GF128.v
+
 # Type System
 type_system/Progress.v
 type_system/Preservation.v
