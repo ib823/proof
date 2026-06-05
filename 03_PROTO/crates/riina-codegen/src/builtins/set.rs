@@ -4,6 +4,41 @@
 
 use crate::value::Value;
 use crate::{Error, Result};
+use std::collections::HashSet;
+
+/// A cheap, hashable key for the scalar `Value` variants that realistically
+/// populate a set. Compound/opaque variants (`Pair`/`List`/`Closure`/`Ref`/…)
+/// return `None` and fall back to linear membership, so set semantics stay
+/// exact for every value. Key equality ⟺ value equality on these variants
+/// (each key captures the whole value), and a keyable value never equals an
+/// unkeyable one (distinct enum variants), so substituting the key index for
+/// `Vec::contains` is behaviour-preserving — it only changes the cost from
+/// O(n·m) to O(n+m) for the common all-scalar set.
+#[derive(PartialEq, Eq, Hash)]
+enum SetKey {
+    Unit,
+    Bool(bool),
+    Int(u64),
+    IntN(u64, u8, bool),
+    Str(String),
+    Color(u8, u8, u8),
+    Hash(Vec<u8>),
+    Actor(u64),
+}
+
+fn set_key(v: &Value) -> Option<SetKey> {
+    Some(match v {
+        Value::Unit => SetKey::Unit,
+        Value::Bool(b) => SetKey::Bool(*b),
+        Value::Int(n) => SetKey::Int(*n),
+        Value::IntN { value, bits, signed } => SetKey::IntN(*value, *bits, *signed),
+        Value::String(s) => SetKey::Str(s.clone()),
+        Value::Color(r, g, b) => SetKey::Color(*r, *g, *b),
+        Value::Hash(bytes) => SetKey::Hash(bytes.clone()),
+        Value::ActorRef(id) => SetKey::Actor(*id),
+        _ => return None,
+    })
+}
 
 pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("set_baru", "set_new", "set_baru"),
@@ -53,8 +88,20 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 let items_a = extract_list(a, "set_kesatuan")?;
                 let items_b = extract_list(b, "set_kesatuan")?;
                 let mut result = items_a.clone();
+                // Membership index over the keyable members of `result`; grows as
+                // we append. Unkeyable items use the exact `Vec::contains` scan, so
+                // the output is identical to the naive O(n·m) union (same elements,
+                // order, no-dup — VerifiedMapSet.v) at O(n+m) for scalar sets.
+                let mut seen: HashSet<SetKey> = result.iter().filter_map(set_key).collect();
                 for item in items_b {
-                    if !result.contains(item) {
+                    let present = match set_key(item) {
+                        Some(k) => seen.contains(&k),
+                        None => result.contains(item),
+                    };
+                    if !present {
+                        if let Some(k) = set_key(item) {
+                            seen.insert(k);
+                        }
                         result.push(item.clone());
                     }
                 }
@@ -66,9 +113,16 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             Value::Pair(a, b) => {
                 let items_a = extract_list(a, "set_persilangan")?;
                 let items_b = extract_list(b, "set_persilangan")?;
+                // Index `b` once; each `a`-member is then tested in O(1) (keyable)
+                // or by exact linear fallback (unkeyable). Same result as the naive
+                // O(n·m) intersect, in O(n+m) for scalar sets.
+                let keys_b: HashSet<SetKey> = items_b.iter().filter_map(set_key).collect();
                 let result: Vec<Value> = items_a
                     .iter()
-                    .filter(|v| items_b.contains(v))
+                    .filter(|v| match set_key(v) {
+                        Some(k) => keys_b.contains(&k),
+                        None => items_b.contains(*v),
+                    })
                     .cloned()
                     .collect();
                 Ok(Some(Value::List(result)))
@@ -263,6 +317,57 @@ mod tests {
                     assert_eq!(contains(&rem, y), contains(&s, y), "remove keeps other members");
                 }
             }
+        }
+    }
+
+    /// Guard the perf optimization: the key-indexed `set_kesatuan`/`set_persilangan`
+    /// must produce byte-identical output to the naive O(n·m) reference on larger,
+    /// mixed-type inputs — including unkeyable `Pair` elements that take the linear
+    /// fallback. Locks fast-path == slow-path semantics (so VerifiedMapSet.v's
+    /// membership/no-dup proofs still describe the running code).
+    #[test]
+    fn opt_union_intersect_equal_naive_reference() {
+        fn rand_list(state: &mut u64) -> Vec<Value> {
+            let n = (lcg(state) % 40) as usize;
+            (0..n)
+                .map(|_| match lcg(state) % 5 {
+                    0 => Value::Int(lcg(state) % 20),
+                    1 => Value::Bool(lcg(state).is_multiple_of(2)),
+                    2 => Value::String(format!("s{}", lcg(state) % 15)),
+                    3 => Value::Unit,
+                    // Unkeyable element → exercises the linear membership fallback.
+                    _ => Value::Pair(
+                        Box::new(Value::Int(lcg(state) % 5)),
+                        Box::new(Value::Int(lcg(state) % 5)),
+                    ),
+                })
+                .collect()
+        }
+        fn naive_union(a: &[Value], b: &[Value]) -> Vec<Value> {
+            let mut r = a.to_vec();
+            for it in b {
+                if !r.contains(it) {
+                    r.push(it.clone());
+                }
+            }
+            r
+        }
+        fn naive_intersect(a: &[Value], b: &[Value]) -> Vec<Value> {
+            a.iter().filter(|v| b.contains(v)).cloned().collect()
+        }
+
+        let mut state: u64 = 0x5151_5151_AAAA_BBBB;
+        for _ in 0..200 {
+            let a = rand_list(&mut state);
+            let b = rand_list(&mut state);
+            let pair = Value::Pair(
+                Box::new(Value::List(a.clone())),
+                Box::new(Value::List(b.clone())),
+            );
+            let u = apply("set_kesatuan", &pair).unwrap().unwrap();
+            let i = apply("set_persilangan", &pair).unwrap().unwrap();
+            assert_eq!(u, Value::List(naive_union(&a, &b)), "union == naive reference");
+            assert_eq!(i, Value::List(naive_intersect(&a, &b)), "intersect == naive reference");
         }
     }
 }
