@@ -15,6 +15,7 @@ foundations/VerifiedMath.v
 # Crypto (formal-equivalence proofs anchored on riina-core)
 crypto/GF128.v
 crypto/GHASH.v
+crypto/AESField.v
 
 # Type System
 type_system/Progress.v

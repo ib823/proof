@@ -486,6 +486,53 @@ fn inv_mix_columns(state: &mut [u32; 4]) {
 mod tests {
     use super::*;
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the AES S-box.
+    ///
+    /// `02_FORMAL/coq/crypto/AESField.v` models GF(2^8) and proves (over all 256
+    /// bytes, by `vm_compute`) that the `SBOX` table equals the mathematical
+    /// construction `affine(a^254)` — `a^254` being the multiplicative inverse —
+    /// and that `SBOX`/`INV_SBOX` are mutual inverses. This test mirrors that
+    /// construction in Rust: it recomputes the S-box from `gf_mul` + the affine
+    /// map and asserts it is byte-identical to the shipped `SBOX`, and that
+    /// `INV_SBOX` inverts it. So the magic 256-byte tables are not just KAT-tested
+    /// but proven (Coq) and cross-checked (here) to be the genuine AES S-box.
+    #[test]
+    fn test_sbox_matches_coq_model() {
+        // a^254 = a^{-1} in GF(2^8) (inv(0) := 0), via the same gf_mul.
+        fn gf_inv(a: u8) -> u8 {
+            if a == 0 {
+                return 0;
+            }
+            let mut r = 1u8;
+            for _ in 0..254 {
+                r = gf_mul(r, a);
+            }
+            r
+        }
+        // AES affine map: x ^ rotl(x,1) ^ rotl(x,2) ^ rotl(x,3) ^ rotl(x,4) ^ 0x63.
+        fn affine(x: u8) -> u8 {
+            x ^ x.rotate_left(1)
+                ^ x.rotate_left(2)
+                ^ x.rotate_left(3)
+                ^ x.rotate_left(4)
+                ^ 0x63
+        }
+        for a in 0u16..=255 {
+            let a = a as u8;
+            assert_eq!(
+                affine(gf_inv(a)),
+                SBOX[a as usize],
+                "SBOX[{a:#04x}] must equal affine(a^-1) (the Coq AESField.v construction)"
+            );
+            assert_eq!(
+                INV_SBOX[SBOX[a as usize] as usize], a,
+                "INV_SBOX must invert SBOX at {a:#04x}"
+            );
+        }
+        // The GF(2^8) worked example from FIPS 197 §4.2.
+        assert_eq!(gf_mul(0x57, 0x83), 0xc1);
+    }
+
     /// FIPS 197 Appendix C.3 - AES-256 test vector
     #[test]
     fn test_aes256_fips197() {
