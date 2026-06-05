@@ -16,6 +16,7 @@ foundations/VerifiedMath.v
 crypto/GF128.v
 crypto/GHASH.v
 crypto/AESField.v
+crypto/SHA256.v
 
 # Type System
 type_system/Progress.v
