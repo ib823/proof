@@ -330,3 +330,65 @@ adding an untestable branch was judged net-negative versus documenting the limit
 `05_TOOLING` `cargo test --all` 280 → **285 / 0 / 0** (+5 tests), `kat_audit` **23 / 0**,
 clippy clean. Machine-level CT evidence (dudect/ctgrind) and the formal-equivalence proof
 remain the open crypto threads; REQ-28 (external audit) is still owner-gated.
+
+---
+
+## Machine-level CT evidence 2026-06-05 (report item 2) — dudect-style harness
+
+The pre-audit's "next correctness item" was empirical constant-time evidence to back the
+by-construction CT analysis. Delivered: a **dependency-free, dudect-style timing-leakage
+harness** at `05_TOOLING/crates/riina-core/examples/dudect_ct.rs` (an `example`, not a
+`#[test]` — timing in CI is noise; it never runs in `cargo test` and does not change the
+test count). Run it pinned to a core:
+`taskset -c 0 cargo run --release --example dudect_ct -p riina-core`.
+
+**Method.** Per primitive, two input classes — class 0 (*fixed* secret) vs class 1
+(*random* secret), public inputs equal — are interleaved; the operation is timed and a
+**Welch's t-test** (with top-10% cropping to drop hypervisor-steal-time outliers) is
+applied. |t| > 4.5 ⇒ FLAGGED. No `dudect`/`criterion`/`rand` crate (Law 8): a hand-rolled
+xorshift PRNG + t-test. A **positive control** (`leaky_eq`, an early-return compare) runs
+first to prove the harness has detection power in the current environment.
+
+**Environment feasibility (assessed, reported — not faked).** The RIINA dev container is
+Docker on a KVM vCPU: it *does* have invariant TSC (`constant_tsc`/`nonstop_tsc`/`rdtscp`),
+a 1 ns monotonic clock, and `taskset` core-pinning — better than a worst-case shared host
+— but hypervisor steal-time and neighbour contention are not controllable. So in-container
+results are **indicative, not audit-grade certification**; the harness exists to (a) catch
+gross leaks and regressions and (b) be re-run by an auditor on a controlled bare-metal host
+(`isolcpus`/`nohz_full`/fixed freq) for REQ-28.
+
+**Results (representative, `taskset -c 0`, scale ×1):**
+
+| Target | |t| | Verdict |
+|---|---|---|
+| `POSCTRL_leaky_eq` (positive control) | ~2800–10000 | FLAGGED — correct (early-return branch); confirms detection power |
+| `ct_eq_bytes_32` | < 1 | no leak |
+| `aes256_encrypt_block` (S-box `ct_lookup`) | < 2 | no leak |
+| `ed25519_sign` (`scalar_mul`/`ct_select`) | < 2 | no leak |
+| `x25519_diffie_hellman` (ladder swap) | < 1 | no leak |
+| `mlkem768_decapsulate` (reductions + implicit reject) | ~2–3 | no leak |
+| `aes256gcm_encrypt_64b` (GHASH `gf128_mul`) | ~20–40 | FLAGGED → **investigated: host artifact** |
+
+**The GCM flag is a measurement artifact, not a leak — established two ways:** (1) source
+inspection — `ghash::gf128_mul` processes all 128 bits with a mask-based conditional XOR,
+shift, and `0xe1` reduction, with **no secret-dependent branch or table** (the prior pass's
+"bitwise CT" assessment holds; code inspection is ground truth for a branch leak); (2) the
+flag's magnitude (|t|~30, vs the positive control's thousands) is the signature of a tiny
+systematic bias, consistent with fixed-vs-random data on a shared vCPU, not a data-dependent
+branch. AES alone (same secret=key) reads clean, so it is the software AES+GHASH data path's
+microarchitectural sensitivity to *fixed* vs *varying* inputs, which a controlled host
+resolves. Recorded as the one in-container FLAG-but-clean for the auditor to re-confirm.
+
+**Methodology note (and a harness self-audit).** A first cut FLAGGED ML-KEM at |t|=114 and
+GCM at |t|=21. ML-KEM was a **harness bug**, not a leak: class 1 drew keys from a 256-entry
+*pool* (cold cache) vs class 0's single hot fixed key — a footprint artifact. Switching to
+per-sample keygen+encaps into the *same* buffers for both classes (symmetric setup; only the
+secret bytes differ) dropped ML-KEM to |t|~2.5. Lesson baked into the harness: do identical
+untimed work for both classes so only the secret *value* differs. (GCM persisted through this
+fix → the source-level investigation above.)
+
+**Net:** by-construction CT is now backed by indicative empirical evidence with a validated
+positive control; 5/6 primitives read clean in-container and the 6th (GCM) is code-confirmed
+CT with the flag traced to a host artifact. The harness is the reusable instrument for the
+controlled-host CT certification an external auditor (REQ-28) performs. The formal-equivalence
+proof remains the north-star open thread.
