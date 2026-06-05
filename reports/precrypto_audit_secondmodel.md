@@ -502,7 +502,21 @@ known-answer digests for `"abc"` (`sha256_abc`) and `""` (`sha256_empty`). The R
 byte-identical digests, so the Coq spec, the FIPS vectors, and the shipped implementation all
 agree.
 
-**Lane status:** four primitives now model-proven + implementation-cross-checked — GHASH's
-GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, and SHA-256 (the GCM + AES + hash
-cores of Law-2 crypto). Remaining: SHA-3/Keccak, the curve25519 field; then machine-level CT on a
-controlled host; then REQ-28.
+### SHA-3 / Keccak-f[1600] (fifth primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/Keccak.v` (active build 318 -> 319 files, 12,513 -> 12,515 Qed, 0
+Admitted/Axiom/Abort) models the Keccak-f[1600] permutation — the five step mappings
+theta/rho/pi/chi/iota over the 25-lane (5x5x64) state, with the round-constant, rotation-offset
+and pi-permutation tables transcribed verbatim from `keccak.rs` — and the SHA3-256 sponge
+(rate 1088, domain `0x06`/`0x80` padding). Like SHA-256 it is a hash, so the content is the
+executable model<->spec<->implementation agreement: the model is run by `vm_compute` and proven
+to reproduce the FIPS 202 known-answer digests for `""` (`sha3_256_empty`) and `"abc"`
+(`sha3_256_abc`). The Rust parity test `crypto::keccak::tests::test_sha3_256_matches_coq_model`
+asserts `Sha3_256::hash` returns those byte-identical digests. (SHA-3/SHAKE is the symmetric
+primitive the PQC suite — ML-KEM/ML-DSA — is built on, so this model also anchors a future PQC
+formal-equivalence.)
+
+**Lane status:** five primitives now model-proven + implementation-cross-checked — GHASH's
+GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, SHA-256, and SHA3-256/Keccak (the
+GCM + AES + SHA-2 + SHA-3 cores of Law-2 crypto). Remaining: the curve25519 field; then
+machine-level CT on a controlled host; then REQ-28.

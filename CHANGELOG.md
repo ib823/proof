@@ -1,11 +1,23 @@
 # Changelog
 
-**Verification:** 12,513 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,515 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-05 — Formal-equivalence proof, fifth primitive: SHA-3 / Keccak
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/Keccak.v`** (active build 318 → 319 files, 12,513 →
+  12,515 Qed, 0 Admitted/Axiom/Abort). A faithful model of `keccak.rs`'s Keccak-f[1600]
+  (θ/ρ/π/χ/ι over the 25-lane state, with the RC/ROTATION/PI_LANE tables) and the SHA3-256 sponge,
+  proven by `vm_compute` to reproduce the FIPS 202 digests for `""` and `"abc"`.
+- **Coq ⇄ Rust bridge** `crypto::keccak::tests::test_sha3_256_matches_coq_model`: `Sha3_256::hash`
+  returns the byte-identical digests (05_TOOLING 289 → **290 / 0 / 0**). Five formal-equivalence
+  primitives now landed (GHASH ×2, AES S-box, SHA-256, SHA3-256 — the GCM + AES + SHA-2 + SHA-3
+  cores). See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
 ## [Unreleased] — 2026-06-05 — Formal-equivalence proof, fourth primitive: SHA-256
 
@@ -656,7 +668,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,513 Qed proofs
+- Active Coq build now at 12,515 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)
