@@ -284,6 +284,45 @@ mod tests {
         assert_eq!(gf128_mul(&x, &y), p, "Rust gf128_mul must match the Coq model's product");
     }
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the full GHASH fold.
+    ///
+    /// `02_FORMAL/coq/crypto/GHASH.v` models `Ghash::update_block`'s recurrence
+    /// (`acc := (acc XOR block) * H`) as a `fold_left` and proves GHASH is a
+    /// GF(2)-linear polynomial hash (`ghash_linear`, `ghash_cons`). This asserts
+    /// the Rust `Ghash` produces the byte-identical accumulator the model's
+    /// `vm_compute` yields for the same `H` and block sequence.
+    #[test]
+    fn test_ghash_fold_matches_coq_model() {
+        let h: [u8; 16] = [
+            0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b, 0x88, 0x4c, 0xfa, 0x59, 0xca, 0x34,
+            0x2b, 0x2e,
+        ];
+        let b1: [u8; 16] = [
+            0x03, 0x88, 0xda, 0xce, 0x60, 0xb6, 0xa3, 0x92, 0xf3, 0x28, 0xc2, 0xb9, 0x71, 0xb2,
+            0xfe, 0x78,
+        ];
+        let b2: [u8; 16] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x80];
+
+        // ghash Hk [B1] (vm_compute) = 125190319049768388224560816502661701303
+        let g1: [u8; 16] = [
+            0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88, 0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53,
+            0xde, 0xb7,
+        ];
+        let mut g = Ghash::new(&h);
+        g.update_block(&b1);
+        assert_eq!(g.finalize(), g1, "Rust GHASH[B1] must match the Coq model");
+
+        // ghash Hk [B1; B2] (vm_compute) = 323733119472864005843474405660461955205
+        let g2: [u8; 16] = [
+            0xf3, 0x8c, 0xbb, 0x1a, 0xd6, 0x92, 0x23, 0xdc, 0xc3, 0x45, 0x7a, 0xe5, 0xb6, 0xb0,
+            0xf8, 0x85,
+        ];
+        let mut g = Ghash::new(&h);
+        g.update_block(&b1);
+        g.update_block(&b2);
+        assert_eq!(g.finalize(), g2, "Rust GHASH[B1,B2] must match the Coq model");
+    }
+
     /// Test GHASH compute function
     #[test]
     fn test_ghash_compute() {
