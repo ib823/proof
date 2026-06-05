@@ -538,8 +538,33 @@ The Rust then runs carry propagation (which preserves the value mod p); the pari
 `crypto::field25519::tests::test_mul_matches_coq_model` confirms the *full carried* implementation
 on those vectors, including the reduction case.
 
-**Lane status:** six primitives now model-proven + implementation-cross-checked — GHASH's
-GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, SHA-256, SHA3-256/Keccak, and the
-Curve25519 field (the GCM + AES + SHA-2 + SHA-3 + ECC cores of Law-2 crypto). The crypto
-formal-equivalence lane now spans every symmetric/field core of the suite. Remaining: machine-level
-CT on a controlled host; then REQ-28.
+### Full AES-256 cipher (seventh primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/AES.v` (active build 320 -> 321 files, 12,524 -> 12,528 Qed, 0
+Admitted/Axiom/Abort) closes the loop on AES. `AESField.v` (third primitive) already proved the
+256-byte S-box *is* the genuine field construction `affine(a^254)`; this primitive assembles the
+**whole cipher** on top of it. The model represents the AES state as a flat 16-byte list in block
+order (index `4c+r` is state cell `s[r][c]`, exactly the big-endian `block_to_state` packing of the
+Rust `u32x4` state) and defines each transform faithfully:
+
+- **Key schedule** (`key_schedule`): the 60-word AES-256 expansion — `RotWord`/`SubWord`/`Rcon` at
+  `i mod 8 = 0`, the extra `SubWord` at `i mod 8 = 4` — reusing the proven `aes_sbox`.
+- **The four round transforms**: `sub_bytes` (S-box over 16 bytes), `shift_rows` (the fixed
+  block-order permutation derived from the Rust row-extract/shift/repack), `mix_columns` (the
+  `[2 3 1 1; …]` GF(2^8) matrix via the proven `gmul`), `add_round_key` (bytewise XOR), plus their
+  inverses, wired into the 14-round encrypt and decrypt structure (final round drops MixColumns).
+
+`aes256_encrypt_fips197` and `aes256_decrypt_fips197` prove by `vm_compute` that the model
+reproduces the **FIPS-197 Appendix C.3** known-answer vector (key `000102…1f`, plaintext
+`00112233…ff` ⟷ ciphertext `8ea2b7ca…89`) in *both* directions — and `ks_first_word`/`ks_eighth_word`
+pin the schedule. The parity test `crypto::aes::tests::test_aes256_matches_coq_model` confirms the
+shipping `Aes256` (the optimized `u32`-state impl) is byte-identical on those exact vectors. So AES
+is verified from "the S-box is the genuine construction" all the way up to "the entire AES-256 block
+transform is the real AES".
+
+**Lane status:** seven primitives now model-proven + implementation-cross-checked — GHASH's
+GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, the full AES-256 cipher, SHA-256,
+SHA3-256/Keccak, and the Curve25519 field (the GCM + AES + SHA-2 + SHA-3 + ECC cores of Law-2
+crypto). The crypto formal-equivalence lane now spans every symmetric/field core of the suite, with
+AES proven end-to-end. Remaining algebra targets: the ML-KEM/ML-DSA NTT and the X25519 ladder; then
+machine-level CT on a controlled host; then REQ-28.
