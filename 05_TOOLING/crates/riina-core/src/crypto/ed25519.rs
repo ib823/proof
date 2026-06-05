@@ -967,13 +967,17 @@ fn scalar_mul(a: &Scalar, b: &Scalar) -> Scalar {
                 carry = p >> 8;
             }
         }
-        // Propagate remaining carry
-        let mut k = i + 32;
-        while carry > 0 && k < 64 {
+        // Propagate the remaining carry with a FIXED trip count (constant-time).
+        // The previous `while carry > 0 && k < 64` leaked the carry chain via its
+        // data-dependent iteration count (a real secret-dependent loop in the
+        // signing path — found by `scripts/ct-structural-check.sh`). Once `carry`
+        // reaches 0 the remaining iterations are no-ops (`sum = product[k] + 0`),
+        // so always running to 64 yields the identical product without branching
+        // on the secret.
+        for k in (i + 32)..64 {
             let sum = u32::from(product[k]) + carry;
             product[k] = sum as u8;
             carry = sum >> 8;
-            k += 1;
         }
     }
 
@@ -988,23 +992,23 @@ fn scalar_reduce(bytes: &mut [u8; 32]) {
     let mut borrow: i16 = 0;
     let mut diff = [0u8; 32];
 
-    // Compute bytes - L
+    // Compute bytes - L, branchlessly. `d` is in [-256, 255]; the borrowed low
+    // byte is `d & 0xff` (== d+256 when d<0, == d when d>=0) and the next borrow
+    // is `d >> 8` (arithmetic: -1 if d<0, else 0). The previous `if d < 0` was a
+    // secret-dependent branch despite the "constant time" comment — flagged by
+    // `scripts/ct-structural-check.sh` (same mask idiom as the canonical check at
+    // `scalar_is_canonical`).
     for i in 0..32 {
         let d = i16::from(bytes[i]) - i16::from(L_BYTES[i]) + borrow;
-        if d < 0 {
-            diff[i] = (d + 256) as u8;
-            borrow = -1;
-        } else {
-            diff[i] = d as u8;
-            borrow = 0;
-        }
+        diff[i] = (d & 0xff) as u8;
+        borrow = d >> 8;
     }
 
-    // If borrow == 0, bytes >= L, so use diff
-    // If borrow == -1, bytes < L, so keep bytes
-    // Create mask: 0xff when borrow == -1 (keep bytes), 0x00 when borrow == 0 (use diff)
-    let keep_original = (borrow != 0) as u8; // 1 if borrow == -1, 0 if borrow == 0
-    let mask = keep_original.wrapping_neg(); // 0xff if keep, 0x00 if use diff
+    // borrow is now 0 (bytes >= L, use diff) or -1 (bytes < L, keep original).
+    // mask = borrow as u8 maps that to 0x00 / 0xff directly. `black_box` stops
+    // LLVM from re-deriving the mask via a sign branch on the final `d`
+    // (`cmp $0xff; ja`) — a secret-dependent branch flagged by ct-structural-check.
+    let mask = core::hint::black_box(borrow) as u8; // 0x00 if use diff, 0xff if keep
 
     for i in 0..32 {
         bytes[i] = (bytes[i] & mask) | (diff[i] & !mask);

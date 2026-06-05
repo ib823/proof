@@ -147,6 +147,15 @@ panic = "abort"
 codegen-units = 1
 strip = "symbols"
 
+# Constant-time discipline for the crypto crate: overflow checks insert
+# `jo`/`jc`→panic BRANCHES on the overflow flag of secret-derived arithmetic
+# (a secret-dependent branch — flagged by `scripts/ct-structural-check.sh`).
+# riina-core's modular/limb arithmetic is wrapping by design and verified by KATs
+# + the Coq formal-equivalence proofs, so checks here are counter-productive
+# (CT + perf). Overflow checks remain ON for the rest of the workspace.
+[profile.release.package.riina-core]
+overflow-checks = false
+
 [profile.test]
 opt-level = 1
 debug = true

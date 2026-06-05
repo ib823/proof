@@ -255,8 +255,11 @@ impl FieldElement {
 
         // If borrow is -1, we had underflow, so keep original limbs
         // If borrow is 0, we successfully subtracted p, so use result
-        // Use constant-time selection
-        let mask = borrow; // -1 or 0
+        // Use constant-time selection. The `black_box` barrier stops LLVM from
+        // recognising `mask` as a sign test (`borrow = … >> 63`) and lowering the
+        // branchless select back into a `js` branch (a secret-dependent branch —
+        // see `scripts/ct-structural-check.sh`); same discipline as `aes::ct_lookup`.
+        let mask = core::hint::black_box(borrow); // -1 or 0
         for i in 0..5 {
             limbs[i] = (limbs[i] & mask) | (result[i] & !mask);
         }
@@ -335,9 +338,11 @@ impl FieldElement {
             diff |= a.limbs[i] ^ b.limbs[i];
         }
 
-        // If diff == 0, all limbs were equal
-        // Return 1 if diff == 0, else 0
-        let zero = (diff | -diff) >> 63; // -1 if diff != 0, 0 if diff == 0
+        // If diff == 0, all limbs were equal. Return 1 if diff == 0, else 0.
+        // `black_box` stops LLVM from turning the fold-to-mask into a `diff == 0`
+        // branch (would be a secret-dependent branch — see ct-structural-check.sh).
+        let d = core::hint::black_box(diff);
+        let zero = (d | d.wrapping_neg()) >> 63; // -1 if diff != 0, 0 if diff == 0
         (zero + 1) & 1 // Convert to 0 or 1
     }
 
@@ -396,8 +401,14 @@ impl FieldElement {
     /// Panics if self is zero (zero has no inverse)
     #[must_use]
     pub fn invert(self) -> Self {
-        // Verify not zero (in debug mode)
-        debug_assert!(!self.is_zero(), "Cannot invert zero");
+        // Total-function convention: invert(0) = 0. The Fermat addition chain
+        // below maps 0 -> 0 (every term derives from `self`), the standard CT
+        // convention (cf. fiat-crypto / curve25519-dalek). The constant-time
+        // X25519 contributory path (`montgomery::u_coordinate_ct`) relies on it:
+        // it inverts a possibly-zero, secret-derived Z without a branch, and Z=0
+        // yields the all-zero (rejected) shared secret. A previous
+        // `debug_assert!(!is_zero())` here panicked on that intended case in
+        // debug/test builds (and would itself have been a secret-dependent panic).
 
         // Compute a^(p-2) using addition chain
         // p - 2 = 2^255 - 21

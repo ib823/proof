@@ -76,10 +76,13 @@ for t in aes cteq x25519 ed25519; do
 done
 
 echo ""
-echo "[ct-structural] $clean clean, $triage need asm-level triage."
+echo "[ct-structural] $clean clean, $triage flagged for triage."
 echo "  Note: memcheck flags constant-time cmov/masked-select the same as a real"
-echo "  branch; only a flagged *conditional jump* (jcc) on a secret or a"
-echo "  secret-indexed load is an actual leak. AES + ct_eq are clean; the X25519/"
-echo "  Ed25519 sites (source field ops are constant-count loops) are"
-echo "  compiler-lowered selects / output-encode checks pending per-site triage."
+echo "  branch; a flagged *conditional jump* (jcc) on a secret or a secret-indexed"
+echo "  load is the actual leak to chase (disassemble the 'at' address: cmov/set ="
+echo "  CT; jcc = investigate). The four covered primitives are currently CT-clean."
+if [ "$triage" -ne 0 ]; then
+  echo "[ct-structural] REGRESSION: a primitive newly flags — triage the new jcc-on-secret."
+  exit 1
+fi
 exit 0

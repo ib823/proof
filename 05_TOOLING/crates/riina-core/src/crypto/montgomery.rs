@@ -325,7 +325,19 @@ impl MontgomeryPoint {
 pub fn x25519_base(scalar: &[u8; 32]) -> [u8; 32] {
     let base = MontgomeryPoint::basepoint();
     let result = base.scalar_mul(scalar);
-    result.to_bytes().unwrap_or([0u8; 32])
+    u_coordinate_ct(&result)
+}
+
+/// Branchless affine u-coordinate `X·Z⁻¹` of an (X:Z) result, as 32 bytes.
+///
+/// Avoids `to_affine`'s `if z.is_zero()` (a secret-dependent branch on the
+/// result — see `scripts/ct-structural-check.sh`). `FieldElement::invert(0) = 0`
+/// (the `z^(p-2)` ladder maps 0→0), so the identity case `Z=0` produces the
+/// all-zero output — exactly the X25519 contributory-behaviour result that the
+/// previous `to_bytes().unwrap_or([0; 32])` returned — with no branch.
+#[inline]
+fn u_coordinate_ct(p: &MontgomeryPoint) -> [u8; 32] {
+    (p.x * p.z.invert()).to_bytes()
 }
 
 /// Compute X25519 Diffie-Hellman: scalar * point.
@@ -342,7 +354,7 @@ pub fn x25519_base(scalar: &[u8; 32]) -> [u8; 32] {
 pub fn x25519(scalar: &[u8; 32], point: &[u8; 32]) -> [u8; 32] {
     let p = MontgomeryPoint::from_bytes(point);
     let result = p.scalar_mul(scalar);
-    result.to_bytes().unwrap_or([0u8; 32])
+    u_coordinate_ct(&result)
 }
 
 #[cfg(test)]
