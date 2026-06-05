@@ -7,6 +7,25 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2026-06-05 — Machine-level constant-time evidence harness (dudect-style)
+
+### Added (Gate C crypto-audit prep — empirical CT evidence)
+- **Dependency-free dudect-style timing-leakage probe** at
+  `05_TOOLING/crates/riina-core/examples/dudect_ct.rs`: Welch's t-test over fixed-vs-random
+  secret classes (hand-rolled xorshift PRNG + t-test, no `dudect`/`criterion`/`rand` — Law 8),
+  with a **positive control** that validates detection power. It is an `example`, not a
+  `#[test]` (timing in CI is noise), so the test count is unchanged (**285 / 0 / 0**). Run it
+  pinned to a core: `taskset -c 0 cargo run --release --example dudect_ct -p riina-core`.
+- **In-container results (indicative, not audit-grade):** AES-256 block, Ed25519 sign,
+  X25519 DH, ML-KEM-768 decaps, and `ct_eq_bytes` all read **no leak**; the positive control
+  flags as designed. AES-256-GCM flags a small |t|, **investigated to a microarchitectural
+  fixed-vs-random artifact** — `ghash::gf128_mul` is branchless (no secret-dependent
+  branch/table), confirmed by source inspection. No code defects found.
+- **Honest scope:** the RIINA dev container is a Docker/KVM vCPU (invariant TSC + `taskset`
+  pinning, but uncontrollable steal-time), so a clean run here is indicative; the harness is
+  the reusable instrument for the controlled-host CT certification an external audit (REQ-28)
+  performs. Detail in `reports/precrypto_audit_secondmodel.md` §Machine-level CT evidence 2026-06-05.
+
 ## [Unreleased] — 2026-06-04 — Ed25519/X25519 deep pre-audit pass (RFC 8032 §5.1.3 strict decode)
 
 ### Security (Gate C crypto-audit prep — `05_TOOLING/crates/riina-core`)
