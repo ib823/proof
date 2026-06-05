@@ -105,3 +105,23 @@ jobs:
         run: cc --version && wasmtime --version
       - name: corpus_differential (C vs WASM stdout)
         run: cargo test -p riinac --test corpus_differential --manifest-path 03_PROTO/Cargo.toml -- --nocapture
+
+  ct-structural:
+    name: Constant-time structural (ctgrind / valgrind)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "05_TOOLING -> target"
+      # The structural CT check is DETERMINISTIC (valgrind secret-poisoning, not
+      # timing), so it is meaningful on a normal hosted runner. It asserts no
+      # secret-dependent branch / memory access in AES / ct_eq / X25519 / Ed25519
+      # (self-tested: a positive control must be detected, baseline must be clean)
+      # and fails the build on any regression. This wraps the repo's own gate
+      # (scripts/ct-structural-check.sh); it does not add a divergent check.
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+      - name: scripts/ct-structural-check.sh
+        run: bash scripts/ct-structural-check.sh
