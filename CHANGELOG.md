@@ -1,11 +1,27 @@
 # Changelog
 
-**Verification:** 12,515 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,524 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-05 — Formal-equivalence proof, sixth primitive: Curve25519 field (the deep one)
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/Field25519.v`** (active build 319 → 320 files, 12,515 →
+  12,524 Qed, 0 Admitted/Axiom/Abort). The first *symbolically*-proved (not KAT) crypto primitive:
+  it models `field25519.rs`'s radix-2^51 GF(2^255-19) limb arithmetic and proves, by `ring` +
+  modular arithmetic, the headline **`mul_correct_mod`** — the schoolbook product folded by
+  `2^255 ≡ 19` computes `a·b mod p` (the Mersenne-style reduction correctness underlying
+  Curve25519) — plus `add_correct` and `sub_correct_mod`, and `vm_compute` corner cases
+  (`(p-1)² ≡ 1`, `2²⁵⁴·4 ≡ 38`).
+- **Coq ⇄ Rust bridge** `crypto::field25519::tests::test_mul_matches_coq_model`: confirms the full
+  carried Rust `Mul` on those vectors incl. a reduction case (05_TOOLING 290 → **291 / 0 / 0**).
+  Six formal-equivalence primitives now landed (GHASH ×2, AES S-box, SHA-256, SHA3-256, Curve25519
+  field — the GCM + AES + SHA-2 + SHA-3 + ECC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
 ## [Unreleased] — 2026-06-05 — Formal-equivalence proof, fifth primitive: SHA-3 / Keccak
 
@@ -668,7 +684,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,515 Qed proofs
+- Active Coq build now at 12,524 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

@@ -516,7 +516,30 @@ asserts `Sha3_256::hash` returns those byte-identical digests. (SHA-3/SHAKE is t
 primitive the PQC suite — ML-KEM/ML-DSA — is built on, so this model also anchors a future PQC
 formal-equivalence.)
 
-**Lane status:** five primitives now model-proven + implementation-cross-checked — GHASH's
-GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, SHA-256, and SHA3-256/Keccak (the
-GCM + AES + SHA-2 + SHA-3 cores of Law-2 crypto). Remaining: the curve25519 field; then
-machine-level CT on a controlled host; then REQ-28.
+### Curve25519 field GF(2^255-19) (sixth primitive — the deep one, 2026-06-05)
+
+`02_FORMAL/coq/crypto/Field25519.v` (active build 319 -> 320 files, 12,515 -> 12,524 Qed, 0
+Admitted/Axiom/Abort) takes on the structurally-deep target the lane had been saving: the
+radix-2^51, 5-limb field arithmetic of `field25519.rs` (the field underneath X25519 and Ed25519).
+Unlike the hashes, this is proved *symbolically*, not by KAT. A field element's value is
+`a0 + a1*2^51 + ... + a4*2^204`; the theorems are:
+
+- **`mul_correct_mod`** (headline) — `val(femul a b) mod p = (val a * val b) mod p`. The Rust
+  `mul` is a 5x5 schoolbook product whose high half is folded by `2^255 = 19 (mod p)`. The proof
+  shows the folded 5-limb result differs from the true product `val a * val b` by an exact
+  multiple of `p = 2^255-19` (`mul_reduce_eq`, closed by `ring`), so they are congruent mod p.
+  This is the Mersenne-style reduction correctness that makes Curve25519 arithmetic right — the
+  same property fiat-crypto mechanizes.
+- **`add_correct`** (`val(feadd a b) = val a + val b`, exact) and **`sub_correct_mod`** (the
+  Rust's `+2p` underflow-avoidance vanishes mod p, using `val(P_LIMBS) = p`).
+- Executable corner cases (`vm_compute`): `(p-1)^2 ≡ 1` and the reduction `2^254·4 ≡ 38`.
+
+The Rust then runs carry propagation (which preserves the value mod p); the parity test
+`crypto::field25519::tests::test_mul_matches_coq_model` confirms the *full carried* implementation
+on those vectors, including the reduction case.
+
+**Lane status:** six primitives now model-proven + implementation-cross-checked — GHASH's
+GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, SHA-256, SHA3-256/Keccak, and the
+Curve25519 field (the GCM + AES + SHA-2 + SHA-3 + ECC cores of Law-2 crypto). The crypto
+formal-equivalence lane now spans every symmetric/field core of the suite. Remaining: machine-level
+CT on a controlled host; then REQ-28.
