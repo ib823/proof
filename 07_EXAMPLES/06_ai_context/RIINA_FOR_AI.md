@@ -1,6 +1,6 @@
 # RIINA for AI Assistants
 
-**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2709 Rust tests
+**Verification:** 12,485 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 ## What is RIINA?
 

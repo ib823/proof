@@ -1,11 +1,29 @@
 # Changelog
 
-**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,485 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-05 — Formal-equivalence proof, first primitive: GHASH GF(2^128)
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New mechanized Coq crypto lane `02_FORMAL/coq/crypto/GF128.v`** (first crypto proof in the
+  Coq corpus; active build **314 → 315 files, 12,456 → 12,485 Qed**, 0 Admitted/Axiom/Abort). It
+  models the *exact* bit-serial algorithm of `riina-core`'s `ghash::gf128_mul` over `Z` and
+  proves — via bit-extensionality (`Z.bits_inj'`) + `btauto` — the additive group laws, `mulx`
+  linearity, **bilinearity** (`gf_mul_distr_l`/`_r`), **identity** (`gf_mul_one_r`), zero, and
+  **128-bit closure** (`gf_mul_in128`), with executable `vm_compute` KAT `Example`s.
+- **Coq ⇄ Rust parity bridge** `crypto::ghash::tests::test_gf128_mul_matches_coq_model`: asserts
+  the Rust `gf128_mul` is byte-identical to the model's `vm_compute` product (`05_TOOLING` 285 →
+  **286 / 0 / 0**). The bridge caught a real model transcription bug (the reduction constant
+  `0xe1` written as decimal `231`=`0xe7`; the Rust was correct) — exactly the point of an
+  executable equivalence anchor.
+- Turns GHASH multiplication from "tested-correct" into "model-proven + implementation
+  cross-checked". Remaining (multi-session): `Ghash::compute`, AES GF(2^8), SHA-2/3 bit-ops,
+  curve25519 field. See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
 ## [Unreleased] — 2026-06-05 — Machine-level constant-time evidence harness (dudect-style)
 
@@ -598,7 +616,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,456 Qed proofs
+- Active Coq build now at 12,485 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

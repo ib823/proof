@@ -392,3 +392,51 @@ positive control; 5/6 primitives read clean in-container and the 6th (GCM) is co
 CT with the flag traced to a host artifact. The harness is the reusable instrument for the
 controlled-host CT certification an external auditor (REQ-28) performs. The formal-equivalence
 proof remains the north-star open thread.
+
+---
+
+## Formal equivalence 2026-06-05 (the north star) — GHASH GF(2^128), first primitive
+
+The north-star deliverable — turning "tested-correct" into "proven-correct" — is now started
+with its first primitive: the **GF(2^128) multiplication** at the heart of GHASH / AES-GCM. New
+mechanized Coq lane `02_FORMAL/coq/crypto/GF128.v` (the first crypto proof in the Coq corpus;
+`# Crypto` section added to `_CoqProject`; active build **314 → 315 files, 12,456 → 12,485 Qed,
+0 Admitted / 0 Axiom / 0 Abort**).
+
+**What is modeled and proved.** `GF128.v` models the *exact* bit-serial algorithm in
+`05_TOOLING/crates/riina-core/src/crypto/ghash.rs::gf128_mul` over `Z` (big-endian 128-bit, with
+an explicit faithfulness map at the file head: `z ^= v` ↔ `Z.lxor`, `v >> 1` ↔ `Z.shiftr v 1`,
+`v[15]&1` ↔ `Z.testbit v 0`, `v[0] ^= 0xe1` ↔ `Z.lxor _ RED` with `RED = 0xe1 << 120`, MSB-first
+y-bit `i` ↔ `Z.testbit y (127-i)`). It then proves the algebraic structure, all `Qed` (no
+`Admitted`), via bit extensionality (`Z.bits_inj'`) reduced to boolean tautology (`btauto`):
+
+- additive group laws (XOR: comm / assoc / 0 / nilpotent);
+- `mulx` (multiply-by-the-generator) is GF(2)-linear;
+- **bilinearity** — `gf_mul_distr_l` `(a+b)·y = a·y + b·y` and `gf_mul_distr_r`
+  `x·(a+b) = x·a + x·b` (proved with loop-invariant lemmas over the 128-step fold);
+- **identity** `gf_mul_one_r` `x·1 = x` and **zero** `gf_mul_0_r`;
+- **closure** — `mulx`, the loop, and `gf_mul` all stay in `[0, 2^128)` (`gf_mul_in128`),
+  i.e. the model is a genuinely closed 128-bit operation.
+
+**Executable cross-check (the bridge).** Concrete products are closed by `vm_compute`
+(`Example gf_mul_kat` etc.), and the parity test
+`crypto::ghash::tests::test_gf128_mul_matches_coq_model` asserts the **Rust `gf128_mul` is
+byte-identical** to the model's computed product on that vector (`05_TOOLING` 285 → **286 / 0 /
+0**). So the chain is: *Coq model (proved bilinear/identity/closed) → `vm_compute` product →
+Rust `gf128_mul` (byte-equal)*.
+
+**The bridge caught a real bug — in the proof, not the code.** The first model used the
+reduction constant as decimal `231` (= `0xe7`), a transcription error for `0xe1` (= `225`); the
+parity test failed (`f2d1… ≠ 6504…`), localizing the defect to the Coq side (the Rust was
+correct). Fixing `RED` to `225` made model and implementation agree byte-for-byte. This is
+exactly why an *executable* equivalence anchor (not just a hand proof) is worth building — it
+mechanically catches model⇄implementation drift in either direction.
+
+**Honest scope.** This is one primitive. It is a real, complete, `Admitted`-free formal model +
+impl cross-check for GHASH multiplication — and the template for the rest. It is *not* yet a full
+GCM/AES proof, nor a commutativity/associativity proof of the field (the hard laws were not
+attempted rather than admitted). Remaining formal-equivalence work (multi-session): the full
+`Ghash::compute` fold, AES GF(2^8) (`xtime`/MixColumns + the S-box as field-inverse∘affine),
+SHA-2/SHA-3 round bit-ops, and the curve25519 field arithmetic. The methodology (faithful `Z`
+model + `bits_inj'`/`btauto` algebra + `vm_compute` KAT + a Rust parity test) now exists to
+replicate.
