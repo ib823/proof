@@ -2952,6 +2952,59 @@ mod tests {
         assert_eq!(run_src("pulang 42"), Value::Int(42));
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // SECURITY BUILTINS (keselamatan) — end-to-end through the real dispatch
+    // ═══════════════════════════════════════════════════════════════════════
+    // These names were typed by the checker but never registered/dispatched in
+    // the interpreter, so any reference raised `UnboundVariable`. Prove the full
+    // path now runs: surface call → `App` → `Var` resolves to `Builtin` (via
+    // `register_builtins`) → `apply_builtin` → result.
+
+    #[test]
+    fn test_sanitize_html_runs_through_interpreter() {
+        // Previously: UnboundVariable("sanitize_html"). Now: real HTML escaping.
+        assert_eq!(
+            run_src("sanitize_html(\"<script>\")"),
+            Value::String("&lt;script&gt;".to_string()),
+        );
+    }
+
+    #[test]
+    fn test_sanitize_then_sink_pipeline_runs() {
+        // The full taint→sanitize→sink shape executes end-to-end: the HtmlEscape
+        // sanitizer feeds the html_render sink, which emits the safe string.
+        assert_eq!(
+            run_src("html_render(sanitize_html(\"<b>x</b>\"))"),
+            Value::String("&lt;b&gt;x&lt;&#x2F;b&gt;".to_string()),
+        );
+    }
+
+    #[test]
+    fn test_bilingual_sanitizer_alias_runs() {
+        // The Bahasa Melayu alias resolves to the same canonical builtin.
+        assert_eq!(
+            run_src("sanitasi_url(\"a b\")"),
+            Value::String("a%20b".to_string()),
+        );
+    }
+
+    #[test]
+    fn test_pair_security_builtin_curries_through_interpreter() {
+        // A two-argument call `f(a, b)` parses curried; the security builtin
+        // forms the pair on the second application (csrf token compare).
+        assert_eq!(run_src("csrf_validate(\"tok\", \"tok\")"), Value::Bool(true));
+        assert_eq!(run_src("csrf_validate(\"tok\", \"nope\")"), Value::Bool(false));
+    }
+
+    #[test]
+    fn test_shell_exec_models_without_spawning() {
+        // shell_exec NEVER spawns a process; it models a 0 exit code.
+        assert_eq!(
+            run_src("shell_exec(sanitize_command(\"rm -rf /\"))"),
+            Value::Int(0),
+        );
+    }
+
     // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──
 
     fn iu(value: u64, bits: u8) -> Value {

@@ -9,6 +9,7 @@
 
 pub(crate) mod fail;
 pub(crate) mod json;
+pub(crate) mod keselamatan;
 pub(crate) mod masa;
 pub(crate) mod matematik;
 pub(crate) mod penukaran;
@@ -156,6 +157,12 @@ pub fn register_builtins(env: &Env) -> Env {
 
     // JSON builtins
     for (bm, en, canonical) in json::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
+    // Security builtins (keselamatan): sanitizers, sinks, CSRF, safe I/O.
+    for (bm, en, canonical) in keselamatan::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
@@ -316,6 +323,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 
     // JSON
     if let Some(result) = json::apply(name, &arg)? {
+        return Ok(result);
+    }
+
+    // Security (sanitizers / sinks / CSRF / safe I/O)
+    if let Some(result) = keselamatan::apply(name, &arg)? {
         return Ok(result);
     }
 
