@@ -1,6 +1,6 @@
 # RIINA Syntax Improvement Specification v2.0.0
 
-**Verification:** 12,553 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2800 Rust tests
+**Verification:** 12,553 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2807 Rust tests
 
 **Document ID:** `SYNTAX_IMPROVEMENT_SPEC_v2_0_0`
 **Date:** 2026-01-30
