@@ -11,7 +11,7 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-03: of 157 examples, 32 build+run in both backends and
+//! Measured 2026-06-03: of 158 examples, 32 build+run in both backends and
 //! **all 32 are byte-equal** (`KNOWN_DIVERGENT` is empty); the rest don't
 //! compile/run under one or both backends. The numeric-tower pair is
 //! `00_basics/sized_integers` (width-masked u8/u16 + full-u32-range wrap →
@@ -176,5 +176,37 @@ fn corpus_c_wasm_differential() {
         new_divergences.is_empty(),
         "NEW C/WASM divergence(s) not in KNOWN_DIVERGENT:\n{}",
         new_divergences.join("\n")
+    );
+}
+
+/// C-backend correctness for arbitrary-precision `besar` (BigInt). The corpus
+/// differential above compares C vs WASM, but BigInt has no WASM backend (it
+/// fails closed), so `00_basics/bigint.rii` is skipped there. This test pins the
+/// C output directly: it compiles the example through the C backend and asserts
+/// the exact decimal results — every one overflows 64 bits, so it can only be
+/// correct if the emitted C bignum runtime (a port of `bigint.rs`, the model
+/// `foundations/BigIntModel.v` proves) actually works. Needs only `cc`.
+#[test]
+fn bigint_c_backend_matches_expected_decimal() {
+    if !tool_available("cc") {
+        eprintln!("skipping bigint C-backend test: cc not available");
+        return;
+    }
+    let root = repo_root();
+    let ex = root.join("07_EXAMPLES/00_basics/bigint.rii");
+    let work = std::env::temp_dir().join("riina_bigint_c");
+    let _ = fs::create_dir_all(&work);
+    let out = run_c(&work, "bigint", &ex)
+        .expect("00_basics/bigint.rii must build and run via the C backend");
+    // a = 99999999999999999999, b = 12345678901234567890.
+    let expected = "9999999999999999999800000000000000000001\n\
+                    112345678901234567889\n\
+                    87654321098765432109\n\
+                    8\n\
+                    1234568790123456879\n";
+    assert_eq!(
+        String::from_utf8(out).unwrap(),
+        expected,
+        "C bignum runtime output must match the proven decimal values"
     );
 }

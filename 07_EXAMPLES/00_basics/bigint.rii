@@ -1,0 +1,21 @@
+// Arbitrary-precision integers (`besar`) — the numeric-tower BigInt slice.
+//
+// `besar("...")` parses a base-10 literal of any length into a BigInt, which
+// the interpreter and the C backend evaluate identically (byte-for-byte). The
+// products below overflow 64 bits, so a fixed-width integer could not hold them.
+//
+// (The WASM backend does not yet support BigInt; it fails closed rather than
+// miscompiling — run this with the interpreter or the C backend.)
+
+fungsi utama() -> Nombor kesan Tulis {
+    biar a = besar("99999999999999999999");
+    biar b = besar("12345678901234567890");
+
+    cetakln(a * a);   // 9999999999999999999800000000000000000001
+    cetakln(a + b);   // 112345678901234567889
+    cetakln(a - b);   // 87654321098765432109
+    cetakln(a / b);   // 8
+    cetakln(a % b);   // 1234568790123456879
+
+    pulang 0;
+}

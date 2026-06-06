@@ -1624,6 +1624,17 @@ impl WasmBackend {
                     }
                 } else if name == "gabung_teks" {
                     Self::emit_gabung_teks(arg, ctx, code);
+                } else if name == "besar" {
+                    // Arbitrary-precision BigInt has no WASM representation yet
+                    // (the C backend boxes it; WASM holds untagged i32). Fail
+                    // closed rather than stub it to 0 — a BigInt cannot exist in a
+                    // WASM program without this constructor, so this one guard
+                    // prevents any silent miscompile. (Tracked: BigInt WASM codegen.)
+                    return Err(crate::Error::InvalidOperation(
+                        "BigInt (besar) is not supported by the WASM backend yet; \
+                         use the C backend or the interpreter"
+                            .to_string(),
+                    ));
                 } else {
                     // Other builtins: push 0 (stub)
                     code.push(Op::I32Const as u8);
