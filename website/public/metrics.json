@@ -1,24 +1,24 @@
 {
-  "generated": "2026-06-06T09:17:26Z",
-  "generatedHuman": "June 06, 2026 at 09:17 UTC",
+  "generated": "2026-06-06T10:19:16Z",
+  "generatedHuman": "June 06, 2026 at 10:19 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "94e811c",
+    "commit": "6d731c4",
     "branch": "claude/busy-dirac-OpHz5"
   },
   "proofs": {
-    "qedActive": 12553,
+    "qedActive": 12581,
     "qedDeprecated": 758,
-    "qedTotal": 13311,
+    "qedTotal": 13339,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 364,
-    "filesActive": 324,
+    "filesTotal": 365,
+    "filesActive": 325,
     "domains": 252,
     "prover": "Rocq 9.2"
   },
@@ -127,7 +127,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 10745,
-    "totalProofsAllProvers": 74396,
+    "totalProofsAllProvers": 74424,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -172,7 +172,7 @@
       }
     },
     "coqTiers": {
-      "core": 1710,
+      "core": 1738,
       "domain": 10843,
       "domainTrivial": 1950
     }
@@ -194,9 +194,9 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 2816,
-    "testsVerified": 2816,
-    "testsEstimated": 2812,
+    "tests": 2817,
+    "testsVerified": 2817,
+    "testsEstimated": 2813,
     "testsSource": "cached_verified",
     "crates": 19
   },
