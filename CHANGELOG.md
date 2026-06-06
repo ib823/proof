@@ -1,13 +1,221 @@
 # Changelog
 
-**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2730 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — 2026-06-04 — Post-quantum FIPS 203/204 reconciliation (NIST ACVP byte-exact)
+## [0.4.0] — 2026-06-06
+
+Ships the constant-time-hardened, formally-verified crypto work accumulated since
+0.3.0 (2026-03-19): nine mechanized Coq⇄Rust formal-equivalence proofs (GHASH×2,
+AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519
+ladder), constant-time hardening — incl. a real variable-time leak fixed in Ed25519
+signing — now CI-gated, the set union/intersect O(n·m)→O(n+m) optimization, and the
+CT / audit-readiness tooling (dossier, RFP, host-prep + timing harnesses). Verified:
+0 Admitted/Axiom/Abort, 12,533 Coq Qed across 323 active files, workspaces 294/0 +
+2730/0, clippy clean. Detailed entries (formerly [Unreleased]) follow.
+
+### 2026-06-05 — Gate C: set union/intersect O(n·m) → O(n+m)
+
+### Changed (Gate C / Standard Library Hardening — Collections)
+- **`set_kesatuan`/`set_persilangan` perf** (`03_PROTO/crates/riina-codegen/src/builtins/set.rs`):
+  the benchmark (`reports/stdlib_bench.md`) flagged the set union/intersect as ~O(n·m) — a linear
+  `Vec::contains` membership scan per element (~42 ms at n=8192). They now build a hashable
+  `SetKey` index over the scalar element variants (Int/Bool/String/IntN/Unit/Color/Hash/ActorRef)
+  for O(1) membership — **O(n·m) → O(n+m)** for the common scalar set — with an exact
+  `Vec::contains` fallback for compound/opaque values (`Pair`/`List`/`Closure`/`Ref`, which aren't
+  `Ord`/`Hash`, so a `BTreeSet<Value>` was not viable). Behaviour-preserving (identical elements,
+  order, no-dup), so the `VerifiedMapSet.v` membership + no-dup proofs still describe the running
+  code; locked by the new `opt_union_intersect_equal_naive_reference` guard (200 mixed-type rounds,
+  incl. unkeyable elements, asserting fast-path == naive reference). 03_PROTO 2729 → **2730 / 0**.
+
+### 2026-06-05 — Formal-equivalence proof, ninth primitive: X25519 Montgomery ladder
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/X25519.v`** (active build 322 → 323 files, 12,531 →
+  12,533 Qed, 0 Admitted/Axiom/Abort). Models `montgomery.rs`'s X25519 scalar multiplication over
+  GF(2^255-19) (the field whose multiply `Field25519.v` proves correct mod p): the Montgomery
+  ladder (`double` xDBL + `diff_add` xADD + the conditional-swap structure, a24=121666), scalar
+  clamping, and the little-endian decode/encode with the bit-255 mask. Proves by `vm_compute` that
+  the modelled `x25519` reproduces the **RFC 7748** §5.2 Test Vector 1 and §6.1 basepoint
+  (Alice's public key) **byte-for-byte** (`x25519_rfc7748_vector1`, `x25519_rfc7748_basepoint`).
+- **Coq ⇄ Rust bridge** `crypto::montgomery::tests::test_x25519_matches_coq_model`: the shipping
+  `x25519`/`x25519_base` produce the identical bytes on those exact vectors (05_TOOLING 293 →
+  **294 / 0 / 0**). Nine formal-equivalence primitives now landed (GHASH ×2, AES S-box, full
+  AES-256 cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, **X25519 ladder** — the GCM +
+  AES + SHA-2 + SHA-3 + ECC (field + ladder) + PQC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, eighth primitive: ML-KEM (Kyber) NTT
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/NTT.v`** (active build 321 → 322 files, 12,528 →
+  12,531 Qed, 0 Admitted/Axiom/Abort). The post-quantum arithmetic core: a model of `ml_kem.rs`'s
+  number-theoretic transform faithful to the *exact integer semantics* — i16 two's-complement
+  wrapping, Montgomery reduction (R=2^16, q=3329, q⁻¹=−3327), Barrett reduction, the 128-entry
+  `ZETAS` table, the Cooley-Tukey forward + Gentleman-Sande inverse butterfly network, the F=1441
+  inverse-NTT scaling, and the degree-1 `basemul`. Proves by `vm_compute` that the pipeline
+  ML-KEM uses — `ntt`, `ntt`, pointwise-multiply, `inv_ntt`, `reduce` — computes the polynomial
+  product in `Z_q[X]/(X²⁵⁶+1)`: `ntt_mul_one` (1·1=1), `ntt_mul_1plusX_squared` (the genuine
+  convolution (1+X)²=1+2X+X²), and `ntt_mul_negacyclic_wrap` (X²⁵⁵·X = X²⁵⁶ ≡ q−1, the negacyclic
+  reduction the NTT encodes).
+- **Coq ⇄ Rust bridge** `crypto::ml_kem::tests::test_ntt_matches_coq_model`: the shipping `Poly`
+  (ntt/pointwise_mul/inv_ntt/reduce) produces the byte-identical `to_positive` outputs on those
+  three vectors (05_TOOLING 292 → **293 / 0 / 0**). Eight formal-equivalence primitives now landed
+  (GHASH ×2, AES S-box, full AES-256 cipher, SHA-256, SHA3-256, Curve25519 field, **ML-KEM NTT** —
+  the GCM + AES + SHA-2 + SHA-3 + ECC + PQC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, seventh primitive: full AES-256 cipher
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/AES.v`** (active build 320 → 321 files, 12,524 →
+  12,528 Qed, 0 Admitted/Axiom/Abort). Builds on `AESField.v` (which already proved the 256-byte
+  S-box is the genuine `affine(a^254)` construction): models the *whole* AES-256 cipher at the
+  byte level — key schedule + 14 rounds of SubBytes/ShiftRows/MixColumns/AddRoundKey and the
+  inverse cipher — reusing the proven `aes_sbox`/`gmul`, and proves by `vm_compute` that it
+  reproduces the **FIPS-197 Appendix C.3** known-answer vector for both `aes256_encrypt` and
+  `aes256_decrypt`. So AES is now verified end-to-end: from "the S-box is real" to "the entire
+  AES-256 block transform is the real AES".
+- **Coq ⇄ Rust bridge** `crypto::aes::tests::test_aes256_matches_coq_model`: the shipping `Aes256`
+  (u32-state impl) produces the byte-identical ciphertext, recovers the plaintext, and its key
+  schedule matches the Coq `ks_first_word`/`ks_eighth_word` (05_TOOLING 291 → **292 / 0 / 0**).
+  Seven formal-equivalence primitives now landed (GHASH ×2, AES S-box, **full AES-256 cipher**,
+  SHA-256, SHA3-256, Curve25519 field — the GCM + AES + SHA-2 + SHA-3 + ECC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, sixth primitive: Curve25519 field (the deep one)
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/Field25519.v`** (active build 319 → 320 files, 12,515 →
+  12,524 Qed, 0 Admitted/Axiom/Abort). The first *symbolically*-proved (not KAT) crypto primitive:
+  it models `field25519.rs`'s radix-2^51 GF(2^255-19) limb arithmetic and proves, by `ring` +
+  modular arithmetic, the headline **`mul_correct_mod`** — the schoolbook product folded by
+  `2^255 ≡ 19` computes `a·b mod p` (the Mersenne-style reduction correctness underlying
+  Curve25519) — plus `add_correct` and `sub_correct_mod`, and `vm_compute` corner cases
+  (`(p-1)² ≡ 1`, `2²⁵⁴·4 ≡ 38`).
+- **Coq ⇄ Rust bridge** `crypto::field25519::tests::test_mul_matches_coq_model`: confirms the full
+  carried Rust `Mul` on those vectors incl. a reduction case (05_TOOLING 290 → **291 / 0 / 0**).
+  Six formal-equivalence primitives now landed (GHASH ×2, AES S-box, SHA-256, SHA3-256, Curve25519
+  field — the GCM + AES + SHA-2 + SHA-3 + ECC cores). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, fifth primitive: SHA-3 / Keccak
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/Keccak.v`** (active build 318 → 319 files, 12,513 →
+  12,515 Qed, 0 Admitted/Axiom/Abort). A faithful model of `keccak.rs`'s Keccak-f[1600]
+  (θ/ρ/π/χ/ι over the 25-lane state, with the RC/ROTATION/PI_LANE tables) and the SHA3-256 sponge,
+  proven by `vm_compute` to reproduce the FIPS 202 digests for `""` and `"abc"`.
+- **Coq ⇄ Rust bridge** `crypto::keccak::tests::test_sha3_256_matches_coq_model`: `Sha3_256::hash`
+  returns the byte-identical digests (05_TOOLING 289 → **290 / 0 / 0**). Five formal-equivalence
+  primitives now landed (GHASH ×2, AES S-box, SHA-256, SHA3-256 — the GCM + AES + SHA-2 + SHA-3
+  cores). See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, fourth primitive: SHA-256
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/SHA256.v`** (active build 317 → 318 files, 12,511 →
+  12,513 Qed, 0 Admitted/Axiom/Abort). A faithful model of `sha2.rs` (round functions, message
+  schedule, 64-round compression + Davies-Meyer feed-forward, padding) proven by `vm_compute` to
+  reproduce the FIPS 180-4 digests for `"abc"` and `""`. (SHA-256 is a hash — the content is
+  executable model⇄spec⇄impl agreement, not deep algebra.)
+- **Coq ⇄ Rust bridge** `crypto::sha2::tests::test_sha256_matches_coq_model`: `Sha256::hash`
+  returns the byte-identical digests (05_TOOLING 288 → **289 / 0 / 0**). Four formal-equivalence
+  primitives now landed (GHASH ×2, AES S-box, SHA-256). See
+  `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, third primitive: AES GF(2^8) & S-box
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/AESField.v`** (active build 316 → 317 files, 12,506 →
+  12,511 Qed, 0 Admitted/Axiom/Abort). Models AES GF(2^8) (`xtime`/`gf_mul`, faithful to
+  `aes.rs`) and proves — finitely, over all 256 bytes by `vm_compute` — that the magic 256-byte
+  S-box tables are the genuine mathematical construction: `sbox_eq_construction`
+  (`SBOX[a] = affine(a^254)`), `gf_inv_correct` (`a^254` is the GF(2^8) inverse, 255 cases), and
+  `SBOX`/`INV_SBOX` mutual inverses. Plus the FIPS 197 worked example `0x57·0x83 = 0xc1`.
+- **Coq ⇄ Rust bridge** `crypto::aes::tests::test_sbox_matches_coq_model`: recomputes the S-box
+  from `gf_mul`+affine and asserts it equals the shipped `SBOX` (and `INV_SBOX` inverts it)
+  (05_TOOLING 287 → **288 / 0 / 0**). Three formal-equivalence primitives now landed (GHASH ×2 +
+  AES). See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, second primitive: full GHASH fold
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New Coq lane `02_FORMAL/coq/crypto/GHASH.v`** (imports `GF128`; active build 315 → 316 files,
+  12,485 → 12,506 Qed, 0 Admitted/Axiom/Abort). Models `Ghash::update_block`'s recurrence as a
+  `fold_left` and proves GHASH is a **GF(2)-linear polynomial hash**: `ghash_linear`
+  (`GHASH_H(X⊕Y) = GHASH_H(X)⊕GHASH_H(Y)`, the almost-XOR-universal property GCM auth rests on)
+  and `ghash_cons`/`ghash_horner_two` (the Horner form `⊕ᵢ Bᵢ·H^(m-i+1)`).
+- **Coq ⇄ Rust bridge** `crypto::ghash::tests::test_ghash_fold_matches_coq_model`: a
+  `Ghash::new`/`update_block` sequence asserted byte-identical to the model's `vm_compute`
+  (05_TOOLING 286 → **287 / 0 / 0**). Detail in `reports/precrypto_audit_secondmodel.md`
+  §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Formal-equivalence proof, first primitive: GHASH GF(2^128)
+
+### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
+- **New mechanized Coq crypto lane `02_FORMAL/coq/crypto/GF128.v`** (first crypto proof in the
+  Coq corpus; active build **314 → 315 files, 12,456 → 12,485 Qed**, 0 Admitted/Axiom/Abort). It
+  models the *exact* bit-serial algorithm of `riina-core`'s `ghash::gf128_mul` over `Z` and
+  proves — via bit-extensionality (`Z.bits_inj'`) + `btauto` — the additive group laws, `mulx`
+  linearity, **bilinearity** (`gf_mul_distr_l`/`_r`), **identity** (`gf_mul_one_r`), zero, and
+  **128-bit closure** (`gf_mul_in128`), with executable `vm_compute` KAT `Example`s.
+- **Coq ⇄ Rust parity bridge** `crypto::ghash::tests::test_gf128_mul_matches_coq_model`: asserts
+  the Rust `gf128_mul` is byte-identical to the model's `vm_compute` product (`05_TOOLING` 285 →
+  **286 / 0 / 0**). The bridge caught a real model transcription bug (the reduction constant
+  `0xe1` written as decimal `231`=`0xe7`; the Rust was correct) — exactly the point of an
+  executable equivalence anchor.
+- Turns GHASH multiplication from "tested-correct" into "model-proven + implementation
+  cross-checked". Remaining (multi-session): `Ghash::compute`, AES GF(2^8), SHA-2/3 bit-ops,
+  curve25519 field. See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
+
+### 2026-06-05 — Machine-level constant-time evidence harness (dudect-style)
+
+### Added (Gate C crypto-audit prep — empirical CT evidence)
+- **Dependency-free dudect-style timing-leakage probe** at
+  `05_TOOLING/crates/riina-core/examples/dudect_ct.rs`: Welch's t-test over fixed-vs-random
+  secret classes (hand-rolled xorshift PRNG + t-test, no `dudect`/`criterion`/`rand` — Law 8),
+  with a **positive control** that validates detection power. It is an `example`, not a
+  `#[test]` (timing in CI is noise), so the test count is unchanged (**285 / 0 / 0**). Run it
+  pinned to a core: `taskset -c 0 cargo run --release --example dudect_ct -p riina-core`.
+- **In-container results (indicative, not audit-grade):** AES-256 block, Ed25519 sign,
+  X25519 DH, ML-KEM-768 decaps, and `ct_eq_bytes` all read **no leak**; the positive control
+  flags as designed. AES-256-GCM flags a small |t|, **investigated to a microarchitectural
+  fixed-vs-random artifact** — `ghash::gf128_mul` is branchless (no secret-dependent
+  branch/table), confirmed by source inspection. No code defects found.
+- **Honest scope:** the RIINA dev container is a Docker/KVM vCPU (invariant TSC + `taskset`
+  pinning, but uncontrollable steal-time), so a clean run here is indicative; the harness is
+  the reusable instrument for the controlled-host CT certification an external audit (REQ-28)
+  performs. Detail in `reports/precrypto_audit_secondmodel.md` §Machine-level CT evidence 2026-06-05.
+
+### 2026-06-04 — Ed25519/X25519 deep pre-audit pass (RFC 8032 §5.1.3 strict decode)
+
+### Security (Gate C crypto-audit prep — `05_TOOLING/crates/riina-core`)
+- **Ed25519 point decoding is now RFC 8032 §5.1.3-strict.** `EdwardsPoint::decompress` previously
+  accepted two non-canonical encodings (point-encoding malleability — one curve point with multiple
+  valid 32-byte encodings):
+  - a **non-canonical y-coordinate `y >= p`**, which `FieldElement::from_bytes` silently reduced
+    mod p (now rejected via a branchless `is_canonical_y` = `y < p`, mirroring the `s < L` check);
+  - **`x = 0` with the sign bit set** (negating zero yields zero), which the standard requires
+    rejecting (no "negative zero").
+
+  Both rejections are **purely additive** — every canonical input (all RFC 8032 test vectors, the
+  sign/verify roundtrips, basepoint/identity compression) is unchanged.
+- Added an end-to-end **`(R, s + L)` malleability-rejection** test through `verify`, exercising the
+  `0 <= s < L` gate (the second-model `is_scalar_valid` borrow fix previously had only a
+  helper-level unit test).
+- **X25519 + GCM re-reviewed, confirmed clean.** Added the previously-missing X25519 contributory
+  **all-zero (small-order) shared-secret rejection** test (`u = 0`). GCM SP 800-38D length limits
+  remain deliberately unenforced (unreachable ~64 GiB / untestable; documented).
+- `05_TOOLING` `cargo test --all` **280 → 285 / 0 / 0** (+5), `kat_audit` **23 / 0 ignored**,
+  clippy clean. Coq/`03_PROTO` unchanged (314 files / 12,456 Qed; 2729 / 0 / 3). Detail in
+  `reports/precrypto_audit_secondmodel.md` §Deep-pass 2026-06-04.
+
+### 2026-06-04 — Post-quantum FIPS 203/204 reconciliation (NIST ACVP byte-exact)
 
 ### Added (PQC — ML-KEM-768 → FIPS 203 + ML-DSA-65 → FIPS 204; authentic NIST ACVP, byte/behaviour-exact)
 - **ML-KEM-768 → FIPS 203 (keyGen + encaps + decaps), byte-exact vs authentic NIST ACVP-Server vectors.**
@@ -34,7 +242,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Release:** `VERSION` → **0.3.0**, tag **`v0.3.0`**. (A historical `[0.3.0] — 2026-03-19` entry already
   exists below; reconciling the release numbering is deferred to a dedicated release-management pass.)
 
-## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
+### 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
 - **OS/system effect-typing audit ⇄ Coq injection-prevention parity**: audited the
@@ -291,7 +499,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   05_TOOLING suite 248 → 256. This is audit *preparation*, not a replacement for the
   external audit (REQ-28), which stays a P0 external-firm dependency.
 
-## [Unreleased] — 2026-06-02 — Gate B: WASM/C parity closed, session pipeline, constant-time
+### 2026-06-02 — Gate B: WASM/C parity closed, session pipeline, constant-time
 
 Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 
@@ -402,7 +610,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - **DMP/GoFetch-class** microarchitectural constant-time channels (out of scope
   until the CHERI/hardware-contract era, Phase 7/9).
 
-## [Unreleased] — 2026-06-01 — Prototype: loop control, logical-not, example corpus
+### 2026-06-01 — Prototype: loop control, logical-not, example corpus
 
 ### Added
 - **Loop control keywords** `putus` (break) and `lanjut` (continue), parsed in
@@ -431,7 +639,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   git-tracked (51/155 on disk). `03_PROTO` test suite: 2,607 pass / 0 fail;
   `cargo clippy --all` reports 0 warnings.
 
-## [Unreleased] — 2026-05-17 — Lean active-lane axiom restoration
+### 2026-05-17 — Lean active-lane axiom restoration
 
 ### Fixed
 - Lean 4 active lane: replaced 15 generator-fallback `axiom` declarations
@@ -455,7 +663,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   shim and does not exercise individual domain files. Recorded in
   RIINA_MASTER_PLAN.md Part 2 Lean caveat for follow-up.
 
-## [Unreleased] — 2026-05-16 — Documentation drift correction
+### 2026-05-16 — Documentation drift correction
 
 ### Fixed
 - `RIINA_MASTER_PLAN.md` Part 2: corrected Coq active `.v` files (292 → 309), Lean files (155 → 325), Lean axiom count (0 → 15), Isabelle files (307 → 368), and extended-prover file counts to match `metrics.json`
@@ -556,7 +764,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,456 Qed proofs
+- Active Coq build now at 12,533 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)
