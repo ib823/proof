@@ -7,7 +7,18 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — 2026-06-05 — Gate C: set union/intersect O(n·m) → O(n+m)
+## [0.4.0] — 2026-06-06
+
+Ships the constant-time-hardened, formally-verified crypto work accumulated since
+0.3.0 (2026-03-19): nine mechanized Coq⇄Rust formal-equivalence proofs (GHASH×2,
+AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519
+ladder), constant-time hardening — incl. a real variable-time leak fixed in Ed25519
+signing — now CI-gated, the set union/intersect O(n·m)→O(n+m) optimization, and the
+CT / audit-readiness tooling (dossier, RFP, host-prep + timing harnesses). Verified:
+0 Admitted/Axiom/Abort, 12,533 Coq Qed across 323 active files, workspaces 294/0 +
+2730/0, clippy clean. Detailed entries (formerly [Unreleased]) follow.
+
+### 2026-06-05 — Gate C: set union/intersect O(n·m) → O(n+m)
 
 ### Changed (Gate C / Standard Library Hardening — Collections)
 - **`set_kesatuan`/`set_persilangan` perf** (`03_PROTO/crates/riina-codegen/src/builtins/set.rs`):
@@ -21,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   code; locked by the new `opt_union_intersect_equal_naive_reference` guard (200 mixed-type rounds,
   incl. unkeyable elements, asserting fast-path == naive reference). 03_PROTO 2729 → **2730 / 0**.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, ninth primitive: X25519 Montgomery ladder
+### 2026-06-05 — Formal-equivalence proof, ninth primitive: X25519 Montgomery ladder
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/X25519.v`** (active build 322 → 323 files, 12,531 →
@@ -38,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   AES + SHA-2 + SHA-3 + ECC (field + ladder) + PQC cores). See
   `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, eighth primitive: ML-KEM (Kyber) NTT
+### 2026-06-05 — Formal-equivalence proof, eighth primitive: ML-KEM (Kyber) NTT
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/NTT.v`** (active build 321 → 322 files, 12,528 →
@@ -58,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the GCM + AES + SHA-2 + SHA-3 + ECC + PQC cores). See
   `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, seventh primitive: full AES-256 cipher
+### 2026-06-05 — Formal-equivalence proof, seventh primitive: full AES-256 cipher
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/AES.v`** (active build 320 → 321 files, 12,524 →
@@ -76,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   SHA-256, SHA3-256, Curve25519 field — the GCM + AES + SHA-2 + SHA-3 + ECC cores). See
   `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, sixth primitive: Curve25519 field (the deep one)
+### 2026-06-05 — Formal-equivalence proof, sixth primitive: Curve25519 field (the deep one)
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/Field25519.v`** (active build 319 → 320 files, 12,515 →
@@ -92,7 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   field — the GCM + AES + SHA-2 + SHA-3 + ECC cores). See
   `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, fifth primitive: SHA-3 / Keccak
+### 2026-06-05 — Formal-equivalence proof, fifth primitive: SHA-3 / Keccak
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/Keccak.v`** (active build 318 → 319 files, 12,513 →
@@ -104,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   primitives now landed (GHASH ×2, AES S-box, SHA-256, SHA3-256 — the GCM + AES + SHA-2 + SHA-3
   cores). See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, fourth primitive: SHA-256
+### 2026-06-05 — Formal-equivalence proof, fourth primitive: SHA-256
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/SHA256.v`** (active build 317 → 318 files, 12,511 →
@@ -117,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   primitives now landed (GHASH ×2, AES S-box, SHA-256). See
   `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, third primitive: AES GF(2^8) & S-box
+### 2026-06-05 — Formal-equivalence proof, third primitive: AES GF(2^8) & S-box
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/AESField.v`** (active build 316 → 317 files, 12,506 →
@@ -131,7 +142,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (05_TOOLING 287 → **288 / 0 / 0**). Three formal-equivalence primitives now landed (GHASH ×2 +
   AES). See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, second primitive: full GHASH fold
+### 2026-06-05 — Formal-equivalence proof, second primitive: full GHASH fold
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New Coq lane `02_FORMAL/coq/crypto/GHASH.v`** (imports `GF128`; active build 315 → 316 files,
@@ -144,7 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (05_TOOLING 286 → **287 / 0 / 0**). Detail in `reports/precrypto_audit_secondmodel.md`
   §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Formal-equivalence proof, first primitive: GHASH GF(2^128)
+### 2026-06-05 — Formal-equivalence proof, first primitive: GHASH GF(2^128)
 
 ### Added (Gate C / north-star — Coq ⇄ Rust formal equivalence)
 - **New mechanized Coq crypto lane `02_FORMAL/coq/crypto/GF128.v`** (first crypto proof in the
@@ -162,7 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cross-checked". Remaining (multi-session): `Ghash::compute`, AES GF(2^8), SHA-2/3 bit-ops,
   curve25519 field. See `reports/precrypto_audit_secondmodel.md` §Formal equivalence 2026-06-05.
 
-## [Unreleased] — 2026-06-05 — Machine-level constant-time evidence harness (dudect-style)
+### 2026-06-05 — Machine-level constant-time evidence harness (dudect-style)
 
 ### Added (Gate C crypto-audit prep — empirical CT evidence)
 - **Dependency-free dudect-style timing-leakage probe** at
@@ -181,7 +192,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the reusable instrument for the controlled-host CT certification an external audit (REQ-28)
   performs. Detail in `reports/precrypto_audit_secondmodel.md` §Machine-level CT evidence 2026-06-05.
 
-## [Unreleased] — 2026-06-04 — Ed25519/X25519 deep pre-audit pass (RFC 8032 §5.1.3 strict decode)
+### 2026-06-04 — Ed25519/X25519 deep pre-audit pass (RFC 8032 §5.1.3 strict decode)
 
 ### Security (Gate C crypto-audit prep — `05_TOOLING/crates/riina-core`)
 - **Ed25519 point decoding is now RFC 8032 §5.1.3-strict.** `EdwardsPoint::decompress` previously
@@ -204,7 +215,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   clippy clean. Coq/`03_PROTO` unchanged (314 files / 12,456 Qed; 2729 / 0 / 3). Detail in
   `reports/precrypto_audit_secondmodel.md` §Deep-pass 2026-06-04.
 
-## [Unreleased] — 2026-06-04 — Post-quantum FIPS 203/204 reconciliation (NIST ACVP byte-exact)
+### 2026-06-04 — Post-quantum FIPS 203/204 reconciliation (NIST ACVP byte-exact)
 
 ### Added (PQC — ML-KEM-768 → FIPS 203 + ML-DSA-65 → FIPS 204; authentic NIST ACVP, byte/behaviour-exact)
 - **ML-KEM-768 → FIPS 203 (keyGen + encaps + decaps), byte-exact vs authentic NIST ACVP-Server vectors.**
@@ -231,7 +242,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Release:** `VERSION` → **0.3.0**, tag **`v0.3.0`**. (A historical `[0.3.0] — 2026-03-19` entry already
   exists below; reconciling the release numbering is deferred to a dedicated release-management pass.)
 
-## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
+### 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
 - **OS/system effect-typing audit ⇄ Coq injection-prevention parity**: audited the
@@ -488,7 +499,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   05_TOOLING suite 248 → 256. This is audit *preparation*, not a replacement for the
   external audit (REQ-28), which stays a P0 external-firm dependency.
 
-## [Unreleased] — 2026-06-02 — Gate B: WASM/C parity closed, session pipeline, constant-time
+### 2026-06-02 — Gate B: WASM/C parity closed, session pipeline, constant-time
 
 Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 
@@ -599,7 +610,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - **DMP/GoFetch-class** microarchitectural constant-time channels (out of scope
   until the CHERI/hardware-contract era, Phase 7/9).
 
-## [Unreleased] — 2026-06-01 — Prototype: loop control, logical-not, example corpus
+### 2026-06-01 — Prototype: loop control, logical-not, example corpus
 
 ### Added
 - **Loop control keywords** `putus` (break) and `lanjut` (continue), parsed in
@@ -628,7 +639,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   git-tracked (51/155 on disk). `03_PROTO` test suite: 2,607 pass / 0 fail;
   `cargo clippy --all` reports 0 warnings.
 
-## [Unreleased] — 2026-05-17 — Lean active-lane axiom restoration
+### 2026-05-17 — Lean active-lane axiom restoration
 
 ### Fixed
 - Lean 4 active lane: replaced 15 generator-fallback `axiom` declarations
@@ -652,7 +663,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   shim and does not exercise individual domain files. Recorded in
   RIINA_MASTER_PLAN.md Part 2 Lean caveat for follow-up.
 
-## [Unreleased] — 2026-05-16 — Documentation drift correction
+### 2026-05-16 — Documentation drift correction
 
 ### Fixed
 - `RIINA_MASTER_PLAN.md` Part 2: corrected Coq active `.v` files (292 → 309), Lean files (155 → 325), Lean axiom count (0 → 15), Isabelle files (307 → 368), and extended-prover file counts to match `metrics.json`
