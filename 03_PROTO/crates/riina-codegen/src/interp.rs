@@ -3200,6 +3200,19 @@ mod tests {
     // ═══════════════════════════════════════════════════════════════════════
 
     #[test]
+    fn test_confusable_detection_through_interpreter() {
+        // Latin "a" vs a Cyrillic look-alike "а" (U+0430) are confusable; a
+        // curried two-arg call forms the pair on the second application.
+        assert_eq!(
+            run_src("adalah_keliru(\"a\", \"\u{430}\")"),
+            Value::Bool(true)
+        );
+        assert_eq!(run_src("adalah_keliru(\"cat\", \"dog\")"), Value::Bool(false));
+        // skeleton is a plain String -> String.
+        assert!(matches!(run_src("skeleton(\"paypal\")"), Value::String(_)));
+    }
+
+    #[test]
     fn test_nfc_normalization_through_interpreter() {
         // Decomposed "e" + combining acute (a real U+0301 in the source string)
         // normalizes to precomposed "é".
