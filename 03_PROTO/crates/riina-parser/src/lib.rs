@@ -2768,6 +2768,8 @@ impl<'a> Parser<'a> {
                     "i64" => Ok(Ty::IntN { bits: 64, signed: true }),
                     // Arbitrary-precision integer (numeric-tower BigInt slice).
                     "Besar" | "BigInt" => Ok(Ty::BigInt),
+                    // Arbitrary-precision decimal (numeric-tower decimal slice).
+                    "Perpuluhan" | "Decimal" => Ok(Ty::Decimal),
                     "Bool" | "Benar" => Ok(Ty::Bool),
                     "Unit" => Ok(Ty::Unit),
                     "String" | "Teks" => Ok(Ty::String),

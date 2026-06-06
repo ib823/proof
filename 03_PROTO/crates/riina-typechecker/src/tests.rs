@@ -965,6 +965,44 @@ mod formalized_tests {
         );
     }
 
+    // ── Numeric tower: arbitrary-precision Decimal (`perpuluhan`) ──
+
+    fn decimal_call(s: &str) -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("perpuluhan".to_string())),
+            Box::new(Expr::String(s.to_string())),
+        )
+    }
+
+    #[test]
+    fn decimal_constructor_and_arithmetic_types() {
+        let mut ctx = builtin_ctx();
+        assert_eq!(
+            type_check_full(&mut ctx, &decimal_call("3.14")).unwrap(),
+            (Ty::Decimal, Effect::Pure)
+        );
+        for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div] {
+            let e = Expr::BinOp(op, Box::new(decimal_call("1.5")), Box::new(decimal_call("0.5")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::Decimal, "{op:?}");
+        }
+        for op in [BinOp::Lt, BinOp::Ge, BinOp::Eq] {
+            let e = Expr::BinOp(op, Box::new(decimal_call("1.5")), Box::new(decimal_call("0.5")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::Bool, "{op:?}");
+        }
+    }
+
+    #[test]
+    fn decimal_does_not_mix_with_bigint_or_int() {
+        let mut ctx = builtin_ctx();
+        for other in [besar_call("1"), Expr::Int(1)] {
+            let e = Expr::BinOp(BinOp::Add, Box::new(decimal_call("1.5")), Box::new(other));
+            assert!(
+                matches!(type_check_full(&mut ctx, &e), Err(TypeError::TypeMismatch { .. })),
+                "Decimal must not mix with BigInt/Int"
+            );
+        }
+    }
+
     // ── Numeric tower: sized integer literals & width-aware arithmetic ──
 
     fn u8n(value: u64) -> Expr {

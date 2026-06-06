@@ -69,6 +69,22 @@ impl BigInt {
         v
     }
 
+    /// `10^k` as a non-negative BigInt. Used by the decimal tower for scale
+    /// alignment (`mantissa * 10^k`).
+    pub fn pow10(k: u32) -> Self {
+        let mut v = BigInt::from_u64(1);
+        let ten = BigInt::from_u64(10);
+        for _ in 0..k {
+            v = v.mul(&ten);
+        }
+        v
+    }
+
+    /// True iff this value is exactly one (`1`). Used by decimal rounding.
+    pub fn is_one(&self) -> bool {
+        !self.negative && self.mag.len() == 1 && self.mag[0] == 1
+    }
+
     fn from_u64_mag(n: u64) -> Vec<u32> {
         if n == 0 {
             Vec::new()

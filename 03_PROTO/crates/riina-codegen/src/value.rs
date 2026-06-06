@@ -205,6 +205,11 @@ pub enum Value {
     /// equivalence model is a tracked follow-up.
     BigInt(crate::bigint::BigInt),
 
+    /// Arbitrary-precision decimal (`perpuluhan`): a BigInt mantissa scaled by a
+    /// power of ten, giving exact base-10 arithmetic for finance. Additive — not
+    /// in the Coq core; an interpreter-only numeric-tower slice.
+    Decimal(crate::decimal::Decimal),
+
     /// String value
     ///
     /// Corresponds to Coq `VString s`.
@@ -804,6 +809,7 @@ impl std::fmt::Display for Value {
                 }
             }
             Self::BigInt(b) => write!(f, "{b}"),
+            Self::Decimal(d) => write!(f, "{d}"),
             Self::String(s) => write!(f, "\"{s}\""),
             Self::Pair(a, b) => write!(f, "({a}, {b})"),
             Self::Sum(Sum::Left(v)) => write!(f, "inl {v}"),

@@ -784,6 +784,7 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
             out.push_str(&bits.to_string());
         }
         Ty::BigInt => out.push_str("Besar"),
+        Ty::Decimal => out.push_str("Perpuluhan"),
         Ty::String => out.push_str("Teks"),
         Ty::Bytes => out.push_str("Bait"),
         Ty::Fn(param, ret, eff) => {
