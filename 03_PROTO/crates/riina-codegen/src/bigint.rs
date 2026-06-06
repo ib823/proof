@@ -534,6 +534,32 @@ mod tests {
         );
     }
 
+    /// Coq⇄Rust formal-equivalence bridge. The running bignum reproduces the
+    /// exact values the model proves by `vm_compute` in
+    /// `02_FORMAL/coq/foundations/BigIntModel.v` (Examples `sum_value`,
+    /// `product_value`, `divmod_BA`, `divmod_BA_reconstructs`) — tying this
+    /// algorithm to the model whose `eval_add`/`eval_mul` prove `eval` is a ring
+    /// homomorphism from the limb representation to ℤ. Same `(A, B)` operands as
+    /// the Coq `Ak`/`Bk`.
+    #[test]
+    fn test_bigint_matches_coq_model() {
+        let a = big("123456789012345678901234567890");
+        let b = big("987654321098765432109876543210");
+        // BigIntModel.v `sum_value`
+        assert_eq!(a.add(&b).to_decimal_string(), "1111111110111111111011111111100");
+        // BigIntModel.v `product_value`
+        assert_eq!(
+            a.mul(&b).to_decimal_string(),
+            "121932631137021795226185032733622923332237463801111263526900"
+        );
+        // BigIntModel.v `divmod_BA`: B = 8*A + r, 0 <= r < A
+        let (q, r) = b.divmod(&a).unwrap();
+        assert_eq!(q.to_decimal_string(), "8");
+        assert_eq!(r.to_decimal_string(), "9000000000900000000090");
+        // BigIntModel.v `divmod_BA_reconstructs`
+        assert_eq!(q.mul(&a).add(&r), b);
+    }
+
     #[test]
     fn zero_and_sign_normalization() {
         assert!(BigInt::zero().is_zero());
