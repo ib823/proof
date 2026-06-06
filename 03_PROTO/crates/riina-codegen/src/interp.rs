@@ -3200,6 +3200,16 @@ mod tests {
     // ═══════════════════════════════════════════════════════════════════════
 
     #[test]
+    fn test_nfc_normalization_through_interpreter() {
+        // Decomposed "e" + combining acute (a real U+0301 in the source string)
+        // normalizes to precomposed "é".
+        assert_eq!(
+            run_src("nfc(\"e\u{301}\")"),
+            Value::String("\u{00E9}".to_string())
+        );
+    }
+
+    #[test]
     fn test_vfs_write_read_through_interpreter() {
         // The curried `vfs_tulis(path, data)` forms a pair on the second
         // application; vfs_baca reads it back. Exercises Var→Builtin→apply_builtin.

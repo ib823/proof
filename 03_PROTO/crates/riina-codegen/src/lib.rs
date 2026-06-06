@@ -84,6 +84,8 @@ pub mod mobile;
 pub mod platform;
 pub mod swift_bridge;
 pub mod toolchain;
+pub mod unicode_nfc;
+pub mod unicode_nfc_data;
 pub mod value;
 pub mod wasm;
 pub mod wasm_encode;

@@ -116,6 +116,10 @@ pub fn register_builtins(env: &Env) -> Env {
     for nm in ["perpuluhan", "decimal"] {
         e = e.extend(nm.to_string(), Value::Builtin("perpuluhan".to_string()));
     }
+    // Unicode NFC normalization (UAX #15).
+    for nm in ["nfc", "ke_nfc"] {
+        e = e.extend(nm.to_string(), Value::Builtin("nfc".to_string()));
+    }
 
     // String builtins (teks)
     for (bm, en, canonical) in teks::BUILTINS {
@@ -310,6 +314,18 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     expected: "string".to_string(),
                     found: format!("{other:?}"),
                     context: "perpuluhan/decimal".to_string(),
+                }),
+            };
+        }
+        // Unicode NFC normalization (UAX #15): canonical-equivalent strings map
+        // to one form (precomposed/decomposed, combining-mark order).
+        "nfc" => {
+            return match &arg {
+                Value::String(s) => Ok(Value::String(crate::unicode_nfc::nfc(s))),
+                other => Err(Error::TypeMismatch {
+                    expected: "string".to_string(),
+                    found: format!("{other:?}"),
+                    context: "nfc".to_string(),
                 }),
             };
         }

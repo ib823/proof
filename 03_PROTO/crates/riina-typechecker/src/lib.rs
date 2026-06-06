@@ -814,6 +814,13 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::String), Box::new(Ty::Decimal), Effect::Pure),
         );
     }
+    // Unicode NFC normalization (UAX #15): `String -> String`, pure.
+    for nm in ["nfc", "ke_nfc"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
     // Virtual-filesystem builtins (verified access-control via riina-os VFS).
     // `vfs_mula`/`vfs_jadi_pengguna` take an Int (byte quota / uid); `vfs_tulis`
     // a `(path, data)` pair; `vfs_baca`/`vfs_padam` a path. All carry filesystem
