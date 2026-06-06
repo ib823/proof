@@ -69,6 +69,7 @@
 
 pub mod android_build;
 pub mod backend;
+pub mod bigint;
 pub mod builtins;
 pub mod ct_verify;
 pub mod emit;

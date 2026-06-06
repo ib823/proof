@@ -531,6 +531,10 @@ pub enum Ty {
     /// Representationally compatible with `Int` for codegen; width-aware
     /// arithmetic semantics are a later numeric-tower phase.
     IntN { bits: u8, signed: bool },
+    /// Arbitrary-precision signed integer (`besar`) — the numeric-tower BigInt
+    /// type. A distinct type that does NOT silently interoperate with `Int`
+    /// (mixing would hide a precision boundary); convert explicitly via `besar`.
+    BigInt,
     String,
     Bytes,
     // Function types

@@ -904,6 +904,67 @@ mod formalized_tests {
         );
     }
 
+    // ── Numeric tower: arbitrary-precision BigInt (`besar`) ──
+
+    /// `besar("…")` as a typed expression.
+    fn besar_call(s: &str) -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("besar".to_string())),
+            Box::new(Expr::String(s.to_string())),
+        )
+    }
+
+    fn builtin_ctx() -> TypingContext {
+        register_builtin_types(&Context::new()).to_typing_context()
+    }
+
+    #[test]
+    fn bigint_constructor_types_as_bigint() {
+        let mut ctx = builtin_ctx();
+        assert_eq!(
+            type_check_full(&mut ctx, &besar_call("123456789012345678901234567890")).unwrap(),
+            (Ty::BigInt, Effect::Pure)
+        );
+    }
+
+    #[test]
+    fn bigint_arithmetic_types_as_bigint() {
+        let mut ctx = builtin_ctx();
+        for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div, BinOp::Mod] {
+            let e = Expr::BinOp(op, Box::new(besar_call("10")), Box::new(besar_call("3")));
+            assert_eq!(
+                type_check_full(&mut ctx, &e).unwrap().0,
+                Ty::BigInt,
+                "{op:?} on BigInt must yield BigInt"
+            );
+        }
+    }
+
+    #[test]
+    fn bigint_comparison_types_as_bool() {
+        let mut ctx = builtin_ctx();
+        for op in [BinOp::Lt, BinOp::Le, BinOp::Gt, BinOp::Ge, BinOp::Eq, BinOp::Ne] {
+            let e = Expr::BinOp(op, Box::new(besar_call("10")), Box::new(besar_call("3")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::Bool, "{op:?}");
+        }
+    }
+
+    #[test]
+    fn bigint_does_not_mix_with_int() {
+        // Mixing arbitrary-precision and fixed-width ints is a type error — the
+        // boundary must be crossed explicitly via `besar`, never silently.
+        let mut ctx = builtin_ctx();
+        let e = Expr::BinOp(
+            BinOp::Add,
+            Box::new(besar_call("10")),
+            Box::new(Expr::Int(1)),
+        );
+        assert!(
+            matches!(type_check_full(&mut ctx, &e), Err(TypeError::TypeMismatch { .. })),
+            "BigInt + Int must be rejected"
+        );
+    }
+
     // ── Numeric tower: sized integer literals & width-aware arithmetic ──
 
     fn u8n(value: u64) -> Expr {

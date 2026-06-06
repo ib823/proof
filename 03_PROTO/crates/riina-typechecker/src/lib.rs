@@ -798,6 +798,14 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         "parse_int".to_string(),
         Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
     );
+    // Arbitrary-precision integer constructor (numeric-tower BigInt slice):
+    // parse a base-10 string of any length into a `BigInt`.
+    for nm in ["besar", "bigint"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::BigInt), Effect::Pure),
+        );
+    }
     c = c.extend(
         "ke_bool".to_string(),
         Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
@@ -2606,6 +2614,9 @@ fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
             })
         }
         (Ty::Int, Ty::Int) => Some(Ty::Int),
+        // Arbitrary-precision integers form their own arithmetic domain; they do
+        // not mix with fixed-width ints (convert explicitly via `besar`).
+        (Ty::BigInt, Ty::BigInt) => Some(Ty::BigInt),
         _ => None,
     }
 }
@@ -3407,6 +3418,8 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         Ok((label_result(Ty::Any), eff))
                     } else if *inner1 == Ty::String && *inner2 == Ty::String {
                         Ok((label_result(Ty::String), eff))
+                    } else if *inner1 == Ty::BigInt && *inner2 == Ty::BigInt {
+                        Ok((label_result(Ty::BigInt), eff))
                     } else if types_compatible(&Ty::Int, inner1)
                         && types_compatible(&Ty::Int, inner2)
                     {
@@ -3459,6 +3472,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                             context: "variable-time division or modulo",
                         });
                     }
+                    // Arbitrary-precision integer arithmetic (distinct from `Int`).
+                    if *inner1 == Ty::BigInt && *inner2 == Ty::BigInt {
+                        return Ok((label_result(Ty::BigInt), eff));
+                    }
                     if !types_compatible(&Ty::Int, inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
@@ -3494,6 +3511,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     if !types_compatible(&Ty::Int, inner1)
                         && !types_compatible(&Ty::Bool, inner1)
                         && !types_compatible(&Ty::String, inner1)
+                        && *inner1 != Ty::BigInt
                     {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
@@ -3503,6 +3521,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
+                    // Ordering is defined for fixed-width ints and BigInt.
+                    if *inner1 == Ty::BigInt && *inner2 == Ty::BigInt {
+                        return Ok((label_result(Ty::Bool), eff));
+                    }
                     if !types_compatible(&Ty::Int, inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,

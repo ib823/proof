@@ -199,6 +199,12 @@ pub enum Value {
     /// Numeric-tower extension — not in the Coq core (which models a single `VInt`).
     IntN { value: u64, bits: u8, signed: bool },
 
+    /// Arbitrary-precision signed integer (`besar`). The runtime counterpart of
+    /// the numeric-tower BigInt slice — additive, so plain `Int`/`IntN` are
+    /// unaffected. Not in the Coq core (which models a single `VInt`); a Coq
+    /// equivalence model is a tracked follow-up.
+    BigInt(crate::bigint::BigInt),
+
     /// String value
     ///
     /// Corresponds to Coq `VString s`.
@@ -797,6 +803,7 @@ impl std::fmt::Display for Value {
                     write!(f, "{value}")
                 }
             }
+            Self::BigInt(b) => write!(f, "{b}"),
             Self::String(s) => write!(f, "\"{s}\""),
             Self::Pair(a, b) => write!(f, "({a}, {b})"),
             Self::Sum(Sum::Left(v)) => write!(f, "inl {v}"),

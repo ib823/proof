@@ -783,6 +783,7 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
             out.push(if *signed { 'i' } else { 'u' });
             out.push_str(&bits.to_string());
         }
+        Ty::BigInt => out.push_str("Besar"),
         Ty::String => out.push_str("Teks"),
         Ty::Bytes => out.push_str("Bait"),
         Ty::Fn(param, ret, eff) => {
