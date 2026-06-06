@@ -22,6 +22,8 @@ Mode: Comprehensive Verification | Zero Trust
 riina-types.workspace = true
 # Actor runtime (JALINAN Phase 6)
 riina-runtime = { path = "../riina-runtime" }
+# Verified VirtualFs access-control model (exposed via the vfs_* builtins)
+riina-os = { path = "../riina-os" }
 
 # No external dependencies (Law 8: Zero third-party deps)
 # All code generation is hand-written for maximum auditability
