@@ -756,6 +756,16 @@ impl Lower {
             | Expr::LetRec(_, _, _, t)
             | Expr::Case(_, _, t, _, _) => self.infer_type(t),
             Expr::App(e1, _) => {
+                // A `besar(..)` call yields a BigInt; `infer_type` of the builtin
+                // `Var` does not carry a Fn type, so recognize it directly (so a
+                // `biar a = besar(..)` binding types `a` as BigInt and `a + a`
+                // hits the WASM BigInt fail-closed guard). Mirrors lower's besar
+                // result typing.
+                if let Expr::Var(name) = e1.as_ref() {
+                    if builtin_canonical(name) == Some("besar") {
+                        return Ty::BigInt;
+                    }
+                }
                 if let Ty::Fn(_, ret, _) = self.infer_type(e1) {
                     *ret
                 } else {
@@ -1262,12 +1272,23 @@ impl Lower {
                     if let Some(canonical) = builtin_canonical(name) {
                         let arg_var = self.lower_expr(arg_expr)?;
                         let effect = self.infer_effect(expr);
+                        // Most builtins return Unit (or a String the C emitter
+                        // renders); the WASM backend dispatches on runtime-untagged
+                        // static types, so `besar` MUST carry its real `BigInt`
+                        // result type for `cetak`/`ke_teks`/binop dispatch (the C
+                        // backend uses runtime tags and is unaffected). Other builtins
+                        // keep the Unit placeholder to preserve existing behavior.
+                        let ret_ty = if canonical == "besar" {
+                            Ty::BigInt
+                        } else {
+                            Ty::Unit
+                        };
                         return Ok(self.emit(
                             Instruction::BuiltinCall {
                                 name: canonical.to_string(),
                                 arg: arg_var,
                             },
-                            Ty::Unit, // builtins mostly return Unit or String; C emitter handles
+                            ret_ty,
                             SecurityLevel::Public,
                             effect,
                         ));
