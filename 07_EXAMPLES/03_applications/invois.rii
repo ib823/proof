@@ -1,0 +1,41 @@
+// invois.rii — Invoice / accounting ledger on the RIINA standard library.
+//
+// A non-trivial sample app (Gate C exit criterion) demonstrating the numeric
+// tower's `wang` (money) type together with recursion + `padan` list folding.
+// Every amount is exact base-10 money at a fixed 2-decimal scale — no
+// binary-floating-point drift — and tax rounds half-to-even back to cents.
+//
+// Runs end-to-end on the shipped compiler: `riinac run invois.rii`.
+
+// A line item's total = quantity × unit price (both as `wang`).
+fungsi kira_baris(kuantiti: Wang, harga: Wang) -> Wang kesan Bersih {
+    pulang kuantiti * harga;
+}
+
+// Sum a list of money exactly, by recursion over the list (`padan`).
+fungsi jumlah(senarai: Senarai<Wang>) -> Wang kesan Bersih {
+    padan senarai {
+        [] -> wang("0.00"),
+        [x, ..ekor] -> x + jumlah(ekor),
+    }
+}
+
+fungsi utama() -> Nombor kesan Tulis {
+    // 3 widget @ 19.99, 2 gajet @ 5.50, 1 khidmat @ 12.00.
+    biar baris1 = kira_baris(wang("3"), wang("19.99"));   // 59.97
+    biar baris2 = kira_baris(wang("2"), wang("5.50"));    // 11.00
+    biar baris3 = kira_baris(wang("1"), wang("12.00"));   // 12.00
+
+    biar subjumlah = jumlah([baris1, baris2, baris3]);
+    biar cukai = subjumlah * wang("0.06");           // SST 6%, rounded to cents
+    biar keseluruhan = subjumlah + cukai;
+
+    cetak("  3 x Widget  @ 19.99  = RM "); cetakln(baris1);
+    cetak("  2 x Gajet   @  5.50  = RM "); cetakln(baris2);
+    cetak("  1 x Khidmat @ 12.00  = RM "); cetakln(baris3);
+    cetak("  Subjumlah            = RM "); cetakln(subjumlah);
+    cetak("  SST (6%)             = RM "); cetakln(cukai);
+    cetak("  JUMLAH               = RM "); cetakln(keseluruhan);
+
+    pulang 0;
+}

@@ -1,0 +1,27 @@
+// keselamatan_nama.rii — Username homograph-safety checker (Unicode security).
+//
+// A non-trivial sample app exercising the *non-numeric* standard library: the
+// UTS#39 confusable detector (`adalah_keliru`). It flags usernames that are
+// visually confusable with a protected brand name — the IDN/homograph spoofing
+// defence — so a Cyrillic look-alike of "paypal" is caught even though the
+// underlying bytes differ.
+//
+// Runs end-to-end on the shipped compiler: `riinac run keselamatan_nama.rii`.
+
+fungsi semak(nama: Teks, jenama: Teks) -> Nombor kesan Tulis {
+    cetak("  "); cetak(nama); cetak(" vs "); cetak(jenama); cetak("  ->  ");
+    kalau adalah_keliru((nama, jenama)) {
+        cetakln("AMARAN: mirip (homograf)");
+    } lain {
+        cetakln("selamat");
+    }
+    pulang 0;
+}
+
+fungsi utama() -> Nombor kesan Tulis {
+    biar jenama = "paypal";
+    semak("paypal", jenama);       // identical -> mirip
+    semak("pаypаl", jenama);       // Cyrillic 'а' (U+0430) -> AMARAN
+    semak("microsoft", jenama);    // distinct -> selamat
+    pulang 0;
+}
