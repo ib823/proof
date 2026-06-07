@@ -77,6 +77,18 @@ pub enum Op {
     I32LeS = 0x4C,
     I32GeS = 0x4E,
     I32GeU = 0x4F,
+    // i64 comparisons: consume two i64, produce an i32 boolean (0/1), which the
+    // uniform i64 value cell lifts back with I64ExtendI32U. Signed forms suffice —
+    // every sub-64-bit unsigned value is non-negative in the 64-bit cell, so a
+    // signed compare orders it correctly (this also fixes the latent u32-compare
+    // case the old i32 cell got wrong for values >= 2^31).
+    I64Eqz = 0x50,
+    I64Eq = 0x51,
+    I64Ne = 0x52,
+    I64LtS = 0x53,
+    I64GtS = 0x55,
+    I64LeS = 0x57,
+    I64GeS = 0x59,
     I32Add = 0x6A,
     I32Sub = 0x6B,
     I32Mul = 0x6C,
@@ -90,10 +102,26 @@ pub enum Op {
     // numeric tower to sign-extend a width-8/16 signed `Ty::IntN` to full i32.
     I32Extend8S = 0xC0,
     I32Extend16S = 0xC1,
+    // i64 sign-extension: sign-extend a width-8/16/32 signed sized int held in the
+    // i64 value cell up to full i64 (the cell holds the width-masked bits, so an
+    // i8 -1 is stored as 255 and must be sign-extended before a signed compare).
+    I64Extend8S = 0xC2,
+    I64Extend16S = 0xC3,
+    I64Extend32S = 0xC4,
+    // i32<->i64 conversions for the uniform i64 value cell: WrapI64 narrows a value
+    // to an i32 address/table-index for a linear-memory op or call_indirect;
+    // ExtendI32U lifts an i32 (a bump-allocator address, or an i32 comparison
+    // result) back into the i64 cell. ExtendI32S is kept for completeness.
+    I32WrapI64 = 0xA7,
+    I64ExtendI32S = 0xAC,
+    I64ExtendI32U = 0xAD,
     I64Add = 0x7C,
     I64Sub = 0x7D,
     I64Mul = 0x7E,
     I64DivS = 0x7F,
+    I64RemS = 0x81,
+    I64And = 0x83,
+    I64Or = 0x84,
     GlobalGet = 0x23,
     GlobalSet = 0x24,
     CallIndirect = 0x11,
@@ -742,6 +770,39 @@ mod tests {
         assert_eq!(section_body[1], 0x01);
         // Min = 1
         assert_eq!(section_body[2], 1);
+    }
+
+    #[test]
+    fn i64_value_cell_opcodes_match_wasm_spec() {
+        // Pin every opcode the uniform-i64 value-cell lowering (W1) depends on to
+        // its canonical WASM binary value. A wrong byte here would silently emit a
+        // different instruction, so these are asserted against the spec directly.
+        // Conversions:
+        assert_eq!(Op::I32WrapI64 as u8, 0xA7);
+        assert_eq!(Op::I64ExtendI32S as u8, 0xAC);
+        assert_eq!(Op::I64ExtendI32U as u8, 0xAD);
+        // i64 comparisons (result is i32 0/1):
+        assert_eq!(Op::I64Eqz as u8, 0x50);
+        assert_eq!(Op::I64Eq as u8, 0x51);
+        assert_eq!(Op::I64Ne as u8, 0x52);
+        assert_eq!(Op::I64LtS as u8, 0x53);
+        assert_eq!(Op::I64GtS as u8, 0x55);
+        assert_eq!(Op::I64LeS as u8, 0x57);
+        assert_eq!(Op::I64GeS as u8, 0x59);
+        // i64 arithmetic / bitwise (Add/Sub/Mul/DivS already pinned by use):
+        assert_eq!(Op::I64RemS as u8, 0x81);
+        assert_eq!(Op::I64And as u8, 0x83);
+        assert_eq!(Op::I64Or as u8, 0x84);
+        // i64 sign-extension:
+        assert_eq!(Op::I64Extend8S as u8, 0xC2);
+        assert_eq!(Op::I64Extend16S as u8, 0xC3);
+        assert_eq!(Op::I64Extend32S as u8, 0xC4);
+        // Already-present i64 ops the cell reuses:
+        assert_eq!(Op::I64Const as u8, 0x42);
+        assert_eq!(Op::I64Load as u8, 0x29);
+        assert_eq!(Op::I64Store as u8, 0x37);
+        assert_eq!(Op::I64Add as u8, 0x7C);
+        assert_eq!(Op::I64DivS as u8, 0x7F);
     }
 
     // ─── Test helpers ────────────────────────────────────────────────
