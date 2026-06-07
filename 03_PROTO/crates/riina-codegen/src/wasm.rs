@@ -1624,15 +1624,21 @@ impl WasmBackend {
                     }
                 } else if name == "gabung_teks" {
                     Self::emit_gabung_teks(arg, ctx, code);
-                } else if name == "besar" || name == "perpuluhan" {
-                    // Arbitrary-precision BigInt (`besar`) / Decimal (`perpuluhan`)
-                    // have no WASM representation yet (the C backend boxes them;
-                    // WASM holds untagged i32). Fail closed rather than stub to 0 —
-                    // such a value cannot exist in a WASM program without its
-                    // constructor, so this one guard prevents any silent miscompile.
-                    // (Tracked: BigInt/Decimal WASM codegen.)
+                } else if name == "besar"
+                    || name == "perpuluhan"
+                    || name == "wang"
+                    || name == "titik_tetap"
+                    || name == "qmn"
+                {
+                    // The boxed numeric-tower types (BigInt `besar`, Decimal
+                    // `perpuluhan`, fixed-point `wang`/`titik_tetap`, Q-format
+                    // `qmn`) have no WASM representation yet (the C backend boxes
+                    // them; WASM holds untagged i32). Fail closed rather than stub
+                    // to 0 — such a value cannot exist in a WASM program without
+                    // its constructor, so this one guard prevents any silent
+                    // miscompile. (Tracked: numeric-tower WASM codegen.)
                     return Err(crate::Error::InvalidOperation(format!(
-                        "{name} (arbitrary-precision numeric tower) is not supported \
+                        "{name} (boxed numeric tower) is not supported \
                          by the WASM backend yet; use the C backend or the interpreter"
                     )));
                 } else {

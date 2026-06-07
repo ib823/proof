@@ -274,7 +274,9 @@ impl CEmitter {
         self.writeln("    RIINA_TAG_PROOF = 10,");
         self.writeln("    RIINA_TAG_CAPABILITY = 11,");
         self.writeln("    RIINA_TAG_BIGINT = 12, /* arbitrary-precision integer (besar) */");
-        self.writeln("    RIINA_TAG_DECIMAL = 13 /* arbitrary-precision decimal (perpuluhan) */");
+        self.writeln("    RIINA_TAG_DECIMAL = 13, /* arbitrary-precision decimal (perpuluhan) */");
+        self.writeln("    RIINA_TAG_FIXED = 14, /* fixed-scale decimal money (wang/titik_tetap) */");
+        self.writeln("    RIINA_TAG_FIXEDBIN = 15 /* binary fixed-point Q-format (qmn) */");
         self.writeln("} riina_tag_t;");
         self.writeln("");
 
@@ -320,6 +322,23 @@ impl CEmitter {
         self.writeln("} riina_decimal_t;");
         self.writeln("");
 
+        // Fixed-scale decimal money (`wang`/`titik_tetap`): same representation as
+        // Decimal but the scale is fixed — arithmetic rounds back to it and
+        // display preserves trailing zeros (mirrors riina-codegen/src/fixed.rs).
+        self.writeln("typedef struct {");
+        self.writeln("    riina_bigint_t mantissa;  /* the scaled integer */");
+        self.writeln("    uint32_t scale;           /* fixed: value = mantissa * 10^-scale */");
+        self.writeln("} riina_fixed_t;");
+        self.writeln("");
+
+        // Binary fixed-point / Q-format (`qmn`): value = raw / 2^frac_bits over a
+        // bounded i64 word (mirrors riina-codegen/src/fixed_bin.rs).
+        self.writeln("typedef struct {");
+        self.writeln("    int64_t raw;        /* the scaled integer (wraps on overflow) */");
+        self.writeln("    uint32_t frac_bits; /* value = raw / 2^frac_bits */");
+        self.writeln("} riina_fixedbin_t;");
+        self.writeln("");
+
         // Closure structure
         self.writeln("typedef struct {");
         self.writeln("    void* func_ptr;           /* Function pointer */");
@@ -360,6 +379,8 @@ impl CEmitter {
         self.writeln("        riina_effect_t cap_val;     /* RIINA_TAG_CAPABILITY */");
         self.writeln("        riina_bigint_t bigint_val;  /* RIINA_TAG_BIGINT */");
         self.writeln("        riina_decimal_t decimal_val;/* RIINA_TAG_DECIMAL */");
+        self.writeln("        riina_fixed_t fixed_val;    /* RIINA_TAG_FIXED */");
+        self.writeln("        riina_fixedbin_t fixedbin_val;/* RIINA_TAG_FIXEDBIN */");
         self.writeln("    } data;");
         self.writeln("};");
         self.writeln("");
@@ -389,6 +410,12 @@ impl CEmitter {
         // Decimal (perpuluhan) runtime — built on the BigInt runtime above, so it
         // must follow it (and precede the binop/builtin helpers that dispatch it).
         self.emit_decimal_runtime();
+
+        // Fixed-point runtimes — built on the BigInt + Decimal runtimes above
+        // (they reuse the round-half-even and decimal render helpers), so they
+        // must follow both (and precede the binop/builtin helpers).
+        self.emit_fixed_runtime();
+        self.emit_fixedbin_runtime();
 
         // Runtime helpers
         self.emit_runtime_helpers();
@@ -1295,6 +1322,331 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         );
     }
 
+    /// Emit the Fixed (`wang`/`titik_tetap`) runtime: a faithful C port of
+    /// `riina-codegen/src/fixed.rs` (a fixed-scale decimal money type). Same
+    /// representation as Decimal but arithmetic rounds half-to-even *back to the
+    /// scale* and display preserves trailing zeros. Reuses the BigInt + Decimal
+    /// runtime helpers, so a compiled `wang` program is byte-identical to the
+    /// interpreter.
+    fn emit_fixed_runtime(&mut self) {
+        self.output.push_str(
+            r##"/* ═══════════════════════════════════════════════════════════════════ */
+/*               FIXED-SCALE MONEY (wang / titik_tetap) RUNTIME        */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+/* num / denom rounded half-to-even (denom nonzero) — the fixed-point rounding
+   primitive (reuses the generic BigInt-value helpers from the runtimes above). */
+static riina_value_t* riina_round_quotient(riina_value_t* num, riina_value_t* den) {
+    riina_value_t *q, *r;
+    riina_bigint_divmod(num, den, &q, &r);
+    riina_value_t* two = riina_bigint_from_str("2");
+    riina_value_t* two_abs_r = riina_bigint_mul(riina_dec_abs(r), two);
+    riina_value_t* abs_den = riina_dec_abs(den);
+    int result_neg = (num->data.bigint_val.neg ^ den->data.bigint_val.neg) ? 1 : 0;
+    int c = riina_bigint_cmp(two_abs_r, abs_den);
+    if (c > 0) {
+        q = riina_dec_bump(q, result_neg);
+    } else if (c == 0) {
+        riina_value_t *qq, *parity;
+        riina_bigint_divmod(q, two, &qq, &parity);
+        if (parity->data.bigint_val.len != 0) q = riina_dec_bump(q, result_neg);
+    }
+    return q;
+}
+
+static riina_value_t* riina_fixed_from_bi(riina_value_t* m, uint32_t scale) {
+    riina_value_t* v = riina_alloc();
+    v->tag = RIINA_TAG_FIXED;
+    v->security = RIINA_LEVEL_PUBLIC;
+    v->data.fixed_val.mantissa = m->data.bigint_val;
+    v->data.fixed_val.scale = scale;
+    return v;
+}
+
+/* Mantissa value `m` rescaled from scale `from` to `to` (round h-t-e if shrinking). */
+static riina_value_t* riina_fixed_rescale(riina_value_t* m, uint32_t from, uint32_t to) {
+    if (to >= from) return riina_bigint_mul(m, riina_dec_pow10(to - from));
+    return riina_round_quotient(m, riina_dec_pow10(from - to));
+}
+
+static uint32_t riina_fixed_max_scale(riina_value_t* a, riina_value_t* b) {
+    uint32_t sa = a->data.fixed_val.scale, sb = b->data.fixed_val.scale;
+    return sa > sb ? sa : sb;
+}
+
+/* a's mantissa as a BigInt value re-expressed at scale s (exact, grow only). */
+static riina_value_t* riina_fixed_aligned(riina_value_t* a, uint32_t s) {
+    riina_bigint_t* m = &a->data.fixed_val.mantissa;
+    riina_value_t mv = riina_bi_wrap(m->neg, m->mag, m->len);
+    return riina_bigint_mul(&mv, riina_dec_pow10(s - a->data.fixed_val.scale));
+}
+
+static riina_value_t* riina_fixed_add(riina_value_t* a, riina_value_t* b) {
+    uint32_t s = riina_fixed_max_scale(a, b);
+    return riina_fixed_from_bi(riina_bigint_add(riina_fixed_aligned(a, s),
+                                                riina_fixed_aligned(b, s)), s);
+}
+
+static riina_value_t* riina_fixed_sub(riina_value_t* a, riina_value_t* b) {
+    uint32_t s = riina_fixed_max_scale(a, b);
+    return riina_fixed_from_bi(riina_bigint_sub(riina_fixed_aligned(a, s),
+                                                riina_fixed_aligned(b, s)), s);
+}
+
+static riina_value_t* riina_fixed_mul(riina_value_t* a, riina_value_t* b) {
+    uint32_t target = riina_fixed_max_scale(a, b);
+    riina_bigint_t* ma = &a->data.fixed_val.mantissa;
+    riina_bigint_t* mb = &b->data.fixed_val.mantissa;
+    riina_value_t av = riina_bi_wrap(ma->neg, ma->mag, ma->len);
+    riina_value_t bv = riina_bi_wrap(mb->neg, mb->mag, mb->len);
+    riina_value_t* exact = riina_bigint_mul(&av, &bv);
+    uint32_t from = a->data.fixed_val.scale + b->data.fixed_val.scale;
+    return riina_fixed_from_bi(riina_fixed_rescale(exact, from, target), target);
+}
+
+static riina_value_t* riina_fixed_neg(riina_value_t* a) {
+    riina_bigint_t* m = &a->data.fixed_val.mantissa;
+    riina_value_t mv = riina_bi_wrap(m->neg, m->mag, m->len);
+    return riina_fixed_from_bi(riina_bigint_neg(&mv), a->data.fixed_val.scale);
+}
+
+static int riina_fixed_cmp(riina_value_t* a, riina_value_t* b) {
+    uint32_t s = riina_fixed_max_scale(a, b);
+    return riina_bigint_cmp(riina_fixed_aligned(a, s), riina_fixed_aligned(b, s));
+}
+
+static riina_value_t* riina_fixed_div(riina_value_t* a, riina_value_t* b) {
+    riina_fixed_t* da = &a->data.fixed_val;
+    riina_fixed_t* db = &b->data.fixed_val;
+    if (db->mantissa.len == 0) {
+        fprintf(stderr, "RIINA: fixed division by zero\n");
+        abort();
+    }
+    uint32_t target = riina_fixed_max_scale(a, b);
+    long long shift = (long long)target + (long long)db->scale - (long long)da->scale;
+    riina_value_t amv = riina_bi_wrap(da->mantissa.neg, da->mantissa.mag, da->mantissa.len);
+    riina_value_t bmv = riina_bi_wrap(db->mantissa.neg, db->mantissa.mag, db->mantissa.len);
+    riina_value_t *num, *den;
+    if (shift >= 0) {
+        num = riina_bigint_mul(&amv, riina_dec_pow10((uint32_t)shift));
+        den = riina_bigint_from_str("1"); *den = bmv;
+    } else {
+        num = riina_bigint_from_str("1"); *num = amv;
+        den = riina_bigint_mul(&bmv, riina_dec_pow10((uint32_t)(-shift)));
+    }
+    return riina_fixed_from_bi(riina_round_quotient(num, den), target);
+}
+
+/* Parse a literal, inferring the scale (the `wang` constructor). */
+static riina_value_t* riina_fixed_from_str(const char* s0) {
+    riina_value_t* d = riina_decimal_from_str(s0);   /* reuse the decimal parser */
+    riina_decimal_t* dd = &d->data.decimal_val;
+    riina_value_t mv = riina_bi_wrap(dd->mantissa.neg, dd->mantissa.mag, dd->mantissa.len);
+    riina_value_t* m = riina_bigint_from_str("0"); *m = mv;
+    return riina_fixed_from_bi(m, dd->scale);
+}
+
+/* Parse a literal then round half-to-even to an explicit scale (`titik_tetap`). */
+static riina_value_t* riina_fixed_from_str_scaled(const char* s0, uint32_t scale) {
+    riina_value_t* parsed = riina_fixed_from_str(s0);
+    riina_fixed_t* p = &parsed->data.fixed_val;
+    riina_value_t mv = riina_bi_wrap(p->mantissa.neg, p->mantissa.mag, p->mantissa.len);
+    return riina_fixed_from_bi(riina_fixed_rescale(&mv, p->scale, scale), scale);
+}
+
+/* Render preserving the fixed scale (trailing zeros kept — money format). */
+static char* riina_fixed_to_str(riina_value_t* v) {
+    riina_fixed_t* d = &v->data.fixed_val;
+    riina_value_t mv = riina_bi_wrap(d->mantissa.neg, d->mantissa.mag, d->mantissa.len);
+    riina_value_t* m = riina_bigint_from_str("0"); *m = mv;
+    /* same digit-placement as Decimal's scale-preserving render. */
+    return riina_decimal_to_str(riina_decimal_from_bi(m, d->scale));
+}
+
+/* The `wang`/`money` constructor builtin (String -> Fixed). */
+static riina_value_t* riina_builtin_wang(riina_value_t* arg) {
+    if (arg->tag == RIINA_TAG_STRING) return riina_fixed_from_str(arg->data.string_val.data);
+    if (arg->tag == RIINA_TAG_FIXED) return arg;
+    fprintf(stderr, "RIINA: wang expects a string\n");
+    abort();
+}
+
+/* The `titik_tetap`/`fixed` constructor builtin ((String, Int) -> Fixed). */
+static riina_value_t* riina_builtin_titik_tetap(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) {
+        fprintf(stderr, "RIINA: titik_tetap expects a (string, int) pair\n");
+        abort();
+    }
+    riina_value_t* s = arg->data.pair_val.fst;
+    riina_value_t* n = arg->data.pair_val.snd;
+    if (s->tag != RIINA_TAG_STRING || n->tag != RIINA_TAG_INT) {
+        fprintf(stderr, "RIINA: titik_tetap expects (string, int)\n");
+        abort();
+    }
+    if (n->data.int_val > 1000) {
+        fprintf(stderr, "RIINA: titik_tetap: scale out of range (max 1000)\n");
+        abort();
+    }
+    return riina_fixed_from_str_scaled(s->data.string_val.data, (uint32_t)n->data.int_val);
+}
+
+"##,
+        );
+    }
+
+    /// Emit the FixedBin (`qmn`) runtime: a faithful C port of
+    /// `riina-codegen/src/fixed_bin.rs` (binary fixed-point / Q-format,
+    /// `raw / 2^frac_bits` over a bounded i64). Construction/display reuse the
+    /// Decimal parser/renderer for an exact decimal↔binary conversion; arithmetic
+    /// is exact in BigInt then wrapped into the i64 word.
+    fn emit_fixedbin_runtime(&mut self) {
+        self.output.push_str(
+            r##"/* ═══════════════════════════════════════════════════════════════════ */
+/*                BINARY FIXED-POINT / Q-FORMAT (qmn) RUNTIME          */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+static riina_value_t* riina_fixedbin_mk(int64_t raw, uint32_t frac_bits) {
+    riina_value_t* v = riina_alloc();
+    v->tag = RIINA_TAG_FIXEDBIN;
+    v->security = RIINA_LEVEL_PUBLIC;
+    v->data.fixedbin_val.raw = raw;
+    v->data.fixedbin_val.frac_bits = frac_bits;
+    return v;
+}
+
+/* 2^bits as a BigInt value. */
+static riina_value_t* riina_fb_two_pow(uint32_t bits) {
+    if (bits < 63) {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "%llu", (unsigned long long)(1ULL << bits));
+        return riina_bigint_from_str(buf);
+    }
+    riina_value_t* r = riina_bigint_from_str("4611686018427387904"); /* 2^62 */
+    riina_value_t* two = riina_bigint_from_str("2");
+    for (uint32_t i = 62; i < bits; i++) r = riina_bigint_mul(r, two);
+    return r;
+}
+
+/* 5^n as a BigInt value. */
+static riina_value_t* riina_fb_five_pow(uint32_t n) {
+    riina_value_t* r = riina_bigint_from_str("1");
+    riina_value_t* five = riina_bigint_from_str("5");
+    for (uint32_t i = 0; i < n; i++) r = riina_bigint_mul(r, five);
+    return r;
+}
+
+/* Reduce a BigInt value into an int64 word, wrapping mod 2^64 (two's complement). */
+static int64_t riina_fb_to_i64(riina_value_t* b) {
+    riina_value_t* mod = riina_fb_two_pow(64);
+    riina_value_t *q, *r;
+    riina_bigint_divmod(b, mod, &q, &r);
+    if (r->data.bigint_val.neg) r = riina_bigint_add(r, mod);  /* [0, 2^64) */
+    char* s = riina_bigint_to_str(r);
+    unsigned long long u = strtoull(s, NULL, 10);
+    free(s);
+    return (int64_t)u;
+}
+
+/* raw as a BigInt value re-expressed at `target` fractional bits (exact). */
+static riina_value_t* riina_fb_aligned(riina_value_t* a, uint32_t target) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%lld", (long long)a->data.fixedbin_val.raw);
+    riina_value_t* rawv = riina_bigint_from_str(buf);
+    return riina_bigint_mul(rawv, riina_fb_two_pow(target - a->data.fixedbin_val.frac_bits));
+}
+
+static uint32_t riina_fb_max_fb(riina_value_t* a, riina_value_t* b) {
+    uint32_t fa = a->data.fixedbin_val.frac_bits, fb = b->data.fixedbin_val.frac_bits;
+    return fa > fb ? fa : fb;
+}
+
+/* Construct from a decimal literal at `frac_bits` bits (round h-t-e to nearest). */
+static riina_value_t* riina_fixedbin_parse(const char* s0, uint32_t frac_bits) {
+    if (frac_bits == 0 || frac_bits > 32) {
+        fprintf(stderr, "RIINA: qmn: frac_bits out of range (1..=32)\n");
+        abort();
+    }
+    riina_value_t* d = riina_decimal_from_str(s0);    /* mantissa + decimal scale */
+    riina_decimal_t* dd = &d->data.decimal_val;
+    riina_value_t mv = riina_bi_wrap(dd->mantissa.neg, dd->mantissa.mag, dd->mantissa.len);
+    /* raw = round(mantissa * 2^frac_bits / 10^scale) */
+    riina_value_t* num = riina_bigint_mul(&mv, riina_fb_two_pow(frac_bits));
+    riina_value_t* den = riina_dec_pow10(dd->scale);
+    riina_value_t* raw_big = riina_round_quotient(num, den);
+    return riina_fixedbin_mk(riina_fb_to_i64(raw_big), frac_bits);
+}
+
+/* Render the exact decimal value (raw / 2^fb = raw*5^fb / 10^fb), stripped. */
+static char* riina_fixedbin_to_str(riina_value_t* v) {
+    riina_fixedbin_t* fb = &v->data.fixedbin_val;
+    if (fb->raw == 0) {
+        char* z = (char*)malloc(2);
+        if (!z) abort();
+        z[0] = '0'; z[1] = '\0';
+        return z;
+    }
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%lld", (long long)fb->raw);
+    riina_value_t* rawv = riina_bigint_from_str(buf);
+    riina_value_t* num = riina_bigint_mul(rawv, riina_fb_five_pow(fb->frac_bits));
+    /* reuse the Decimal strip + render for num / 10^frac_bits. */
+    return riina_decimal_to_str(riina_decimal_stripped(riina_decimal_from_bi(num, fb->frac_bits)));
+}
+
+static riina_value_t* riina_fixedbin_add(riina_value_t* a, riina_value_t* b) {
+    uint32_t fb = riina_fb_max_fb(a, b);
+    riina_value_t* r = riina_bigint_add(riina_fb_aligned(a, fb), riina_fb_aligned(b, fb));
+    return riina_fixedbin_mk(riina_fb_to_i64(r), fb);
+}
+
+static riina_value_t* riina_fixedbin_sub(riina_value_t* a, riina_value_t* b) {
+    uint32_t fb = riina_fb_max_fb(a, b);
+    riina_value_t* r = riina_bigint_sub(riina_fb_aligned(a, fb), riina_fb_aligned(b, fb));
+    return riina_fixedbin_mk(riina_fb_to_i64(r), fb);
+}
+
+static riina_value_t* riina_fixedbin_mul(riina_value_t* a, riina_value_t* b) {
+    uint32_t fb = riina_fb_max_fb(a, b);
+    riina_value_t* product = riina_bigint_mul(riina_fb_aligned(a, fb), riina_fb_aligned(b, fb));
+    riina_value_t* r = riina_round_quotient(product, riina_fb_two_pow(fb));
+    return riina_fixedbin_mk(riina_fb_to_i64(r), fb);
+}
+
+static riina_value_t* riina_fixedbin_div(riina_value_t* a, riina_value_t* b) {
+    if (b->data.fixedbin_val.raw == 0) {
+        fprintf(stderr, "RIINA: qmn division by zero\n");
+        abort();
+    }
+    uint32_t fb = riina_fb_max_fb(a, b);
+    riina_value_t* num = riina_bigint_mul(riina_fb_aligned(a, fb), riina_fb_two_pow(fb));
+    riina_value_t* r = riina_round_quotient(num, riina_fb_aligned(b, fb));
+    return riina_fixedbin_mk(riina_fb_to_i64(r), fb);
+}
+
+static int riina_fixedbin_cmp(riina_value_t* a, riina_value_t* b) {
+    uint32_t fb = riina_fb_max_fb(a, b);
+    return riina_bigint_cmp(riina_fb_aligned(a, fb), riina_fb_aligned(b, fb));
+}
+
+/* The `qmn`/`binary_fixed` constructor builtin ((String, Int) -> FixedBin). */
+static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) {
+        fprintf(stderr, "RIINA: qmn expects a (string, int) pair\n");
+        abort();
+    }
+    riina_value_t* s = arg->data.pair_val.fst;
+    riina_value_t* n = arg->data.pair_val.snd;
+    if (s->tag != RIINA_TAG_STRING || n->tag != RIINA_TAG_INT) {
+        fprintf(stderr, "RIINA: qmn expects (string, int)\n");
+        abort();
+    }
+    return riina_fixedbin_parse(s->data.string_val.data, (uint32_t)n->data.int_val);
+}
+
+"##,
+        );
+    }
+
     /// Emit runtime helper functions
     fn emit_runtime_helpers(&mut self) {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
@@ -1306,6 +1658,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_add(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_add(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_add(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_fixedbin_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_STRING && b->tag == RIINA_TAG_STRING) {");
         self.writeln("        size_t la = a->data.string_val.len;");
         self.writeln("        size_t lb = b->data.string_val.len;");
@@ -1326,6 +1680,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_sub(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_sub(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_sub(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_sub(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_fixedbin_sub(a, b);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: sub on non-int\\n\");");
         self.writeln("        abort();");
@@ -1337,6 +1693,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_mul(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_mul(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_mul(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_mul(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_fixedbin_mul(a, b);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: mul on non-int\\n\");");
         self.writeln("        abort();");
@@ -1350,6 +1708,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("        riina_value_t *q, *r; riina_bigint_divmod(a, b, &q, &r); return q;");
         self.writeln("    }");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_div(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_div(a, b);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_fixedbin_div(a, b);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: div on non-int\\n\");");
         self.writeln("        abort();");
@@ -1399,6 +1759,12 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln(
             "        case RIINA_TAG_DECIMAL: return riina_bool(riina_decimal_cmp(a, b) == 0);",
         );
+        self.writeln(
+            "        case RIINA_TAG_FIXED: return riina_bool(riina_fixed_cmp(a, b) == 0);",
+        );
+        self.writeln(
+            "        case RIINA_TAG_FIXEDBIN: return riina_bool(riina_fixedbin_cmp(a, b) == 0);",
+        );
         self.writeln("        case RIINA_TAG_STRING:");
         self.writeln(
             "            return riina_bool(a->data.string_val.len == b->data.string_val.len &&",
@@ -1418,6 +1784,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_lt(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) < 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) < 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) < 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_bool(riina_fixedbin_cmp(a, b) < 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: lt on non-int\\n\");");
         self.writeln("        abort();");
@@ -1431,6 +1799,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_le(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) <= 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) <= 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) <= 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_bool(riina_fixedbin_cmp(a, b) <= 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: le on non-int\\n\");");
         self.writeln("        abort();");
@@ -1444,6 +1814,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_gt(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) > 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) > 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) > 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_bool(riina_fixedbin_cmp(a, b) > 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: gt on non-int\\n\");");
         self.writeln("        abort();");
@@ -1457,6 +1829,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_binop_ge(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) >= 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) >= 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) >= 0);");
+        self.writeln("    if (a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_bool(riina_fixedbin_cmp(a, b) >= 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: ge on non-int\\n\");");
         self.writeln("        abort();");
@@ -1602,6 +1976,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("        case RIINA_TAG_STRING: return v->data.string_val.data;");
         self.writeln("        case RIINA_TAG_BIGINT: return riina_bigint_to_str(v);");
         self.writeln("        case RIINA_TAG_DECIMAL: return riina_decimal_to_str(v);");
+        self.writeln("        case RIINA_TAG_FIXED: return riina_fixed_to_str(v);");
+        self.writeln("        case RIINA_TAG_FIXEDBIN: return riina_fixedbin_to_str(v);");
         self.writeln("        default: return \"<value>\";");
         self.writeln("    }");
         self.writeln("}");
@@ -1633,6 +2009,8 @@ static riina_value_t* riina_builtin_perpuluhan(riina_value_t* arg) {
         self.writeln("        case RIINA_TAG_STRING: return arg;");
         self.writeln("        case RIINA_TAG_BIGINT: return riina_string(riina_bigint_to_str(arg));");
         self.writeln("        case RIINA_TAG_DECIMAL: return riina_string(riina_decimal_to_str(arg));");
+        self.writeln("        case RIINA_TAG_FIXED: return riina_string(riina_fixed_to_str(arg));");
+        self.writeln("        case RIINA_TAG_FIXEDBIN: return riina_string(riina_fixedbin_to_str(arg));");
         self.writeln("        default: return riina_string(\"<value>\");");
         self.writeln("    }");
         self.writeln("}");
@@ -4322,6 +4700,75 @@ mod tests {
                 "a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_add"
             ),
             "the add binop must dispatch the Decimal path"
+        );
+    }
+
+    #[test]
+    fn fixed_point_emits_runtimes_and_dispatches_binops() {
+        // `wang("19.99") * wang("3")` and `qmn(("0.5", 8)) + qmn(("0.25", 8))`
+        // must emit the Fixed + FixedBin runtimes, call the constructors, and
+        // route the binops through the fixed-point dispatch paths.
+        let wang = |s: &str| {
+            Expr::App(
+                Box::new(Expr::Var("wang".to_string())),
+                Box::new(Expr::String(s.to_string())),
+            )
+        };
+        let qmn = |s: &str| {
+            Expr::App(
+                Box::new(Expr::Var("qmn".to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::String(s.to_string())),
+                    Box::new(Expr::Int(8)),
+                )),
+            )
+        };
+        let expr = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(Expr::BinOp(
+                riina_types::BinOp::Mul,
+                Box::new(wang("19.99")),
+                Box::new(wang("3")),
+            )),
+            Box::new(wang("0")),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("RIINA_TAG_FIXED"), "Fixed tag must be emitted");
+        assert!(
+            code.contains("static char* riina_fixed_to_str"),
+            "the C Fixed runtime must be emitted"
+        );
+        assert!(
+            code.contains("riina_builtin_wang"),
+            "the wang constructor must be emitted and called"
+        );
+        assert!(
+            code.contains(
+                "a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_mul"
+            ),
+            "the multiply binop must dispatch the Fixed path"
+        );
+        // The FixedBin (qmn) runtime is also emitted, with its constructor.
+        let qexpr = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(qmn("0.5")),
+            Box::new(qmn("0.25")),
+        );
+        let qcode = compile_and_emit(&qexpr).unwrap();
+        assert!(qcode.contains("RIINA_TAG_FIXEDBIN"), "FixedBin tag must be emitted");
+        assert!(
+            qcode.contains("static char* riina_fixedbin_to_str"),
+            "the C FixedBin runtime must be emitted"
+        );
+        assert!(
+            qcode.contains("riina_builtin_qmn"),
+            "the qmn constructor must be emitted and called"
+        );
+        assert!(
+            qcode.contains(
+                "a->tag == RIINA_TAG_FIXEDBIN && b->tag == RIINA_TAG_FIXEDBIN) return riina_fixedbin_add"
+            ),
+            "the add binop must dispatch the FixedBin path"
         );
     }
 

@@ -46,7 +46,7 @@ theorem counts as "verified theorems."
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
 - Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +
   5 tooling crates, 0 external runtime deps (proto). This part is solid.
-- Examples: 163 .rii files, of which 53 currently pass `riinac check` (all 22 of
+- Examples: 164 .rii files, of which 53 currently pass `riinac check` (all 22 of
   `00_basics/`); the shipped parser accepts a narrower grammar than some examples
   assume — see `07_EXAMPLES/README.md`.
 

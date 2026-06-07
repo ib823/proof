@@ -85,6 +85,10 @@ fn builtin_canonical(name: &str) -> Option<&'static str> {
         "besar" | "bigint" => return Some("besar"),
         // Arbitrary-precision exact decimal constructor (numeric-tower Decimal).
         "perpuluhan" | "decimal" => return Some("perpuluhan"),
+        // Fixed-point constructors (numeric-tower money + binary Q-format).
+        "wang" | "money" => return Some("wang"),
+        "titik_tetap" | "fixed" => return Some("titik_tetap"),
+        "qmn" | "binary_fixed" => return Some("qmn"),
         // Math
         "mutlak" | "abs" => return Some("mutlak"),
         "minimum" | "min" => return Some("minimum"),
