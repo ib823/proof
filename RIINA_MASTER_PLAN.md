@@ -2411,6 +2411,28 @@ AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushe
 `claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
 `filesActive` **326**, `examples` **164**.
 
+**Twelfth session (2026-06-07), part 7 — W2 started (WASM linear-memory BigInt; rigorous, multi-increment):**
+began W2 — arbitrary-precision `besar` on the WASM backend, base-2^32 sign-magnitude limbs **matching
+`bigint.rs` (the algorithm `BigIntModel.v` proves)**. **Design (locked):** a BigInt value is the i64 cell
+holding an i32 pointer to a heap record `[len:i32 @0][neg:i32 @4][limb:u32 @8+4*i]` (little-endian; len=
+#limbs, 0=zero; from the bump allocator — never freed, fine for one run). Internal WASM helper functions
+are inserted in `translate` between `$alloc` (fn idx `NUM_IMPORTS`=2) and the user functions (which shift
+to `NUM_IMPORTS+1+N_BI+i`); their indices are threaded through `EmitCtx`. Helper ABIs are i32-addr in/out
+(wrap/extend only at the i64-cell boundary): `bi_from_str(str)->rec`, `bi_to_str(rec)->str`, then
+`bi_cmp(a,b)->i32`, `bi_add`/`bi_sub`/`bi_mul`/`bi_divmod`. **bi_from_str:** `slen=mem[str]`;
+`rec=alloc(8+(slen+2)*4)`; len=0,neg from leading -/+; per digit *scale-by-10-add* (`carry=digit`;
+`for j<len: cur=(i64)limb[j]*10+carry; limb[j]=cur&0xffffffff; carry=cur>>32`; `if carry: limb[len++]=carry`)
+— outer digit loop × inner limb loop, i64 mul. **bi_to_str:** len==0→"0"; copy mag→scratch; write digits
+backward via repeated *divmod-by-10* (`rem=0; for k=len-1..0: cur=(rem<<32)|limb[k]; limb[k]=cur/10;
+rem=cur%10`; shrink len; digit=rem) using the i64 `div_u`/`rem_u` W1a added; prepend '-' if neg; store the
+i32 length-prefix at `wp-4`; return `wp-4`. **Wiring:** `besar`/`bigint` → wrap str arg, call bi_from_str,
+extend; `cetak`/`ke_teks` of `Ty::BigInt` → bi_to_str then the string path; **BinOp on `Ty::BigInt` fails
+closed** until W2.2 (never falls through to `i64.add`). **Staging** (each a green commit + focused wasm
+test): **W2.1** infra+from_str+to_str (`cetak(besar("<20-digit>"))` byte-identical C vs WASM); **W2.2**
+cmp+add+sub; **W2.3** mul; **W2.4** divmod, then wire `bigint.rii` into the corpus differential (32→33) and
+lift the `besar` binop guard. `cmp_mag`/`add_mag`/`sub_mag`/`mul_mag`/`divmod_mag`(bit-serial shl1+cmp+sub)
+all per `bigint.rs`. Next: execute W2.1.
+
 **Twelfth session (2026-06-07), part 6 — W1 complete (WASM i64 value cell):** executed the full W1c
 representation flip (~40 sites across `wasm.rs`): every value is now held in a uniform **i64 cell**, so
 true 64-bit `Int`/`IntN` (`≥ 2^32`) compile and run on wasm32 (the old clean compile-error is gone).
