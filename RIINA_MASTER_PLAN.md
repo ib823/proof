@@ -2392,7 +2392,7 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM tower scoped)
+### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM tower scoped, W1a landed)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
 **Verified baseline at handoff (all re-run by command this session):** `cargo test --release` (03_PROTO)
@@ -2410,6 +2410,48 @@ fresh container must provision Rocq before any push, see the environment notes b
 AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushed to
 `claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
 `filesActive` **326**, `examples` **164**.
+
+**Twelfth session (2026-06-07), part 5 — W1 started (W1a landed; W1c mapped):** began executing W1 of
+the WASM numeric tower (uniform i64 value cell). **W1a (committed, green):** extended `wasm_encode::Op`
+with every i64-cell opcode that was missing — conversions `i32.wrap_i64`/`i64.extend_i32_s|u`
+(0xA7/0xAC/0xAD), i64 comparisons (0x50..0x59, result is i32 → re-extend), `i64.rem_s/and/or`
+(0x81/0x83/0x84), i64 sign-extends (0xC2..0xC4); a unit test pins all to spec (encoder 15/15, clippy
+clean). `Op` is `pub`, so unused variants don't trip `-D warnings`.
+**W1c (the representation flip) is fully scoped but NOT started** — it is **atomic** (between the
+all-i32 and all-i64 states there is no valid-WASM intermediate, so no green checkpoint exists to commit)
+and **large** (~38 `I32Load/Store` + ~37 `I32Const` sites + 6 hand-rolled routines in
+`riina-codegen/src/wasm.rs`). The pre-commit/pre-push hooks enforce green on every commit and the
+container is ephemeral, so it must be executed as one focused pass that reaches green before any commit
+— do it first in a fresh session. **Execution map** (the invariant: *every instruction arm leaves an
+i64 on the stack; wrap i64→i32 when consuming a value as an address/table-index; extend i32→i64 when an
+address or an i32 compare-result becomes a value; heap slots are 8 bytes, align hint stays 0x02; string
+bytes/length-prefix stay i32*):
+- **Signatures**: user-func type `(i32,i32)->i32` → `(i64,i64)->i64` (closure_ptr + arg + result are all
+  cells), so `user_func_type_idx` and the trampoline's `call main` match; `alloc` stays `(i32)->i32`
+  (addresses are i32) and `emit_alloc_call` (~717) appends `i64.extend_i32_u` once so every alloc site
+  yields an i64 pointer; `fd_write`/`proc_exit` stay i32; `_start` stays `()->()`.
+- **Locals**: split the single `(extra_locals, I32)` group (user-func ~456; trampoline ~300) into an i64
+  group (SSA values + `itoa_v`) then an i32 group (the 7 address/length scratch — `itoa_p`, `$neg`, 5
+  string scratch); indices already order value-locals before scratch, so numbering is preserved. `alloc`
+  `$ptr` (~364) stays i32.
+- **Const lowering** (~1134): Unit/Bool/Int/String-ptr → `i64.const`; delete the `n > u32::MAX` guard
+  (~1150) and its test's rejection assertion (~2217, flip to ACCEPT + assert the value prints).
+- **Slot ops**: `Load`/`Store` (~1173), `Pair`/`Fst`/`Snd` (~1305), `Inl`/`Inr`/`IsLeft`/`Unwrap`
+  (~1354; alloc 16, tag i64 at +0, value at +8, `IsLeft`=`i64.eqz`+extend), `Closure`/`FixClosure`
+  (~1443; alloc `(1+n)*8`, func_idx i64 at +0 → on call load i64 then wrap for the table index),
+  `Alloc`/ref (~1501), capture-loads (~476): `i32.wrap_i64` the address, `i64.load`/`i64.store`, offsets
+  ×4→×8.
+- **BinOp** (~1229): Add/Sub/Mul→i64, Div→`i64.div_s`, Mod→`i64.rem_s`, And/Or→i64; Eq/Ne/Lt/Gt/Le/Ge→
+  i64 compare + `i64.extend_i32_u`; sign-ext via a new `emit_sext_i64` (8/16/32_s); mask `(1<<bits)-1` +
+  `i64.and` for `IntN{bits<64}`. **UnaryOp** (~1261): Not→`i64.eqz`+extend; Neg→`i64.const 0; v; i64.sub`.
+- **Print/string routines**: `emit_print_int` (~736) — `itoa_v` i64, `i64.div_u`/`rem_u`, wrap the digit
+  to i32 for `i32.store8`, loop cond via i64 compare, sign path via `emit_sext_i64`+`i64.lt_s`/`i64.sub`;
+  the string-print path (~1553), `emit_ke_teks`/`emit_gabung_teks`/`wasm_echo_int`/`wasm_echo_strptr` —
+  wrap string-pointer args before addressing, i64-ize the int value; every builtin's unit result →
+  `i64.const 0`.
+- **Verify**: `corpus_differential` stays **32/32 byte-equal** + add a `>= 2^32` case to
+  `wasm_c_differential.rs` (e.g. `cetak(5000000000)` and a 64-bit add) that is byte-identical C vs WASM;
+  `wasm_e2e` green. Then lift the W1 sentence in the Part 11 numeric-tower row.
 
 **Twelfth session (2026-06-07), part 4 — WASM numeric-tower scoped (not yet implemented):** investigated
 the WASM backend and confirmed it is a dedicated multi-session effort — every value is an untagged i32
