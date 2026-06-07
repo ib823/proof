@@ -195,17 +195,30 @@ impl WasmBackend {
                 .iter()
                 .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::BigInt)))
         });
-        let n_bignum_fns: u32 = if uses_bigint { 2 } else { 0 };
-        let (bi_from_str_index, bi_to_str_index) = if uses_bigint {
+        let n_bignum_fns: u32 = if uses_bigint { 4 } else { 0 };
+        let (bi_from_str_index, bi_to_str_index, bi_cmp_index) = if uses_bigint {
+            // (i32)->i32 helpers (share alloc's type): parse + render.
             let from = NUM_IMPORTS + 1;
             module.functions.push(alloc_type_idx);
             module.codes.push(self.emit_bi_from_str(alloc_func_index));
             let to = NUM_IMPORTS + 2;
             module.functions.push(alloc_type_idx);
             module.codes.push(self.emit_bi_to_str(alloc_func_index));
-            (from, to)
+            // (i32,i32)->i32 helpers: magnitude compare + signed compare (W2.2a).
+            let bin_type_idx = module.types.len() as u32;
+            module.types.push(FuncType {
+                params: vec![ValType::I32, ValType::I32],
+                results: vec![ValType::I32],
+            });
+            let cmp_mag = NUM_IMPORTS + 3;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_bi_cmp_mag());
+            let cmp = NUM_IMPORTS + 4;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_bi_cmp(cmp_mag));
+            (from, to, cmp)
         } else {
-            (0, 0) // unused: no BigInt op is emitted when the program has none
+            (0, 0, 0) // unused: no BigInt op is emitted when the program has none
         };
 
         // === User functions ===
@@ -257,6 +270,7 @@ impl WasmBackend {
                 user_func_type_idx,
                 bi_from_str_index,
                 bi_to_str_index,
+                bi_cmp_index,
             )?;
             module.codes.push(body);
         }
@@ -819,7 +833,173 @@ impl WasmBackend {
         }
     }
 
-    /// Emit WASM instructions for a function.
+    /// Emit `bi_cmp_mag(a: i32, b: i32) -> i32`: compare BigInt **magnitudes**,
+    /// returning -1/0/1. Magnitudes are normalized (no leading zero limbs), so a
+    /// longer limb count is unconditionally the larger magnitude; equal lengths
+    /// compare limbs from most-significant down (unsigned).
+    fn emit_bi_cmp_mag(&self) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const LA: u32 = 2;
+        const LB: u32 = 3;
+        const K: u32 = 4;
+        const UA: u32 = 5;
+        const UB: u32 = 6;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // la = mem[a]; lb = mem[b]
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LB);
+        // if la != lb { return la > lb ? 1 : -1 }
+        lget(&mut c, LA);
+        lget(&mut c, LB);
+        op(&mut c, Op::I32Ne);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, LA);
+        lget(&mut c, LB);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, -1);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // k = la - 1; for k downto 0
+        lget(&mut c, LA);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32LtS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // ua = mem[a+8+k*4]; ub = mem[b+8+k*4]
+        lget(&mut c, A);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        lset(&mut c, UA);
+        lget(&mut c, B);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        lset(&mut c, UB);
+        // if ua != ub { return ua >u ub ? 1 : -1 }
+        lget(&mut c, UA);
+        lget(&mut c, UB);
+        op(&mut c, Op::I32Ne);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, UA);
+        lget(&mut c, UB);
+        op(&mut c, Op::I32GeU); // ua != ub here, so >=u is equivalent to >u
+        op(&mut c, Op::If);
+        c.push(0x40);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, -1);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // k -= 1; continue
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop
+        op(&mut c, Op::End); // block
+        wasm_i32c(&mut c, 0); // equal
+        FuncBody {
+            locals: vec![(5, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `bi_cmp(a: i32, b: i32) -> i32`: signed BigInt compare (-1/0/1).
+    /// Different signs decide immediately (negative < non-negative); same sign
+    /// compares magnitudes, reversed when both are negative.
+    fn emit_bi_cmp(&self, cmp_mag_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const NA: u32 = 2;
+        const NB: u32 = 3;
+        const M: u32 = 4;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // na = mem[a+4]; nb = mem[b+4]
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lset(&mut c, NA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        lset(&mut c, NB);
+        // if na != nb { return na ? -1 : 1 }
+        lget(&mut c, NA);
+        lget(&mut c, NB);
+        op(&mut c, Op::I32Ne);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, NA);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        wasm_i32c(&mut c, -1);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // m = cmp_mag(a, b)
+        lget(&mut c, A);
+        lget(&mut c, B);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(cmp_mag_index as u64, &mut c);
+        lset(&mut c, M);
+        // return na ? -m : m
+        lget(&mut c, NA);
+        op(&mut c, Op::If);
+        c.push(0x7F); // result i32
+        wasm_i32c(&mut c, 0);
+        lget(&mut c, M);
+        op(&mut c, Op::I32Sub);
+        op(&mut c, Op::Else);
+        lget(&mut c, M);
+        op(&mut c, Op::End);
+        FuncBody {
+            locals: vec![(3, ValType::I32)],
+            code: c,
+        }
+    }
+
+
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
@@ -835,6 +1015,7 @@ impl WasmBackend {
         user_func_type_idx: u32,
         bi_from_str_index: u32,
         bi_to_str_index: u32,
+        bi_cmp_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -930,6 +1111,7 @@ impl WasmBackend {
             user_func_type_idx,
             bi_from_str_index,
             bi_to_str_index,
+            bi_cmp_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -1674,21 +1856,61 @@ impl WasmBackend {
                 // pointer on the stack for the generic result-store below.
                 Self::emit_str_add(lhs, rhs, ctx, code);
             }
-            Instruction::BinOp(op, lhs, rhs) => {
-                // BigInt arithmetic is not yet wired on WASM (W2.1 lands besar
-                // construction + display; cmp/add/sub/mul/divmod are W2.2+). Fail
-                // closed so a `besar` binop never falls through to `i64.*` on the
-                // record pointers — a guaranteed miscompile.
+            Instruction::BinOp(op, lhs, rhs)
                 if matches!(ctx.var_to_ty.get(lhs), Some(Ty::BigInt))
-                    || matches!(ctx.var_to_ty.get(rhs), Some(Ty::BigInt))
-                {
-                    return Err(crate::Error::InvalidOperation(
-                        "BigInt (`besar`) arithmetic is not yet supported by the WASM \
-                         backend (construction + display work; arithmetic is a follow-up). \
-                         Use the C backend or the interpreter."
-                            .to_string(),
-                    ));
+                    || matches!(ctx.var_to_ty.get(rhs), Some(Ty::BigInt)) =>
+            {
+                // BigInt operands dispatch to the bignum runtime. W2.2a wires the
+                // six comparisons via `bi_cmp` (-1/0/1) mapped to a Bool; arithmetic
+                // (+, -, *, /) still fails closed so a besar binop never silently
+                // `i64.*`-es the record pointers.
+                match op {
+                    BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Gt | BinOp::Le | BinOp::Ge => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.bi_cmp_index as u64, code);
+                        // map the (-1/0/1) compare result to this op's boolean
+                        match op {
+                            BinOp::Eq => code.push(Op::I32Eqz as u8), // == 0
+                            BinOp::Ne => {
+                                code.push(Op::I32Eqz as u8);
+                                code.push(Op::I32Eqz as u8); // != 0
+                            }
+                            BinOp::Lt => {
+                                wasm_i32c(code, 0);
+                                code.push(Op::I32LtS as u8); // < 0
+                            }
+                            BinOp::Gt => {
+                                wasm_i32c(code, 0);
+                                code.push(Op::I32GtS as u8); // > 0
+                            }
+                            BinOp::Le => {
+                                wasm_i32c(code, 0);
+                                code.push(Op::I32LeS as u8); // <= 0
+                            }
+                            BinOp::Ge => {
+                                wasm_i32c(code, 0);
+                                code.push(Op::I32GeS as u8); // >= 0
+                            }
+                            _ => unreachable!(),
+                        }
+                        code.push(Op::I64ExtendI32U as u8); // bool -> i64 cell
+                    }
+                    _ => {
+                        return Err(crate::Error::InvalidOperation(
+                            "BigInt (`besar`) arithmetic (+, -, *, /) is not yet \
+                             supported by the WASM backend (comparison, construction, \
+                             and display work; arithmetic is a follow-up). Use the C \
+                             backend or the interpreter."
+                                .to_string(),
+                        ));
+                    }
                 }
+            }
+            Instruction::BinOp(op, lhs, rhs) => {
                 // Numeric tower: division/modulo/comparison of a *signed* sized int
                 // (`Ty::IntN{signed}`) narrower than i32 must sign-extend its
                 // operands first — the cell holds the width-masked (unsigned-range)
@@ -2579,9 +2801,11 @@ struct EmitCtx<'a> {
     string_table: &'a HashMap<String, u32>,
     alloc_func_index: u32,
     user_func_type_idx: u32,
-    /// Function indices of the bignum runtime helpers (`besar`): parse and render.
+    /// Function indices of the bignum runtime helpers (`besar`): parse, render,
+    /// and signed compare (`bi_cmp`, returns -1/0/1).
     bi_from_str_index: u32,
     bi_to_str_index: u32,
+    bi_cmp_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,
