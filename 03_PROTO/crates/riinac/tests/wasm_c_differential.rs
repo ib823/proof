@@ -156,3 +156,41 @@ fn diff_bare_zero() {
 fn diff_bare_bool() {
     assert_byte_equal("bare_bool", "betul");
 }
+
+// ── W1: true 64-bit values (>= 2^32) ────────────────────────────────────────
+// Before W1 the wasm32 backend held a 32-bit value cell, so these were a clean
+// compile error there. With the uniform i64 cell they must print byte-identically
+// to the C backend (which has always used a 64-bit integer).
+
+#[test]
+fn diff_cetak_64bit_value() {
+    // 5_000_000_000 > 2^32 (4_294_967_296).
+    assert_byte_equal(
+        "cetak_64bit",
+        "fungsi utama() -> Nombor kesan Sistem { cetak(5000000000); pulang 0 }",
+    );
+}
+
+#[test]
+fn diff_cetak_64bit_add() {
+    // 3e9 + 3e9 = 6e9 — a sum that overflows 32 bits.
+    assert_byte_equal(
+        "cetak_64bit_add",
+        "fungsi utama() -> Nombor kesan Sistem { cetak(3000000000 + 3000000000); pulang 0 }",
+    );
+}
+
+#[test]
+fn diff_cetak_64bit_mul() {
+    // 10^6 * 10^6 = 10^12 — a product that overflows 32 bits.
+    assert_byte_equal(
+        "cetak_64bit_mul",
+        "fungsi utama() -> Nombor kesan Sistem { cetak(1000000 * 1000000); pulang 0 }",
+    );
+}
+
+#[test]
+fn diff_bare_64bit() {
+    // A bare 64-bit expression echoed by the trampoline.
+    assert_byte_equal("bare_64bit", "9000000000");
+}

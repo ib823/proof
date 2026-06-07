@@ -119,7 +119,9 @@ pub enum Op {
     I64Sub = 0x7D,
     I64Mul = 0x7E,
     I64DivS = 0x7F,
+    I64DivU = 0x80,
     I64RemS = 0x81,
+    I64RemU = 0x82,
     I64And = 0x83,
     I64Or = 0x84,
     GlobalGet = 0x23,
@@ -790,7 +792,9 @@ mod tests {
         assert_eq!(Op::I64LeS as u8, 0x57);
         assert_eq!(Op::I64GeS as u8, 0x59);
         // i64 arithmetic / bitwise (Add/Sub/Mul/DivS already pinned by use):
+        assert_eq!(Op::I64DivU as u8, 0x80);
         assert_eq!(Op::I64RemS as u8, 0x81);
+        assert_eq!(Op::I64RemU as u8, 0x82);
         assert_eq!(Op::I64And as u8, 0x83);
         assert_eq!(Op::I64Or as u8, 0x84);
         // i64 sign-extension:
