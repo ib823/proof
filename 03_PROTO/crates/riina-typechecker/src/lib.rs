@@ -833,6 +833,17 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             ),
         );
     }
+    // Binary fixed-point / Q-format: `qmn((literal, frac_bits)) -> Qmn`.
+    for nm in ["qmn", "binary_fixed"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::Int))),
+                Box::new(Ty::FixedBin),
+                Effect::Pure,
+            ),
+        );
+    }
     // Unicode NFC normalization (UAX #15): `String -> String`, pure.
     for nm in ["nfc", "ke_nfc"] {
         c = c.extend(
@@ -2706,6 +2717,8 @@ fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
         (Ty::Decimal, Ty::Decimal) => Some(Ty::Decimal),
         // Fixed-scale decimals (`wang`/`titik_tetap`) form their own domain too.
         (Ty::Fixed, Ty::Fixed) => Some(Ty::Fixed),
+        // Binary fixed-point (`qmn`) likewise.
+        (Ty::FixedBin, Ty::FixedBin) => Some(Ty::FixedBin),
         _ => None,
     }
 }
@@ -3513,6 +3526,8 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         Ok((label_result(Ty::Decimal), eff))
                     } else if *inner1 == Ty::Fixed && *inner2 == Ty::Fixed {
                         Ok((label_result(Ty::Fixed), eff))
+                    } else if *inner1 == Ty::FixedBin && *inner2 == Ty::FixedBin {
+                        Ok((label_result(Ty::FixedBin), eff))
                     } else if types_compatible(&Ty::Int, inner1)
                         && types_compatible(&Ty::Int, inner2)
                     {
@@ -3570,6 +3585,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     if (*inner1 == Ty::BigInt && *inner2 == Ty::BigInt)
                         || (*inner1 == Ty::Decimal && *inner2 == Ty::Decimal)
                         || (*inner1 == Ty::Fixed && *inner2 == Ty::Fixed)
+                        || (*inner1 == Ty::FixedBin && *inner2 == Ty::FixedBin)
                     {
                         return Ok((label_result(inner1.clone()), eff));
                     }
@@ -3611,6 +3627,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         && *inner1 != Ty::BigInt
                         && *inner1 != Ty::Decimal
                         && *inner1 != Ty::Fixed
+                        && *inner1 != Ty::FixedBin
                     {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
@@ -3620,10 +3637,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
-                    // Ordering is defined for fixed-width ints, BigInt, Decimal, Fixed.
+                    // Ordering is defined for fixed-width ints, BigInt, Decimal,
+                    // Fixed, and FixedBin.
                     if (*inner1 == Ty::BigInt && *inner2 == Ty::BigInt)
                         || (*inner1 == Ty::Decimal && *inner2 == Ty::Decimal)
                         || (*inner1 == Ty::Fixed && *inner2 == Ty::Fixed)
+                        || (*inner1 == Ty::FixedBin && *inner2 == Ty::FixedBin)
                     {
                         return Ok((label_result(Ty::Bool), eff));
                     }

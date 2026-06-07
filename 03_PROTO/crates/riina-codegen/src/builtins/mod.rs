@@ -124,6 +124,11 @@ pub fn register_builtins(env: &Env) -> Env {
     for nm in ["titik_tetap", "fixed"] {
         e = e.extend(nm.to_string(), Value::Builtin("titik_tetap".to_string()));
     }
+    // Binary fixed-point / Q-format (numeric tower fixed-point slice): `qmn`
+    // takes a `(literal, frac_bits)` pair.
+    for nm in ["qmn", "binary_fixed"] {
+        e = e.extend(nm.to_string(), Value::Builtin("qmn".to_string()));
+    }
     // Unicode NFC normalization (UAX #15).
     for nm in ["nfc", "ke_nfc"] {
         e = e.extend(nm.to_string(), Value::Builtin("nfc".to_string()));
@@ -397,6 +402,52 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                 )),
             };
         }
+        // Binary fixed-point / Q-format: `qmn(value, frac_bits)` parses `value`
+        // and rounds half-to-even to the nearest `raw / 2^frac_bits`.
+        "qmn" => {
+            return match &arg {
+                Value::Pair(a, b) => {
+                    let s = match a.as_ref() {
+                        Value::String(s) => s.clone(),
+                        other => {
+                            return Err(Error::TypeMismatch {
+                                expected: "string".to_string(),
+                                found: format!("{other:?}"),
+                                context: "qmn value".to_string(),
+                            })
+                        }
+                    };
+                    let frac_bits = match b.as_ref() {
+                        Value::Int(n) if *n >= 1 && *n <= crate::fixed_bin::MAX_FRAC_BITS as u64 => {
+                            *n as u32
+                        }
+                        Value::Int(n) => {
+                            return Err(Error::InvalidOperation(format!(
+                                "qmn: frac_bits {n} out of range (1..={})",
+                                crate::fixed_bin::MAX_FRAC_BITS
+                            )))
+                        }
+                        other => {
+                            return Err(Error::TypeMismatch {
+                                expected: "int".to_string(),
+                                found: format!("{other:?}"),
+                                context: "qmn frac_bits".to_string(),
+                            })
+                        }
+                    };
+                    match crate::fixed_bin::FixedBin::parse(&s, frac_bits) {
+                        Some(x) => Ok(Value::FixedBin(x)),
+                        None => Err(Error::InvalidOperation(format!(
+                            "qmn: '{s}' is not a decimal number"
+                        ))),
+                    }
+                }
+                other => Ok(Value::BuiltinPartial(
+                    "qmn".to_string(),
+                    Box::new(other.clone()),
+                )),
+            };
+        }
         // Unicode NFC normalization (UAX #15): canonical-equivalent strings map
         // to one form (precomposed/decomposed, combining-mark order).
         "nfc" => {
@@ -528,6 +579,7 @@ pub fn format_value(v: &Value) -> String {
         Value::BigInt(b) => b.to_string(),
         Value::Decimal(d) => d.to_string(),
         Value::Fixed(x) => x.to_string(),
+        Value::FixedBin(x) => x.to_string(),
         Value::String(s) => s.clone(),
         Value::Pair(a, b) => format!("({}, {})", format_value(a), format_value(b)),
         Value::List(items) => {

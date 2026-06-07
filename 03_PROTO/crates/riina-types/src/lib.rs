@@ -543,6 +543,10 @@ pub enum Ty {
     /// display preserves trailing zeros (`3.30`, `100.00`). A distinct type; does
     /// not silently mix with `Int`/`BigInt`/`Decimal`.
     Fixed,
+    /// Binary fixed-point — Q-format (`qmn`): `raw / 2^frac_bits` over a bounded
+    /// machine word (arithmetic wraps on overflow). A distinct type; does not
+    /// silently mix with the other numeric types.
+    FixedBin,
     String,
     Bytes,
     // Function types

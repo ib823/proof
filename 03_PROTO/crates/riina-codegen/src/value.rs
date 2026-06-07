@@ -215,6 +215,10 @@ pub enum Value {
     /// display preserves trailing zeros. Additive interpreter-only slice.
     Fixed(crate::fixed::Fixed),
 
+    /// Binary fixed-point — Q-format (`qmn`): `raw / 2^frac_bits` over a bounded
+    /// machine word (wraps on overflow). Additive interpreter-only slice.
+    FixedBin(crate::fixed_bin::FixedBin),
+
     /// String value
     ///
     /// Corresponds to Coq `VString s`.
@@ -816,6 +820,7 @@ impl std::fmt::Display for Value {
             Self::BigInt(b) => write!(f, "{b}"),
             Self::Decimal(d) => write!(f, "{d}"),
             Self::Fixed(x) => write!(f, "{x}"),
+            Self::FixedBin(x) => write!(f, "{x}"),
             Self::String(s) => write!(f, "\"{s}\""),
             Self::Pair(a, b) => write!(f, "({a}, {b})"),
             Self::Sum(Sum::Left(v)) => write!(f, "inl {v}"),

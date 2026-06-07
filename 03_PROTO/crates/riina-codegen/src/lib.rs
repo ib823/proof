@@ -74,6 +74,7 @@ pub mod builtins;
 pub mod decimal;
 pub mod ct_verify;
 pub mod fixed;
+pub mod fixed_bin;
 pub mod emit;
 pub mod ffi;
 pub mod interp;
