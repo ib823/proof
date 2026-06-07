@@ -2770,6 +2770,8 @@ impl<'a> Parser<'a> {
                     "Besar" | "BigInt" => Ok(Ty::BigInt),
                     // Arbitrary-precision decimal (numeric-tower decimal slice).
                     "Perpuluhan" | "Decimal" => Ok(Ty::Decimal),
+                    // Fixed-scale decimal / money (numeric-tower fixed-point slice).
+                    "Wang" | "Money" | "TitikTetap" => Ok(Ty::Fixed),
                     "Bool" | "Benar" => Ok(Ty::Bool),
                     "Unit" => Ok(Ty::Unit),
                     "String" | "Teks" => Ok(Ty::String),

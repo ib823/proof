@@ -116,6 +116,14 @@ pub fn register_builtins(env: &Env) -> Env {
     for nm in ["perpuluhan", "decimal"] {
         e = e.extend(nm.to_string(), Value::Builtin("perpuluhan".to_string()));
     }
+    // Fixed-scale decimal / money (numeric tower fixed-point slice): `wang`
+    // infers the scale from the literal; `titik_tetap` takes an explicit scale.
+    for nm in ["wang", "money"] {
+        e = e.extend(nm.to_string(), Value::Builtin("wang".to_string()));
+    }
+    for nm in ["titik_tetap", "fixed"] {
+        e = e.extend(nm.to_string(), Value::Builtin("titik_tetap".to_string()));
+    }
     // Unicode NFC normalization (UAX #15).
     for nm in ["nfc", "ke_nfc"] {
         e = e.extend(nm.to_string(), Value::Builtin("nfc".to_string()));
@@ -324,6 +332,71 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                 }),
             };
         }
+        // Fixed-scale decimal / money constructor: `wang`/`money` parses a literal
+        // and infers the fixed scale from its fractional digits (`wang("19.99")`
+        // → 2 dp). Distinct from `perpuluhan`: arithmetic stays at this scale.
+        "wang" => {
+            return match &arg {
+                Value::String(s) => match crate::fixed::Fixed::parse(s) {
+                    Some(x) => Ok(Value::Fixed(x)),
+                    None => Err(Error::InvalidOperation(format!(
+                        "wang: '{s}' is not a decimal number"
+                    ))),
+                },
+                Value::Fixed(x) => Ok(Value::Fixed(x.clone())),
+                other => Err(Error::TypeMismatch {
+                    expected: "string".to_string(),
+                    found: format!("{other:?}"),
+                    context: "wang/money".to_string(),
+                }),
+            };
+        }
+        // Fixed-scale decimal with an explicit scale: `titik_tetap(value, scale)`
+        // parses `value` and rounds half-to-even to `scale` fractional digits.
+        "titik_tetap" => {
+            return match &arg {
+                Value::Pair(a, b) => {
+                    let s = match a.as_ref() {
+                        Value::String(s) => s.clone(),
+                        other => {
+                            return Err(Error::TypeMismatch {
+                                expected: "string".to_string(),
+                                found: format!("{other:?}"),
+                                context: "titik_tetap value".to_string(),
+                            })
+                        }
+                    };
+                    let scale = match b.as_ref() {
+                        // `Value::Int` is a u64 bit pattern; a real scale is tiny.
+                        // Cap it (a negative literal wraps to a huge u64) so a
+                        // bogus scale can't blow up `10^scale`.
+                        Value::Int(n) if *n <= 1_000 => *n as u32,
+                        Value::Int(n) => {
+                            return Err(Error::InvalidOperation(format!(
+                                "titik_tetap: scale {n} is out of range (max 1000)"
+                            )))
+                        }
+                        other => {
+                            return Err(Error::TypeMismatch {
+                                expected: "int".to_string(),
+                                found: format!("{other:?}"),
+                                context: "titik_tetap scale".to_string(),
+                            })
+                        }
+                    };
+                    match crate::fixed::Fixed::parse_scaled(&s, scale) {
+                        Some(x) => Ok(Value::Fixed(x)),
+                        None => Err(Error::InvalidOperation(format!(
+                            "titik_tetap: '{s}' is not a decimal number"
+                        ))),
+                    }
+                }
+                other => Ok(Value::BuiltinPartial(
+                    "titik_tetap".to_string(),
+                    Box::new(other.clone()),
+                )),
+            };
+        }
         // Unicode NFC normalization (UAX #15): canonical-equivalent strings map
         // to one form (precomposed/decomposed, combining-mark order).
         "nfc" => {
@@ -454,6 +527,7 @@ pub fn format_value(v: &Value) -> String {
         Value::Int(n) => n.to_string(),
         Value::BigInt(b) => b.to_string(),
         Value::Decimal(d) => d.to_string(),
+        Value::Fixed(x) => x.to_string(),
         Value::String(s) => s.clone(),
         Value::Pair(a, b) => format!("({}, {})", format_value(a), format_value(b)),
         Value::List(items) => {

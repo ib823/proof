@@ -1078,6 +1078,14 @@ impl Interpreter {
                         return result;
                     }
                 }
+                // Numeric tower: fixed-scale `Fixed` (`wang`/`titik_tetap`)
+                // arithmetic. Both operands are `Fixed` (the typechecker rejects
+                // mixing); the result stays at the fixed scale.
+                if matches!(l, Value::Fixed(_)) && matches!(r, Value::Fixed(_)) {
+                    if let Some(result) = eval_fixed_binop(*op, &l, &r) {
+                        return result;
+                    }
+                }
                 match (op, &l, &r) {
                     (BinOp::Add, Value::Int(a), Value::Int(b)) => {
                         Ok(Value::Int(a.wrapping_add(*b)))
@@ -1275,6 +1283,34 @@ fn eval_decimal_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> 
         BinOp::Mul => Ok(Value::Decimal(a.mul(b))),
         BinOp::Div => match a.div(b) {
             Some(q) => Ok(Value::Decimal(q)),
+            None => Err(Error::DivisionByZero),
+        },
+        BinOp::Eq => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Equal)),
+        BinOp::Ne => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Equal)),
+        BinOp::Lt => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Less)),
+        BinOp::Le => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Greater)),
+        BinOp::Gt => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Greater)),
+        BinOp::Ge => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Less)),
+        BinOp::Mod | BinOp::And | BinOp::Or => return None,
+    };
+    Some(res)
+}
+
+/// Fixed-scale decimal binop (`wang`/`titik_tetap`) for the numeric tower.
+/// Called only when both operands are `Value::Fixed`. Add/sub stay exact at the
+/// aligned scale; `Mul`/`Div` round half-to-even back to `max(scale)` (`Mod` is
+/// undefined → falls through). Comparison is value-based. Returns `None` for
+/// unsupported ops so the caller's error applies.
+fn eval_fixed_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
+    let (Value::Fixed(a), Value::Fixed(b)) = (l, r) else {
+        return None;
+    };
+    let res = match op {
+        BinOp::Add => Ok(Value::Fixed(a.add(b))),
+        BinOp::Sub => Ok(Value::Fixed(a.sub(b))),
+        BinOp::Mul => Ok(Value::Fixed(a.mul(b))),
+        BinOp::Div => match a.div(b) {
+            Some(q) => Ok(Value::Fixed(q)),
             None => Err(Error::DivisionByZero),
         },
         BinOp::Eq => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Equal)),
@@ -3193,6 +3229,46 @@ mod tests {
             crate::builtins::format_value(&dec("-12.340")),
             "-12.340"
         );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NUMERIC TOWER: fixed-scale Fixed (`wang`/`titik_tetap`), end-to-end
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn fx(s: &str) -> Value {
+        Value::Fixed(crate::fixed::Fixed::parse(s).unwrap())
+    }
+
+    #[test]
+    fn test_fixed_money_stays_at_scale() {
+        // Price * quantity + line item, all at 2 places, no float drift.
+        assert_eq!(
+            run_src("wang(\"19.99\") * wang(\"2\") + wang(\"5.00\")"),
+            fx("44.98"),
+        );
+        // Tax rounds back to 2 places: 44.98 * 0.07 = 3.1486 → 3.15.
+        assert_eq!(run_src("wang(\"44.98\") * wang(\"0.07\")"), fx("3.15"));
+        // Division stays at the fixed scale (3.33) — not 34 places like perpuluhan.
+        assert_eq!(run_src("wang(\"10.00\") / wang(\"3\")"), fx("3.33"));
+    }
+
+    #[test]
+    fn test_fixed_value_based_compare_and_display() {
+        // Value-based: 3.30 == 3.3 despite different scales.
+        assert_eq!(run_src("wang(\"3.30\") == wang(\"3.3\")"), Value::Bool(true));
+        // Display preserves the fixed scale (trailing zeros kept — money format).
+        assert_eq!(crate::builtins::format_value(&fx("100.00")), "100.00");
+        assert_eq!(crate::builtins::format_value(&fx("3.30")), "3.30");
+    }
+
+    #[test]
+    fn test_fixed_titik_tetap_explicit_scale_and_typed_fn() {
+        // `titik_tetap((value, scale))` rounds half-to-even to an explicit scale.
+        assert_eq!(run_src("titik_tetap((\"3.14159\", 2))"), fx("3.14"));
+        // A `Wang`-typed function: summing ten dimes is exactly 1.00.
+        let src = "fungsi jumlah(x: Wang) -> Wang kesan Bersih { \
+                   pulang x + x + x + x + x + x + x + x + x + x; } jumlah(wang(\"0.10\"))";
+        assert_eq!(run_src(src), fx("1.00"));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
