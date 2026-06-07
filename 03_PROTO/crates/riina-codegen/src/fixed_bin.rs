@@ -364,4 +364,21 @@ mod tests {
         let r = big.mul(&big);
         assert_eq!(r.frac_bits(), 32);
     }
+
+    /// Coq⇄Rust formal-equivalence bridge. The running Q-format constructor
+    /// reproduces the exact round-half-to-even `raw` the model proves in
+    /// `02_FORMAL/coq/foundations/FixedPointModel.v` — the `round_he` KATs
+    /// `qmn_0p1_8bits` / `qmn_0p03125_4bits` / `qmn_0p09375_4bits`, whose
+    /// `round_he_nearest` + `round_he_tie_even` lemmas prove the decimal→binary
+    /// rounding is correct (nearest, ties to even).
+    #[test]
+    fn test_fixedbin_matches_coq_model() {
+        // FixedPointModel.v `qmn_0p1_8bits`: round_he 256 10 = 26 → 0.1015625.
+        assert_eq!(q("0.1", 8).raw(), 26);
+        assert_eq!(q("0.1", 8).to_string_repr(), "0.1015625");
+        // `qmn_0p03125_4bits`: 0.5 tie rounds to even 0.
+        assert_eq!(q("0.03125", 4).raw(), 0);
+        // `qmn_0p09375_4bits`: 1.5 tie rounds to even 2.
+        assert_eq!(q("0.09375", 4).raw(), 2);
+    }
 }

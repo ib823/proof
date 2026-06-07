@@ -9,6 +9,7 @@ foundations/Typing.v
 foundations/SizedInt.v
 foundations/BigIntModel.v
 foundations/DecimalModel.v
+foundations/FixedPointModel.v
 foundations/VerifiedList.v
 foundations/VerifiedMapSet.v
 foundations/VerifiedString.v
