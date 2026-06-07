@@ -26,6 +26,16 @@ on:
 permissions:
   contents: read
 
+# The tree-walking interpreter (`riina-codegen`) recurses on the native call
+# stack; in debug builds its single large `eval` match makes each frame big, so
+# the recursive tests need more than the default 2 MiB test-thread stack. CI runs
+# `cargo test --manifest-path 03_PROTO/...` from the repo root, which does NOT
+# discover `03_PROTO/.cargo/config.toml` (cargo reads config from the CWD, not the
+# manifest path), so set the same value here. Mirrors that config; no semantic
+# change to what is tested.
+env:
+  RUST_MIN_STACK: "67108864"
+
 concurrency:
   group: verify-${{ github.ref }}
   cancel-in-progress: true

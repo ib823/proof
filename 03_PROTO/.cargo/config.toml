@@ -3,9 +3,12 @@
 # The tree-walking interpreter (`riina-codegen`) recurses through a single
 # very large `eval_with_env` match. In *debug* builds Rust does not overlap
 # the stack slots of disjoint match arms, so each frame is large and a modest
-# recursion depth (e.g. the `letrec` countdown tests) overflows the default
-# 2 MiB stack of a spawned test thread. The release `riinac` binary runs on
-# the 8 MiB main thread and is unaffected. Raise the per-thread minimum stack
-# so `cargo test` is green by default without changing interpreter semantics.
+# recursion depth (e.g. the `letrec` countdown / BigInt-factorial tests)
+# overflows the default 2 MiB stack of a spawned test thread. The release
+# `riinac` binary runs on the 8 MiB main thread and is unaffected. Raise the
+# per-thread minimum stack so `cargo test` is green by default without changing
+# interpreter semantics. 16 MiB proved borderline (the BigInt `fac(30)` recursion
+# nests many large eval frames and overflowed it intermittently, flaking
+# `verify --full`); 64 MiB gives ample margin.
 [env]
-RUST_MIN_STACK = "16777216"
+RUST_MIN_STACK = "67108864"
