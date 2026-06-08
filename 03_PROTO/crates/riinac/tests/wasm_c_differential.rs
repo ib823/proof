@@ -367,3 +367,43 @@ fn diff_besar_mul_square_let() {
         }",
     );
 }
+
+// ── W2.4: BigInt truncating divmod (bi_divmod) ───────────────────────────────
+// `/` and `%` route through bi_divmod; must match the C backend exactly —
+// truncating toward zero, remainder taking the dividend's sign, the `a<b` short
+// path, exact division, and large multi-limb quotients.
+// (00_basics/bigint.rii also exercises a/b + a%b in the corpus differential.)
+
+#[test]
+fn diff_besar_divmod() {
+    assert_byte_equal(
+        "besar_divmod",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(besar(\"100\") / besar(\"7\"));\n\
+            cetakln(besar(\"100\") % besar(\"7\"));\n\
+            cetakln(besar(\"99999999999999999999\") / besar(\"12345678901234567890\"));\n\
+            cetakln(besar(\"99999999999999999999\") % besar(\"12345678901234567890\"));\n\
+            cetakln(besar(\"7\") / besar(\"100\"));\n\
+            cetakln(besar(\"7\") % besar(\"100\"));\n\
+            cetakln(besar(\"100\") / besar(\"4\"));\n\
+            cetakln(besar(\"100\") % besar(\"4\"));\n\
+            cetakln(besar(\"123456789012345678901234567890\") / besar(\"987654321\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_besar_divmod_negative() {
+    // truncating toward zero; remainder takes the dividend's sign.
+    assert_byte_equal(
+        "besar_divmod_neg",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln((besar(\"0\") - besar(\"100\")) / besar(\"7\"));\n\
+            cetakln((besar(\"0\") - besar(\"100\")) % besar(\"7\"));\n\
+            cetakln(besar(\"100\") / (besar(\"0\") - besar(\"7\")));\n\
+            cetakln((besar(\"0\") - besar(\"100\")) / (besar(\"0\") - besar(\"7\")));\n\
+            pulang 0\n\
+        }",
+    );
+}

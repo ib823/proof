@@ -195,9 +195,15 @@ impl WasmBackend {
                 .iter()
                 .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::BigInt)))
         });
-        let n_bignum_fns: u32 = if uses_bigint { 8 } else { 0 };
-        let (bi_from_str_index, bi_to_str_index, bi_cmp_index, bi_addsub_index, bi_mul_index) = if uses_bigint
-        {
+        let n_bignum_fns: u32 = if uses_bigint { 9 } else { 0 };
+        let (
+            bi_from_str_index,
+            bi_to_str_index,
+            bi_cmp_index,
+            bi_addsub_index,
+            bi_mul_index,
+            bi_divmod_index,
+        ) = if uses_bigint {
             // (i32)->i32 helpers (share alloc's type): parse + render.
             let from = NUM_IMPORTS + 1;
             module.functions.push(alloc_type_idx);
@@ -238,9 +244,15 @@ impl WasmBackend {
             let mul = NUM_IMPORTS + 8;
             module.functions.push(bin_type_idx);
             module.codes.push(self.emit_bi_mul(alloc_func_index));
-            (from, to, cmp, addsub, mul)
+            // (i32,i32,i32)->i32 truncating divmod (W2.4): want_rem selects q or r.
+            let divmod = NUM_IMPORTS + 9;
+            module.functions.push(ter_type_idx);
+            module
+                .codes
+                .push(self.emit_bi_divmod(alloc_func_index, cmp_mag));
+            (from, to, cmp, addsub, mul, divmod)
         } else {
-            (0, 0, 0, 0, 0) // unused: no BigInt op is emitted when the program has none
+            (0, 0, 0, 0, 0, 0) // unused: no BigInt op is emitted when the program has none
         };
 
         // === User functions ===
@@ -295,6 +307,7 @@ impl WasmBackend {
                 bi_cmp_index,
                 bi_addsub_index,
                 bi_mul_index,
+                bi_divmod_index,
             )?;
             module.codes.push(body);
         }
@@ -1674,6 +1687,548 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `bi_divmod(a: i32, b: i32, want_rem: i32) -> i32`: truncating BigInt
+    /// division — returns the quotient (`want_rem=0`) or remainder (`want_rem=1`).
+    /// Quotient truncates toward zero (sign = `a.neg XOR b.neg`); remainder takes
+    /// the dividend's sign — matching Rust/C `/` and `%` and `bigint.rs::divmod`
+    /// (proved in `BigIntModel.v`). Bit-serial shift-and-subtract on magnitudes
+    /// (reusing `bi_cmp_mag`; shl1/subtract/bit-ops inline). Division by zero
+    /// traps (`unreachable`), matching the C runtime's `abort()`.
+    fn emit_bi_divmod(&self, alloc_func_index: u32, cmp_mag_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const WANT_REM: u32 = 2;
+        const LA: u32 = 3;
+        const LV: u32 = 4;
+        const Q: u32 = 5;
+        const R: u32 = 6;
+        const RLEN: u32 = 7;
+        const BIT: u32 = 8;
+        const LIMBIDX: u32 = 9;
+        const OFF: u32 = 10;
+        const K: u32 = 11;
+        const CARRY: u32 = 12;
+        const BITVAL: u32 = 13;
+        const BORROW: u32 = 14;
+        const QLEN: u32 = 15;
+        const RES: u32 = 16;
+        const RESLEN: u32 = 17;
+        const NL: u32 = 18;
+        const DIFF: u32 = 19;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // Push the address of limb `idx` (in local `idxl`) of record in local `rec`.
+        let limb_addr = |c: &mut Vec<u8>, rec: u32, idxl: u32| {
+            wasm_local(c, Op::LocalGet, rec);
+            wasm_i32c(c, 8);
+            c.push(Op::I32Add as u8);
+            wasm_local(c, Op::LocalGet, idxl);
+            wasm_i32c(c, 4);
+            c.push(Op::I32Mul as u8);
+            c.push(Op::I32Add as u8);
+        };
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // A small self-contained `block { loop { <cond>; body } }` is built by the
+        // caller; helpers above keep the address arithmetic terse.
+
+        // la = mem[a]; lv = mem[b]
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LV);
+        // division by zero traps (matches C abort)
+        lget(&mut c, LV);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        op(&mut c, Op::Unreachable);
+        op(&mut c, Op::End);
+        // if |a| < |b| { quotient = 0, remainder = a }
+        lget(&mut c, A);
+        lget(&mut c, B);
+        call(&mut c, cmp_mag_index);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32LtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, WANT_REM);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        // remainder = copy of a (mag + a.neg, normalized)
+        lget(&mut c, LA);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        lget(&mut c, LA);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RES);
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        wasm_store(&mut c, 4);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, LA);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        limb_addr(&mut c, RES, K);
+        limb_addr(&mut c, A, K);
+        wasm_load(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        lget(&mut c, LA);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::End);
+        lget(&mut c, RES);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::Else);
+        // quotient = 0
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        lget(&mut c, RES);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // q = alloc(8 + la*4), zeroed
+        lget(&mut c, LA);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, Q);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, LA);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        limb_addr(&mut c, Q, K);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // r = alloc(8 + (lv+2)*4), zeroed; rlen = 0
+        lget(&mut c, LV);
+        wasm_i32c(&mut c, 2);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, R);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, LV);
+        wasm_i32c(&mut c, 2);
+        op(&mut c, Op::I32Add);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        limb_addr(&mut c, R, K);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, RLEN);
+        lget(&mut c, R);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        // bit = la*32 - 1; for bit downto 0
+        lget(&mut c, LA);
+        wasm_i32c(&mut c, 32);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, BIT);
+        op(&mut c, Op::Block); // outer_done
+        c.push(0x40);
+        op(&mut c, Op::Loop); // outer
+        c.push(0x40);
+        lget(&mut c, BIT);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32LtS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // --- shl1(r) ---
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, CARRY);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        limb_addr(&mut c, R, K);
+        wasm_load(&mut c, 0);
+        lset(&mut c, NL);
+        limb_addr(&mut c, R, K);
+        lget(&mut c, NL);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Shl);
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I32Or);
+        wasm_store(&mut c, 0);
+        lget(&mut c, NL);
+        wasm_i32c(&mut c, 31);
+        op(&mut c, Op::I32ShrU);
+        lset(&mut c, CARRY);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // if carry { r[rlen] = carry; rlen++ }
+        lget(&mut c, CARRY);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        limb_addr(&mut c, R, RLEN);
+        lget(&mut c, CARRY);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::End);
+        // limbidx = bit>>5; off = bit&31; bitval = (a[limbidx] >> off) & 1
+        lget(&mut c, BIT);
+        wasm_i32c(&mut c, 5);
+        op(&mut c, Op::I32ShrU);
+        lset(&mut c, LIMBIDX);
+        lget(&mut c, BIT);
+        wasm_i32c(&mut c, 31);
+        op(&mut c, Op::I32And);
+        lset(&mut c, OFF);
+        limb_addr(&mut c, A, LIMBIDX);
+        wasm_load(&mut c, 0);
+        lget(&mut c, OFF);
+        op(&mut c, Op::I32ShrU);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32And);
+        lset(&mut c, BITVAL);
+        // if bitval { if rlen==0 { r[0]=1; rlen=1 } else { r[0] |= 1 } }
+        lget(&mut c, BITVAL);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, R);
+        wasm_i32c(&mut c, 1);
+        wasm_store(&mut c, 8);
+        wasm_i32c(&mut c, 1);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::Else);
+        lget(&mut c, R);
+        lget(&mut c, R);
+        wasm_load(&mut c, 8);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Or);
+        wasm_store(&mut c, 8);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // mem[r] = rlen
+        lget(&mut c, R);
+        lget(&mut c, RLEN);
+        wasm_store(&mut c, 0);
+        // if cmp_mag(r, b) >= 0 { r -= b; q[limbidx] |= 1<<off }
+        lget(&mut c, R);
+        lget(&mut c, B);
+        call(&mut c, cmp_mag_index);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        // r -= b over lv limbs
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, BORROW);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, LV);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        limb_addr(&mut c, R, K);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        limb_addr(&mut c, B, K);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Sub);
+        lget(&mut c, BORROW);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Sub);
+        lset(&mut c, DIFF);
+        lget(&mut c, DIFF);
+        wasm_i64c(&mut c, 0);
+        op(&mut c, Op::I64LtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, DIFF);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, DIFF);
+        wasm_i32c(&mut c, 1);
+        lset(&mut c, BORROW);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, BORROW);
+        op(&mut c, Op::End);
+        limb_addr(&mut c, R, K);
+        lget(&mut c, DIFF);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // propagate borrow into r[lv..rlen]
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        limb_addr(&mut c, R, K);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        lget(&mut c, BORROW);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Sub);
+        lset(&mut c, DIFF);
+        lget(&mut c, DIFF);
+        wasm_i64c(&mut c, 0);
+        op(&mut c, Op::I64LtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, DIFF);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, DIFF);
+        wasm_i32c(&mut c, 1);
+        lset(&mut c, BORROW);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, BORROW);
+        op(&mut c, Op::End);
+        limb_addr(&mut c, R, K);
+        lget(&mut c, DIFF);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // strip leading zeros of r
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, R);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        lget(&mut c, R);
+        lget(&mut c, RLEN);
+        wasm_store(&mut c, 0);
+        // q[limbidx] |= 1 << off
+        limb_addr(&mut c, Q, LIMBIDX);
+        limb_addr(&mut c, Q, LIMBIDX);
+        wasm_load(&mut c, 0);
+        wasm_i32c(&mut c, 1);
+        lget(&mut c, OFF);
+        op(&mut c, Op::I32Shl);
+        op(&mut c, Op::I32Or);
+        wasm_store(&mut c, 0);
+        op(&mut c, Op::End); // if cmp>=0
+        // bit--
+        lget(&mut c, BIT);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, BIT);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (outer)
+        op(&mut c, Op::End); // block (outer)
+        // strip leading zeros of q
+        lget(&mut c, LA);
+        lset(&mut c, QLEN);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, QLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, Q);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, QLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, QLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, QLEN);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        lget(&mut c, Q);
+        lget(&mut c, QLEN);
+        wasm_store(&mut c, 0);
+        // select result: remainder (res=r, neg=a.neg) or quotient (res=q, neg=a.neg^b.neg)
+        lget(&mut c, WANT_REM);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, R);
+        lset(&mut c, RES);
+        lget(&mut c, R);
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        wasm_store(&mut c, 4);
+        lget(&mut c, RLEN);
+        lset(&mut c, RESLEN);
+        op(&mut c, Op::Else);
+        lget(&mut c, Q);
+        lset(&mut c, RES);
+        lget(&mut c, Q);
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        op(&mut c, Op::I32Ne);
+        wasm_store(&mut c, 4);
+        lget(&mut c, QLEN);
+        lset(&mut c, RESLEN);
+        op(&mut c, Op::End);
+        // normalize -0
+        lget(&mut c, RESLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::End);
+        lget(&mut c, RES);
+        FuncBody {
+            locals: vec![(16, ValType::I32), (1, ValType::I64)],
+            code: c,
+        }
+    }
+
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
@@ -1692,6 +2247,7 @@ impl WasmBackend {
         bi_cmp_index: u32,
         bi_addsub_index: u32,
         bi_mul_index: u32,
+        bi_divmod_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -1790,6 +2346,7 @@ impl WasmBackend {
             bi_cmp_index,
             bi_addsub_index,
             bi_mul_index,
+            bi_divmod_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -2598,14 +3155,25 @@ impl WasmBackend {
                         wasm_encode::encode_uleb128(ctx.bi_mul_index as u64, code);
                         code.push(Op::I64ExtendI32U as u8); // result ptr -> i64 cell
                     }
+                    BinOp::Div | BinOp::Mod => {
+                        // Truncating divmod via bi_divmod(a, b, want_rem): want_rem=1
+                        // for `%` (remainder), 0 for `/` (quotient).
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        wasm_i32c(code, if matches!(op, BinOp::Mod) { 1 } else { 0 });
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.bi_divmod_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8); // result ptr -> i64 cell
+                    }
                     _ => {
-                        return Err(crate::Error::InvalidOperation(
-                            "BigInt (`besar`) division/modulo is not yet supported by \
-                             the WASM backend (comparison, add/sub, multiply, \
-                             construction, and display work; divide/modulo are a \
-                             follow-up). Use the C backend or the interpreter."
-                                .to_string(),
-                        ));
+                        // And/Or on BigInt: the typechecker rejects these, but fail
+                        // closed defensively rather than emit i64 bitops on pointers.
+                        return Err(crate::Error::InvalidOperation(format!(
+                            "BigInt (`besar`) operator {op:?} is not supported by the \
+                             WASM backend"
+                        )));
                     }
                 }
             }
@@ -3509,6 +4077,8 @@ struct EmitCtx<'a> {
     bi_addsub_index: u32,
     /// Function index of the signed BigInt multiply helper (`bi_mul(a,b)`).
     bi_mul_index: u32,
+    /// Function index of the truncating BigInt divmod (`bi_divmod(a,b,want_rem)`).
+    bi_divmod_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,
