@@ -331,3 +331,39 @@ fn diff_besar_addsub_chain_and_negcmp() {
         }",
     );
 }
+
+// ── W2.3: BigInt multiply (bi_mul) ───────────────────────────────────────────
+// Schoolbook limb multiply; must match the C backend exactly, including the
+// >64-bit headline square, max-limb carries, cross-size operands, sign (XOR),
+// and zero (normalized to +0). Divide/modulo still fail closed.
+
+#[test]
+fn diff_besar_mul() {
+    assert_byte_equal(
+        "besar_mul",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(besar(\"12\") * besar(\"12\"));\n\
+            cetakln(besar(\"99999999999999999999\") * besar(\"99999999999999999999\"));\n\
+            cetakln(besar(\"4294967295\") * besar(\"4294967295\"));\n\
+            cetakln(besar(\"7\") * besar(\"18446744073709551616\"));\n\
+            cetakln((besar(\"0\") - besar(\"5\")) * besar(\"3\"));\n\
+            cetakln((besar(\"0\") - besar(\"5\")) * (besar(\"0\") - besar(\"3\")));\n\
+            cetakln(besar(\"0\") * besar(\"12345\"));\n\
+            cetakln(besar(\"999999999999\") * besar(\"0\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_besar_mul_square_let() {
+    // 30-digit squared (58-digit result) through a let binding.
+    assert_byte_equal(
+        "besar_mul_sq",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            biar a = besar(\"123456789012345678901234567890\");\n\
+            cetakln(a * a);\n\
+            pulang 0\n\
+        }",
+    );
+}
