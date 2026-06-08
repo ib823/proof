@@ -2215,10 +2215,13 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 when the program uses BigInt), **the six comparisons** (`bi_cmp_mag`/`bi_cmp`), **add/sub**
 (`bi_add_mag`/`bi_sub_mag`/`bi_addsub`), **multiply** (`bi_mul`), **and truncating divmod** (`bi_divmod`,
 `/`+`%`) all work on WASM **byte-identical to C** — **W2 is complete**, the besar binop guard is fully lifted,
-and `00_basics/bigint.rii` is in the **corpus differential (33/33 byte-equal)**. The remaining boxed types
-`perpuluhan`/`wang`/`titik_tetap`/`qmn` (**W3**) still fail closed on WASM — C + the interpreter cover them
+and `00_basics/bigint.rii` is in the **corpus differential (33/33 byte-equal)**. **W3 (in progress):**
+`perpuluhan` (Decimal) **construction + display** now work on WASM byte-identical to C (W3.1a — a
+`[scale][mantissa]` record reusing the BigInt runtime, `dec_from_str`/`dec_to_str`); **Decimal arithmetic**
+and the fixed-point types `wang`/`titik_tetap`/`qmn` still fail closed — C + the interpreter cover them
 byte-identically, so this is a **parity gap, not a blocker**; each guard stays until its replacement is
-*proven* byte-identical. **W3 (next): `perpuluhan`/`wang`/`titik_tetap`/`qmn` WASM codegen.**
+*proven* byte-identical. **Next: W3.1b** (Decimal arithmetic) **→ W3.2** (`wang`/`titik_tetap`) **→ W3.3**
+(`qmn`).
 **W2 — linear-memory bignum:** a heap record `{ neg, len, limbs }` from the bump allocator; hand-emit `bi_from_str`/`bi_to_str` (base-10 ↔ limbs), `bi_add`/`bi_sub` (carry/borrow), `bi_mul`, `bi_divmod` (bit-serial, matching `bigint.rs` — the algorithm `BigIntModel.v` proves); box `besar` as a pointer and dispatch `riina_binop_*`. Land BigInt first (extend the corpus differential once `00_basics/bigint.rii` compiles on WASM), then lift its guard. **W3 — scaled types reuse W2:** `perpuluhan`/`wang`/`qmn` carry a `scale`/`frac_bits` beside the bignum pointer; reuse the W2 functions + the `round_quotient` rounding `FixedPointModel.v` proves. Extend the differential to `decimal.rii`/`fixed.rii`. **Gate: no guard removed before its type reads byte-identically across interp/C/WASM.** | **Numeric tower complete (interpreter + C codegen + Coq model)**; finance use cases supported + a shipping sample app (Gate C exit criterion) |
 
 **Exit criteria:** external crypto audit clean (owner-gated, P0 budget item — **OPEN**);
@@ -2401,7 +2404,7 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM numeric tower W1 (i64 cell) + W2.1 (BigInt construct/display) + W2.2 (compare + add/sub) + W2 complete (BigInt construct/display/compare/+/−/×/÷/%))
+### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM numeric tower W1 (i64 cell) + W2.1 (BigInt construct/display) + W2.2 (compare + add/sub) + W2 complete (full WASM BigInt) + W3.1a (WASM Decimal construct/display))
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
 **Verified baseline at handoff (all re-run by command this session):** `cargo test --release` (03_PROTO)
@@ -2419,6 +2422,22 @@ fresh container must provision Rocq before any push, see the environment notes b
 AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushed to
 `claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
 `filesActive` **326**, `examples` **164**.
+
+**Twelfth session (2026-06-07), part 13 — W3.1a started (WASM Decimal construction + display):**
+`perpuluhan` now constructs and displays on the WASM backend, **byte-identical to C** — the first slice of
+**W3** (the remaining boxed numeric-tower types). A Decimal is a heap record `[scale:i32][mantissa_ptr:i32]`
+(value = mantissa·10^-scale), the mantissa a **reused BigInt record** — so the bignum runtime is now emitted
+for `Ty::Decimal` too (`needs_bignum = uses_bigint || uses_decimal`). Two helpers: `dec_from_str` (parse —
+split sign/point, build the int+frac digit string, `bi_from_str` it, apply sign + scale, matching
+`decimal.rs::parse`) and `dec_to_str` (render — `bi_to_str` the magnitude, then insert the point `scale`
+from the right, zero-padding to `0.0…d` when shorter, leading `-` if negative, matching `to_string_repr`).
+`perpuluhan`/`cetak`/`ke_teks` of `Ty::Decimal` dispatch to them; the lowering types the constructor result
+`Ty::Decimal`; **Decimal arithmetic fails closed** (a follow-up). **Verified:** C/WASM byte-identical for
+`3.14`/`0.001`/`-3.14`/`7`/`3.140` (trailing-zero preservation)/`0.00`/`.5`→`0.5`/`100.00`/`-0.5`/`12345.6789`
+(`+1` differential test, 12 cases); corpus **33/33** (decimal.rii uses arithmetic, still fails closed);
+wasm_e2e 43/43; full workspace `--release` **2868→2869 / 0**; clippy clean. **Next: W3.1b** — Decimal
+arithmetic (`+`/`-` via scale-align + `bi_addsub`, `*` via `bi_mul` + scale-add, `/` half-to-even, value-based
+compare), then W3.2 fixed-point (`wang`/`titik_tetap`) and W3.3 Q-format (`qmn`).
 
 **Twelfth session (2026-06-07), part 12 — W2.4 complete → W2 DONE (WASM BigInt divmod):**
 `besar` `/` and `%` now work on the WASM backend, **byte-identical to C** — **completing the WASM BigInt
