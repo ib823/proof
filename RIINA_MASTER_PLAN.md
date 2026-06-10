@@ -2293,10 +2293,10 @@ closed by D2 alone, but the *honesty* obligation (no marketing claim survives un
 | Task | Verification |
 |---|---|
 | External crypto audit (riina-core) | Audit report published, 0 findings ≥ Medium |
-| Formal threat model (STRIDE/PASTA) for compiler + runtime | Document in `04_SPECS/security/` |
-| CVE disclosure: `security@` mailbox + 90-day disclosure policy | Documented in `SECURITY.md` |
-| Reproducible verification one-liner for outsiders | `make verify-all` re-derives every public metric |
-| Design doc for the 7 `unsafe` blocks (riina-arena, riina-wasm) | Per-block invariants + audit log |
+| Formal threat model (STRIDE/PASTA) for compiler + runtime | **DONE 2026-06-10** — `04_SPECS/security/THREAT_MODEL.md`: per-element STRIDE over the shipped TCB (lexer/parser, typechecker/IFC, codegen, `unsafe` inventory, side channels, supply chain), benchmarked to MS SDL + NIST SSDF; a consolidated **Open-Risks register (OR-1…OR-9)** surfacing every residual Medium+, and the **GoFetch/Downfall/Inception** section REQ-32 requires (honestly: source-level CT is necessary-not-sufficient; DMP/transient leaks are accepted+disclosed, deploy-time HW/OS controls). |
+| CVE disclosure: `security@` mailbox + 90-day disclosure policy | **DONE 2026-06-10** — `SECURITY.md` hardened: 90-day coordinated disclosure (Project-Zero/CERT-CC norms), CVSS-band severity, CVE-request + GHSA-advisory process, safe-harbor clause, scope incl. the documented HW side-channel limitations; `security@` alias is the owner-action remainder. |
+| Reproducible verification one-liner for outsiders | `riinac verify --full` (+ `scripts/audit-docs.sh`) re-derives the public counts today; a single `make verify-all` wrapper is the remaining tidy. |
+| Design doc for the `unsafe` blocks (riina-arena, riina-wasm, riina-core) | **DONE 2026-06-10** — `04_SPECS/security/UNSAFE_AUDIT.md`: every `unsafe` site (re-derived from the tree — **8 in 2 proto crates + 4 in `riina-core`**, correcting the plan's stale "7") with its operation, safety contract, discharging invariant, and review note; `#![forbid(unsafe_code)]` confirmed in **11/19** proto crates; the arena's append-only `ARENA-INV` and the `repr(transparent)` Ed25519 cast verified. The log is a review gate (a new `unsafe` without an entry fails review). |
 | Side-channel review of `masa_tetap` codegen + `riina-core` crypto | Independent reviewer signs off. **Tooling ready 2026-06-05:** structural (`scripts/ct-structural-check.sh`, deterministic ctgrind) + timing (`scripts/ct-timing-certify.sh`, host-graded dudect) CT harnesses; see `reports/precrypto_audit_secondmodel.md` §§Structural/Timing CT |
 | OSS-Fuzz or equivalent continuous fuzzing | Hooked + stable |
 
@@ -2424,6 +2424,24 @@ fresh container must provision Rocq before any push, see the environment notes b
 AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushed to
 `claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
 `filesActive` **326**, `examples` **164**.
+
+**Twelfth session (2026-06-10), part 17 — Gate G security posture (3 of 7 tasks landed; honesty-first).**
+After confirming (and *recording as the honest answer*) that the rest of the backlog is external /
+owner-gated / multi-month and cannot be done in one session without the inflated-claim shortcut the
+mandate forbids, drove the one fully-in-power Gate-G lane to a verified close. Three deliverables, each
+benchmarked to a recognized standard and anchored to re-derived facts (Zero-Trust: counts grepped from the
+tree, not copied): (1) **`04_SPECS/security/THREAT_MODEL.md`** — per-element STRIDE over the *shipped* TCB
+(MS SDL + NIST SSDF framing), with a 9-entry Open-Risks register surfacing every residual Medium+ and the
+REQ-32-mandated **GoFetch (DMP) + Downfall/Inception (transient-exec)** treatment stated honestly
+(source-level CT is necessary-not-sufficient; those leaks are accepted+disclosed, needing deploy-time
+HW/OS controls). (2) **`04_SPECS/security/UNSAFE_AUDIT.md`** — every `unsafe` site with contract + discharging
+invariant + review note; **corrected the plan's stale "7" to the tree's actual 8 (proto) + 4 (`riina-core`)**,
+confirmed `#![forbid(unsafe_code)]` in 11/19 proto crates, verified the arena append-only invariant and the
+`repr(transparent)` Ed25519 cast. (3) **`SECURITY.md`** — 90-day coordinated disclosure, CVSS severity bands,
+CVE/GHSA process, safe-harbor. Docs-only (no code change); `audit-docs.sh` 0 discrepancies; tree green.
+**Gate-G remainder (4 tasks):** external crypto+compiler audit (REQ-28, owner-gated budget), the `make
+verify-all` one-liner tidy, the independent side-channel sign-off, and OSS-Fuzz onboarding. **The other
+backlog lanes are unchanged and remain owner-decision- or multi-session-gated** (see part-16 inventory).
 
 **Twelfth session (2026-06-10), part 16 — W3.3 complete → W3 DONE (WASM Q-format `qmn`): the WASM numeric
 tower is COMPLETE.** Q-format binary fixed-point now works on the WASM backend, **byte-identical to C** —
