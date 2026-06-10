@@ -2304,7 +2304,7 @@ closed by D2 alone, but the *honesty* obligation (no marketing claim survives un
 | External crypto audit (riina-core) | Audit report published, 0 findings ≥ Medium |
 | Formal threat model (STRIDE/PASTA) for compiler + runtime | **DONE 2026-06-10** — `04_SPECS/security/THREAT_MODEL.md`: per-element STRIDE over the shipped TCB (lexer/parser, typechecker/IFC, codegen, `unsafe` inventory, side channels, supply chain), benchmarked to MS SDL + NIST SSDF; a consolidated **Open-Risks register (OR-1…OR-9)** surfacing every residual Medium+, and the **GoFetch/Downfall/Inception** section REQ-32 requires (honestly: source-level CT is necessary-not-sufficient; DMP/transient leaks are accepted+disclosed, deploy-time HW/OS controls). |
 | CVE disclosure: `security@` mailbox + 90-day disclosure policy | **DONE 2026-06-10** — `SECURITY.md` hardened: 90-day coordinated disclosure (Project-Zero/CERT-CC norms), CVSS-band severity, CVE-request + GHSA-advisory process, safe-harbor clause, scope incl. the documented HW side-channel limitations; `security@` alias is the owner-action remainder. |
-| Reproducible verification one-liner for outsiders | `riinac verify --full` (+ `scripts/audit-docs.sh`) re-derives the public counts today; a single `make verify-all` wrapper is the remaining tidy. |
+| Reproducible verification one-liner for outsiders | **DONE 2026-06-10** — `make verify-all` (root `Makefile`): builds `riinac`, runs `riinac verify --full` (re-compiles the active Coq corpus → Qed count, runs all Rust tests in both workspaces, clippy), then `scripts/audit-docs.sh` (published-counts == source). One command re-derives every public metric. (`make verify` is the fast variant; `make coq` now delegates to the canonical `02_FORMAL/coq` build — the root Makefile was previously a stale, unparseable stub.) |
 | Design doc for the `unsafe` blocks (riina-arena, riina-wasm, riina-core) | **DONE 2026-06-10** — `04_SPECS/security/UNSAFE_AUDIT.md`: every `unsafe` site (re-derived from the tree — **8 in 2 proto crates + 4 in `riina-core`**, correcting the plan's stale "7") with its operation, safety contract, discharging invariant, and review note; `#![forbid(unsafe_code)]` confirmed in **11/19** proto crates; the arena's append-only `ARENA-INV` and the `repr(transparent)` Ed25519 cast verified. The log is a review gate (a new `unsafe` without an entry fails review). |
 | Side-channel review of `masa_tetap` codegen + `riina-core` crypto | Independent reviewer signs off. **Tooling ready 2026-06-05:** structural (`scripts/ct-structural-check.sh`, deterministic ctgrind) + timing (`scripts/ct-timing-certify.sh`, host-graded dudect) CT harnesses; see `reports/precrypto_audit_secondmodel.md` §§Structural/Timing CT |
 | OSS-Fuzz or equivalent continuous fuzzing | Hooked + stable |
@@ -2433,6 +2433,25 @@ fresh container must provision Rocq before any push, see the environment notes b
 AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushed to
 `claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
 `filesActive` **326**, `examples` **164**.
+
+**Twelfth session (2026-06-10), part 18 — owner decisions executed (Gate D retract, REQ-33/35/28 recorded) + `make verify-all`.**
+Put the owner's standing P0 decisions directly and acted on each *accordingly* (not pretending the
+external/multi-month ones are doable): **(1) REQ-29 → Path D2 (retract).** RIINA now makes no public
+multi-prover claim — the verification banner template (`sync-metrics.sh`) no longer leads with a prover-lane
+count and explicitly labels the 9 non-Coq trees "machine-generated … not independent verification"
+(propagated to 39 docs); the website hero stat "10 prover lanes" → "0 axioms & admitted (Coq active build)",
+the "Multi-prover verification" heading → "Verification lanes — Coq mechanized; the rest generated", and
+`docs/papers/07_multi_prover.md` opens with a ⚠ RETRACTED banner (vite build validated). **(2) REQ-35 →
+remain Proprietary** (consequence recorded: Gate I/J open-contribution items intentionally blocked).
+**(3) REQ-33 → Fintech / PCI-DSS + Syariah** (decision made; cert execution remains external, Gate H).
+**(4) REQ-28 audit → deferred** by owner (status quo). **(5) `make verify-all`** (Gate G's 4th task): a
+one-command reproducible-verification wrapper (`riinac verify --full` + `audit-docs.sh`) — and the root
+`Makefile`, previously a stale unparseable stub, was rewritten so `make coq` delegates to the canonical
+`02_FORMAL/coq` build. Docs/website-source + Makefile only; no code; metrics.json kept at the verified 2877
+(not the estimate sync-metrics fell back to); audit-docs 0 discrepancies. **Honest scope note:** the
+remaining backlog (external audit, certifications, TCP/TLS, async, full IFC-enforcement parity, JALINAN/
+CAHAYA, self-hosting, Gate F supply-chain, 24h fuzz, maintainer recruitment) is unchanged — external,
+owner-gated, or multi-month, and was correctly NOT attempted in one session.
 
 **Twelfth session (2026-06-10), part 17 — Gate G security posture (3 of 7 tasks landed; honesty-first).**
 After confirming (and *recording as the honest answer*) that the rest of the backlog is external /
