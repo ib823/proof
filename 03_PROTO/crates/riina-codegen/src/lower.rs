@@ -765,6 +765,7 @@ impl Lower {
                     match builtin_canonical(name) {
                         Some("besar") => return Ty::BigInt,
                         Some("perpuluhan") => return Ty::Decimal,
+                        Some("wang") | Some("titik_tetap") => return Ty::Fixed,
                         _ => {}
                     }
                 }
@@ -801,6 +802,7 @@ impl Lower {
                             // uses runtime tags).
                             (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
                             (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
+                            (Ty::Fixed, _) | (_, Ty::Fixed) => Ty::Fixed,
                             _ => Ty::Int,
                         }
                     }
@@ -1289,6 +1291,7 @@ impl Lower {
                         let ret_ty = match canonical {
                             "besar" => Ty::BigInt,
                             "perpuluhan" => Ty::Decimal,
+                            "wang" | "titik_tetap" => Ty::Fixed,
                             _ => Ty::Unit,
                         };
                         return Ok(self.emit(
