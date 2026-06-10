@@ -548,3 +548,45 @@ fn diff_titik_tetap_rescale() {
         }",
     );
 }
+
+// ── W3.3: Q-format qmn (qmn_parse / qmn_to_str / qmn_* arithmetic) ───────────
+// A FixedBin is raw/2^frac_bits over a wrapping i64 word; construction/display
+// convert decimal<->binary exactly (round half-to-even to the nearest
+// representable), arithmetic is exact in BigInt then wrapped. All byte-identical
+// to C. (00_basics/fixed.rii exercises wang+titik_tetap+qmn in the corpus.)
+
+#[test]
+fn diff_qmn_construct_display() {
+    // exact binary fractions; 0.1 -> nearest representable at 8 bits
+    // (0.1015625); integers; negatives; Q32 precision.
+    assert_byte_equal(
+        "qmn_construct",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(qmn((\"0.5\", 8)));\n\
+            cetakln(qmn((\"0.1\", 8)));\n\
+            cetakln(qmn((\"7\", 4)));\n\
+            cetakln(qmn((\"-2.5\", 8)));\n\
+            cetakln(qmn((\"3.14159265\", 32)));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_qmn_arith_cmp() {
+    // exact add (0.75), negative sub, round-he mul/div, mixed frac_bits
+    // alignment, value-based compare across widths.
+    assert_byte_equal(
+        "qmn_arith",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(qmn((\"0.5\", 8)) + qmn((\"0.25\", 8)));\n\
+            cetakln(qmn((\"0.25\", 8)) - qmn((\"0.5\", 8)));\n\
+            cetakln(qmn((\"1.5\", 16)) * qmn((\"2.5\", 16)));\n\
+            cetakln(qmn((\"1\", 16)) / qmn((\"3\", 16)));\n\
+            cetakln(qmn((\"0.5\", 8)) + qmn((\"0.25\", 16)));\n\
+            kalau qmn((\"0.5\", 8)) == qmn((\"0.5\", 16)) { cetak(1) } lain { cetak(0) }\n\
+            kalau qmn((\"0.25\", 8)) < qmn((\"0.5\", 8)) { cetak(1) } lain { cetak(0) }\n\
+            pulang 0\n\
+        }",
+    );
+}

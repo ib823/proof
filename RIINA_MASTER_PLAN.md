@@ -2215,15 +2215,15 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 when the program uses BigInt), **the six comparisons** (`bi_cmp_mag`/`bi_cmp`), **add/sub**
 (`bi_add_mag`/`bi_sub_mag`/`bi_addsub`), **multiply** (`bi_mul`), **and truncating divmod** (`bi_divmod`,
 `/`+`%`) all work on WASM **byte-identical to C** — **W2 is complete**, the besar binop guard is fully lifted,
-and `00_basics/bigint.rii` is in the **corpus differential**. **W3 (in progress):** `perpuluhan` (Decimal,
-W3.1) and `wang`/`titik_tetap` (fixed-point money, W3.2) are now **fully supported on WASM** byte-identical
-to C — both share a `[scale][mantissa]` record over the BigInt runtime; Decimal divides to 34 places and
-strips, Fixed rounds half-to-even back to max(scale) and preserves trailing zeros. `00_basics/decimal.rii`
-and the three Gate-C sample apps (`invois`/`gaji`/`belah_bil`) are in the **corpus differential (36/36
-byte-equal)**. Only Q-format `qmn` still fails closed — C + the interpreter cover it byte-identically, so
-this is a **parity gap, not a blocker**; the guard stays until its replacement is *proven* byte-identical.
-**Next: W3.3** (`qmn` — i64 raw/2^frac_bits), after which `00_basics/fixed.rii` joins the corpus and W3
-completes.
+and `00_basics/bigint.rii` is in the **corpus differential**. **W3 (COMPLETE, 2026-06-10):** every boxed
+numeric-tower type now runs on WASM **byte-identical to C** — `perpuluhan` (Decimal, W3.1: `[scale][mantissa]`
+over the BigInt runtime; exact add/sub/mul, half-to-even div to 34 places + strip, value-based compare),
+`wang`/`titik_tetap` (fixed-point money, W3.2: same record, mul/div round half-to-even **back to max(scale)**,
+display preserves trailing zeros), and `qmn` (Q-format, W3.3: `[frac_bits][raw:i64]`, a wrapping machine
+word; arithmetic exact in BigInt then wrapped; decimal↔binary conversion exact). `decimal.rii`, `fixed.rii`,
+and the three Gate-C sample apps (`invois`/`gaji`/`belah_bil`) are all in the **corpus differential (37/37
+byte-equal)**. **The WASM numeric tower (W1→W3) is complete — no numeric type fails closed anymore;
+interpreter, C, and WASM agree byte-for-byte across the corpus.**
 **W2 — linear-memory bignum:** a heap record `{ neg, len, limbs }` from the bump allocator; hand-emit `bi_from_str`/`bi_to_str` (base-10 ↔ limbs), `bi_add`/`bi_sub` (carry/borrow), `bi_mul`, `bi_divmod` (bit-serial, matching `bigint.rs` — the algorithm `BigIntModel.v` proves); box `besar` as a pointer and dispatch `riina_binop_*`. Land BigInt first (extend the corpus differential once `00_basics/bigint.rii` compiles on WASM), then lift its guard. **W3 — scaled types reuse W2:** `perpuluhan`/`wang`/`qmn` carry a `scale`/`frac_bits` beside the bignum pointer; reuse the W2 functions + the `round_quotient` rounding `FixedPointModel.v` proves. Extend the differential to `decimal.rii`/`fixed.rii`. **Gate: no guard removed before its type reads byte-identically across interp/C/WASM.** | **Numeric tower complete (interpreter + C codegen + Coq model)**; finance use cases supported + a shipping sample app (Gate C exit criterion) |
 
 **Exit criteria:** external crypto audit clean (owner-gated, P0 budget item — **OPEN**);
@@ -2406,7 +2406,7 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM numeric tower W1 (i64 cell) + W2.1 (BigInt construct/display) + W2.2 (compare + add/sub) + W2 complete (full WASM BigInt) + W3.1–W3.2 (WASM Decimal + fixed-point))
+### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM numeric tower W1 (i64 cell) + W2.1 (BigInt construct/display) + W2.2 (compare + add/sub) + W2 complete (full WASM BigInt) + W3 (full WASM numeric tower))
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
 **Verified baseline at handoff (all re-run by command this session):** `cargo test --release` (03_PROTO)
@@ -2424,6 +2424,24 @@ fresh container must provision Rocq before any push, see the environment notes b
 AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushed to
 `claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
 `filesActive` **326**, `examples` **164**.
+
+**Twelfth session (2026-06-10), part 16 — W3.3 complete → W3 DONE (WASM Q-format `qmn`): the WASM numeric
+tower is COMPLETE.** Q-format binary fixed-point now works on the WASM backend, **byte-identical to C** —
+the last fail-closed numeric type. A FixedBin is `[frac_bits:i32][raw:i64@8]` (value = raw/2^fb, a
+**wrapping** i64 word — the machine-int trade-off); all arithmetic is done **exactly in BigInt** then
+wrapped back, matching `fixed_bin.rs`: `qmn_two_pow` (2^bits as limbs, up to the 2^64 wrap modulus),
+`qmn_raw_to_big` (signed i64 → BigInt; the `0−raw` wrap makes `i64::MIN`'s magnitude come out right),
+`qmn_wrap_store` (BigInt → two's-complement-mod-2^64 i64 + record), `qmn_align` (×2^Δfb), `qmn_parse`
+(`(literal, fb)` pair → `round_he(mant·2^fb / 10^scale)`; fb∉1..=32 traps like the C abort), `qmn_to_str`
+(exact decimal render: `raw·5^fb/10^fb` with **5^fb computed exactly as 10^fb/2^fb** — no new pow loop —
+then the decimal strip+render), and addsub/mul/div/cmp (exact-align, `fix_round_q` for mul/div, zero-divisor
+trap). Reuse maximal: only 10 small functions, everything else is the existing bignum/decimal/fixed runtime.
+**`00_basics/fixed.rii` (wang + titik_tetap + qmn) joined the corpus differential — 36→37, all byte-equal.**
+**Verified:** exact binary fractions (`0.5+0.25=0.75`), nearest-representable `0.1→0.1015625` (Q8), Q32 π,
+mixed-frac_bits alignment, value-based compare across widths, round-he mul/div, negatives (`+2` differential
+tests, 12 cases); wasm_e2e 43/43; full workspace `--release` **2875→2877 / 0**; clippy clean. **W1→W3 are
+all complete: every numeric-tower type — sized ints, 64-bit ints, BigInt, Decimal, fixed-point money,
+Q-format — now runs on all three backends (interpreter, C, WASM) byte-identically.**
 
 **Twelfth session (2026-06-10), part 15 — W3.2 complete (WASM fixed-point `wang`/`titik_tetap`):**
 Fixed-point money now works on the WASM backend, **byte-identical to C**. Maximal reuse: a Fixed shares the
