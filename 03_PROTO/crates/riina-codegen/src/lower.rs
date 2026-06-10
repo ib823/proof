@@ -795,10 +795,12 @@ impl Lower {
                             (Ty::IntN { bits, signed }, _) | (_, Ty::IntN { bits, signed }) => {
                                 Ty::IntN { bits, signed }
                             }
-                            // Arbitrary-precision: a BigInt operand makes the result
-                            // BigInt, so `cetak`/`a + b`/binding dispatch stays on the
-                            // bignum path on WASM (the C backend uses runtime tags).
+                            // Boxed numeric tower: a BigInt/Decimal operand makes the
+                            // result BigInt/Decimal, so `cetak`/`a + b`/binding
+                            // dispatch stays on the boxed path on WASM (the C backend
+                            // uses runtime tags).
                             (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
+                            (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
                             _ => Ty::Int,
                         }
                     }

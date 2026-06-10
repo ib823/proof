@@ -201,9 +201,26 @@ impl WasmBackend {
         // Decimal mantissas are BigInts, so either type needs the bignum runtime.
         let needs_bignum = uses_bigint || uses_decimal;
         let n_bignum_fns: u32 = if needs_bignum { 9 } else { 0 };
+        // Helper signatures shared by the bignum + decimal runtimes.
+        let (bin_type_idx, ter_type_idx) = if needs_bignum {
+            let b = module.types.len() as u32;
+            module.types.push(FuncType {
+                params: vec![ValType::I32, ValType::I32],
+                results: vec![ValType::I32],
+            });
+            let t = module.types.len() as u32;
+            module.types.push(FuncType {
+                params: vec![ValType::I32, ValType::I32, ValType::I32],
+                results: vec![ValType::I32],
+            });
+            (b, t)
+        } else {
+            (0, 0)
+        };
         let (
             bi_from_str_index,
             bi_to_str_index,
+            bi_cmp_mag_index,
             bi_cmp_index,
             bi_addsub_index,
             bi_mul_index,
@@ -217,11 +234,6 @@ impl WasmBackend {
             module.functions.push(alloc_type_idx);
             module.codes.push(self.emit_bi_to_str(alloc_func_index));
             // (i32,i32)->i32 helpers: cmp_mag, cmp (W2.2a), add_mag, sub_mag (W2.2b).
-            let bin_type_idx = module.types.len() as u32;
-            module.types.push(FuncType {
-                params: vec![ValType::I32, ValType::I32],
-                results: vec![ValType::I32],
-            });
             let cmp_mag = NUM_IMPORTS + 3;
             module.functions.push(bin_type_idx);
             module.codes.push(self.emit_bi_cmp_mag());
@@ -235,11 +247,6 @@ impl WasmBackend {
             module.functions.push(bin_type_idx);
             module.codes.push(self.emit_bi_sub_mag(alloc_func_index));
             // (i32,i32,i32)->i32 helper: signed add/sub (W2.2b).
-            let ter_type_idx = module.types.len() as u32;
-            module.types.push(FuncType {
-                params: vec![ValType::I32, ValType::I32, ValType::I32],
-                results: vec![ValType::I32],
-            });
             let addsub = NUM_IMPORTS + 7;
             module.functions.push(ter_type_idx);
             module
@@ -255,30 +262,71 @@ impl WasmBackend {
             module
                 .codes
                 .push(self.emit_bi_divmod(alloc_func_index, cmp_mag));
-            (from, to, cmp, addsub, mul, divmod)
+            (from, to, cmp_mag, cmp, addsub, mul, divmod)
         } else {
-            (0, 0, 0, 0, 0, 0) // unused: no bignum op is emitted when unneeded
+            (0, 0, 0, 0, 0, 0, 0) // unused: no bignum op is emitted when unneeded
         };
 
         // === Decimal (`perpuluhan`) runtime ===
         // A decimal is `[scale:i32][mantissa_ptr:i32]` (value = mantissa·10^-scale),
         // the mantissa a BigInt record. W3.1a: from_str (parse) + to_str (display);
-        // arithmetic is a follow-up (its binops still fail closed). (i32)->i32.
-        let n_decimal_fns: u32 = if uses_decimal { 2 } else { 0 };
-        let (dec_from_str_index, dec_to_str_index) = if uses_decimal {
-            let dfrom = NUM_IMPORTS + 1 + n_bignum_fns;
+        // W3.1b: arithmetic — scale-aligned exact add/sub, mul (scales add),
+        // half-to-even div to 34 places + trailing-zero strip, value-based compare
+        // (matching `decimal.rs`). Mod/And/Or stay fail-closed (typechecker rejects).
+        let n_decimal_fns: u32 = if uses_decimal { 7 } else { 0 };
+        let (
+            dec_from_str_index,
+            dec_to_str_index,
+            dec_addsub_index,
+            dec_mul_index,
+            dec_cmp_index,
+            dec_div_index,
+        ) = if uses_decimal {
+            let base = NUM_IMPORTS + n_bignum_fns;
+            let dfrom = base + 1;
             module.functions.push(alloc_type_idx);
             module
                 .codes
                 .push(self.emit_dec_from_str(alloc_func_index, bi_from_str_index));
-            let dto = NUM_IMPORTS + 2 + n_bignum_fns;
+            let dto = base + 2;
             module.functions.push(alloc_type_idx);
             module
                 .codes
                 .push(self.emit_dec_to_str(alloc_func_index, bi_to_str_index));
-            (dfrom, dto)
+            // dec_pow10_mul(mant, n) -> mant * 10^n (internal to the helpers below).
+            let dpow = base + 3;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_dec_pow10_mul(
+                alloc_func_index,
+                bi_from_str_index,
+                bi_mul_index,
+            ));
+            let daddsub = base + 4;
+            module.functions.push(ter_type_idx);
+            module
+                .codes
+                .push(self.emit_dec_addsub(alloc_func_index, bi_addsub_index, dpow));
+            let dmul = base + 5;
+            module.functions.push(bin_type_idx);
+            module
+                .codes
+                .push(self.emit_dec_mul(alloc_func_index, bi_mul_index));
+            let dcmp = base + 6;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_dec_cmp(bi_cmp_index, dpow));
+            let ddiv = base + 7;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_dec_div(
+                alloc_func_index,
+                bi_divmod_index,
+                bi_mul_index,
+                bi_cmp_mag_index,
+                bi_addsub_index,
+                dpow,
+            ));
+            (dfrom, dto, daddsub, dmul, dcmp, ddiv)
         } else {
-            (0, 0)
+            (0, 0, 0, 0, 0, 0)
         };
         let n_helper_fns = n_bignum_fns + n_decimal_fns;
 
@@ -337,6 +385,10 @@ impl WasmBackend {
                 bi_divmod_index,
                 dec_from_str_index,
                 dec_to_str_index,
+                dec_addsub_index,
+                dec_mul_index,
+                dec_cmp_index,
+                dec_div_index,
             )?;
             module.codes.push(body);
         }
@@ -2766,6 +2818,469 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `dec_pow10_mul(mant: i32, n: i32) -> i32`: return `mant * 10^n` as a
+    /// fresh BigInt (or `mant` itself when n == 0). 10^n is built as the digit
+    /// string `1 0…0` parsed by `bi_from_str` (proven in W2), then `bi_mul`.
+    /// Used by the Decimal scale-alignment (`decimal.rs::align`) and division.
+    fn emit_dec_pow10_mul(
+        &self,
+        alloc_func_index: u32,
+        bi_from_str_index: u32,
+        bi_mul_index: u32,
+    ) -> FuncBody {
+        const MANT: u32 = 0;
+        const N: u32 = 1;
+        const S: u32 = 2;
+        const K: u32 = 3;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // if n == 0 { return mant }
+        lget(&mut c, N);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, MANT);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::End);
+        // s = alloc(align4(4 + 1 + n)); mem[s] = n+1; data = '1' then n '0's
+        lget(&mut c, N);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, -4);
+        op(&mut c, Op::I32And);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, S);
+        lget(&mut c, S);
+        lget(&mut c, N);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        wasm_store(&mut c, 0);
+        lget(&mut c, S);
+        wasm_i32c(&mut c, 49); // '1'
+        wasm_store8(&mut c, 4);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, N);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, S);
+        wasm_i32c(&mut c, 5);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, K);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 48); // '0'
+        wasm_store8(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // return bi_mul(mant, bi_from_str(s))
+        lget(&mut c, MANT);
+        lget(&mut c, S);
+        call(&mut c, bi_from_str_index);
+        call(&mut c, bi_mul_index);
+        FuncBody {
+            locals: vec![(2, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `dec_addsub(a: i32, b: i32, sub: i32) -> i32`: exact Decimal add
+    /// (sub=0) / sub (sub=1) — align both mantissas to `max(scale)` via
+    /// `dec_pow10_mul`, `bi_addsub` them, result keeps the common scale
+    /// (matching `decimal.rs::{add,sub}`).
+    fn emit_dec_addsub(
+        &self,
+        alloc_func_index: u32,
+        bi_addsub_index: u32,
+        dec_pow10_mul_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const SUB: u32 = 2;
+        const SA: u32 = 3;
+        const SB: u32 = 4;
+        const SCALE: u32 = 5;
+        const M: u32 = 6;
+        const D: u32 = 7;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // sa = mem[a]; sb = mem[b]; scale = max(sa, sb)
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SB);
+        lget(&mut c, SA);
+        lset(&mut c, SCALE);
+        lget(&mut c, SB);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, SB);
+        lset(&mut c, SCALE);
+        op(&mut c, Op::End);
+        // m = bi_addsub(pow10_mul(a.mant, scale-sa), pow10_mul(b.mant, scale-sb), sub)
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, SCALE);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        lget(&mut c, SCALE);
+        lget(&mut c, SB);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        lget(&mut c, SUB);
+        call(&mut c, bi_addsub_index);
+        lset(&mut c, M);
+        // d = alloc(8); d.scale = scale; d.mant = m
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, SCALE);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, M);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        FuncBody {
+            locals: vec![(5, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `dec_mul(a: i32, b: i32) -> i32`: exact Decimal multiply — mantissas
+    /// `bi_mul`, scales add (matching `decimal.rs::mul`).
+    fn emit_dec_mul(&self, alloc_func_index: u32, bi_mul_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const M: u32 = 2;
+        const D: u32 = 3;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        call(&mut c, bi_mul_index);
+        lset(&mut c, M);
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        c.push(Op::I32Add as u8);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, M);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        FuncBody {
+            locals: vec![(2, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `dec_cmp(a: i32, b: i32) -> i32`: value-based Decimal compare
+    /// (-1/0/1, scale-insensitive: `3.14 == 3.140`) — align mantissas to the
+    /// common scale, then `bi_cmp` (matching `decimal.rs::compare`).
+    fn emit_dec_cmp(&self, bi_cmp_index: u32, dec_pow10_mul_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const SA: u32 = 2;
+        const SB: u32 = 3;
+        const SCALE: u32 = 4;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SB);
+        lget(&mut c, SA);
+        lset(&mut c, SCALE);
+        lget(&mut c, SB);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, SB);
+        lset(&mut c, SCALE);
+        op(&mut c, Op::End);
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, SCALE);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        lget(&mut c, SCALE);
+        lget(&mut c, SB);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        call(&mut c, bi_cmp_index);
+        FuncBody {
+            locals: vec![(3, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `dec_div(a: i32, b: i32) -> i32`: Decimal division, rounded
+    /// **half-to-even** to 34 fractional digits then trailing-zero-stripped,
+    /// matching `decimal.rs::div`. `num/den` are scaled so the integer quotient
+    /// is the 34-place mantissa; the round compares `2|r|` vs `|den|` via
+    /// `bi_cmp_mag` (sign-insensitive — no in-place `abs` mutation), bumping the
+    /// quotient away from zero on Greater, and on a tie only when it is odd.
+    /// Division by zero traps (`unreachable`), matching the C runtime's abort.
+    fn emit_dec_div(
+        &self,
+        alloc_func_index: u32,
+        bi_divmod_index: u32,
+        bi_mul_index: u32,
+        bi_cmp_mag_index: u32,
+        bi_addsub_index: u32,
+        dec_pow10_mul_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const MA: u32 = 2;
+        const MB: u32 = 3;
+        const SHIFT: u32 = 4;
+        const NUM: u32 = 5;
+        const DEN: u32 = 6;
+        const Q: u32 = 7;
+        const R: u32 = 8;
+        const TWO: u32 = 9;
+        const CMPRES: u32 = 10;
+        const RESNEG: u32 = 11;
+        const ONE: u32 = 12;
+        const TEN: u32 = 13;
+        const SCALE: u32 = 14;
+        const Q2: u32 = 15;
+        const D: u32 = 16;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // Build a 1-limb positive BigInt constant `v` into local `dst`.
+        let mkconst = |c: &mut Vec<u8>, dst: u32, v: i64| {
+            wasm_i32c(c, 12);
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+            wasm_local(c, Op::LocalSet, dst);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 1);
+            wasm_store(c, 0);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 0);
+            wasm_store(c, 4);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, v);
+            wasm_store(c, 8);
+        };
+        // ma = a.mant; mb = b.mant; trap on zero divisor
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lset(&mut c, MA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        lset(&mut c, MB);
+        lget(&mut c, MB);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        op(&mut c, Op::Unreachable);
+        op(&mut c, Op::End);
+        // shift = 34 + b.scale - a.scale
+        wasm_i32c(&mut c, 34);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, SHIFT);
+        // num/den per the sign of shift
+        lget(&mut c, SHIFT);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, MA);
+        lget(&mut c, SHIFT);
+        call(&mut c, dec_pow10_mul_index);
+        lset(&mut c, NUM);
+        lget(&mut c, MB);
+        lset(&mut c, DEN);
+        op(&mut c, Op::Else);
+        lget(&mut c, MA);
+        lset(&mut c, NUM);
+        lget(&mut c, MB);
+        wasm_i32c(&mut c, 0);
+        lget(&mut c, SHIFT);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        lset(&mut c, DEN);
+        op(&mut c, Op::End);
+        // q = num / den (truncated); r = num % den
+        lget(&mut c, NUM);
+        lget(&mut c, DEN);
+        wasm_i32c(&mut c, 0);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, Q);
+        lget(&mut c, NUM);
+        lget(&mut c, DEN);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, R);
+        // cmpres = cmp_mag(2*r, den)  [magnitude-only: |2r| vs |den|]
+        mkconst(&mut c, TWO, 2);
+        lget(&mut c, R);
+        lget(&mut c, TWO);
+        call(&mut c, bi_mul_index);
+        lget(&mut c, DEN);
+        call(&mut c, bi_cmp_mag_index);
+        lset(&mut c, CMPRES);
+        // resneg = (ma.neg != mb.neg)
+        lget(&mut c, MA);
+        wasm_load(&mut c, 4);
+        lget(&mut c, MB);
+        wasm_load(&mut c, 4);
+        op(&mut c, Op::I32Ne);
+        lset(&mut c, RESNEG);
+        mkconst(&mut c, ONE, 1);
+        // if cmpres > 0 { q = bi_addsub(q, 1, resneg) }   [away from zero]
+        lget(&mut c, CMPRES);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, Q);
+        lget(&mut c, ONE);
+        lget(&mut c, RESNEG);
+        call(&mut c, bi_addsub_index);
+        lset(&mut c, Q);
+        op(&mut c, Op::Else);
+        // else if cmpres == 0 { if q is odd { bump } }   [half: round to even]
+        lget(&mut c, CMPRES);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, Q);
+        lget(&mut c, TWO);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        wasm_load(&mut c, 0); // parity remainder's len: 0 = even
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, Q);
+        lget(&mut c, ONE);
+        lget(&mut c, RESNEG);
+        call(&mut c, bi_addsub_index);
+        lset(&mut c, Q);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // strip trailing zero digits: while scale>0 && q % 10 == 0 { q /= 10; scale-- }
+        wasm_i32c(&mut c, 34);
+        lset(&mut c, SCALE);
+        mkconst(&mut c, TEN, 10);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, SCALE);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, Q);
+        lget(&mut c, TEN);
+        wasm_i32c(&mut c, 0);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, Q2);
+        lget(&mut c, Q);
+        lget(&mut c, TEN);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        wasm_load(&mut c, 0); // remainder len != 0 → not divisible → stop
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, Q2);
+        lset(&mut c, Q);
+        lget(&mut c, SCALE);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, SCALE);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // d = alloc(8); d.scale = scale; d.mant = q
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, SCALE);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, Q);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        FuncBody {
+            locals: vec![(15, ValType::I32)],
+            code: c,
+        }
+    }
+
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
@@ -2787,6 +3302,10 @@ impl WasmBackend {
         bi_divmod_index: u32,
         dec_from_str_index: u32,
         dec_to_str_index: u32,
+        dec_addsub_index: u32,
+        dec_mul_index: u32,
+        dec_cmp_index: u32,
+        dec_div_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -2888,6 +3407,10 @@ impl WasmBackend {
             bi_divmod_index,
             dec_from_str_index,
             dec_to_str_index,
+            dec_addsub_index,
+            dec_mul_index,
+            dec_cmp_index,
+            dec_div_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -3157,6 +3680,36 @@ impl WasmBackend {
             code.push(Op::LocalGet as u8);
             wasm_encode::encode_uleb128(*local as u64, code);
         }
+    }
+
+    /// Map a `-1/0/1` compare result (i32, on the stack — from `bi_cmp` or
+    /// `dec_cmp`) to comparison `op`'s boolean and lift it into the i64 cell.
+    fn emit_cmp_result_to_bool(op: &BinOp, code: &mut Vec<u8>) {
+        match op {
+            BinOp::Eq => code.push(Op::I32Eqz as u8), // == 0
+            BinOp::Ne => {
+                code.push(Op::I32Eqz as u8);
+                code.push(Op::I32Eqz as u8); // != 0
+            }
+            BinOp::Lt => {
+                wasm_i32c(code, 0);
+                code.push(Op::I32LtS as u8); // < 0
+            }
+            BinOp::Gt => {
+                wasm_i32c(code, 0);
+                code.push(Op::I32GtS as u8); // > 0
+            }
+            BinOp::Le => {
+                wasm_i32c(code, 0);
+                code.push(Op::I32LeS as u8); // <= 0
+            }
+            BinOp::Ge => {
+                wasm_i32c(code, 0);
+                code.push(Op::I32GeS as u8); // >= 0
+            }
+            _ => unreachable!("comparison op expected"),
+        }
+        code.push(Op::I64ExtendI32U as u8); // bool -> i64 cell
     }
 
     /// Emit code that prints the integer in `arg` as unsigned decimal ASCII via
@@ -3648,32 +4201,7 @@ impl WasmBackend {
                         code.push(Op::I32WrapI64 as u8);
                         code.push(Op::Call as u8);
                         wasm_encode::encode_uleb128(ctx.bi_cmp_index as u64, code);
-                        // map the (-1/0/1) compare result to this op's boolean
-                        match op {
-                            BinOp::Eq => code.push(Op::I32Eqz as u8), // == 0
-                            BinOp::Ne => {
-                                code.push(Op::I32Eqz as u8);
-                                code.push(Op::I32Eqz as u8); // != 0
-                            }
-                            BinOp::Lt => {
-                                wasm_i32c(code, 0);
-                                code.push(Op::I32LtS as u8); // < 0
-                            }
-                            BinOp::Gt => {
-                                wasm_i32c(code, 0);
-                                code.push(Op::I32GtS as u8); // > 0
-                            }
-                            BinOp::Le => {
-                                wasm_i32c(code, 0);
-                                code.push(Op::I32LeS as u8); // <= 0
-                            }
-                            BinOp::Ge => {
-                                wasm_i32c(code, 0);
-                                code.push(Op::I32GeS as u8); // >= 0
-                            }
-                            _ => unreachable!(),
-                        }
-                        code.push(Op::I64ExtendI32U as u8); // bool -> i64 cell
+                        Self::emit_cmp_result_to_bool(op, code);
                     }
                     BinOp::Add | BinOp::Sub => {
                         // Signed add/sub via bi_addsub(a, b, sub): sub=1 for `-`.
@@ -3718,19 +4246,60 @@ impl WasmBackend {
                     }
                 }
             }
-            Instruction::BinOp(_, lhs, rhs)
+            Instruction::BinOp(op, lhs, rhs)
                 if matches!(ctx.var_to_ty.get(lhs), Some(Ty::Decimal))
                     || matches!(ctx.var_to_ty.get(rhs), Some(Ty::Decimal)) =>
             {
-                // Decimal (`perpuluhan`) arithmetic is not yet wired on WASM (W3.1a
-                // lands construction + display). Fail closed so a Decimal binop
-                // never falls through to `i64.*` on the record pointers.
-                return Err(crate::Error::InvalidOperation(
-                    "Decimal (`perpuluhan`) arithmetic is not yet supported by the WASM \
-                     backend (construction + display work; arithmetic is a follow-up). \
-                     Use the C backend or the interpreter."
-                        .to_string(),
-                ));
+                // Decimal (`perpuluhan`) operands dispatch to the decimal runtime
+                // (W3.1b): exact scale-aligned add/sub, exact mul (scales add),
+                // half-to-even div, value-based compare — matching `decimal.rs` /
+                // the C backend. `%`/And/Or are undefined for decimals (the
+                // typechecker rejects them); fail closed defensively.
+                match op {
+                    BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Gt | BinOp::Le | BinOp::Ge => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.dec_cmp_index as u64, code);
+                        Self::emit_cmp_result_to_bool(op, code);
+                    }
+                    BinOp::Add | BinOp::Sub => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        wasm_i32c(code, if matches!(op, BinOp::Sub) { 1 } else { 0 });
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.dec_addsub_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8); // result ptr -> i64 cell
+                    }
+                    BinOp::Mul => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.dec_mul_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Div => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.dec_div_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    _ => {
+                        return Err(crate::Error::InvalidOperation(format!(
+                            "Decimal (`perpuluhan`) operator {op:?} is not supported by \
+                             the WASM backend (it is undefined for decimals)"
+                        )));
+                    }
+                }
             }
             Instruction::BinOp(op, lhs, rhs) => {
                 // Numeric tower: division/modulo/comparison of a *signed* sized int
@@ -4680,9 +5249,15 @@ struct EmitCtx<'a> {
     bi_mul_index: u32,
     /// Function index of the truncating BigInt divmod (`bi_divmod(a,b,want_rem)`).
     bi_divmod_index: u32,
-    /// Function indices of the Decimal (`perpuluhan`) runtime: parse + render.
+    /// Function indices of the Decimal (`perpuluhan`) runtime: parse, render,
+    /// signed add/sub (`dec_addsub(a,b,sub)`), multiply, value-based compare
+    /// (-1/0/1), and half-to-even division.
     dec_from_str_index: u32,
     dec_to_str_index: u32,
+    dec_addsub_index: u32,
+    dec_mul_index: u32,
+    dec_cmp_index: u32,
+    dec_div_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,

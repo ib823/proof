@@ -4,12 +4,10 @@
 // value `mantissa * 10^-scale`, built on the proven `besar` bignum so it never
 // overflows and never suffers binary-floating-point drift. Add/sub/mul are
 // exact; division rounds half-to-even to 34 places then strips trailing zeros;
-// comparison is value-based. The interpreter and the C backend evaluate it
-// identically (byte-for-byte) — its arithmetic is what `DecimalModel.v` proves
-// is a ring homomorphism to the rationals.
-//
-// (The WASM backend does not yet support Decimal; it fails closed rather than
-// miscompiling — run this with the interpreter or the C backend.)
+// comparison is value-based. All three backends — the interpreter, the C
+// backend, and the WASM backend — evaluate it byte-for-byte identically (it is
+// part of the C/WASM corpus differential); its arithmetic is what
+// `DecimalModel.v` proves is a ring homomorphism to the rationals.
 
 fungsi utama() -> Nombor kesan Tulis {
     biar a = perpuluhan("0.1");
