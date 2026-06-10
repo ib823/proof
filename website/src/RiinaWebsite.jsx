@@ -111,7 +111,7 @@ const RiinaWebsite = () => {
       version: '0.2.0',
       date: '2026-02-10',
       highlights: [
-        '10-prover verification corpus with explicit claim levels per lane',
+        '10-lane prover corpus tracked by claim level (Coq mechanized; the other lanes generated, not independent verification)',
         'Public quality gates and repository transparency',
       ],
     },
@@ -213,8 +213,8 @@ const RiinaWebsite = () => {
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
-            <span className="hero-stat__num">{metrics.multiProver.totalProvers}</span>
-            <span className="hero-stat__label">prover lanes (1 mechanized, rest generated)</span>
+            <span className="hero-stat__num">{fmt(metrics.proofs.axioms)}</span>
+            <span className="hero-stat__label">axioms &amp; admitted (Coq active build)</span>
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
@@ -453,7 +453,7 @@ const RiinaWebsite = () => {
         </div>
 
         <div className="triple-prover">
-          <h3 className="triple-prover__title">Multi-prover verification</h3>
+          <h3 className="triple-prover__title">Verification lanes — Coq mechanized; the rest generated</h3>
           <p className="triple-prover__desc">
             Coq is the only fully mechanized proof engine — all {fmt(metrics.proofs.qedActive)} proofs compile with zero admits and zero declared axioms
             (the active build also relies on 32 <code>Parameter</code> assumptions). The other lanes below are machine-generated from the Coq

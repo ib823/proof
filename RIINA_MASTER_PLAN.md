@@ -389,13 +389,13 @@ research source, and detailed description.
 | REQ-26 | Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | P1 | DONE | Gate A |
 | REQ-27 | Compiler enforcement parity with Coq theorems (linear/capability/session/full IFC/constant-time) — PARTIAL 2026-06-02: 6 enforcement-parity properties checked end-to-end (positive + negative), 18 `gate_b_parity` tests incl. IFC reference-aliasing (no-read-up through a `let`-bound ref) and capability at a nested call site; **WASM/C differential now 30/30 byte-equal (0 divergent), wired into a CI job** (cc+wasmtime); fixes: main.return_ty soundness, itoa, ke_teks/gabung_teks string builtins, structured-control-flow relooper, nested-if/else merge-phi (fixes `padan` matches), struct FieldAccess resolution (fixes compiler/main), WASM string-`Add` concat + ke_teks string pass-through (fixes CAHAYA UI). session parse→project→check pipeline wired (role-relative parse + `project_choreography`/`choreography_compatible`); constant-time div/mod rule + per-program codegen CT pass (`ct_verify`). Remaining: per-statement channel-op impl checking + `koreografi`-surface wiring for multiparty (RIINA has no session-channel surface ops yet); DMP/GoFetch CT channels (out of scope per Phase 7/9 caveat). All 5 documented lexer/parser/codegen `// TODO`s now resolved (the lexer int-suffix as a documented numeric-tower/Gate-C deferral). 2026-06-02 closures: 2 `lower.rs` sum-unwrap payload-type TODOs (Case lowering types `UnwrapLeft/Right` + bindings per `T_Case`); LDAP injection-parity + Effect-Gate top-level-binding-purity tests; Perform-payload TODO resolved (Rust already matches Coq `T_Perform`, no signature premise); `TaintViolation`/`SanitizerMismatch` wired live at taint sinks (were dead variants); **N-party multiparty global-type + projection core** (`multiparty.rs`, mirrors Coq `ChoreographyTypes`/`ChoreographyProjection`) | P0 | PARTIAL | Gate B |
 | REQ-28 | External crypto audit of `riina-core` (NCC/ToB/Cure53 grade) | P0 | TODO | Gate C / Gate G |
-| REQ-29 | Public position on multi-prover claim (Path D1 industrialize vs D2 retract) | P0 | TODO | Gate D |
+| REQ-29 | Public position on multi-prover claim (Path D1 industrialize vs D2 retract) — **DECIDED 2026-06-10: Path D2 (retract).** Public docs now state Coq is the only mechanized lane; the 9 other trees are machine-generated, claim-level-tracked, and explicitly *not* independent verification. Banner reworded (`sync-metrics.sh`, 39 docs), website hero/heading/changelog de-claimed, `docs/papers/07_multi_prover.md` headed with a retraction. | P0 | DONE (D2) | Gate D |
 | REQ-30 | Enable `03_PROTO/tests/fuzzing` workspace; continuous fuzz; ≥80% coverage gate | P1 | TODO | Gate E |
 | REQ-31 | Reproducible build attestation (Nix flake + SBOM + signed releases) | P1 | TODO | Gate F |
 | REQ-32 | Threat model document + CVE disclosure process + side-channel review of `masa_tetap` (must explicitly cover the DMP/prefetcher class — GoFetch 2024 — and the transient-execution families Downfall/Inception; see `01_RESEARCH/29_REFRESH_2026H1/`) | P0 | TODO | Gate G |
-| REQ-33 | Choose primary target industry & compliance certification path | P0 | DECISION | Gate H |
+| REQ-33 | Choose primary target industry & compliance certification path — **DECIDED 2026-06-10: Fintech / payments first → PCI-DSS + Syariah (AAOIFI) path.** Rationale: aligns with the delivered `wang`/`perpuluhan` money types (exact decimal, banker's rounding) and the Malaysia/SG compliance research already in `04_SPECS/`. The *decision* (what REQ-33 asks) is made; the certification *execution* is external/multi-month (Gate H). | P0 | DONE (decision) | Gate H |
 | REQ-34 | Language Reference + Getting Started + "Writing Secure RIINA" guide | P1 | TODO | Gate I |
-| REQ-35 | License decision (Proprietary → Apache-2.0 / BSL / AGPL / Dual) | P0 | DECISION | Gate J |
+| REQ-35 | License decision — **DECIDED 2026-06-10: remain Proprietary** (no change to `LICENSE`). Deliberate consequence: the Gate J / Gate I open-contribution items (public RFC, ≥3 external maintainers, DCO/CLA, community CoC enforcement) stay **intentionally blocked** while proprietary; they are not "TODO" so much as "N/A until a license change." | P0 | DONE (decision) | Gate J |
 | REQ-36 | Recruit ≥2 additional maintainers (current bus factor = 1) | P0 | DECISION | Gate J |
 
 ### Extension Protocol
@@ -2232,9 +2232,18 @@ interpreter, C, and WASM agree byte-for-byte across the corpus.**
 `riinac/tests/sample_apps.rs`; see the numeric-tower row slice 16). The crypto-audit half is the
 sole remaining blocker to closing Gate C.
 
-### Gate D — Extended Prover Honesty (owns REQ-29)
+### Gate D — Extended Prover Honesty (owns REQ-29) — **DECISION TAKEN 2026-06-10: Path D2 (retract). REQ-29 DONE.**
 
-Today's "10 provers" marketing must either be earned (D1) or retracted (D2).
+Today's "10 provers" marketing must either be earned (D1) or retracted (D2). **The owner chose D2
+(retract) on 2026-06-10**, so the gate is satisfied by retraction: the verification banner no longer
+leads with a prover-lane count (`sync-metrics.sh` reworded → "Coq is the only mechanized lane … the
+other prover trees are machine-generated (claim-level tracked, not independent verification)",
+propagated to 39 docs); the website hero stat that showed "10 prover lanes" now shows "0 axioms &
+admitted (Coq active build)", the section heading "Multi-prover verification" → "Verification lanes —
+Coq mechanized; the rest generated", and the changelog "10-prover verification corpus" was de-claimed;
+`docs/papers/07_multi_prover.md` now opens with a ⚠ RETRACTED banner marking it design/aspirational.
+**Path D1 (industrialize) is not pursued.** The detail below is retained for the historical record and
+the *if-and-when* of a future D1.
 
 **Path D1 — Industrialize the smoke artifacts** (6–12 months):
 - F\*: ≥50 lemmas across multiple modules, `fstar` build in CI
@@ -2369,13 +2378,13 @@ These cannot be made by a session; they require the project owner:
 
 | Decision | Blocks | Track in |
 |---|---|---|
-| License model (Proprietary / Apache-2.0 / BSL / AGPL / Dual) | Gates D2 publication, I community, J governance | REQ-35 |
-| Primary target industry first (avionics / automotive / fintech / general) | Gate H certification path | REQ-33 |
-| Multi-prover commitment (D1 industrialize vs D2 retract) | Gate D public position | REQ-29 |
-| Self-hosting target (Phase 10) or always Rust-hosted | Phase 10 effort sizing | REQ-18 |
-| External audit budget (~$100k–$500k for compiler verification audit) | Gates C, G | REQ-28, REQ-32 |
-| Maintainer recruitment plan (current bus factor 1) | Gate J | REQ-36 |
-| Trademark policy publication | Gate J | (new REQ when decided) |
+| ✅ **RESOLVED 2026-06-10: remain Proprietary** (License model) | (consequence) Gate I/J open-contribution items stay intentionally blocked while proprietary | REQ-35 |
+| ✅ **RESOLVED 2026-06-10: Fintech / PCI-DSS + Syariah** (primary target industry) | unblocks Gate H *direction*; cert execution is external/multi-month | REQ-33 |
+| ✅ **RESOLVED 2026-06-10: Path D2 — retract** (multi-prover position) | Gate D satisfied by retraction; no public multi-prover claim | REQ-29 |
+| Self-hosting target (Phase 10) or always Rust-hosted | Phase 10 effort sizing | REQ-18 — **still open** |
+| External audit budget (~$100k–$500k) | Gates C, G | REQ-28, REQ-32 — **DEFERRED by owner 2026-06-10 (status quo)** |
+| Maintainer recruitment plan (current bus factor 1) | Gate J | REQ-36 — **still open** (and N/A while proprietary) |
+| Trademark policy publication | Gate J | (new REQ when decided) — **still open** |
 
 ### Effort Sizing (rough, calendar time)
 

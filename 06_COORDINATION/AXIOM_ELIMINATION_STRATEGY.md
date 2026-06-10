@@ -5,7 +5,7 @@
 > It is not the live execution tracker.
 > Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`, `PROOF_STATUS.md`, and `website/public/metrics.json` for current state.
 
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2877 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2877 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Comprehensive Analysis & Execution Plan
 

@@ -1,4 +1,18 @@
-# Paper 7: Multi-Prover Verification Architecture for RIINA
+> ## ⚠ RETRACTED AS A CURRENT CLAIM — design/aspirational only (Gate D, Path D2, 2026-06-10)
+>
+> The "multi-prover verification" described below is an **intended architecture, not a
+> delivered capability.** Per the owner's decision to take **Path D2 (retract)** rather than
+> D1 (industrialize), RIINA makes **no public claim of multi-prover verification.** The honest
+> position, in force everywhere:
+>
+> - **Coq (Rocq 9.2) is the *only* mechanized lane** — 12,594 Qed, 0 Admitted, 0 axioms.
+> - The Lean, Isabelle, F\*, TLA+, Alloy, Z3/CVC5, Verus, Kani, and Translation-Validation trees
+>   are **machine-generated from the Coq sources** and are **not independent verification**;
+>   each is tracked by an explicit claim level in `website/public/metrics.json`.
+> - This paper is retained as a **research/design note** for the *if-and-when* of D1, not as a
+>   description of shipped assurance. Read every "verify"/"cross-validate" below as *intended*.
+
+# Paper 7: Multi-Prover Verification Architecture for RIINA (design note — see retraction above)
 
 ## Abstract
 

@@ -1,5 +1,5 @@
 # RIINA AXIOM ELIMINATION - PHASE 0 DELEGATION PROMPT
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2877 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2877 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## For Claude AI Web Execution
 

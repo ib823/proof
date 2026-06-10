@@ -1,6 +1,6 @@
 # DELEGATION TASKS FOR CLAUDE AI (WEB)
 
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2877 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2877 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## TASK 1: exp_rel_step1_fst
 

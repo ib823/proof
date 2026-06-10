@@ -112,8 +112,12 @@ ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); prin
 STUB_TOTAL=$((FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
 LEAN_ISA_TOTAL=$((LEAN_THEOREMS + ISABELLE_LEMMAS))
 
-# The canonical verification banner line — clean, professional
-BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) | ${TOTAL_PROVERS} prover lanes tracked with claim levels | ${RUST_TESTS} Rust tests"
+# The canonical verification banner line — honest framing (Gate D, Path D2,
+# 2026-06-10): Coq is the ONLY mechanized lane; the other prover trees are
+# machine-generated and are NOT independent verification (tracked by claim level
+# in website/public/metrics.json). The banner no longer leads with a "prover
+# lanes" count, which read as multi-prover verification.
+BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) — Coq is the only mechanized lane | ${RUST_TESTS} Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 
