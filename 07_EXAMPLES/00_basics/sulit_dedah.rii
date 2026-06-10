@@ -1,0 +1,20 @@
+// SULIT_DEDAH.RII — Secrets and sanctioned declassification (REQ-27)
+// Rahsia dan pendedahan yang disahkan
+//
+// This example CHECKS AND RUNS on the shipped compiler.
+//
+// `sulit e`            classifies a value (Coq: T_Classify -> TSecret)
+// `cetak(<secret>)`    is a COMPILE ERROR — secrets cannot reach a print sink
+// `dedah e dengan bukti e`  declassifies with a matching proof (Coq: T_Declassify
+//                      with declass_ok; Declassification.v) — only then printing
+//                      is allowed.
+//
+// The rejected counterpart (try it — `riinac check` fails with
+// "Security violation in print sink"):
+//
+//     biar pin = sulit 1234;
+//     cetak(pin)
+
+fungsi utama() -> Unit kesan Tulis {
+    cetak(dedah (sulit 1234) dengan bukti (sulit 1234))
+}

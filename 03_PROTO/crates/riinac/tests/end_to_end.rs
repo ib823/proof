@@ -355,3 +355,55 @@ fn rii_example_regression_gate_all() {
 
     eprintln!("rii_example_regression_gate_all: {pass}/{total} pass");
 }
+
+// ── REQ-27 IFC sink rule, end-to-end through the surface syntax ──
+// The same flow the typechecker unit tests pin at the AST level, exercised
+// through parse → typecheck via the real driver: printing a secret is a
+// compile error; the declassified form checks AND runs. Mirrors Coq
+// Declassification.v (T_Declassify / declass_ok).
+#[test]
+fn ifc_secret_print_rejected_end_to_end() {
+    let dir = std::env::temp_dir().join("riina_e2e_tests");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("ifc_leak.rii");
+    fs::write(
+        &path,
+        "fungsi utama() -> Unit kesan Tulis {\n    biar pin = sulit 1234;\n    cetak(pin)\n}\n",
+    )
+    .unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["check", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run riinac check");
+    assert!(!out.status.success(), "printing a secret must fail riinac check");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("Security violation in print sink"),
+        "expected the IFC sink diagnostic, got: {stderr}"
+    );
+}
+
+#[test]
+fn ifc_declassified_secret_prints_end_to_end() {
+    let dir = std::env::temp_dir().join("riina_e2e_tests");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("ifc_declass.rii");
+    fs::write(
+        &path,
+        "fungsi utama() -> Unit kesan Tulis {\n    cetak(dedah (sulit 1234) dengan bukti (sulit 1234))\n}\n",
+    )
+    .unwrap();
+
+    assert!(rii_check_passes(&path), "declassified secret must typecheck");
+
+    let run = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["run", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run riinac run");
+    assert!(run.status.success(), "declassified program must run");
+    assert!(
+        String::from_utf8_lossy(&run.stdout).contains("1234"),
+        "declassified value prints"
+    );
+}

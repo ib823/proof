@@ -35,6 +35,7 @@ type_system/TypeSafety.v
 effects/EffectAlgebra.v
 effects/EffectSystem.v
 effects/EffectGate.v
+effects/FileIOEffectModel.v
 
 # Properties - Phase 1 Foundation (WORKER_α) - VERIFIED COMPILING
 properties/TypeMeasure.v

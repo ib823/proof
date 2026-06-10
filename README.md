@@ -6,7 +6,7 @@
 
 Security properties in RIINA are tracked as a mix of machine-checked proofs, compiler checks, and explicitly documented gaps. The current verified state lives in `RIINA_MASTER_PLAN.md` Part 2.
 
-**[Try the Playground](https://ib823.github.io/riina/#playground)** | **[RIINA vs Rust](07_EXAMPLES/showcase/riina_vs_rust/)** | **[Website](https://ib823.github.io/riina/)**
+**[Get Started in 10 Minutes](docs/guide/GETTING_STARTED.md)** | **[Writing Secure RIINA](docs/guide/WRITING_SECURE_RIINA.md)** | **[Try the Playground](https://ib823.github.io/riina/#playground)** | **[RIINA vs Rust](07_EXAMPLES/showcase/riina_vs_rust/)** | **[Website](https://ib823.github.io/riina/)**
 
 ```
   ██████╗ ██╗██╗███╗   ██╗ █████╗
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2877 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2884 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 | Area | Status |
 |------|--------|
