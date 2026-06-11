@@ -1,0 +1,426 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:cargo/riina-arena@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-arena",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-arena@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-codegen@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-codegen",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-codegen@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-compliance@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-compliance",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-compliance@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-doc@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-doc",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-doc@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-fmt@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-fmt",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-fmt@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-lexer@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-lexer",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-lexer@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-lsp@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-lsp",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-lsp@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-os@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-os",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-os@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-parser@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-parser",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-parser@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-pkg@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-pkg",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-pkg@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-receipt@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-receipt",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-receipt@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-runtime@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-runtime",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-runtime@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-span@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-span",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-span@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-symbols@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-symbols",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-symbols@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-typechecker@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-typechecker",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-typechecker@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-types@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-types",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-types@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-ui@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-ui",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-ui@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riina-wasm@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riina-wasm",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riina-wasm@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    },
+    {
+      "bom-ref": "pkg:cargo/riinac@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "Proprietary"
+          }
+        }
+      ],
+      "name": "riinac",
+      "properties": [
+        {
+          "name": "riina:origin",
+          "value": "workspace"
+        }
+      ],
+      "purl": "pkg:cargo/riinac@0.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "0.3.0"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "name": "riinac",
+      "type": "application"
+    },
+    "properties": [
+      {
+        "name": "riina:totalComponents",
+        "value": "19"
+      },
+      {
+        "name": "riina:externalComponents",
+        "value": "0"
+      },
+      {
+        "name": "riina:note",
+        "value": "Deterministic SBOM (no timestamp/serial). Regenerate: bash scripts/generate-sbom.sh"
+      }
+    ]
+  },
+  "specVersion": "1.5",
+  "version": 1
+}
