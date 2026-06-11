@@ -187,6 +187,9 @@ fungsi utama() -> Unit kesan Sistem {
 
 - **[Writing Secure RIINA](WRITING_SECURE_RIINA.md)** — the security features
   in depth, each labeled with what is enforced today.
+- **[Standard Library API Reference](../api/STDLIB.md)** — every builtin and its
+  type signature, generated from the compiler's own registry (so it can't drift).
+- **[Proof Guide](PROOF_GUIDE.md)** — how to read, build, and extend the Coq lane.
 - **`07_EXAMPLES/00_basics/` and `07_EXAMPLES/03_applications/`** — examples
   verified to run on the shipped compiler (`belah_bil.rii`, `invois.rii`,
   `gaji.rii`, …). *Honesty note:* other example directories include

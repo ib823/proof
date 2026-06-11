@@ -11,6 +11,7 @@ riina-types.workspace = true
 
 [dev-dependencies]
 riina-parser.workspace = true
+riina-fmt.workspace = true
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
