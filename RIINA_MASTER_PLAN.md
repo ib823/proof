@@ -2044,7 +2044,7 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 | Proof integrity | L2 (Coq core real; Lean active-lane 0 axioms at audit-grep scope but per-file elaboration gaps remain; 5 provers smoke-only; 3 generated) | All active scopes 0 admit/0 axiom/0 abort; ≥1 independently re-proven theorem |
 | Compiler maturity | L3 (full pipeline; Gate B CLOSED 2026-06-02 — every compiler-enforceable Coq-modeled security property has a matching check + pos/neg tests; 0 `todo!()` outside tests) | Every Coq-modeled security property has matching compiler check + negative tests |
 | Stdlib audit | L1 (no external audit) | External crypto audit clean; effect-typed I/O; numeric tower |
-| Operational maturity | L2 (CI added — `.github/workflows/verify.yml` wraps cargo test + audit-docs + Rocq `make`; hooks still not auto-installed on fresh clone) | Hermetic builds + SBOM + signed releases + CVE process |
+| Operational maturity | L2→L3 partial (CI `.github/workflows/verify.yml`; **CVE process** `SECURITY.md` + **threat model** `04_SPECS/security/THREAT_MODEL.md` (Gate G); **SBOM** `sbom/*.cdx.json` proving 0 external runtime deps (REQ-31); `make verify-all` one-liner. Remaining for L3: CI-verified hermetic/reproducible `nix build` + **signed releases** (needs external key); hooks still not auto-installed on fresh clone) | Hermetic builds + SBOM + signed releases + CVE process |
 | Governance | L1 (1 contributor, proprietary license, no public RFC) | ≥3 maintainers, public roadmap, RFC process, license clear |
 
 ### Gate A — Truth-up & House Cleaning
@@ -2415,24 +2415,64 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-07, twelfth session — fixed-point types + C codegen + Coq model + sample apps; WASM numeric tower W1 (i64 cell) + W2.1 (BigInt construct/display) + W2.2 (compare + add/sub) + W2 complete (full WASM BigInt) + W3 (full WASM numeric tower))
+### Session Handoff Snapshot (last updated 2026-06-11, twelfth session — four machine-doable increments: REQ-27 secret-sink generalization, Gate I generated stdlib API docs + proof guide, REQ-30 fuzz harness + 2 parser DoS fixes, REQ-31 SBOM; on top of parts 15–19 below)
 
-**Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above).
-**Verified baseline at handoff (all re-run by command this session):** `cargo test --release` (03_PROTO)
-= **2848 / 0 / 3 ignored** (was 2730; +35 security-builtin lane + 18 BigInt + 1 Coq-bridge + 2 BigInt
-C-codegen + 14 decimal + 7 VirtualFs `vfs_*` + 4 NFC + 5 confusables + 1 Decimal Coq-bridge + 2 Decimal
-C-codegen + 13 Fixed (`wang`) + 10 FixedBin (`qmn`) + 4 sample-apps + 2 fixed-point C-codegen — all
-below), (05_TOOLING **294 /
-0**), `cargo clippy --all-targets` **0 warnings** (both
-workspaces), Coq active **327 files / 12,613 Qed / 0 Admitted / 0 Axiom / 0 Abort** (Rocq 9.1.1 — +1
-file/+13 Qed from `foundations/FixedPointModel.v` this session, machine-checked in-container; pre-push
-`verify --full` builds 326 `.vo` + a Metrics-Accuracy gate that pins `qedActive`=live Qed + a
-fail-closed "Primary Verifier (Coq) Present" guard that REQUIRES a `rocq`/`coqc` binary to PASS — a
-fresh container must provision Rocq before any push, see the environment notes below), `audit-docs.sh`
-**0 discrepancies**, the **structural-CT gate green** (`scripts/ct-structural-check.sh` →
-AES/ct_eq/X25519/Ed25519 all 0 memcheck errors, now a CI job). Clean tree, pushed to
-`claude/busy-dirac-OpHz5`. `metrics.json`: `tests`/`testsVerified` = **2850**, `qedActive` **12,594**,
-`filesActive` **326**, `examples` **164**.
+**Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above). Gate C's
+File-I/O Coq-model and stdlib-hardening rows are DONE; the gate stays open only on the **external crypto
+audit (REQ-28), deferred by the owner** — the sole remaining Gate C blocker.
+
+**Verified baseline at handoff (last commit `beb93fa`; all re-run by command this session):**
+`cargo test --workspace --release` (03_PROTO) = **2898 / 0** (was 2877 at the start of this session's
+four lanes: +6 REQ-27 IFC sink tests, +1 generated-stdlib-doc drift guard, +8 fuzz-robustness tests,
++ the REQ-30 parser-hardening regressions), (05_TOOLING **294 / 0**), `cargo clippy --workspace`
+**0 warnings** (both workspaces), Coq active **327 files / 12,613 Qed / 0 Admitted / 0 Axiom / 0 Abort**
+(Rocq 9.2; +1 file/+19 Qed from `effects/FileIOEffectModel.v`, part 19), `audit-docs.sh`
+**0 discrepancies**, proof ledger up to date. `metrics.json` (source of truth):
+`tests`/`testsVerified` = **2898**, `qedActive` **12,613**, `filesActive` **327**, `examples` **165**
+(61 pass `riinac check`, all 26 of `00_basics/`). Clean tree, pushed to `claude/busy-dirac-OpHz5`.
+
+**Environment note (unchanged, still load-bearing):** the pre-push `riinac verify --full` runs a
+fail-closed "Primary Verifier (Coq) Present" guard that REQUIRES a `rocq`/`coqc` binary, plus a
+Metrics-Accuracy gate pinning `qedActive` = live Qed — so a **fresh container MUST provision Rocq 9.2
+(`eval $(opam env --switch=rocq)`) before any push.** `make verify-all` runs the whole gate in one
+command; the structural-CT gate (`scripts/ct-structural-check.sh`) and `.github/workflows/verify.yml`
+remain green.
+
+**New artifacts this session a continuing session should know about:**
+`docs/guide/GETTING_STARTED.md`, `docs/guide/WRITING_SECURE_RIINA.md`, `docs/guide/PROOF_GUIDE.md`,
+the **generated** `docs/api/STDLIB.md` (regen/drift-guard: `cargo test -p riina-typechecker --test
+stdlib_doc`), `sbom/*.cdx.json` (regen: `bash scripts/generate-sbom.sh`, drift: `--check`),
+`02_FORMAL/coq/effects/FileIOEffectModel.v`, the REQ-30 fuzz harness
+`03_PROTO/crates/riinac/tests/fuzz_robustness.rs`, and the root `make verify-all`/`make verify` targets.
+
+**Twelfth session (2026-06-11), part 20 — four machine-doable increments (REQ-27 / Gate I / REQ-30 / REQ-31), each verified by running the artifact.**
+After an explore-first assessment of the remaining "machine-doable" backlog (and a recommendation to
+**descope** the Gate C host-FS inode bridge — its honest form is in-process defense-in-depth, not
+verification, so dressing it in Coq would overclaim), executed the four agreed lanes; commits
+`e5479f1`, `590e649`, `3164fbb`, `6171e5c`, `beb93fa`.
+**(1) REQ-27 sink generalization** (`e5479f1`): `ty_contains_secret`→`ty_secrecy_level` (rejects any
+`Labeled(_, l)` above `Public`, reporting the real level) and `secret_at_print_sink`→`secrecy_at_sink`,
+now covering print + **network-send** (`http_post`/`http_hantar`/`http_put` — body is `Any`-typed, a
+real leak vector, verified e2e) + **file-write** sinks (concrete-typed, so the check runs before
+unification to give a clear `SecurityViolation`). +6 typechecker tests +1 e2e; 0 corpus regressions.
+**(2) Gate I docs** (`590e649`): a **generated, drift-guarded** stdlib API reference `docs/api/STDLIB.md`
+(301 builtins from the compiler's own registry via `tests/stdlib_doc.rs` — fails CI if it drifts;
+needed `Context::iter` + `riina-fmt::format_ty`) and `docs/guide/PROOF_GUIDE.md` (every command verified).
+Both Gate I "Missing" rows for these → DONE.
+**(3) REQ-30 fuzz harness** (`3164fbb`): a stable-Rust, dep-free fuzz-robustness harness
+(`riinac/tests/fuzz_robustness.rs`, XorShift, four input modes, **per-input 5 s timeout thread so a
+non-terminating input is reported not spun on**) that **found and I fixed two real parser DoS bugs** —
+(a) stack overflow on `((((…` → a depth guard (`MAX_EXPR_DEPTH=100`, safe on a 2 MiB thread) returning
+new `ParseErrorKind::NestingTooDeep`; (b) infinite loop on `fungsi x<` (unclosed generic — the `<…>`-skip
+loops only broke on `None` but the lexer repeats `Eof`) → terminate at `Eof`. Both minimized + regression
+tests. This is the session's highest-value outcome for the `riinac check --stdin`/AI-input threat model.
+**(4) REQ-31 SBOM** (`6171e5c`): deterministic CycloneDX-1.5 SBOMs (`scripts/generate-sbom.sh` + `--check`
+drift guard) — `sbom/riina-proto.cdx.json` = **19 components, 0 external** (a machine-checkable proof of
+the zero-dependency shipped compiler) vs `sbom/riina-tooling.cdx.json` (129/121 external, never shipped);
+`flake.nix` version synced to VERSION. REQ-27/30/31 → PARTIAL with honest "remaining" notes; metrics
+trued up to the verified 2898 (`beb93fa`). **Still external/owner-gated (NOT attempted):** the external
+crypto audit (REQ-28), release signing (needs a maintainer key + CI secret), CI-verified reproducible
+`nix build`, and continuous-fuzz/coverage-gate/OSS-Fuzz.
 
 **Twelfth session (2026-06-10), part 19 — three-lane increment: Gate C File-I/O effect Coq model + REQ-27 secret-sink enforcement + Gate I human docs.**
 All three named lanes landed, each verified by running the artifact: **(1) Gate C / TRACK_A** —
