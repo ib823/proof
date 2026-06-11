@@ -83,12 +83,26 @@ declassification theorems (`properties/Declassification.v`:
 - Comparisons and crypto on secrets should go through constant-time/crypto
   builtins, not through declassify-then-compare.
 
-**Scope today.** References already enforce no-read-up / no-write-down on
-security levels (`Typing.v` `T_Deref`/`T_Assign`, mirrored by the checker's
-`gate_b_parity` tests), and the print sinks now reject `Secret`. Rejection of
-*level-labeled* (`Labeled`) data at print sinks by level, and secret-aware
-checking of further sinks (network, file writes) are the named next
-increments — tracked as REQ-27 in `RIINA_MASTER_PLAN.md`.
+The same rule now guards the **network-send** sinks (`http_post`/`http_hantar`/
+`http_put` — their body is `Any`-typed, so a secret would otherwise flow onto
+the wire) and the **file-write** sinks (`file_write`/`fail_tulis`/`file_append`/
+`fail_tambah`), and it rejects not just `Secret` but any `Labeled(_, level)` data
+*above* `Public` (the level a value carries after being dereferenced from a
+non-public reference). All of these report a `SecurityViolation` naming the leak
+level and the channel:
+
+```riina
+fungsi utama() -> Unit kesan Rangkaian {
+    biar pin = sulit 1234;
+    http_post(("https://api", (pin, "csrf")))   // COMPILE ERROR — secret on the network
+}
+```
+
+**Scope today.** References enforce no-read-up / no-write-down on security
+levels (`Typing.v` `T_Deref`/`T_Assign`, mirrored by the checker's
+`gate_b_parity` tests); print, network-send, and file-write sinks reject
+`Secret` and above-`Public` `Labeled` data. Secret-aware checking of *further*
+sinks as they are added is tracked as REQ-27 in `RIINA_MASTER_PLAN.md`.
 
 ## 3. Untrusted input: taint in, sanitizer out
 
