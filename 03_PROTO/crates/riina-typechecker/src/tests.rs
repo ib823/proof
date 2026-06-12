@@ -3231,6 +3231,196 @@ mod formalized_tests {
         assert!(type_check(&ctx, &call).is_ok(), "plain file write must typecheck");
     }
 
+    // ── REQ-27 slices 5–7 (Any-typed builtin audit, 2026-06-12) ──
+    // Four verified leak vectors closed: the `http_kemaskini` PUT alias was
+    // registered but missing from the sink list; the sanitized file-write
+    // variants have an Any-typed DATA position that passed unification; a
+    // failing assertion renders its operands into the runtime error message;
+    // and pure Any-typed builtins (ke_teks, containers) LAUNDERED secrecy —
+    // `cetak(ke_teks(pin))` type-checked while `cetak(pin)` was rejected.
+
+    #[test]
+    fn ifc_network_send_rejects_secret_via_kemaskini_alias() {
+        // http_kemaskini is the BM alias of http_put — same (URL,(body,csrf)).
+        let ctx = register_builtin_types(&Context::new());
+        let arg = Expr::Pair(
+            Box::new(Expr::String("https://api".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+                Box::new(Expr::String("tok".to_string())),
+            )),
+        );
+        let call = Expr::App(Box::new(Expr::Var("http_kemaskini".to_string())), Box::new(arg));
+        match type_check(&ctx, &call) {
+            Err(TypeError::SecurityViolation { found, context, .. }) => {
+                assert_eq!(found, SecurityLevel::Secret);
+                assert!(context.contains("network"), "network context, got {context}");
+            }
+            other => panic!("http_kemaskini(secret body) must be rejected, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_network_url_rejects_secret_with_clear_error() {
+        // GET/DELETE have no Any body, but a secret-derived URL/token is still
+        // exfiltration; pre-unification check upgrades the opaque TypeMismatch.
+        let ctx = register_builtin_types(&Context::new());
+        for sink in ["http_get", "http_dapat"] {
+            let arg = Expr::Classify(Box::new(Expr::String("https://x/?pin=1234".to_string())));
+            let call = Expr::App(Box::new(Expr::Var(sink.to_string())), Box::new(arg));
+            match type_check(&ctx, &call) {
+                Err(TypeError::SecurityViolation { found, context, .. }) => {
+                    assert_eq!(found, SecurityLevel::Secret);
+                    assert!(context.contains("network"), "{sink}: network context, got {context}");
+                }
+                other => panic!("{sink}(secret URL) must be a SecurityViolation, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn ifc_safe_file_write_rejects_secret_data() {
+        // fail_tulis_selamat/file_write_safe take (Sanitized path, Any data) —
+        // the Any data position let a raw secret through before the audit.
+        let ctx = register_builtin_types(&Context::new()).extend(
+            "laluan".to_string(),
+            Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal),
+        );
+        for sink in ["file_write_safe", "fail_tulis_selamat"] {
+            let arg = Expr::Pair(
+                Box::new(Expr::Var("laluan".to_string())),
+                Box::new(Expr::Classify(Box::new(Expr::Int(1234)))),
+            );
+            let call = Expr::App(Box::new(Expr::Var(sink.to_string())), Box::new(arg));
+            match type_check(&ctx, &call) {
+                Err(TypeError::SecurityViolation { found, context, .. }) => {
+                    assert_eq!(found, SecurityLevel::Secret);
+                    assert!(context.contains("file-write"), "{sink}: file context, got {context}");
+                }
+                other => panic!("{sink}(secret data) must be rejected, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn ifc_safe_file_write_accepts_public_data() {
+        let ctx = register_builtin_types(&Context::new()).extend(
+            "laluan".to_string(),
+            Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal),
+        );
+        let arg = Expr::Pair(
+            Box::new(Expr::Var("laluan".to_string())),
+            Box::new(Expr::String("data".to_string())),
+        );
+        let call = Expr::App(Box::new(Expr::Var("file_write_safe".to_string())), Box::new(arg));
+        assert!(type_check(&ctx, &call).is_ok(), "sanitized path + public data must write");
+    }
+
+    #[test]
+    fn ifc_assert_rejects_secret_operand() {
+        // builtins/ujian.rs renders `assert_eq failed: {:?} != {:?}` — a
+        // failing assertion on a secret prints it (error-message sink).
+        let ctx = register_builtin_types(&Context::new());
+        for sink in ["assert_eq", "tegaskan_sama", "assert_ne", "tegaskan_beza"] {
+            let arg = Expr::Pair(
+                Box::new(Expr::Classify(Box::new(Expr::Int(1234)))),
+                Box::new(Expr::Int(1234)),
+            );
+            let call = Expr::App(Box::new(Expr::Var(sink.to_string())), Box::new(arg));
+            match type_check(&ctx, &call) {
+                Err(TypeError::SecurityViolation { found, context, .. }) => {
+                    assert_eq!(found, SecurityLevel::Secret);
+                    assert!(context.contains("assertion"), "{sink}: assertion context, got {context}");
+                }
+                other => panic!("{sink}(secret operand) must be rejected, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn ifc_assert_accepts_public_operands() {
+        let ctx = register_builtin_types(&Context::new());
+        let arg = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(1)));
+        let call = Expr::App(Box::new(Expr::Var("tegaskan_sama".to_string())), Box::new(arg));
+        assert!(type_check(&ctx, &call).is_ok(), "public assert must typecheck");
+    }
+
+    #[test]
+    fn ifc_laundering_via_ke_teks_rejected_at_sink() {
+        // cetak(ke_teks(secret)) — the conversion result re-carries the
+        // argument's secrecy, so the sink still rejects it.
+        let ctx = register_builtin_types(&Context::new());
+        let launder = Expr::App(
+            Box::new(Expr::Var("ke_teks".to_string())),
+            Box::new(Expr::Classify(Box::new(Expr::Int(1234)))),
+        );
+        let call = Expr::App(Box::new(Expr::Var("cetak".to_string())), Box::new(launder));
+        match type_check(&ctx, &call) {
+            Err(TypeError::SecurityViolation { found, .. }) => {
+                assert_eq!(found, SecurityLevel::Secret);
+            }
+            other => panic!("cetak(ke_teks(secret)) must be rejected, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_laundering_via_container_rejected_at_sink() {
+        // cetak(senarai_tolak((list, secret))) — pushing a secret into an
+        // Any-typed container must not strip its label.
+        let ctx = register_builtin_types(&Context::new());
+        let mklist = Expr::App(
+            Box::new(Expr::Var("senarai_baru".to_string())),
+            Box::new(Expr::Int(0)),
+        );
+        let push = Expr::App(
+            Box::new(Expr::Var("senarai_tolak".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(mklist),
+                Box::new(Expr::Classify(Box::new(Expr::Int(1234)))),
+            )),
+        );
+        let call = Expr::App(Box::new(Expr::Var("cetak".to_string())), Box::new(push));
+        match type_check(&ctx, &call) {
+            Err(TypeError::SecurityViolation { found, .. }) => {
+                assert_eq!(found, SecurityLevel::Secret);
+            }
+            other => panic!("cetak(list with secret) must be rejected, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_secrecy_propagation_result_types() {
+        // ke_teks(Secret<Int>) : Secret<String>; ke_teks(Labeled(_, User)) :
+        // Labeled(String, User); ke_teks(public Int) stays String.
+        let ctx = register_builtin_types(&Context::new())
+            .extend("rahsia_u".to_string(), Ty::Labeled(Box::new(Ty::Int), SecurityLevel::User));
+
+        let secret_conv = Expr::App(
+            Box::new(Expr::Var("ke_teks".to_string())),
+            Box::new(Expr::Classify(Box::new(Expr::Int(1)))),
+        );
+        let (ty, _) = type_check(&ctx, &secret_conv).expect("ke_teks(secret) types");
+        assert_eq!(ty, Ty::Secret(Box::new(Ty::String)), "top joins to Secret<_>");
+
+        let user_conv = Expr::App(
+            Box::new(Expr::Var("ke_teks".to_string())),
+            Box::new(Expr::Var("rahsia_u".to_string())),
+        );
+        let (ty, _) = type_check(&ctx, &user_conv).expect("ke_teks(labeled) types");
+        assert_eq!(
+            ty,
+            Ty::Labeled(Box::new(Ty::String), SecurityLevel::User),
+            "intermediate level re-carried as Labeled"
+        );
+
+        let public_conv = Expr::App(
+            Box::new(Expr::Var("ke_teks".to_string())),
+            Box::new(Expr::Int(1)),
+        );
+        let (ty, _) = type_check(&ctx, &public_conv).expect("ke_teks(public) types");
+        assert_eq!(ty, Ty::String, "public data is untouched by propagation");
+    }
+
     #[test]
     fn test_file_write_append_take_string_pair_and_return_unit() {
         // Multi-arg `file_write`/`file_append` take a `(path, data)` pair of
