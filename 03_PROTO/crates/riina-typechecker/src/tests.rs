@@ -1003,6 +1003,58 @@ mod formalized_tests {
         }
     }
 
+    // ── Numeric tower: fixed-scale Fixed (`wang` / `titik_tetap`) ──
+
+    fn wang_call(s: &str) -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("wang".to_string())),
+            Box::new(Expr::String(s.to_string())),
+        )
+    }
+
+    #[test]
+    fn fixed_constructor_and_arithmetic_types() {
+        let mut ctx = builtin_ctx();
+        // `wang(String) -> Fixed`.
+        assert_eq!(
+            type_check_full(&mut ctx, &wang_call("19.99")).unwrap(),
+            (Ty::Fixed, Effect::Pure)
+        );
+        // `titik_tetap((String, Int)) -> Fixed`.
+        let tt = Expr::App(
+            Box::new(Expr::Var("titik_tetap".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("3.14159".to_string())),
+                Box::new(Expr::Int(2)),
+            )),
+        );
+        assert_eq!(
+            type_check_full(&mut ctx, &tt).unwrap(),
+            (Ty::Fixed, Effect::Pure)
+        );
+        for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div] {
+            let e = Expr::BinOp(op, Box::new(wang_call("1.50")), Box::new(wang_call("0.50")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::Fixed, "{op:?}");
+        }
+        for op in [BinOp::Lt, BinOp::Ge, BinOp::Eq] {
+            let e = Expr::BinOp(op, Box::new(wang_call("1.50")), Box::new(wang_call("0.50")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::Bool, "{op:?}");
+        }
+    }
+
+    #[test]
+    fn fixed_does_not_mix_with_other_numeric_types() {
+        let mut ctx = builtin_ctx();
+        // Fixed is its own domain — distinct from BigInt, Decimal, and Int.
+        for other in [besar_call("1"), decimal_call("1.5"), Expr::Int(1)] {
+            let e = Expr::BinOp(BinOp::Add, Box::new(wang_call("1.50")), Box::new(other));
+            assert!(
+                matches!(type_check_full(&mut ctx, &e), Err(TypeError::TypeMismatch { .. })),
+                "Fixed must not mix with BigInt/Decimal/Int"
+            );
+        }
+    }
+
     // ── Numeric tower: sized integer literals & width-aware arithmetic ──
 
     fn u8n(value: u64) -> Expr {

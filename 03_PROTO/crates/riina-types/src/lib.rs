@@ -538,6 +538,11 @@ pub enum Ty {
     /// Arbitrary-precision decimal (`perpuluhan`) — exact base-10 arithmetic for
     /// finance. A distinct type; does not silently mix with `Int`/`BigInt`.
     Decimal,
+    /// Fixed-scale decimal (`wang` money / `titik_tetap`) — a `mantissa` with a
+    /// *fixed* scale: arithmetic rounds half-to-even back to that scale and
+    /// display preserves trailing zeros (`3.30`, `100.00`). A distinct type; does
+    /// not silently mix with `Int`/`BigInt`/`Decimal`.
+    Fixed,
     String,
     Bytes,
     // Function types

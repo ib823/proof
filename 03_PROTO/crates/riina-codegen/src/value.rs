@@ -210,6 +210,11 @@ pub enum Value {
     /// in the Coq core; an interpreter-only numeric-tower slice.
     Decimal(crate::decimal::Decimal),
 
+    /// Fixed-scale decimal (`wang` money / `titik_tetap`): a BigInt mantissa with
+    /// a *fixed* scale — arithmetic rounds half-to-even back to that scale and
+    /// display preserves trailing zeros. Additive interpreter-only slice.
+    Fixed(crate::fixed::Fixed),
+
     /// String value
     ///
     /// Corresponds to Coq `VString s`.
@@ -810,6 +815,7 @@ impl std::fmt::Display for Value {
             }
             Self::BigInt(b) => write!(f, "{b}"),
             Self::Decimal(d) => write!(f, "{d}"),
+            Self::Fixed(x) => write!(f, "{x}"),
             Self::String(s) => write!(f, "\"{s}\""),
             Self::Pair(a, b) => write!(f, "({a}, {b})"),
             Self::Sum(Sum::Left(v)) => write!(f, "inl {v}"),
