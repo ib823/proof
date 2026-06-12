@@ -68,7 +68,7 @@ Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSyste
 
 ## Prover Maturity (be honest in generated docs/comments)
 
-Only **Coq (Rocq 9.2)** is a fully mechanized lane. The Lean 4, Isabelle, F\*, TLA+,
+Only **Coq (Rocq 9.1.1)** is a fully mechanized lane. The Lean 4, Isabelle, F\*, TLA+,
 Alloy, SMT, Verus, Kani, and TV trees are **generated or smoke-level** artifacts — do
 NOT describe them as independently verifying RIINA. Per-lane claim levels live in
 `website/public/metrics.json` (the single source of truth); all docs must agree with it.
