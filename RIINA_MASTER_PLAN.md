@@ -2429,7 +2429,9 @@ four lanes: +6 REQ-27 IFC sink tests, +1 generated-stdlib-doc drift guard, +8 fu
 (Rocq 9.2; +1 file/+19 Qed from `effects/FileIOEffectModel.v`, part 19), `audit-docs.sh`
 **0 discrepancies**, proof ledger up to date. `metrics.json` (source of truth):
 `tests`/`testsVerified` = **2898**, `qedActive` **12,613**, `filesActive` **327**, `examples` **165**
-(61 pass `riinac check`, all 26 of `00_basics/`). Clean tree, pushed to `claude/busy-dirac-OpHz5`.
+(61 pass `riinac check`, all 26 of `00_basics/`). Clean tree; **merged fast-forward to `main` and
+pushed 2026-06-12** (`aae4785..9f74cc8` + deploy follow-ups), **`v0.4.0` tagged**, public branch
+synced and reconciled (see the session-conclusion entry below).
 
 **Environment note (unchanged, still load-bearing):** the pre-push `riinac verify --full` runs a
 fail-closed "Primary Verifier (Coq) Present" guard that REQUIRES a `rocq`/`coqc` binary, plus a
@@ -2473,6 +2475,28 @@ the zero-dependency shipped compiler) vs `sbom/riina-tooling.cdx.json` (129/121 
 trued up to the verified 2898 (`beb93fa`). **Still external/owner-gated (NOT attempted):** the external
 crypto audit (REQ-28), release signing (needs a maintainer key + CI secret), CI-verified reproducible
 `nix build`, and continuous-fuzz/coverage-gate/OSS-Fuzz.
+
+**Session conclusion — merge + deploy (2026-06-12, owner-authorized).** Branch fast-forwarded to
+`main` (`aae4785..9f74cc8`, 64 commits, full pre-push verify PASS); the missing **`v0.4.0` tag**
+created at the release commit `aae4785` (Version/tag-alignment gate had no tag matching VERSION;
+v0.2.0/v0.3.0 precedent). **Public-branch deploy surfaced two real defects:** (1) `sync-public.sh`
+range mode stops at the first conflicting commit, commits the partial squash, and leaves cherry-pick
+sequencer state that makes the next run spuriously report "no new changes" — the session range was
+pushed via per-commit iteration, then fixed properly as **`--reconcile` mode** (`[TRACK_F]`
+`0bfa797bb`: content-level repair setting every public-destined file to main's exact blob, internal
+lists enforced against historical leaks, added-lines contamination self-check, **origin-only push**);
+(2) the **public tree's Coq corpus had drifted to 7,105 Qed while public's published metrics.json
+claims 12,613** — never caught because `scripts/verify-public.sh` is itself internal-excluded, so its
+`[ -f ]` guard self-skips on public. Reconciliation (owner-approved) makes the published claims
+reproducible from the public tree. **Known residuals for the owner:** the proof-ledger freshness gate
+cannot pass *on the curated public tree* by construction (PROOF_STATUS.md embeds global counts that
+include the deliberately-unpublished `properties/_archive_deprecated/`); an F\* toolchain install is
+tracked on public (`05_TOOLING/tools/fstar/` — not in the internal lists, unlike the Isabelle
+install; decide add+purge); `04_SPECS/cross-cutting/DOMAIN_R5_CHECKLIST_v1_0_0.md` carries
+`/workspaces/proof` paths onto public (main-sourced, flagged by verify-public check 7). **Website
+deploy NOT run:** `deploy-website.sh` pushes `gh-pages` on `ib823/riina`, outside this session's repo
+scope — runbook: `git remote add riina https://ib823:<TOKEN>@github.com/ib823/riina.git`, then
+`bash scripts/deploy-website.sh` (Node/npm present; Dim1/Dim9 + public-quality gates green on main).
 
 **Twelfth session (2026-06-10), part 19 — three-lane increment: Gate C File-I/O effect Coq model + REQ-27 secret-sink enforcement + Gate I human docs.**
 All three named lanes landed, each verified by running the artifact: **(1) Gate C / TRACK_A** —

@@ -262,10 +262,12 @@ Synced from main ($MAIN_SHA). Internal files excluded."
     git push origin public --no-verify
     echo -e "${GREEN}[✓] Public branch pushed to origin${NC}"
 
+    # Deliberately origin-only: reconcile is a bulk content repair, so the
+    # riina-mirror push (a force-push to another repo) stays with the normal
+    # single-commit sync path where the delta is small and reviewable.
     if git remote | grep -q "^riina$"; then
-        echo "Pushing to riina remote (public → main)..."
-        git push riina public:main --force-with-lease --no-verify
-        echo -e "${GREEN}[✓] Public branch pushed to riina (ib823/riina)${NC}"
+        echo -e "${YELLOW}[!] riina remote configured but NOT pushed by reconcile mode.${NC}"
+        echo "    Review origin/public first, then mirror via the normal sync path."
     fi
 
     git checkout main --quiet
