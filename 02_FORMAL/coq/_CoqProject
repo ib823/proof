@@ -6,6 +6,23 @@
 foundations/Syntax.v
 foundations/Semantics.v
 foundations/Typing.v
+foundations/SizedInt.v
+foundations/BigIntModel.v
+foundations/VerifiedList.v
+foundations/VerifiedMapSet.v
+foundations/VerifiedString.v
+foundations/VerifiedMath.v
+
+# Crypto (formal-equivalence proofs anchored on riina-core)
+crypto/GF128.v
+crypto/GHASH.v
+crypto/AESField.v
+crypto/AES.v
+crypto/SHA256.v
+crypto/Keccak.v
+crypto/Field25519.v
+crypto/NTT.v
+crypto/X25519.v
 
 # Type System
 type_system/Progress.v
@@ -387,3 +404,19 @@ domains/ChoreographyTypes.v
 domains/MerkleDAG.v
 domains/ContentAddressedState.v
 domains/AccessibilityVerification.v
+
+# Phase 18: Restored from _incomplete (zero admits, Rocq 9.1 compatible)
+domains/ActorCalculus.v
+domains/CRDTFoundations.v
+domains/CRDTComposition.v
+domains/ChoreographyProjection.v
+
+# Phase 6-9: Domain proofs — blockchain, Syariah, runtime, UI, OS (zero admits, zero axioms)
+domains/BlockchainSafety.v
+domains/SyariahCompliance.v
+domains/RuntimeMonitor.v
+domains/ExecutionReceipts.v
+domains/VerifiedLayout.v
+domains/TerasKernel.v
+domains/TerasSecurity.v
+domains/TerasCapabilities.v
