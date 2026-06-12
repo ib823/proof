@@ -455,6 +455,12 @@ impl TypeEnv {
         }
     }
 
+    /// Iterate the bindings (name → type). Used by tooling that needs to walk
+    /// the registered builtins, e.g. the stdlib API-doc generator.
+    pub fn iter(&self) -> impl Iterator<Item = (&Ident, &Ty)> {
+        self.vars.iter()
+    }
+
     /// Extend with an unrestricted (default) binding.
     pub fn extend(&self, name: Ident, ty: Ty) -> Self {
         let mut new_vars = self.vars.clone();
@@ -676,6 +682,12 @@ impl Context {
 
     pub fn lookup(&self, name: &Ident) -> Option<&Ty> {
         self.vars.get(name)
+    }
+
+    /// Iterate the bindings (name → type). Used by tooling that walks the
+    /// registered builtins, e.g. the stdlib API-doc generator.
+    pub fn iter(&self) -> impl Iterator<Item = (&Ident, &Ty)> {
+        self.vars.iter()
     }
 
     /// Convert to new TypingContext

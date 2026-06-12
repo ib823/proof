@@ -36,6 +36,16 @@ pub fn format_source(source: &str) -> Result<String, String> {
     Ok(format_program(&program, &FmtConfig::default()))
 }
 
+/// Render a type to its RIINA (Bahasa Melayu) surface form — e.g. `Ty::String`
+/// → `Teks`, `Ty::Fn(a, b, eff)` → `Fn(a, b, eff)`. The canonical type renderer,
+/// reused by tooling (e.g. the stdlib API-doc generator) so rendered signatures
+/// match what the formatter prints.
+pub fn format_ty(ty: &Ty) -> String {
+    let mut out = String::new();
+    fmt_ty(&mut out, ty);
+    out
+}
+
 /// Format a parsed Program to a string.
 pub fn format_program(program: &Program, cfg: &FmtConfig) -> String {
     let mut out = String::new();
