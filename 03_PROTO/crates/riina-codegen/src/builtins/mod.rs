@@ -7,16 +7,17 @@
 //!
 //! Bilingual names: Bahasa Melayu and English.
 
-pub(crate) mod teks;
-pub(crate) mod senarai;
-pub(crate) mod peta;
-pub(crate) mod set;
-pub(crate) mod matematik;
-pub(crate) mod penukaran;
-pub(crate) mod ujian;
-pub(crate) mod masa;
 pub(crate) mod fail;
 pub(crate) mod json;
+pub(crate) mod keselamatan;
+pub(crate) mod masa;
+pub(crate) mod matematik;
+pub(crate) mod penukaran;
+pub(crate) mod peta;
+pub(crate) mod senarai;
+pub(crate) mod set;
+pub(crate) mod teks;
+pub(crate) mod ujian;
 
 use crate::value::{Env, Value};
 use crate::{Error, Result};
@@ -30,27 +31,81 @@ pub fn register_builtins(env: &Env) -> Env {
     e = e.extend("cetak".to_string(), Value::Builtin("cetak".to_string()));
     e = e.extend("print".to_string(), Value::Builtin("cetak".to_string()));
     e = e.extend("cetakln".to_string(), Value::Builtin("cetakln".to_string()));
+    e = e.extend(
+        "cetak_baris".to_string(),
+        Value::Builtin("cetakln".to_string()),
+    );
     e = e.extend("println".to_string(), Value::Builtin("cetakln".to_string()));
 
+    // Input-source thunks. A zero-arg call like `baca_garisan()` parses to a
+    // bare `Var` (the empty `()` is a no-op suffix — see the parser note in
+    // `riina-parser`), and the typechecker binds the thunk to its result type
+    // (`baca_garisan : Teks`) or to `Unit -> Tainted<Teks>` (`baca_baris` /
+    // `read_line`). Register them here so the bare `Var` *materialises* to its
+    // `Builtin` value at runtime instead of raising `UnboundVariable` — the
+    // zero-arg-thunk materialisation tracked under the Gate C "OS/system" row.
+    // (Like the `masa_*` clocks, the runtime value is the `Builtin` itself; the
+    // C/WASM backends likewise carry no side-effecting input read yet.)
+    for nm in ["baca_garisan", "baca_baris", "read_line"] {
+        e = e.extend(nm.to_string(), Value::Builtin(nm.to_string()));
+    }
+
     // String operations (existing)
-    e = e.extend("gabung_teks".to_string(), Value::Builtin("gabung_teks".to_string()));
-    e = e.extend("concat".to_string(), Value::Builtin("gabung_teks".to_string()));
+    e = e.extend(
+        "gabung_teks".to_string(),
+        Value::Builtin("gabung_teks".to_string()),
+    );
+    e = e.extend(
+        "concat".to_string(),
+        Value::Builtin("gabung_teks".to_string()),
+    );
     e = e.extend("panjang".to_string(), Value::Builtin("panjang".to_string()));
     e = e.extend("length".to_string(), Value::Builtin("panjang".to_string()));
+    // Range constructors for the `a..b` / `a..=b` surface syntax.
+    e = e.extend("julat".to_string(), Value::Builtin("julat".to_string()));
+    e = e.extend(
+        "julat_inklusif".to_string(),
+        Value::Builtin("julat_inklusif".to_string()),
+    );
+    // Sum (Option/Result) introspection for constructor-pattern desugaring.
+    for nm in ["adalah_kiri", "adalah_kanan", "nilai_kiri", "nilai_kanan"] {
+        e = e.extend(nm.to_string(), Value::Builtin(nm.to_string()));
+    }
 
     // Conversion (existing, moved to penukaran)
     e = e.extend("ke_teks".to_string(), Value::Builtin("ke_teks".to_string()));
-    e = e.extend("to_string".to_string(), Value::Builtin("ke_teks".to_string()));
-    e = e.extend("ke_nombor".to_string(), Value::Builtin("ke_nombor".to_string()));
-    e = e.extend("parse_int".to_string(), Value::Builtin("ke_nombor".to_string()));
+    e = e.extend(
+        "to_string".to_string(),
+        Value::Builtin("ke_teks".to_string()),
+    );
+    e = e.extend(
+        "ke_nombor".to_string(),
+        Value::Builtin("ke_nombor".to_string()),
+    );
+    e = e.extend(
+        "parse_int".to_string(),
+        Value::Builtin("ke_nombor".to_string()),
+    );
 
     // New conversion builtins
     e = e.extend("ke_bool".to_string(), Value::Builtin("ke_bool".to_string()));
     e = e.extend("to_bool".to_string(), Value::Builtin("ke_bool".to_string()));
-    e = e.extend("bool_ke_nombor".to_string(), Value::Builtin("bool_ke_nombor".to_string()));
-    e = e.extend("bool_to_int".to_string(), Value::Builtin("bool_ke_nombor".to_string()));
-    e = e.extend("nombor_ke_teks".to_string(), Value::Builtin("nombor_ke_teks".to_string()));
-    e = e.extend("int_to_string".to_string(), Value::Builtin("nombor_ke_teks".to_string()));
+    e = e.extend(
+        "bool_ke_nombor".to_string(),
+        Value::Builtin("bool_ke_nombor".to_string()),
+    );
+    e = e.extend(
+        "bool_to_int".to_string(),
+        Value::Builtin("bool_ke_nombor".to_string()),
+    );
+    e = e.extend(
+        "nombor_ke_teks".to_string(),
+        Value::Builtin("nombor_ke_teks".to_string()),
+    );
+    e = e.extend(
+        "int_to_string".to_string(),
+        Value::Builtin("nombor_ke_teks".to_string()),
+    );
 
     // String builtins (teks)
     for (bm, en, canonical) in teks::BUILTINS {
@@ -106,6 +161,12 @@ pub fn register_builtins(env: &Env) -> Env {
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
 
+    // Security builtins (keselamatan): sanitizers, sinks, CSRF, safe I/O.
+    for (bm, en, canonical) in keselamatan::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
     e
 }
 
@@ -128,11 +189,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     let sb = value_to_string(&b)?;
                     Ok(Value::String(format!("{sa}{sb}")))
                 }
-                _ => Err(Error::TypeMismatch {
-                    expected: "pair of strings".to_string(),
-                    found: format!("{:?}", arg),
-                    context: "gabung_teks/concat".to_string(),
-                }),
+                // Partial application: gabung_teks(a) waits for b
+                other => Ok(Value::BuiltinPartial(
+                    "gabung_teks".to_string(),
+                    Box::new(other),
+                )),
             };
         }
         "panjang" => {
@@ -143,6 +204,73 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     found: format!("{:?}", arg),
                     context: "panjang/length".to_string(),
                 }),
+            };
+        }
+        // Range constructors: `julat((a, b))` -> [a, a+1, ..., b-1] (exclusive);
+        // `julat_inklusif((a, b))` includes `b`. Used by the `a..b` / `a..=b`
+        // surface syntax (see parse_pipe). An empty range (a >= b) yields [].
+        "julat" | "julat_inklusif" => {
+            return match arg {
+                Value::Pair(a, b) => {
+                    let lo = match *a {
+                        Value::Int(n) => n,
+                        _ => {
+                            return Err(Error::TypeMismatch {
+                                expected: "int".to_string(),
+                                found: format!("{:?}", a),
+                                context: "julat".to_string(),
+                            })
+                        }
+                    };
+                    let hi = match *b {
+                        Value::Int(n) => n,
+                        _ => {
+                            return Err(Error::TypeMismatch {
+                                expected: "int".to_string(),
+                                found: format!("{:?}", b),
+                                context: "julat".to_string(),
+                            })
+                        }
+                    };
+                    let end = if name == "julat_inklusif" {
+                        hi.saturating_add(1)
+                    } else {
+                        hi
+                    };
+                    let items: Vec<Value> = (lo..end).map(Value::Int).collect();
+                    Ok(Value::List(items))
+                }
+                other => Err(Error::TypeMismatch {
+                    expected: "pair".to_string(),
+                    found: format!("{:?}", other),
+                    context: "julat".to_string(),
+                }),
+            };
+        }
+        // Sum (Option/Result) introspection, used by the desugaring of
+        // constructor patterns (`Ada(x)`, `Ok(x)`, ...) in positions where a
+        // `Case` cannot be used directly (e.g. nested inside a tuple pattern):
+        //   adalah_kiri(s)  -> Bool : is this a left injection (Some/Ok/Ada)?
+        //   nilai_kiri(s)   -> the left payload   (caller guarantees left)
+        //   nilai_kanan(s)  -> the right payload  (caller guarantees right)
+        "adalah_kiri" => {
+            return Ok(Value::Bool(arg.is_left()));
+        }
+        "adalah_kanan" => {
+            return Ok(Value::Bool(arg.is_right()));
+        }
+        "nilai_kiri" => {
+            return match arg {
+                Value::Sum(crate::value::Sum::Left(v)) => Ok(*v),
+                Value::Sum(crate::value::Sum::Right(v)) => Ok(*v),
+                other => Ok(other), // be lenient: non-sum yields itself
+            };
+        }
+        "nilai_kanan" => {
+            return match arg {
+                Value::Sum(crate::value::Sum::Right(v)) => Ok(*v),
+                Value::Sum(crate::value::Sum::Left(v)) => Ok(*v),
+                other => Ok(other),
             };
         }
         _ => {}
@@ -198,6 +326,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
         return Ok(result);
     }
 
+    // Security (sanitizers / sinks / CSRF / safe I/O)
+    if let Some(result) = keselamatan::apply(name, &arg)? {
+        return Ok(result);
+    }
+
     Err(Error::InvalidOperation(format!("unknown builtin: {name}")))
 }
 
@@ -241,7 +374,12 @@ pub(crate) fn value_to_string(v: &Value) -> Result<String> {
 pub fn is_higher_order_builtin(name: &str) -> bool {
     matches!(
         name,
-        "senarai_peta" | "list_map" | "senarai_tapis" | "list_filter" | "senarai_lipat" | "list_fold"
+        "senarai_peta"
+            | "list_map"
+            | "senarai_tapis"
+            | "list_filter"
+            | "senarai_lipat"
+            | "list_fold"
     )
 }
 
