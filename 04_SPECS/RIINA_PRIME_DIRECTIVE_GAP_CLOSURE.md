@@ -1,6 +1,6 @@
 # RIINA PRIME DIRECTIVE GAP CLOSURE SPECIFICATION
 
-**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2898 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2910 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Document Status: AUTHORITATIVE | Version 1.0.0 | 2026-01-22
 
