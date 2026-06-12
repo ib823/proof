@@ -3101,7 +3101,7 @@ mod formalized_tests {
     #[test]
     fn ifc_print_sink_rejects_secret_in_full_checker() {
         // The security-aware checker (type_check_full) enforces the same sink
-        // rule — both checking paths share `secret_at_print_sink`.
+        // rule — both checking paths share `secrecy_at_sink`.
         let mut ctx = TypingContext::new().extend_gamma(
             "cetak".to_string(),
             Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
@@ -3117,6 +3117,118 @@ mod formalized_tests {
             }
             other => panic!("full checker must also reject, got {other:?}"),
         }
+    }
+
+    // ── REQ-27 slice 2: Labeled-by-level rejection at print sinks ──
+    // A `Labeled(_, l)` with l above Public (produced by deref of a non-Public
+    // ref — Typing.v T_Deref no-read-up) is a leak at a public sink too, not
+    // only `Secret`. The reported level is the label, not Secret.
+    #[test]
+    fn ifc_print_sink_rejects_labeled_above_public() {
+        let ctx = register_builtin_types(&Context::new())
+            .extend("rahsia_x".to_string(), Ty::Labeled(Box::new(Ty::Int), SecurityLevel::User));
+        let call = Expr::App(
+            Box::new(Expr::Var("cetak".to_string())),
+            Box::new(Expr::Var("rahsia_x".to_string())),
+        );
+        match type_check(&ctx, &call) {
+            Err(TypeError::SecurityViolation { found, expected, .. }) => {
+                assert_eq!(found, SecurityLevel::User, "reports the label level, not Secret");
+                assert_eq!(expected, SecurityLevel::Public);
+            }
+            other => panic!("Labeled(User) at print sink must be rejected, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_print_sink_accepts_public_labeled() {
+        // Labeled at Public level carries no secrecy — it must still print.
+        // (Deref of a Public ref yields the plain type, so this is the boundary.)
+        let ctx = register_builtin_types(&Context::new())
+            .extend("awam_x".to_string(), Ty::Labeled(Box::new(Ty::Int), SecurityLevel::Public));
+        let call = Expr::App(
+            Box::new(Expr::Var("cetak".to_string())),
+            Box::new(Expr::Var("awam_x".to_string())),
+        );
+        assert!(type_check(&ctx, &call).is_ok(), "Public-labeled data must print");
+    }
+
+    // ── REQ-27 slice 3: secret-aware network-send sinks ──
+    // http_post/http_hantar/http_put take (URL, (body, csrf)); the body is Any,
+    // so a secret in it would flow onto the network. Reject it (any secret in
+    // the whole argument — URL or csrf shouldn't be secret-derived either).
+    #[test]
+    fn ifc_network_send_rejects_secret_body() {
+        let ctx = register_builtin_types(&Context::new());
+        for sink in ["http_post", "http_hantar", "http_put"] {
+            // (url, (classify(42), "csrf"))
+            let arg = Expr::Pair(
+                Box::new(Expr::String("https://api".to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+                    Box::new(Expr::String("tok".to_string())),
+                )),
+            );
+            let call = Expr::App(Box::new(Expr::Var(sink.to_string())), Box::new(arg));
+            match type_check(&ctx, &call) {
+                Err(TypeError::SecurityViolation { found, expected, context }) => {
+                    assert_eq!(found, SecurityLevel::Secret);
+                    assert_eq!(expected, SecurityLevel::Public);
+                    assert!(context.contains("network"), "{sink}: network context, got {context}");
+                }
+                other => panic!("{sink}(secret body) must be rejected, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn ifc_network_send_accepts_public_body() {
+        // Plain public body still sends (non-regression).
+        let ctx = register_builtin_types(&Context::new());
+        let arg = Expr::Pair(
+            Box::new(Expr::String("https://api".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("payload".to_string())),
+                Box::new(Expr::String("tok".to_string())),
+            )),
+        );
+        let call = Expr::App(Box::new(Expr::Var("http_post".to_string())), Box::new(arg));
+        assert!(type_check(&ctx, &call).is_ok(), "public body must send");
+    }
+
+    // ── REQ-27 slice 4: secret-aware file-write sinks ──
+    // file_write/fail_tulis take a concrete (String, String), so a Secret data
+    // arg was ALREADY a TypeMismatch; routing it through secrecy_at_sink (before
+    // unification) gives the *clear* SecurityViolation instead.
+    #[test]
+    fn ifc_file_write_rejects_secret_data_with_clear_error() {
+        let ctx = register_builtin_types(&Context::new());
+        for sink in ["file_write", "fail_tulis", "file_append", "fail_tambah"] {
+            let arg = Expr::Pair(
+                Box::new(Expr::String("/tmp/out".to_string())),
+                Box::new(Expr::Classify(Box::new(Expr::String("rahsia".to_string())))),
+            );
+            let call = Expr::App(Box::new(Expr::Var(sink.to_string())), Box::new(arg));
+            match type_check(&ctx, &call) {
+                Err(TypeError::SecurityViolation { found, context, .. }) => {
+                    assert_eq!(found, SecurityLevel::Secret);
+                    assert!(context.contains("file-write"), "{sink}: file context, got {context}");
+                }
+                other => panic!("{sink}(secret data) must be a SecurityViolation, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn ifc_file_write_accepts_plain_data() {
+        // Plain (path, data) still writes (non-regression).
+        let ctx = register_builtin_types(&Context::new());
+        let arg = Expr::Pair(
+            Box::new(Expr::String("/tmp/out".to_string())),
+            Box::new(Expr::String("data".to_string())),
+        );
+        let call = Expr::App(Box::new(Expr::Var("file_write".to_string())), Box::new(arg));
+        assert!(type_check(&ctx, &call).is_ok(), "plain file write must typecheck");
     }
 
     #[test]
