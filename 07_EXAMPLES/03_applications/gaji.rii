@@ -1,0 +1,41 @@
+// gaji.rii — Payroll calculator on the RIINA standard library.
+//
+// A non-trivial sample app (Gate C exit criterion) computing net monthly pay
+// from gross salary with an EPF contribution and a simple progressive tax,
+// entirely in exact `wang` (money) arithmetic. Tax brackets use `kalau` on
+// value-based money comparison; every ringgit-and-sen figure is exact.
+//
+// Runs end-to-end on the shipped compiler: `riinac run gaji.rii`.
+
+// 11% Employees Provident Fund contribution (rounded to cents).
+fungsi epf(gaji: Wang) -> Wang kesan Bersih {
+    pulang gaji * wang("0.11");
+}
+
+// Progressive tax: the first RM 3000 is untaxed; the excess is taxed at 8%.
+fungsi cukai(gaji: Wang) -> Wang kesan Bersih {
+    kalau gaji <= wang("3000.00") {
+        pulang wang("0.00");
+    }
+    pulang (gaji - wang("3000.00")) * wang("0.08");
+}
+
+fungsi slip(gaji: Wang) -> Nombor kesan Tulis {
+    biar potongan_epf = epf(gaji);
+    biar potongan_cukai = cukai(gaji);
+    biar bayaran_bersih = gaji - potongan_epf - potongan_cukai;
+
+    cetak("  Gaji kasar  = RM "); cetakln(gaji);
+    cetak("  EPF (11%)   = RM "); cetakln(potongan_epf);
+    cetak("  Cukai       = RM "); cetakln(potongan_cukai);
+    cetak("  Gaji bersih = RM "); cetakln(bayaran_bersih);
+    pulang 0;
+}
+
+fungsi utama() -> Nombor kesan Tulis {
+    cetakln("Pekerja A:");
+    slip(wang("5000.00"));   // EPF 550.00, cukai 160.00, bersih 4290.00
+    cetakln("Pekerja B (di bawah ambang cukai):");
+    slip(wang("2500.00"));   // EPF 275.00, cukai 0.00, bersih 2225.00
+    pulang 0;
+}

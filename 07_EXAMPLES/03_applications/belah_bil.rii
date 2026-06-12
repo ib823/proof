@@ -1,0 +1,29 @@
+// belah_bil.rii — Splitting a bill three ways, and why the money type matters.
+//
+// A sample app showcasing the numeric tower. `wang` (fixed-scale money) rounds
+// RM 100.00 / 3 to RM 33.33 per person — but 3 × 33.33 = 99.99, a sen short, so
+// the app reconciles by giving the leftover sen to the first payer. It contrasts
+// this with `perpuluhan` (arbitrary-precision decimal: 33.333…34 places) to show
+// why money deliberately uses a fixed scale.
+//
+// Runs end-to-end on the shipped compiler: `riinac run belah_bil.rii`.
+
+fungsi utama() -> Nombor kesan Tulis {
+    biar bil = wang("100.00");
+    biar sorang = bil / wang("3");          // 33.33 (rounded half-to-even to cents)
+    biar tiga = sorang * wang("3");         // 99.99
+    biar baki = bil - tiga;                 // 0.01 leftover sen
+    biar pembayar_pertama = sorang + baki;  // 33.34
+
+    cetak("  Jumlah bil         = RM "); cetakln(bil);
+    cetak("  Setiap orang (3)   = RM "); cetakln(sorang);
+    cetak("  3 x bahagian       = RM "); cetakln(tiga);
+    cetak("  Sen baki           = RM "); cetakln(baki);
+    cetak("  Pembayar pertama   = RM "); cetakln(pembayar_pertama);
+
+    // Contrast: perpuluhan keeps dividing to 34 places (exact, but not money).
+    biar tepat = perpuluhan("100") / perpuluhan("3");
+    cetak("  (perpuluhan 100/3) =    "); cetakln(tepat);
+
+    pulang 0;
+}
