@@ -355,4 +355,37 @@ mod tests {
         // Price * quantity with cents: 19.99 * 3 = 59.97.
         assert_eq!(d("19.99").mul(&d("3")).to_string_repr(), "59.97");
     }
+
+    /// Coq⇄Rust formal-equivalence bridge. The running decimal reproduces the
+    /// exact values the model proves by `vm_compute` in
+    /// `02_FORMAL/coq/foundations/DecimalModel.v` (Examples `add_point1_point2`,
+    /// `mul_1p5_1p5`, `mul_big_exact`, `sub_5_point01`, `neg_3p14`,
+    /// `compare_3p14_3p140`, `compare_3p14_3p15`, `compare_100_100`) — tying this
+    /// implementation to the model whose `value_add`/`value_sub`/`value_mul`/
+    /// `value_neg` prove `value` is a ring homomorphism to ℚ, and whose
+    /// `compare_eq`/`compare_lt` prove comparison is value-based. The Coq KATs pin
+    /// the denoted rationals; the running code's `to_string_repr`/`compare` below
+    /// reproduce them.
+    #[test]
+    fn test_decimal_matches_coq_model() {
+        // DecimalModel.v `add_point1_point2`: 0.1 + 0.2 = 0.3 (no float drift).
+        assert_eq!(d("0.1").add(&d("0.2")).to_string_repr(), "0.3");
+        // DecimalModel.v `mul_1p5_1p5`: 1.5 * 1.5 = 2.25.
+        assert_eq!(d("1.5").mul(&d("1.5")).to_string_repr(), "2.25");
+        // DecimalModel.v `mul_big_exact`: a >64-bit exact product.
+        assert_eq!(
+            d("9999999999.99").mul(&d("9999999999.99")).to_string_repr(),
+            "99999999999800000000.0001"
+        );
+        // DecimalModel.v `sub_5_point01`: 5 - 0.01 = 4.99.
+        assert_eq!(d("5").sub(&d("0.01")).to_string_repr(), "4.99");
+        // DecimalModel.v `neg_3p14`: negation.
+        assert_eq!(d("3.14").neg().to_string_repr(), "-3.14");
+        // DecimalModel.v `compare_3p14_3p140`: value-based equality across scales.
+        assert_eq!(d("3.14").compare(&d("3.140")), Ordering::Equal);
+        // DecimalModel.v `compare_3p14_3p15`: 3.14 < 3.15.
+        assert_eq!(d("3.14").compare(&d("3.15")), Ordering::Less);
+        // DecimalModel.v `compare_100_100`: 100.00 == 100.
+        assert_eq!(d("100.00").compare(&d("100")), Ordering::Equal);
+    }
 }
