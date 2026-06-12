@@ -83,13 +83,21 @@ declassification theorems (`properties/Declassification.v`:
 - Comparisons and crypto on secrets should go through constant-time/crypto
   builtins, not through declassify-then-compare.
 
-The same rule now guards the **network-send** sinks (`http_post`/`http_hantar`/
-`http_put` — their body is `Any`-typed, so a secret would otherwise flow onto
-the wire) and the **file-write** sinks (`file_write`/`fail_tulis`/`file_append`/
-`fail_tambah`), and it rejects not just `Secret` but any `Labeled(_, level)` data
-*above* `Public` (the level a value carries after being dereferenced from a
-non-public reference). All of these report a `SecurityViolation` naming the leak
-level and the channel:
+The same rule now guards the **network** sinks (`http_post`/`http_hantar`/
+`http_put`/`http_kemaskini` — their body is `Any`-typed, so a secret would
+otherwise flow onto the wire — plus the URL/token positions of `http_get`/
+`http_dapat`/`http_delete`/`http_padam`), the **file-write** sinks
+(`file_write`/`fail_tulis`/`file_append`/`fail_tambah` and the sanitized-path
+variants `file_write_safe`/`fail_tulis_selamat`, whose *data* position is
+`Any`-typed), and the **assertion** builtins (`assert_eq`/`tegaskan_sama`/
+`assert_ne`/`tegaskan_beza` — a failing assertion renders both operands into
+the error message). It rejects not just `Secret` but any `Labeled(_, level)`
+data *above* `Public` (the level a value carries after being dereferenced from
+a non-public reference). Secrecy also **survives conversion**: routing a secret
+through `ke_teks`, a list/map/set, string ops, or JSON builders re-carries the
+label, so `cetak(ke_teks(pin))` is rejected exactly like `cetak(pin)` —
+declassify *first*, then convert. All of these report a `SecurityViolation`
+naming the leak level and the channel:
 
 ```riina
 fungsi utama() -> Unit kesan Rangkaian {
@@ -100,9 +108,11 @@ fungsi utama() -> Unit kesan Rangkaian {
 
 **Scope today.** References enforce no-read-up / no-write-down on security
 levels (`Typing.v` `T_Deref`/`T_Assign`, mirrored by the checker's
-`gate_b_parity` tests); print, network-send, and file-write sinks reject
-`Secret` and above-`Public` `Labeled` data. Secret-aware checking of *further*
-sinks as they are added is tracked as REQ-27 in `RIINA_MASTER_PLAN.md`.
+`gate_b_parity` tests); print, network, file-write, and assertion sinks reject
+`Secret` and above-`Public` `Labeled` data, and pure `Any`-typed builtins
+re-carry their argument's secrecy (no laundering). Secret-aware checking of
+*further* sinks as they are added (logging/DB — none exist in the registry
+yet) is tracked as REQ-27 in `RIINA_MASTER_PLAN.md`.
 
 ## 3. Untrusted input: taint in, sanitizer out
 
@@ -227,7 +237,7 @@ Honesty is the product. As of 2026-06-10:
 | Area | Status |
 |---|---|
 | Effect checking (`kesan`) | Enforced (checker + interpreter; effect lattice proven in Coq) |
-| Secret → print sink | Enforced (this guide §2); other sink families (network/file writes) and `Labeled`-by-level are the named next REQ-27 increments |
+| Secret → sinks | Enforced (this guide §2): print, network (send + URL), file-write (incl. sanitized-path variants), assertions; `Labeled`-by-level; secrecy propagation through `Any`-typed conversions/containers (no `ke_teks` laundering). Further sinks as they land are the named next REQ-27 increments |
 | Full non-interference | Proven in Coq for the model language; compiler enforcement is **partial** (REQ-27 tracks the parity gap) |
 | Taint/sanitizers, path hardening | Enforced at the type boundary (§3) |
 | Verified VFS | Enforced for `vfs_*` (interpreter, in-memory); host `file_*` are path-only |

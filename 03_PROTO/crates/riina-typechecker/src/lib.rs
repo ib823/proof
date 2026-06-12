@@ -2502,11 +2502,28 @@ fn secrecy_at_sink(callee: &Expr, arg_ty: &Ty) -> Option<TypeError> {
         "cetak" | "cetakln" | "cetak_baris" | "print" | "println" => {
             "print sink: declassify (dedah) the secret before printing it"
         }
-        "http_post" | "http_hantar" | "http_put" => {
+        // `http_kemaskini` is the BM alias of `http_put` (REQ-27 audit
+        // 2026-06-12: it was registered but missing here — a secret body
+        // passed the checker). GET/DELETE carry no `Any` body, but their
+        // URL/token positions are still exfiltration channels; checking here
+        // (before unification) upgrades the opaque TypeMismatch a raw secret
+        // would produce into an actionable SecurityViolation.
+        "http_post" | "http_hantar" | "http_put" | "http_kemaskini" | "http_get"
+        | "http_dapat" | "http_delete" | "http_padam" => {
             "network sink: declassify (dedah) the secret before sending it over the network"
         }
-        "file_write" | "fail_tulis" | "file_append" | "fail_tambah" => {
+        // The sanitized-path variants (`*_selamat`/`*_safe`) have an
+        // `Any`-typed DATA position, so unlike the plain file writes a raw
+        // secret sailed through unification (REQ-27 audit 2026-06-12).
+        "file_write" | "fail_tulis" | "file_append" | "fail_tambah"
+        | "file_write_safe" | "fail_tulis_selamat" => {
             "file-write sink: declassify (dedah) the secret before writing it to a file"
+        }
+        // A failing assertion renders BOTH operands into the runtime error
+        // message (`assert_eq failed: {:?} != {:?}` — builtins/ujian.rs), so
+        // an assert on a secret is an error-message sink.
+        "assert_eq" | "tegaskan_sama" | "assert_ne" | "tegaskan_beza" => {
+            "assertion sink: a failing assertion prints its operands; declassify (dedah) the secret before asserting on it"
         }
         _ => return None,
     };
@@ -2552,6 +2569,58 @@ fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
         | Ty::Zeroizing(inner)
         | Ty::Proof(inner) => ty_secrecy_level(inner),
         _ => None,
+    }
+}
+
+/// REQ-27 (laundering fix, 2026-06-12): builtins with `Any`-typed positions
+/// are opaque to unification, so a secret routed through a pure
+/// data-transforming builtin came out unlabeled and walked straight past
+/// `secrecy_at_sink` — `cetak(ke_teks(pin))` and
+/// `cetak(senarai_tolak((l, pin)))` type-checked while `cetak(pin)` was
+/// rejected. These conversions/containers cannot remove secrecy, only move it,
+/// so their result must re-carry the argument's level — the same label-join
+/// discipline the Coq development applies through elimination forms
+/// (Declassification.v: only `T_Declassify` with `declass_ok` lowers a label).
+fn is_secrecy_propagating_builtin(name: &str) -> bool {
+    const EXACT: &[&str] = &[
+        "ke_teks",
+        "to_string",
+        "ke_bool",
+        "to_bool",
+        "gabung_teks",
+        "nilai_kiri",
+        "nilai_kanan",
+        "adalah_kiri",
+        "adalah_kanan",
+    ];
+    const PREFIXES: &[&str] = &[
+        "str_", "teks_", "list_", "senarai_", "map_", "peta_", "set_", "json_",
+    ];
+    EXACT.contains(&name) || PREFIXES.iter().any(|p| name.starts_with(p))
+}
+
+/// If `callee` is a secrecy-propagating builtin and the argument carries an
+/// above-`Public` level, the result type re-carries that level (top joins to
+/// `Secret<_>`, intermediate levels to `Labeled(_, l)`). No-op when the result
+/// already carries at least that level, and for user functions (their bodies
+/// are checked directly; only opaque builtins need the conservative join).
+fn propagate_secrecy_through_builtin(callee: &Expr, arg_ty: &Ty, ret_ty: Ty) -> Ty {
+    let Expr::Var(name) = callee else {
+        return ret_ty;
+    };
+    if !is_secrecy_propagating_builtin(name) {
+        return ret_ty;
+    }
+    let Some(level) = ty_secrecy_level(arg_ty) else {
+        return ret_ty;
+    };
+    if matches!(ty_secrecy_level(&ret_ty), Some(existing) if level.leq(existing)) {
+        return ret_ty;
+    }
+    if level == SecurityLevel::Secret {
+        Ty::Secret(Box::new(ret_ty))
+    } else {
+        Ty::Labeled(Box::new(ret_ty), level)
     }
 }
 
@@ -3122,7 +3191,11 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         });
                     }
                     let total_eff = eff1.join(eff2).join(fn_eff);
-                    Ok((*ret_ty, total_eff))
+                    // REQ-27: a pure data-transforming builtin re-carries its
+                    // argument's secrecy (laundering fix — see
+                    // propagate_secrecy_through_builtin).
+                    let ret_ty = propagate_secrecy_through_builtin(e1, &t2, *ret_ty);
+                    Ok((ret_ty, total_eff))
                 }
                 // Applying an `Any`-typed callee (e.g. a closure passed as an
                 // `Any` parameter, or a higher-order builtin result) yields `Any`.
@@ -4122,7 +4195,11 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     }
                     // Effect accumulation: eff1 + eff2 + fn_eff
                     let total_eff = eff1.join(eff2).join(fn_eff);
-                    Ok((*ret_ty, total_eff))
+                    // REQ-27: a pure data-transforming builtin re-carries its
+                    // argument's secrecy (laundering fix — see
+                    // propagate_secrecy_through_builtin).
+                    let ret_ty = propagate_secrecy_through_builtin(e1, &t2, *ret_ty);
+                    Ok((ret_ty, total_eff))
                 }
                 Ty::Any => Ok((Ty::Any, eff1.join(eff2))),
                 _ => Err(TypeError::ExpectedFunction(t1)),

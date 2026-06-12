@@ -435,7 +435,7 @@ Proof lane refresh if Coq changed:
 
 ```bash
 eval $(opam env --switch=rocq) && cd 02_FORMAL/coq && make -j$(nproc)
-cd /workspaces/proof
+cd "$(git rev-parse --show-toplevel)"
 python3 scripts/generate-multiprover.py
 python3 scripts/generate-full-stack.py
 bash scripts/generate-metrics.sh

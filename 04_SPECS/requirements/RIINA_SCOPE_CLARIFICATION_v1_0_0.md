@@ -61,7 +61,7 @@
 ## 1.3 Evidence from Codebase Structure
 
 ```
-/workspaces/proof/                    ← THE RIINA REPOSITORY
+<repo-root>/                    ← THE RIINA REPOSITORY
 ├── 02_FORMAL/coq/                    ← FORMAL PROOFS OF THE LANGUAGE
 │   ├── foundations/                  ← Language syntax, semantics
 │   ├── type_system/                  ← Language type system proofs
@@ -212,7 +212,7 @@ The research tracks are NOT separate products. They are RESEARCH TO BUILD THE LA
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                              EXPECTED OUTCOMES FROM github.com/ib823/proof                           ║
+║                              EXPECTED OUTCOMES FROM THE RIINA REPOSITORY                             ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                      ║
 ║  1. THE RIINA LANGUAGE SPECIFICATION                                                                ║
@@ -385,7 +385,7 @@ Given your rules:
 ║                              RECOMMENDED STRUCTURE                                                   ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                      ║
-║  github.com/ib823/proof (RIINA LANGUAGE)                                                            ║
+║  the RIINA repository    (RIINA LANGUAGE)                                                            ║
 ║  ├── Language specification                                                                         ║
 ║  ├── Compiler (riinac)                                                                              ║
 ║  ├── Formal proofs                                                                                  ║

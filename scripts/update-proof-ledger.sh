@@ -83,8 +83,23 @@ for rel in "${active_coq_files[@]}"; do
   grep -nE '^[[:space:]]*Abort\.' "$path" | sed "s|^|$rel:|" >> "$tmp_active_abort_sites" || true
 done
 
-global_admitted="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Admitted\.' {} + 2>/dev/null | wc -l | tr -d " ")"
-global_axioms="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Axiom[[:space:]]+' {} + 2>/dev/null | wc -l | tr -d " ")"
+# `find -exec grep … +` exits non-zero when grep matches NOTHING anywhere —
+# true on the curated public tree (0 global Admitted once the deprecated
+# archive is excluded) — and under `set -euo pipefail` that killed the whole
+# script silently. The `|| true` keeps the honest 0.
+global_admitted="$({ find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Admitted\.' {} + 2>/dev/null || true; } | wc -l | tr -d " ")"
+global_axioms="$({ find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Axiom[[:space:]]+' {} + 2>/dev/null || true; } | wc -l | tr -d " ")"
+
+# The deprecated proof archive is deliberately not published on the curated
+# public branch. Global counts are always derived from THIS tree, so label
+# the scope honestly: a curated tree's "global" excludes the archive.
+if [ -d "$COQ_DIR/properties/_archive_deprecated" ]; then
+  global_scope_suffix="(Includes Archived/Non-Active)"
+  curated_tree_note=""
+else
+  global_scope_suffix="(This Tree — Deprecated Archive Not Published)"
+  curated_tree_note="- NOTE: this is a curated tree; \`properties/_archive_deprecated/\` is deliberately not published. Counts above are derived from the published files only."
+fi
 
 {
   echo "# RIINA Proof Status"
@@ -123,9 +138,12 @@ global_axioms="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh 
     echo "- None."
   fi
   echo ""
-  echo "## Global Repository Snapshot (Includes Archived/Non-Active)"
+  echo "## Global Repository Snapshot $global_scope_suffix"
   echo "- Admitted (global): $global_admitted"
   echo "- Axioms (global): $global_axioms"
+  if [ -n "$curated_tree_note" ]; then
+    echo "$curated_tree_note"
+  fi
   echo ""
   echo "## Policy"
   echo "- Production-active scope is defined by \`02_FORMAL/coq/_CoqProject\`."
@@ -171,9 +189,12 @@ global_axioms="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh 
     echo "- None."
   fi
   echo ""
-  echo "## Global Repository (Includes Archived/Non-Active)"
+  echo "## Global Repository $global_scope_suffix"
   echo "- Axioms (global): $global_axioms"
   echo "- Admitted (global): $global_admitted"
+  if [ -n "$curated_tree_note" ]; then
+    echo "$curated_tree_note"
+  fi
   echo ""
   echo "## Notes"
   echo "- Global non-zero values can exist in archived/non-active files."

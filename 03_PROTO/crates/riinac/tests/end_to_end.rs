@@ -432,3 +432,57 @@ fn ifc_secret_network_send_rejected_end_to_end() {
         "expected the network-sink IFC diagnostic"
     );
 }
+
+// ── REQ-27 laundering fix (2026-06-12), end-to-end ──
+// `cetak(ke_teks(pin))` type-checked before the audit: the Any-typed
+// conversion stripped the type-level secrecy. The propagation rule re-carries
+// the label, so the sink rejects the laundered form too; declassifying FIRST
+// (the sanctioned pattern) still checks and runs.
+#[test]
+fn ifc_laundered_secret_print_rejected_end_to_end() {
+    let dir = std::env::temp_dir().join("riina_e2e_tests");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("ifc_launder.rii");
+    fs::write(
+        &path,
+        "fungsi utama() -> Unit kesan Tulis {\n    biar pin = sulit 1234;\n    cetak(ke_teks(pin))\n}\n",
+    )
+    .unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["check", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run riinac check");
+    assert!(
+        !out.status.success(),
+        "printing a ke_teks-laundered secret must fail riinac check"
+    );
+    assert!(
+        String::from_utf8_lossy(&out.stderr).contains("Security violation in print sink"),
+        "expected the IFC sink diagnostic on the laundered form"
+    );
+}
+
+#[test]
+fn ifc_declassify_then_convert_runs_end_to_end() {
+    let dir = std::env::temp_dir().join("riina_e2e_tests");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("ifc_declass_convert.rii");
+    fs::write(
+        &path,
+        "fungsi utama() -> Unit kesan Tulis {\n    cetak(ke_teks(dedah (sulit 1234) dengan bukti (sulit 1234)))\n}\n",
+    )
+    .unwrap();
+
+    assert!(rii_check_passes(&path), "declassify-then-convert must typecheck");
+
+    let run = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["run", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run riinac run");
+    assert!(run.status.success(), "declassify-then-convert program must run");
+    assert!(
+        String::from_utf8_lossy(&run.stdout).contains("1234"),
+        "declassified converted value prints"
+    );
+}

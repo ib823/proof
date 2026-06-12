@@ -126,7 +126,7 @@ All full-stack components MUST align with existing architectural decisions (D1-D
 All new components MUST integrate with the existing directory structure:
 
 ```
-/workspaces/proof/
+<repo-root>/
 ├── 02_FORMAL/coq/           ← NEW LAYER PROOFS GO HERE
 │   ├── foundations/         ← Core definitions (Syntax.v, Semantics.v)
 │   ├── type_system/         ← Type safety (Typing.v, Progress.v, Preservation.v)

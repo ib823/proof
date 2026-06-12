@@ -10,7 +10,7 @@
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                                      ║
 ║                              COMPONENT SPECIFICATIONS                                                ║
-║                     Precise Integration with github.com/ib823/proof                                  ║
+║                     Precise Integration with the RIINA repository                                    ║
 ║                                                                                                      ║
 ║  Purpose: Detailed specifications for each new component with exact file paths,                      ║
 ║           Coq module templates, Rust crate structures, and research track references.                ║
@@ -58,7 +58,7 @@
 ## 1.2 File Structure
 
 ```
-/workspaces/proof/
+<repo-root>/
 ├── 01_RESEARCH/
 │   ├── 27_DOMAIN_HA_RENDERING/              ← NEW: Rendering research
 │   │   ├── HA01_2D_GRAPHICS_PRIMITIVES.md
@@ -733,7 +733,7 @@ mod tests {
 ## 2.2 File Structure
 
 ```
-/workspaces/proof/
+<repo-root>/
 ├── 02_FORMAL/coq/
 │   └── layers/
 │       └── Kernel.v                         ← TERAS-OS formal specification
