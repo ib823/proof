@@ -211,11 +211,13 @@ impl WasmBackend {
             func_indices: all_func_indices,
         });
 
-        // Emit each user function — all share the same type: (i32, i32) -> i32
+        // Emit each user function — all share the same type: (i64, i64) -> i64.
+        // The uniform value cell is i64: closure_ptr, arg, and result are all
+        // cells (a pointer is a cell whose value is a < 2^32 linear-memory addr).
         let user_func_type_idx = module.types.len() as u32;
         module.types.push(FuncType {
-            params: vec![ValType::I32, ValType::I32], // closure_ptr, arg
-            results: vec![ValType::I32],
+            params: vec![ValType::I64, ValType::I64], // closure_ptr, arg
+            results: vec![ValType::I64],
         });
 
         for &fid in &func_ids {
@@ -244,12 +246,10 @@ impl WasmBackend {
             module.functions.push(start_type_idx);
 
             let mut trampoline_code = Vec::new();
-            // Push closure_ptr=0 and arg=0 for main
-            trampoline_code.push(Op::I32Const as u8);
-            wasm_encode::encode_sleb128(0, &mut trampoline_code);
-            trampoline_code.push(Op::I32Const as u8);
-            wasm_encode::encode_sleb128(0, &mut trampoline_code);
-            // Call main; result (i32) is on the stack. Store it in local 0.
+            // Push closure_ptr=0 and arg=0 for main (i64 value cells)
+            wasm_i64c(&mut trampoline_code, 0);
+            wasm_i64c(&mut trampoline_code, 0);
+            // Call main; result (i64) is on the stack. Store it in local 0.
             trampoline_code.push(Op::Call as u8);
             wasm_encode::encode_uleb128(main_idx as u64, &mut trampoline_code);
             wasm_local(&mut trampoline_code, Op::LocalSet, 0); // result = local 0
@@ -276,6 +276,7 @@ impl WasmBackend {
                 }
                 Ty::Bool => {
                     wasm_local(&mut trampoline_code, Op::LocalGet, 0);
+                    trampoline_code.push(Op::I32WrapI64 as u8); // i64 cell -> i32 cond
                     trampoline_code.push(Op::If as u8);
                     trampoline_code.push(0x40);
                     wasm_write_bytes(&mut trampoline_code, b"true\n");
@@ -296,8 +297,9 @@ impl WasmBackend {
             }
 
             module.codes.push(FuncBody {
-                // locals 0 = main result, 1/2 = itoa scratch, 3 = signed-echo flag
-                locals: vec![(4, ValType::I32)],
+                // local 0 = main result (i64 cell), 1 = itoa value scratch (i64);
+                // 2 = itoa ptr (i32 addr), 3 = signed-echo flag (i32).
+                locals: vec![(2, ValType::I64), (2, ValType::I32)],
                 code: trampoline_code,
             });
 
@@ -450,10 +452,19 @@ impl WasmBackend {
             }
         }
 
-        // Finalize locals: subtract 2 params (closure_ptr, arg)
-        let extra_locals = local_count.saturating_sub(2);
-        if extra_locals > 0 {
-            locals.push((extra_locals, ValType::I32));
+        // Finalize locals (params closure_ptr/arg are locals 0,1, declared by the
+        // function type). The uniform value cell is i64, so SSA-value locals and
+        // the int-print value scratch `itoa_v` form one i64 group [2, itoa_v];
+        // the 7 address/length scratch (`itoa_p` + 6 string-builtin scratch) that
+        // follow are addresses, so they stay i32. Indices already order value
+        // locals before scratch, so the split preserves the flat numbering.
+        let i64_locals = (itoa_v + 1).saturating_sub(2); // SSA values + itoa_v
+        let i32_locals = local_count - (itoa_v + 1); // itoa_p + 6 string scratch = 7
+        if i64_locals > 0 {
+            locals.push((i64_locals, ValType::I64));
+        }
+        if i32_locals > 0 {
+            locals.push((i32_locals, ValType::I32));
         }
 
         let ctx = EmitCtx {
@@ -478,9 +489,10 @@ impl WasmBackend {
                 let cap_var = VarId::new(i as u32);
                 code.push(Op::LocalGet as u8);
                 wasm_encode::encode_uleb128(0, &mut code); // closure_ptr = local 0
-                code.push(Op::I32Load as u8);
+                code.push(Op::I32WrapI64 as u8); // cell -> i32 address
+                code.push(Op::I64Load as u8);
                 code.push(0x02); // align 4
-                code.push(((i + 1) * 4) as u8); // offset
+                code.push(((i + 1) * 8) as u8); // offset (8-byte cells)
                 if let Some(&local) = var_to_local.get(&cap_var) {
                     code.push(Op::LocalSet as u8);
                     wasm_encode::encode_uleb128(local as u64, &mut code);
@@ -508,8 +520,7 @@ impl WasmBackend {
         self.emit_structured(entry_idx, None, func, &ctx, &block_map, &mut code)?;
 
         if code.is_empty() || !matches!(code.last(), Some(&b) if b == Op::Return as u8) {
-            code.push(Op::I32Const as u8);
-            wasm_encode::encode_sleb128(0, &mut code);
+            wasm_i64c(&mut code, 0);
         }
 
         Ok(FuncBody { locals, code })
@@ -587,9 +598,11 @@ impl WasmBackend {
                     if let Some(local) = ctx.var_map.get(cond) {
                         code.push(Op::LocalGet as u8);
                         wasm_encode::encode_uleb128(*local as u64, code);
+                        code.push(Op::I32WrapI64 as u8); // bool cell -> i32 condition
                     }
                     code.push(Op::If as u8);
-                    code.push(ValType::I32 as u8);
+                    // Each branch pushes its i64 phi contribution as the block result.
+                    code.push(ValType::I64 as u8);
                     // Emit each branch region, then push its contribution to the
                     // merge phi from the region's EXIT block (its merge
                     // predecessor), falling back to the entry block when the
@@ -702,9 +715,8 @@ impl WasmBackend {
                 wasm_encode::encode_uleb128(*local as u64, code);
             }
         } else {
-            // Empty block — push 0
-            code.push(Op::I32Const as u8);
-            wasm_encode::encode_sleb128(0, code);
+            // Empty block — push 0 (unit cell)
+            wasm_i64c(code, 0);
         }
 
         Ok(())
@@ -713,12 +725,16 @@ impl WasmBackend {
     // emit_block is no longer used — block emission is now handled by
     // emit_function (structured if/else) + emit_block_instrs + emit_block_terminator.
 
-    /// Helper: emit `call $riina_alloc` with size on stack.
+    /// Helper: emit `call $riina_alloc` with size on stack, leaving the returned
+    /// address lifted into the i64 value cell (`alloc` stays `(i32)->i32` since
+    /// linear-memory addresses are i32, so every allocation site gets a uniform
+    /// i64 pointer from this single extend).
     fn emit_alloc_call(alloc_func_index: u32, size: u32, code: &mut Vec<u8>) {
         code.push(Op::I32Const as u8);
         wasm_encode::encode_sleb128(size as i64, code);
         code.push(Op::Call as u8);
         wasm_encode::encode_uleb128(alloc_func_index as u64, code);
+        code.push(Op::I64ExtendI32U as u8); // address -> i64 cell
     }
 
     /// Helper: emit local.get for a VarId.
@@ -778,20 +794,20 @@ impl WasmBackend {
         if let Some(bits) = signed_bits {
             // $v = sext($v, bits)
             get_v(code);
-            emit_sext_i32(bits, code);
+            emit_sext_i64(bits, code);
             set_v(code);
-            // $neg = ($v < 0)
+            // $neg = ($v < 0)   (i64 compare -> i32 flag)
             get_v(code);
-            i32c(code, 0);
-            code.push(Op::I32LtS as u8);
+            wasm_i64c(code, 0);
+            code.push(Op::I64LtS as u8);
             set_neg(code);
             // if $neg { $v = 0 - $v }
             get_neg(code);
             code.push(Op::If as u8);
             code.push(0x40);
-            i32c(code, 0);
+            wasm_i64c(code, 0);
             get_v(code);
-            code.push(Op::I32Sub as u8);
+            code.push(Op::I64Sub as u8);
             set_v(code);
             code.push(Op::End as u8);
         }
@@ -810,11 +826,13 @@ impl WasmBackend {
             i32c(code, 1);
             code.push(Op::I32Sub as u8);
             set_p(code);
-            // mem[p] = 48 + (v % 10)   (i32.store8: addr then value)
+            // mem[p] = 48 + (v % 10)   (i32.store8: addr then value; the digit is
+            // an i64 remainder wrapped to an i32 byte)
             get_p(code);
             get_v(code);
-            i32c(code, 10);
-            code.push(Op::I32RemU as u8);
+            wasm_i64c(code, 10);
+            code.push(Op::I64RemU as u8);
+            code.push(Op::I32WrapI64 as u8);
             i32c(code, 48); // '0'
             code.push(Op::I32Add as u8);
             code.push(Op::I32Store8 as u8);
@@ -822,11 +840,13 @@ impl WasmBackend {
             code.push(0x00); // offset 0
             // v = v / 10
             get_v(code);
-            i32c(code, 10);
-            code.push(Op::I32DivU as u8);
+            wasm_i64c(code, 10);
+            code.push(Op::I64DivU as u8);
             set_v(code);
-            // if v != 0, branch back to loop (depth 0)
+            // if v != 0, branch back to loop (depth 0)  (i64 -> i32 condition)
             get_v(code);
+            code.push(Op::I64Eqz as u8);
+            code.push(Op::I32Eqz as u8);
             code.push(Op::BrIf as u8);
             wasm_encode::encode_uleb128(0, code);
         }
@@ -905,10 +925,12 @@ impl WasmBackend {
         code.push(Op::I32Add as u8);
         set(code, cnt);
         get(code, v);
-        wasm_i32c(code, 10);
-        code.push(Op::I32DivU as u8);
+        wasm_i64c(code, 10);
+        code.push(Op::I64DivU as u8);
         set(code, v);
         get(code, v);
+        code.push(Op::I64Eqz as u8);
+        code.push(Op::I32Eqz as u8);
         code.push(Op::BrIf as u8);
         wasm_encode::encode_uleb128(0, code);
         code.push(Op::End as u8);
@@ -947,23 +969,27 @@ impl WasmBackend {
         set(code, wp);
         get(code, wp);
         get(code, v);
-        wasm_i32c(code, 10);
-        code.push(Op::I32RemU as u8);
+        wasm_i64c(code, 10);
+        code.push(Op::I64RemU as u8);
+        code.push(Op::I32WrapI64 as u8);
         wasm_i32c(code, 48);
         code.push(Op::I32Add as u8);
         code.push(Op::I32Store8 as u8);
         code.push(0x00);
         code.push(0x00);
         get(code, v);
-        wasm_i32c(code, 10);
-        code.push(Op::I32DivU as u8);
+        wasm_i64c(code, 10);
+        code.push(Op::I64DivU as u8);
         set(code, v);
         get(code, v);
+        code.push(Op::I64Eqz as u8);
+        code.push(Op::I32Eqz as u8);
         code.push(Op::BrIf as u8);
         wasm_encode::encode_uleb128(0, code);
         code.push(Op::End as u8);
-        // result = rp
+        // result = rp, lifted into the i64 value cell
         get(code, rp);
+        code.push(Op::I64ExtendI32U as u8);
     }
 
     /// `gabung_teks((s1, s2))` → a freshly-allocated heap string that is the
@@ -977,16 +1003,18 @@ impl WasmBackend {
             wasm_encode::encode_uleb128(l as u64, c);
         };
         let load = |c: &mut Vec<u8>, off: u8| {
-            c.push(Op::I32Load as u8);
+            c.push(Op::I32WrapI64 as u8); // pair ptr cell -> i32 addr
+            c.push(Op::I64Load as u8);
             c.push(0x02);
             c.push(off);
+            c.push(Op::I32WrapI64 as u8); // loaded string-ptr cell -> i32 scratch
         };
-        // s1 = mem[arg+0]; s2 = mem[arg+4]
+        // s1 = mem[arg+0]; s2 = mem[arg+8]   (8-byte cells)
         Self::emit_local_get(arg, ctx.var_map, code);
         load(code, 0x00);
         set(code, s1);
         Self::emit_local_get(arg, ctx.var_map, code);
-        load(code, 0x04);
+        load(code, 0x08);
         set(code, s2);
         Self::emit_str_concat_core(ctx, code);
     }
@@ -1002,8 +1030,10 @@ impl WasmBackend {
             wasm_encode::encode_uleb128(l as u64, c);
         };
         Self::emit_local_get(lhs, ctx.var_map, code);
+        code.push(Op::I32WrapI64 as u8); // string ptr cell -> i32 scratch
         set(code, s1);
         Self::emit_local_get(rhs, ctx.var_map, code);
+        code.push(Op::I32WrapI64 as u8);
         set(code, s2);
         Self::emit_str_concat_core(ctx, code);
     }
@@ -1018,7 +1048,9 @@ impl WasmBackend {
         let len1 = ctx.scratch + 2;
         let len2 = ctx.scratch + 3;
         let rp = ctx.scratch + 4;
-        let idx = ctx.itoa_v;
+        // The copy index is an i32 address counter; use the 6th (i32) string
+        // scratch, NOT itoa_v — itoa_v is now an i64 value-cell local.
+        let idx = ctx.scratch + 5;
         let get = |c: &mut Vec<u8>, l: u32| {
             c.push(Op::LocalGet as u8);
             wasm_encode::encode_uleb128(l as u64, c);
@@ -1116,8 +1148,9 @@ impl WasmBackend {
             s2,
             len2,
         );
-        // result = rp
+        // result = rp, lifted into the i64 value cell
         get(code, rp);
+        code.push(Op::I64ExtendI32U as u8);
     }
 
     /// Emit a single IR instruction as WASM instructions.
@@ -1132,61 +1165,45 @@ impl WasmBackend {
             Instruction::Const(c) => {
                 match c {
                     Constant::Unit => {
-                        code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(0, code);
+                        wasm_i64c(code, 0);
                     }
                     Constant::Bool(b) => {
-                        code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(if *b { 1 } else { 0 }, code);
+                        wasm_i64c(code, if *b { 1 } else { 0 });
                     }
                     Constant::Int(n) => {
-                        // wasm32 holds integers in a 32-bit value cell. The full
-                        // unsigned 32-bit range (incl. [2^31, 2^32)) is encoded as
-                        // the wrapped i32 bit pattern; a true 64-bit value (>= 2^32)
-                        // cannot be represented, so it is a clean compile error
-                        // rather than an invalid `i32.const` (which would only fail,
-                        // cryptically, at wasmtime load time). See the wasm32
-                        // limitation note in RIINA_MASTER_PLAN.md Gate C numeric tower.
-                        if *n > u64::from(u32::MAX) {
-                            return Err(crate::Error::InvalidOperation(format!(
-                                "wasm32 target cannot represent the 64-bit integer {n}: it \
-                                 exceeds the 32-bit value cell (max {}). Use the native \
-                                 target, or keep integer values within 32 bits.",
-                                u32::MAX
-                            )));
-                        }
-                        code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(i64::from(*n as u32 as i32), code);
+                        // The uniform value cell is i64, so the full 64-bit integer
+                        // is materialized directly (`*n as i64` carries the exact
+                        // bit pattern, incl. the [2^63, 2^64) range). The old wasm32
+                        // 32-bit-cell limitation (a clean compile error for >= 2^32)
+                        // is gone — W1 of the numeric tower.
+                        wasm_i64c(code, *n as i64);
                     }
                     Constant::String(s) => {
-                        // Push pointer to string in data section (points to length prefix)
-                        if let Some(&offset) = ctx.string_table.get(s) {
-                            code.push(Op::I32Const as u8);
-                            wasm_encode::encode_sleb128(offset as i64, code);
-                        } else {
-                            code.push(Op::I32Const as u8);
-                            wasm_encode::encode_sleb128(0, code);
-                        }
+                        // Push pointer to string in data section (points to length
+                        // prefix), lifted into the i64 cell.
+                        let offset = ctx.string_table.get(s).copied().unwrap_or(0);
+                        wasm_i64c(code, offset as i64);
                     }
                 }
             }
             Instruction::Load(var) => {
-                // Dereference: load i32 from memory address held in var
+                // Dereference: load the i64 cell at the address held in var
                 Self::emit_local_get(var, ctx.var_map, code);
-                code.push(Op::I32Load as u8);
+                code.push(Op::I32WrapI64 as u8); // cell -> i32 address
+                code.push(Op::I64Load as u8);
                 code.push(0x02); // alignment: 4
                 code.push(0x00); // offset: 0
             }
             Instruction::Store(dst, src) => {
                 // Store to memory: *dst = src
                 Self::emit_local_get(dst, ctx.var_map, code);
+                code.push(Op::I32WrapI64 as u8); // cell -> i32 address
                 Self::emit_local_get(src, ctx.var_map, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02); // alignment: 4
                 code.push(0x00); // offset: 0
                                  // Store returns unit (0)
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
             Instruction::BinOp(op, lhs, rhs)
                 if matches!(op, BinOp::Add)
@@ -1213,47 +1230,65 @@ impl WasmBackend {
                     BinOp::Div | BinOp::Mod | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
                 );
                 let lext = needs_signed_operands
-                    .then(|| signed_subi32_width(ctx.var_to_ty.get(lhs)))
+                    .then(|| signed_sub64_width(ctx.var_to_ty.get(lhs)))
                     .flatten();
                 let rext = needs_signed_operands
-                    .then(|| signed_subi32_width(ctx.var_to_ty.get(rhs)))
+                    .then(|| signed_sub64_width(ctx.var_to_ty.get(rhs)))
                     .flatten();
                 Self::emit_local_get(lhs, ctx.var_map, code);
                 if let Some(b) = lext {
-                    emit_sext_i32(b, code);
+                    emit_sext_i64(b, code);
                 }
                 Self::emit_local_get(rhs, ctx.var_map, code);
                 if let Some(b) = rext {
-                    emit_sext_i32(b, code);
+                    emit_sext_i64(b, code);
                 }
                 match op {
-                    BinOp::Add => code.push(Op::I32Add as u8),
-                    BinOp::Sub => code.push(Op::I32Sub as u8),
-                    BinOp::Mul => code.push(Op::I32Mul as u8),
-                    BinOp::Div => code.push(Op::I32DivS as u8),
-                    BinOp::Eq => code.push(Op::I32Eq as u8),
-                    BinOp::Ne => code.push(Op::I32Ne as u8),
-                    BinOp::Mod => code.push(Op::I32RemS as u8),
-                    BinOp::Lt => code.push(Op::I32LtS as u8),
-                    BinOp::Gt => code.push(Op::I32GtS as u8),
-                    BinOp::Le => code.push(Op::I32LeS as u8),
-                    BinOp::Ge => code.push(Op::I32GeS as u8),
-                    BinOp::And => code.push(Op::I32And as u8),
-                    BinOp::Or => code.push(Op::I32Or as u8),
+                    BinOp::Add => code.push(Op::I64Add as u8),
+                    BinOp::Sub => code.push(Op::I64Sub as u8),
+                    BinOp::Mul => code.push(Op::I64Mul as u8),
+                    BinOp::Div => code.push(Op::I64DivS as u8),
+                    BinOp::Mod => code.push(Op::I64RemS as u8),
+                    BinOp::And => code.push(Op::I64And as u8),
+                    BinOp::Or => code.push(Op::I64Or as u8),
+                    // Comparisons yield an i32 (0/1); lift back into the i64 cell.
+                    BinOp::Eq => {
+                        code.push(Op::I64Eq as u8);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Ne => {
+                        code.push(Op::I64Ne as u8);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Lt => {
+                        code.push(Op::I64LtS as u8);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Gt => {
+                        code.push(Op::I64GtS as u8);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Le => {
+                        code.push(Op::I64LeS as u8);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Ge => {
+                        code.push(Op::I64GeS as u8);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
                 }
                 // Numeric tower: mask an arithmetic result that types as a sized
-                // integer narrower than the i32 cell to its width (`& (2^bits-1)`),
+                // integer narrower than the 64-bit cell to its width (`& (2^bits-1)`),
                 // so compiled overflow wraps modulo 2^bits like the interpreter and
-                // the C backend. Operands are already in-range (every sized value
-                // comes from a masked literal or a masked arithmetic result), so
-                // masking the result suffices. Comparisons type as `Bool`, so they
-                // are not masked.
+                // the C backend. (With i64 arithmetic this now also masks 32-bit
+                // results, which the old i32 cell wrapped implicitly.) Operands are
+                // already in-range, so masking the result suffices; comparisons type
+                // as `Bool`, so they are not masked.
                 if let Some(r) = result.as_ref() {
                     if let Some(Ty::IntN { bits, .. }) = ctx.var_to_ty.get(r) {
-                        if *bits < 32 {
-                            code.push(Op::I32Const as u8);
-                            wasm_encode::encode_sleb128((1i64 << bits) - 1, code);
-                            code.push(Op::I32And as u8);
+                        if *bits < 64 {
+                            wasm_i64c(code, (1i64 << bits) - 1);
+                            code.push(Op::I64And as u8);
                         }
                     }
                 }
@@ -1261,13 +1296,13 @@ impl WasmBackend {
             Instruction::UnaryOp(op, operand) => match op {
                 UnaryOp::Not => {
                     Self::emit_local_get(operand, ctx.var_map, code);
-                    code.push(Op::I32Eqz as u8);
+                    code.push(Op::I64Eqz as u8);
+                    code.push(Op::I64ExtendI32U as u8);
                 }
                 UnaryOp::Neg => {
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(0, code);
+                    wasm_i64c(code, 0);
                     Self::emit_local_get(operand, ctx.var_map, code);
-                    code.push(Op::I32Sub as u8);
+                    code.push(Op::I64Sub as u8);
                 }
             },
             Instruction::Call(func_var, arg) => {
@@ -1279,8 +1314,7 @@ impl WasmBackend {
                         code.push(Op::Call as u8);
                         wasm_encode::encode_uleb128(idx as u64, code);
                     } else {
-                        code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(0, code);
+                        wasm_i64c(code, 0); // null closure ptr (cell)
                         Self::emit_local_get(arg, ctx.var_map, code);
                         code.push(Op::Call as u8);
                         wasm_encode::encode_uleb128(0, code);
@@ -1290,21 +1324,23 @@ impl WasmBackend {
                     // Push closure_ptr (first arg), then arg (second arg)
                     Self::emit_local_get(func_var, ctx.var_map, code);
                     Self::emit_local_get(arg, ctx.var_map, code);
-                    // Load func_idx from closure memory for table index
+                    // Load func_idx (an i64 cell) from closure[0] and wrap it to the
+                    // i32 table index.
                     Self::emit_local_get(func_var, ctx.var_map, code);
-                    code.push(Op::I32Load as u8);
+                    code.push(Op::I32WrapI64 as u8); // closure ptr cell -> i32 addr
+                    code.push(Op::I64Load as u8);
                     code.push(0x02);
                     code.push(0x00); // load func_table_idx from closure[0]
-                                     // call_indirect: type must match (i32, i32) -> i32
-                                     // Find the user function type index (first user function type)
+                    code.push(Op::I32WrapI64 as u8); // cell -> i32 table index
+                                     // call_indirect: type must match (i64, i64) -> i64
                     code.push(Op::CallIndirect as u8);
                     wasm_encode::encode_uleb128(ctx.user_func_type_idx as u64, code);
                     wasm_encode::encode_uleb128(0, code); // table 0
                 }
             }
             Instruction::Pair(a, b) => {
-                // Alloc 8 bytes, store a at +0, b at +4
-                Self::emit_alloc_call(ctx.alloc_func_index, 8, code);
+                // Alloc 16 bytes (two 8-byte cells), store a at +0, b at +8
+                Self::emit_alloc_call(ctx.alloc_func_index, 16, code);
                 // Duplicate ptr: tee to result local, then use it
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
@@ -1313,21 +1349,23 @@ impl WasmBackend {
                     }
                 }
                 // Store a at ptr+0
+                code.push(Op::I32WrapI64 as u8); // ptr cell -> i32 addr
                 Self::emit_local_get(a, ctx.var_map, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
                 code.push(0x00);
-                // Store b at ptr+4
+                // Store b at ptr+8
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
                         code.push(Op::LocalGet as u8);
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                 }
+                code.push(Op::I32WrapI64 as u8);
                 Self::emit_local_get(b, ctx.var_map, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02); // align 4
-                code.push(0x04); // offset 4
+                code.push(0x08); // offset 8
                                  // Result is already in local from LocalTee; load it back for the
                                  // generic LocalSet below
                 if let Some(result_var) = result {
@@ -1338,22 +1376,24 @@ impl WasmBackend {
                 }
             }
             Instruction::Fst(pair) => {
-                // Load i32 at pair_ptr + 0
+                // Load the i64 cell at pair_ptr + 0
                 Self::emit_local_get(pair, ctx.var_map, code);
-                code.push(Op::I32Load as u8);
+                code.push(Op::I32WrapI64 as u8);
+                code.push(Op::I64Load as u8);
                 code.push(0x02);
                 code.push(0x00);
             }
             Instruction::Snd(pair) => {
-                // Load i32 at pair_ptr + 4
+                // Load the i64 cell at pair_ptr + 8
                 Self::emit_local_get(pair, ctx.var_map, code);
-                code.push(Op::I32Load as u8);
+                code.push(Op::I32WrapI64 as u8);
+                code.push(Op::I64Load as u8);
                 code.push(0x02); // align 4
-                code.push(0x04); // offset 4
+                code.push(0x08); // offset 8
             }
             Instruction::Inl(val) => {
-                // Alloc 8 bytes: tag=0 at +0, value at +4
-                Self::emit_alloc_call(ctx.alloc_func_index, 8, code);
+                // Alloc 16 bytes: tag=0 at +0, value at +8 (8-byte cells)
+                Self::emit_alloc_call(ctx.alloc_func_index, 16, code);
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
                         code.push(Op::LocalTee as u8);
@@ -1361,22 +1401,23 @@ impl WasmBackend {
                     }
                 }
                 // Store tag=0
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I32WrapI64 as u8);
+                wasm_i64c(code, 0);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
                 code.push(0x00);
-                // Store value at +4
+                // Store value at +8
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
                         code.push(Op::LocalGet as u8);
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                 }
+                code.push(Op::I32WrapI64 as u8);
                 Self::emit_local_get(val, ctx.var_map, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
-                code.push(0x04);
+                code.push(0x08);
                 // Push ptr for generic LocalSet
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
@@ -1386,17 +1427,17 @@ impl WasmBackend {
                 }
             }
             Instruction::Inr(val) => {
-                // Alloc 8 bytes: tag=1 at +0, value at +4
-                Self::emit_alloc_call(ctx.alloc_func_index, 8, code);
+                // Alloc 16 bytes: tag=1 at +0, value at +8 (8-byte cells)
+                Self::emit_alloc_call(ctx.alloc_func_index, 16, code);
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
                         code.push(Op::LocalTee as u8);
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                 }
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(1, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I32WrapI64 as u8);
+                wasm_i64c(code, 1);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
                 code.push(0x00);
                 if let Some(result_var) = result {
@@ -1405,10 +1446,11 @@ impl WasmBackend {
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                 }
+                code.push(Op::I32WrapI64 as u8);
                 Self::emit_local_get(val, ctx.var_map, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
-                code.push(0x04);
+                code.push(0x08);
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
                         code.push(Op::LocalGet as u8);
@@ -1417,19 +1459,22 @@ impl WasmBackend {
                 }
             }
             Instruction::IsLeft(sum) => {
-                // Load tag at sum_ptr+0, check if == 0
+                // Load tag (i64 cell) at sum_ptr+0, check if == 0, lift to the cell
                 Self::emit_local_get(sum, ctx.var_map, code);
-                code.push(Op::I32Load as u8);
+                code.push(Op::I32WrapI64 as u8);
+                code.push(Op::I64Load as u8);
                 code.push(0x02);
                 code.push(0x00);
-                code.push(Op::I32Eqz as u8); // tag==0 means left
+                code.push(Op::I64Eqz as u8); // tag==0 means left
+                code.push(Op::I64ExtendI32U as u8);
             }
             Instruction::UnwrapLeft(sum) | Instruction::UnwrapRight(sum) => {
-                // Load value at sum_ptr+4
+                // Load value (i64 cell) at sum_ptr+8
                 Self::emit_local_get(sum, ctx.var_map, code);
-                code.push(Op::I32Load as u8);
+                code.push(Op::I32WrapI64 as u8);
+                code.push(Op::I64Load as u8);
                 code.push(0x02);
-                code.push(0x04);
+                code.push(0x08);
             }
             Instruction::Copy(src) => {
                 Self::emit_local_get(src, ctx.var_map, code);
@@ -1441,9 +1486,9 @@ impl WasmBackend {
                 Self::emit_local_get(val, ctx.var_map, code);
             }
             Instruction::Closure { func, captures } => {
-                // Alloc (1 + len(captures)) * 4 bytes
-                // Layout: [func_index: i32, capture0: i32, capture1: i32, ...]
-                let size = (1 + captures.len()) as u32 * 4;
+                // Alloc (1 + len(captures)) * 8 bytes
+                // Layout: [func_index, capture0, capture1, ...] (8-byte cells)
+                let size = (1 + captures.len()) as u32 * 8;
                 Self::emit_alloc_call(ctx.alloc_func_index, size, code);
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
@@ -1451,11 +1496,11 @@ impl WasmBackend {
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                 }
-                // Store func_index at +0
+                // Store func_index at +0 (as an i64 cell)
                 let func_idx = ctx.func_map.get(func).copied().unwrap_or(0);
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(func_idx as i64, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I32WrapI64 as u8); // ptr cell -> i32 addr
+                wasm_i64c(code, func_idx as i64);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
                 code.push(0x00);
                 // Store each capture
@@ -1466,10 +1511,11 @@ impl WasmBackend {
                             wasm_encode::encode_uleb128(*local as u64, code);
                         }
                     }
+                    code.push(Op::I32WrapI64 as u8); // ptr cell -> i32 addr
                     Self::emit_local_get(cap, ctx.var_map, code);
-                    code.push(Op::I32Store as u8);
+                    code.push(Op::I64Store as u8);
                     code.push(0x02); // align 4
-                    let offset = ((i + 1) * 4) as u8;
+                    let offset = ((i + 1) * 8) as u8;
                     code.push(offset);
                 }
                 // Push ptr for generic LocalSet
@@ -1486,29 +1532,31 @@ impl WasmBackend {
             } => {
                 // Patch captures[capture_index] with closure pointer itself
                 Self::emit_local_get(closure, ctx.var_map, code);
-                // Duplicate
+                code.push(Op::I32WrapI64 as u8); // ptr cell -> i32 addr
+                // Duplicate (the closure ptr value to store)
                 if let Some(local) = ctx.var_map.get(closure) {
                     code.push(Op::LocalGet as u8);
                     wasm_encode::encode_uleb128(*local as u64, code);
                 }
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
-                let offset = ((capture_index + 1) * 4) as u8;
+                let offset = ((capture_index + 1) * 8) as u8;
                 code.push(offset);
                 // Result is the closure ptr
                 Self::emit_local_get(closure, ctx.var_map, code);
             }
             Instruction::Alloc { init, .. } => {
-                // Allocate 4 bytes, store init value
-                Self::emit_alloc_call(ctx.alloc_func_index, 4, code);
+                // Allocate one 8-byte cell, store init value
+                Self::emit_alloc_call(ctx.alloc_func_index, 8, code);
                 if let Some(result_var) = result {
                     if let Some(local) = ctx.var_map.get(&result_var) {
                         code.push(Op::LocalTee as u8);
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                 }
+                code.push(Op::I32WrapI64 as u8); // ptr cell -> i32 addr
                 Self::emit_local_get(init, ctx.var_map, code);
-                code.push(Op::I32Store as u8);
+                code.push(Op::I64Store as u8);
                 code.push(0x02);
                 code.push(0x00);
                 // Push ptr for generic LocalSet
@@ -1554,6 +1602,7 @@ impl WasmBackend {
                         code.push(Op::GlobalGet as u8);
                         wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
                         Self::emit_local_get(arg, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8); // string ptr cell -> i32 addr
                         code.push(Op::I32Const as u8);
                         wasm_encode::encode_sleb128(4, code);
                         code.push(Op::I32Add as u8); // ptr + 4 = data start
@@ -1568,9 +1617,10 @@ impl WasmBackend {
                         wasm_encode::encode_sleb128(4, code);
                         code.push(Op::I32Add as u8); // scratch + 4
                         Self::emit_local_get(arg, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8); // string ptr cell -> i32 addr
                         code.push(Op::I32Load as u8);
                         code.push(0x02);
-                        code.push(0x00); // load len from arg
+                        code.push(0x00); // load len from arg (i32 length prefix)
                         code.push(Op::I32Store as u8);
                         code.push(0x02);
                         code.push(0x00); // store at scratch[4]
@@ -1600,8 +1650,7 @@ impl WasmBackend {
                     }
 
                     // push unit (0) as result
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(0, code);
+                    wasm_i64c(code, 0);
                 } else if name == "ke_teks" || name == "nombor_ke_teks" {
                     match ctx.var_to_ty.get(arg) {
                         Some(Ty::Int | Ty::CInt | Ty::IntN { .. }) => {
@@ -1618,8 +1667,7 @@ impl WasmBackend {
                         }
                         _ => {
                             // Other types: stub 0 (prior behavior).
-                            code.push(Op::I32Const as u8);
-                            wasm_encode::encode_sleb128(0, code);
+                            wasm_i64c(code, 0);
                         }
                     }
                 } else if name == "gabung_teks" {
@@ -1643,8 +1691,7 @@ impl WasmBackend {
                     )));
                 } else {
                     // Other builtins: push 0 (stub)
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(0, code);
+                    wasm_i64c(code, 0);
                 }
             }
             Instruction::Perform { payload, .. } => {
@@ -1653,8 +1700,7 @@ impl WasmBackend {
             }
             Instruction::RequireCap(_) | Instruction::GrantCap(_) => {
                 // Capability instructions are compile-time checks; emit unit at runtime
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
             Instruction::FFICall { name, args } => {
                 // FFI calls are routed to WASM imports.
@@ -1663,41 +1709,34 @@ impl WasmBackend {
                     Self::emit_local_get(arg, ctx.var_map, code);
                 }
                 let _ = name;
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
 
             // JALINAN Phase 6: simplified WASM actor support
             Instruction::ActorDecl { .. } | Instruction::ChoreographyDecl { .. } => {
                 // Declaration: push 0 (unit)
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
             Instruction::ActorSpawn(_, _) => {
                 // Spawn: push actor ID (incrementing counter via global)
                 // For simplicity, just push 1 as the actor ref
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(1, code);
+                wasm_i64c(code, 1);
             }
             Instruction::ActorSend(_, _) => {
                 // Send: no-op in single-threaded WASM, push 0
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
             Instruction::ActorRecv(_) => {
                 // Recv: return 0 (placeholder — no real mailbox in WASM)
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
             Instruction::CRDTMerge(_, _) => {
                 // CRDT merge: for integers, take max (simplified)
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
             Instruction::ContentHash(_) => {
                 // Content hash: return 0 (placeholder)
-                code.push(Op::I32Const as u8);
-                wasm_encode::encode_sleb128(0, code);
+                wasm_i64c(code, 0);
             }
         }
 
@@ -1790,24 +1829,34 @@ fn wasm_i32c(code: &mut Vec<u8>, n: i64) {
     wasm_encode::encode_sleb128(n, code);
 }
 
-/// Numeric tower: the width of a *signed* `Ty::IntN` narrower than the i32 cell
-/// (so it needs sign extension), else `None`. Width 32 already fills the cell.
-fn signed_subi32_width(ty: Option<&Ty>) -> Option<u8> {
+/// Push an i64 value constant (the uniform value cell). Used wherever a RIINA
+/// value — int, bool, unit, or a pointer lifted into the cell — is materialized.
+fn wasm_i64c(code: &mut Vec<u8>, n: i64) {
+    code.push(Op::I64Const as u8);
+    wasm_encode::encode_sleb128(n, code);
+}
+
+/// Numeric tower: the width of a *signed* `Ty::IntN` narrower than the 64-bit
+/// value cell (so it needs sign extension before a signed op), else `None`. The
+/// cell holds the width-masked (non-negative) bits, so e.g. an i8 `-1` is stored
+/// as 255 and must be sign-extended to a full i64. Full `Int` (64) fills the cell.
+fn signed_sub64_width(ty: Option<&Ty>) -> Option<u8> {
     match ty {
         Some(Ty::IntN {
             bits,
             signed: true,
-        }) if *bits < 32 => Some(*bits),
+        }) if *bits < 64 => Some(*bits),
         _ => None,
     }
 }
 
-/// Sign-extend the top-of-stack i32 from `bits` (8 or 16) to a full i32 via the
-/// standardized sign-extension operators. Width 32/64 needs nothing.
-fn emit_sext_i32(bits: u8, code: &mut Vec<u8>) {
+/// Sign-extend the top-of-stack i64 from `bits` (8, 16, or 32) to a full i64 via
+/// the standardized sign-extension operators. Width 64 needs nothing.
+fn emit_sext_i64(bits: u8, code: &mut Vec<u8>) {
     match bits {
-        8 => code.push(Op::I32Extend8S as u8),
-        16 => code.push(Op::I32Extend16S as u8),
+        8 => code.push(Op::I64Extend8S as u8),
+        16 => code.push(Op::I64Extend16S as u8),
+        32 => code.push(Op::I64Extend32S as u8),
         _ => {}
     }
 }
@@ -1857,9 +1906,10 @@ fn wasm_write_bytes(code: &mut Vec<u8>, bytes: &[u8]) {
 /// Write the contents of a length-prefixed string `[len:u32][bytes]` whose
 /// pointer is in local `ptr_local` (no quotes, no newline).
 fn wasm_echo_strptr(code: &mut Vec<u8>, ptr_local: u32) {
-    // iovec.ptr = ptr_local + 4
+    // iovec.ptr = ptr_local + 4   (ptr_local is an i64 cell -> wrap to address)
     wasm_heap(code);
     wasm_local(code, Op::LocalGet, ptr_local);
+    code.push(Op::I32WrapI64 as u8);
     wasm_i32c(code, 4);
     code.push(Op::I32Add as u8);
     code.push(Op::I32Store as u8);
@@ -1868,6 +1918,7 @@ fn wasm_echo_strptr(code: &mut Vec<u8>, ptr_local: u32) {
     // iovec.len = load len from ptr_local
     wasm_heap(code);
     wasm_local(code, Op::LocalGet, ptr_local);
+    code.push(Op::I32WrapI64 as u8);
     code.push(Op::I32Load as u8);
     code.push(0x02);
     code.push(0x00);
@@ -1885,18 +1936,18 @@ fn wasm_echo_int(code: &mut Vec<u8>, v_local: u32, tv: u32, tp: u32, neg: u32, s
     // Signed sized int: sign-extend, record the sign, print magnitude + '-'.
     if let Some(bits) = signed_bits {
         wasm_local(code, Op::LocalGet, tv);
-        emit_sext_i32(bits, code);
+        emit_sext_i64(bits, code);
         wasm_local(code, Op::LocalSet, tv);
         wasm_local(code, Op::LocalGet, tv);
-        wasm_i32c(code, 0);
-        code.push(Op::I32LtS as u8);
+        wasm_i64c(code, 0);
+        code.push(Op::I64LtS as u8);
         wasm_local(code, Op::LocalSet, neg);
         wasm_local(code, Op::LocalGet, neg);
         code.push(Op::If as u8);
         code.push(0x40);
-        wasm_i32c(code, 0);
+        wasm_i64c(code, 0);
         wasm_local(code, Op::LocalGet, tv);
-        code.push(Op::I32Sub as u8);
+        code.push(Op::I64Sub as u8);
         wasm_local(code, Op::LocalSet, tv);
         code.push(Op::End as u8);
     }
@@ -1922,18 +1973,21 @@ fn wasm_echo_int(code: &mut Vec<u8>, v_local: u32, tv: u32, tp: u32, neg: u32, s
     wasm_local(code, Op::LocalSet, tp);
     wasm_local(code, Op::LocalGet, tp);
     wasm_local(code, Op::LocalGet, tv);
-    wasm_i32c(code, 10);
-    code.push(Op::I32RemU as u8);
+    wasm_i64c(code, 10);
+    code.push(Op::I64RemU as u8);
+    code.push(Op::I32WrapI64 as u8);
     wasm_i32c(code, 48);
     code.push(Op::I32Add as u8);
     code.push(Op::I32Store8 as u8);
     code.push(0x00);
     code.push(0x00);
     wasm_local(code, Op::LocalGet, tv);
-    wasm_i32c(code, 10);
-    code.push(Op::I32DivU as u8);
+    wasm_i64c(code, 10);
+    code.push(Op::I64DivU as u8);
     wasm_local(code, Op::LocalSet, tv);
     wasm_local(code, Op::LocalGet, tv);
+    code.push(Op::I64Eqz as u8);
+    code.push(Op::I32Eqz as u8);
     code.push(Op::BrIf as u8);
     wasm_encode::encode_uleb128(0, code);
     code.push(Op::End as u8);
@@ -2101,7 +2155,9 @@ mod tests {
 
     /// The width-mask byte sequence for a u8 result: `i32.const 255` (0x41 0xFF
     /// 0x01) followed by `i32.and` (0x71).
-    const U8_MASK_SEQ: [u8; 4] = [0x41, 0xFF, 0x01, 0x71];
+    // i64.const 255 (0x42, sleb128 0xFF 0x01); i64.and (0x83) — the width mask
+    // in the uniform i64 value cell.
+    const U8_MASK_SEQ: [u8; 4] = [0x42, 0xFF, 0x01, 0x83];
 
     #[test]
     fn numeric_tower_wasm_masks_sized_arithmetic() {
@@ -2128,7 +2184,7 @@ mod tests {
         let out = WasmBackend::new(Target::Wasm32).emit(&program).unwrap();
         assert!(
             out.primary.windows(4).any(|w| w == U8_MASK_SEQ),
-            "u8 arithmetic must be masked with `i32.const 255; i32.and` in WASM"
+            "u8 arithmetic must be masked with `i64.const 255; i64.and` in WASM"
         );
     }
 
@@ -2153,9 +2209,9 @@ mod tests {
 
     #[test]
     fn numeric_tower_wasm_sign_extends_signed_division() {
-        // Signed i8 division must sign-extend its operands to a full i32 before
-        // `i32.div_s` (the cell holds the width-masked bits), via `i32.extend8_s`
-        // (0xC0). Add/Sub/Mul and unsigned ops do not.
+        // Signed i8 division must sign-extend its operands to a full i64 before
+        // `i64.div_s` (the cell holds the width-masked bits), via `i64.extend8_s`
+        // (0xC2). Add/Sub/Mul and unsigned ops do not.
         let (v0, v1, v2) = (VarId::new(0), VarId::new(1), VarId::new(2));
         let i8s = riina_types::Ty::IntN {
             bits: 8,
@@ -2178,8 +2234,8 @@ mod tests {
         );
         let out = WasmBackend::new(Target::Wasm32).emit(&signed).unwrap();
         assert!(
-            out.primary.contains(&(Op::I32Extend8S as u8)),
-            "signed i8 division must sign-extend operands (i32.extend8_s = 0xC0)"
+            out.primary.contains(&(Op::I64Extend8S as u8)),
+            "signed i8 division must sign-extend operands (i64.extend8_s = 0xC2)"
         );
         // The unsigned u8 counterpart does not sign-extend.
         let u8t = riina_types::Ty::IntN {
@@ -2196,39 +2252,49 @@ mod tests {
         );
         let out_u = WasmBackend::new(Target::Wasm32).emit(&unsigned).unwrap();
         assert!(
-            !out_u.primary.contains(&(Op::I32Extend8S as u8)),
+            !out_u.primary.contains(&(Op::I64Extend8S as u8)),
             "unsigned u8 division must not sign-extend"
         );
     }
 
     #[test]
-    fn numeric_tower_wasm_rejects_64bit_constant() {
-        // A value that exceeds the 32-bit cell is a clean compile error, not the
-        // invalid `i32.const` that previously only failed at wasmtime load time.
+    fn numeric_tower_wasm_accepts_64bit_constant() {
+        // W1: the uniform i64 value cell represents a true 64-bit integer (>= 2^32)
+        // directly. This used to be a clean compile error (the 32-bit cell could
+        // not hold it).
         let v0 = VarId::new(0);
         let program = make_program(
             vec![ann(Instruction::Const(Constant::Int(5_000_000_000)), v0)],
             v0,
         );
-        let err = WasmBackend::new(Target::Wasm32).emit(&program).unwrap_err();
-        let msg = format!("{err:?}");
+        let out = WasmBackend::new(Target::Wasm32)
+            .emit(&program)
+            .expect("a 64-bit constant must compile on wasm32 (i64 value cell)");
+        // Materialized as i64.const, not i32.const.
         assert!(
-            msg.contains("wasm32") && msg.contains("5000000000"),
-            "expected a clear 64-bit rejection, got: {msg}"
+            out.primary.contains(&(Op::I64Const as u8)),
+            "64-bit constant must lower to i64.const"
         );
     }
 
     #[test]
-    fn numeric_tower_wasm_accepts_full_u32_range() {
-        // The full unsigned 32-bit range, including [2^31, 2^32), is representable
-        // (encoded as the wrapped i32 bit pattern) — these used to emit an invalid
-        // `i32.const`.
+    fn numeric_tower_wasm_accepts_full_u32_and_64bit_range() {
+        // The full unsigned 32-bit range AND true 64-bit values (>= 2^32) are
+        // representable in the i64 cell (W1). The u32 range used to emit a wrapped
+        // i32.const; the 64-bit range used to be a clean compile error.
         let v0 = VarId::new(0);
-        for n in [3_000_000_000u64, u64::from(u32::MAX)] {
+        for n in [
+            3_000_000_000u64,
+            u64::from(u32::MAX),
+            5_000_000_000,
+            u64::from(u32::MAX) + 1,
+            1u64 << 40,
+            u64::MAX,
+        ] {
             let program = make_program(vec![ann(Instruction::Const(Constant::Int(n)), v0)], v0);
             assert!(
                 WasmBackend::new(Target::Wasm32).emit(&program).is_ok(),
-                "u32 value {n} must be representable on wasm32"
+                "value {n} must be representable on wasm32 (i64 cell)"
             );
         }
     }
@@ -2365,10 +2431,10 @@ mod tests {
 
         let backend = WasmBackend::new(Target::Wasm32);
         let output = backend.emit(&program).unwrap();
-        // Should contain i32.load (0x28) for projections
+        // Should contain i64.load (0x29) for projections (uniform i64 value cell)
         assert!(
-            output.primary.windows(1).any(|w| w[0] == Op::I32Load as u8),
-            "WASM binary should contain I32Load for pair projection"
+            output.primary.windows(1).any(|w| w[0] == Op::I64Load as u8),
+            "WASM binary should contain I64Load for pair projection"
         );
         // Should contain call to alloc
         assert!(
@@ -2488,12 +2554,12 @@ mod tests {
 
         let backend = WasmBackend::new(Target::Wasm32);
         let output = backend.emit(&program).unwrap();
-        // Should have i32.load and i32.store
-        assert!(output.primary.windows(1).any(|w| w[0] == Op::I32Load as u8));
+        // Should have i64.load and i64.store (uniform i64 value cell)
+        assert!(output.primary.windows(1).any(|w| w[0] == Op::I64Load as u8));
         assert!(output
             .primary
             .windows(1)
-            .any(|w| w[0] == Op::I32Store as u8));
+            .any(|w| w[0] == Op::I64Store as u8));
     }
 
     #[test]
