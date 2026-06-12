@@ -10,7 +10,7 @@
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                                      ║
 ║                              COMPONENT SPECIFICATIONS                                                ║
-║                     Precise Integration with github.com/ib823/proof                                  ║
+║                     Precise Integration with the RIINA repository                                    ║
 ║                                                                                                      ║
 ║  Purpose: Detailed specifications for each new component with exact file paths,                      ║
 ║           Coq module templates, Rust crate structures, and research track references.                ║
