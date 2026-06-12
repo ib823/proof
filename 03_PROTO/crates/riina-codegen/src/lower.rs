@@ -82,6 +82,8 @@ fn builtin_canonical(name: &str) -> Option<&'static str> {
         "ke_bool" | "to_bool" => return Some("ke_bool"),
         "bool_ke_nombor" | "bool_to_int" => return Some("bool_ke_nombor"),
         "nombor_ke_teks" | "int_to_string" => return Some("nombor_ke_teks"),
+        // Arbitrary-precision integer constructor (numeric-tower BigInt).
+        "besar" | "bigint" => return Some("besar"),
         // Math
         "mutlak" | "abs" => return Some("mutlak"),
         "minimum" | "min" => return Some("minimum"),

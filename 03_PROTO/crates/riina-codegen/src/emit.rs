@@ -74,7 +74,7 @@ use crate::ir::{
     Terminator, UnaryOp, VarId,
 };
 use crate::Result;
-use riina_types::{Effect, SecurityLevel};
+use riina_types::{Effect, SecurityLevel, Ty};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as FmtWrite;
 
@@ -211,6 +211,7 @@ impl CEmitter {
         self.writeln("#include <string.h>");
         self.writeln("#include <stdio.h>");
         self.writeln("#include <setjmp.h>");
+        self.writeln("#include <pthread.h>");
         self.writeln("");
 
         // Security level enum
@@ -271,7 +272,8 @@ impl CEmitter {
         self.writeln("    RIINA_TAG_REF = 8,");
         self.writeln("    RIINA_TAG_SECRET = 9,");
         self.writeln("    RIINA_TAG_PROOF = 10,");
-        self.writeln("    RIINA_TAG_CAPABILITY = 11");
+        self.writeln("    RIINA_TAG_CAPABILITY = 11,");
+        self.writeln("    RIINA_TAG_BIGINT = 12  /* arbitrary-precision integer (besar) */");
         self.writeln("} riina_tag_t;");
         self.writeln("");
 
@@ -298,6 +300,17 @@ impl CEmitter {
         self.writeln("} riina_string_t;");
         self.writeln("");
 
+        // BigInt: sign-magnitude, little-endian base-2^32 limbs (mirrors
+        // riina-codegen/src/bigint.rs). Magnitude is normalized (no trailing zero
+        // limbs); len==0 / mag==NULL is zero, and neg is 0 for zero. Heap limbs
+        // are leaked, matching this backend's value-allocation model.
+        self.writeln("typedef struct {");
+        self.writeln("    int neg;          /* sign; 0 for zero */");
+        self.writeln("    uint32_t* mag;    /* little-endian limbs, normalized */");
+        self.writeln("    size_t len;       /* number of limbs; 0 == zero */");
+        self.writeln("} riina_bigint_t;");
+        self.writeln("");
+
         // Closure structure
         self.writeln("typedef struct {");
         self.writeln("    void* func_ptr;           /* Function pointer */");
@@ -321,6 +334,10 @@ impl CEmitter {
         self.writeln("struct riina_value {");
         self.writeln("    riina_tag_t tag;");
         self.writeln("    riina_security_level_t security;");
+        self.writeln("    /* Numeric tower: for a signed sized int (Ty::IntN{signed}) this is the");
+        self.writeln("       bit width (8/16/32/64) so format/compare/div sign-extend; 0 for plain");
+        self.writeln("       or unsigned ints, which keep unsigned semantics (zeroed by calloc). */");
+        self.writeln("    uint8_t int_signed_bits;");
         self.writeln("    union {");
         self.writeln("        /* RIINA_TAG_UNIT: no data */");
         self.writeln("        bool bool_val;              /* RIINA_TAG_BOOL */");
@@ -332,6 +349,7 @@ impl CEmitter {
         self.writeln("        riina_ref_t ref_val;        /* RIINA_TAG_REF */");
         self.writeln("        riina_value_t* wrapped_val; /* RIINA_TAG_SECRET/PROOF */");
         self.writeln("        riina_effect_t cap_val;     /* RIINA_TAG_CAPABILITY */");
+        self.writeln("        riina_bigint_t bigint_val;  /* RIINA_TAG_BIGINT */");
         self.writeln("    } data;");
         self.writeln("};");
         self.writeln("");
@@ -354,6 +372,9 @@ impl CEmitter {
 
         // Value constructors
         self.emit_runtime_constructors();
+
+        // BigInt (besar) runtime — must precede the binop/builtin helpers that use it.
+        self.emit_bigint_runtime();
 
         // Runtime helpers
         self.emit_runtime_helpers();
@@ -412,6 +433,48 @@ impl CEmitter {
         self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
         self.writeln("    v->data.int_val = n;");
         self.writeln("    return v;");
+        self.writeln("}");
+        self.writeln("");
+
+        // Numeric tower: sign-extend a width-`bits` two's-complement bit pattern
+        // to int64 (identity for bits 0/>=64). Used by signed format/compare/div.
+        self.writeln("static int64_t riina_sext(uint64_t v, unsigned bits) {");
+        self.writeln("    if (bits == 0 || bits >= 64) return (int64_t)v;");
+        self.writeln("    unsigned sh = 64u - bits;");
+        self.writeln("    return ((int64_t)(v << sh)) >> sh;");
+        self.writeln("}");
+        self.writeln("");
+
+        // A sized integer: tags the value with its signed width (so signed values
+        // sign-extend on display/compare/div). Unsigned ⇒ tag 0 ⇒ unsigned semantics.
+        self.writeln(
+            "static riina_value_t* riina_int_sized(uint64_t n, unsigned bits, int is_signed) {",
+        );
+        self.writeln("    riina_value_t* v = riina_int(n);");
+        self.writeln("    if (is_signed) v->int_signed_bits = (uint8_t)bits;");
+        self.writeln("    return v;");
+        self.writeln("}");
+        self.writeln("");
+
+        // The signed width governing a binary op: the signed operand's width (0 if
+        // neither is a signed sized int ⇒ the unsigned path).
+        self.writeln(
+            "static unsigned riina_swidth(riina_value_t* a, riina_value_t* b) {",
+        );
+        self.writeln("    return a->int_signed_bits ? a->int_signed_bits : b->int_signed_bits;");
+        self.writeln("}");
+        self.writeln("");
+
+        // Reduce a boxed integer to its declared bit width (`Ty::IntN`).
+        // Add/Sub/Mul/Div/Mod whose result types as a sized integer are wrapped
+        // through this so compiled arithmetic overflows modulo 2^bits, matching the
+        // interpreter; a signed result is tagged so it later prints/compares signed.
+        self.writeln(
+            "static riina_value_t* riina_trunc(riina_value_t* v, unsigned bits, int is_signed) {",
+        );
+        self.writeln("    uint64_t masked = (bits >= 64) ? v->data.int_val");
+        self.writeln("                                   : (v->data.int_val & (((uint64_t)1 << bits) - 1u));");
+        self.writeln("    return riina_int_sized(masked, bits, is_signed);");
         self.writeln("}");
         self.writeln("");
 
@@ -682,6 +745,287 @@ impl CEmitter {
         self.writeln("");
     }
 
+    /// Emit the BigInt (`besar`) runtime: a faithful C port of the dependency-free
+    /// bignum in `riina-codegen/src/bigint.rs` (little-endian base-2^32 limbs,
+    /// schoolbook add/mul, bit-serial truncating divmod, base-10 parse/render),
+    /// so a compiled `besar` program produces byte-identical output to the
+    /// interpreter. Limbs are malloc'd and leaked, like every other boxed value.
+    fn emit_bigint_runtime(&mut self) {
+        self.output.push_str(
+            r##"/* ═══════════════════════════════════════════════════════════════════ */
+/*                       BIGINT (besar) RUNTIME                        */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+/* Strip trailing zero limbs; return the normalized length. */
+static size_t riina_bi_norm(uint32_t* mag, size_t len) {
+    while (len > 0 && mag[len - 1] == 0) len--;
+    return len;
+}
+
+/* Box a magnitude into a BigInt value (takes ownership of `mag`; forces the
+   sign to non-negative when the value is zero). */
+static riina_value_t* riina_bigint_mk(int neg, uint32_t* mag, size_t len) {
+    len = riina_bi_norm(mag, len);
+    riina_value_t* v = riina_alloc();
+    v->tag = RIINA_TAG_BIGINT;
+    v->security = RIINA_LEVEL_PUBLIC;
+    v->data.bigint_val.neg = (len == 0) ? 0 : (neg ? 1 : 0);
+    v->data.bigint_val.mag = mag;
+    v->data.bigint_val.len = len;
+    return v;
+}
+
+/* Compare magnitudes: -1 / 0 / 1. */
+static int riina_bi_cmp_mag(const uint32_t* a, size_t na, const uint32_t* b, size_t nb) {
+    if (na != nb) return na < nb ? -1 : 1;
+    for (size_t i = na; i-- > 0;) {
+        if (a[i] != b[i]) return a[i] < b[i] ? -1 : 1;
+    }
+    return 0;
+}
+
+static uint32_t* riina_bi_add_mag(const uint32_t* a, size_t na,
+                                  const uint32_t* b, size_t nb, size_t* outlen) {
+    size_t n = na > nb ? na : nb;
+    uint32_t* out = (uint32_t*)malloc((n + 1) * sizeof(uint32_t));
+    if (!out) abort();
+    uint64_t carry = 0;
+    for (size_t i = 0; i < n; i++) {
+        uint64_t av = i < na ? a[i] : 0;
+        uint64_t bv = i < nb ? b[i] : 0;
+        uint64_t s = av + bv + carry;
+        out[i] = (uint32_t)(s & 0xffffffffu);
+        carry = s >> 32;
+    }
+    out[n] = (uint32_t)carry;
+    *outlen = riina_bi_norm(out, n + 1);
+    return out;
+}
+
+/* a - b, requires a >= b (magnitudes). */
+static uint32_t* riina_bi_sub_mag(const uint32_t* a, size_t na,
+                                  const uint32_t* b, size_t nb, size_t* outlen) {
+    uint32_t* out = (uint32_t*)malloc((na ? na : 1) * sizeof(uint32_t));
+    if (!out) abort();
+    int64_t borrow = 0;
+    for (size_t i = 0; i < na; i++) {
+        int64_t av = (int64_t)a[i];
+        int64_t bv = i < nb ? (int64_t)b[i] : 0;
+        int64_t d = av - bv - borrow;
+        if (d < 0) { d += ((int64_t)1 << 32); borrow = 1; } else { borrow = 0; }
+        out[i] = (uint32_t)d;
+    }
+    *outlen = riina_bi_norm(out, na);
+    return out;
+}
+
+static uint32_t* riina_bi_mul_mag(const uint32_t* a, size_t na,
+                                  const uint32_t* b, size_t nb, size_t* outlen) {
+    if (na == 0 || nb == 0) { *outlen = 0; return (uint32_t*)malloc(1); }
+    size_t n = na + nb;
+    uint32_t* out = (uint32_t*)calloc(n, sizeof(uint32_t));
+    if (!out) abort();
+    for (size_t i = 0; i < na; i++) {
+        uint64_t carry = 0;
+        for (size_t j = 0; j < nb; j++) {
+            uint64_t cur = (uint64_t)out[i + j] + (uint64_t)a[i] * (uint64_t)b[j] + carry;
+            out[i + j] = (uint32_t)(cur & 0xffffffffu);
+            carry = cur >> 32;
+        }
+        out[i + nb] += (uint32_t)carry;
+    }
+    *outlen = riina_bi_norm(out, n);
+    return out;
+}
+
+/* In-place <<= 1 on a magnitude held in a buffer of capacity `cap`. */
+static size_t riina_bi_shl1(uint32_t* r, size_t len, size_t cap) {
+    uint32_t carry = 0;
+    for (size_t i = 0; i < len; i++) {
+        uint32_t nc = r[i] >> 31;
+        r[i] = (r[i] << 1) | carry;
+        carry = nc;
+    }
+    if (carry && len < cap) { r[len] = carry; len++; }
+    return len;
+}
+
+/* Unsigned long division by shift-and-subtract: q = u / v, r = u % v. */
+static void riina_bi_divmod_mag(const uint32_t* u, size_t nu, const uint32_t* v, size_t nv,
+                                uint32_t** qout, size_t* qlen, uint32_t** rout, size_t* rlen) {
+    if (riina_bi_cmp_mag(u, nu, v, nv) < 0) {
+        uint32_t* r = (uint32_t*)malloc((nu ? nu : 1) * sizeof(uint32_t));
+        for (size_t i = 0; i < nu; i++) r[i] = u[i];
+        *qout = (uint32_t*)malloc(1); *qlen = 0;
+        *rout = r; *rlen = nu;
+        return;
+    }
+    size_t total_bits = nu * 32;
+    uint32_t* q = (uint32_t*)calloc(nu ? nu : 1, sizeof(uint32_t));
+    size_t rcap = nu + 1;
+    uint32_t* r = (uint32_t*)calloc(rcap, sizeof(uint32_t));
+    if (!q || !r) abort();
+    size_t rl = 0;
+    for (size_t bi = total_bits; bi-- > 0;) {
+        rl = riina_bi_shl1(r, rl, rcap);
+        size_t limb = bi / 32, off = bi % 32;
+        if ((u[limb] >> off) & 1u) {
+            if (rl == 0) { r[0] = 1; rl = 1; } else { r[0] |= 1u; }
+        }
+        if (riina_bi_cmp_mag(r, rl, v, nv) >= 0) {
+            size_t nl;
+            uint32_t* nr = riina_bi_sub_mag(r, rl, v, nv, &nl);
+            for (size_t i = 0; i < nl; i++) r[i] = nr[i];
+            for (size_t i = nl; i < rl; i++) r[i] = 0;
+            rl = nl;
+            free(nr);
+            q[limb] |= (uint32_t)1u << off;
+        }
+    }
+    *qout = q; *qlen = riina_bi_norm(q, nu);
+    *rout = r; *rlen = rl;
+}
+
+/* acc*m + add (scalar), used by base-10 parsing. */
+static uint32_t* riina_bi_muladd_small(const uint32_t* a, size_t na,
+                                       uint32_t m, uint32_t add, size_t* outlen) {
+    uint32_t* out = (uint32_t*)malloc((na + 2) * sizeof(uint32_t));
+    if (!out) abort();
+    uint64_t carry = add;
+    for (size_t i = 0; i < na; i++) {
+        uint64_t cur = (uint64_t)a[i] * m + carry;
+        out[i] = (uint32_t)(cur & 0xffffffffu);
+        carry = cur >> 32;
+    }
+    size_t len = na;
+    while (carry) { out[len++] = (uint32_t)(carry & 0xffffffffu); carry >>= 32; }
+    *outlen = riina_bi_norm(out, len);
+    return out;
+}
+
+/* Parse a base-10 string (optional leading +/-) into a BigInt value. */
+static riina_value_t* riina_bigint_from_str(const char* s) {
+    int neg = 0; size_t i = 0;
+    if (s[0] == '-') { neg = 1; i = 1; } else if (s[0] == '+') { i = 1; }
+    uint32_t* mag = (uint32_t*)malloc(1); size_t len = 0;
+    for (; s[i]; i++) {
+        if (s[i] < '0' || s[i] > '9') {
+            fprintf(stderr, "RIINA: besar: '%s' is not a base-10 integer\n", s);
+            abort();
+        }
+        size_t nl;
+        uint32_t* nm = riina_bi_muladd_small(mag, len, 10u, (uint32_t)(s[i] - '0'), &nl);
+        free(mag); mag = nm; len = nl;
+    }
+    return riina_bigint_mk(neg, mag, len);
+}
+
+/* Render a BigInt in base 10 (sign + 9-digit groups via division by 10^9). */
+static char* riina_bigint_to_str(riina_value_t* v) {
+    riina_bigint_t* b = &v->data.bigint_val;
+    if (b->len == 0) { char* z = (char*)malloc(2); z[0] = '0'; z[1] = 0; return z; }
+    size_t len = b->len;
+    uint32_t* m = (uint32_t*)malloc(len * sizeof(uint32_t));
+    if (!m) abort();
+    for (size_t i = 0; i < len; i++) m[i] = b->mag[i];
+    uint32_t* groups = (uint32_t*)malloc((len * 10 + 1) * sizeof(uint32_t));
+    if (!groups) abort();
+    size_t ng = 0;
+    while (len > 0) {
+        uint64_t rem = 0;
+        for (size_t i = len; i-- > 0;) {
+            uint64_t cur = (rem << 32) | m[i];
+            m[i] = (uint32_t)(cur / 1000000000ull);
+            rem = cur % 1000000000ull;
+        }
+        groups[ng++] = (uint32_t)rem;
+        while (len > 0 && m[len - 1] == 0) len--;
+    }
+    char* out = (char*)malloc(ng * 9 + 2);
+    if (!out) abort();
+    size_t pos = 0;
+    if (b->neg) out[pos++] = '-';
+    pos += (size_t)sprintf(out + pos, "%u", groups[ng - 1]);
+    for (size_t i = ng - 1; i-- > 0;) {
+        pos += (size_t)sprintf(out + pos, "%09u", groups[i]);
+    }
+    out[pos] = 0;
+    free(m); free(groups);
+    return out;
+}
+
+/* Signed value-level operations (truncated division: quotient toward zero,
+   remainder takes the dividend's sign — Rust/C semantics). */
+static riina_value_t* riina_bigint_add(riina_value_t* x, riina_value_t* y) {
+    riina_bigint_t* a = &x->data.bigint_val; riina_bigint_t* b = &y->data.bigint_val;
+    size_t ol;
+    if (a->neg == b->neg) {
+        uint32_t* m = riina_bi_add_mag(a->mag, a->len, b->mag, b->len, &ol);
+        return riina_bigint_mk(a->neg, m, ol);
+    }
+    int c = riina_bi_cmp_mag(a->mag, a->len, b->mag, b->len);
+    if (c == 0) return riina_bigint_mk(0, (uint32_t*)malloc(1), 0);
+    if (c > 0) {
+        uint32_t* m = riina_bi_sub_mag(a->mag, a->len, b->mag, b->len, &ol);
+        return riina_bigint_mk(a->neg, m, ol);
+    }
+    uint32_t* m = riina_bi_sub_mag(b->mag, b->len, a->mag, a->len, &ol);
+    return riina_bigint_mk(b->neg, m, ol);
+}
+
+static riina_value_t* riina_bigint_neg(riina_value_t* x) {
+    riina_bigint_t* a = &x->data.bigint_val;
+    uint32_t* m = (uint32_t*)malloc((a->len ? a->len : 1) * sizeof(uint32_t));
+    if (!m) abort();
+    for (size_t i = 0; i < a->len; i++) m[i] = a->mag[i];
+    return riina_bigint_mk(a->len ? !a->neg : 0, m, a->len);
+}
+
+static riina_value_t* riina_bigint_sub(riina_value_t* x, riina_value_t* y) {
+    return riina_bigint_add(x, riina_bigint_neg(y));
+}
+
+static riina_value_t* riina_bigint_mul(riina_value_t* x, riina_value_t* y) {
+    riina_bigint_t* a = &x->data.bigint_val; riina_bigint_t* b = &y->data.bigint_val;
+    size_t ol;
+    uint32_t* m = riina_bi_mul_mag(a->mag, a->len, b->mag, b->len, &ol);
+    return riina_bigint_mk(a->neg ^ b->neg, m, ol);
+}
+
+static int riina_bigint_cmp(riina_value_t* x, riina_value_t* y) {
+    riina_bigint_t* a = &x->data.bigint_val; riina_bigint_t* b = &y->data.bigint_val;
+    if (a->neg != b->neg) return a->neg ? -1 : 1;
+    int c = riina_bi_cmp_mag(a->mag, a->len, b->mag, b->len);
+    return a->neg ? -c : c;
+}
+
+static void riina_bigint_divmod(riina_value_t* x, riina_value_t* y,
+                                riina_value_t** q, riina_value_t** r) {
+    riina_bigint_t* a = &x->data.bigint_val; riina_bigint_t* b = &y->data.bigint_val;
+    if (b->len == 0) { fprintf(stderr, "RIINA: bigint division by zero\n"); abort(); }
+    uint32_t *qm, *rm; size_t ql, rl;
+    riina_bi_divmod_mag(a->mag, a->len, b->mag, b->len, &qm, &ql, &rm, &rl);
+    *q = riina_bigint_mk(a->neg ^ b->neg, qm, ql);
+    *r = riina_bigint_mk(a->neg, rm, rl);
+}
+
+/* The `besar`/`bigint` constructor builtin (String -> BigInt). */
+static riina_value_t* riina_builtin_besar(riina_value_t* arg) {
+    if (arg->tag == RIINA_TAG_STRING) return riina_bigint_from_str(arg->data.string_val.data);
+    if (arg->tag == RIINA_TAG_BIGINT) return arg;
+    if (arg->tag == RIINA_TAG_INT) {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "%llu", (unsigned long long)arg->data.int_val);
+        return riina_bigint_from_str(buf);
+    }
+    fprintf(stderr, "RIINA: besar expects a string or int\n");
+    abort();
+}
+
+"##,
+        );
+    }
+
     /// Emit runtime helper functions
     fn emit_runtime_helpers(&mut self) {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
@@ -691,6 +1035,7 @@ impl CEmitter {
 
         // Binary operations
         self.writeln("static riina_value_t* riina_binop_add(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_STRING && b->tag == RIINA_TAG_STRING) {");
         self.writeln("        size_t la = a->data.string_val.len;");
         self.writeln("        size_t lb = b->data.string_val.len;");
@@ -709,6 +1054,7 @@ impl CEmitter {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_sub(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_sub(a, b);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: sub on non-int\\n\");");
         self.writeln("        abort();");
@@ -718,6 +1064,7 @@ impl CEmitter {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_mul(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_mul(a, b);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: mul on non-int\\n\");");
         self.writeln("        abort();");
@@ -727,6 +1074,9 @@ impl CEmitter {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_div(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) {");
+        self.writeln("        riina_value_t *q, *r; riina_bigint_divmod(a, b, &q, &r); return q;");
+        self.writeln("    }");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: div on non-int\\n\");");
         self.writeln("        abort();");
@@ -735,11 +1085,16 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: division by zero\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_int_sized((uint64_t)(riina_sext(a->data.int_val, w) / riina_sext(b->data.int_val, w)), w, 1);");
         self.writeln("    return riina_int(a->data.int_val / b->data.int_val);");
         self.writeln("}");
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_mod(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) {");
+        self.writeln("        riina_value_t *q, *r; riina_bigint_divmod(a, b, &q, &r); return r;");
+        self.writeln("    }");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: mod on non-int\\n\");");
         self.writeln("        abort();");
@@ -748,6 +1103,8 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: modulo by zero\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_int_sized((uint64_t)(riina_sext(a->data.int_val, w) % riina_sext(b->data.int_val, w)), w, 1);");
         self.writeln("    return riina_int(a->data.int_val % b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -762,6 +1119,9 @@ impl CEmitter {
         );
         self.writeln(
             "        case RIINA_TAG_INT: return riina_bool(a->data.int_val == b->data.int_val);",
+        );
+        self.writeln(
+            "        case RIINA_TAG_BIGINT: return riina_bool(riina_bigint_cmp(a, b) == 0);",
         );
         self.writeln("        case RIINA_TAG_STRING:");
         self.writeln(
@@ -780,37 +1140,49 @@ impl CEmitter {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_lt(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) < 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: lt on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) < riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val < b->data.int_val);");
         self.writeln("}");
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_le(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) <= 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: le on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) <= riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val <= b->data.int_val);");
         self.writeln("}");
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_gt(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) > 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: gt on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) > riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val > b->data.int_val);");
         self.writeln("}");
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_ge(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) >= 0);");
         self.writeln("    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) {");
         self.writeln("        fprintf(stderr, \"RIINA: ge on non-int\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        self.writeln("    unsigned w = riina_swidth(a, b);");
+        self.writeln("    if (w) return riina_bool(riina_sext(a->data.int_val, w) >= riina_sext(b->data.int_val, w));");
         self.writeln("    return riina_bool(a->data.int_val >= b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -942,9 +1314,13 @@ impl CEmitter {
             "        case RIINA_TAG_BOOL: return v->data.bool_val ? \"betul\" : \"salah\";",
         );
         self.writeln("        case RIINA_TAG_INT:");
-        self.writeln("            snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)v->data.int_val);");
+        self.writeln("            if (v->int_signed_bits)");
+        self.writeln("                snprintf(buf, sizeof(buf), \"%lld\", (long long)riina_sext(v->data.int_val, v->int_signed_bits));");
+        self.writeln("            else");
+        self.writeln("                snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)v->data.int_val);");
         self.writeln("            return buf;");
         self.writeln("        case RIINA_TAG_STRING: return v->data.string_val.data;");
+        self.writeln("        case RIINA_TAG_BIGINT: return riina_bigint_to_str(v);");
         self.writeln("        default: return \"<value>\";");
         self.writeln("    }");
         self.writeln("}");
@@ -974,6 +1350,7 @@ impl CEmitter {
         self.writeln("            snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)arg->data.int_val);");
         self.writeln("            return riina_string(buf);");
         self.writeln("        case RIINA_TAG_STRING: return arg;");
+        self.writeln("        case RIINA_TAG_BIGINT: return riina_string(riina_bigint_to_str(arg));");
         self.writeln("        default: return riina_string(\"<value>\");");
         self.writeln("    }");
         self.writeln("}");
@@ -2568,14 +2945,42 @@ impl CEmitter {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("");
 
-        // Actor ID counter
+        // Actor type registry and instance definitions
+        self.writeln("#define RIINA_ACTOR_MAILBOX_SIZE 256");
+        self.writeln("#define RIINA_MAX_ACTORS 64");
+        self.writeln("#define RIINA_MAX_ACTOR_TYPES 16");
+        self.writeln("");
+        self.writeln("typedef struct {");
+        self.writeln("    riina_value_t* init_state;");
+        self.writeln("    riina_value_t* handler;");
+        self.writeln("} riina_actor_type_t;");
+        self.writeln("");
+        self.writeln("static riina_actor_type_t riina_actor_types[RIINA_MAX_ACTOR_TYPES];");
+        self.writeln("static int64_t riina_next_actor_type_id = 0;");
+        self.writeln("");
+        self.writeln("typedef struct {");
+        self.writeln("    int64_t id;");
+        self.writeln("    riina_value_t* state;");
+        self.writeln("    riina_value_t* handler;");
+        self.writeln("    riina_value_t* mailbox[RIINA_ACTOR_MAILBOX_SIZE];");
+        self.writeln("    int64_t mailbox_head;");
+        self.writeln("    int64_t mailbox_tail;");
+        self.writeln("    int64_t mailbox_count;");
+        self.writeln("    pthread_mutex_t mutex;");
+        self.writeln("    pthread_cond_t cond;");
+        self.writeln("    pthread_t thread;");
+        self.writeln("} riina_actor_t;");
+        self.writeln("");
+        self.writeln("static riina_actor_t riina_actors[RIINA_MAX_ACTORS];");
         self.writeln("static int64_t riina_next_actor_id = 0;");
         self.writeln("");
 
-        // Actor declaration (registers actor type, returns unit)
+        // Actor declaration (registers actor type in type registry, returns type ID)
         self.writeln("static riina_value_t* riina_actor_decl(riina_value_t* init_state, riina_value_t* handler) {");
-        self.writeln("    (void)init_state; (void)handler;");
-        self.writeln("    return riina_unit();");
+        self.writeln("    int64_t type_id = riina_next_actor_type_id++;");
+        self.writeln("    riina_actor_types[type_id].init_state = init_state;");
+        self.writeln("    riina_actor_types[type_id].handler = handler;");
+        self.writeln("    return riina_int((uint64_t)type_id);");
         self.writeln("}");
         self.writeln("");
 
@@ -2585,29 +2990,52 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
-        // Actor spawn (creates actor instance, returns integer ref ID)
+        // Actor spawn (creates actor instance with pthread primitives, returns actor ID)
         self.writeln("static riina_value_t* riina_actor_spawn(riina_value_t* actor_decl, riina_value_t* init_state) {");
-        self.writeln("    (void)actor_decl; (void)init_state;");
-        self.writeln("    return riina_int(++riina_next_actor_id);");
+        self.writeln("    int64_t actor_id = riina_next_actor_id++;");
+        self.writeln("    riina_actor_t* actor = &riina_actors[actor_id];");
+        self.writeln("    actor->id = actor_id;");
+        self.writeln("    actor->state = init_state;");
+        self.writeln("    actor->handler = riina_actor_types[actor_decl->data.int_val].handler;");
+        self.writeln("    actor->mailbox_head = 0;");
+        self.writeln("    actor->mailbox_tail = 0;");
+        self.writeln("    actor->mailbox_count = 0;");
+        self.writeln("    pthread_mutex_init(&actor->mutex, NULL);");
+        self.writeln("    pthread_cond_init(&actor->cond, NULL);");
+        self.writeln("    return riina_int((uint64_t)actor_id);");
         self.writeln("}");
         self.writeln("");
 
-        // Actor send (enqueue message, returns unit)
+        // Actor send (enqueue message in ring buffer with mutex protection)
         self.writeln("static riina_value_t* riina_actor_send(riina_value_t* actor_ref, riina_value_t* msg) {");
-        self.writeln("    (void)actor_ref; (void)msg;");
+        self.writeln("    int64_t actor_id = actor_ref->data.int_val;");
+        self.writeln("    riina_actor_t* actor = &riina_actors[actor_id];");
+        self.writeln("    pthread_mutex_lock(&actor->mutex);");
+        self.writeln("    if (actor->mailbox_count < RIINA_ACTOR_MAILBOX_SIZE) {");
+        self.writeln("        actor->mailbox[actor->mailbox_tail] = msg;");
+        self.writeln(
+            "        actor->mailbox_tail = (actor->mailbox_tail + 1) % RIINA_ACTOR_MAILBOX_SIZE;",
+        );
+        self.writeln("        actor->mailbox_count++;");
+        self.writeln("    }");
+        self.writeln("    pthread_cond_signal(&actor->cond);");
+        self.writeln("    pthread_mutex_unlock(&actor->mutex);");
         self.writeln("    return riina_unit();");
         self.writeln("}");
         self.writeln("");
 
-        // Actor receive (dequeue message, returns unit in single-threaded mode)
+        // Actor receive (returns current actor state)
         self.writeln("static riina_value_t* riina_actor_recv(riina_value_t* actor_ref) {");
-        self.writeln("    (void)actor_ref;");
-        self.writeln("    return riina_unit();");
+        self.writeln("    int64_t actor_id = actor_ref->data.int_val;");
+        self.writeln("    riina_actor_t* actor = &riina_actors[actor_id];");
+        self.writeln("    return actor->state;");
         self.writeln("}");
         self.writeln("");
 
         // CRDT merge (pointwise max for integer counters)
-        self.writeln("static riina_value_t* riina_crdt_merge(riina_value_t* a, riina_value_t* b) {");
+        self.writeln(
+            "static riina_value_t* riina_crdt_merge(riina_value_t* a, riina_value_t* b) {",
+        );
         self.writeln("    if (a->tag == RIINA_TAG_INT && b->tag == RIINA_TAG_INT) {");
         self.writeln("        return riina_int(a->data.int_val > b->data.int_val ? a->data.int_val : b->data.int_val);");
         self.writeln("    }");
@@ -2615,21 +3043,23 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
-        // Content hash (DJB2 hash, returns hex string)
+        // Content hash (FNV-1a, returns hex string)
         self.writeln("static riina_value_t* riina_content_hash(riina_value_t* val) {");
-        self.writeln("    uint64_t hash = 5381;");
+        self.writeln("    uint64_t hash = 14695981039346656037ULL;");
+        self.writeln("    const uint64_t prime = 1099511628211ULL;");
         self.writeln("    if (val->tag == RIINA_TAG_INT) {");
-        self.writeln("        uint64_t n = val->data.int_val;");
+        self.writeln("        int64_t n = val->data.int_val;");
         self.writeln("        int i;");
         self.writeln("        for (i = 0; i < 8; i++) {");
-        self.writeln("            hash = ((hash << 5) + hash) + (n & 0xff);");
-        self.writeln("            n >>= 8;");
+        self.writeln("            hash ^= (n >> (i * 8)) & 0xFF;");
+        self.writeln("            hash *= prime;");
         self.writeln("        }");
         self.writeln("    } else if (val->tag == RIINA_TAG_STRING) {");
         self.writeln("        const char* s = val->data.string_val.data;");
-        self.writeln("        while (*s) { hash = ((hash << 5) + hash) + (unsigned char)*s++; }");
+        self.writeln("        while (*s) { hash ^= (unsigned char)*s++; hash *= prime; }");
         self.writeln("    } else if (val->tag == RIINA_TAG_BOOL) {");
-        self.writeln("        hash = ((hash << 5) + hash) + (val->data.bool_val ? 1 : 0);");
+        self.writeln("        hash ^= (val->data.bool_val ? 1 : 0);");
+        self.writeln("        hash *= prime;");
         self.writeln("    }");
         self.writeln("    char buf[17];");
         self.writeln("    snprintf(buf, sizeof(buf), \"%016llx\", (unsigned long long)hash);");
@@ -2829,7 +3259,11 @@ impl CEmitter {
                     Instruction::FixClosure { closure, .. } => {
                         vars.insert(*closure);
                     }
-                    Instruction::ActorDecl { init_state, handler, .. } => {
+                    Instruction::ActorDecl {
+                        init_state,
+                        handler,
+                        ..
+                    } => {
                         vars.insert(*init_state);
                         vars.insert(*handler);
                     }
@@ -2911,11 +3345,19 @@ impl CEmitter {
                     BinOp::And => "riina_binop_and",
                     BinOp::Or => "riina_binop_or",
                 };
-                self.writeln(&format!(
-                    "{result} = {func}({}, {});",
-                    self.var_name(lhs),
-                    self.var_name(rhs)
-                ));
+                let call = format!("{func}({}, {})", self.var_name(lhs), self.var_name(rhs));
+                // Numeric tower: a result that types as a sized integer is wrapped
+                // to its width so compiled arithmetic overflows modulo 2^bits, and a
+                // signed result is tagged so it later prints/compares/divides signed.
+                // Unsigned narrower-than-64 wraps; unsigned 64-bit needs nothing;
+                // signed any-width is tagged. Comparisons type as `Bool`, untouched.
+                let rhs_expr = match instr.ty {
+                    Ty::IntN { bits, signed } if signed || bits < 64 => {
+                        format!("riina_trunc({call}, {bits}, {})", i32::from(signed))
+                    }
+                    _ => call,
+                };
+                self.writeln(&format!("{result} = {rhs_expr};"));
             }
 
             Instruction::UnaryOp(op, operand) => {
@@ -3136,8 +3578,11 @@ impl CEmitter {
             // ═══════════════════════════════════════════════════════════
             // JALINAN (actors, choreography, CRDTs, content-addressed)
             // ═══════════════════════════════════════════════════════════
-
-            Instruction::ActorDecl { name: _, init_state, handler } => {
+            Instruction::ActorDecl {
+                name: _,
+                init_state,
+                handler,
+            } => {
                 self.writeln(&format!(
                     "{result} = *riina_actor_decl(&{init}, &{handler});",
                     result = result,
@@ -3147,9 +3592,7 @@ impl CEmitter {
             }
 
             Instruction::ChoreographyDecl { name: _, roles: _ } => {
-                self.writeln(&format!(
-                    "{result} = *riina_choreography_decl();",
-                ));
+                self.writeln(&format!("{result} = *riina_choreography_decl();",));
             }
 
             Instruction::ActorSpawn(decl, state) => {
@@ -3326,6 +3769,11 @@ impl CEmitter {
 
     /// Emit main wrapper function
     fn emit_main_wrapper(&mut self, program: &Program) -> Result<()> {
+        let main_return_ty = program
+            .function(program.main)
+            .map(|f| f.return_ty.clone())
+            .unwrap_or(Ty::Unit);
+
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("/*                         MAIN ENTRY POINT                            */");
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
@@ -3346,21 +3794,31 @@ impl CEmitter {
         ));
         self.writeln("");
 
-        // Print result
-        self.writeln("/* Print result */");
+        // Echo the program's final value to stdout — EXCEPT Unit. A Unit result
+        // means the program already performed its I/O via `cetak` and returns
+        // nothing, so echoing "()" would diverge from the WASM backend (whose
+        // result-echo also skips Unit). Non-Unit results — a bare-expression
+        // value, UI markup, etc. — are still echoed, byte-identical to WASM.
+        self.writeln("/* Echo non-Unit result (Unit = already did I/O via cetak) */");
         self.writeln("switch (result->tag) {");
         self.indent();
         self.writeln("case RIINA_TAG_UNIT:");
-        self.writeln("    printf(\"()\\n\");");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_BOOL:");
         self.writeln("    printf(\"%s\\n\", result->data.bool_val ? \"true\" : \"false\");");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_INT:");
-        self.writeln("    printf(\"%llu\\n\", (unsigned long long)result->data.int_val);");
+        self.writeln("    if (result->int_signed_bits)");
+        self.writeln("        printf(\"%lld\\n\", (long long)riina_sext(result->data.int_val, result->int_signed_bits));");
+        self.writeln("    else");
+        self.writeln("        printf(\"%llu\\n\", (unsigned long long)result->data.int_val);");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_STRING:");
-        self.writeln("    printf(\"\\\"%s\\\"\\n\", result->data.string_val.data);");
+        if main_return_ty == Ty::Element {
+            self.writeln("    printf(\"%s\\n\", result->data.string_val.data);");
+        } else {
+            self.writeln("    printf(\"\\\"%s\\\"\\n\", result->data.string_val.data);");
+        }
         self.writeln("    break;");
         self.writeln("default:");
         self.writeln("    printf(\"<value>\\n\");");
@@ -3481,6 +3939,109 @@ mod tests {
         let code = compile_and_emit(&Expr::Unit).unwrap();
         assert!(code.contains("riina_unit()"));
         assert!(code.contains("int main(void)"));
+    }
+
+    #[test]
+    fn numeric_tower_sized_arithmetic_emits_width_mask() {
+        // `200u8 + 100u8` types as u8, so the C emit wraps the result to 8 bits
+        // (`riina_trunc(..., 8)`) — compiled overflow then matches the interpreter.
+        let expr = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(Expr::IntN {
+                value: 200,
+                bits: 8,
+                signed: false,
+            }),
+            Box::new(Expr::IntN {
+                value: 100,
+                bits: 8,
+                signed: false,
+            }),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            code.contains("static riina_value_t* riina_trunc"),
+            "the width-truncation runtime helper must be emitted"
+        );
+        assert!(
+            code.contains("riina_trunc(riina_binop_add("),
+            "the u8 addition must be width-masked:\n{code}"
+        );
+        assert!(
+            code.contains(", 8, 0)"),
+            "the 8-bit unsigned width (bits=8, signed=0) must appear in the mask"
+        );
+    }
+
+    #[test]
+    fn bigint_emits_runtime_and_dispatches_binop() {
+        // `besar("123") * besar("456")` must emit the bignum runtime, call the
+        // `besar` constructor, and route the multiply through the BigInt path.
+        let mk = |s: &str| {
+            Expr::App(
+                Box::new(Expr::Var("besar".to_string())),
+                Box::new(Expr::String(s.to_string())),
+            )
+        };
+        let expr = Expr::BinOp(
+            riina_types::BinOp::Mul,
+            Box::new(mk("123")),
+            Box::new(mk("456")),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("RIINA_TAG_BIGINT"), "BigInt tag must be emitted");
+        assert!(
+            code.contains("static char* riina_bigint_to_str"),
+            "the C bignum runtime must be emitted"
+        );
+        assert!(
+            code.contains("riina_builtin_besar"),
+            "the besar constructor must be emitted and called:\n{code}"
+        );
+        assert!(
+            code.contains(
+                "a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_mul"
+            ),
+            "the multiply binop must dispatch the BigInt path"
+        );
+    }
+
+    #[test]
+    fn numeric_tower_unsized_arithmetic_is_not_masked() {
+        // Plain `Int` arithmetic is unaffected — no truncation call is emitted.
+        let expr = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(Expr::Int(200)),
+            Box::new(Expr::Int(100)),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            !code.contains("riina_trunc(riina_binop_add("),
+            "plain Int addition must not be width-masked"
+        );
+    }
+
+    #[test]
+    fn numeric_tower_signed_arithmetic_tags_and_emits_helpers() {
+        // `0i8 - 5i8` types as signed i8, so the result is wrapped *and tagged*
+        // signed (`riina_trunc(.., 8, 1)`), and the signed runtime helpers exist.
+        let s8 = |value| {
+            Box::new(Expr::IntN {
+                value,
+                bits: 8,
+                signed: true,
+            })
+        };
+        let expr = Expr::BinOp(riina_types::BinOp::Sub, s8(0), s8(5));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            code.contains("riina_trunc(riina_binop_sub(") && code.contains(", 8, 1)"),
+            "signed i8 subtraction must be tagged signed (bits=8, signed=1):\n{code}"
+        );
+        // The signed runtime path is emitted: sign extension + signed display.
+        assert!(code.contains("int_signed_bits"), "value carries a signed-width tag");
+        assert!(code.contains("riina_sext"), "sign-extension helper emitted");
+        assert!(code.contains("%lld"), "signed values format with %lld");
     }
 
     #[test]
@@ -3697,5 +4258,136 @@ mod tests {
         // Should have multiple riina_pair calls
         let pair_count = code.matches("riina_pair").count();
         assert!(pair_count >= 2);
+    }
+
+    #[test]
+    fn test_emit_content_hash() {
+        let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("riina_content_hash"));
+    }
+
+    #[test]
+    fn test_emit_content_hash_fnv_constants() {
+        let expr = Expr::ContentHash(Box::new(Expr::Int(1)));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            code.contains("14695981039346656037"),
+            "FNV offset basis missing"
+        );
+        assert!(code.contains("1099511628211"), "FNV prime missing");
+    }
+
+    #[test]
+    fn test_emit_crdt_merge_present() {
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(5)), Box::new(Expr::Int(8)));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("riina_crdt_merge"));
+    }
+
+    #[test]
+    fn test_emit_crdt_merge_int_max() {
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(5)), Box::new(Expr::Int(8)));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(
+            code.contains("int_val > b->data.int_val"),
+            "GCounter max logic missing"
+        );
+    }
+
+    #[test]
+    fn test_emit_ui_display_html() {
+        let expr = Expr::UIDisplay(vec![Expr::UIText(
+            Box::new(Expr::String("hello".into())),
+            Box::new(Expr::UIColor(255, 255, 255)),
+        )]);
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("<div style='display:flex;flex-direction:column'>"));
+        assert!(code.contains("<span style='color:"));
+        assert!(code.contains("#ffffff"));
+        assert!(code.contains("</span>"));
+    }
+
+    #[test]
+    fn test_emit_ui_main_prints_raw_markup() {
+        let expr = Expr::UIButton(Box::new(Expr::String("Click".into())), Box::new(Expr::Unit));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("printf(\"%s\\n\", result->data.string_val.data);"));
+        assert!(!code.contains("printf(\"\\\"%s\\\"\\n\", result->data.string_val.data);"));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ACTOR RUNTIME (PTHREAD) TESTS
+    // ═══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_emit_actor_pthread_include() {
+        let actor = Expr::ActorDecl {
+            name: "Counter".to_string(),
+            state_ty: Ty::Int,
+            message_ty: Ty::Int,
+            init_state: Box::new(Expr::Int(0)),
+            handler: Box::new(Expr::Lam(
+                "msg".to_string(),
+                Ty::Int,
+                Box::new(Expr::Var("msg".to_string())),
+            )),
+        };
+        let code = compile_and_emit(&actor).unwrap();
+        assert!(code.contains("#include <pthread.h>"));
+    }
+
+    #[test]
+    fn test_emit_actor_struct_definition() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_t"));
+        assert!(code.contains("pthread_mutex_t"));
+        assert!(code.contains("pthread_cond_t"));
+        assert!(code.contains("RIINA_ACTOR_MAILBOX_SIZE"));
+    }
+
+    #[test]
+    fn test_emit_actor_spawn() {
+        let decl = Expr::ActorDecl {
+            name: "Counter".to_string(),
+            state_ty: Ty::Int,
+            message_ty: Ty::Int,
+            init_state: Box::new(Expr::Int(0)),
+            handler: Box::new(Expr::Lam(
+                "msg".to_string(),
+                Ty::Int,
+                Box::new(Expr::Var("msg".to_string())),
+            )),
+        };
+        let spawn = Expr::Spawn(Box::new(decl), Box::new(Expr::Int(0)));
+        let code = compile_and_emit(&spawn).unwrap();
+        assert!(code.contains("riina_actor_spawn"));
+        assert!(code.contains("pthread_mutex_init"));
+        assert!(code.contains("pthread_cond_init"));
+    }
+
+    #[test]
+    fn test_emit_actor_send_mailbox() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_send"));
+        assert!(code.contains("pthread_mutex_lock"));
+        assert!(code.contains("mailbox_tail"));
+        assert!(code.contains("pthread_cond_signal"));
+        assert!(code.contains("pthread_mutex_unlock"));
+    }
+
+    #[test]
+    fn test_emit_actor_recv_returns_state() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_recv"));
+        assert!(code.contains("actor->state"));
+    }
+
+    #[test]
+    fn test_emit_actor_decl_stores_type() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_decl"));
+        assert!(code.contains("riina_actor_types"));
+        assert!(code.contains("riina_next_actor_type_id"));
     }
 }
