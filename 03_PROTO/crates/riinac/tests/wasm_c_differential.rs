@@ -407,3 +407,28 @@ fn diff_besar_divmod_negative() {
         }",
     );
 }
+
+// ── W3.1a: Decimal (perpuluhan) construction + display ───────────────────────
+// `perpuluhan("...")` parses a decimal into a [scale][mantissa] record and
+// renders it back, preserving scale (trailing zeros) and sign — byte-identical
+// to the C backend. Decimal arithmetic still fails closed.
+
+#[test]
+fn diff_perpuluhan_display() {
+    assert_byte_equal(
+        "perpuluhan_display",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(perpuluhan(\"3.14\"));\n\
+            cetakln(perpuluhan(\"0.001\"));\n\
+            cetakln(perpuluhan(\"-3.14\"));\n\
+            cetakln(perpuluhan(\"7\"));\n\
+            cetakln(perpuluhan(\"3.140\"));\n\
+            cetakln(perpuluhan(\"0.00\"));\n\
+            cetakln(perpuluhan(\".5\"));\n\
+            cetakln(perpuluhan(\"100.00\"));\n\
+            cetakln(perpuluhan(\"-0.5\"));\n\
+            cetakln(perpuluhan(\"12345.6789\"));\n\
+            pulang 0\n\
+        }",
+    );
+}

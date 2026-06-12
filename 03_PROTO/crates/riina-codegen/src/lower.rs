@@ -756,14 +756,16 @@ impl Lower {
             | Expr::LetRec(_, _, _, t)
             | Expr::Case(_, _, t, _, _) => self.infer_type(t),
             Expr::App(e1, _) => {
-                // A `besar(..)` call yields a BigInt; `infer_type` of the builtin
-                // `Var` does not carry a Fn type, so recognize it directly (so a
-                // `biar a = besar(..)` binding types `a` as BigInt and `a + a`
-                // hits the WASM BigInt fail-closed guard). Mirrors lower's besar
-                // result typing.
+                // A boxed numeric constructor (`besar`/`perpuluhan`) yields its
+                // domain type; `infer_type` of the builtin `Var` carries no Fn type,
+                // so recognize it directly (so a `biar a = besar(..)` binding types
+                // `a` correctly and the WASM dispatch/guard sees it). Mirrors lower's
+                // builtin result typing.
                 if let Expr::Var(name) = e1.as_ref() {
-                    if builtin_canonical(name) == Some("besar") {
-                        return Ty::BigInt;
+                    match builtin_canonical(name) {
+                        Some("besar") => return Ty::BigInt,
+                        Some("perpuluhan") => return Ty::Decimal,
+                        _ => {}
                     }
                 }
                 if let Ty::Fn(_, ret, _) = self.infer_type(e1) {
@@ -1278,14 +1280,14 @@ impl Lower {
                         let effect = self.infer_effect(expr);
                         // Most builtins return Unit (or a String the C emitter
                         // renders); the WASM backend dispatches on runtime-untagged
-                        // static types, so `besar` MUST carry its real `BigInt`
-                        // result type for `cetak`/`ke_teks`/binop dispatch (the C
-                        // backend uses runtime tags and is unaffected). Other builtins
-                        // keep the Unit placeholder to preserve existing behavior.
-                        let ret_ty = if canonical == "besar" {
-                            Ty::BigInt
-                        } else {
-                            Ty::Unit
+                        // static types, so the boxed numeric constructors MUST carry
+                        // their real result type for `cetak`/`ke_teks`/binop dispatch
+                        // (the C backend uses runtime tags and is unaffected). Other
+                        // builtins keep the Unit placeholder to preserve behavior.
+                        let ret_ty = match canonical {
+                            "besar" => Ty::BigInt,
+                            "perpuluhan" => Ty::Decimal,
+                            _ => Ty::Unit,
                         };
                         return Ok(self.emit(
                             Instruction::BuiltinCall {
