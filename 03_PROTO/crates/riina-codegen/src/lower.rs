@@ -766,6 +766,7 @@ impl Lower {
                         Some("besar") => return Ty::BigInt,
                         Some("perpuluhan") => return Ty::Decimal,
                         Some("wang") | Some("titik_tetap") => return Ty::Fixed,
+                        Some("qmn") => return Ty::FixedBin,
                         _ => {}
                     }
                 }
@@ -803,6 +804,7 @@ impl Lower {
                             (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
                             (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
                             (Ty::Fixed, _) | (_, Ty::Fixed) => Ty::Fixed,
+                            (Ty::FixedBin, _) | (_, Ty::FixedBin) => Ty::FixedBin,
                             _ => Ty::Int,
                         }
                     }
@@ -1292,6 +1294,7 @@ impl Lower {
                             "besar" => Ty::BigInt,
                             "perpuluhan" => Ty::Decimal,
                             "wang" | "titik_tetap" => Ty::Fixed,
+                            "qmn" => Ty::FixedBin,
                             _ => Ty::Unit,
                         };
                         return Ok(self.emit(

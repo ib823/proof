@@ -203,9 +203,17 @@ impl WasmBackend {
                 .iter()
                 .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::Fixed)))
         });
+        let uses_fixedbin = program.functions.values().any(|f| {
+            f.blocks
+                .iter()
+                .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::FixedBin)))
+        });
         // Fixed (`wang`/`titik_tetap`) shares the Decimal record layout and reuses
-        // its parse/render/addsub/compare helpers; both are BigInt-mantissa types.
-        let needs_decimal = uses_decimal || uses_fixed;
+        // its parse/render/addsub/compare helpers; Q-format `qmn` reuses the
+        // decimal parse/render and the fixed rounding primitive. All are
+        // BigInt-backed, so the runtimes nest: qmn ⇒ fixed ⇒ decimal ⇒ bignum.
+        let needs_fixed = uses_fixed || uses_fixedbin;
+        let needs_decimal = uses_decimal || needs_fixed;
         let needs_bignum = uses_bigint || needs_decimal;
         let n_bignum_fns: u32 = if needs_bignum { 9 } else { 0 };
         // Helper signatures shared by the bignum + decimal runtimes.
@@ -343,8 +351,9 @@ impl WasmBackend {
         // display, exact aligned add/sub, value-based compare). New here (W3.2):
         // mul/div round **half-to-even back to max(scale)** via fix_round_q, and
         // `titik_tetap` parses then rescales to an explicit target scale.
-        let n_fixed_fns: u32 = if uses_fixed { 4 } else { 0 };
-        let (fix_mul_index, fix_div_index, fix_titik_tetap_index) = if uses_fixed {
+        let n_fixed_fns: u32 = if needs_fixed { 4 } else { 0 };
+        let (fix_round_q_index, fix_mul_index, fix_div_index, fix_titik_tetap_index) = if needs_fixed
+        {
             let base = NUM_IMPORTS + n_bignum_fns + n_decimal_fns;
             // fix_round_q(num, den) -> round-half-to-even BigInt quotient
             // (internal to the three helpers below).
@@ -378,11 +387,99 @@ impl WasmBackend {
                 dec_pow10_mul_index,
                 fround,
             ));
-            (fmul, fdiv, ftt)
+            (fround, fmul, fdiv, ftt)
         } else {
-            (0, 0, 0)
+            (0, 0, 0, 0)
         };
-        let n_helper_fns = n_bignum_fns + n_decimal_fns + n_fixed_fns;
+
+        // === Q-format binary fixed-point (`qmn`) runtime ===
+        // A FixedBin is `[frac_bits:i32][raw:i64@8]` (value = raw / 2^frac_bits,
+        // raw a wrapping i64 word — the machine-int trade-off). All arithmetic is
+        // done exactly in BigInt then wrapped back (W3.3, matching
+        // `fixed_bin.rs`): construction/display convert decimal↔binary exactly
+        // via the decimal runtime + fix_round_q.
+        let n_fixedbin_fns: u32 = if uses_fixedbin { 10 } else { 0 };
+        let (
+            qmn_parse_index,
+            qmn_to_str_index,
+            qmn_addsub_index,
+            qmn_mul_index,
+            qmn_div_index,
+            qmn_cmp_index,
+        ) = if uses_fixedbin {
+            let base = NUM_IMPORTS + n_bignum_fns + n_decimal_fns + n_fixed_fns;
+            // Internal building blocks.
+            let qpow2 = base + 1;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_qmn_two_pow(alloc_func_index));
+            let qraw = base + 2;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_qmn_raw_to_big(alloc_func_index));
+            let qwrap = base + 3;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_qmn_wrap_store(
+                alloc_func_index,
+                bi_divmod_index,
+                bi_addsub_index,
+                qpow2,
+            ));
+            let qalign = base + 4;
+            module.functions.push(bin_type_idx);
+            module
+                .codes
+                .push(self.emit_qmn_align(bi_mul_index, qpow2, qraw));
+            // Dispatchable operations.
+            let qparse = base + 5;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_qmn_parse(
+                alloc_func_index,
+                dec_from_str_index,
+                dec_pow10_mul_index,
+                bi_mul_index,
+                fix_round_q_index,
+                (qpow2, qwrap),
+            ));
+            let qstr = base + 6;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_qmn_to_str(
+                alloc_func_index,
+                dec_to_str_index,
+                dec_pow10_mul_index,
+                bi_divmod_index,
+                bi_mul_index,
+                (qpow2, qraw),
+            ));
+            let qaddsub = base + 7;
+            module.functions.push(ter_type_idx);
+            module
+                .codes
+                .push(self.emit_qmn_addsub(bi_addsub_index, qalign, qwrap));
+            let qmul = base + 8;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_qmn_mul(
+                bi_mul_index,
+                fix_round_q_index,
+                qpow2,
+                qalign,
+                qwrap,
+            ));
+            let qdiv = base + 9;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_qmn_div(
+                bi_mul_index,
+                fix_round_q_index,
+                qpow2,
+                qalign,
+                qwrap,
+            ));
+            let qcmp = base + 10;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_qmn_cmp(bi_cmp_index, qalign));
+            (qparse, qstr, qaddsub, qmul, qdiv, qcmp)
+        } else {
+            (0, 0, 0, 0, 0, 0)
+        };
+        let n_helper_fns = n_bignum_fns + n_decimal_fns + n_fixed_fns + n_fixedbin_fns;
 
         // === User functions ===
         let mut func_ids: Vec<FuncId> = program.functions.keys().copied().collect();
@@ -446,6 +543,12 @@ impl WasmBackend {
                 fix_mul_index,
                 fix_div_index,
                 fix_titik_tetap_index,
+                qmn_parse_index,
+                qmn_to_str_index,
+                qmn_addsub_index,
+                qmn_mul_index,
+                qmn_div_index,
+                qmn_cmp_index,
             )?;
             module.codes.push(body);
         }
@@ -3736,6 +3839,722 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `qmn_two_pow(bits: i32) -> i32`: `2^bits` as a BigInt — `bits/32 + 1`
+    /// limbs, all zero except limb `bits>>5` = `1 << (bits & 31)`. Handles any
+    /// `bits` up to 64 (used for the 2^64 wrap modulus).
+    fn emit_qmn_two_pow(&self, alloc_func_index: u32) -> FuncBody {
+        const BITS: u32 = 0;
+        const NL: u32 = 1;
+        const R: u32 = 2;
+        const K: u32 = 3;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // nl = (bits >> 5) + 1
+        lget(&mut c, BITS);
+        wasm_i32c(&mut c, 5);
+        op(&mut c, Op::I32ShrU);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, NL);
+        // r = alloc(8 + nl*4); r.len = nl; r.neg = 0
+        lget(&mut c, NL);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(alloc_func_index as u64, &mut c);
+        lset(&mut c, R);
+        lget(&mut c, R);
+        lget(&mut c, NL);
+        wasm_store(&mut c, 0);
+        lget(&mut c, R);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        // zero the limbs
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, NL);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, R);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // limb[bits>>5] = 1 << (bits & 31)
+        lget(&mut c, R);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, BITS);
+        wasm_i32c(&mut c, 5);
+        op(&mut c, Op::I32ShrU);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 1);
+        lget(&mut c, BITS);
+        wasm_i32c(&mut c, 31);
+        op(&mut c, Op::I32And);
+        op(&mut c, Op::I32Shl);
+        wasm_store(&mut c, 0);
+        lget(&mut c, R);
+        FuncBody {
+            locals: vec![(3, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_raw_to_big(rec: i32) -> i32`: the record's signed i64 `raw` as a
+    /// BigInt. The magnitude is `raw < 0 ? 0 - raw : raw` (the i64 wrap makes
+    /// `i64::MIN`'s magnitude 2^63 come out right as an unsigned bit pattern);
+    /// limbs are `u mod 2^32` and `u / 2^32` (unsigned), normalized.
+    fn emit_qmn_raw_to_big(&self, alloc_func_index: u32) -> FuncBody {
+        const REC: u32 = 0;
+        const NEG: u32 = 1;
+        const LO: u32 = 2;
+        const HI: u32 = 3;
+        const B: u32 = 4;
+        const LEN: u32 = 5;
+        const RAW: u32 = 6; // i64
+        const U: u32 = 7; // i64
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // raw = i64.load rec+8
+        lget(&mut c, REC);
+        c.push(Op::I64Load as u8);
+        c.push(0x02);
+        c.push(0x08);
+        lset(&mut c, RAW);
+        // neg = raw < 0; u = neg ? 0 - raw : raw
+        lget(&mut c, RAW);
+        wasm_i64c(&mut c, 0);
+        op(&mut c, Op::I64LtS);
+        lset(&mut c, NEG);
+        lget(&mut c, NEG);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        wasm_i64c(&mut c, 0);
+        lget(&mut c, RAW);
+        op(&mut c, Op::I64Sub);
+        lset(&mut c, U);
+        op(&mut c, Op::Else);
+        lget(&mut c, RAW);
+        lset(&mut c, U);
+        op(&mut c, Op::End);
+        // lo = wrap(u); hi = wrap(u /u 2^32)
+        lget(&mut c, U);
+        op(&mut c, Op::I32WrapI64);
+        lset(&mut c, LO);
+        lget(&mut c, U);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64DivU);
+        op(&mut c, Op::I32WrapI64);
+        lset(&mut c, HI);
+        // len = hi != 0 ? 2 : (lo != 0 ? 1 : 0)
+        lget(&mut c, HI);
+        op(&mut c, Op::If);
+        c.push(0x7F);
+        wasm_i32c(&mut c, 2);
+        op(&mut c, Op::Else);
+        lget(&mut c, LO);
+        op(&mut c, Op::If);
+        c.push(0x7F);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        lset(&mut c, LEN);
+        // b = alloc(16); len; neg = (len != 0) && neg; limbs
+        wasm_i32c(&mut c, 16);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(alloc_func_index as u64, &mut c);
+        lset(&mut c, B);
+        lget(&mut c, B);
+        lget(&mut c, LEN);
+        wasm_store(&mut c, 0);
+        lget(&mut c, B);
+        lget(&mut c, NEG);
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32Ne);
+        op(&mut c, Op::I32And);
+        wasm_store(&mut c, 4);
+        lget(&mut c, B);
+        lget(&mut c, LO);
+        wasm_store(&mut c, 8);
+        lget(&mut c, B);
+        lget(&mut c, HI);
+        wasm_store(&mut c, 12);
+        lget(&mut c, B);
+        FuncBody {
+            locals: vec![(5, ValType::I32), (2, ValType::I64)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_wrap_store(b: i32, fb: i32) -> i32`: reduce BigInt `b` into a
+    /// wrapping i64 word (two's complement mod 2^64, matching
+    /// `fixed_bin.rs::to_i64_wrapping`) and build the `[fb][raw:i64@8]` record.
+    fn emit_qmn_wrap_store(
+        &self,
+        alloc_func_index: u32,
+        bi_divmod_index: u32,
+        bi_addsub_index: u32,
+        qmn_two_pow_index: u32,
+    ) -> FuncBody {
+        const B: u32 = 0;
+        const FB: u32 = 1;
+        const M64: u32 = 2;
+        const R: u32 = 3;
+        const LEN: u32 = 4;
+        const LO: u32 = 5;
+        const HI: u32 = 6;
+        const REC: u32 = 7;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // m64 = 2^64; r = b mod 2^64 (truncating, dividend's sign)
+        wasm_i32c(&mut c, 64);
+        call(&mut c, qmn_two_pow_index);
+        lset(&mut c, M64);
+        lget(&mut c, B);
+        lget(&mut c, M64);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, R);
+        // if r.neg { r = r + 2^64 }
+        lget(&mut c, R);
+        wasm_load(&mut c, 4);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, R);
+        lget(&mut c, M64);
+        wasm_i32c(&mut c, 0);
+        call(&mut c, bi_addsub_index);
+        lset(&mut c, R);
+        op(&mut c, Op::End);
+        // lo/hi from the (≤ 2) limbs
+        lget(&mut c, R);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LEN);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, LO);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, HI);
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, R);
+        wasm_load(&mut c, 8);
+        lset(&mut c, LO);
+        op(&mut c, Op::End);
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 2);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, R);
+        wasm_load(&mut c, 12);
+        lset(&mut c, HI);
+        op(&mut c, Op::End);
+        // rec = alloc(16); rec.fb = fb; rec.raw = ext(lo) + ext(hi)*2^32
+        wasm_i32c(&mut c, 16);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, REC);
+        lget(&mut c, REC);
+        lget(&mut c, FB);
+        wasm_store(&mut c, 0);
+        lget(&mut c, REC);
+        lget(&mut c, LO);
+        op(&mut c, Op::I64ExtendI32U);
+        lget(&mut c, HI);
+        op(&mut c, Op::I64ExtendI32U);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64Mul);
+        op(&mut c, Op::I64Add);
+        c.push(Op::I64Store as u8);
+        c.push(0x02);
+        c.push(0x08);
+        lget(&mut c, REC);
+        FuncBody {
+            locals: vec![(6, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_align(rec: i32, fb: i32) -> i32`: the record's raw re-expressed
+    /// at `fb` fractional bits as a BigInt — `raw_big * 2^(fb - rec.fb)`
+    /// (`fb >= rec.fb`; exact).
+    fn emit_qmn_align(
+        &self,
+        bi_mul_index: u32,
+        qmn_two_pow_index: u32,
+        qmn_raw_to_big_index: u32,
+    ) -> FuncBody {
+        const REC: u32 = 0;
+        const FB: u32 = 1;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        lget(&mut c, REC);
+        call(&mut c, qmn_raw_to_big_index);
+        lget(&mut c, FB);
+        lget(&mut c, REC);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, qmn_two_pow_index);
+        call(&mut c, bi_mul_index);
+        FuncBody {
+            locals: vec![],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_parse(pair: i32) -> i32`: the `qmn((literal, frac_bits))`
+    /// constructor — `raw = round_he(mantissa · 2^fb / 10^scale)` (matching
+    /// `fixed_bin.rs::parse`). `frac_bits` outside `1..=32` traps, matching the
+    /// C runtime's abort.
+    fn emit_qmn_parse(
+        &self,
+        alloc_func_index: u32,
+        dec_from_str_index: u32,
+        dec_pow10_mul_index: u32,
+        bi_mul_index: u32,
+        fix_round_q_index: u32,
+        (qmn_two_pow_index, qmn_wrap_store_index): (u32, u32),
+    ) -> FuncBody {
+        const PAIR: u32 = 0;
+        const FB: u32 = 1;
+        const D: u32 = 2;
+        const ONE: u32 = 3;
+        const RAWBIG: u32 = 4;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        let mkconst = |c: &mut Vec<u8>, dst: u32, v: i64| {
+            wasm_i32c(c, 12);
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+            wasm_local(c, Op::LocalSet, dst);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 1);
+            wasm_store(c, 0);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 0);
+            wasm_store(c, 4);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, v);
+            wasm_store(c, 8);
+        };
+        // fb = (i32)pair.snd; validate 1..=32 (trap like the C abort)
+        lget(&mut c, PAIR);
+        c.push(Op::I64Load as u8);
+        c.push(0x02);
+        c.push(0x08);
+        op(&mut c, Op::I32WrapI64);
+        lset(&mut c, FB);
+        lget(&mut c, FB);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32LtS);
+        lget(&mut c, FB);
+        wasm_i32c(&mut c, 32);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::I32Or);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        op(&mut c, Op::Unreachable);
+        op(&mut c, Op::End);
+        // d = dec_from_str((i32)pair.fst)   [scale][mantissa]
+        lget(&mut c, PAIR);
+        c.push(Op::I64Load as u8);
+        c.push(0x02);
+        c.push(0x00);
+        op(&mut c, Op::I32WrapI64);
+        call(&mut c, dec_from_str_index);
+        lset(&mut c, D);
+        // rawbig = round_he(mant * 2^fb, 10^scale)
+        mkconst(&mut c, ONE, 1);
+        lget(&mut c, D);
+        wasm_load(&mut c, 4);
+        lget(&mut c, FB);
+        call(&mut c, qmn_two_pow_index);
+        call(&mut c, bi_mul_index);
+        lget(&mut c, ONE);
+        lget(&mut c, D);
+        wasm_load(&mut c, 0);
+        call(&mut c, dec_pow10_mul_index);
+        call(&mut c, fix_round_q_index);
+        lset(&mut c, RAWBIG);
+        // wrap into the record
+        lget(&mut c, RAWBIG);
+        lget(&mut c, FB);
+        call(&mut c, qmn_wrap_store_index);
+        FuncBody {
+            locals: vec![(4, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_to_str(rec: i32) -> i32`: render the exact decimal value —
+    /// `raw·5^fb / 10^fb` with trailing zeros stripped (`0.5`, not `0.50000000`),
+    /// matching `fixed_bin.rs::to_string_repr`. `5^fb` is computed exactly as
+    /// `10^fb / 2^fb`; the strip + render reuse the decimal machinery.
+    fn emit_qmn_to_str(
+        &self,
+        alloc_func_index: u32,
+        dec_to_str_index: u32,
+        dec_pow10_mul_index: u32,
+        bi_divmod_index: u32,
+        bi_mul_index: u32,
+        (qmn_two_pow_index, qmn_raw_to_big_index): (u32, u32),
+    ) -> FuncBody {
+        const REC: u32 = 0;
+        const FB: u32 = 1;
+        const ONE: u32 = 2;
+        const NUM: u32 = 3;
+        const SCALE: u32 = 4;
+        const TEN: u32 = 5;
+        const Q2: u32 = 6;
+        const D: u32 = 7;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        let mkconst = |c: &mut Vec<u8>, dst: u32, v: i64| {
+            wasm_i32c(c, 12);
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+            wasm_local(c, Op::LocalSet, dst);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 1);
+            wasm_store(c, 0);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 0);
+            wasm_store(c, 4);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, v);
+            wasm_store(c, 8);
+        };
+        // fb = rec.fb; num = raw_big * (10^fb / 2^fb)
+        lget(&mut c, REC);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        mkconst(&mut c, ONE, 1);
+        lget(&mut c, REC);
+        call(&mut c, qmn_raw_to_big_index);
+        lget(&mut c, ONE);
+        lget(&mut c, FB);
+        call(&mut c, dec_pow10_mul_index);
+        lget(&mut c, FB);
+        call(&mut c, qmn_two_pow_index);
+        wasm_i32c(&mut c, 0);
+        call(&mut c, bi_divmod_index);
+        call(&mut c, bi_mul_index);
+        lset(&mut c, NUM);
+        // strip trailing zeros: while scale>0 && num%10==0 { num/=10; scale-- }
+        lget(&mut c, FB);
+        lset(&mut c, SCALE);
+        mkconst(&mut c, TEN, 10);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, SCALE);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, NUM);
+        lget(&mut c, TEN);
+        wasm_i32c(&mut c, 0);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, Q2);
+        lget(&mut c, NUM);
+        lget(&mut c, TEN);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, Q2);
+        lset(&mut c, NUM);
+        lget(&mut c, SCALE);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, SCALE);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        // d = [scale][num]; dec_to_str(d)
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, SCALE);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, NUM);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        call(&mut c, dec_to_str_index);
+        FuncBody {
+            locals: vec![(7, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_addsub(a: i32, b: i32, sub: i32) -> i32`: exact in BigInt at
+    /// `max(frac_bits)`, wrapped back into the i64 word (matching
+    /// `fixed_bin.rs::{add,sub}` — machine-int overflow wraps).
+    fn emit_qmn_addsub(
+        &self,
+        bi_addsub_index: u32,
+        qmn_align_index: u32,
+        qmn_wrap_store_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const SUB: u32 = 2;
+        const FB: u32 = 3;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // fb = max(a.fb, b.fb)
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lget(&mut c, FB);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        op(&mut c, Op::End);
+        // wrap_store(bi_addsub(align(a,fb), align(b,fb), sub), fb)
+        lget(&mut c, A);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        lget(&mut c, B);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        lget(&mut c, SUB);
+        call(&mut c, bi_addsub_index);
+        lget(&mut c, FB);
+        call(&mut c, qmn_wrap_store_index);
+        FuncBody {
+            locals: vec![(1, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_mul(a: i32, b: i32) -> i32`: `round_he(a' · b' / 2^fb)` at
+    /// `fb = max(frac_bits)`, wrapped (matching `fixed_bin.rs::mul`).
+    fn emit_qmn_mul(
+        &self,
+        bi_mul_index: u32,
+        fix_round_q_index: u32,
+        qmn_two_pow_index: u32,
+        qmn_align_index: u32,
+        qmn_wrap_store_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const FB: u32 = 2;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lget(&mut c, FB);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        op(&mut c, Op::End);
+        lget(&mut c, A);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        lget(&mut c, B);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        call(&mut c, bi_mul_index);
+        lget(&mut c, FB);
+        call(&mut c, qmn_two_pow_index);
+        call(&mut c, fix_round_q_index);
+        lget(&mut c, FB);
+        call(&mut c, qmn_wrap_store_index);
+        FuncBody {
+            locals: vec![(1, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_div(a: i32, b: i32) -> i32`: `round_he(a' · 2^fb / b')` at
+    /// `fb = max(frac_bits)`, wrapped (matching `fixed_bin.rs::div`). Division
+    /// by zero (b.raw == 0) traps, matching the C runtime's abort.
+    fn emit_qmn_div(
+        &self,
+        bi_mul_index: u32,
+        fix_round_q_index: u32,
+        qmn_two_pow_index: u32,
+        qmn_align_index: u32,
+        qmn_wrap_store_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const FB: u32 = 2;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // trap on zero divisor (raw == 0)
+        lget(&mut c, B);
+        c.push(Op::I64Load as u8);
+        c.push(0x02);
+        c.push(0x08);
+        op(&mut c, Op::I64Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        op(&mut c, Op::Unreachable);
+        op(&mut c, Op::End);
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lget(&mut c, FB);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        op(&mut c, Op::End);
+        lget(&mut c, A);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        lget(&mut c, FB);
+        call(&mut c, qmn_two_pow_index);
+        call(&mut c, bi_mul_index);
+        lget(&mut c, B);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        call(&mut c, fix_round_q_index);
+        lget(&mut c, FB);
+        call(&mut c, qmn_wrap_store_index);
+        FuncBody {
+            locals: vec![(1, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `qmn_cmp(a: i32, b: i32) -> i32`: value-based compare (-1/0/1) —
+    /// align both raws to `max(frac_bits)` and `bi_cmp` (matching
+    /// `fixed_bin.rs::compare`).
+    fn emit_qmn_cmp(&self, bi_cmp_index: u32, qmn_align_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const FB: u32 = 2;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lget(&mut c, FB);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FB);
+        op(&mut c, Op::End);
+        lget(&mut c, A);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        lget(&mut c, B);
+        lget(&mut c, FB);
+        call(&mut c, qmn_align_index);
+        call(&mut c, bi_cmp_index);
+        FuncBody {
+            locals: vec![(1, ValType::I32)],
+            code: c,
+        }
+    }
+
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
@@ -3764,6 +4583,12 @@ impl WasmBackend {
         fix_mul_index: u32,
         fix_div_index: u32,
         fix_titik_tetap_index: u32,
+        qmn_parse_index: u32,
+        qmn_to_str_index: u32,
+        qmn_addsub_index: u32,
+        qmn_mul_index: u32,
+        qmn_div_index: u32,
+        qmn_cmp_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -3872,6 +4697,12 @@ impl WasmBackend {
             fix_mul_index,
             fix_div_index,
             fix_titik_tetap_index,
+            qmn_parse_index,
+            qmn_to_str_index,
+            qmn_addsub_index,
+            qmn_mul_index,
+            qmn_div_index,
+            qmn_cmp_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -4818,6 +5649,60 @@ impl WasmBackend {
                     }
                 }
             }
+            Instruction::BinOp(op, lhs, rhs)
+                if matches!(ctx.var_to_ty.get(lhs), Some(Ty::FixedBin))
+                    || matches!(ctx.var_to_ty.get(rhs), Some(Ty::FixedBin)) =>
+            {
+                // Q-format (`qmn`) operands (W3.3): exact in BigInt at
+                // max(frac_bits), wrapped back into the i64 word (add/sub) or
+                // rounded half-to-even (mul/div); value-based compare.
+                // `%`/And/Or are undefined for Q-format; fail closed.
+                match op {
+                    BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Gt | BinOp::Le | BinOp::Ge => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.qmn_cmp_index as u64, code);
+                        Self::emit_cmp_result_to_bool(op, code);
+                    }
+                    BinOp::Add | BinOp::Sub => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        wasm_i32c(code, if matches!(op, BinOp::Sub) { 1 } else { 0 });
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.qmn_addsub_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Mul => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.qmn_mul_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Div => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.qmn_div_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    _ => {
+                        return Err(crate::Error::InvalidOperation(format!(
+                            "Q-format (`qmn`) operator {op:?} is not supported by the \
+                             WASM backend (it is undefined for binary fixed-point)"
+                        )));
+                    }
+                }
+            }
             Instruction::BinOp(op, lhs, rhs) => {
                 // Numeric tower: division/modulo/comparison of a *signed* sized int
                 // (`Ty::IntN{signed}`) narrower than i32 must sign-extend its
@@ -5192,15 +6077,24 @@ impl WasmBackend {
                             _ => None,
                         };
                         Self::emit_print_int(arg, signed_bits, ctx, code);
-                    } else if matches!(ctx.var_to_ty.get(arg), Some(Ty::Decimal | Ty::Fixed)) {
-                        // Decimal/Fixed: render via dec_to_str (the record layout is
-                        // shared; Fixed display preserves its scale, which is what
-                        // dec_to_str does), then print it (same iovec path as
-                        // BigInt; stash the string pointer in scratch).
+                    } else if matches!(
+                        ctx.var_to_ty.get(arg),
+                        Some(Ty::Decimal | Ty::Fixed | Ty::FixedBin)
+                    ) {
+                        // Decimal/Fixed render via dec_to_str (shared record layout;
+                        // Fixed display preserves its scale, which is what
+                        // dec_to_str does); Q-format renders via qmn_to_str. Then
+                        // print (same iovec path as BigInt; stash the pointer in
+                        // scratch).
+                        let render = if matches!(ctx.var_to_ty.get(arg), Some(Ty::FixedBin)) {
+                            ctx.qmn_to_str_index
+                        } else {
+                            ctx.dec_to_str_index
+                        };
                         Self::emit_local_get(arg, ctx.var_map, code);
                         code.push(Op::I32WrapI64 as u8);
                         code.push(Op::Call as u8);
-                        wasm_encode::encode_uleb128(ctx.dec_to_str_index as u64, code);
+                        wasm_encode::encode_uleb128(render as u64, code);
                         wasm_local(code, Op::LocalSet, ctx.scratch);
                         // heap[0] = strptr + 4; heap[4] = mem[strptr]; fd_write; drop
                         code.push(Op::GlobalGet as u8);
@@ -5344,6 +6238,14 @@ impl WasmBackend {
                             wasm_encode::encode_uleb128(ctx.dec_to_str_index as u64, code);
                             code.push(Op::I64ExtendI32U as u8);
                         }
+                        Some(Ty::FixedBin) => {
+                            // Q-format → heap string via qmn_to_str.
+                            Self::emit_local_get(arg, ctx.var_map, code);
+                            code.push(Op::I32WrapI64 as u8);
+                            code.push(Op::Call as u8);
+                            wasm_encode::encode_uleb128(ctx.qmn_to_str_index as u64, code);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
                         Some(Ty::String | Ty::Element | Ty::Color | Ty::UIStyle) => {
                             // `ke_teks` of a string-typed value is identity — the
                             // value is already a `[len][bytes]` heap string. This
@@ -5398,15 +6300,14 @@ impl WasmBackend {
                     wasm_encode::encode_uleb128(ctx.fix_titik_tetap_index as u64, code);
                     code.push(Op::I64ExtendI32U as u8);
                 } else if name == "qmn" {
-                    // Q-format binary fixed-point has no WASM representation yet
-                    // (the C backend boxes it). Fail closed rather than stub to 0 —
-                    // such a value cannot exist in a WASM program without its
-                    // constructor, so this guard prevents any silent miscompile.
-                    // (Tracked: W3.3 qmn WASM codegen.)
-                    return Err(crate::Error::InvalidOperation(format!(
-                        "{name} (boxed numeric tower) is not supported \
-                         by the WASM backend yet; use the C backend or the interpreter"
-                    )));
+                    // Q-format construction (W3.3): the arg is a (string,
+                    // frac_bits) heap pair; qmn_parse rounds the literal
+                    // half-to-even to the nearest representable raw/2^fb.
+                    Self::emit_local_get(arg, ctx.var_map, code);
+                    code.push(Op::I32WrapI64 as u8);
+                    code.push(Op::Call as u8);
+                    wasm_encode::encode_uleb128(ctx.qmn_parse_index as u64, code);
+                    code.push(Op::I64ExtendI32U as u8);
                 } else {
                     // Other builtins: push 0 (stub)
                     wasm_i64c(code, 0);
@@ -5800,6 +6701,14 @@ struct EmitCtx<'a> {
     fix_mul_index: u32,
     fix_div_index: u32,
     fix_titik_tetap_index: u32,
+    /// Function indices of the Q-format (`qmn`) runtime: constructor, render,
+    /// wrapping add/sub, round-to-fb multiply/divide, value-based compare.
+    qmn_parse_index: u32,
+    qmn_to_str_index: u32,
+    qmn_addsub_index: u32,
+    qmn_mul_index: u32,
+    qmn_div_index: u32,
+    qmn_cmp_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,
