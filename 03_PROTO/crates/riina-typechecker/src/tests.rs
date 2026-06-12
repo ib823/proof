@@ -1055,6 +1055,49 @@ mod formalized_tests {
         }
     }
 
+    // ── Numeric tower: binary fixed-point FixedBin (`qmn`) ──
+
+    fn qmn_call(s: &str) -> Expr {
+        Expr::App(
+            Box::new(Expr::Var("qmn".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String(s.to_string())),
+                Box::new(Expr::Int(8)),
+            )),
+        )
+    }
+
+    #[test]
+    fn fixedbin_constructor_and_arithmetic_types() {
+        let mut ctx = builtin_ctx();
+        // `qmn((String, Int)) -> FixedBin`.
+        assert_eq!(
+            type_check_full(&mut ctx, &qmn_call("0.5")).unwrap(),
+            (Ty::FixedBin, Effect::Pure)
+        );
+        for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div] {
+            let e = Expr::BinOp(op, Box::new(qmn_call("0.5")), Box::new(qmn_call("0.25")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::FixedBin, "{op:?}");
+        }
+        for op in [BinOp::Lt, BinOp::Ge, BinOp::Eq] {
+            let e = Expr::BinOp(op, Box::new(qmn_call("0.5")), Box::new(qmn_call("0.25")));
+            assert_eq!(type_check_full(&mut ctx, &e).unwrap().0, Ty::Bool, "{op:?}");
+        }
+    }
+
+    #[test]
+    fn fixedbin_does_not_mix_with_other_numeric_types() {
+        let mut ctx = builtin_ctx();
+        // FixedBin is its own domain — distinct from Fixed, Decimal, and Int.
+        for other in [wang_call("1.50"), decimal_call("1.5"), Expr::Int(1)] {
+            let e = Expr::BinOp(BinOp::Add, Box::new(qmn_call("0.5")), Box::new(other));
+            assert!(
+                matches!(type_check_full(&mut ctx, &e), Err(TypeError::TypeMismatch { .. })),
+                "FixedBin must not mix with Fixed/Decimal/Int"
+            );
+        }
+    }
+
     // ── Numeric tower: sized integer literals & width-aware arithmetic ──
 
     fn u8n(value: u64) -> Expr {

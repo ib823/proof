@@ -1086,6 +1086,12 @@ impl Interpreter {
                         return result;
                     }
                 }
+                // Numeric tower: binary fixed-point `FixedBin` (`qmn`) arithmetic.
+                if matches!(l, Value::FixedBin(_)) && matches!(r, Value::FixedBin(_)) {
+                    if let Some(result) = eval_fixedbin_binop(*op, &l, &r) {
+                        return result;
+                    }
+                }
                 match (op, &l, &r) {
                     (BinOp::Add, Value::Int(a), Value::Int(b)) => {
                         Ok(Value::Int(a.wrapping_add(*b)))
@@ -1311,6 +1317,33 @@ fn eval_fixed_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
         BinOp::Mul => Ok(Value::Fixed(a.mul(b))),
         BinOp::Div => match a.div(b) {
             Some(q) => Ok(Value::Fixed(q)),
+            None => Err(Error::DivisionByZero),
+        },
+        BinOp::Eq => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Equal)),
+        BinOp::Ne => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Equal)),
+        BinOp::Lt => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Less)),
+        BinOp::Le => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Greater)),
+        BinOp::Gt => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Greater)),
+        BinOp::Ge => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Less)),
+        BinOp::Mod | BinOp::And | BinOp::Or => return None,
+    };
+    Some(res)
+}
+
+/// Binary fixed-point binop (`qmn`) for the numeric tower. Called only when both
+/// operands are `Value::FixedBin`. Arithmetic is exact-then-wrapped to the i64
+/// word (`Mod` is undefined → falls through). Comparison is value-based. Returns
+/// `None` for unsupported ops so the caller's error applies.
+fn eval_fixedbin_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
+    let (Value::FixedBin(a), Value::FixedBin(b)) = (l, r) else {
+        return None;
+    };
+    let res = match op {
+        BinOp::Add => Ok(Value::FixedBin(a.add(b))),
+        BinOp::Sub => Ok(Value::FixedBin(a.sub(b))),
+        BinOp::Mul => Ok(Value::FixedBin(a.mul(b))),
+        BinOp::Div => match a.div(b) {
+            Some(q) => Ok(Value::FixedBin(q)),
             None => Err(Error::DivisionByZero),
         },
         BinOp::Eq => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Equal)),
@@ -3269,6 +3302,28 @@ mod tests {
         let src = "fungsi jumlah(x: Wang) -> Wang kesan Bersih { \
                    pulang x + x + x + x + x + x + x + x + x + x; } jumlah(wang(\"0.10\"))";
         assert_eq!(run_src(src), fx("1.00"));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NUMERIC TOWER: binary fixed-point FixedBin (`qmn`), end-to-end
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn qb(s: &str, fb: u32) -> Value {
+        Value::FixedBin(crate::fixed_bin::FixedBin::parse(s, fb).unwrap())
+    }
+
+    #[test]
+    fn test_fixedbin_qformat_exact_and_nearest() {
+        // Binary fractions are exact in Q-format.
+        assert_eq!(run_src("qmn((\"0.5\", 8)) + qmn((\"0.25\", 8))"), qb("0.75", 8));
+        assert_eq!(run_src("qmn((\"1.5\", 8)) * qmn((\"1.5\", 8))"), qb("2.25", 8));
+        // 0.1 is not a binary fraction → the nearest representable value.
+        assert_eq!(run_src("qmn((\"0.1\", 8))"), qb("0.1015625", 8));
+        // Value-based comparison across differing fractional bits.
+        assert_eq!(
+            run_src("qmn((\"0.5\", 4)) == qmn((\"0.5\", 16))"),
+            Value::Bool(true),
+        );
     }
 
     // ═══════════════════════════════════════════════════════════════════════

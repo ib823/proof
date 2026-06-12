@@ -2772,6 +2772,8 @@ impl<'a> Parser<'a> {
                     "Perpuluhan" | "Decimal" => Ok(Ty::Decimal),
                     // Fixed-scale decimal / money (numeric-tower fixed-point slice).
                     "Wang" | "Money" | "TitikTetap" => Ok(Ty::Fixed),
+                    // Binary fixed-point / Q-format (numeric-tower fixed-point slice).
+                    "Qmn" | "BinaryFixed" => Ok(Ty::FixedBin),
                     "Bool" | "Benar" => Ok(Ty::Bool),
                     "Unit" => Ok(Ty::Unit),
                     "String" | "Teks" => Ok(Ty::String),
