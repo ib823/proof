@@ -397,6 +397,12 @@ research source, and detailed description.
 | REQ-34 | Language Reference + Getting Started + "Writing Secure RIINA" guide — **PARTIAL 2026-06-10:** `docs/guide/GETTING_STARTED.md` + `docs/guide/WRITING_SECURE_RIINA.md` DONE (every snippet run against the shipped `riinac` before publishing; linked from the README header); remaining: the Language Reference (formal, complete, indexed — `04_SPECS/` fragments today) and the other Gate I rows (API-doc deployment, tutorial corpus completion, compiler-internals doc, proof guide, stability policy — the last needs an owner decision) | P1 | PARTIAL | Gate I |
 | REQ-35 | License decision — **DECIDED 2026-06-10: remain Proprietary** (no change to `LICENSE`). Deliberate consequence: the Gate J / Gate I open-contribution items (public RFC, ≥3 external maintainers, DCO/CLA, community CoC enforcement) stay **intentionally blocked** while proprietary; they are not "TODO" so much as "N/A until a license change." | P0 | DONE (decision) | Gate J |
 | REQ-36 | Recruit ≥2 additional maintainers (current bus factor = 1) | P0 | DECISION | Gate J |
+| REQ-37 | Research currency — PQC/hardware 2025-2026 wave: integrate **FIPS 206 (FN-DSA/Falcon)** and **HQC** (both named "missing" by the corpus's own 29_REFRESH_2026H1 batch), **hybrid-KEM transition** (X-Wing/ML-KEM+X25519 — 1 mention today; `riina-core` ships a hybrid signature type with no research backing), **SLAP** (2025 Apple M-series speculative attack — 0 files while sibling FLOP has 6), and a root-of-trust silicon survey (**Caliptra/OpenTitan** — 0 files). Closure = a new `01_RESEARCH/29_REFRESH_*` batch (research archive is append-only) + updates to the affected Part 6 rows and the REQ-19/crypto registry rows | P1 | TODO | Gate G / Phase 7 |
+| REQ-38 | Research gap — AI/ML security beyond inference robustness: the corpus covers NN verification (α,β-CROWN/VNN-COMP, Domains NU/AT) but has **no treatment** of training-data poisoning, model extraction, membership inference, **LLM prompt-injection/jailbreak resilience**, RAG correctness, or federated/differential-privacy verification. Load-bearing because Domain AM positions RIINA as an "AI-first language" and Part 6 claims OWASP LLM Top-10 90% coverage — that row cannot be honestly sustained without this research. Closure = refresh batch + Part 6 row re-derivation | P1 | TODO | Gate G / Phase 6 |
+| REQ-39 | Research depth — promote the thinnest load-bearing domains from single-file foundational specs to multi-session depth (the A–C survey→comparison→decision pattern): **real-time/WCET + schedulability** (Domains T–V are 1-2 files; compositional WCET, cache/bus interference, schedulability proofs absent) and **hardware-software co-verification** (Domain AR, 1 file, no methodology). Prioritize by phase needs (Phase 7/9 hardware contracts) | P2 | TODO | Phase 7 |
+| REQ-40 | Quantum-lane soundness caveat — Domain AP self-discloses that Coq `R` (reals) extract to floating-point, introducing rounding error "not accounted for in proofs"; any future quantum-circuit verification claim must carry this as a declared TCB item (Prime Directive: no hidden assumptions). Record in the claim-level machinery if/when a quantum lane ships | P2 | TODO | Phase 9 |
+| REQ-41 | Research maintenance — execute the corpus's own quarterly currency review (`00_METADATA/RESEARCH_STANDARDS_EVOLUTION_FRAMEWORK.md`: "today's 100% becomes tomorrow's 85%"); refresh the stale `00_METADATA/MANIFEST.md` (pins the corpus at 135 files; the tree has 414 — the completeness manifest no longer describes the corpus it certifies). Next review due 2026-Q3 | P2 | TODO | Ongoing |
+| REQ-42 | Crypto-core/tooling debt found by the 2026-06-12 untracked-TODO sweep (feeds REQ-28 audit readiness; none previously tracked anywhere): (a) `riina-core/crypto/hybrid.rs::HybridVerifyingKey::from_bytes` says "TODO: Validate both public keys" and accepts ANY bytes — hybrid signature verification never validates component public keys; (b) `riina-core/crypto/mod.rs` trait-default MAC `verify` is **disabled** ("temporarily" — fails closed via `InvalidTagLength`, so safe, but it is dead/misleading API; `hmac.rs` has the real working `verify`) — fix the slice `ct_eq` type mismatch or delete the dead default; (c) `field25519.rs` dedicated squaring (perf-only, ~20%); (d) `litmus/spectre_v{1,2}.rs` missing cache-timing measurement + BTB-poisoning cases; (e) `riina-verify` reproducible-build comparison is a stub ("TODO: Actually compare builds") plus GNATprove/mutation-testing stubs — overlaps REQ-31's CI-verified reproducibility; (f) `riina-build` HDL-toolchain stub (Phase 9). Each closure needs tests; (a)/(b) before the external audit | P1 | TODO | Gate C / Gate G |
 
 ### Extension Protocol
 
@@ -1226,6 +1232,26 @@ Source: `04_SPECS/requirements/RIINA_EXHAUSTIVE_GAP_ANALYSIS_v1_0_0.md`
 | E-GAP01-18 | 18 | 18 | Hardware trust, quantum, AI/ML, DevSecOps |
 | Extended (Greek, etc.) | 50+ | 50+ | Domain-specific extensions |
 | **TOTAL** | **218** | **218** | **All feed language design** |
+
+### Coverage-Claim Qualification (2026-06-12 corpus audit — derived from the tree, not from the docs' self-labels)
+
+The "Verified" rows above are **mapping/breadth claims backed by summary documents**, not
+per-item exhaustive research. A by-command audit of `01_RESEARCH/` (79 domain dirs, 414 files)
+found a two-tier corpus; the "COMPLETE/EXHAUSTIVE" self-labels hold only with these qualifications:
+
+| Tier | Domains | Reality |
+|---|---|---|
+| Deep, multi-session (survey→comparison→decision) | A Type Theory (72 files), B Effects (27), C IFC (9) | Genuinely exhaustive for their scope |
+| Consolidated syntheses, actively refreshed | D–G hardware/crypto/side-channel (2 files each, 20–50 KB) | Current to 2024-2025 SOTA via `29_REFRESH_2026H1` (GoFetch, Downfall/Inception, FLOP, FIPS 203/204/205, VNN-COMP 2025); the refresh batch itself names FIPS 206 + HQC as missing |
+| Single-file foundational specs | ~20 (AL layout, AN Syariah, AO blockchain, AP quantum, AS PQC, AT AI/ML, …) | Real cited research (16–60 KB each), but one document deep — foundational, not implementation-ready |
+| Single-file application briefs | ~14 RIINA_* product domains | Product-focused; least academic rigor |
+
+**Named gaps now tracked as requirements:** PQC/hardware currency wave → REQ-37; AI/ML security
+beyond inference robustness (poisoning/extraction/membership-inference/LLM prompt safety/federated-DP —
+absent today; qualifies the OWASP LLM row above) → REQ-38; real-time/WCET + HW-SW co-verification
+depth → REQ-39; quantum extraction soundness caveat (Coq reals → float) → REQ-40; quarterly currency
+review + stale 135-vs-414-file MANIFEST → REQ-41. The OWASP LLM Top-10 row's "90%" stands only at the
+type-system/taint level; the LLM-era threat research behind it is REQ-38's to earn.
 
 ### Items Correctly Excluded (Not Gaps)
 
@@ -2489,6 +2515,18 @@ remainders:** REQ-28 external audit (owner-deferred), release signing + CI nix b
 in container, checked), continuous fuzz/coverage-gate-in-CI/OSS-Fuzz, examples parse-gap
 lanes (failure classes re-derived above), riina-mirror push of the reconcile (origin-only by
 design — owner reviews then mirrors).
+
+**Addendum (2026-06-12, late session) — research-corpus audit + comprehensive TODO registry.**
+Owner-requested by-command audit of `01_RESEARCH/` (depth tiers, citation currency, gap
+enumeration — findings in the new Part 6 qualification subsection) plus an untracked-debt sweep
+of both Rust workspaces (which found audit-relevant crypto TODOs tracked nowhere, incl.
+`HybridVerifyingKey::from_bytes` accepting unvalidated bytes and a disabled-but-fail-closed
+trait-default MAC `verify`). Every open item is now a registry row: **REQ-37..42 added**
+(PQC/hardware currency wave; AI/ML-security research gap; WCET/co-verification depth; quantum
+extraction-soundness caveat; quarterly currency review + stale MANIFEST; crypto-core/tooling
+debt pre-audit). Highest-value machine-doable next increments: REQ-42(a)/(b) (hybrid key
+validation + MAC-verify dead API, small + test-pinned), REQ-37/38 refresh batches, then the
+examples parse-gap lanes.
 
 **Verified baseline at handoff (2026-06-11, twelfth session, last commit `beb93fa`; all re-run by command that session):**
 `cargo test --workspace --release` (03_PROTO) = **2898 / 0** (was 2877 at the start of this session's
