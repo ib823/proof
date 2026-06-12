@@ -4,46 +4,94 @@
 
 If you discover a security issue in RIINA, please report it responsibly.
 
-**Telegram:** [@ib823](https://t.me/ib823)
+**Security contact:** `ikmal.baharudin@gmail.com` (PGP key on request) — or **Telegram:**
+[@ib823](https://t.me/ib823). A dedicated `security@` alias is being established; until it is live,
+use the contact above and put **`SECURITY`** in the subject.
 
-Please do **not** open a public GitHub issue for security reports.
+Please do **not** open a public GitHub issue, PR, or discussion for security reports.
 
-## Response Timeline
+## Response & Coordinated Disclosure Timeline
 
-- **72 hours** — Acknowledgment of your report
-- **7 days** — Initial assessment and severity classification
-- **30 days** — Target for fix or mitigation (critical issues prioritized)
+RIINA follows a **90-day coordinated disclosure** policy (aligned with the norms used by Google
+Project Zero / CERT/CC):
+
+- **72 hours** — Acknowledgment of your report.
+- **7 days** — Initial assessment and severity classification (see bands below).
+- **30 days** — Target for a fix or mitigation (Critical issues prioritized).
+- **90 days** — Default public-disclosure deadline. We coordinate the date with you; we may request a
+  short extension for a hard fix, and we may disclose *earlier* if the issue is already being
+  exploited in the wild. Either party may shorten the window by mutual agreement.
+
+## Severity classification
+
+We classify using CVSS v3.1 qualitative bands, applied to **residual** impact:
+
+| Band | Example | Handling |
+|---|---|---|
+| **Critical** | Miscompile that silently breaks a security guarantee; key/secret recovery | Immediate; out-of-band fix if needed |
+| **High** | Soundness hole in the type/effect/IFC checker; CT leak with a practical oracle | Prioritized in the 30-day target |
+| **Medium** | DoS on the compiler (crafted input → hang/OOM); FFI-boundary issue in the playground shim | Standard window |
+| **Low** | Hardening gaps without a practical exploit | Batched into normal releases |
+
+The maintainers' own view of the current residual-Medium-and-above risks is published openly in
+[`04_SPECS/security/THREAT_MODEL.md`](04_SPECS/security/THREAT_MODEL.md) §8 (Open Risks) — we do not
+hide the gaps.
+
+## CVE handling
+
+- For any issue rated **Medium or above** that affects a released artifact, we will **request a CVE**
+  (via GitHub's CNA for this repository, or MITRE directly) and reference it in the advisory and
+  `CHANGELOG.md`.
+- Advisories are published via **GitHub Security Advisories (GHSA)** after a fix is available; the
+  GHSA ID and any CVE are cross-linked.
+- Fixes land with a regression test (and, where the affected component has one, an updated Coq/CT
+  anchor) so the issue cannot silently regress.
 
 ## Scope
 
-The following components are in scope:
+In scope: the **compiler** (`riinac`, all passes + codegen + verification), the **formal proofs**
+(`02_FORMAL/`), the **tooling/crypto** (`05_TOOLING/`, esp. `riina-core`), the **website**
+(`website/`), and the **VS Code extension** (`riina-vscode/`).
 
-- **Compiler** (`riinac`) — All compiler passes, code generation, and verification
-- **Formal proofs** (`02_FORMAL/`) — Coq, Lean, and Isabelle proof files
-- **Tooling** (`05_TOOLING/`) — Cryptographic primitives and build tools
-- **Website** (`website/`) — Project website
-- **VS Code extension** (`riina-vscode/`) — Language support extension
+Known limitations that are **documented, not vulnerabilities** (see the threat model): source-level
+constant-time cannot defeat **DMP/GoFetch** or **transient-execution (Downfall/Inception)** leaks on
+affected hardware — those require deploy-time hardware/OS controls (DIT, microcode, kernel
+mitigations). Reports demonstrating a *practical* leak through RIINA-generated code on a mitigated
+host are in scope and very welcome.
 
 ## Out of Scope
 
-- Example programs in `07_EXAMPLES/` (educational, not production)
-- Documentation content (unless it leaks secrets)
+- Example programs in `07_EXAMPLES/` (educational, not production).
+- Documentation content (unless it leaks secrets).
+- The **downstream toolchain** (`cc`, `wasmtime`, the OS, the CPU) — each is its own TCB; RIINA's
+  guarantee ends at *what it emits* (threat model TB-2). Bugs in those projects go to those projects.
+- Findings that require a malicious host OS, physical access, fault injection, or power/EM analysis.
 
-## Responsible Disclosure
+## Safe Harbor
 
-We follow a coordinated disclosure process:
+We will **not pursue legal action** against researchers who, in good faith, follow this policy: who
+access only their own data (or test data), avoid privacy violations and service degradation, and give
+us a reasonable window to remediate before public disclosure. If in doubt, ask first via the security
+contact.
 
-1. Reporter sends details via the contact above
-2. We acknowledge receipt within 72 hours
-3. We work with the reporter to understand and reproduce the issue
-4. We develop and test a fix
-5. We release the fix and credit the reporter (unless anonymity is requested)
-6. We publish an advisory after the fix is available
+## Responsible Disclosure (process)
+
+1. Reporter sends details via the contact above.
+2. We acknowledge receipt within 72 hours.
+3. We work with the reporter to reproduce and assess the issue.
+4. We develop, test, and (where applicable) prove the fix.
+5. We release the fix, request a CVE if Medium+, and credit the reporter (unless anonymity is
+   requested).
+6. We publish a GHSA advisory after the fix is available and coordinate public disclosure (≤ 90 days).
 
 ## Recognition
 
-We gratefully acknowledge security researchers who report issues responsibly. With your permission, we will credit you in our CHANGELOG and security advisories.
+We gratefully acknowledge security researchers who report issues responsibly. With your permission,
+we will credit you in our `CHANGELOG.md` and security advisories.
 
 ---
 
-*RIINA takes security seriously. Our formal verification approach means many classes of bugs are mathematically impossible — but we remain vigilant about the components that fall outside our proof coverage.*
+*RIINA takes security seriously. Our formal-verification approach makes many classes of bug
+mathematically impossible within the proven fragment — but we remain vigilant about the components
+that fall outside our proof coverage, and we document those boundaries openly in
+[`04_SPECS/security/THREAT_MODEL.md`](04_SPECS/security/THREAT_MODEL.md).*
