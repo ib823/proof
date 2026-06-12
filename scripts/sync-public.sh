@@ -178,6 +178,105 @@ else
     exit 1
 fi
 
+# Step 4-R: --reconcile mode — content-level drift repair (TRACK_F fix).
+#
+# WHY: the range cherry-pick below stops at the first conflicting commit
+# (git leaves the sequencer mid-range; later commits in the range are never
+# applied) and the partial result is committed anyway. Years of such partial
+# squashes left public's tree silently stale — e.g. the Coq corpus on public
+# carried 7,105 Qed while the published metrics.json claimed 12,613, making
+# the public claims non-reproducible from the public tree.
+#
+# WHAT: for every file tracked on main that is not internal-excluded, set
+# public's content to main's exact blob (adds + updates; deliberately does
+# NOT delete public files absent from main — curation decisions stay with
+# the owner). Also enforces INTERNAL_PATHS/INTERNAL_GLOBS against files
+# already tracked on public (removes historical leaks). The staged diff is
+# then self-checked for contamination before the normal commit+push tail.
+if [ "${1:-}" = "--reconcile" ]; then
+    echo ""
+    echo "Reconcile mode: setting public's tree to main's content (minus internals)..."
+    MAIN_SHA="$(git rev-parse --short main)"
+    git checkout public --quiet
+    git cherry-pick --abort 2>/dev/null || true
+    rm -rf "$REPO_ROOT/.git/sequencer" 2>/dev/null || true
+
+    # Build the list of public-destined files tracked on main.
+    SYNC_LIST="$(mktemp)"
+    git ls-tree -r --name-only main | while IFS= read -r f; do
+        IS_INTERNAL=false
+        for pattern in "${INTERNAL_PATHS[@]}"; do
+            case "$f" in
+                $pattern*) IS_INTERNAL=true; break ;;
+            esac
+        done
+        if ! $IS_INTERNAL; then
+            for glob in "${INTERNAL_GLOBS[@]}"; do
+                case "$f" in
+                    $glob) IS_INTERNAL=true; break ;;
+                esac
+            done
+        fi
+        $IS_INTERNAL || printf '%s\0' "$f"
+    done > "$SYNC_LIST"
+    tr -cd '\0' < "$SYNC_LIST" | wc -c | xargs -I{} echo "    Files to sync from main: {}"
+    xargs -0 git checkout main -- < "$SYNC_LIST"
+    rm -f "$SYNC_LIST"
+
+    # Enforce the internal lists against files already tracked on public.
+    for pattern in "${INTERNAL_PATHS[@]}"; do
+        git rm -rf --quiet --ignore-unmatch "$pattern" 2>/dev/null || true
+    done
+    for glob in "${INTERNAL_GLOBS[@]}"; do
+        git rm -rf --quiet --ignore-unmatch "$glob" 2>/dev/null || true
+    done
+
+    git add -A
+
+    # Contamination self-check on exactly what this commit would publish
+    # (added lines only — removing a leaked file must not trip the check).
+    if git diff --cached | grep -E '^\+' | grep -qE 'ib823/proof|/workspaces/proof'; then
+        echo -e "${RED}ERROR: reconcile diff contains internal references. NOT committing.${NC}"
+        git reset --hard HEAD --quiet
+        git checkout main --quiet
+        exit 1
+    fi
+
+    if git diff --cached --quiet; then
+        echo -e "${GREEN}[✓] Public already matches main (nothing to reconcile)${NC}"
+        git checkout main --quiet
+        exit 0
+    fi
+
+    git commit --no-verify --quiet -m "[ALL] CHORE: reconcile public tree with main ($MAIN_SHA)
+
+Content-level drift repair: sets every public-destined file to main's exact
+blob and enforces the internal-exclusion lists against historical leaks.
+Repairs staleness accumulated by conflict-stopped range syncs (see
+scripts/sync-public.sh --reconcile).
+
+Synced from main ($MAIN_SHA). Internal files excluded."
+    echo -e "${GREEN}[✓] Committed reconciliation on public${NC}"
+
+    echo "Pushing public..."
+    git push origin public --no-verify
+    echo -e "${GREEN}[✓] Public branch pushed to origin${NC}"
+
+    if git remote | grep -q "^riina$"; then
+        echo "Pushing to riina remote (public → main)..."
+        git push riina public:main --force-with-lease --no-verify
+        echo -e "${GREEN}[✓] Public branch pushed to riina (ib823/riina)${NC}"
+    fi
+
+    git checkout main --quiet
+    echo -e "${GREEN}[✓] Back on main${NC}"
+    echo ""
+    echo "================================================================"
+    echo -e "  ${GREEN}RECONCILE COMPLETE${NC}"
+    echo "================================================================"
+    exit 0
+fi
+
 # Step 4: Determine commit(s) to sync
 if [ $# -ge 1 ]; then
     COMMIT_ARG="$1"
