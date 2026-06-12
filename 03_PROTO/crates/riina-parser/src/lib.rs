@@ -38,6 +38,10 @@ pub enum ParseErrorKind {
     InvalidSecurityLevel,
     InvalidEffect,
     InvalidSessionType,
+    /// Expression/grouping nesting exceeded the parser's depth limit. Returned
+    /// instead of letting deeply nested input (e.g. `((((…`) overflow the stack
+    /// — a denial-of-service guard on untrusted input (REQ-30).
+    NestingTooDeep,
 }
 
 impl fmt::Display for ParseErrorKind {
@@ -51,6 +55,7 @@ impl fmt::Display for ParseErrorKind {
             ParseErrorKind::InvalidSecurityLevel => write!(f, "Invalid security level"),
             ParseErrorKind::InvalidEffect => write!(f, "Invalid effect"),
             ParseErrorKind::InvalidSessionType => write!(f, "Invalid session type"),
+            ParseErrorKind::NestingTooDeep => write!(f, "Expression nesting too deep"),
         }
     }
 }
@@ -68,6 +73,7 @@ impl ParseErrorKind {
             ParseErrorKind::InvalidSecurityLevel => "P0006",
             ParseErrorKind::InvalidEffect => "P0007",
             ParseErrorKind::InvalidSessionType => "P0008",
+            ParseErrorKind::NestingTooDeep => "P0009",
         }
     }
 
@@ -99,6 +105,9 @@ impl ParseErrorKind {
             ParseErrorKind::InvalidSessionType => {
                 "Invalid session type. Valid: Send<T, S>, Recv<T, S>, Select<S1, S2>, Branch<S1, S2>, End, Rec<X, S>, Var<X>".to_string()
             }
+            ParseErrorKind::NestingTooDeep => {
+                "Expression/grouping nesting is too deep. Deeply nested input like ((((… can exhaust the stack; reduce the nesting depth".to_string()
+            }
         })
     }
 }
@@ -116,9 +125,25 @@ impl Iterator for LexerIter<'_> {
     }
 }
 
+/// Maximum expression/grouping nesting depth before the parser fails with
+/// [`ParseErrorKind::NestingTooDeep`]. The recursive-descent parser would
+/// otherwise overflow the stack on adversarial input (`((((…`) — a SIGABRT/SIGSEGV
+/// rather than a catchable error.
+///
+/// The value is chosen to be safe on a **default 2 MiB thread stack** (Rust's
+/// `std::thread` default — smaller than the 8 MiB main thread), since the parser
+/// is a library others may call off-thread: the per-level frames are large
+/// (~8 KiB), so 256 levels overflow a 2 MiB stack while 100 leaves comfortable
+/// margin (~1 MiB). No hand-written or generated RIINA nests expressions
+/// anywhere near this deep. REQ-30 (found by the fuzz-robustness harness).
+const MAX_EXPR_DEPTH: usize = 100;
+
 pub struct Parser<'a> {
     lexer: Peekable<LexerIter<'a>>,
     current_span: Span,
+    /// Current expression-nesting depth (incremented per `parse_expr`); bounded
+    /// by [`MAX_EXPR_DEPTH`] to keep untrusted input from overflowing the stack.
+    depth: usize,
     /// Counter for generating fresh, capture-free variable names during
     /// desugaring (e.g. `padan` compilation). See [`Parser::fresh_var`].
     gensym: usize,
@@ -201,6 +226,7 @@ impl<'a> Parser<'a> {
             }
             .peekable(),
             current_span: Span { start: 0, end: 0 },
+            depth: 0,
             gensym: 0,
             pending_gt: false,
         }
@@ -229,7 +255,20 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_expr(&mut self) -> Result<Expr, ParseError> {
-        self.parse_stmt_sequence()
+        // Depth guard (REQ-30): every nested grouping `(e)`, block, argument,
+        // etc. re-enters here, so bounding `parse_expr` bounds the recursion and
+        // turns a stack-overflow on adversarial input into a clean error.
+        self.depth += 1;
+        if self.depth > MAX_EXPR_DEPTH {
+            self.depth -= 1;
+            return Err(ParseError {
+                kind: ParseErrorKind::NestingTooDeep,
+                span: self.current_span,
+            });
+        }
+        let result = self.parse_stmt_sequence();
+        self.depth -= 1;
+        result
     }
 
     /// Parse a complete .rii file as a sequence of top-level declarations.
@@ -329,7 +368,9 @@ impl<'a> Parser<'a> {
                                 self.next();
                                 depth -= 1;
                             }
-                            None => break,
+                            // Terminate at Eof (lexer repeats Eof, never None) so
+                            // unclosed `<` doesn't loop forever (REQ-30).
+                            Some(TokenKind::Eof) | None => break,
                             _ => {
                                 self.next();
                             }
@@ -786,7 +827,11 @@ impl<'a> Parser<'a> {
                         self.pending_gt = true;
                     }
                 }
-                None => break,
+                // The lexer yields `Eof` repeatedly (never `None`) at end of
+                // input, so an Eof here must terminate the skip — otherwise the
+                // `_` arm consumes it without progress and loops forever on
+                // unclosed input like `fungsi x<` (REQ-30, fuzz-found).
+                Some(TokenKind::Eof) | None => break,
                 _ => {
                     self.next();
                 }
@@ -808,7 +853,11 @@ impl<'a> Parser<'a> {
                     self.next();
                     depth -= 1;
                 }
-                None => break,
+                // The lexer yields `Eof` repeatedly (never `None`) at end of
+                // input, so an Eof here must terminate the skip — otherwise the
+                // `_` arm consumes it without progress and loops forever on
+                // unclosed input like `fungsi x<` (REQ-30, fuzz-found).
+                Some(TokenKind::Eof) | None => break,
                 _ => {
                     self.next();
                 }
