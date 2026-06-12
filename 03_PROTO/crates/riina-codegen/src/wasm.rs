@@ -195,8 +195,9 @@ impl WasmBackend {
                 .iter()
                 .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::BigInt)))
         });
-        let n_bignum_fns: u32 = if uses_bigint { 7 } else { 0 };
-        let (bi_from_str_index, bi_to_str_index, bi_cmp_index, bi_addsub_index) = if uses_bigint {
+        let n_bignum_fns: u32 = if uses_bigint { 8 } else { 0 };
+        let (bi_from_str_index, bi_to_str_index, bi_cmp_index, bi_addsub_index, bi_mul_index) = if uses_bigint
+        {
             // (i32)->i32 helpers (share alloc's type): parse + render.
             let from = NUM_IMPORTS + 1;
             module.functions.push(alloc_type_idx);
@@ -233,9 +234,13 @@ impl WasmBackend {
             module
                 .codes
                 .push(self.emit_bi_addsub(alloc_func_index, cmp_mag, add_mag, sub_mag));
-            (from, to, cmp, addsub)
+            // (i32,i32)->i32 multiply (W2.3).
+            let mul = NUM_IMPORTS + 8;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_bi_mul(alloc_func_index));
+            (from, to, cmp, addsub, mul)
         } else {
-            (0, 0, 0, 0) // unused: no BigInt op is emitted when the program has none
+            (0, 0, 0, 0, 0) // unused: no BigInt op is emitted when the program has none
         };
 
         // === User functions ===
@@ -289,6 +294,7 @@ impl WasmBackend {
                 bi_to_str_index,
                 bi_cmp_index,
                 bi_addsub_index,
+                bi_mul_index,
             )?;
             module.codes.push(body);
         }
@@ -1436,6 +1442,238 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `bi_mul(a: i32, b: i32) -> i32`: signed BigInt multiply. Schoolbook
+    /// O(la·lb) limb multiply-accumulate into a zeroed `la+lb`-limb result
+    /// (`t = a[i]*b[j] + w[i+j] + carry` fits in u64 exactly), then sign =
+    /// `a.neg XOR b.neg`, normalized so a zero product is `+0`.
+    fn emit_bi_mul(&self, alloc_func_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const LA: u32 = 2;
+        const LB: u32 = 3;
+        const N: u32 = 4;
+        const RES: u32 = 5;
+        const I: u32 = 6;
+        const J: u32 = 7;
+        const ADDR: u32 = 8;
+        const RLEN: u32 = 9;
+        const K: u32 = 10;
+        const T: u32 = 11;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // la = mem[a]; lb = mem[b]; n = la + lb
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LB);
+        lget(&mut c, LA);
+        lget(&mut c, LB);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, N);
+        // res = alloc(8 + n*4)
+        lget(&mut c, N);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(alloc_func_index as u64, &mut c);
+        lset(&mut c, RES);
+        // zero the n result limbs: for i in 0..n { w[i] = 0 }
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, I);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, I);
+        lget(&mut c, N);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, I);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (zero)
+        op(&mut c, Op::End); // block (zero)
+        // for i in 0..la
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, I);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, I);
+        lget(&mut c, LA);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // k = 0; for j in 0..lb
+        wasm_i64c(&mut c, 0);
+        lset(&mut c, K);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, J);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, J);
+        lget(&mut c, LB);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // addr = res + 8 + (i+j)*4
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        lget(&mut c, J);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, ADDR);
+        // t = a[i]*b[j] + w[i+j] + k
+        lget(&mut c, A);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        lget(&mut c, B);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, J);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Mul);
+        lget(&mut c, ADDR);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Add);
+        lget(&mut c, K);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, T);
+        // w[i+j] = wrap(t); k = t / 2^32
+        lget(&mut c, ADDR);
+        lget(&mut c, T);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        lget(&mut c, T);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64DivU);
+        lset(&mut c, K);
+        // j += 1
+        lget(&mut c, J);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, J);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (inner j)
+        op(&mut c, Op::End); // block (inner j)
+        // w[i+lb] = wrap(k)
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        lget(&mut c, LB);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, K);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        // i += 1
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, I);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (outer i)
+        op(&mut c, Op::End); // block (outer i)
+        // res.neg = (a.neg != b.neg)
+        lget(&mut c, RES);
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        op(&mut c, Op::I32Ne);
+        wasm_store(&mut c, 4);
+        // normalize: rlen = n; while rlen>0 && w[rlen-1]==0 { rlen-- }
+        lget(&mut c, N);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (normalize)
+        op(&mut c, Op::End); // block (normalize)
+        // mem[res] = rlen; if rlen == 0 { res.neg = 0 }
+        lget(&mut c, RES);
+        lget(&mut c, RLEN);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::End);
+        lget(&mut c, RES);
+        FuncBody {
+            locals: vec![(8, ValType::I32), (2, ValType::I64)],
+            code: c,
+        }
+    }
+
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
@@ -1453,6 +1691,7 @@ impl WasmBackend {
         bi_to_str_index: u32,
         bi_cmp_index: u32,
         bi_addsub_index: u32,
+        bi_mul_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -1550,6 +1789,7 @@ impl WasmBackend {
             bi_to_str_index,
             bi_cmp_index,
             bi_addsub_index,
+            bi_mul_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -2348,12 +2588,22 @@ impl WasmBackend {
                         wasm_encode::encode_uleb128(ctx.bi_addsub_index as u64, code);
                         code.push(Op::I64ExtendI32U as u8); // result ptr -> i64 cell
                     }
+                    BinOp::Mul => {
+                        // Schoolbook multiply via bi_mul(a, b).
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.bi_mul_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8); // result ptr -> i64 cell
+                    }
                     _ => {
                         return Err(crate::Error::InvalidOperation(
-                            "BigInt (`besar`) arithmetic (*, /) is not yet \
-                             supported by the WASM backend (comparison, add/sub, \
-                             construction, and display work; multiply and divide are \
-                             a follow-up). Use the C backend or the interpreter."
+                            "BigInt (`besar`) division/modulo is not yet supported by \
+                             the WASM backend (comparison, add/sub, multiply, \
+                             construction, and display work; divide/modulo are a \
+                             follow-up). Use the C backend or the interpreter."
                                 .to_string(),
                         ));
                     }
@@ -3257,6 +3507,8 @@ struct EmitCtx<'a> {
     bi_cmp_index: u32,
     /// Function index of the signed BigInt add/sub helper (`bi_addsub(a,b,sub)`).
     bi_addsub_index: u32,
+    /// Function index of the signed BigInt multiply helper (`bi_mul(a,b)`).
+    bi_mul_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,
