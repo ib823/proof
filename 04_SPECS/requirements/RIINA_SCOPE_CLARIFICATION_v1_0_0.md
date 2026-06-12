@@ -61,7 +61,7 @@
 ## 1.3 Evidence from Codebase Structure
 
 ```
-/workspaces/proof/                    ← THE RIINA REPOSITORY
+<repo-root>/                    ← THE RIINA REPOSITORY
 ├── 02_FORMAL/coq/                    ← FORMAL PROOFS OF THE LANGUAGE
 │   ├── foundations/                  ← Language syntax, semantics
 │   ├── type_system/                  ← Language type system proofs
