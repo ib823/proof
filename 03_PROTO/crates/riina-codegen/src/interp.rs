@@ -1062,6 +1062,15 @@ impl Interpreter {
                         return result;
                     }
                 }
+                // Numeric tower: arbitrary-precision `BigInt` arithmetic. Both
+                // operands must be `BigInt` (the typechecker rejects mixing with
+                // fixed-width ints), so a lone `BigInt` operand falls through to
+                // the generic type-mismatch error below.
+                if matches!(l, Value::BigInt(_)) && matches!(r, Value::BigInt(_)) {
+                    if let Some(result) = eval_bigint_binop(*op, &l, &r) {
+                        return result;
+                    }
+                }
                 match (op, &l, &r) {
                     (BinOp::Add, Value::Int(a), Value::Int(b)) => {
                         Ok(Value::Int(a.wrapping_add(*b)))
@@ -1210,6 +1219,37 @@ fn eval_sized_int_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>
             Ok(Value::Bool(truth))
         }
         BinOp::And | BinOp::Or => return None, // boolean-only operators
+    };
+    Some(res)
+}
+
+/// Arbitrary-precision integer binop for the numeric tower. Called only when
+/// both operands are `Value::BigInt`. `Div`/`Mod` truncate toward zero with the
+/// remainder taking the dividend's sign (matching `Value::Int`). Returns `None`
+/// for the boolean-only `And`/`Or` so the caller's generic error still applies.
+fn eval_bigint_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
+    let (Value::BigInt(a), Value::BigInt(b)) = (l, r) else {
+        return None;
+    };
+    let res = match op {
+        BinOp::Add => Ok(Value::BigInt(a.add(b))),
+        BinOp::Sub => Ok(Value::BigInt(a.sub(b))),
+        BinOp::Mul => Ok(Value::BigInt(a.mul(b))),
+        BinOp::Div => match a.divmod(b) {
+            Some((q, _)) => Ok(Value::BigInt(q)),
+            None => Err(Error::DivisionByZero),
+        },
+        BinOp::Mod => match a.divmod(b) {
+            Some((_, rem)) => Ok(Value::BigInt(rem)),
+            None => Err(Error::DivisionByZero),
+        },
+        BinOp::Eq => Ok(Value::Bool(a == b)),
+        BinOp::Ne => Ok(Value::Bool(a != b)),
+        BinOp::Lt => Ok(Value::Bool(a < b)),
+        BinOp::Le => Ok(Value::Bool(a <= b)),
+        BinOp::Gt => Ok(Value::Bool(a > b)),
+        BinOp::Ge => Ok(Value::Bool(a >= b)),
+        BinOp::And | BinOp::Or => return None,
     };
     Some(res)
 }
@@ -3003,6 +3043,72 @@ mod tests {
             run_src("shell_exec(sanitize_command(\"rm -rf /\"))"),
             Value::Int(0),
         );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NUMERIC TOWER: arbitrary-precision BigInt (`besar`), end-to-end
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn big(s: &str) -> Value {
+        Value::BigInt(crate::bigint::BigInt::from_decimal_str(s).unwrap())
+    }
+
+    #[test]
+    fn test_bigint_construct_and_multiply_beyond_u64() {
+        // 99999999999999999999^2 overflows u64/u128-as-machine-int; BigInt is exact.
+        assert_eq!(
+            run_src("besar(\"99999999999999999999\") * besar(\"99999999999999999999\")"),
+            big("9999999999999999999800000000000000000001"),
+        );
+    }
+
+    #[test]
+    fn test_bigint_add_sub_div_mod() {
+        assert_eq!(run_src("besar(\"1000\") + besar(\"337\")"), big("1337"));
+        assert_eq!(run_src("besar(\"1000\") - besar(\"1337\")"), big("-337"));
+        assert_eq!(run_src("besar(\"100\") / besar(\"7\")"), big("14"));
+        assert_eq!(run_src("besar(\"100\") % besar(\"7\")"), big("2"));
+        // Truncation toward zero with a negative dividend (matches Int / %).
+        assert_eq!(run_src("besar(\"-7\") / besar(\"2\")"), big("-3"));
+        assert_eq!(run_src("besar(\"-7\") % besar(\"2\")"), big("-1"));
+    }
+
+    #[test]
+    fn test_bigint_comparison_and_equality() {
+        assert_eq!(
+            run_src("besar(\"100000000000000000000\") > besar(\"99999999999999999999\")"),
+            Value::Bool(true),
+        );
+        assert_eq!(run_src("besar(\"42\") == besar(\"42\")"), Value::Bool(true));
+        assert_eq!(run_src("besar(\"42\") != besar(\"43\")"), Value::Bool(true));
+    }
+
+    #[test]
+    fn test_bigint_english_alias_and_int_promotion() {
+        // The `bigint` English alias resolves to the same constructor.
+        assert_eq!(run_src("bigint(\"5\") + bigint(\"5\")"), big("10"));
+        // The constructor also accepts a machine int for convenience.
+        assert_eq!(run_src("besar(7) * besar(6)"), big("42"));
+    }
+
+    #[test]
+    fn test_bigint_prints_as_decimal() {
+        // `cetak` renders a BigInt as its base-10 string (no quotes, no wrapping).
+        let mut interp = Interpreter::new();
+        let v = Value::BigInt(crate::bigint::BigInt::from_decimal_str("-340282366920938463463374607431768211456").unwrap());
+        assert_eq!(crate::builtins::format_value(&v), "-340282366920938463463374607431768211456");
+        let _ = &mut interp;
+    }
+
+    #[test]
+    fn test_bigint_factorial_via_letrec() {
+        // 30! = 265252859812191058636308480000000 — far beyond 64 bits — computed
+        // end-to-end through the interpreter with a recursive function.
+        let src = "fungsi fac(n: Besar) -> Besar kesan Bersih { \
+                   kalau n == besar(\"0\") { pulang besar(\"1\"); } \
+                   pulang n * fac(n - besar(\"1\")); } \
+                   fac(besar(\"30\"))";
+        assert_eq!(run_src(src), big("265252859812191058636308480000000"));
     }
 
     // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──

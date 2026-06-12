@@ -67,31 +67,33 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::all)]
 
-pub mod ir;
-pub mod value;
-pub mod lower;
-pub mod interp;
-pub mod emit;
-pub mod builtins;
-pub mod ffi;
+pub mod android_build;
 pub mod backend;
-pub mod wasm;
-pub mod wasm_encode;
-pub mod platform;
-pub mod mobile;
+pub mod bigint;
+pub mod builtins;
+pub mod ct_verify;
+pub mod emit;
+pub mod ffi;
+pub mod interp;
+pub mod ios_build;
+pub mod ir;
 pub mod jni;
+pub mod lower;
+pub mod mobile;
+pub mod platform;
 pub mod swift_bridge;
 pub mod toolchain;
-pub mod android_build;
-pub mod ios_build;
+pub mod value;
+pub mod wasm;
+pub mod wasm_encode;
 
 // Re-export primary interface
-pub use ir::{Instruction, BasicBlock, Function, Program};
-pub use value::Value;
-pub use lower::Lower;
+pub use backend::{backend_for_target, Backend, BackendOutput, Target};
+pub use emit::{emit_c, CEmitter};
 pub use interp::Interpreter;
-pub use emit::{CEmitter, emit_c};
-pub use backend::{Backend, BackendOutput, Target, backend_for_target};
+pub use ir::{BasicBlock, Function, Instruction, Program};
+pub use lower::Lower;
+pub use value::Value;
 
 /// Result type for code generation operations
 pub type Result<T> = std::result::Result<T, Error>;
@@ -127,26 +129,54 @@ pub enum Error {
     UnhandledEffect(riina_types::Effect),
     /// Capability not held
     MissingCapability(riina_types::Effect),
+    /// The lowered IR violates the constant-time discipline (a secret-dependent
+    /// branch, or a variable-time operation on a `ConstantTime` value). Carries
+    /// the human-readable description of each violation found.
+    ConstantTimeViolation(Vec<String>),
+    /// Non-error control-flow signal: an early `pulang` (return) is unwinding to
+    /// the nearest enclosing function-application boundary, carrying its value.
+    /// This is never surfaced to the user — it is always caught when a closure
+    /// body is evaluated (see the interpreter's `App` rule). A `pulang` at top
+    /// level (outside any function) is caught by the top-level `eval` entry.
+    /// Boxed to keep `Error` small (it is the only otherwise-large variant).
+    Return(Box<Value>),
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::UnboundVariable(name) => write!(f, "unbound variable: {name}"),
-            Self::TypeMismatch { expected, found, context } => {
-                write!(f, "type mismatch in {context}: expected {expected}, found {found}")
+            Self::TypeMismatch {
+                expected,
+                found,
+                context,
+            } => {
+                write!(
+                    f,
+                    "type mismatch in {context}: expected {expected}, found {found}"
+                )
             }
             Self::EffectViolation { allowed, found } => {
                 write!(f, "effect violation: allowed {allowed:?}, found {found:?}")
             }
-            Self::SecurityViolation { context_level, data_level } => {
-                write!(f, "security violation: context {context_level:?}, data {data_level:?}")
+            Self::SecurityViolation {
+                context_level,
+                data_level,
+            } => {
+                write!(
+                    f,
+                    "security violation: context {context_level:?}, data {data_level:?}"
+                )
             }
             Self::InvalidOperation(msg) => write!(f, "invalid operation: {msg}"),
             Self::DivisionByZero => write!(f, "division by zero"),
             Self::InvalidReference(msg) => write!(f, "invalid reference: {msg}"),
             Self::UnhandledEffect(eff) => write!(f, "unhandled effect: {eff:?}"),
             Self::MissingCapability(eff) => write!(f, "missing capability for effect: {eff:?}"),
+            Self::ConstantTimeViolation(msgs) => {
+                write!(f, "constant-time violation(s): {}", msgs.join("; "))
+            }
+            Self::Return(_) => write!(f, "internal: uncaught early-return signal"),
         }
     }
 }
@@ -203,7 +233,21 @@ pub fn eval_with_builtins(expr: &riina_types::Expr) -> Result<Value> {
 /// * `Err(Error)` - Compilation error
 pub fn compile(expr: &riina_types::Expr) -> Result<Program> {
     let mut lower = Lower::new();
-    lower.compile(expr)
+    let program = lower.compile(expr)?;
+    // Per-program constant-time gate over the lowered IR: independently certify
+    // that the artifact has no secret-dependent branch or variable-time operation
+    // on a `ConstantTime` value (defense-in-depth behind the source-level A2
+    // typecheck). Valid programs — including constant-time ones with no such
+    // hazard — pass unchanged.
+    if let Err(violations) = crate::ct_verify::verify_constant_time(&program) {
+        return Err(Error::ConstantTimeViolation(
+            violations
+                .iter()
+                .map(crate::ct_verify::CtViolation::message)
+                .collect(),
+        ));
+    }
+    Ok(program)
 }
 
 /// Compile an expression to C source code
@@ -295,10 +339,7 @@ mod tests {
     /// Test full pipeline: AST -> IR -> C code produces valid output
     #[test]
     fn test_integration_full_pipeline_to_c() {
-        let expr = Expr::Pair(
-            Box::new(Expr::Int(1)),
-            Box::new(Expr::Bool(true)),
-        );
+        let expr = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Bool(true)));
 
         let c_code = compile_to_c(&expr).unwrap();
 
@@ -347,9 +388,11 @@ mod tests {
         // let x = 10 in let y = 20 in (x, y)
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(10)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(20)),
                 Box::new(Expr::Pair(
                     Box::new(Expr::Var("x".to_string())),
@@ -404,7 +447,7 @@ mod tests {
         let program = compile(&expr).unwrap();
         let main = program.function(ir::FuncId::MAIN).unwrap();
         // Should have multiple blocks for branching
-        assert!(main.blocks.len() >= 1);
+        assert!(!main.blocks.is_empty());
     }
 
     /// Test conditional branching false branch
@@ -442,10 +485,7 @@ mod tests {
     #[test]
     fn test_integration_pair_projections() {
         // fst (1, 2)
-        let pair = Expr::Pair(
-            Box::new(Expr::Int(1)),
-            Box::new(Expr::Int(2)),
-        );
+        let pair = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
 
         let fst_result = eval(&Expr::Fst(Box::new(pair.clone()))).unwrap();
         let snd_result = eval(&Expr::Snd(Box::new(pair))).unwrap();

@@ -73,6 +73,60 @@ impl SecurityLevel {
             other
         }
     }
+
+    /// Convert from numeric level back to SecurityLevel.
+    #[must_use]
+    pub const fn from_level(n: u8) -> Self {
+        match n {
+            0 => Self::Public,
+            1 => Self::Internal,
+            2 => Self::Session,
+            3 => Self::User,
+            4 => Self::System,
+            _ => Self::Secret,
+        }
+    }
+}
+
+/// Linearity qualifiers for substructural type system.
+///
+/// Matches Coq `Linearity` in `domains/LinearTypes.v`.
+/// Controls how many times a variable binding may be used.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Linearity {
+    /// Linear: must be used exactly once
+    Linear,
+    /// Affine: may be used at most once (can be dropped)
+    Affine,
+    /// Relevant: must be used at least once (can be duplicated)
+    Relevant,
+    /// Unrestricted: no usage constraints (default)
+    Unrestricted,
+}
+
+/// Usage count for linearity tracking.
+///
+/// Matches Coq `Usage` in `domains/LinearTypes.v`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Usage {
+    /// Not yet used
+    Zero,
+    /// Used exactly once
+    One,
+    /// Used more than once
+    Many,
+}
+
+impl Usage {
+    /// Increment usage: Zero→One, One→Many, Many→Many
+    #[must_use]
+    pub const fn increment(self) -> Self {
+        match self {
+            Usage::Zero => Usage::One,
+            Usage::One => Usage::Many,
+            Usage::Many => Usage::Many,
+        }
+    }
 }
 
 /// Effects
@@ -161,9 +215,9 @@ impl Effect {
     pub const fn level(self) -> u8 {
         match self {
             Self::Pure => 0,
-            Self::Mut => 1,       // Local mutation (below Read)
+            Self::Mut => 1, // Local mutation (below Read)
             Self::Read => 2,
-            Self::Alloc => 3,     // Heap allocation
+            Self::Alloc => 3, // Heap allocation
             Self::Write => 4,
             Self::FileSystem => 5,
             Self::Network => 6,
@@ -191,8 +245,12 @@ impl Effect {
             Self::Network | Self::NetworkSecure => EffectCategory::Network,
             Self::Crypto | Self::Random => EffectCategory::Crypto,
             Self::System | Self::Time | Self::Process => EffectCategory::System,
-            Self::Panel | Self::Zirah | Self::Benteng
-            | Self::Sandi | Self::Menara | Self::Gapura => EffectCategory::Product,
+            Self::Panel
+            | Self::Zirah
+            | Self::Benteng
+            | Self::Sandi
+            | Self::Menara
+            | Self::Gapura => EffectCategory::Product,
         }
     }
 
@@ -264,6 +322,7 @@ pub enum Sanitizer {
     CommandEscape,
     LdapEscape,
     XmlEscape,
+    UrlAllowlist,
     // Validation
     JsonValidation,
     XmlValidation,
@@ -403,8 +462,8 @@ impl StoreTy {
     /// This is used for strong updates where the type of a location changes.
     /// Returns `true` if the location existed and was updated.
     pub fn update(&mut self, loc: Location, ty: Ty, sl: SecurityLevel) -> bool {
-        if self.bindings.contains_key(&loc) {
-            self.bindings.insert(loc, (ty, sl));
+        if let std::collections::hash_map::Entry::Occupied(mut e) = self.bindings.entry(loc) {
+            e.insert((ty, sl));
             true
         } else {
             false
@@ -465,7 +524,17 @@ pub enum Ty {
     // Primitive types
     Unit,
     Bool,
+    /// The default integer type (`Nombor`) — an unbounded machine integer.
     Int,
+    /// A sized integer type (numeric-tower slice): `bits` ∈ {8,16,32,64},
+    /// `signed` distinguishes `iN` from `uN` (e.g. `u8` = `{bits:8, signed:false}`).
+    /// Representationally compatible with `Int` for codegen; width-aware
+    /// arithmetic semantics are a later numeric-tower phase.
+    IntN { bits: u8, signed: bool },
+    /// Arbitrary-precision signed integer (`besar`) — the numeric-tower BigInt
+    /// type. A distinct type that does NOT silently interoperate with `Int`
+    /// (mixing would hide a precision boundary); convert explicitly via `besar`.
+    BigInt,
     String,
     Bytes,
     // Function types
@@ -521,17 +590,59 @@ pub enum Ty {
     CInt,
     /// C void type
     CVoid,
+
+    // ── JALINAN Phase 6 types ──────────────────────────────────────────
+    /// Actor[State, Msg] — typed actor reference with state and message types
+    Actor(Box<Ty>, Box<Ty>),
+    /// Choreography[roles, protocol] — global multiparty session protocol
+    Choreography(Vec<Ident>, SessionType),
+    /// ContentAddressed[T] — content-addressed (Merkle) value
+    ContentAddressed(Box<Ty>),
+    /// CRDT[T, Op] — conflict-free replicated data type
+    CRDT(Box<Ty>, Box<Ty>),
+    /// Supervisor[T] — fault-tolerance supervisor for actor type T
+    Supervisor(Box<Ty>),
+
+    // ── Blockchain + Syariah Phase J6 types ─────────────────────────
+    /// SmartContract[T] — capability-gated smart-contract state
+    SmartContract(Box<Ty>),
+    /// Token[T] — conserved transferable value
+    Token(Box<Ty>),
+    /// SyariahCompliant[T] — effect-constrained value
+    SyariahCompliant(Box<Ty>),
+
+    // ── CAHAYA Phase J5 types ──────────────────────────────────────
+    /// Color — RGBA color with compile-time contrast checking
+    Color,
+    /// Element — UI element type
+    Element,
+    /// Layout — container for UI elements
+    Layout,
+    /// Style — CSS-like style properties
+    UIStyle,
+    /// AccessibleText — text with proven WCAG contrast
+    AccessibleText,
 }
 
 /// Binary operators
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BinOp {
     // Arithmetic
-    Add, Sub, Mul, Div, Mod,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
     // Comparison
-    Eq, Ne, Lt, Le, Gt, Ge,
+    Eq,
+    Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge,
     // Logical
-    And, Or,
+    And,
+    Or,
 }
 
 /// A source span (byte offsets) for LSP support.
@@ -551,8 +662,16 @@ impl Span {
     #[must_use]
     pub const fn merge(self, other: Self) -> Self {
         Self {
-            start: if self.start < other.start { self.start } else { other.start },
-            end: if self.end > other.end { self.end } else { other.end },
+            start: if self.start < other.start {
+                self.start
+            } else {
+                other.start
+            },
+            end: if self.end > other.end {
+                self.end
+            } else {
+                other.end
+            },
         }
     }
 }
@@ -566,21 +685,26 @@ pub enum TopLevelDecl {
         name: Ident,
         params: Vec<(Ident, Ty)>,
         return_ty: Ty,
+        /// The function's effect as a single lattice value (the join of the
+        /// declared components) — used for effect propagation and codegen.
         effect: Effect,
+        /// The *components* of a compound declared effect (`kesan (A, B, C)` ⇒
+        /// `[A, B, C]`). The lattice `effect` field is lossy (it collapses a
+        /// compound to the max-level component), so this preserves the full set
+        /// for capability granting: each component is granted in the body, which
+        /// makes capability-gating sound for compound-effect functions. For a
+        /// single declared effect this is a one-element vector.
+        effect_set: Vec<Effect>,
         body: Box<Expr>,
     },
     /// biar name = expr;
-    Binding {
-        name: Ident,
-        value: Box<Expr>,
-    },
+    Binding { name: Ident, value: Box<Expr> },
     /// Expression at top level (the program's main expression)
     Expr(Box<Expr>),
     /// luaran "C" { ... } — extern block for FFI declarations
-    ExternBlock {
-        abi: String,
-        decls: Vec<ExternDecl>,
-    },
+    ExternBlock { abi: String, decls: Vec<ExternDecl> },
+    /// ujian "name" { body } — inline test block
+    Test { name: String, body: Box<Expr> },
 }
 
 /// A single declaration inside an extern block.
@@ -609,11 +733,55 @@ pub struct Program {
     pub spans: Vec<SpannedDecl>,
 }
 
+/// Desugar a single function decl into a LetRec binding.
+#[allow(clippy::boxed_local)]
+fn desugar_function(
+    name: Ident,
+    params: Vec<(Ident, Ty)>,
+    return_ty: Ty,
+    effect: Effect,
+    body: Box<Expr>,
+    continuation: Box<Expr>,
+) -> Expr {
+    let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
+        Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
+    });
+    let fn_ty = params
+        .iter()
+        .rev()
+        .fold(return_ty.clone(), |ret, (_, param_ty)| {
+            Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
+        });
+    Expr::LetRec(name, fn_ty, Box::new(lam), continuation)
+}
+
+/// Desugar an extern block into Let bindings for each extern decl.
+fn desugar_extern_block(decls: Vec<ExternDecl>, continuation: Expr) -> Expr {
+    let mut result = continuation;
+    for decl in decls.into_iter().rev() {
+        let param_names: Vec<Ident> = decl.params.iter().map(|(n, _)| n.clone()).collect();
+        let args: Vec<Expr> = param_names.iter().map(|n| Expr::Var(n.clone())).collect();
+        let ffi_call = Expr::FFICall {
+            name: decl.name.clone(),
+            args,
+            ret_ty: decl.ret_ty.clone(),
+        };
+        let lam = decl.params.iter().rev().fold(ffi_call, |acc, (p, ty)| {
+            Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
+        });
+        result = Expr::Let(decl.name, None, Box::new(lam), Box::new(result));
+    }
+    result
+}
+
 impl Program {
     /// Create a Program without span info (backwards compat).
     #[must_use]
     pub fn new(decls: Vec<TopLevelDecl>) -> Self {
-        Self { spans: Vec::new(), decls }
+        Self {
+            spans: Vec::new(),
+            decls,
+        }
     }
 
     /// Create a Program with span info.
@@ -633,68 +801,69 @@ impl Program {
             return Expr::Unit;
         }
 
-        // Helper: desugar a single function decl into the appropriate binding
-        #[allow(clippy::boxed_local)]
-        fn desugar_function(name: Ident, params: Vec<(Ident, Ty)>, return_ty: Ty, effect: Effect, body: Box<Expr>, continuation: Box<Expr>) -> Expr {
-            let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
-                Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
-            });
-            // Build the curried function type for the LetRec annotation
-            let fn_ty = params.iter().rev().fold(return_ty.clone(), |ret, (_, param_ty)| {
-                Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-            });
-            Expr::LetRec(name, fn_ty, Box::new(lam), continuation)
-        }
-
-        // Helper: desugar an extern block into Let bindings for each extern decl
-        fn desugar_extern_block(decls: Vec<ExternDecl>, continuation: Expr) -> Expr {
-            let mut result = continuation;
-            for decl in decls.into_iter().rev() {
-                // Build a lambda wrapper that creates an FFICall
-                let param_names: Vec<Ident> = decl.params.iter().map(|(n, _)| n.clone()).collect();
-                let args: Vec<Expr> = param_names.iter().map(|n| Expr::Var(n.clone())).collect();
-                let ffi_call = Expr::FFICall {
-                    name: decl.name.clone(),
-                    args,
-                    ret_ty: decl.ret_ty.clone(),
-                };
-                let lam = decl.params.iter().rev().fold(ffi_call, |acc, (p, ty)| {
-                    Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
-                });
-                result = Expr::Let(decl.name, Box::new(lam), Box::new(result));
-            }
-            result
-        }
-
         // Build from the end: last decl is the program body
         let last = decls.pop().unwrap();
-        let mut result = match last {
+        let body = match last {
             TopLevelDecl::Expr(e) => *e,
             TopLevelDecl::Binding { name, value } => {
-                Expr::Let(name, value, Box::new(Expr::Unit))
+                Expr::Let(name, None, value, Box::new(Expr::Unit))
             }
-            TopLevelDecl::Function { name, params, return_ty, effect, body } => {
-                desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit))
-            }
+            TopLevelDecl::Function {
+                name,
+                params,
+                return_ty,
+                effect,
+                body,
+                ..
+            } => desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit)),
             TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                 desugar_extern_block(edecls, Expr::Unit)
             }
+            // Test blocks are skipped during desugaring (run by riinac test)
+            TopLevelDecl::Test { .. } => Expr::Unit,
         };
+
+        Self::wrap_decls(decls, body)
+    }
+
+    /// Desugar declarations with a specific body expression.
+    ///
+    /// This is useful for the test runner: desugar the non-test declarations
+    /// once for each test body, without needing to push a fake TopLevelDecl::Expr.
+    pub fn desugar_with_body(self, body: Expr) -> Expr {
+        Self::wrap_decls(self.decls, body)
+    }
+
+    /// Wrap a body expression with a chain of Let/LetRec bindings from declarations.
+    fn wrap_decls(decls: Vec<TopLevelDecl>, body: Expr) -> Expr {
+        let mut result = body;
         // Wrap remaining decls from back to front
         for decl in decls.into_iter().rev() {
             result = match decl {
                 TopLevelDecl::Expr(e) => {
-                    Expr::Let("_".to_string(), e, Box::new(result))
+                    // Actor declarations bind the actor name for subsequent spawn
+                    let bind_name = match e.as_ref() {
+                        Expr::ActorDecl { name, .. } => name.clone(),
+                        _ => "_".to_string(),
+                    };
+                    Expr::Let(bind_name, None, e, Box::new(result))
                 }
                 TopLevelDecl::Binding { name, value } => {
-                    Expr::Let(name, value, Box::new(result))
+                    Expr::Let(name, None, value, Box::new(result))
                 }
-                TopLevelDecl::Function { name, params, return_ty, effect, body } => {
-                    desugar_function(name, params, return_ty, effect, body, Box::new(result))
-                }
+                TopLevelDecl::Function {
+                    name,
+                    params,
+                    return_ty,
+                    effect,
+                    body,
+                    ..
+                } => desugar_function(name, params, return_ty, effect, body, Box::new(result)),
                 TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                     desugar_extern_block(edecls, result)
                 }
+                // Test blocks are skipped during desugaring
+                TopLevelDecl::Test { .. } => result,
             };
         }
         result
@@ -710,6 +879,14 @@ pub enum Expr {
     Unit,
     Bool(bool),
     Int(u64), // Using u64 to represent nat/int
+    /// Sized integer literal: `42u8`, `7i32`. The numeric-tower counterpart of
+    /// `Int`, carrying the bit width and signedness so it types as the distinct
+    /// `Ty::IntN { bits, signed }` (not the default `Ty::Int`) and so arithmetic
+    /// wraps at the declared width. `value` holds the lexed magnitude already
+    /// reduced modulo `2^bits` (a leading `-` is a separate unary-minus token, so
+    /// `-128i8` is `Neg(IntN{value:128,..})`). Kept as an additive variant so the
+    /// hundreds of existing `Int(_)` sites are untouched.
+    IntN { value: u64, bits: u8, signed: bool },
     String(String),
     Var(Ident),
 
@@ -738,8 +915,13 @@ pub enum Expr {
     // Control
     /// if e1 then e2 else e3
     If(Box<Expr>, Box<Expr>, Box<Expr>),
-    /// let x = e1 in e2
-    Let(Ident, Box<Expr>, Box<Expr>),
+    /// let x = e1 in e2 (with optional linearity qualifier)
+    Let(Ident, Option<Linearity>, Box<Expr>, Box<Expr>),
+    /// Early return: `pulang e`. Evaluating it unwinds to the nearest enclosing
+    /// function-application boundary, yielding `e` as that call's result. Its own
+    /// type is `Any` (it never returns to its evaluation context), so it unifies
+    /// with any branch/sequence type.
+    Return(Box<Expr>),
 
     // Effects
     /// perform ε e
@@ -781,6 +963,16 @@ pub enum Expr {
     /// e1 op e2
     BinOp(BinOp, Box<Expr>, Box<Expr>),
 
+    // Collections
+    /// List literal: [e1, e2, ...]. Empty `[]` is the empty list.
+    ListLit(Vec<Expr>),
+    /// Record literal: `Name { field1: e1, field2: e2, ... }`. The type name is
+    /// retained for diagnostics only; records are structural (string-keyed) at
+    /// runtime. Fields are stored in source order.
+    RecordLit(Ident, Vec<(Ident, Expr)>),
+    /// Field access: `e.field`.
+    FieldAccess(Box<Expr>, Ident),
+
     // FFI
     /// Foreign function call
     FFICall {
@@ -788,4 +980,65 @@ pub enum Expr {
         args: Vec<Expr>,
         ret_ty: Ty,
     },
+
+    // ── JALINAN Phase 6 expressions ────────────────────────────────────
+    /// Actor declaration: pelakon Name { keadaan: StateType, kendalikan msg { ... } }
+    ActorDecl {
+        name: Ident,
+        state_ty: Ty,
+        message_ty: Ty,
+        init_state: Box<Expr>,
+        handler: Box<Expr>,
+    },
+    /// Choreography block: koreografi ProtocolName { peranan A, B; ... }
+    ChoreographyBlock {
+        name: Ident,
+        roles: Vec<Ident>,
+        protocol: SessionType,
+    },
+    /// Spawn actor: lahir ActorType(init_state)
+    Spawn(Box<Expr>, Box<Expr>),
+    /// Send message to actor: hantar(actor, message)
+    ActorSend(Box<Expr>, Box<Expr>),
+    /// Receive message from actor: terima(actor)
+    ActorRecv(Box<Expr>),
+    /// CRDT merge: gabung(crdt1, crdt2)
+    CRDTMerge(Box<Expr>, Box<Expr>),
+    /// Content hash: cincang(value)
+    ContentHash(Box<Expr>),
+    /// Content hash verification: sahkan(expected_hash, value)
+    ContentVerify(Box<Expr>, Box<Expr>),
+
+    // ── Blockchain + Syariah Phase J6 expressions ───────────────────
+    /// Smart-contract deployment: kontrak_pintar { expr }
+    ContractDeploy(Box<Expr>),
+    /// Token transfer: token::pindah(from, to, amount)
+    TokenTransfer {
+        from: Box<Expr>,
+        to: Box<Expr>,
+        amount: Box<Expr>,
+    },
+    /// Zakat calculation: zakat(expr)
+    ZakatCalculate(Box<Expr>),
+
+    // ── CAHAYA Phase J5 expressions ────────────────────────────────
+    /// UI display block: paparan { ... }
+    UIDisplay(Vec<Expr>),
+    /// Row layout: baris { child1; child2; ... }
+    UIRow(Vec<Expr>),
+    /// Column layout: lajur { child1; child2; ... }
+    UIColumn(Vec<Expr>),
+    /// Text element: tulisan("Hello", warna(255, 255, 255))
+    UIText(Box<Expr>, Box<Expr>),
+    /// Button: butang("Click", handler)
+    UIButton(Box<Expr>, Box<Expr>),
+    /// Color literal: warna(r, g, b)
+    UIColor(u8, u8, u8),
+    /// Style: gaya { pelapik: 16, saiz_fon: 14 }
+    UIStyleDecl {
+        padding: Option<u32>,
+        font_size: Option<u32>,
+    },
+    /// Contrast check: kontras(fg_color, bg_color) — returns Bool
+    UIContrastCheck(Box<Expr>, Box<Expr>),
 }

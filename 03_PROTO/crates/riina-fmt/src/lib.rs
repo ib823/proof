@@ -63,6 +63,7 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
             return_ty,
             effect,
             body,
+            ..
         } => {
             indent(out, level, cfg);
             out.push_str("fungsi ");
@@ -103,6 +104,16 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
             indent(out, level, cfg);
             fmt_expr(out, e, level, cfg);
         }
+        TopLevelDecl::Test { name, body } => {
+            indent(out, level, cfg);
+            out.push_str("ujian \"");
+            out.push_str(name);
+            out.push_str("\" {\n");
+            fmt_expr(out, body, level + 1, cfg);
+            out.push('\n');
+            indent(out, level, cfg);
+            out.push('}');
+        }
         TopLevelDecl::ExternBlock { abi, decls } => {
             indent(out, level, cfg);
             out.push_str("luaran \"");
@@ -138,6 +149,28 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
     }
 }
 
+/// Format a record literal `Name { field: value, ... }` inline.
+fn fmt_record_inline(out: &mut String, name: &str, fields: &[(String, Expr)], cfg: &FmtConfig) {
+    out.push_str(name);
+    out.push_str(" { ");
+    for (i, (field, value)) in fields.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(field);
+        out.push_str(": ");
+        fmt_expr_inline(out, value, cfg);
+    }
+    out.push_str(" }");
+}
+
+/// Reconstruct the width suffix for a sized integer literal (`Expr::IntN`), e.g.
+/// `(8, false)` ⇒ `"u8"`, `(32, true)` ⇒ `"i32"`, so formatting round-trips the
+/// source token.
+fn int_width_suffix(bits: u8, signed: bool) -> String {
+    format!("{}{bits}", if signed { "i" } else { "u" })
+}
+
 fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
     match expr {
         Expr::Unit => {
@@ -151,6 +184,14 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
         Expr::Int(n) => {
             indent(out, level, cfg);
             out.push_str(&n.to_string());
+        }
+        Expr::IntN {
+            value,
+            bits,
+            signed,
+        } => {
+            indent(out, level, cfg);
+            out.push_str(&format!("{value}{}", int_width_suffix(*bits, *signed)));
         }
         Expr::String(s) => {
             indent(out, level, cfg);
@@ -195,6 +236,27 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             out.push_str(", ");
             fmt_expr_inline(out, b, cfg);
             out.push(')');
+        }
+        Expr::ListLit(elems) => {
+            indent(out, level, cfg);
+            out.push('[');
+            for (i, e) in elems.iter().enumerate() {
+                if i > 0 {
+                    out.push_str(", ");
+                }
+                fmt_expr_inline(out, e, cfg);
+            }
+            out.push(']');
+        }
+        Expr::RecordLit(name, fields) => {
+            indent(out, level, cfg);
+            fmt_record_inline(out, name, fields, cfg);
+        }
+        Expr::FieldAccess(base, field) => {
+            indent(out, level, cfg);
+            fmt_expr_inline(out, base, cfg);
+            out.push('.');
+            out.push_str(field);
         }
         Expr::Fst(e) => {
             indent(out, level, cfg);
@@ -254,7 +316,7 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             indent(out, level, cfg);
             out.push('}');
         }
-        Expr::Let(name, value, body) => {
+        Expr::Let(name, _, value, body) => {
             indent(out, level, cfg);
             out.push_str("biar ");
             out.push_str(name);
@@ -323,6 +385,11 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             out.push_str("bukti ");
             fmt_expr_inline(out, e, cfg);
         }
+        Expr::Return(e) => {
+            indent(out, level, cfg);
+            out.push_str("pulang ");
+            fmt_expr_inline(out, e, cfg);
+        }
         Expr::Require(eff, e) => {
             indent(out, level, cfg);
             out.push_str("perlukan ");
@@ -361,6 +428,52 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             }
             out.push(')');
         }
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_)
+        | Expr::ContentVerify(_, _) => {
+            indent(out, level, cfg);
+            out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
+        }
+        Expr::ContractDeploy(expr) => {
+            indent(out, level, cfg);
+            out.push_str("kontrak_pintar { ");
+            fmt_expr_inline(out, expr, cfg);
+            out.push_str(" }");
+        }
+        Expr::TokenTransfer { from, to, amount } => {
+            indent(out, level, cfg);
+            out.push_str("token::pindah(");
+            fmt_expr_inline(out, from, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, to, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, amount, cfg);
+            out.push(')');
+        }
+        Expr::ZakatCalculate(expr) => {
+            indent(out, level, cfg);
+            out.push_str("zakat(");
+            fmt_expr_inline(out, expr, cfg);
+            out.push(')');
+        }
+
+        // CAHAYA Phase J5
+        Expr::UIDisplay(_)
+        | Expr::UIRow(_)
+        | Expr::UIColumn(_)
+        | Expr::UIText(_, _)
+        | Expr::UIButton(_, _)
+        | Expr::UIColor(_, _, _)
+        | Expr::UIStyleDecl { .. }
+        | Expr::UIContrastCheck(_, _) => {
+            indent(out, level, cfg);
+            out.push_str("/* CAHAYA Phase J5: UI primitives */");
+        }
     }
 }
 
@@ -371,6 +484,11 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         Expr::Unit => out.push_str("()"),
         Expr::Bool(b) => out.push_str(if *b { "betul" } else { "salah" }),
         Expr::Int(n) => out.push_str(&n.to_string()),
+        Expr::IntN {
+            value,
+            bits,
+            signed,
+        } => out.push_str(&format!("{value}{}", int_width_suffix(*bits, *signed))),
         Expr::String(s) => {
             out.push('"');
             for c in s.chars() {
@@ -406,6 +524,22 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             out.push_str(", ");
             fmt_expr_inline(out, b, cfg);
             out.push(')');
+        }
+        Expr::ListLit(elems) => {
+            out.push('[');
+            for (i, e) in elems.iter().enumerate() {
+                if i > 0 {
+                    out.push_str(", ");
+                }
+                fmt_expr_inline(out, e, cfg);
+            }
+            out.push(']');
+        }
+        Expr::RecordLit(name, fields) => fmt_record_inline(out, name, fields, cfg),
+        Expr::FieldAccess(base, field) => {
+            fmt_expr_inline(out, base, cfg);
+            out.push('.');
+            out.push_str(field);
         }
         Expr::Fst(e) => {
             out.push_str("pertama ");
@@ -449,7 +583,7 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             fmt_expr_inline(out, else_br, cfg);
             out.push_str(" }");
         }
-        Expr::Let(name, value, body) => {
+        Expr::Let(name, _, value, body) => {
             out.push_str("biar ");
             out.push_str(name);
             out.push_str(" = ");
@@ -508,6 +642,10 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             out.push_str("bukti ");
             fmt_expr_inline(out, e, cfg);
         }
+        Expr::Return(e) => {
+            out.push_str("pulang ");
+            fmt_expr_inline(out, e, cfg);
+        }
         Expr::Require(eff, e) => {
             out.push_str("perlukan ");
             fmt_effect(out, eff);
@@ -538,6 +676,47 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
                 fmt_expr_inline(out, arg, cfg);
             }
             out.push(')');
+        }
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_)
+        | Expr::ContentVerify(_, _) => {
+            out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
+        }
+        Expr::ContractDeploy(expr) => {
+            out.push_str("kontrak_pintar { ");
+            fmt_expr_inline(out, expr, cfg);
+            out.push_str(" }");
+        }
+        Expr::TokenTransfer { from, to, amount } => {
+            out.push_str("token::pindah(");
+            fmt_expr_inline(out, from, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, to, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, amount, cfg);
+            out.push(')');
+        }
+        Expr::ZakatCalculate(expr) => {
+            out.push_str("zakat(");
+            fmt_expr_inline(out, expr, cfg);
+            out.push(')');
+        }
+
+        // CAHAYA Phase J5
+        Expr::UIDisplay(_)
+        | Expr::UIRow(_)
+        | Expr::UIColumn(_)
+        | Expr::UIText(_, _)
+        | Expr::UIButton(_, _)
+        | Expr::UIColor(_, _, _)
+        | Expr::UIStyleDecl { .. }
+        | Expr::UIContrastCheck(_, _) => {
+            out.push_str("/* CAHAYA Phase J5: UI primitives */");
         }
     }
 }
@@ -600,6 +779,11 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         Ty::Unit => out.push_str("()"),
         Ty::Bool => out.push_str("Benar"),
         Ty::Int => out.push_str("Nombor"),
+        Ty::IntN { bits, signed } => {
+            out.push(if *signed { 'i' } else { 'u' });
+            out.push_str(&bits.to_string());
+        }
+        Ty::BigInt => out.push_str("Besar"),
         Ty::String => out.push_str("Teks"),
         Ty::Bytes => out.push_str("Bait"),
         Ty::Fn(param, ret, eff) => {
@@ -714,6 +898,35 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         Ty::CChar => out.push_str("CChar"),
         Ty::CInt => out.push_str("CInt"),
         Ty::CVoid => out.push_str("CVoid"),
+        Ty::Actor(_, _)
+        | Ty::Choreography(_, _)
+        | Ty::ContentAddressed(_)
+        | Ty::CRDT(_, _)
+        | Ty::Supervisor(_) => {
+            out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT type */");
+        }
+        Ty::SmartContract(inner) => {
+            out.push_str("kontrak_pintar<");
+            fmt_ty(out, inner);
+            out.push('>');
+        }
+        Ty::Token(inner) => {
+            out.push_str("token<");
+            fmt_ty(out, inner);
+            out.push('>');
+        }
+        Ty::SyariahCompliant(inner) => {
+            out.push_str("patuh_syariah<");
+            fmt_ty(out, inner);
+            out.push('>');
+        }
+
+        // CAHAYA Phase J5
+        Ty::Color => out.push_str("Color"),
+        Ty::Element => out.push_str("Element"),
+        Ty::Layout => out.push_str("Layout"),
+        Ty::UIStyle => out.push_str("UIStyle"),
+        Ty::AccessibleText => out.push_str("AccessibleText"),
     }
 }
 
@@ -747,6 +960,7 @@ fn fmt_sanitizer(out: &mut String, san: &Sanitizer) {
         Sanitizer::CommandEscape => "CommandEscape",
         Sanitizer::LdapEscape => "LdapEscape",
         Sanitizer::XmlEscape => "XmlEscape",
+        Sanitizer::UrlAllowlist => "UrlAllowlist",
         Sanitizer::JsonValidation => "JsonValidation",
         Sanitizer::XmlValidation => "XmlValidation",
         Sanitizer::EmailValidation => "EmailValidation",
@@ -914,7 +1128,6 @@ mod tests {
 
     #[test]
     fn test_format_security_ref() {
-        let cfg = FmtConfig::default();
         let mut out = String::new();
         fmt_ty(&mut out, &Ty::Ref(Box::new(Ty::Int), SecurityLevel::Secret));
         assert_eq!(out, "Ruj<Nombor>@Rahsia");

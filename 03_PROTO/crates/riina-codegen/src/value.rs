@@ -161,11 +161,20 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // BASE VALUES (correspond to Expr::Unit, Expr::Bool, Expr::Int, Expr::String)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Built-in function (name, implementation pointer index)
     ///
     /// Not in Coq — Rust-only extension for I/O builtins.
     Builtin(String),
+
+    /// Partially-applied builtin awaiting a second argument to form a pair.
+    ///
+    /// Created when a pair-expecting builtin (e.g. tegaskan_sama) is called
+    /// with a single argument via curried application: `tegaskan_sama(a)(b)`
+    /// becomes `BuiltinPartial("tegaskan_sama", a)` then applied to `b`
+    /// produces `tegaskan_sama(Pair(a, b))`.
+    ///
+    /// Not in Coq — Rust-only extension for ergonomic curried calls.
+    BuiltinPartial(String, Box<Value>),
 
     /// Unit value `()`
     ///
@@ -182,6 +191,20 @@ pub enum Value {
     /// Corresponds to Coq `VInt n`.
     Int(u64),
 
+    /// Sized integer value: the runtime counterpart of `Expr::IntN`. Carries the
+    /// bit width and signedness so the interpreter wraps arithmetic at the
+    /// declared width (8/16/32/64) rather than at 64 bits. `value` is the raw
+    /// two's-complement bit pattern already reduced modulo `2^bits`; the `signed`
+    /// flag selects signed interpretation for division/modulo/comparison/display.
+    /// Numeric-tower extension — not in the Coq core (which models a single `VInt`).
+    IntN { value: u64, bits: u8, signed: bool },
+
+    /// Arbitrary-precision signed integer (`besar`). The runtime counterpart of
+    /// the numeric-tower BigInt slice — additive, so plain `Int`/`IntN` are
+    /// unaffected. Not in the Coq core (which models a single `VInt`); a Coq
+    /// equivalence model is a tracked follow-up.
+    BigInt(crate::bigint::BigInt),
+
     /// String value
     ///
     /// Corresponds to Coq `VString s`.
@@ -190,7 +213,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // PRODUCT VALUES (correspond to Expr::Pair)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Pair of values
     ///
     /// Corresponds to Coq `VPair v1 v2`.
@@ -199,7 +221,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // SUM VALUES (correspond to Expr::Inl, Expr::Inr)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Sum value (left or right)
     ///
     /// Corresponds to Coq `VInl v` or `VInr v`.
@@ -208,7 +229,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // FUNCTION VALUES (correspond to Expr::Lam)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Closure (function value)
     ///
     /// Corresponds to Coq `VClosure env x T e`.
@@ -217,7 +237,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // REFERENCE VALUES (correspond to Expr::Ref)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Reference (mutable cell)
     ///
     /// Corresponds to Coq `VRef loc`.
@@ -226,7 +245,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // SECURITY VALUES (correspond to Expr::Classify, Expr::Prove)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Secret value (information hiding)
     ///
     /// Corresponds to Coq `VSecret v`.
@@ -240,7 +258,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // CAPABILITY VALUES (correspond to capability tokens)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Effect capability token
     ///
     /// Corresponds to Coq `VCap eff`.
@@ -249,7 +266,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // COLLECTION VALUES (Rust-only extensions, not in Coq)
     // ═══════════════════════════════════════════════════════════════════
-
     /// List value (ordered collection)
     ///
     /// Not in Coq — Rust-only extension for stdlib.
@@ -263,7 +279,6 @@ pub enum Value {
     // ═══════════════════════════════════════════════════════════════════
     // JALINAN VALUES (actor system, CRDTs, content-addressed)
     // ═══════════════════════════════════════════════════════════════════
-
     /// Actor reference (unique ID)
     ///
     /// Not in Coq — Rust-only extension for JALINAN Phase 6.
@@ -278,6 +293,11 @@ pub enum Value {
     ///
     /// Not in Coq — Rust-only extension for JALINAN Phase 6.
     Hash(Vec<u8>),
+
+    /// RGB color used by CAHAYA UI expressions.
+    ///
+    /// Not in Coq — Rust-only extension for CAHAYA Phase 6.
+    Color(u8, u8, u8),
 }
 
 impl Value {
@@ -373,6 +393,12 @@ impl Value {
     #[must_use]
     pub fn hash(bytes: Vec<u8>) -> Self {
         Self::Hash(bytes)
+    }
+
+    /// Create an RGB color value
+    #[must_use]
+    pub const fn color(r: u8, g: u8, b: u8) -> Self {
+        Self::Color(r, g, b)
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -485,6 +511,12 @@ impl Value {
     #[must_use]
     pub const fn is_hash(&self) -> bool {
         matches!(self, Self::Hash(_))
+    }
+
+    /// Check if this is a color
+    #[must_use]
+    pub const fn is_color(&self) -> bool {
+        matches!(self, Self::Color(_, _, _))
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -681,6 +713,16 @@ impl Value {
         }
     }
 
+    /// Extract RGB color components
+    #[must_use]
+    pub const fn as_color(&self) -> Option<(u8, u8, u8)> {
+        if let Self::Color(r, g, b) = self {
+            Some((*r, *g, *b))
+        } else {
+            None
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // SECURITY ANALYSIS
     // ═══════════════════════════════════════════════════════════════════
@@ -709,14 +751,20 @@ impl Value {
                 Sum::Left(v) | Sum::Right(v) => v.security_level(),
             },
             Self::List(items) => {
-                if items.iter().any(|v| v.security_level() == SecurityLevel::Secret) {
+                if items
+                    .iter()
+                    .any(|v| v.security_level() == SecurityLevel::Secret)
+                {
                     SecurityLevel::Secret
                 } else {
                     SecurityLevel::Public
                 }
             }
             Self::Map(entries) => {
-                if entries.values().any(|v| v.security_level() == SecurityLevel::Secret) {
+                if entries
+                    .values()
+                    .any(|v| v.security_level() == SecurityLevel::Secret)
+                {
                     SecurityLevel::Secret
                 } else {
                     SecurityLevel::Public
@@ -739,9 +787,23 @@ impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Builtin(name) => write!(f, "<builtin:{name}>"),
+            Self::BuiltinPartial(name, arg) => write!(f, "<builtin:{name}({arg})>"),
             Self::Unit => write!(f, "()"),
             Self::Bool(b) => write!(f, "{b}"),
             Self::Int(n) => write!(f, "{n}"),
+            Self::IntN {
+                value,
+                bits,
+                signed,
+            } => {
+                if *signed {
+                    let shift = 64 - u32::from(*bits);
+                    write!(f, "{}", ((value << shift) as i64) >> shift)
+                } else {
+                    write!(f, "{value}")
+                }
+            }
+            Self::BigInt(b) => write!(f, "{b}"),
             Self::String(s) => write!(f, "\"{s}\""),
             Self::Pair(a, b) => write!(f, "({a}, {b})"),
             Self::Sum(Sum::Left(v)) => write!(f, "inl {v}"),
@@ -780,6 +842,7 @@ impl std::fmt::Display for Value {
                 }
                 write!(f, ")")
             }
+            Self::Color(r, g, b) => write!(f, "#{r:02x}{g:02x}{b:02x}"),
         }
     }
 }
@@ -787,7 +850,7 @@ impl std::fmt::Display for Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use riina_types::{Expr, Effect};
+    use riina_types::{Effect, Expr};
 
     // ═══════════════════════════════════════════════════════════════════
     // VALUE CONSTRUCTOR TESTS
@@ -799,6 +862,7 @@ mod tests {
         assert!(Value::bool(true).is_bool());
         assert!(Value::int(42).is_int());
         assert!(Value::string("hello").is_string());
+        assert!(Value::color(255, 128, 0).is_color());
     }
 
     #[test]
@@ -821,11 +885,17 @@ mod tests {
     #[test]
     fn test_value_string_edge_cases() {
         assert_eq!(Value::string("").as_string(), Some(""));
-        assert_eq!(Value::string("hello world").as_string(), Some("hello world"));
+        assert_eq!(
+            Value::string("hello world").as_string(),
+            Some("hello world")
+        );
         // Unicode
         assert_eq!(Value::string("こんにちは").as_string(), Some("こんにちは"));
         // Bahasa Melayu
-        assert_eq!(Value::string("Selamat pagi").as_string(), Some("Selamat pagi"));
+        assert_eq!(
+            Value::string("Selamat pagi").as_string(),
+            Some("Selamat pagi")
+        );
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -837,6 +907,7 @@ mod tests {
         assert_eq!(Value::bool(true).as_bool(), Some(true));
         assert_eq!(Value::int(42).as_int(), Some(42));
         assert_eq!(Value::string("hello").as_string(), Some("hello"));
+        assert_eq!(Value::color(1, 2, 3).as_color(), Some((1, 2, 3)));
     }
 
     #[test]
@@ -999,10 +1070,7 @@ mod tests {
         // Secret inside a pair inside a pair
         let deep_secret = Value::pair(
             Value::int(1),
-            Value::pair(
-                Value::int(2),
-                Value::secret(Value::int(3))
-            )
+            Value::pair(Value::int(2), Value::secret(Value::int(3))),
         );
         assert_eq!(deep_secret.security_level(), SecurityLevel::Secret);
     }
@@ -1125,7 +1193,10 @@ mod tests {
         assert_eq!(Value::int(42).to_string(), "42");
         assert_eq!(Value::int(100).to_string(), "100");
         assert_eq!(Value::string("hello").to_string(), "\"hello\"");
-        assert_eq!(Value::pair(Value::int(1), Value::int(2)).to_string(), "(1, 2)");
+        assert_eq!(
+            Value::pair(Value::int(1), Value::int(2)).to_string(),
+            "(1, 2)"
+        );
         assert_eq!(Value::inl(Value::int(1)).to_string(), "inl 1");
         assert_eq!(Value::inr(Value::int(2)).to_string(), "inr 2");
         assert_eq!(Value::secret(Value::int(42)).to_string(), "secret(42)");
@@ -1134,10 +1205,7 @@ mod tests {
 
     #[test]
     fn test_value_display_nested() {
-        let nested_pair = Value::pair(
-            Value::pair(Value::int(1), Value::int(2)),
-            Value::int(3)
-        );
+        let nested_pair = Value::pair(Value::pair(Value::int(1), Value::int(2)), Value::int(3));
         assert_eq!(nested_pair.to_string(), "((1, 2), 3)");
     }
 
@@ -1192,7 +1260,10 @@ mod tests {
     #[test]
     fn test_jalinan_values_are_public() {
         assert_eq!(Value::actor_ref(1).security_level(), SecurityLevel::Public);
-        assert_eq!(Value::hash(vec![1, 2, 3]).security_level(), SecurityLevel::Public);
+        assert_eq!(
+            Value::hash(vec![1, 2, 3]).security_level(),
+            SecurityLevel::Public
+        );
         assert_eq!(
             Value::crdt_state(Value::int(1), Value::int(0)).security_level(),
             SecurityLevel::Public

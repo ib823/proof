@@ -107,6 +107,11 @@ pub fn register_builtins(env: &Env) -> Env {
         Value::Builtin("nombor_ke_teks".to_string()),
     );
 
+    // Arbitrary-precision integer constructor (numeric tower BigInt slice).
+    for nm in ["besar", "bigint"] {
+        e = e.extend(nm.to_string(), Value::Builtin("besar".to_string()));
+    }
+
     // String builtins (teks)
     for (bm, en, canonical) in teks::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
@@ -259,6 +264,26 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
         "adalah_kanan" => {
             return Ok(Value::Bool(arg.is_right()));
         }
+        // Arbitrary-precision integer constructor: `besar`/`bigint` parses a
+        // base-10 string (which can hold a value of any size). Also accepts a
+        // machine `Int` for convenience.
+        "besar" => {
+            return match &arg {
+                Value::String(s) => match crate::bigint::BigInt::from_decimal_str(s) {
+                    Some(b) => Ok(Value::BigInt(b)),
+                    None => Err(Error::InvalidOperation(format!(
+                        "besar: '{s}' is not a base-10 integer"
+                    ))),
+                },
+                Value::Int(n) => Ok(Value::BigInt(crate::bigint::BigInt::from_u64(*n))),
+                Value::BigInt(b) => Ok(Value::BigInt(b.clone())),
+                other => Err(Error::TypeMismatch {
+                    expected: "string or int".to_string(),
+                    found: format!("{other:?}"),
+                    context: "besar/bigint".to_string(),
+                }),
+            };
+        }
         "nilai_kiri" => {
             return match arg {
                 Value::Sum(crate::value::Sum::Left(v)) => Ok(*v),
@@ -340,6 +365,7 @@ pub fn format_value(v: &Value) -> String {
         Value::Unit => "()".to_string(),
         Value::Bool(b) => b.to_string(),
         Value::Int(n) => n.to_string(),
+        Value::BigInt(b) => b.to_string(),
         Value::String(s) => s.clone(),
         Value::Pair(a, b) => format!("({}, {})", format_value(a), format_value(b)),
         Value::List(items) => {
