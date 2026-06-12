@@ -21,7 +21,7 @@ other lanes were machine-GENERATED from the Coq sources (via
 unproven placeholders or single small smoke artifacts. Do NOT cite their raw
 theorem counts as "verified theorems."
 
-- Coq: 12,594 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 326 active .v files.
+- Coq: 12,613 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 327 active .v files.
   Caveat: 32 active `Parameter` declarations are logically equivalent to axioms
   (the propositional ones model the trusted hardware interface) — these are the de-facto trusted assumptions.
 - Lean 4: 12,576 theorem/lemma declarations, but **only 215 across 7 files
@@ -44,9 +44,9 @@ theorem counts as "verified theorems."
   NOT verified. (The SMT "11,843 verified" figure cited elsewhere was a counting error → 25.)
 - Verus / Kani / TV: generated stubs, explicitly quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
-- Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +
-  5 tooling crates, 0 external runtime deps (proto). This part is solid.
-- Examples: 164 .rii files, of which 53 currently pass `riinac check` (all 22 of
+- Rust: 2,884 proto tests + 294 tooling tests = 3,178 (all passing), 19 proto +
+  4 tooling crates, 0 external runtime deps (proto). This part is solid.
+- Examples: 165 .rii files, of which 61 currently pass `riinac check` (all 26 of
   `00_basics/`); the shipped parser accepts a narrower grammar than some examples
   assume — see `07_EXAMPLES/README.md`.
 

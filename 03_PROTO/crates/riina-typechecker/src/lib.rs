@@ -2464,6 +2464,62 @@ fn sink_argument_error(arg_ty: Ty, found: Ty) -> TypeError {
     }
 }
 
+/// IFC sink discipline (REQ-27): a `Secret<_>` value may not reach a public
+/// print sink (`cetak`/`cetakln`/`cetak_baris`/`print`/`println`).
+///
+/// The print sinks are typed `Any -> Unit ! Write`, so plain unification would
+/// let a secret flow to stdout. Coq forbids exactly this: a `TSecret` value
+/// re-enters public typing only through `T_Declassify` with a matching proof
+/// (`declass_ok`; `properties/Declassification.v`
+/// `logical_relation_declassify_proven` / `declassify_requires_public_context`),
+/// and `val_rel_le_secret_trivial` is what makes an undeclassified secret
+/// observationally indistinguishable — printing it would break that. So a
+/// secret in a printable data position is a `SecurityViolation` (Secret data
+/// on a Public channel), not a generic `TypeMismatch`.
+fn secret_at_print_sink(callee: &Expr, arg_ty: &Ty) -> Option<TypeError> {
+    let Expr::Var(name) = callee else { return None };
+    if !matches!(
+        name.as_str(),
+        "cetak" | "cetakln" | "cetak_baris" | "print" | "println"
+    ) {
+        return None;
+    }
+    if !ty_contains_secret(arg_ty) {
+        return None;
+    }
+    Some(TypeError::SecurityViolation {
+        found: SecurityLevel::Secret,
+        expected: SecurityLevel::Public,
+        context: "print sink: declassify (dedah) the secret before printing it",
+    })
+}
+
+/// Does `ty` contain `Secret<_>` in a printable data position?
+///
+/// Recurses through the containers a print sink would render: products, sums,
+/// lists, options, the security/taint wrappers, refs, constant-time/zeroizing
+/// wrappers, and proof witnesses. Deliberately does NOT recurse into `Fn`
+/// (printing a closure renders no captured data), and `Any` is not treated as
+/// secret-bearing — the check is syntactic on the inferred argument type.
+/// `Labeled(_, level)` rejection by level (not just a nested `Secret`) is the
+/// named next REQ-27 increment.
+fn ty_contains_secret(ty: &Ty) -> bool {
+    match ty {
+        Ty::Secret(_) => true,
+        Ty::Prod(a, b) | Ty::Sum(a, b) => ty_contains_secret(a) || ty_contains_secret(b),
+        Ty::List(inner)
+        | Ty::Option(inner)
+        | Ty::Labeled(inner, _)
+        | Ty::Tainted(inner, _)
+        | Ty::Sanitized(inner, _)
+        | Ty::Ref(inner, _)
+        | Ty::ConstantTime(inner)
+        | Ty::Zeroizing(inner)
+        | Ty::Proof(inner) => ty_contains_secret(inner),
+        _ => false,
+    }
+}
+
 /// Check if two types are compatible, considering:
 /// - Ty::Any as a wildcard
 /// - Tainted cannot flow to Sanitized (taint violation)
@@ -2989,6 +3045,11 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 Ty::Fn(arg_ty, ret_ty, fn_eff) => {
                     if !types_compatible(&arg_ty, &t2) {
                         return Err(sink_argument_error(*arg_ty, t2));
+                    }
+                    // IFC (REQ-27): the Any-typed print sinks would unify with
+                    // a Secret — reject it here; only declassified data prints.
+                    if let Some(err) = secret_at_print_sink(e1, &t2) {
+                        return Err(err);
                     }
                     // Gate C (hybrid POLA): once a program opts into the
                     // capability discipline (granted set non-empty), a
@@ -4016,6 +4077,11 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 Ty::Fn(arg_ty, ret_ty, fn_eff) => {
                     if !types_compatible(&arg_ty, &t2) {
                         return Err(sink_argument_error(*arg_ty, t2));
+                    }
+                    // IFC (REQ-27): the Any-typed print sinks would unify with
+                    // a Secret — reject it here; only declassified data prints.
+                    if let Some(err) = secret_at_print_sink(e1, &t2) {
+                        return Err(err);
                     }
                     // Effect accumulation: eff1 + eff2 + fn_eff
                     let total_eff = eff1.join(eff2).join(fn_eff);

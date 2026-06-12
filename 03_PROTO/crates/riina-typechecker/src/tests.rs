@@ -2996,6 +2996,129 @@ mod formalized_tests {
         }
     }
 
+    // ── Coq ⇄ Rust parity: the full file-builtin signature table ──
+    // Mirrors 02_FORMAL/coq/effects/FileIOEffectModel.v (the kat_file_* rows):
+    // every file op is exactly (effect = FileSystem, arg shape, ret shape) as the
+    // Coq model pins it — ShString = plain String (a tainted path is rejected),
+    // ShTaintedString = Tainted<String, FileSystem> (contents tainted at birth),
+    // ShPairStringString = (String, String), ShAny = Any. Both surface names of
+    // each op share one signature. Drift on either side fails this test.
+    #[test]
+    fn file_builtin_table_matches_coq_model() {
+        let ctx = register_builtin_types(&Context::new());
+        let tainted_string =
+            Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::FileSystem);
+        let string_pair = Ty::Prod(Box::new(Ty::String), Box::new(Ty::String));
+        let rows: [(&str, &str, Ty, Ty); 8] = [
+            // (bm, en, arg, ret) — one row per FileIOEffectModel.v KAT
+            ("fail_baca", "file_read", Ty::String, tainted_string.clone()),
+            ("fail_baca_baris", "file_read_lines", Ty::String, tainted_string),
+            ("fail_ada", "file_exists", Ty::String, Ty::Bool),
+            ("fail_buang", "file_delete", Ty::String, Ty::Unit),
+            ("fail_panjang", "file_size", Ty::String, Ty::Int),
+            ("fail_senarai", "file_list_dir", Ty::String, Ty::Any),
+            ("fail_tulis", "file_write", string_pair.clone(), Ty::Unit),
+            ("fail_tambah", "file_append", string_pair, Ty::Unit),
+        ];
+        for (bm, en, arg, ret) in rows {
+            for name in [bm, en] {
+                let (ty, _eff) = type_check(&ctx, &Expr::Var(name.to_string()))
+                    .unwrap_or_else(|e| panic!("{name} must be a bound builtin: {e:?}"));
+                assert_eq!(
+                    ty,
+                    Ty::Fn(Box::new(arg.clone()), Box::new(ret.clone()), Effect::FileSystem),
+                    "{name}: signature drifted from FileIOEffectModel.v"
+                );
+            }
+        }
+    }
+
+    // ── REQ-27 IFC enforcement parity: Secret ⇏ print sink ──
+    // The print sinks are typed `Any -> Unit ! Write`, so before this rule a
+    // `Secret` unified straight through to stdout. Coq forbids that flow: a
+    // TSecret re-enters public typing only via T_Declassify with a matching
+    // proof (Declassification.v `logical_relation_declassify_proven`,
+    // `declassify_requires_public_context`). Negative + positive both ways.
+    #[test]
+    fn ifc_print_sinks_reject_secret() {
+        let ctx = register_builtin_types(&Context::new());
+        let secret = Expr::Classify(Box::new(Expr::Int(42)));
+        for sink in ["cetak", "cetakln", "cetak_baris", "print", "println"] {
+            let call = Expr::App(
+                Box::new(Expr::Var(sink.to_string())),
+                Box::new(secret.clone()),
+            );
+            match type_check(&ctx, &call) {
+                Err(TypeError::SecurityViolation { found, expected, .. }) => {
+                    assert_eq!(found, SecurityLevel::Secret, "{sink}: leak level");
+                    assert_eq!(expected, SecurityLevel::Public, "{sink}: channel level");
+                }
+                other => panic!("{sink}(secret) must be a SecurityViolation, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn ifc_print_sink_rejects_secret_nested_in_pair() {
+        // A secret smuggled inside a printable container is still a leak:
+        // cetak((classify(42), 7)) is rejected like cetak(classify(42)).
+        let ctx = register_builtin_types(&Context::new());
+        let call = Expr::App(
+            Box::new(Expr::Var("cetak".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+                Box::new(Expr::Int(7)),
+            )),
+        );
+        match type_check(&ctx, &call) {
+            Err(TypeError::SecurityViolation { .. }) => {}
+            other => panic!("nested secret at print sink must be rejected, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_print_sink_accepts_declassified_secret() {
+        // The sanctioned path: declassify (classify v) (prove (classify v))
+        // erases secrecy (T_Declassify / declass_ok), so printing the result
+        // is fine — and plain data keeps printing (non-regression).
+        let ctx = register_builtin_types(&Context::new());
+        let v = Expr::Int(42);
+        let declassified = Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(v.clone()))),
+            Box::new(Expr::Prove(Box::new(Expr::Classify(Box::new(v))))),
+        );
+        let call = Expr::App(Box::new(Expr::Var("cetak".to_string())), Box::new(declassified));
+        let (ty, _eff) = type_check(&ctx, &call).expect("declassified secret must print");
+        assert_eq!(ty, Ty::Unit);
+
+        let plain = Expr::App(
+            Box::new(Expr::Var("cetak".to_string())),
+            Box::new(Expr::Int(7)),
+        );
+        assert!(type_check(&ctx, &plain).is_ok(), "plain data must keep printing");
+    }
+
+    #[test]
+    fn ifc_print_sink_rejects_secret_in_full_checker() {
+        // The security-aware checker (type_check_full) enforces the same sink
+        // rule — both checking paths share `secret_at_print_sink`.
+        let mut ctx = TypingContext::new().extend_gamma(
+            "cetak".to_string(),
+            Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+        );
+        let call = Expr::App(
+            Box::new(Expr::Var("cetak".to_string())),
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+        );
+        match type_check_full(&mut ctx, &call) {
+            Err(TypeError::SecurityViolation { found, expected, .. }) => {
+                assert_eq!(found, SecurityLevel::Secret);
+                assert_eq!(expected, SecurityLevel::Public);
+            }
+            other => panic!("full checker must also reject, got {other:?}"),
+        }
+    }
+
     #[test]
     fn test_file_write_append_take_string_pair_and_return_unit() {
         // Multi-arg `file_write`/`file_append` take a `(path, data)` pair of
