@@ -21,10 +21,15 @@ const WASM_VERSION: [u8; 4] = [0x01, 0x00, 0x00, 0x00];
 #[repr(u8)]
 pub enum SectionId {
     Type = 1,
+    Import = 2,
     Function = 3,
+    Table = 4,
     Memory = 5,
+    Global = 6,
     Export = 7,
+    Element = 9,
     Code = 10,
+    Data = 11,
 }
 
 /// WASM value types
@@ -56,8 +61,10 @@ pub enum Op {
     LocalSet = 0x21,
     LocalTee = 0x22,
     I32Load = 0x28,
+    I32Load8U = 0x2D,
     I64Load = 0x29,
     I32Store = 0x36,
+    I32Store8 = 0x3A,
     I64Store = 0x37,
     I32Const = 0x41,
     I64Const = 0x42,
@@ -69,15 +76,55 @@ pub enum Op {
     I32GtS = 0x4A,
     I32LeS = 0x4C,
     I32GeS = 0x4E,
+    I32GeU = 0x4F,
+    // i64 comparisons: consume two i64, produce an i32 boolean (0/1), which the
+    // uniform i64 value cell lifts back with I64ExtendI32U. Signed forms suffice —
+    // every sub-64-bit unsigned value is non-negative in the 64-bit cell, so a
+    // signed compare orders it correctly (this also fixes the latent u32-compare
+    // case the old i32 cell got wrong for values >= 2^31).
+    I64Eqz = 0x50,
+    I64Eq = 0x51,
+    I64Ne = 0x52,
+    I64LtS = 0x53,
+    I64GtS = 0x55,
+    I64LeS = 0x57,
+    I64GeS = 0x59,
     I32Add = 0x6A,
     I32Sub = 0x6B,
     I32Mul = 0x6C,
     I32DivS = 0x6D,
+    I32DivU = 0x6E,
     I32RemS = 0x6F,
+    I32RemU = 0x70,
+    I32And = 0x71,
+    I32Or = 0x72,
+    // Sign-extension operators (standardized; supported by wasmtime). Used by the
+    // numeric tower to sign-extend a width-8/16 signed `Ty::IntN` to full i32.
+    I32Extend8S = 0xC0,
+    I32Extend16S = 0xC1,
+    // i64 sign-extension: sign-extend a width-8/16/32 signed sized int held in the
+    // i64 value cell up to full i64 (the cell holds the width-masked bits, so an
+    // i8 -1 is stored as 255 and must be sign-extended before a signed compare).
+    I64Extend8S = 0xC2,
+    I64Extend16S = 0xC3,
+    I64Extend32S = 0xC4,
+    // i32<->i64 conversions for the uniform i64 value cell: WrapI64 narrows a value
+    // to an i32 address/table-index for a linear-memory op or call_indirect;
+    // ExtendI32U lifts an i32 (a bump-allocator address, or an i32 comparison
+    // result) back into the i64 cell. ExtendI32S is kept for completeness.
+    I32WrapI64 = 0xA7,
+    I64ExtendI32S = 0xAC,
+    I64ExtendI32U = 0xAD,
     I64Add = 0x7C,
     I64Sub = 0x7D,
     I64Mul = 0x7E,
     I64DivS = 0x7F,
+    I64RemS = 0x81,
+    I64And = 0x83,
+    I64Or = 0x84,
+    GlobalGet = 0x23,
+    GlobalSet = 0x24,
+    CallIndirect = 0x11,
 }
 
 /// Encode an unsigned LEB128 integer.
@@ -119,17 +166,71 @@ pub fn encode_vec(data: &[u8], out: &mut Vec<u8>) {
 /// WASM module builder.
 ///
 /// Constructs a valid .wasm binary by accumulating sections.
+/// Import entry.
+#[derive(Debug, Clone)]
+pub struct Import {
+    pub module: String,
+    pub name: String,
+    pub kind: ImportKind,
+}
+
+/// Import kind.
+#[derive(Debug, Clone)]
+pub enum ImportKind {
+    Func(u32), // type index
+}
+
+/// Global type.
+#[derive(Debug, Clone)]
+pub struct GlobalType {
+    pub val_type: ValType,
+    pub mutable: bool,
+    /// Init expression bytes (e.g., i32.const 0, end)
+    pub init: Vec<u8>,
+}
+
+/// Table type.
+#[derive(Debug, Clone)]
+pub struct TableType {
+    pub min: u32,
+    pub max: Option<u32>,
+}
+
+/// Element segment (active, table 0, offset expr).
+#[derive(Debug, Clone)]
+pub struct ElemSegment {
+    pub offset_expr: Vec<u8>,
+    pub func_indices: Vec<u32>,
+}
+
+/// Data segment (active, memory 0, offset expr).
+#[derive(Debug, Clone)]
+pub struct DataSegment {
+    pub offset: u32,
+    pub data: Vec<u8>,
+}
+
 pub struct WasmModule {
     /// Type section entries (function signatures)
     pub types: Vec<FuncType>,
+    /// Import section
+    pub imports: Vec<Import>,
     /// Function section (type indices)
     pub functions: Vec<u32>,
+    /// Table section
+    pub tables: Vec<TableType>,
     /// Memory section
     pub memories: Vec<MemoryType>,
+    /// Global section
+    pub globals: Vec<GlobalType>,
     /// Export section
     pub exports: Vec<Export>,
+    /// Element section
+    pub elements: Vec<ElemSegment>,
     /// Code section (function bodies)
     pub codes: Vec<FuncBody>,
+    /// Data section
+    pub data: Vec<DataSegment>,
 }
 
 /// Function type (signature).
@@ -178,10 +279,15 @@ impl WasmModule {
     pub fn new() -> Self {
         Self {
             types: Vec::new(),
+            imports: Vec::new(),
             functions: Vec::new(),
+            tables: Vec::new(),
             memories: Vec::new(),
+            globals: Vec::new(),
             exports: Vec::new(),
+            elements: Vec::new(),
             codes: Vec::new(),
+            data: Vec::new(),
         }
     }
 
@@ -193,34 +299,66 @@ impl WasmModule {
         out.extend_from_slice(&WASM_MAGIC);
         out.extend_from_slice(&WASM_VERSION);
 
-        // Type section
+        // Sections MUST be emitted in order of SectionId
+
+        // 1. Type section
         if !self.types.is_empty() {
             let section = self.encode_type_section();
             self.write_section(SectionId::Type, &section, &mut out);
         }
 
-        // Function section
+        // 2. Import section
+        if !self.imports.is_empty() {
+            let section = self.encode_import_section();
+            self.write_section(SectionId::Import, &section, &mut out);
+        }
+
+        // 3. Function section
         if !self.functions.is_empty() {
             let section = self.encode_function_section();
             self.write_section(SectionId::Function, &section, &mut out);
         }
 
-        // Memory section
+        // 4. Table section
+        if !self.tables.is_empty() {
+            let section = self.encode_table_section();
+            self.write_section(SectionId::Table, &section, &mut out);
+        }
+
+        // 5. Memory section
         if !self.memories.is_empty() {
             let section = self.encode_memory_section();
             self.write_section(SectionId::Memory, &section, &mut out);
         }
 
-        // Export section
+        // 6. Global section
+        if !self.globals.is_empty() {
+            let section = self.encode_global_section();
+            self.write_section(SectionId::Global, &section, &mut out);
+        }
+
+        // 7. Export section
         if !self.exports.is_empty() {
             let section = self.encode_export_section();
             self.write_section(SectionId::Export, &section, &mut out);
         }
 
-        // Code section
+        // 9. Element section
+        if !self.elements.is_empty() {
+            let section = self.encode_element_section();
+            self.write_section(SectionId::Element, &section, &mut out);
+        }
+
+        // 10. Code section
         if !self.codes.is_empty() {
             let section = self.encode_code_section();
             self.write_section(SectionId::Code, &section, &mut out);
+        }
+
+        // 11. Data section
+        if !self.data.is_empty() {
+            let section = self.encode_data_section();
+            self.write_section(SectionId::Data, &section, &mut out);
         }
 
         out
@@ -292,6 +430,78 @@ impl WasmModule {
             let func_body = self.encode_func_body(body);
             encode_uleb128(func_body.len() as u64, &mut buf);
             buf.extend_from_slice(&func_body);
+        }
+        buf
+    }
+
+    fn encode_import_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.imports.len() as u64, &mut buf);
+        for import in &self.imports {
+            encode_vec(import.module.as_bytes(), &mut buf);
+            encode_vec(import.name.as_bytes(), &mut buf);
+            match &import.kind {
+                ImportKind::Func(type_idx) => {
+                    buf.push(0x00); // func
+                    encode_uleb128(*type_idx as u64, &mut buf);
+                }
+            }
+        }
+        buf
+    }
+
+    fn encode_table_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.tables.len() as u64, &mut buf);
+        for table in &self.tables {
+            buf.push(0x70); // funcref
+            if let Some(max) = table.max {
+                buf.push(0x01);
+                encode_uleb128(table.min as u64, &mut buf);
+                encode_uleb128(max as u64, &mut buf);
+            } else {
+                buf.push(0x00);
+                encode_uleb128(table.min as u64, &mut buf);
+            }
+        }
+        buf
+    }
+
+    fn encode_global_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.globals.len() as u64, &mut buf);
+        for global in &self.globals {
+            buf.push(global.val_type as u8);
+            buf.push(if global.mutable { 0x01 } else { 0x00 });
+            buf.extend_from_slice(&global.init);
+        }
+        buf
+    }
+
+    fn encode_element_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.elements.len() as u64, &mut buf);
+        for elem in &self.elements {
+            buf.push(0x00); // active, table 0
+            buf.extend_from_slice(&elem.offset_expr);
+            encode_uleb128(elem.func_indices.len() as u64, &mut buf);
+            for &idx in &elem.func_indices {
+                encode_uleb128(idx as u64, &mut buf);
+            }
+        }
+        buf
+    }
+
+    fn encode_data_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.data.len() as u64, &mut buf);
+        for seg in &self.data {
+            buf.push(0x00); // active, memory 0
+                            // offset expr: i32.const <offset>, end
+            buf.push(Op::I32Const as u8);
+            encode_sleb128(seg.offset as i64, &mut buf);
+            buf.push(Op::End as u8);
+            encode_vec(&seg.data, &mut buf);
         }
         buf
     }
@@ -401,5 +611,229 @@ mod tests {
         assert_eq!(&bytes[0..4], &WASM_MAGIC);
         // Should be a valid binary (>8 bytes)
         assert!(bytes.len() > 8);
+    }
+
+    // ─── Structural validation tests ─────────────────────────────────
+
+    #[test]
+    fn test_section_ordering() {
+        // WASM spec requires sections in ascending ID order.
+        // Build a module with multiple sections and verify.
+        let mut module = WasmModule::new();
+        module.types.push(FuncType {
+            params: vec![],
+            results: vec![ValType::I32],
+        });
+        module.functions.push(0);
+        module.memories.push(MemoryType { min: 1, max: None });
+        module.exports.push(Export {
+            name: "_start".to_string(),
+            kind: ExportKind::Func,
+            index: 0,
+        });
+        let mut code = Vec::new();
+        code.push(Op::I32Const as u8);
+        encode_sleb128(0, &mut code);
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
+
+        let bytes = module.encode();
+        // Walk sections and verify IDs are non-decreasing
+        let mut pos = 8; // skip header
+        let mut last_id = 0u8;
+        while pos < bytes.len() {
+            let section_id = bytes[pos];
+            assert!(
+                section_id >= last_id,
+                "Section ID {} came after {}, violating WASM ordering",
+                section_id,
+                last_id
+            );
+            last_id = section_id;
+            pos += 1;
+            // Read section size (LEB128)
+            let (size, consumed) = decode_uleb128_for_test(&bytes[pos..]);
+            pos += consumed;
+            pos += size as usize; // skip section body
+        }
+        assert_eq!(pos, bytes.len(), "binary should be fully consumed");
+    }
+
+    #[test]
+    fn test_type_section_structure() {
+        let mut module = WasmModule::new();
+        // (i32, i32) -> i32
+        module.types.push(FuncType {
+            params: vec![ValType::I32, ValType::I32],
+            results: vec![ValType::I32],
+        });
+        module.functions.push(0);
+        let mut code = Vec::new();
+        code.push(Op::LocalGet as u8);
+        encode_uleb128(0, &mut code);
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
+
+        let bytes = module.encode();
+        // Find type section (ID=1)
+        let (section_body, _) = find_section(&bytes, SectionId::Type as u8);
+        // First byte is count (1 type)
+        assert_eq!(section_body[0], 1, "should have exactly 1 type");
+        // Next byte is 0x60 (func type marker)
+        assert_eq!(section_body[1], 0x60, "should start with func type marker");
+    }
+
+    #[test]
+    fn test_export_section_contains_start() {
+        let mut module = WasmModule::new();
+        module.types.push(FuncType {
+            params: vec![],
+            results: vec![ValType::I32],
+        });
+        module.functions.push(0);
+        module.exports.push(Export {
+            name: "_start".to_string(),
+            kind: ExportKind::Func,
+            index: 0,
+        });
+        let mut code = Vec::new();
+        code.push(Op::I32Const as u8);
+        encode_sleb128(42, &mut code);
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
+
+        let bytes = module.encode();
+        // Verify export section exists and contains "_start"
+        let (section_body, _) = find_section(&bytes, SectionId::Export as u8);
+        // Export count
+        assert_eq!(section_body[0], 1);
+        // Export name length
+        assert_eq!(section_body[1], 6); // "_start" = 6 bytes
+                                        // Export name
+        assert_eq!(&section_body[2..8], b"_start");
+    }
+
+    #[test]
+    fn test_code_section_contains_i32_const_42() {
+        let mut module = WasmModule::new();
+        module.types.push(FuncType {
+            params: vec![],
+            results: vec![ValType::I32],
+        });
+        module.functions.push(0);
+        let mut code = Vec::new();
+        code.push(Op::I32Const as u8);
+        encode_sleb128(42, &mut code);
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
+
+        let bytes = module.encode();
+        // Find code section
+        let (section_body, _) = find_section(&bytes, SectionId::Code as u8);
+        // The section should contain the i32.const 42 opcode sequence
+        let has_const_42 = section_body
+            .windows(2)
+            .any(|w| w[0] == Op::I32Const as u8 && w[1] == 42);
+        assert!(has_const_42, "code section should contain i32.const 42");
+    }
+
+    #[test]
+    fn test_empty_module_is_valid() {
+        let module = WasmModule::new();
+        let bytes = module.encode();
+        // Empty module = just header (8 bytes)
+        assert_eq!(bytes.len(), 8);
+        assert_eq!(&bytes[0..4], &WASM_MAGIC);
+        assert_eq!(&bytes[4..8], &WASM_VERSION);
+    }
+
+    #[test]
+    fn test_memory_section_one_page() {
+        let mut module = WasmModule::new();
+        module.memories.push(MemoryType {
+            min: 1,
+            max: Some(256),
+        });
+        let bytes = module.encode();
+        let (section_body, _) = find_section(&bytes, SectionId::Memory as u8);
+        // Count = 1
+        assert_eq!(section_body[0], 1);
+        // Has max flag = 0x01
+        assert_eq!(section_body[1], 0x01);
+        // Min = 1
+        assert_eq!(section_body[2], 1);
+    }
+
+    #[test]
+    fn i64_value_cell_opcodes_match_wasm_spec() {
+        // Pin every opcode the uniform-i64 value-cell lowering (W1) depends on to
+        // its canonical WASM binary value. A wrong byte here would silently emit a
+        // different instruction, so these are asserted against the spec directly.
+        // Conversions:
+        assert_eq!(Op::I32WrapI64 as u8, 0xA7);
+        assert_eq!(Op::I64ExtendI32S as u8, 0xAC);
+        assert_eq!(Op::I64ExtendI32U as u8, 0xAD);
+        // i64 comparisons (result is i32 0/1):
+        assert_eq!(Op::I64Eqz as u8, 0x50);
+        assert_eq!(Op::I64Eq as u8, 0x51);
+        assert_eq!(Op::I64Ne as u8, 0x52);
+        assert_eq!(Op::I64LtS as u8, 0x53);
+        assert_eq!(Op::I64GtS as u8, 0x55);
+        assert_eq!(Op::I64LeS as u8, 0x57);
+        assert_eq!(Op::I64GeS as u8, 0x59);
+        // i64 arithmetic / bitwise (Add/Sub/Mul/DivS already pinned by use):
+        assert_eq!(Op::I64RemS as u8, 0x81);
+        assert_eq!(Op::I64And as u8, 0x83);
+        assert_eq!(Op::I64Or as u8, 0x84);
+        // i64 sign-extension:
+        assert_eq!(Op::I64Extend8S as u8, 0xC2);
+        assert_eq!(Op::I64Extend16S as u8, 0xC3);
+        assert_eq!(Op::I64Extend32S as u8, 0xC4);
+        // Already-present i64 ops the cell reuses:
+        assert_eq!(Op::I64Const as u8, 0x42);
+        assert_eq!(Op::I64Load as u8, 0x29);
+        assert_eq!(Op::I64Store as u8, 0x37);
+        assert_eq!(Op::I64Add as u8, 0x7C);
+        assert_eq!(Op::I64DivS as u8, 0x7F);
+    }
+
+    // ─── Test helpers ────────────────────────────────────────────────
+
+    /// Decode a ULEB128 value for test assertions. Returns (value, bytes_consumed).
+    fn decode_uleb128_for_test(bytes: &[u8]) -> (u64, usize) {
+        let mut result: u64 = 0;
+        let mut shift = 0;
+        for (i, &byte) in bytes.iter().enumerate() {
+            result |= ((byte & 0x7F) as u64) << shift;
+            shift += 7;
+            if byte & 0x80 == 0 {
+                return (result, i + 1);
+            }
+        }
+        (result, bytes.len())
+    }
+
+    /// Find a section by ID in a WASM binary. Returns (section_body, start_offset).
+    fn find_section(bytes: &[u8], section_id: u8) -> (&[u8], usize) {
+        let mut pos = 8; // skip header
+        while pos < bytes.len() {
+            let id = bytes[pos];
+            pos += 1;
+            let (size, consumed) = decode_uleb128_for_test(&bytes[pos..]);
+            pos += consumed;
+            if id == section_id {
+                return (&bytes[pos..pos + size as usize], pos);
+            }
+            pos += size as usize;
+        }
+        panic!("Section {} not found in WASM binary", section_id);
     }
 }
