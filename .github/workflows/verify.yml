@@ -65,6 +65,36 @@ jobs:
       - name: cargo test --all
         run: cargo test --all --manifest-path 05_TOOLING/Cargo.toml
 
+  fuzz-robustness:
+    name: Fuzz robustness (REQ-30 harness)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "03_PROTO -> target"
+      # Thin wrapper over the in-repo REQ-30 harness
+      # (03_PROTO/crates/riinac/tests/fuzz_robustness.rs) — the exact suite
+      # plain `cargo test` runs (lexer → parser → typechecker → interpreter
+      # pipeline fuzz), surfaced as its own required job so a fuzz regression
+      # is named in the checks UI. No CI-divergent checks.
+      - name: fuzz_robustness (full-pipeline fuzz)
+        run: cargo test --manifest-path 03_PROTO/Cargo.toml -p riinac --test fuzz_robustness
+
+  sbom-freshness:
+    name: SBOM freshness (REQ-31)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      # Thin wrapper over the repo's own drift guard: regenerates the
+      # CycloneDX SBOMs from cargo metadata and fails if sbom/*.cdx.json is
+      # stale (the shipped-compiler SBOM is the machine-checkable proof of
+      # the zero-external-runtime-deps claim).
+      - name: scripts/generate-sbom.sh --check
+        run: bash scripts/generate-sbom.sh --check
+
   docs-audit:
     name: Docs / metrics parity (audit-docs.sh)
     runs-on: ubuntu-latest
