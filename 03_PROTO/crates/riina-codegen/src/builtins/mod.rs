@@ -120,6 +120,13 @@ pub fn register_builtins(env: &Env) -> Env {
     for nm in ["nfc", "ke_nfc"] {
         e = e.extend(nm.to_string(), Value::Builtin("nfc".to_string()));
     }
+    // UTS #39 confusable skeleton + detection.
+    for nm in ["skeleton", "rangka"] {
+        e = e.extend(nm.to_string(), Value::Builtin("skeleton".to_string()));
+    }
+    for nm in ["adalah_keliru", "is_confusable"] {
+        e = e.extend(nm.to_string(), Value::Builtin("adalah_keliru".to_string()));
+    }
 
     // String builtins (teks)
     for (bm, en, canonical) in teks::BUILTINS {
@@ -327,6 +334,36 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     found: format!("{other:?}"),
                     context: "nfc".to_string(),
                 }),
+            };
+        }
+        // UTS #39 confusable skeleton: the prototype form for homograph detection.
+        "skeleton" => {
+            return match &arg {
+                Value::String(s) => {
+                    Ok(Value::String(crate::unicode_confusables::skeleton(s)))
+                }
+                other => Err(Error::TypeMismatch {
+                    expected: "string".to_string(),
+                    found: format!("{other:?}"),
+                    context: "skeleton".to_string(),
+                }),
+            };
+        }
+        // Whether two strings are visually confusable (same skeleton). A curried
+        // `adalah_keliru(a, b)` forms the pair on the second application.
+        "adalah_keliru" => {
+            return match &arg {
+                Value::Pair(a, b) => {
+                    let sa = value_to_string(a)?;
+                    let sb = value_to_string(b)?;
+                    Ok(Value::Bool(crate::unicode_confusables::is_confusable(
+                        &sa, &sb,
+                    )))
+                }
+                other => Ok(Value::BuiltinPartial(
+                    "adalah_keliru".to_string(),
+                    Box::new(other.clone()),
+                )),
             };
         }
         "nilai_kiri" => {

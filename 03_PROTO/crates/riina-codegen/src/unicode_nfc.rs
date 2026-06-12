@@ -97,18 +97,32 @@ fn compose_pair(a: u32, b: u32) -> Option<u32> {
         .ok()
 }
 
-/// Normalize `s` to NFC.
-pub fn nfc(s: &str) -> String {
-    // 1. Canonical decomposition.
+/// Canonical decomposition + canonical ordering (the NFD code points) — the
+/// first two phases shared by NFC and the UTS#39 confusable skeleton.
+fn nfd_codepoints(s: &str) -> Vec<u32> {
     let mut buf: Vec<u32> = Vec::with_capacity(s.len());
     for c in s.chars() {
         decompose_char(c as u32, &mut buf);
     }
+    canonical_order(&mut buf);
+    buf
+}
+
+/// Normalize `s` to NFD (Normalization Form D — canonical decomposition).
+pub fn nfd(s: &str) -> String {
+    nfd_codepoints(s)
+        .iter()
+        .map(|&c| char::from_u32(c).unwrap_or('\u{FFFD}'))
+        .collect()
+}
+
+/// Normalize `s` to NFC.
+pub fn nfc(s: &str) -> String {
+    // 1-2. Canonical decomposition + ordering.
+    let buf = nfd_codepoints(s);
     if buf.is_empty() {
         return String::new();
     }
-    // 2. Canonical ordering.
-    canonical_order(&mut buf);
     // 3. Canonical composition (UAX #15 reference; `-1` marks "immediately after
     //    the current starter", so the first following char is never blocked).
     let mut out: Vec<u32> = Vec::with_capacity(buf.len());

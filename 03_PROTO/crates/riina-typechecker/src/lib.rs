@@ -821,6 +821,24 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
         );
     }
+    // UTS #39 confusable skeleton (`String -> String`) + detection
+    // (`(String, String) -> Bool`), both pure.
+    for nm in ["skeleton", "rangka"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["adalah_keliru", "is_confusable"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::Pure,
+            ),
+        );
+    }
     // Virtual-filesystem builtins (verified access-control via riina-os VFS).
     // `vfs_mula`/`vfs_jadi_pengguna` take an Int (byte quota / uid); `vfs_tulis`
     // a `(path, data)` pair; `vfs_baca`/`vfs_padam` a path. All carry filesystem
