@@ -806,6 +806,14 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::String), Box::new(Ty::BigInt), Effect::Pure),
         );
     }
+    // Arbitrary-precision decimal constructor (numeric-tower decimal slice):
+    // parse a decimal literal string into a `Decimal`.
+    for nm in ["perpuluhan", "decimal"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Decimal), Effect::Pure),
+        );
+    }
     c = c.extend(
         "ke_bool".to_string(),
         Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
@@ -2617,6 +2625,8 @@ fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
         // Arbitrary-precision integers form their own arithmetic domain; they do
         // not mix with fixed-width ints (convert explicitly via `besar`).
         (Ty::BigInt, Ty::BigInt) => Some(Ty::BigInt),
+        // Decimals likewise form their own domain.
+        (Ty::Decimal, Ty::Decimal) => Some(Ty::Decimal),
         _ => None,
     }
 }
@@ -3420,6 +3430,8 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         Ok((label_result(Ty::String), eff))
                     } else if *inner1 == Ty::BigInt && *inner2 == Ty::BigInt {
                         Ok((label_result(Ty::BigInt), eff))
+                    } else if *inner1 == Ty::Decimal && *inner2 == Ty::Decimal {
+                        Ok((label_result(Ty::Decimal), eff))
                     } else if types_compatible(&Ty::Int, inner1)
                         && types_compatible(&Ty::Int, inner2)
                     {
@@ -3472,9 +3484,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                             context: "variable-time division or modulo",
                         });
                     }
-                    // Arbitrary-precision integer arithmetic (distinct from `Int`).
-                    if *inner1 == Ty::BigInt && *inner2 == Ty::BigInt {
-                        return Ok((label_result(Ty::BigInt), eff));
+                    // Arbitrary-precision integer / decimal arithmetic (each its
+                    // own domain, distinct from `Int` and from each other).
+                    if (*inner1 == Ty::BigInt && *inner2 == Ty::BigInt)
+                        || (*inner1 == Ty::Decimal && *inner2 == Ty::Decimal)
+                    {
+                        return Ok((label_result(inner1.clone()), eff));
                     }
                     if !types_compatible(&Ty::Int, inner1) {
                         return Err(TypeError::TypeMismatch {
@@ -3512,6 +3527,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         && !types_compatible(&Ty::Bool, inner1)
                         && !types_compatible(&Ty::String, inner1)
                         && *inner1 != Ty::BigInt
+                        && *inner1 != Ty::Decimal
                     {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
@@ -3521,8 +3537,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
-                    // Ordering is defined for fixed-width ints and BigInt.
-                    if *inner1 == Ty::BigInt && *inner2 == Ty::BigInt {
+                    // Ordering is defined for fixed-width ints, BigInt, Decimal.
+                    if (*inner1 == Ty::BigInt && *inner2 == Ty::BigInt)
+                        || (*inner1 == Ty::Decimal && *inner2 == Ty::Decimal)
+                    {
                         return Ok((label_result(Ty::Bool), eff));
                     }
                     if !types_compatible(&Ty::Int, inner1) {

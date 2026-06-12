@@ -1071,6 +1071,13 @@ impl Interpreter {
                         return result;
                     }
                 }
+                // Numeric tower: arbitrary-precision `Decimal` arithmetic. Both
+                // operands must be `Decimal` (the typechecker rejects mixing).
+                if matches!(l, Value::Decimal(_)) && matches!(r, Value::Decimal(_)) {
+                    if let Some(result) = eval_decimal_binop(*op, &l, &r) {
+                        return result;
+                    }
+                }
                 match (op, &l, &r) {
                     (BinOp::Add, Value::Int(a), Value::Int(b)) => {
                         Ok(Value::Int(a.wrapping_add(*b)))
@@ -1250,6 +1257,33 @@ fn eval_bigint_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
         BinOp::Gt => Ok(Value::Bool(a > b)),
         BinOp::Ge => Ok(Value::Bool(a >= b)),
         BinOp::And | BinOp::Or => return None,
+    };
+    Some(res)
+}
+
+/// Arbitrary-precision decimal binop for the numeric tower. Called only when
+/// both operands are `Value::Decimal`. Add/sub/mul are exact; `Div` rounds
+/// half-to-even (`Mod` is undefined for decimals → falls through). Comparison is
+/// value-based. Returns `None` for unsupported ops so the caller's error applies.
+fn eval_decimal_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>> {
+    let (Value::Decimal(a), Value::Decimal(b)) = (l, r) else {
+        return None;
+    };
+    let res = match op {
+        BinOp::Add => Ok(Value::Decimal(a.add(b))),
+        BinOp::Sub => Ok(Value::Decimal(a.sub(b))),
+        BinOp::Mul => Ok(Value::Decimal(a.mul(b))),
+        BinOp::Div => match a.div(b) {
+            Some(q) => Ok(Value::Decimal(q)),
+            None => Err(Error::DivisionByZero),
+        },
+        BinOp::Eq => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Equal)),
+        BinOp::Ne => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Equal)),
+        BinOp::Lt => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Less)),
+        BinOp::Le => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Greater)),
+        BinOp::Gt => Ok(Value::Bool(a.compare(b) == std::cmp::Ordering::Greater)),
+        BinOp::Ge => Ok(Value::Bool(a.compare(b) != std::cmp::Ordering::Less)),
+        BinOp::Mod | BinOp::And | BinOp::Or => return None,
     };
     Some(res)
 }
@@ -3109,6 +3143,56 @@ mod tests {
                    pulang n * fac(n - besar(\"1\")); } \
                    fac(besar(\"30\"))";
         assert_eq!(run_src(src), big("265252859812191058636308480000000"));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NUMERIC TOWER: arbitrary-precision Decimal (`perpuluhan`), end-to-end
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn dec(s: &str) -> Value {
+        Value::Decimal(crate::decimal::Decimal::parse(s).unwrap())
+    }
+
+    #[test]
+    fn test_decimal_exact_arithmetic_no_float_drift() {
+        // 0.1 + 0.2 is exactly 0.3 (a binary float would give 0.30000000000000004).
+        assert_eq!(run_src("perpuluhan(\"0.1\") + perpuluhan(\"0.2\")"), dec("0.3"));
+        assert_eq!(run_src("perpuluhan(\"19.99\") * perpuluhan(\"3\")"), dec("59.97"));
+        assert_eq!(run_src("perpuluhan(\"5\") - perpuluhan(\"0.01\")"), dec("4.99"));
+        assert_eq!(run_src("perpuluhan(\"1\") / perpuluhan(\"4\")"), dec("0.25"));
+    }
+
+    #[test]
+    fn test_decimal_value_based_comparison() {
+        assert_eq!(
+            run_src("perpuluhan(\"3.14\") == perpuluhan(\"3.140\")"),
+            Value::Bool(true),
+        );
+        assert_eq!(
+            run_src("perpuluhan(\"2.5\") < perpuluhan(\"2.50001\")"),
+            Value::Bool(true),
+        );
+        assert_eq!(
+            run_src("perpuluhan(\"100.00\") >= perpuluhan(\"100\")"),
+            Value::Bool(true),
+        );
+    }
+
+    #[test]
+    fn test_decimal_english_alias_and_typed_fn() {
+        assert_eq!(run_src("decimal(\"1.5\") * decimal(\"1.5\")"), dec("2.25"));
+        // A `Perpuluhan`-typed function summing 0.10 three times → exactly 0.30.
+        let src = "fungsi tiga(x: Perpuluhan) -> Perpuluhan kesan Bersih { \
+                   pulang x + x + x; } tiga(perpuluhan(\"0.10\"))";
+        assert_eq!(run_src(src), dec("0.30"));
+    }
+
+    #[test]
+    fn test_decimal_prints_preserving_scale() {
+        assert_eq!(
+            crate::builtins::format_value(&dec("-12.340")),
+            "-12.340"
+        );
     }
 
     // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──

@@ -111,6 +111,10 @@ pub fn register_builtins(env: &Env) -> Env {
     for nm in ["besar", "bigint"] {
         e = e.extend(nm.to_string(), Value::Builtin("besar".to_string()));
     }
+    // Arbitrary-precision decimal constructor (numeric tower decimal slice).
+    for nm in ["perpuluhan", "decimal"] {
+        e = e.extend(nm.to_string(), Value::Builtin("perpuluhan".to_string()));
+    }
 
     // String builtins (teks)
     for (bm, en, canonical) in teks::BUILTINS {
@@ -284,6 +288,24 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                 }),
             };
         }
+        // Arbitrary-precision decimal constructor: `perpuluhan`/`decimal` parses
+        // a decimal literal string (`"3.14"`).
+        "perpuluhan" => {
+            return match &arg {
+                Value::String(s) => match crate::decimal::Decimal::parse(s) {
+                    Some(d) => Ok(Value::Decimal(d)),
+                    None => Err(Error::InvalidOperation(format!(
+                        "perpuluhan: '{s}' is not a decimal number"
+                    ))),
+                },
+                Value::Decimal(d) => Ok(Value::Decimal(d.clone())),
+                other => Err(Error::TypeMismatch {
+                    expected: "string".to_string(),
+                    found: format!("{other:?}"),
+                    context: "perpuluhan/decimal".to_string(),
+                }),
+            };
+        }
         "nilai_kiri" => {
             return match arg {
                 Value::Sum(crate::value::Sum::Left(v)) => Ok(*v),
@@ -366,6 +388,7 @@ pub fn format_value(v: &Value) -> String {
         Value::Bool(b) => b.to_string(),
         Value::Int(n) => n.to_string(),
         Value::BigInt(b) => b.to_string(),
+        Value::Decimal(d) => d.to_string(),
         Value::String(s) => s.clone(),
         Value::Pair(a, b) => format!("({}, {})", format_value(a), format_value(b)),
         Value::List(items) => {

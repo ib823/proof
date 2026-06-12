@@ -535,6 +535,9 @@ pub enum Ty {
     /// type. A distinct type that does NOT silently interoperate with `Int`
     /// (mixing would hide a precision boundary); convert explicitly via `besar`.
     BigInt,
+    /// Arbitrary-precision decimal (`perpuluhan`) — exact base-10 arithmetic for
+    /// finance. A distinct type; does not silently mix with `Int`/`BigInt`.
+    Decimal,
     String,
     Bytes,
     // Function types
