@@ -84,6 +84,8 @@ fn builtin_canonical(name: &str) -> Option<&'static str> {
         "nombor_ke_teks" | "int_to_string" => return Some("nombor_ke_teks"),
         // Arbitrary-precision integer constructor (numeric-tower BigInt).
         "besar" | "bigint" => return Some("besar"),
+        // Arbitrary-precision exact decimal constructor (numeric-tower Decimal).
+        "perpuluhan" | "decimal" => return Some("perpuluhan"),
         // Math
         "mutlak" | "abs" => return Some("mutlak"),
         "minimum" | "min" => return Some("minimum"),

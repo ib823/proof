@@ -1,0 +1,25 @@
+// Arbitrary-precision exact decimal (`perpuluhan`) — the numeric-tower Decimal slice.
+//
+// `perpuluhan("...")` parses a base-10 decimal of any precision into an exact
+// value `mantissa * 10^-scale`, built on the proven `besar` bignum so it never
+// overflows and never suffers binary-floating-point drift. Add/sub/mul are
+// exact; division rounds half-to-even to 34 places then strips trailing zeros;
+// comparison is value-based. The interpreter and the C backend evaluate it
+// identically (byte-for-byte) — its arithmetic is what `DecimalModel.v` proves
+// is a ring homomorphism to the rationals.
+//
+// (The WASM backend does not yet support Decimal; it fails closed rather than
+// miscompiling — run this with the interpreter or the C backend.)
+
+fungsi utama() -> Nombor kesan Tulis {
+    biar a = perpuluhan("0.1");
+    biar b = perpuluhan("0.2");
+
+    cetakln(a + b);                                   // 0.3   (no float drift)
+    cetakln(perpuluhan("19.99") * perpuluhan("3"));   // 59.97
+    cetakln(perpuluhan("5") - perpuluhan("0.01"));    // 4.99
+    cetakln(perpuluhan("1") / perpuluhan("4"));       // 0.25
+    cetakln(perpuluhan("1") / perpuluhan("3"));       // 0.3333333333333333333333333333333333
+
+    pulang 0;
+}

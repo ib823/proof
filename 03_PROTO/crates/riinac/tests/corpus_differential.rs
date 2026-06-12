@@ -210,3 +210,36 @@ fn bigint_c_backend_matches_expected_decimal() {
         "C bignum runtime output must match the proven decimal values"
     );
 }
+
+/// C-backend correctness for arbitrary-precision exact `perpuluhan` (Decimal).
+/// Like BigInt, Decimal has no WASM backend (it fails closed), so
+/// `00_basics/decimal.rii` is skipped by the corpus differential above. This
+/// test pins the C output directly: it compiles the example through the C
+/// backend and asserts the exact base-10 results — `0.1 + 0.2` is exactly `0.3`
+/// (no float drift), `1/3` rounds half-to-even to 34 places — so it can only be
+/// correct if the emitted C decimal runtime (a port of `decimal.rs`, the model
+/// `foundations/DecimalModel.v` proves a ring homomorphism to ℚ) actually works.
+/// The same values the interpreter produces (`decimal::tests`). Needs only `cc`.
+#[test]
+fn decimal_c_backend_matches_expected_decimal() {
+    if !tool_available("cc") {
+        eprintln!("skipping decimal C-backend test: cc not available");
+        return;
+    }
+    let root = repo_root();
+    let ex = root.join("07_EXAMPLES/00_basics/decimal.rii");
+    let work = std::env::temp_dir().join("riina_decimal_c");
+    let _ = fs::create_dir_all(&work);
+    let out = run_c(&work, "decimal", &ex)
+        .expect("00_basics/decimal.rii must build and run via the C backend");
+    let expected = "0.3\n\
+                    59.97\n\
+                    4.99\n\
+                    0.25\n\
+                    0.3333333333333333333333333333333333\n";
+    assert_eq!(
+        String::from_utf8(out).unwrap(),
+        expected,
+        "C decimal runtime output must match the proven exact-base-10 values"
+    );
+}
