@@ -1,6 +1,6 @@
 # REGULATORY COMPLIANCE FRAMEWORKS: MALAYSIA & SINGAPORE (2026)
 
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2850 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2855 Rust tests
 
 ## COMPREHENSIVE GUIDE FOR RIINA SECURITY-FOCUSED PROGRAMMING LANGUAGE
 
