@@ -1,0 +1,23 @@
+// Fixed-point numeric tower — compiled C codegen.
+//
+// Two types, both byte-identical across the interpreter and the C backend:
+//   * `wang` / `titik_tetap` — fixed-scale decimal *money*: arithmetic rounds
+//     half-to-even back to the scale and display keeps trailing zeros, so
+//     `10.00 / 3` is `3.33` (not `3.333…`) and `100.00 - 0.01` is `99.99`.
+//   * `qmn` — binary fixed-point (Q-format): `raw / 2^frac_bits`. Binary
+//     fractions are exact (`0.5 + 0.25 = 0.75`); a decimal like `0.1` becomes
+//     the nearest representable value (`0.1015625` at 8 bits).
+//
+// (The WASM backend fails closed on these — run with the C backend or the
+// interpreter.)
+
+fungsi utama() -> Nombor kesan Tulis {
+    cetakln(wang("19.99") * wang("3"));            // 59.97
+    cetakln(wang("10.00") / wang("3"));            // 3.33  (fixed scale)
+    cetakln(wang("100.00") - wang("0.01"));        // 99.99 (cents preserved)
+    cetakln(titik_tetap(("3.14159", 2)));          // 3.14  (rounded to 2 dp)
+    cetakln(qmn(("0.5", 8)) + qmn(("0.25", 8)));   // 0.75  (exact binary)
+    cetakln(qmn(("0.1", 8)));                      // 0.1015625 (nearest)
+
+    pulang 0;
+}

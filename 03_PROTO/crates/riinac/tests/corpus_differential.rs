@@ -243,3 +243,35 @@ fn decimal_c_backend_matches_expected_decimal() {
         "C decimal runtime output must match the proven exact-base-10 values"
     );
 }
+
+/// C-backend correctness for the fixed-point numeric tower — fixed-scale money
+/// (`wang`/`titik_tetap`) and binary Q-format (`qmn`). Like BigInt/Decimal these
+/// have no WASM backend (fail closed), so `00_basics/fixed.rii` is skipped by the
+/// corpus differential above. This pins the C output directly: it can only be
+/// correct if the emitted C ports of `fixed.rs` (round-to-scale money) and
+/// `fixed_bin.rs` (decimal↔binary Q-format) actually work — the same values the
+/// interpreter produces (`fixed::tests`, `fixed_bin::tests`). Needs only `cc`.
+#[test]
+fn fixed_point_c_backend_matches_interpreter() {
+    if !tool_available("cc") {
+        eprintln!("skipping fixed-point C-backend test: cc not available");
+        return;
+    }
+    let root = repo_root();
+    let ex = root.join("07_EXAMPLES/00_basics/fixed.rii");
+    let work = std::env::temp_dir().join("riina_fixed_c");
+    let _ = fs::create_dir_all(&work);
+    let out = run_c(&work, "fixed", &ex)
+        .expect("00_basics/fixed.rii must build and run via the C backend");
+    let expected = "59.97\n\
+                    3.33\n\
+                    99.99\n\
+                    3.14\n\
+                    0.75\n\
+                    0.1015625\n";
+    assert_eq!(
+        String::from_utf8(out).unwrap(),
+        expected,
+        "C fixed-point runtime output must match the interpreter (money + Q-format)"
+    );
+}
