@@ -1,6 +1,6 @@
 # RIINA Syntax Improvement Specification v2.0.0
 
-**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2294 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2765 Rust tests
 
 **Document ID:** `SYNTAX_IMPROVEMENT_SPEC_v2_0_0`
 **Date:** 2026-01-30
@@ -668,7 +668,7 @@ __loop ()
 
 ### 3.3 Loop (Parser Sugar)
 
-`ulang { body }` is an infinite loop with `keluar` (break). Same termination concern as while.
+`ulang { body }` is an infinite loop with `putus` (break). Same termination concern as while.
 
 **Same constraint as 3.2 applies.** Require fuel or effect annotation.
 

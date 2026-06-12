@@ -82,7 +82,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes — 12,456 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
+| Formal proof corpus in repo | Yes — 12,533 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
 | Multi-prover work | Coq mechanized; 9 other lanes are generated/smoke-only (not independent verification) | No | No | No |
 | Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,456 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2729 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2765 Rust tests
 
 | Area | Status |
 |------|--------|

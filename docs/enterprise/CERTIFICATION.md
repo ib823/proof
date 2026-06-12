@@ -1,6 +1,6 @@
 # RIINA Certification Output
 
-**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2294 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2765 Rust tests
 
 ## What RIINA Certifies
 
@@ -16,8 +16,8 @@ This is not a test report. This is a mathematical proof that your program satisf
 ├──────────────────────────────────────────────────────┤
 │ Program     : myapp.rii                              │
 │ Compiled    : 2026-01-31T14:30:00Z                   │
-│ Compiler    : riinac 0.2.0                           │
-│ Prover      : Rocq 9.1.1                    │
+│ Compiler    : riinac 0.3.0                           │
+│ Prover      : Rocq 9.2                    │
 │ Certificate : SHA-256 of proof objects                │
 ├──────────────────────────────────────────────────────┤
 │                                                      │

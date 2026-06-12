@@ -1,6 +1,6 @@
 # RIINA DEFINITIVE SCOPE DOCUMENT
 
-**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2294 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2765 Rust tests
 
 ## Version 1.0.0 — The Single Source of Truth
 
@@ -144,7 +144,7 @@
 
 ```
 /02_FORMAL/
-├── coq/                    — PRIMARY (Rocq 9.1 / Coq 8.21)
+├── coq/                    — PRIMARY (Rocq 9.2)
 │   ├── foundations/        — Syntax.v, Typing.v, Semantics.v
 │   ├── type_system/        — Progress.v, Preservation.v
 │   ├── effects/            — EffectSystem.v

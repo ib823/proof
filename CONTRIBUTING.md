@@ -1,13 +1,13 @@
 # Contributing to RIINA™
 
-**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2294 Rust tests
+**Verification:** 12,533 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2765 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
 ## Prerequisites
 
-- **Rust** 1.84.0+ — `rustup install stable`
-- **Rocq 9.1.1** — Only needed for formal proof work (files use `From Stdlib`)
+- **Rust** 1.94.1+ — `rustup install stable` (pinned in `rust-toolchain.toml`)
+- **Rocq 9.2** — Only needed for formal proof work (files use `From Stdlib`)
 - No external dependencies required
 
 ## Getting Started
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 2294 passing)
+# Run all tests (should show 2765 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out
