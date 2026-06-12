@@ -432,3 +432,62 @@ fn diff_perpuluhan_display() {
         }",
     );
 }
+
+// ── W3.1b: Decimal arithmetic (dec_addsub / dec_mul / dec_div / dec_cmp) ─────
+// Exact scale-aligned +/-, exact * (scales add), / rounded half-to-even to 34
+// places then trailing-zero-stripped, and value-based comparison — all must
+// match the C backend exactly. (00_basics/decimal.rii also exercises these in
+// the corpus differential.)
+
+#[test]
+fn diff_perpuluhan_arith() {
+    assert_byte_equal(
+        "perpuluhan_arith",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(perpuluhan(\"0.1\") + perpuluhan(\"0.2\"));\n\
+            cetakln(perpuluhan(\"19.99\") * perpuluhan(\"3\"));\n\
+            cetakln(perpuluhan(\"5\") - perpuluhan(\"0.01\"));\n\
+            cetakln(perpuluhan(\"0.1\") - perpuluhan(\"0.3\"));\n\
+            cetakln(perpuluhan(\"1.5\") * perpuluhan(\"1.5\"));\n\
+            biar a = perpuluhan(\"100.001\");\n\
+            biar b = a + perpuluhan(\"0.999\");\n\
+            cetakln(b * perpuluhan(\"2\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_perpuluhan_div() {
+    // exact (0.25), repeating to 34 places (1/3), rounded last digit (2/3),
+    // trailing-zero strip (10/4 = 2.5), negative quotient.
+    assert_byte_equal(
+        "perpuluhan_div",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(perpuluhan(\"1\") / perpuluhan(\"4\"));\n\
+            cetakln(perpuluhan(\"1\") / perpuluhan(\"3\"));\n\
+            cetakln(perpuluhan(\"2\") / perpuluhan(\"3\"));\n\
+            cetakln(perpuluhan(\"10\") / perpuluhan(\"4\"));\n\
+            cetakln((perpuluhan(\"0\") - perpuluhan(\"1\")) / perpuluhan(\"3\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_perpuluhan_cmp_and_ties() {
+    // value-based compare (3.14 == 3.140) and half-to-even ties at the 34th
+    // place: 5e-35 rounds to even (0); 15e-35 has an odd quotient and bumps.
+    assert_byte_equal(
+        "perpuluhan_cmp_ties",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            kalau perpuluhan(\"3.14\") == perpuluhan(\"3.140\") { cetak(1) } lain { cetak(0) }\n\
+            kalau perpuluhan(\"0.5\") < perpuluhan(\"0.75\") { cetak(1) } lain { cetak(0) }\n\
+            kalau (perpuluhan(\"0\") - perpuluhan(\"0.1\")) < perpuluhan(\"0.05\") { cetak(1) } lain { cetak(0) }\n\
+            kalau perpuluhan(\"2.50\") >= perpuluhan(\"2.5\") { cetak(1) } lain { cetak(0) }\n\
+            cetakln(perpuluhan(\"0.00000000000000000000000000000000005\") / perpuluhan(\"1\"));\n\
+            cetakln(perpuluhan(\"0.00000000000000000000000000000000015\") / perpuluhan(\"1\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
