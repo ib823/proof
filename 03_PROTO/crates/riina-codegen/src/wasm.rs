@@ -195,8 +195,8 @@ impl WasmBackend {
                 .iter()
                 .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::BigInt)))
         });
-        let n_bignum_fns: u32 = if uses_bigint { 4 } else { 0 };
-        let (bi_from_str_index, bi_to_str_index, bi_cmp_index) = if uses_bigint {
+        let n_bignum_fns: u32 = if uses_bigint { 7 } else { 0 };
+        let (bi_from_str_index, bi_to_str_index, bi_cmp_index, bi_addsub_index) = if uses_bigint {
             // (i32)->i32 helpers (share alloc's type): parse + render.
             let from = NUM_IMPORTS + 1;
             module.functions.push(alloc_type_idx);
@@ -204,7 +204,7 @@ impl WasmBackend {
             let to = NUM_IMPORTS + 2;
             module.functions.push(alloc_type_idx);
             module.codes.push(self.emit_bi_to_str(alloc_func_index));
-            // (i32,i32)->i32 helpers: magnitude compare + signed compare (W2.2a).
+            // (i32,i32)->i32 helpers: cmp_mag, cmp (W2.2a), add_mag, sub_mag (W2.2b).
             let bin_type_idx = module.types.len() as u32;
             module.types.push(FuncType {
                 params: vec![ValType::I32, ValType::I32],
@@ -216,9 +216,26 @@ impl WasmBackend {
             let cmp = NUM_IMPORTS + 4;
             module.functions.push(bin_type_idx);
             module.codes.push(self.emit_bi_cmp(cmp_mag));
-            (from, to, cmp)
+            let add_mag = NUM_IMPORTS + 5;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_bi_add_mag(alloc_func_index));
+            let sub_mag = NUM_IMPORTS + 6;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_bi_sub_mag(alloc_func_index));
+            // (i32,i32,i32)->i32 helper: signed add/sub (W2.2b).
+            let ter_type_idx = module.types.len() as u32;
+            module.types.push(FuncType {
+                params: vec![ValType::I32, ValType::I32, ValType::I32],
+                results: vec![ValType::I32],
+            });
+            let addsub = NUM_IMPORTS + 7;
+            module.functions.push(ter_type_idx);
+            module
+                .codes
+                .push(self.emit_bi_addsub(alloc_func_index, cmp_mag, add_mag, sub_mag));
+            (from, to, cmp, addsub)
         } else {
-            (0, 0, 0) // unused: no BigInt op is emitted when the program has none
+            (0, 0, 0, 0) // unused: no BigInt op is emitted when the program has none
         };
 
         // === User functions ===
@@ -271,6 +288,7 @@ impl WasmBackend {
                 bi_from_str_index,
                 bi_to_str_index,
                 bi_cmp_index,
+                bi_addsub_index,
             )?;
             module.codes.push(body);
         }
@@ -999,6 +1017,424 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `bi_add_mag(a: i32, b: i32) -> i32`: add BigInt **magnitudes**,
+    /// returning a fresh `[len][neg=0][limbs]` record (caller sets the sign).
+    /// Schoolbook carry-propagating add over base-2^32 limbs.
+    fn emit_bi_add_mag(&self, alloc_func_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const LA: u32 = 2;
+        const LB: u32 = 3;
+        const MAXL: u32 = 4;
+        const RES: u32 = 5;
+        const I: u32 = 6;
+        const RLEN: u32 = 7;
+        const CARRY: u32 = 8;
+        const SUM: u32 = 9;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        // Push limb `idx` of `rec` (length `len`) as an i64, or 0 if idx >= len.
+        let limb = |c: &mut Vec<u8>, rec: u32, len: u32, idx: u32| {
+            wasm_local(c, Op::LocalGet, idx);
+            wasm_local(c, Op::LocalGet, len);
+            c.push(Op::I32LtS as u8);
+            c.push(Op::If as u8);
+            c.push(0x7E); // i64
+            wasm_local(c, Op::LocalGet, rec);
+            wasm_i32c(c, 8);
+            c.push(Op::I32Add as u8);
+            wasm_local(c, Op::LocalGet, idx);
+            wasm_i32c(c, 4);
+            c.push(Op::I32Mul as u8);
+            c.push(Op::I32Add as u8);
+            wasm_load(c, 0);
+            c.push(Op::I64ExtendI32U as u8);
+            c.push(Op::Else as u8);
+            wasm_i64c(c, 0);
+            c.push(Op::End as u8);
+        };
+        // la = mem[a]; lb = mem[b]
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LB);
+        // maxl = max(la, lb)
+        lget(&mut c, LA);
+        lset(&mut c, MAXL);
+        lget(&mut c, LB);
+        lget(&mut c, LA);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, LB);
+        lset(&mut c, MAXL);
+        op(&mut c, Op::End);
+        // res = alloc(8 + (maxl+1)*4)
+        lget(&mut c, MAXL);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(alloc_func_index as u64, &mut c);
+        lset(&mut c, RES);
+        // mem[res+4] = 0 (neg)
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        // carry = 0; i = 0
+        wasm_i64c(&mut c, 0);
+        lset(&mut c, CARRY);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, I);
+        // for i in 0..maxl
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, I);
+        lget(&mut c, MAXL);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // sum = a[i] + b[i] + carry
+        limb(&mut c, A, LA, I);
+        limb(&mut c, B, LB, I);
+        op(&mut c, Op::I64Add);
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, SUM);
+        // mem[res+8+i*4] = wrap(sum)
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, SUM);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        // carry = sum / 2^32
+        lget(&mut c, SUM);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64DivU);
+        lset(&mut c, CARRY);
+        // i += 1
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, I);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop
+        op(&mut c, Op::End); // block
+        // rlen = maxl; if carry != 0 { limb[maxl] = carry; rlen = maxl+1 }
+        lget(&mut c, MAXL);
+        lset(&mut c, RLEN);
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I64Eqz);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, MAXL);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        lget(&mut c, MAXL);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::End);
+        // mem[res] = rlen; return res
+        lget(&mut c, RES);
+        lget(&mut c, RLEN);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RES);
+        FuncBody {
+            locals: vec![(6, ValType::I32), (2, ValType::I64)],
+            code: c,
+        }
+    }
+
+    /// Emit `bi_sub_mag(a: i32, b: i32) -> i32`: subtract magnitudes (|a| - |b|),
+    /// **requires |a| >= |b|** so the result is non-negative. Borrow-propagating
+    /// subtract, then strip leading zero limbs to normalize.
+    fn emit_bi_sub_mag(&self, alloc_func_index: u32) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const LA: u32 = 2;
+        const LB: u32 = 3;
+        const RES: u32 = 4;
+        const I: u32 = 5;
+        const RLEN: u32 = 6;
+        const BORROW: u32 = 7;
+        const DIFF: u32 = 8;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let limb = |c: &mut Vec<u8>, rec: u32, len: u32, idx: u32| {
+            wasm_local(c, Op::LocalGet, idx);
+            wasm_local(c, Op::LocalGet, len);
+            c.push(Op::I32LtS as u8);
+            c.push(Op::If as u8);
+            c.push(0x7E);
+            wasm_local(c, Op::LocalGet, rec);
+            wasm_i32c(c, 8);
+            c.push(Op::I32Add as u8);
+            wasm_local(c, Op::LocalGet, idx);
+            wasm_i32c(c, 4);
+            c.push(Op::I32Mul as u8);
+            c.push(Op::I32Add as u8);
+            wasm_load(c, 0);
+            c.push(Op::I64ExtendI32U as u8);
+            c.push(Op::Else as u8);
+            wasm_i64c(c, 0);
+            c.push(Op::End as u8);
+        };
+        // la = mem[a]; lb = mem[b]
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LB);
+        // res = alloc(8 + la*4)
+        lget(&mut c, LA);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(alloc_func_index as u64, &mut c);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        // borrow = 0; i = 0
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, BORROW);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, I);
+        // for i in 0..la
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, I);
+        lget(&mut c, LA);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // diff = a[i] - b[i] - borrow
+        limb(&mut c, A, LA, I);
+        limb(&mut c, B, LB, I);
+        op(&mut c, Op::I64Sub);
+        lget(&mut c, BORROW);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Sub);
+        lset(&mut c, DIFF);
+        // if diff < 0 { diff += 2^32; borrow = 1 } else { borrow = 0 }
+        lget(&mut c, DIFF);
+        wasm_i64c(&mut c, 0);
+        op(&mut c, Op::I64LtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, DIFF);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, DIFF);
+        wasm_i32c(&mut c, 1);
+        lset(&mut c, BORROW);
+        op(&mut c, Op::Else);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, BORROW);
+        op(&mut c, Op::End);
+        // mem[res+8+i*4] = wrap(diff)
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, DIFF);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        // i += 1
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, I);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop
+        op(&mut c, Op::End); // block
+        // normalize: rlen = la; while rlen>0 && limb[rlen-1]==0 { rlen-- }
+        lget(&mut c, LA);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, RLEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, RLEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, RLEN);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop
+        op(&mut c, Op::End); // block
+        // mem[res] = rlen; return res
+        lget(&mut c, RES);
+        lget(&mut c, RLEN);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RES);
+        FuncBody {
+            locals: vec![(6, ValType::I32), (1, ValType::I64)],
+            code: c,
+        }
+    }
+
+    /// Emit `bi_addsub(a: i32, b: i32, sub: i32) -> i32`: signed `a + b` (sub=0)
+    /// or `a - b` (sub=1). Flips b's sign when subtracting, then: equal signs add
+    /// magnitudes (keep sign); differing signs subtract the smaller magnitude from
+    /// the larger (taking the larger's sign). Result `-0` is normalized to `+0`.
+    fn emit_bi_addsub(
+        &self,
+        alloc_func_index: u32,
+        cmp_mag_index: u32,
+        add_mag_index: u32,
+        sub_mag_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const SUB: u32 = 2;
+        const NA: u32 = 3;
+        const BNEG: u32 = 4;
+        const CMP: u32 = 5;
+        const RES: u32 = 6;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // na = mem[a+4]; bneg = (mem[b+4] != sub)   [XOR of 0/1 flags]
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lset(&mut c, NA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        lget(&mut c, SUB);
+        op(&mut c, Op::I32Ne);
+        lset(&mut c, BNEG);
+        // if na == bneg { res = add_mag(a,b); res.neg = na }
+        lget(&mut c, NA);
+        lget(&mut c, BNEG);
+        op(&mut c, Op::I32Eq);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, A);
+        lget(&mut c, B);
+        call(&mut c, add_mag_index);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        lget(&mut c, NA);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::Else);
+        // cmp = cmp_mag(a,b)
+        lget(&mut c, A);
+        lget(&mut c, B);
+        call(&mut c, cmp_mag_index);
+        lset(&mut c, CMP);
+        lget(&mut c, CMP);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        // equal magnitudes → zero record
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::Else);
+        lget(&mut c, CMP);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        // |a| > |b| → a - b, sign na
+        lget(&mut c, A);
+        lget(&mut c, B);
+        call(&mut c, sub_mag_index);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        lget(&mut c, NA);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::Else);
+        // |a| < |b| → b - a, sign bneg
+        lget(&mut c, B);
+        lget(&mut c, A);
+        call(&mut c, sub_mag_index);
+        lset(&mut c, RES);
+        lget(&mut c, RES);
+        lget(&mut c, BNEG);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::End); // if cmp>0
+        op(&mut c, Op::End); // if cmp==0
+        op(&mut c, Op::End); // if na==bneg
+        // normalize -0: if mem[res]==0 { mem[res+4]=0 }
+        lget(&mut c, RES);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, RES);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        op(&mut c, Op::End);
+        lget(&mut c, RES);
+        FuncBody {
+            locals: vec![(4, ValType::I32)],
+            code: c,
+        }
+    }
 
     ///
     /// This method analyzes the block structure to detect if/else patterns
@@ -1016,6 +1452,7 @@ impl WasmBackend {
         bi_from_str_index: u32,
         bi_to_str_index: u32,
         bi_cmp_index: u32,
+        bi_addsub_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -1112,6 +1549,7 @@ impl WasmBackend {
             bi_from_str_index,
             bi_to_str_index,
             bi_cmp_index,
+            bi_addsub_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -1899,12 +2337,23 @@ impl WasmBackend {
                         }
                         code.push(Op::I64ExtendI32U as u8); // bool -> i64 cell
                     }
+                    BinOp::Add | BinOp::Sub => {
+                        // Signed add/sub via bi_addsub(a, b, sub): sub=1 for `-`.
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        wasm_i32c(code, if matches!(op, BinOp::Sub) { 1 } else { 0 });
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.bi_addsub_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8); // result ptr -> i64 cell
+                    }
                     _ => {
                         return Err(crate::Error::InvalidOperation(
-                            "BigInt (`besar`) arithmetic (+, -, *, /) is not yet \
-                             supported by the WASM backend (comparison, construction, \
-                             and display work; arithmetic is a follow-up). Use the C \
-                             backend or the interpreter."
+                            "BigInt (`besar`) arithmetic (*, /) is not yet \
+                             supported by the WASM backend (comparison, add/sub, \
+                             construction, and display work; multiply and divide are \
+                             a follow-up). Use the C backend or the interpreter."
                                 .to_string(),
                         ));
                     }
@@ -2806,6 +3255,8 @@ struct EmitCtx<'a> {
     bi_from_str_index: u32,
     bi_to_str_index: u32,
     bi_cmp_index: u32,
+    /// Function index of the signed BigInt add/sub helper (`bi_addsub(a,b,sub)`).
+    bi_addsub_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,

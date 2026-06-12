@@ -278,3 +278,56 @@ fn diff_besar_cmp_false_and_zero() {
         }",
     );
 }
+
+// ── W2.2b: BigInt add/sub (bi_add_mag / bi_sub_mag / bi_addsub) ───────────────
+// Signed +/- route through bi_addsub; results must match the C backend exactly,
+// including carry/borrow across limb boundaries, normalization, zero, and the
+// negative results (which also exercise bi_cmp's sign paths).
+
+#[test]
+fn diff_besar_add() {
+    assert_byte_equal(
+        "besar_add",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(besar(\"100\") + besar(\"200\"));\n\
+            cetakln(besar(\"4294967295\") + besar(\"1\"));\n\
+            cetakln(besar(\"99999999999999999999\") + besar(\"1\"));\n\
+            cetakln(besar(\"123456789012345678901234567890\") + besar(\"987654321098765432109876543210\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_besar_sub() {
+    // includes a negative result (-100), zero, and a 3-limb -> 2-limb borrow.
+    assert_byte_equal(
+        "besar_sub",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(besar(\"300\") - besar(\"100\"));\n\
+            cetakln(besar(\"100\") - besar(\"200\"));\n\
+            cetakln(besar(\"100\") - besar(\"100\"));\n\
+            cetakln(besar(\"18446744073709551616\") - besar(\"1\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_besar_addsub_chain_and_negcmp() {
+    // let-bound arithmetic propagates BigInt; negative intermediates feed both
+    // add/sub and bi_cmp's signed paths.
+    assert_byte_equal(
+        "besar_chain",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            biar a = besar(\"99999999999999999999\");\n\
+            biar b = a + a;\n\
+            cetakln(b);\n\
+            cetakln((besar(\"0\") - besar(\"500\")) + besar(\"200\"));\n\
+            kalau (besar(\"0\") - besar(\"5\")) < besar(\"3\") { cetak(1) } lain { cetak(0) }\n\
+            kalau (besar(\"0\") - besar(\"5\")) < (besar(\"0\") - besar(\"3\")) { cetak(1) } lain { cetak(0) }\n\
+            kalau (besar(\"0\") - besar(\"5\")) > (besar(\"0\") - besar(\"3\")) { cetak(1) } lain { cetak(0) }\n\
+            pulang 0\n\
+        }",
+    );
+}
