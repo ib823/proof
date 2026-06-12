@@ -236,3 +236,45 @@ fn diff_besar_2pow128_cetakln() {
         "fungsi utama() -> Nombor kesan Sistem { cetakln(besar(\"340282366920938463463374607431768211456\")); pulang 0 }",
     );
 }
+
+// ── W2.2a: BigInt comparison (bi_cmp) ────────────────────────────────────────
+// The six relational operators on BigInt operands route through bi_cmp; results
+// (used here as `kalau` conditions) must match the C backend exactly, across
+// limb-count boundaries and equal values. (besar parses non-negative magnitudes;
+// signed comparison is exercised once arithmetic yields negatives in W2.2b.)
+
+#[test]
+fn diff_besar_cmp_true_cases() {
+    // >, <, ==, cross-limb >, >=, !=, <, <=  → all true → "11111111".
+    assert_byte_equal(
+        "besar_cmp_true",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            kalau besar(\"100\") > besar(\"99\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"99\") < besar(\"100\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"50\") == besar(\"50\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"18446744073709551616\") > besar(\"9999999999\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"99999999999999999999\") >= besar(\"99999999999999999999\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"7\") != besar(\"8\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"99999999999999999998\") < besar(\"99999999999999999999\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"12345678901234567890\") <= besar(\"12345678901234567890\") { cetak(1) } lain { cetak(0) }\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_besar_cmp_false_and_zero() {
+    // false relations, zero, and cross-limb the other way → "001101".
+    assert_byte_equal(
+        "besar_cmp_false",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            kalau besar(\"99\") > besar(\"100\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"7\") == besar(\"8\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"0\") == besar(\"0\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"0\") < besar(\"1\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"9999999999\") > besar(\"18446744073709551616\") { cetak(1) } lain { cetak(0) }\n\
+            kalau besar(\"5\") >= besar(\"5\") { cetak(1) } lain { cetak(0) }\n\
+            pulang 0\n\
+        }",
+    );
+}
