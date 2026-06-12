@@ -170,7 +170,9 @@ strip_internals() {
 # if the committed ledgers are regenerated FROM that tree.
 regen_public_ledgers() {
     if [ -f "$REPO_ROOT/scripts/update-proof-ledger.sh" ]; then
-        bash "$REPO_ROOT/scripts/update-proof-ledger.sh" >/dev/null
+        # stdout NOT suppressed: the ledger script reports errors there, and a
+        # silent set -e death here cost a debugging session.
+        bash "$REPO_ROOT/scripts/update-proof-ledger.sh"
         git add PROOF_STATUS.md AXIOMS.md 2>/dev/null || true
     fi
 }

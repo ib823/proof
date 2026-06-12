@@ -83,8 +83,12 @@ for rel in "${active_coq_files[@]}"; do
   grep -nE '^[[:space:]]*Abort\.' "$path" | sed "s|^|$rel:|" >> "$tmp_active_abort_sites" || true
 done
 
-global_admitted="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Admitted\.' {} + 2>/dev/null | wc -l | tr -d " ")"
-global_axioms="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Axiom[[:space:]]+' {} + 2>/dev/null | wc -l | tr -d " ")"
+# `find -exec grep … +` exits non-zero when grep matches NOTHING anywhere —
+# true on the curated public tree (0 global Admitted once the deprecated
+# archive is excluded) — and under `set -euo pipefail` that killed the whole
+# script silently. The `|| true` keeps the honest 0.
+global_admitted="$({ find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Admitted\.' {} + 2>/dev/null || true; } | wc -l | tr -d " ")"
+global_axioms="$({ find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Axiom[[:space:]]+' {} + 2>/dev/null || true; } | wc -l | tr -d " ")"
 
 # The deprecated proof archive is deliberately not published on the curated
 # public branch. Global counts are always derived from THIS tree, so label
