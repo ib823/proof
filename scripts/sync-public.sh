@@ -84,6 +84,7 @@ INTERNAL_PATHS=(
 
     # --- Local toolchain installs (must never be published) ---
     "05_TOOLING/tools/isabelle/"
+    "05_TOOLING/tools/fstar/"
 
     # --- Internal audit/gap analysis docs ---
     "04_SPECS/cross-cutting/EXHAUSTIVENESS_AUDIT.md"
@@ -124,6 +125,82 @@ INTERNAL_GLOBS=(
     "02_FORMAL/coq/.lia.cache"
     "02_FORMAL/coq/.nia.cache"
 )
+
+# ── Shared helpers ──────────────────────────────────────────────────────────
+
+# Does $1 match the internal-exclusion lists?
+is_internal_path() {
+    local f="$1" pattern glob
+    for pattern in "${INTERNAL_PATHS[@]}"; do
+        case "$f" in
+            $pattern*) return 0 ;;
+        esac
+    done
+    for glob in "${INTERNAL_GLOBS[@]}"; do
+        case "$f" in
+            $glob) return 0 ;;
+        esac
+    done
+    return 1
+}
+
+# Remove every internal path/glob from the index and working tree.
+strip_internals() {
+    local pattern glob MATCHED
+    for pattern in "${INTERNAL_PATHS[@]}"; do
+        git rm -rf --quiet --ignore-unmatch "$pattern" 2>/dev/null || true
+        if ls $REPO_ROOT/$pattern 1>/dev/null 2>&1; then
+            rm -rf $REPO_ROOT/$pattern 2>/dev/null || true
+        fi
+    done
+    for glob in "${INTERNAL_GLOBS[@]}"; do
+        MATCHED=$(git ls-files "$glob" 2>/dev/null || true)
+        if [ -n "$MATCHED" ]; then
+            while IFS= read -r f; do
+                git rm -f --quiet "$f" 2>/dev/null || true
+            done <<< "$MATCHED"
+        fi
+    done
+}
+
+# Regenerate the proof ledgers against the tree we are on and stage them.
+# PROOF_STATUS.md/AXIOMS.md global counts are tree-derived; main's blob embeds
+# the unpublished properties/_archive_deprecated/, so the freshness gate
+# (update-proof-ledger.sh --check) can only pass on the curated public tree
+# if the committed ledgers are regenerated FROM that tree.
+regen_public_ledgers() {
+    if [ -f "$REPO_ROOT/scripts/update-proof-ledger.sh" ]; then
+        bash "$REPO_ROOT/scripts/update-proof-ledger.sh" >/dev/null
+        git add PROOF_STATUS.md AXIOMS.md 2>/dev/null || true
+    fi
+}
+
+# Run verify-public.sh against the current (public) tree. The script itself is
+# internal-excluded — it does not exist on public — so run main's copy;
+# previously a plain [ -f ] guard made the whole gate silently self-skip.
+run_verify_public() {
+    local tmp rc=0
+    tmp="$(mktemp)"
+    if git cat-file -e main:scripts/verify-public.sh 2>/dev/null; then
+        git show main:scripts/verify-public.sh > "$tmp"
+    elif [ -f "$REPO_ROOT/scripts/verify-public.sh" ]; then
+        cp "$REPO_ROOT/scripts/verify-public.sh" "$tmp"
+    else
+        echo -e "${RED}ERROR: verify-public.sh not found on main or in working tree${NC}"
+        rm -f "$tmp"
+        return 1
+    fi
+    bash "$tmp" || rc=$?
+    rm -f "$tmp"
+    return $rc
+}
+
+# Clear any cherry-pick/sequencer state (a previous conflict-stopped run left
+# state that made the next run spuriously report "no new changes").
+cleanup_sequencer() {
+    git cherry-pick --abort 2>/dev/null || true
+    rm -rf "$REPO_ROOT/.git/sequencer" 2>/dev/null || true
+}
 
 echo ""
 echo "================================================================"
@@ -198,8 +275,7 @@ if [ "${1:-}" = "--reconcile" ]; then
     echo "Reconcile mode: setting public's tree to main's content (minus internals)..."
     MAIN_SHA="$(git rev-parse --short main)"
     git checkout public --quiet
-    git cherry-pick --abort 2>/dev/null || true
-    rm -rf "$REPO_ROOT/.git/sequencer" 2>/dev/null || true
+    cleanup_sequencer
 
     # Build the list of public-destined files tracked on main.
     SYNC_LIST="$(mktemp)"
@@ -224,12 +300,10 @@ if [ "${1:-}" = "--reconcile" ]; then
     rm -f "$SYNC_LIST"
 
     # Enforce the internal lists against files already tracked on public.
-    for pattern in "${INTERNAL_PATHS[@]}"; do
-        git rm -rf --quiet --ignore-unmatch "$pattern" 2>/dev/null || true
-    done
-    for glob in "${INTERNAL_GLOBS[@]}"; do
-        git rm -rf --quiet --ignore-unmatch "$glob" 2>/dev/null || true
-    done
+    strip_internals
+
+    # Ledgers must be reproducible from the public tree itself.
+    regen_public_ledgers
 
     git add -A
 
@@ -258,6 +332,14 @@ scripts/sync-public.sh --reconcile).
 Synced from main ($MAIN_SHA). Internal files excluded."
     echo -e "${GREEN}[✓] Committed reconciliation on public${NC}"
 
+    echo "Running post-reconcile verification (main's verify-public.sh)..."
+    if ! run_verify_public; then
+        echo -e "${RED}ERROR: Public branch verification failed. NOT pushing.${NC}"
+        echo "The reconcile commit is left on public for inspection."
+        git checkout main --quiet
+        exit 1
+    fi
+
     echo "Pushing public..."
     git push origin public --no-verify
     echo -e "${GREEN}[✓] Public branch pushed to origin${NC}"
@@ -279,7 +361,12 @@ Synced from main ($MAIN_SHA). Internal files excluded."
     exit 0
 fi
 
-# Step 4: Determine commit(s) to sync
+# Step 4: Determine commit(s) to sync.
+# A range is expanded to its individual commits and each is cherry-picked,
+# resolved, stripped, and committed SEPARATELY. (The old behavior — one
+# `git cherry-pick <from>..<to> --no-commit` squash — stopped at the first
+# conflicting commit, committed the partial result, and left sequencer state
+# that made the next run spuriously report "no new changes".)
 if [ $# -ge 1 ]; then
     COMMIT_ARG="$1"
 else
@@ -287,123 +374,128 @@ else
     echo -e "${YELLOW}    Syncing latest main commit: $(git log --oneline -1 HEAD)${NC}"
 fi
 
-# Step 5: Switch to public
+if [[ "$COMMIT_ARG" == *".."* ]]; then
+    mapfile -t COMMITS < <(git rev-list --reverse --no-merges "$COMMIT_ARG")
+    if [ ${#COMMITS[@]} -eq 0 ]; then
+        echo -e "${YELLOW}    Range contains no commits. Nothing to sync.${NC}"
+        exit 0
+    fi
+    echo "    Range expands to ${#COMMITS[@]} commit(s)."
+else
+    COMMITS=("$(git rev-parse "$COMMIT_ARG")")
+fi
+
+# Step 5: Switch to public and clear any stale cherry-pick/sequencer state
 echo ""
 echo "Switching to public branch..."
 git checkout public --quiet
+cleanup_sequencer
 
-# Step 6: Cherry-pick
-echo "Cherry-picking from main..."
-if [[ "$COMMIT_ARG" == *".."* ]]; then
-    # Range
-    git cherry-pick "$COMMIT_ARG" --no-commit || true
-else
-    # Single commit
-    git cherry-pick "$COMMIT_ARG" --no-commit || true
-fi
+# On unresolvable failure: restore a clean public checkout, return to main.
+abort_sync() {
+    local c="$1"
+    echo -e "${RED}ERROR: could not cherry-pick $(git rev-parse --short "$c") cleanly. Aborting sync.${NC}"
+    echo "Commits synced before the failure (if any) remain committed on public"
+    echo "but have NOT been pushed. Resolve manually or use --reconcile."
+    cleanup_sequencer
+    git reset --hard HEAD --quiet
+    git checkout main --quiet
+    exit 1
+}
 
-# Step 7: Resolve conflicts
-# Internal files (matching INTERNAL_PATHS) → git rm
-# Public files (README.md, etc.) → accept main's version
-CONFLICTED=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
-if [ -n "$CONFLICTED" ]; then
-    echo -e "${YELLOW}    Resolving conflicts...${NC}"
-    echo "$CONFLICTED" | while read -r f; do
-        IS_INTERNAL=false
-        for pattern in "${INTERNAL_PATHS[@]}"; do
-            case "$f" in
-                $pattern*) IS_INTERNAL=true; break ;;
-            esac
-        done
-        if $IS_INTERNAL; then
-            echo -e "${YELLOW}      Removing internal: $f${NC}"
-            git rm -f --quiet "$f" 2>/dev/null || true
-        else
-            echo -e "${GREEN}      Keeping (accept main): $f${NC}"
-            git checkout --theirs "$f" 2>/dev/null || true
-            git add "$f" 2>/dev/null || true
+SYNCED_COUNT=0
+SKIPPED_COUNT=0
+
+sync_one_commit() {
+    local c="$1" rc=0 f
+    local short subj
+    short="$(git rev-parse --short "$c")"
+    subj="$(git log --format=%s -n 1 "$c")"
+    echo "Cherry-picking $short  $subj"
+
+    git cherry-pick --no-commit "$c" >/dev/null 2>&1 || rc=$?
+
+    # Conflict policy: internal file → remove; public file → take main's
+    # version; file deleted on main → accept the deletion.
+    local UNMERGED
+    UNMERGED=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
+    if [ -n "$UNMERGED" ]; then
+        echo -e "${YELLOW}    Resolving conflicts...${NC}"
+        while IFS= read -r f; do
+            if is_internal_path "$f"; then
+                echo -e "${YELLOW}      Removing internal: $f${NC}"
+                git rm -f --quiet "$f" 2>/dev/null || true
+            elif git cat-file -e "main:$f" 2>/dev/null; then
+                echo -e "${GREEN}      Keeping (accept main): $f${NC}"
+                git checkout main --quiet -- "$f" && git add "$f"
+            else
+                echo -e "${YELLOW}      Deleted on main: $f${NC}"
+                git rm -f --quiet "$f" 2>/dev/null || true
+            fi
+        done <<< "$UNMERGED"
+    elif [ $rc -ne 0 ]; then
+        # cherry-pick failed without leaving unmerged paths (e.g. empty
+        # commit) — treat an empty index as a skip below, otherwise abort.
+        if ! git diff --cached --quiet || ! git diff --quiet; then
+            abort_sync "$c"
         fi
-    done
-fi
+    fi
 
-# Step 8: Remove internal files that may have been introduced
-echo "Removing internal files from public..."
-REMOVED_COUNT=0
-for pattern in "${INTERNAL_PATHS[@]}"; do
-    # Use git rm with glob support
-    if git ls-files "$pattern" 2>/dev/null | grep -q .; then
-        git rm -rf --quiet "$pattern" 2>/dev/null || true
-        REMOVED_COUNT=$((REMOVED_COUNT + 1))
+    # Any conflict still unresolved is a policy failure — do not guess.
+    if [ -n "$(git diff --name-only --diff-filter=U 2>/dev/null)" ]; then
+        abort_sync "$c"
     fi
-    # Also handle untracked files from cherry-pick
-    if ls $REPO_ROOT/$pattern 1>/dev/null 2>&1; then
-        rm -rf $REPO_ROOT/$pattern 2>/dev/null || true
+
+    # Strip internals, regenerate tree-derived ledgers, stage everything.
+    strip_internals
+    regen_public_ledgers
+    git add -A
+    strip_internals   # git add -A may have re-added internal working-tree files
+
+    if git diff --cached --quiet; then
+        echo -e "${YELLOW}    SKIP $short — no public-destined changes (internal-only or already applied)${NC}"
+        git cherry-pick --quit 2>/dev/null || true
+        git reset --hard HEAD --quiet
+        SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+        return 0
     fi
+
+    # Use --no-verify because main was already fully verified by pre-push hook.
+    # Without this, the pre-commit hook regenerates VERIFICATION_MANIFEST.md
+    # during the commit, re-introducing an internal file to public.
+    git commit --no-verify --quiet -m "$(cat <<EOF
+$subj
+
+Cherry-picked from main ($short).
+Internal files excluded.
+EOF
+)"
+    SYNCED_COUNT=$((SYNCED_COUNT + 1))
+    echo -e "${GREEN}    [✓] Committed on public${NC}"
+}
+
+for c in "${COMMITS[@]}"; do
+    sync_one_commit "$c"
 done
 
-# Step 8b: Remove files matching glob patterns (backups, caches, temp files)
-for glob in "${INTERNAL_GLOBS[@]}"; do
-    MATCHED=$(git ls-files "$glob" 2>/dev/null || true)
-    if [ -n "$MATCHED" ]; then
-        echo "$MATCHED" | while read -r f; do
-            echo -e "${YELLOW}    Removing artifact: $f${NC}"
-            git rm -f --quiet "$f" 2>/dev/null || true
-        done
-        REMOVED_COUNT=$((REMOVED_COUNT + 1))
-    fi
-done
+echo ""
+echo "Synced $SYNCED_COUNT commit(s), skipped $SKIPPED_COUNT (no public-destined changes)."
 
-if [ $REMOVED_COUNT -gt 0 ]; then
-    echo -e "${YELLOW}    Removed $REMOVED_COUNT internal path(s) from public${NC}"
-fi
-
-# Step 8: Check if there are changes to commit
-if git diff --cached --quiet && git diff --quiet; then
-    echo -e "${YELLOW}    No new changes for public branch. Skipping.${NC}"
-    git cherry-pick --abort 2>/dev/null || true
+if [ "$SYNCED_COUNT" -eq 0 ]; then
+    echo -e "${YELLOW}    Nothing new for public branch.${NC}"
     git checkout main --quiet
     echo -e "${GREEN}[✓] Back on main${NC}"
     exit 0
 fi
 
-# Step 9: Commit on public
-# Get original message, stripping any Co-Authored-By lines
-ORIGINAL_MSG=$(git log --format=%B -n 1 "$COMMIT_ARG" 2>/dev/null | head -1)
-git add -A
-# Final cleanup: force-remove any internal files that git add -A may have re-added
-for pattern in "${INTERNAL_PATHS[@]}"; do
-    git rm -rf --quiet "$pattern" 2>/dev/null || true
-done
-for glob in "${INTERNAL_GLOBS[@]}"; do
-    MATCHED=$(git ls-files "$glob" 2>/dev/null || true)
-    if [ -n "$MATCHED" ]; then
-        echo "$MATCHED" | while read -r f; do
-            git rm -f --quiet "$f" 2>/dev/null || true
-        done
-    fi
-done
-# Use --no-verify because main was already fully verified by pre-push hook.
-# Without this, the pre-commit hook regenerates VERIFICATION_MANIFEST.md
-# during the commit, re-introducing an internal file to public.
-git commit --no-verify -m "$(cat <<EOF
-$ORIGINAL_MSG
-
-Cherry-picked from main ($(echo $COMMIT_ARG | cut -c1-7)).
-Internal files excluded.
-EOF
-)" --quiet
-
-echo -e "${GREEN}[✓] Committed on public${NC}"
-
-# Step 10: Post-sync verification gate
-if [ -f "$REPO_ROOT/scripts/verify-public.sh" ]; then
-    echo "Running post-sync verification..."
-    if ! bash "$REPO_ROOT/scripts/verify-public.sh"; then
-        echo -e "${RED}ERROR: Public branch verification failed. NOT pushing.${NC}"
-        echo "Fix issues, then re-run sync."
-        git checkout main --quiet
-        exit 1
-    fi
+# Step 10: Post-sync verification gate (runs main's verify-public.sh — the
+# script is internal-excluded so it does not exist on the public tree).
+echo "Running post-sync verification..."
+if ! run_verify_public; then
+    echo -e "${RED}ERROR: Public branch verification failed. NOT pushing.${NC}"
+    echo "Fix issues, then re-run sync."
+    git checkout main --quiet
+    exit 1
 fi
 
 # Step 11: Push public to origin and riina (ib823/riina)

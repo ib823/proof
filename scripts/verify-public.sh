@@ -50,7 +50,8 @@ done
 
 # ── 3. No internal directories ───────────────────────────────────────
 echo "[3/9] Checking for internal directories..."
-for d in 01_RESEARCH 06_COORDINATION 99_ARCHIVE claude_ai_output dist 04_SPECS/business; do
+for d in 01_RESEARCH 06_COORDINATION 99_ARCHIVE claude_ai_output dist 04_SPECS/business \
+         05_TOOLING/tools/isabelle 05_TOOLING/tools/fstar; do
     if [ -d "$REPO_ROOT/$d" ]; then
         echo -e "${RED}FAIL: $d/ exists on public branch${NC}"
         FAIL=1
