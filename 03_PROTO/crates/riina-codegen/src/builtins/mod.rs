@@ -18,6 +18,7 @@ pub(crate) mod senarai;
 pub(crate) mod set;
 pub(crate) mod teks;
 pub(crate) mod ujian;
+pub(crate) mod vfs;
 
 use crate::value::{Env, Value};
 use crate::{Error, Result};
@@ -172,6 +173,12 @@ pub fn register_builtins(env: &Env) -> Env {
 
     // Security builtins (keselamatan): sanitizers, sinks, CSRF, safe I/O.
     for (bm, en, canonical) in keselamatan::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
+    // Virtual-filesystem builtins (verified access-control via riina-os VFS).
+    for (bm, en, canonical) in vfs::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
@@ -375,6 +382,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 
     // Security (sanitizers / sinks / CSRF / safe I/O)
     if let Some(result) = keselamatan::apply(name, &arg)? {
+        return Ok(result);
+    }
+
+    // Virtual filesystem (verified access-control)
+    if let Some(result) = vfs::apply(name, &arg)? {
         return Ok(result);
     }
 

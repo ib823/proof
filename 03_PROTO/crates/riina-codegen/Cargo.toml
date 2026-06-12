@@ -20,17 +20,31 @@ Mode: Comprehensive Verification | Zero Trust
 [dependencies]
 # Internal dependencies - AST definitions
 riina-types.workspace = true
+# Actor runtime (JALINAN Phase 6)
+riina-runtime = { path = "../riina-runtime" }
+# Verified VirtualFs access-control model (exposed via the vfs_* builtins)
+riina-os = { path = "../riina-os" }
 
 # No external dependencies (Law 8: Zero third-party deps)
 # All code generation is hand-written for maximum auditability
 
 [dev-dependencies]
 # Testing dependencies (internal only)
+riina-parser = { path = "../riina-parser" }
+riina-typechecker = { path = "../riina-typechecker" }
 
 # No feature flags - ZERO LAZINESS means we include EVERYTHING
 # All backends (interpreter, C emission) are always available
 
+# Verified-stdlib micro-benchmarks (Gate C / Gate E). `harness = false` means
+# the bench provides its own `fn main()` — a hand-written timing loop — so NO
+# third-party benchmarking crate is pulled in (Law 8 holds for 03_PROTO).
+[[bench]]
+name = "stdlib_bench"
+harness = false
+
 [lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
 unsafe_code = "forbid"
 
 [lints.clippy]

@@ -3195,6 +3195,20 @@ mod tests {
         );
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // VIRTUAL FILESYSTEM (vfs_*) — verified access-control, end-to-end
+    // ═══════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_vfs_write_read_through_interpreter() {
+        // The curried `vfs_tulis(path, data)` forms a pair on the second
+        // application; vfs_baca reads it back. Exercises Var→Builtin→apply_builtin.
+        let src = "biar a = vfs_mula(1000000); \
+                   biar b = vfs_tulis(\"f.txt\", \"data\"); \
+                   vfs_baca(\"f.txt\")";
+        assert_eq!(run_src(src), Value::String("data".to_string()));
+    }
+
     // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──
 
     fn iu(value: u64, bits: u8) -> Value {

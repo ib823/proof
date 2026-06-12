@@ -814,6 +814,39 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::String), Box::new(Ty::Decimal), Effect::Pure),
         );
     }
+    // Virtual-filesystem builtins (verified access-control via riina-os VFS).
+    // `vfs_mula`/`vfs_jadi_pengguna` take an Int (byte quota / uid); `vfs_tulis`
+    // a `(path, data)` pair; `vfs_baca`/`vfs_padam` a path. All carry filesystem
+    // effects (not the capability-gated `System`) so they are usable directly.
+    let unit_ty = || Box::new(Ty::Unit);
+    for nm in ["vfs_mula", "vfs_init", "vfs_jadi_pengguna", "vfs_become_user"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), unit_ty(), Effect::FileSystem),
+        );
+    }
+    for nm in ["vfs_tulis", "vfs_write"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                unit_ty(),
+                Effect::Write,
+            ),
+        );
+    }
+    for nm in ["vfs_baca", "vfs_read"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Read),
+        );
+    }
+    for nm in ["vfs_padam", "vfs_delete"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Write),
+        );
+    }
     c = c.extend(
         "ke_bool".to_string(),
         Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
