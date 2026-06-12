@@ -52,6 +52,21 @@ INTERNAL_PATHS=(
     "axiom_audit_report.txt"
     "riina-website.jsx"
     "AUDIT_REPORT_2026_02_06.md"
+    "PRESERVATION_SORRY_PROMPT.md"
+
+    # --- Internal worker/delegation reports + AI-review harness + machine-local
+    #     diagnostics (carry container-absolute paths; flagged by verify-public
+    #     check 7 the first time it actually ran on public, 2026-06-12) ---
+    "02_FORMAL/lean/WORKER_B_COMPLETION_REPORT.md"
+    "02_FORMAL/fstar/TRANSPILER_FIX_COMPLETE.md"
+    "scripts/run-hostile-review.sh"
+    "scripts/run-claude-hostile-review.sh"
+    "scripts/run-codex-hostile-review.sh"
+    "scripts/run-gemini-hostile-review.sh"
+    "reports/dim1_dim9_promotion_status.json"
+    "reports/heavy_closure_status.json"
+    "reports/noncoq_mechanized_status.json"
+    "diagnostics/"
 
     # --- Coq internal strategy/delegation files ---
     "02_FORMAL/coq/CLAUDE_*.md"
