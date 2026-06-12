@@ -2462,6 +2462,34 @@ linearity/session/CRDT — the parse-gap lanes are where Gate-C-adjacent example
 **v0.4.0 tag recreated at `aae47857`** (the fresh clone had lost the local-only tag) — push attempted
 per the loose-end protocol; see conclusion below for the outcome.
 
+**Session conclusion (2026-06-12, thirteenth session).** Twelve commits on `main`
+(`9853ea24..` this entry), every push under the full pre-push verify (Coq 327 files rebuilt
+from clean each time on Rocq 9.1.1; Rust 2910/0; clippy 0; audit-docs 0 discrepancies).
+**Verified baseline at this handoff (all by command): 03_PROTO `cargo test --workspace
+--release` = 2910 / 0 (2898 + 9 REQ-27 typechecker + 2 e2e + 1 fuzz reach test); 05_TOOLING
+294 / 0; clippy 0 warnings (both); Coq active 327 files / 12,613 Qed / 0 Admitted / 0 Axiom /
+0 Abort; examples 165 (61 pass `riinac check`); metrics.json `tests`/`testsVerified` = 2910;
+proof ledgers + SBOMs fresh.** **Public reconciled and pushed** (`1036b77b`, via
+`sync-public.sh --reconcile`): the rebuilt verify-public gate now ACTUALLY RUNS on the public
+tree (main's blob) and the push went out only after **all 9 checks + all 10 quality gates
+passed on the public tree itself — including proof-ledger freshness, the gate that could
+never pass before** (active-only/curated PROOF_STATUS variant, owner decision a). Getting
+there surfaced and fixed two more real defects the dormant gate had been hiding: (1)
+`update-proof-ledger.sh` died silently on any tree with 0 global Admitted (`find -exec grep +`
+propagates grep's no-match exit 1 under `set -euo pipefail`) — exactly the curated tree;
+(2) historical contamination published all along: the PRESERVATION_SORRY_PROMPT delegation
+doc, lean/fstar worker reports, 4 AI hostile-review scripts, 3 machine-local status JSONs,
+`diagnostics/`, and `github.com/ib823/proof` references in two spec diagrams — all
+internal-excluded or scrubbed (same classes/remedies as owner decisions b/c). F\* toolchain
+purged from public; Isabelle/fstar dirs both absent; zero internal leaks re-verified.
+**v0.4.0 tag: still cannot be pushed from a managed environment** (proxy disconnects on tag
+push, retried; tag exists locally at `aae47857` — from any normal clone: `git push origin
+v0.4.0`). **Website deploy not run** (no ib823/riina access; runbook unchanged). **Honest
+remainders:** REQ-28 external audit (owner-deferred), release signing + CI nix build (no Nix
+in container, checked), continuous fuzz/coverage-gate-in-CI/OSS-Fuzz, examples parse-gap
+lanes (failure classes re-derived above), riina-mirror push of the reconcile (origin-only by
+design — owner reviews then mirrors).
+
 **Verified baseline at handoff (2026-06-11, twelfth session, last commit `beb93fa`; all re-run by command that session):**
 `cargo test --workspace --release` (03_PROTO) = **2898 / 0** (was 2877 at the start of this session's
 four lanes: +6 REQ-27 IFC sink tests, +1 generated-stdlib-doc drift guard, +8 fuzz-robustness tests,
