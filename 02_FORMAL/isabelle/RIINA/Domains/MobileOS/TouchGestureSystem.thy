@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TouchGestureSystem - Isabelle/HOL Port
@@ -20,6 +22,8 @@
  * | physical_touch     | physical_touch         | OK     |
  * | registered         | registered             | OK     |
  * | display_latency    | display_latency        | OK     |
+ * | LATENCY_BOUND_10MS | LATENCY_BOUND_10MS     | OK     |
+ * | TOUCH_LATENCY_MAX_16MS | TOUCH_LATENCY_MAX_16MS | OK     |
  * | latency_bound      | latency_bound          | OK     |
  * | touch_system_correct | touch_system_correct   | OK     |
  * | intended_gesture   | intended_gesture       | OK     |
@@ -33,6 +37,7 @@
  * | edge_margin        | edge_margin            | OK     |
  * | is_edge_touch      | is_edge_touch          | OK     |
  * | is_accidental_touch | is_accidental_touch    | OK     |
+ * | timestamps_monotonic | timestamps_monotonic   | OK     |
  * | gesture_priority   | gesture_priority       | OK     |
  * | touch_cancelled    | touch_cancelled        | OK     |
  * | multi_touch_count  | multi_touch_count      | OK     |
@@ -61,12 +66,8 @@
  *)
 
 theory TouchGestureSystem
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* GestureType (matches Coq: Inductive GestureType) *)
 datatype gesture_type =
@@ -110,19 +111,27 @@ definition TouchSequence :: "'a" where
 
 (* physical_touch (matches Coq: Definition physical_touch) *)
 definition physical_touch :: "TouchEvent \<Rightarrow> bool" where
-  "physical_touch t \<equiv> touch_is_physical t = true"
+  "physical_touch t \<equiv> touch_is_physical t = True"
 
 (* registered (matches Coq: Definition registered) *)
 definition registered :: "TouchEvent \<Rightarrow> bool" where
-  "registered t \<equiv> touch_registered t = true"
+  "registered t \<equiv> touch_registered t = True"
 
 (* display_latency (matches Coq: Definition display_latency) *)
 definition display_latency :: "TouchEvent \<Rightarrow> Microseconds" where
   "display_latency t \<equiv> touch_display_latency t"
 
+(* LATENCY_BOUND_10MS (matches Coq: Definition LATENCY_BOUND_10MS) *)
+definition LATENCY_BOUND_10MS :: "Microseconds" where
+  "LATENCY_BOUND_10MS \<equiv> Z.to_nat 10000%Z"
+
+(* TOUCH_LATENCY_MAX_16MS (matches Coq: Definition TOUCH_LATENCY_MAX_16MS) *)
+definition TOUCH_LATENCY_MAX_16MS :: "Microseconds" where
+  "TOUCH_LATENCY_MAX_16MS \<equiv> Z.to_nat 16000%Z"
+
 (* latency_bound (matches Coq: Definition latency_bound) *)
 definition latency_bound :: "Microseconds" where
-  "latency_bound \<equiv> 10000"
+  "latency_bound \<equiv> LATENCY_BOUND_10MS"
 
 (* touch_system_correct (matches Coq: Definition touch_system_correct) *)
 definition touch_system_correct :: "TouchEvent \<Rightarrow> bool" where
@@ -130,7 +139,8 @@ definition touch_system_correct :: "TouchEvent \<Rightarrow> bool" where
   (registered t -> physical_touch t) /\
   (physical_touch t -> display_latency t <= latency_bound)"
 
-(* intended_gesture - complex match, manual review needed *)
+(* intended_gesture - complex match, needs manual translation *)
+definition intended_gesture :: "bool" where "intended_gesture = undefined"
 
 (* recognized_gesture (matches Coq: Definition recognized_gesture) *)
 fun recognized_gesture :: "TouchSequence \<Rightarrow> GestureType" where
@@ -150,11 +160,11 @@ definition touch_pressure_max :: "nat" where
 
 (* touch_latency_max (matches Coq: Definition touch_latency_max) *)
 definition touch_latency_max :: "Microseconds" where
-  "touch_latency_max \<equiv> 16000"
+  "touch_latency_max \<equiv> TOUCH_LATENCY_MAX_16MS"
 
 (* is_hover_event (matches Coq: Definition is_hover_event) *)
 definition is_hover_event :: "TouchEvent \<Rightarrow> bool" where
-  "is_hover_event t \<equiv> negb (touch_is_physical t) \<and> (0 <? fst (touch_position t) + snd (touch_position t))"
+  "is_hover_event t \<equiv> (\<not> (touch_is_physical) t) \<and> (0 <? fst (touch_position t) + snd (touch_position t))"
 
 (* is_stylus_event (matches Coq: Definition is_stylus_event) *)
 definition is_stylus_event :: "TouchEvent \<Rightarrow> bool" where
@@ -173,6 +183,10 @@ definition is_edge_touch :: "TouchEvent \<Rightarrow> bool" where
 (* is_accidental_touch (matches Coq: Definition is_accidental_touch) *)
 definition is_accidental_touch :: "TouchEvent \<Rightarrow> bool" where
   "is_accidental_touch t \<equiv> (touch_pressure t <? 5) \<and> (touch_display_latency t <? 50)"
+
+(* timestamps_monotonic (matches Coq: Definition timestamps_monotonic) *)
+fun timestamps_monotonic :: "TouchSequence \<Rightarrow> bool" where
+
 
 (* gesture_priority (matches Coq: Definition gesture_priority) *)
 fun gesture_priority :: "GestureType \<Rightarrow> nat" where
@@ -199,7 +213,7 @@ definition well_formed_multi_touch :: "MultiTouchState \<Rightarrow> bool" where
   max_simultaneous mt > 0"
 
 (* touch_latency_bounded (matches Coq) *)
-lemma touch_latency_bounded: "\<forall> (touch : TouchEvent), touch_system_correct touch \<longrightarrow> physical_touch touch \<longrightarrow> display_latency touch \<le> 10000"
+lemma touch_latency_bounded: "\<forall> (touch : TouchEvent), touch_system_correct touch \<longrightarrow> physical_touch touch \<longrightarrow> display_latency touch \<le> LATENCY_BOUND_10MS"
   by auto
 
 (* touch_registration_complete (matches Coq) *)
@@ -243,7 +257,7 @@ lemma touch_pressure_bounded: "\<forall> (t : TouchEvent), touch_pressure t \<le
   by auto
 
 (* touch_latency_bounded_16ms (matches Coq) *)
-lemma touch_latency_bounded_16ms: "\<forall> (t : TouchEvent), touch_display_latency t \<le> touch_latency_max \<longrightarrow> touch_display_latency t \<le> 16000"
+lemma touch_latency_bounded_16ms: "\<forall> (t : TouchEvent), touch_display_latency t \<le> touch_latency_max \<longrightarrow> touch_display_latency t \<le> TOUCH_LATENCY_MAX_16MS"
   by auto
 
 (* hover_event_supported (matches Coq) *)

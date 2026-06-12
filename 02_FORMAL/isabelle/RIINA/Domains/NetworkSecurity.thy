@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkSecurity - Isabelle/HOL Port
@@ -92,14 +94,14 @@
  *)
 
 theory NetworkSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* TLSConfig (matches Coq: Record TLSConfig) *)
 record tls_config =
   tls_enabled :: bool
   certificate_pinning_enabled :: bool
-  min_tls_version :: nat  (* 12 = TLS 1.2, 13 = TLS 1.3 *)
+  min_tls_version :: nat
   strong_cipher_suites :: bool
 
 (* ARPConfig (matches Coq: Record ARPConfig) *)
@@ -127,7 +129,7 @@ record https_config =
   hsts_enabled :: bool
   hsts_preload :: bool
   hsts_include_subdomains :: bool
-  hsts_max_age :: nat  (* seconds *)
+  hsts_max_age :: nat
 
 (* EncryptionConfig (matches Coq: Record EncryptionConfig) *)
 record encryption_config =
@@ -255,14 +257,14 @@ record dhcp_security_config =
 record ntp_client_config =
   multiple_time_sources :: bool
   min_time_sources :: nat
-  nts_enabled :: bool  (* Network Time Security *)
+  nts_enabled :: bool
   authenticated_ntp :: bool
 
 (* TCPSecurityConfig (matches Coq: Record TCPSecurityConfig) *)
 record tcp_security_config =
   tcp_encryption_enabled :: bool
   tcp_md5_auth :: bool
-  tcp_ao_enabled :: bool  (* TCP-AO authentication *)
+  tcp_ao_enabled :: bool
   randomized_isn :: bool
 
 (* TrafficAnalysisConfig (matches Coq: Record TrafficAnalysisConfig) *)
@@ -302,11 +304,11 @@ record network_security_config =
 
 (* tls_mitm_defense_enabled (matches Coq: Definition tls_mitm_defense_enabled) *)
 definition tls_mitm_defense_enabled :: "TLSConfig \<Rightarrow> bool" where
-  "tls_mitm_defense_enabled config \<equiv> andb (tls_enabled config) (certificate_pinning_enabled config)"
+  "tls_mitm_defense_enabled config \<equiv> (tls_enabled config \<and> certificate_pinning_enabled config)"
 
 (* arp_spoofing_defense_enabled (matches Coq: Definition arp_spoofing_defense_enabled) *)
 definition arp_spoofing_defense_enabled :: "ARPConfig \<Rightarrow> bool" where
-  "arp_spoofing_defense_enabled config \<equiv> orb (static_arp_enabled config) (arp_inspection_enabled config)"
+  "arp_spoofing_defense_enabled config \<equiv> (static_arp_enabled config \<or> arp_inspection_enabled config)"
 
 (* dns_poisoning_defense_enabled (matches Coq: Definition dns_poisoning_defense_enabled) *)
 definition dns_poisoning_defense_enabled :: "DNSSECConfig \<Rightarrow> bool" where
@@ -318,7 +320,7 @@ definition bgp_hijacking_defense_enabled :: "BGPConfig \<Rightarrow> bool" where
 
 (* ssl_stripping_defense_enabled (matches Coq: Definition ssl_stripping_defense_enabled) *)
 definition ssl_stripping_defense_enabled :: "HTTPSConfig \<Rightarrow> bool" where
-  "ssl_stripping_defense_enabled config \<equiv> andb (hsts_enabled config) (hsts_preload config)"
+  "ssl_stripping_defense_enabled config \<equiv> (hsts_enabled config \<and> hsts_preload config)"
 
 (* packet_sniffing_defense_enabled (matches Coq: Definition packet_sniffing_defense_enabled) *)
 definition packet_sniffing_defense_enabled :: "EncryptionConfig \<Rightarrow> bool" where
@@ -326,15 +328,15 @@ definition packet_sniffing_defense_enabled :: "EncryptionConfig \<Rightarrow> bo
 
 (* packet_injection_defense_enabled (matches Coq: Definition packet_injection_defense_enabled) *)
 definition packet_injection_defense_enabled :: "AuthProtocolConfig \<Rightarrow> bool" where
-  "packet_injection_defense_enabled config \<equiv> andb (protocol_auth_enabled config) (message_authentication_code config)"
+  "packet_injection_defense_enabled config \<equiv> (protocol_auth_enabled config \<and> message_authentication_code config)"
 
 (* replay_attack_defense_enabled (matches Coq: Definition replay_attack_defense_enabled) *)
 definition replay_attack_defense_enabled :: "ReplayProtectionConfig \<Rightarrow> bool" where
-  "replay_attack_defense_enabled config \<equiv> andb (nonces_enabled config) (timestamps_enabled config)"
+  "replay_attack_defense_enabled config \<equiv> (nonces_enabled config \<and> timestamps_enabled config)"
 
 (* volumetric_dos_defense_enabled (matches Coq: Definition volumetric_dos_defense_enabled) *)
 definition volumetric_dos_defense_enabled :: "RateLimiterConfig \<Rightarrow> bool" where
-  "volumetric_dos_defense_enabled config \<equiv> andb (rate_limiting_enabled config) (cdn_protection_enabled config)"
+  "volumetric_dos_defense_enabled config \<equiv> (rate_limiting_enabled config \<and> cdn_protection_enabled config)"
 
 (* protocol_dos_defense_enabled (matches Coq: Definition protocol_dos_defense_enabled) *)
 definition protocol_dos_defense_enabled :: "ProtocolImplConfig \<Rightarrow> bool" where
@@ -346,7 +348,7 @@ definition application_dos_defense_enabled :: "ResourceLimitsConfig \<Rightarrow
 
 (* amplification_dos_defense_enabled (matches Coq: Definition amplification_dos_defense_enabled) *)
 definition amplification_dos_defense_enabled :: "AmplificationConfig \<Rightarrow> bool" where
-  "amplification_dos_defense_enabled config \<equiv> andb (open_resolvers_disabled config) (source_validation_enabled config)"
+  "amplification_dos_defense_enabled config \<equiv> (open_resolvers_disabled config \<and> source_validation_enabled config)"
 
 (* syn_flood_defense_enabled (matches Coq: Definition syn_flood_defense_enabled) *)
 definition syn_flood_defense_enabled :: "SYNProtectionConfig \<Rightarrow> bool" where
@@ -374,7 +376,7 @@ definition ntp_amplification_defense_enabled :: "NTPServerConfig \<Rightarrow> b
 
 (* ip_spoofing_defense_enabled (matches Coq: Definition ip_spoofing_defense_enabled) *)
 definition ip_spoofing_defense_enabled :: "IPSpoofingConfig \<Rightarrow> bool" where
-  "ip_spoofing_defense_enabled config \<equiv> andb (bcp38_filtering_enabled config) (source_address_validation config)"
+  "ip_spoofing_defense_enabled config \<equiv> (bcp38_filtering_enabled config \<and> source_address_validation config)"
 
 (* mac_spoofing_defense_enabled (matches Coq: Definition mac_spoofing_defense_enabled) *)
 definition mac_spoofing_defense_enabled :: "MACSecurityConfig \<Rightarrow> bool" where
@@ -382,7 +384,7 @@ definition mac_spoofing_defense_enabled :: "MACSecurityConfig \<Rightarrow> bool
 
 (* vlan_hopping_defense_enabled (matches Coq: Definition vlan_hopping_defense_enabled) *)
 definition vlan_hopping_defense_enabled :: "VLANSecurityConfig \<Rightarrow> bool" where
-  "vlan_hopping_defense_enabled config \<equiv> andb (dtp_disabled config) (trunk_ports_restricted config)"
+  "vlan_hopping_defense_enabled config \<equiv> (dtp_disabled config \<and> trunk_ports_restricted config)"
 
 (* rogue_dhcp_defense_enabled (matches Coq: Definition rogue_dhcp_defense_enabled) *)
 definition rogue_dhcp_defense_enabled :: "DHCPSecurityConfig \<Rightarrow> bool" where
@@ -390,7 +392,7 @@ definition rogue_dhcp_defense_enabled :: "DHCPSecurityConfig \<Rightarrow> bool"
 
 (* ntp_attack_defense_enabled (matches Coq: Definition ntp_attack_defense_enabled) *)
 definition ntp_attack_defense_enabled :: "NTPClientConfig \<Rightarrow> bool" where
-  "ntp_attack_defense_enabled config \<equiv> andb (multiple_time_sources config) (Nat"
+  "ntp_attack_defense_enabled config \<equiv> (multiple_time_sources config \<and> (3 \<le> (min_time_sources) config))"
 
 (* tcp_reset_defense_enabled (matches Coq: Definition tcp_reset_defense_enabled) *)
 definition tcp_reset_defense_enabled :: "TCPSecurityConfig \<Rightarrow> bool" where
@@ -398,34 +400,34 @@ definition tcp_reset_defense_enabled :: "TCPSecurityConfig \<Rightarrow> bool" w
 
 (* traffic_analysis_defense_enabled (matches Coq: Definition traffic_analysis_defense_enabled) *)
 definition traffic_analysis_defense_enabled :: "TrafficAnalysisConfig \<Rightarrow> bool" where
-  "traffic_analysis_defense_enabled config \<equiv> andb (traffic_padding_enabled config) (traffic_mixing_enabled config)"
+  "traffic_analysis_defense_enabled config \<equiv> (traffic_padding_enabled config \<and> traffic_mixing_enabled config)"
 
 (* all_defenses_enabled (matches Coq: Definition all_defenses_enabled) *)
 definition all_defenses_enabled :: "NetworkSecurityConfig \<Rightarrow> bool" where
-  "all_defenses_enabled config \<equiv> andb (tls_mitm_defense_enabled (ns_tls config))
-  (andb (arp_spoofing_defense_enabled (ns_arp config))
-  (andb (dns_poisoning_defense_enabled (ns_dnssec config))
-  (andb (bgp_hijacking_defense_enabled (ns_bgp config))
-  (andb (ssl_stripping_defense_enabled (ns_https config))
-  (andb (packet_sniffing_defense_enabled (ns_encryption config))
-  (andb (packet_injection_defense_enabled (ns_auth_protocol config))
-  (andb (replay_attack_defense_enabled (ns_replay config))
-  (andb (volumetric_dos_defense_enabled (ns_rate_limiter config))
-  (andb (protocol_dos_defense_enabled (ns_protocol_impl config))
-  (andb (application_dos_defense_enabled (ns_resource_limits config))
-  (andb (amplification_dos_defense_enabled (ns_amplification config))
-  (andb (syn_flood_defense_enabled (ns_syn config))
-  (andb (udp_flood_defense_enabled (ns_udp config))
-  (andb (icmp_flood_defense_enabled (ns_icmp config))
-  (andb (slowloris_defense_enabled (ns_slowloris config))
-  (andb (dns_amplification_defense_enabled (ns_dns_server config))
-  (andb (ntp_amplification_defense_enabled (ns_ntp_server config))
-  (andb (ip_spoofing_defense_enabled (ns_ip_spoofing config))
-  (andb (mac_spoofing_defense_enabled (ns_mac config))
-  (andb (vlan_hopping_defense_enabled (ns_vlan config))
-  (andb (rogue_dhcp_defense_enabled (ns_dhcp config))
-  (andb (ntp_attack_defense_enabled (ns_ntp_client config))
-  (andb (tcp_reset_defense_enabled (ns_tcp config))
+  "all_defenses_enabled config \<equiv> ((tls_mitm_defense_enabled \<and> (ns_tls) config))
+  (((arp_spoofing_defense_enabled \<and> (ns_arp) config))
+  (((dns_poisoning_defense_enabled \<and> (ns_dnssec) config))
+  (((bgp_hijacking_defense_enabled \<and> (ns_bgp) config))
+  (((ssl_stripping_defense_enabled \<and> (ns_https) config))
+  (((packet_sniffing_defense_enabled \<and> (ns_encryption) config))
+  (((packet_injection_defense_enabled \<and> (ns_auth_protocol) config))
+  (((replay_attack_defense_enabled \<and> (ns_replay) config))
+  (((volumetric_dos_defense_enabled \<and> (ns_rate_limiter) config))
+  (((protocol_dos_defense_enabled \<and> (ns_protocol_impl) config))
+  (((application_dos_defense_enabled \<and> (ns_resource_limits) config))
+  (((amplification_dos_defense_enabled \<and> (ns_amplification) config))
+  (((syn_flood_defense_enabled \<and> (ns_syn) config))
+  (((udp_flood_defense_enabled \<and> (ns_udp) config))
+  (((icmp_flood_defense_enabled \<and> (ns_icmp) config))
+  (((slowloris_defense_enabled \<and> (ns_slowloris) config))
+  (((dns_amplification_defense_enabled \<and> (ns_dns_server) config))
+  (((ntp_amplification_defense_enabled \<and> (ns_ntp_server) config))
+  (((ip_spoofing_defense_enabled \<and> (ns_ip_spoofing) config))
+  (((mac_spoofing_defense_enabled \<and> (ns_mac) config))
+  (((vlan_hopping_defense_enabled \<and> (ns_vlan) config))
+  (((rogue_dhcp_defense_enabled \<and> (ns_dhcp) config))
+  (((ntp_attack_defense_enabled \<and> (ns_ntp_client) config))
+  (((tcp_reset_defense_enabled \<and> (ns_tcp) config))
         (traffic_analysis_defense_enabled (ns_traffic_analysis config)))))))))))))))))))))))))"
 
 (* net_001_man_in_the_middle_mitigated (matches Coq) *)

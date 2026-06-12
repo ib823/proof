@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HypervisorSecurity - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | PrivilegeLevel     | privilege_level        | OK     |
+ * | SecurityWorld      | security_world         | OK     |
  * | VMIsolation        | vm_isolation           | OK     |
  * | EPTEntry           | ept_entry              | OK     |
  * | VMCSState          | vmcs_state             | OK     |
@@ -136,12 +139,15 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* PrivilegeLevel (matches Coq: Inductive PrivilegeLevel) *)
 datatype privilege_level =
-    PL_Hypervisor  (* Ring -1 / VMX root *)
-  |     PL_Kernel  (* Ring 0 *)
-  |     PL_Driver  (* Ring 1 *)
-  |     PL_Service  (* Ring 2 *)
+    PL_Hypervisor
+  |     PL_Kernel
+  |     PL_Driver
+  |     PL_Service
   |     PL_User
-  |     SecureWorld  (* TEE / TrustZone Secure *)
+
+(* SecurityWorld (matches Coq: Inductive SecurityWorld) *)
+datatype security_world =
+    SecureWorld
   |     NormalWorld
 
 (* VMIsolation (matches Coq: Record VMIsolation) *)
@@ -173,8 +179,8 @@ record vmcs_state =
   vmcs_exception_bitmap :: nat
   vmcs_io_bitmap_enabled :: bool
   vmcs_msr_bitmap_enabled :: bool
-  vmcs_vpid :: nat  (* Virtual Processor ID *)
-  vmcs_eptp :: nat  (* EPT Pointer *)
+  vmcs_vpid :: nat
+  vmcs_eptp :: nat
 
 (* InterruptDescriptor (matches Coq: Record InterruptDescriptor) *)
 record interrupt_descriptor =
@@ -182,7 +188,7 @@ record interrupt_descriptor =
   int_handler_addr :: nat
   int_privilege_level :: PrivilegeLevel
   int_is_trap :: bool
-  int_ist_index :: nat  (* Interrupt Stack Table index *)
+  int_ist_index :: nat
 
 (* VMState (matches Coq: Record VMState) *)
 record vm_state =
@@ -193,44 +199,44 @@ record vm_state =
   vm_ept :: GPA
   vm_active :: bool
   vm_paused :: bool
-  vm_interrupt_shadow :: bool  (* In interrupt shadow *)
+  vm_interrupt_shadow :: bool
 
 (* SideChannelMitigation (matches Coq: Record SideChannelMitigation) *)
 record side_channel_mitigation =
-  scm_flush_l1d :: bool  (* Flush L1D cache on VM entry *)
-  scm_ibrs_enabled :: bool  (* Indirect Branch Restricted Speculation *)
-  scm_ibpb_enabled :: bool  (* Indirect Branch Prediction Barrier *)
-  scm_stibp_enabled :: bool  (* Single Thread Indirect Branch Predictor *)
-  scm_ssbd_enabled :: bool  (* Speculative Store Bypass Disable *)
-  scm_mds_clear :: bool  (* MDS buffer clear *)
-  scm_taa_mitigation :: bool  (* TSX Async Abort mitigation *)
-  scm_srbds_mitigation :: bool  (* Special Register Buffer Data Sampling *)
+  scm_flush_l1d :: bool
+  scm_ibrs_enabled :: bool
+  scm_ibpb_enabled :: bool
+  scm_stibp_enabled :: bool
+  scm_ssbd_enabled :: bool
+  scm_mds_clear :: bool
+  scm_taa_mitigation :: bool
+  scm_srbds_mitigation :: bool
 
 (* MemVirtConfig (matches Coq: Record MemVirtConfig) *)
 record mem_virt_config =
-  mv_ept_enabled :: bool  (* Extended Page Tables *)
-  mv_vpid_enabled :: bool  (* Virtual Processor ID *)
-  mv_shadow_paging :: bool  (* Shadow page tables (if no EPT) *)
-  mv_memory_type_range :: bool  (* MTRR virtualization *)
-  mv_page_modification_log :: bool  (* Page modification logging *)
-  mv_accessed_dirty :: bool  (* A/D bits in EPT *)
+  mv_ept_enabled :: bool
+  mv_vpid_enabled :: bool
+  mv_shadow_paging :: bool
+  mv_memory_type_range :: bool
+  mv_page_modification_log :: bool
+  mv_accessed_dirty :: bool
 
 (* InterruptVirtConfig (matches Coq: Record InterruptVirtConfig) *)
 record interrupt_virt_config =
-  iv_apic_virtualization :: bool  (* Virtual APIC *)
-  iv_posted_interrupts :: bool  (* Posted Interrupts *)
-  iv_interrupt_exit :: bool  (* VM exit on external interrupt *)
-  iv_nmi_exiting :: bool  (* NMI causes VM exit *)
-  iv_virtual_nmi :: bool  (* Virtual NMI blocking *)
-  iv_ple_enabled :: bool  (* Pause Loop Exiting *)
+  iv_apic_virtualization :: bool
+  iv_posted_interrupts :: bool
+  iv_interrupt_exit :: bool
+  iv_nmi_exiting :: bool
+  iv_virtual_nmi :: bool
+  iv_ple_enabled :: bool
 
 (* WorldSwitchConfig (matches Coq: Record WorldSwitchConfig) *)
 record world_switch_config =
-  ws_smc_filtering :: bool  (* SMC instruction filtering *)
-  ws_ns_bit_control :: bool  (* Non-Secure bit control *)
-  ws_secure_monitor :: bool  (* Secure Monitor Call handler *)
-  ws_tzasc_enabled :: bool  (* TrustZone Address Space Controller *)
-  ws_tzpc_enabled :: bool  (* TrustZone Protection Controller *)
+  ws_smc_filtering :: bool
+  ws_ns_bit_control :: bool
+  ws_secure_monitor :: bool
+  ws_tzasc_enabled :: bool
+  ws_tzpc_enabled :: bool
 
 (* HypervisorConfig (matches Coq: Record HypervisorConfig) *)
 record hypervisor_config =
@@ -280,27 +286,27 @@ definition hv_fully_secure :: "HypervisorConfig \<Rightarrow> bool" where
 
 (* riina_vm_isolation (matches Coq: Definition riina_vm_isolation) *)
 definition riina_vm_isolation :: "VMIsolation" where
-  "riina_vm_isolation \<equiv> mkVMIsolation true true true true"
+  "riina_vm_isolation \<equiv> mkVMIsolation True True True True"
 
 (* riina_side_channel (matches Coq: Definition riina_side_channel) *)
 definition riina_side_channel :: "SideChannelMitigation" where
-  "riina_side_channel \<equiv> mkSCMitigation true true true true true true true true"
+  "riina_side_channel \<equiv> mkSCMitigation True True True True True True True True"
 
 (* riina_mem_virt (matches Coq: Definition riina_mem_virt) *)
 definition riina_mem_virt :: "MemVirtConfig" where
-  "riina_mem_virt \<equiv> mkMemVirt true true false true true true"
+  "riina_mem_virt \<equiv> mkMemVirt True True False True True True"
 
 (* riina_int_virt (matches Coq: Definition riina_int_virt) *)
 definition riina_int_virt :: "InterruptVirtConfig" where
-  "riina_int_virt \<equiv> mkIntVirt true true true true true true"
+  "riina_int_virt \<equiv> mkIntVirt True True True True True True"
 
 (* riina_world_switch (matches Coq: Definition riina_world_switch) *)
 definition riina_world_switch :: "WorldSwitchConfig" where
-  "riina_world_switch \<equiv> mkWorldSwitch true true true true true"
+  "riina_world_switch \<equiv> mkWorldSwitch True True True True True"
 
 (* riina_hypervisor (matches Coq: Definition riina_hypervisor) *)
 definition riina_hypervisor :: "HypervisorConfig" where
-  "riina_hypervisor \<equiv> mkHypervisor riina_vm_isolation true true true true true
+  "riina_hypervisor \<equiv> mkHypervisor riina_vm_isolation True True True True True
                riina_side_channel riina_mem_virt riina_int_virt riina_world_switch"
 
 (* ============================================================================

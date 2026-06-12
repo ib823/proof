@@ -216,7 +216,7 @@ theorem subst_env_id : ∀ e, subst_env id_rho e = e := by
 
 -- Helper: substitution has no effect when variable is not free
 /-- subst_not_free_in (matches Coq) -/
-theorem subst_not_free_in : ∀ x v e, ~ free_in x e → [x := v] e = e := by
+theorem subst_not_free_in : ∀ x v e, ~ free_in x e → subst[x := v] e = e := by
   cases ‹_› <;> simp
 
 -- Helper: free_in only holds for the same variable in EVar
@@ -246,12 +246,12 @@ theorem subst_env_ext : ∀ ρ1 ρ2 e, (∀ y, ρ1 y = ρ2 y) → subst_env ρ1 
 
 -- Generalized substitution commutation lemma
 /-- subst_subst_env_commute_gen (matches Coq) -/
-theorem subst_subst_env_commute_gen : ∀ e ρ x v, (∀ y, y ≠ x → ~ free_in x (ρ y)) → [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by
+theorem subst_subst_env_commute_gen : ∀ e ρ x v, (∀ y, y ≠ x → ~ free_in x (ρ y)) → subst[x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by
   cases ‹_› <;> simp
 
 -- Main lemma with closed_rho hypothesis
 /-- subst_subst_env_commute (matches Coq) -/
-theorem subst_subst_env_commute : ∀ ρ x v e, closed_rho ρ → [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by
+theorem subst_subst_env_commute : ∀ ρ x v e, closed_rho ρ → subst[x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by
   simp_all [Bool.and_eq_true]
 
 -- CR1: Reducible terms are SN - trivial with simplified definition
@@ -324,7 +324,7 @@ theorem SN_closed_step : ∀ e st ctx, SN (e, st, ctx) → ∀ e' st' ctx', (e, 
 
 -- SN of beta when body is SN
 /-- SN_beta_value (matches Coq) -/
-theorem SN_beta_value : ∀ x T body a st ctx, value a → SN (([x := a] body), st, ctx) → SN (EApp (ELam x T body) a, st, ctx) := by
+theorem SN_beta_value : ∀ x T body a st ctx, value a → SN ((subst[x := a] body), st, ctx) → SN (EApp (ELam x T body) a, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

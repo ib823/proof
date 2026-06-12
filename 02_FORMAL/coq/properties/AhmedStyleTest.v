@@ -17,10 +17,10 @@
     If this file compiles, Phase 1 can proceed.
 *)
 
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Wf_nat.
-Require Import Coq.Arith.Compare_dec.
-Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Arith.Wf_nat.
+From Stdlib Require Import Arith.Compare_dec.
+From Stdlib Require Import Lia.
 
 (** ========================================================================
     SIMPLIFIED TYPE AND VALUE DEFINITIONS
@@ -423,3 +423,240 @@ Print Assumptions ahmed_tower_ft_works.
     The key challenge moves to LogicalRelation.v where the FT
     must be restructured to not use step-up.
     ======================================================================== *)
+
+(** ** Additional Tower Properties *)
+
+(** Tower at step n is a prefix of tower at step n+1 *)
+Lemma sval_rel_tower_prefix : forall n T v1 v2,
+  sval_rel_tower (S n) T v1 v2 ->
+  sval_rel_tower n T v1 v2.
+Proof.
+  intros n T v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [Hrec _]. exact Hrec.
+Qed.
+
+(** Tower at 0 is trivially satisfied for any values *)
+Lemma sval_rel_tower_trivial : forall T v1 v2,
+  sval_rel_tower 0 T v1 v2.
+Proof. intros. simpl. exact I. Qed.
+
+(** Unit tower is always satisfied *)
+Lemma sval_rel_tower_unit : forall n,
+  sval_rel_tower n STUnit SVUnit SVUnit.
+Proof.
+  induction n.
+  - simpl. exact I.
+  - rewrite sval_rel_tower_S. split.
+    + exact IHn.
+    + split; reflexivity.
+Qed.
+
+(** Bool tower is always satisfied for same boolean *)
+Lemma sval_rel_tower_bool : forall n b,
+  sval_rel_tower n STBool (SVBool b) (SVBool b).
+Proof.
+  induction n; intros b.
+  - simpl. exact I.
+  - rewrite sval_rel_tower_S. split.
+    + exact (IHn b).
+    + exists b. split; reflexivity.
+Qed.
+
+(** Pair tower from component towers *)
+Lemma sval_rel_tower_pair : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower n T1 a1 a2 ->
+  sval_rel_tower n T2 b1 b2 ->
+  sval_rel_tower n (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2).
+Proof.
+  induction n; intros T1 T2 a1 b1 a2 b2 H1 H2.
+  - simpl. exact I.
+  - assert (Hp1 : sval_rel_tower n T1 a1 a2) by (apply sval_rel_tower_prefix in H1; exact H1).
+    assert (Hp2 : sval_rel_tower n T2 b1 b2) by (apply sval_rel_tower_prefix in H2; exact H2).
+    rewrite sval_rel_tower_S. split.
+    + apply IHn; auto.
+    + exists a1, b1, a2, b2. auto.
+Qed.
+
+(** Tower monotonicity at step 0 *)
+Lemma sval_rel_tower_mono_to_0 : forall n T v1 v2,
+  sval_rel_tower n T v1 v2 ->
+  sval_rel_tower 0 T v1 v2.
+Proof.
+  intros n T v1 v2 H.
+  apply sval_rel_tower_mono with n; auto. lia.
+Qed.
+
+(** Tower step down by 2 *)
+Lemma sval_rel_tower_drop_2 : forall n T v1 v2,
+  sval_rel_tower (S (S n)) T v1 v2 ->
+  sval_rel_tower n T v1 v2.
+Proof.
+  intros n T v1 v2 H.
+  apply sval_rel_tower_mono with (n := S (S n)).
+  - lia.
+  - exact H.
+Qed.
+
+(** Tower from higher index *)
+Lemma sval_rel_tower_from_higher : forall m n T v1 v2,
+  m <= n ->
+  sval_rel_tower n T v1 v2 ->
+  sval_rel_tower m T v1 v2.
+Proof. exact sval_rel_tower_mono. Qed.
+
+(** Tower product decomposition *)
+Lemma sval_rel_tower_prod_elim : forall n T1 T2 v1 v2,
+  sval_rel_tower (S n) (STProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = SVPair a1 b1 /\ v2 = SVPair a2 b2 /\
+    sval_rel_tower n T1 a1 a2 /\ sval_rel_tower n T2 b1 b2.
+Proof.
+  intros n T1 T2 v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent].
+  exact Hcontent.
+Qed.
+
+(** Tower function application at step n *)
+Lemma sval_rel_tower_fn_elim : forall n T1 T2 f1 f2,
+  sval_rel_tower (S n) (STFn T1 T2) f1 f2 ->
+  forall x y,
+    sval_rel_tower n T1 x y ->
+    exists r1 r2, sval_rel_tower n T2 r1 r2.
+Proof.
+  intros n T1 T2 f1 f2 H x y Harg.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent].
+  exact (Hcontent x y Harg).
+Qed.
+
+(** Tower unit inversion *)
+Lemma sval_rel_tower_unit_inv : forall n v1 v2,
+  sval_rel_tower (S n) STUnit v1 v2 ->
+  v1 = SVUnit /\ v2 = SVUnit.
+Proof.
+  intros n v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent]. exact Hcontent.
+Qed.
+
+(** Tower bool inversion *)
+Lemma sval_rel_tower_bool_inv : forall n v1 v2,
+  sval_rel_tower (S n) STBool v1 v2 ->
+  exists b, v1 = SVBool b /\ v2 = SVBool b.
+Proof.
+  intros n v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent]. exact Hcontent.
+Qed.
+
+(** Tower product left component extraction *)
+Lemma sval_rel_tower_pair_left : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) ->
+  sval_rel_tower n T1 a1 a2.
+Proof.
+  intros n T1 T2 a1 b1 a2 b2 H.
+  apply sval_rel_tower_prod_elim in H.
+  destruct H as (a1' & b1' & a2' & b2' & Heq1 & Heq2 & Hr1 & Hr2).
+  injection Heq1 as Heq1a Heq1b.
+  injection Heq2 as Heq2a Heq2b.
+  subst. exact Hr1.
+Qed.
+
+(** Tower product right component extraction *)
+Lemma sval_rel_tower_pair_right : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) ->
+  sval_rel_tower n T2 b1 b2.
+Proof.
+  intros n T1 T2 a1 b1 a2 b2 H.
+  apply sval_rel_tower_prod_elim in H.
+  destruct H as (a1' & b1' & a2' & b2' & Heq1 & Heq2 & Hr1 & Hr2).
+  injection Heq1 as Heq1a Heq1b.
+  injection Heq2 as Heq2a Heq2b.
+  subst. exact Hr2.
+Qed.
+
+(** Tower function application with monotonicity *)
+Lemma sval_rel_tower_fn_mono_app : forall m n T1 T2 f1 f2 x y,
+  m <= n ->
+  sval_rel_tower (S n) (STFn T1 T2) f1 f2 ->
+  sval_rel_tower m T1 x y ->
+  exists r1 r2, sval_rel_tower m T2 r1 r2.
+Proof.
+  intros m n T1 T2 f1 f2 x y Hle Hfn Harg.
+  assert (Hfn' : sval_rel_tower (S m) (STFn T1 T2) f1 f2).
+  { apply sval_rel_tower_mono with (S n). lia. exact Hfn. }
+  eapply sval_rel_tower_fn_apply; eauto.
+Qed.
+
+(** Tower unit value extraction — left value *)
+Lemma sval_rel_tower_unit_val : forall n v1 v2,
+  sval_rel_tower (S n) STUnit v1 v2 ->
+  v1 = SVUnit.
+Proof.
+  intros n v1 v2 H.
+  apply sval_rel_tower_unit_inv in H. destruct H. exact H.
+Qed.
+
+(** Tower bool equality — both values are equal *)
+Lemma sval_rel_tower_bool_same : forall n v1 v2,
+  sval_rel_tower (S n) STBool v1 v2 ->
+  v1 = v2.
+Proof.
+  intros n v1 v2 H.
+  apply sval_rel_tower_bool_inv in H.
+  destruct H as [b [H1 H2]]. subst. reflexivity.
+Qed.
+
+(** Tower step-up for pairs: build at step S n from step n components *)
+Lemma sval_rel_tower_step_up_pair : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower n T1 a1 a2 ->
+  sval_rel_tower n T2 b1 b2 ->
+  sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2).
+Proof.
+  intros n T1 T2 a1 b1 a2 b2 H1 H2.
+  rewrite sval_rel_tower_S. split.
+  - apply sval_rel_tower_pair; auto.
+  - exists a1, b1, a2, b2. repeat split; auto.
+Qed.
+
+(** Tower for pair of units at any step *)
+Lemma sval_rel_tower_pair_unit_unit : forall n,
+  sval_rel_tower n (STProd STUnit STUnit) (SVPair SVUnit SVUnit) (SVPair SVUnit SVUnit).
+Proof.
+  intros n. apply sval_rel_tower_pair.
+  - apply sval_rel_tower_unit.
+  - apply sval_rel_tower_unit.
+Qed.
+
+(** Tower for false at any step *)
+Lemma sval_rel_tower_bool_false : forall n,
+  sval_rel_tower n STBool (SVBool false) (SVBool false).
+Proof. intros. apply sval_rel_tower_bool. Qed.
+
+(** Tower for true at any step *)
+Lemma sval_rel_tower_bool_true : forall n,
+  sval_rel_tower n STBool (SVBool true) (SVBool true).
+Proof. intros. apply sval_rel_tower_bool. Qed.
+
+(** Tower step down by 3 *)
+Lemma sval_rel_tower_drop_3 : forall n T v1 v2,
+  sval_rel_tower (S (S (S n))) T v1 v2 ->
+  sval_rel_tower n T v1 v2.
+Proof.
+  intros. apply sval_rel_tower_mono with (S (S (S n))).
+  - lia.
+  - exact H.
+Qed.
+
+(** Tower product with unit left component *)
+Lemma sval_rel_tower_prod_unit_refl : forall n T,
+  sval_rel_tower n T SVUnit SVUnit ->
+  sval_rel_tower n (STProd STUnit T) (SVPair SVUnit SVUnit) (SVPair SVUnit SVUnit).
+Proof.
+  intros n T H.
+  apply sval_rel_tower_pair.
+  - apply sval_rel_tower_unit.
+  - exact H.
+Qed.

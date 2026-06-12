@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA V001_TerminationGuarantees - Isabelle/HOL Port
@@ -15,16 +17,20 @@
  * | sized_ty           | sized_ty               | OK     |
  * | even_tree          | even_tree              | OK     |
  * | NonTerminating     | non_terminating        | OK     |
+ * | expr_size          | expr_size              | OK     |
  * | structurally_smaller | structurally_smaller   | OK     |
  * | structural_recursion | structural_recursion   | OK     |
+ * | get_size           | get_size               | OK     |
  * | size_subtype       | size_subtype           | OK     |
  * | sized_wellformed   | sized_wellformed       | OK     |
  * | size_less          | size_less              | OK     |
+ * | ack_inner          | ack_inner              | OK     |
  * | ackermann          | ackermann              | OK     |
  * | pure               | pure                   | OK     |
  * | well_typed         | well_typed             | OK     |
  * | is_value           | is_value               | OK     |
  * | check_termination  | check_termination      | OK     |
+ * | even_size          | even_size              | OK     |
  * | infer_size         | infer_size             | OK     |
  * | infer_measure      | infer_measure          | OK     |
  * | explicitly_marked  | explicitly_marked      | OK     |
@@ -93,6 +99,10 @@ datatype even_tree =
 datatype non_terminating =
     Loop
 
+(* expr_size (matches Coq: Definition expr_size) *)
+fun expr_size :: "expr \<Rightarrow> nat" where
+
+
 (* structurally_smaller (matches Coq: Definition structurally_smaller) *)
 definition structurally_smaller :: "bool" where
   "structurally_smaller \<equiv> expr_size e1 < expr_size e2"
@@ -103,17 +113,34 @@ definition structural_recursion :: "expr \<Rightarrow> bool" where
     recursive_call e e_rec arg ->
     structurally_smaller arg e"
 
+(* get_size (matches Coq: Definition get_size) *)
+fun get_size :: "sized_ty \<Rightarrow> option Size" where
+
+
 (* size_subtype (matches Coq: Definition size_subtype) *)
 definition size_subtype :: "bool" where
   "size_subtype \<equiv> s1 <= s2"
 
-(* sized_wellformed - complex match, manual review needed *)
+(* sized_wellformed - complex match, needs manual translation *)
+definition sized_wellformed :: "bool" where "sized_wellformed = undefined"
 
-(* size_less - complex match, manual review needed *)
+(* size_less - complex match, needs manual translation *)
+definition size_less :: "bool" where "size_less = undefined"
+
+(* ack_inner (matches Coq: Definition ack_inner) *)
+fun ack_inner :: "nat \<Rightarrow> nat -> nat" where
+  "ack_inner 0 = fun"
+|   "ack_inner 0 = ack_inner"
 
 (* ackermann (matches Coq: Definition ackermann) *)
 definition ackermann :: "nat" where
-  "ackermann \<equiv> ack_inner m n"
+  "ackermann \<equiv> ack_inner m n.
+
+
+
+
+CoInductive Stream (A : Type) : Type :=
+  | SCons : A -> Stream A -> Stream A"
 
 (* pure (matches Coq: Definition pure) *)
 fun pure :: "expr \<Rightarrow> bool" where
@@ -129,7 +156,11 @@ fun is_value :: "expr \<Rightarrow> bool" where
 
 (* check_termination (matches Coq: Definition check_termination) *)
 definition check_termination :: "expr \<Rightarrow> bool" where
-  "check_termination e \<equiv> true"
+  "check_termination e \<equiv> True"
+
+(* even_size (matches Coq: Definition even_size) *)
+fun even_size :: "even_tree \<Rightarrow> nat" where
+  "even_size ELeaf = 0"
 
 (* infer_size (matches Coq: Definition infer_size) *)
 definition infer_size :: "expr \<Rightarrow> Size" where

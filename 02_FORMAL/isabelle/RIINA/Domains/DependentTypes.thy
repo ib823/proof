@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DependentTypes - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | DTerm              | d_term                 | OK     |
+ * | ctx_lookup         | ctx_lookup             | OK     |
  * | TYPE_005_01        | TYPE_005_01            | OK     |
  * | TYPE_005_02        | TYPE_005_02            | OK     |
  * | TYPE_005_03        | TYPE_005_03            | OK     |
@@ -48,23 +51,27 @@
  *)
 
 theory DependentTypes
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DTerm (matches Coq: Inductive DTerm) *)
 datatype d_term =
     DVar
-  |     DLam  (* λx:A.b *)
-  |     DApp  (* f a *)
-  |     DPair  (* (a, b) *)
-  |     DFst  (* π₁ *)
-  |     DSnd  (* π₂ *)
-  |     DRefl  (* refl *)
-  |     DJ  (* J eliminator *)
-  |     DNil  (* nil : Vec A 0 *)
-  |     DCons  (* cons : A → Vec A n → Vec A (S n) *)
-  |     DHead  (* head : Vec A (S n) → A *)
-  |     DTail  (* tail : Vec A (S n) → Vec A n *)
+  |     DLam
+  |     DApp
+  |     DPair
+  |     DFst
+  |     DSnd
+  |     DRefl
+  |     DJ
+  |     DNil
+  |     DCons
+  |     DHead
+  |     DTail
+
+(* ctx_lookup (matches Coq: Definition ctx_lookup) *)
+fun ctx_lookup :: "DCtx \<Rightarrow> nat \<Rightarrow> option (DTy 0)" where
+
 
 (* TYPE_005_01 (matches Coq) *)
 lemma TYPE_005_01: "\<forall> (ctx : DCtx) (A : DTy 0) (B : nat \<longrightarrow> DTy 0), WfTy ctx A \<longrightarrow> (\<forall> n, WfTy (A :: ctx) (B n)) \<longrightarrow> WfTy ctx (DPi 0 A B)"
@@ -191,7 +198,7 @@ lemma dec_to_bool: "\<forall> (P : Prop), Dec P \<longrightarrow> {P} + {~P}"
   by auto
 
 (* nat_eq_reflect (matches Coq) *)
-lemma nat_eq_reflect: "\<forall> (x y : nat), Nat.eqb x y = True <-> x = y"
+lemma nat_eq_reflect: "\<forall> (x y : nat), (x = y) = True <-> x = y"
   by auto
 
 (* uip_dec (matches Coq) *)

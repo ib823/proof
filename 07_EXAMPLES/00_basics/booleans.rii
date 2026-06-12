@@ -1,61 +1,33 @@
-/// BOOLEANS.RII - Boolean Operations and Logic
-/// Operasi logik dalam RIINA menggunakan betul/salah
-/// Demonstrates: true/false, &&, ||, !, comparisons
+/// BOOLEANS.RII - Boolean Logic & Operators
+/// Operasi logik boolean dalam RIINA
+/// Demonstrates: betul/salah, &&, ||, bukan, comparisons
 
-fungsi operasiLogik() -> Benar kesan Bersih {
-    /// Nilai boolean asli
-    /// Native boolean values
-    biar betulnya = betul;           /// true
-    biar salahnya = salah;            /// false
+fungsi operasiLogik() -> Bool kesan Bersih {
+    /// Nilai boolean asas / Basic boolean values
+    biar benar_nilai = betul;
+    biar palsu_nilai = salah;
 
-    /// Operasi AND (&&)
-    biar dan = betul && betul;        /// true
-    biar danFalse = betul && salah;   /// false
+    /// DAN logik (AND)
+    biar hasil_dan = betul && betul;
 
-    /// Operasi OR (||)
-    biar atau = betul || salah;       /// true
-    biar auSemua = salah || salah;    /// false
+    /// ATAU logik (OR)
+    biar hasil_atau = betul || salah;
 
-    /// Operasi NOT (!)
-    biar tidak = !betul;              /// false
-    biar tidakFalse = !salah;         /// true
+    /// BUKAN logik (NOT)
+    biar songsang = bukan betul;
 
-    pulang betul;
+    pulang hasil_dan && hasil_atau;
 }
 
-fungsi perbandingan() -> Benar kesan Bersih {
-    biar x = 5;
-    biar y = 10;
+fungsi bandingan() -> Bool kesan Bersih {
+    biar sama = 5 == 5;
+    biar tak_sama = 5 != 3;
+    biar lebih_besar = 10 > 5;
+    biar lebih_kecil = 3 < 8;
 
-    /// Sama dengan
-    biar samadengan = x == y;         /// false
-
-    /// Tidak sama dengan
-    biar tidakSama = x != y;          /// true
-
-    /// Lebih besar
-    biar lebihBesar = x > y;          /// false
-
-    /// Lebih kecil
-    biar lebihKecil = x < y;          /// true
-
-    /// Lebih besar atau sama
-    biar lebihBesarSama = x >= y;     /// false
-
-    /// Lebih kecil atau sama
-    biar lebihKecilSama = x <= y;     /// true
-
-    pulang lebihKecilSama;
+    pulang sama && lebih_besar;
 }
 
-fungsi utama() -> Nombor kesan Tulis {
-    biar hasil = operasiLogik();
-    cetak("Boolean result: ");
-    cetak(hasil);
-    cetak("\n");
-    pulang 0;
+fungsi utama() -> Bool kesan Bersih {
+    pulang operasiLogik();
 }
-
-/// GRAMMAR NOTE: betul/salah are keywords for true/false.
-/// Logical operators: && (and), || (or), ! (not)
-/// Comparison operators work on all comparable types.

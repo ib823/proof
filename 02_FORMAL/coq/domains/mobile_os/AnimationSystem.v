@@ -10,9 +10,10 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 2.4
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -178,7 +179,7 @@ Qed.
 
 (** ** Extended Animation System Verification *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Additional definitions for extended verification *)
 
@@ -235,10 +236,12 @@ Record Keyframe : Type := mkKeyframe {
 }.
 
 (** Frame budget for 60Hz = 16667 microseconds *)
-Definition frame_budget_60hz : nat := 16667.
+Definition FRAME_BUDGET_60HZ_US : nat := Z.to_nat 16667%Z.
+Definition frame_budget_60hz : nat := FRAME_BUDGET_60HZ_US.
 
 (** Frame budget for 120Hz = 8333 microseconds *)
-Definition frame_budget_120hz : nat := 8333.
+Definition FRAME_BUDGET_120HZ_US : nat := Z.to_nat 8333%Z.
+Definition frame_budget_120hz : nat := FRAME_BUDGET_120HZ_US.
 
 (** Render frame *)
 Record Frame : Type := mkFrame {

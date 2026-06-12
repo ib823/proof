@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Z001_DeclassificationPolicy - Isabelle/HOL Port
@@ -19,6 +21,7 @@
  * | DeclassExpr        | declass_expr           | OK     |
  * | AuditEntry         | audit_entry            | OK     |
  * | PrivacyBudget      | privacy_budget         | OK     |
+ * | principal_eqb      | principal_eqb          | OK     |
  * | acts_for           | acts_for               | OK     |
  * | principal_leq      | principal_leq          | OK     |
  * | level_leq          | level_leq              | OK     |
@@ -26,6 +29,8 @@
  * | level_meet         | level_meet             | OK     |
  * | valid_policy       | valid_policy           | OK     |
  * | wellformed_budget  | wellformed_budget      | OK     |
+ * | consume_budget     | consume_budget         | OK     |
+ * | reset_budget       | reset_budget           | OK     |
  * | low_equiv          | low_equiv              | OK     |
  * | robust             | robust                 | OK     |
  * | valid_declass      | valid_declass          | OK     |
@@ -33,6 +38,7 @@
  * | logged_declass     | logged_declass         | OK     |
  * | neighbors          | neighbors              | OK     |
  * | sensitivity_bounded | sensitivity_bounded    | OK     |
+ * | compose_budget     | compose_budget         | OK     |
  * | guard_satisfied    | guard_satisfied        | OK     |
  * | apply_transform    | apply_transform        | OK     |
  * | revoke_policy      | revoke_policy          | OK     |
@@ -78,7 +84,7 @@
  *)
 
 theory Z001_DeclassificationPolicy
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Principal (matches Coq: Inductive Principal) *)
@@ -144,33 +150,68 @@ record privacy_budget =
   epsilon_used :: nat
   delta_used :: nat
 
+(* principal_eqb - complex match, needs manual translation *)
+definition principal_eqb :: "bool" where "principal_eqb = undefined"
+
 (* acts_for (matches Coq: Definition acts_for) *)
 definition acts_for :: "bool" where
-  "acts_for \<equiv> principal_eqb p1 p2 = true \/ exists authority : nat, authority > 0"
+  "acts_for \<equiv> principal_eqb p1 p2 = True \/ exists authority : nat, authority > 0"
 
 (* principal_leq (matches Coq: Definition principal_leq) *)
 definition principal_leq :: "bool" where
   "principal_leq \<equiv> acts_for p1 p2"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
-(* level_join - complex match, manual review needed *)
+(* level_join - complex match, needs manual translation *)
+definition level_join :: "bool" where "level_join = undefined"
 
-(* level_meet - complex match, manual review needed *)
+(* level_meet - complex match, needs manual translation *)
+definition level_meet :: "bool" where "level_meet = undefined"
 
 (* valid_policy (matches Coq: Definition valid_policy) *)
 definition valid_policy :: "DeclassPolicy \<Rightarrow> bool" where
-  "valid_policy p \<equiv> level_leq (target_level p) (source_level p) = true /\
+  "valid_policy p \<equiv> level_leq (target_level p) (source_level p) = True /\
   budget p > 0 /\
-  policy_active p = true"
+  policy_active p = True"
 
 (* wellformed_budget (matches Coq: Definition wellformed_budget) *)
 definition wellformed_budget :: "BudgetState \<Rightarrow> bool" where
   "wellformed_budget bs \<equiv> total_leaked bs <= budget_total_limit bs"
 
+(* consume_budget (matches Coq: Definition consume_budget) *)
+definition consume_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> option BudgetState" where
+  "consume_budget bs pid bits \<equiv> let remaining := budget_per_policy bs pid in
+  if remaining <? bits then None
+  else if budget_total_limit bs <? total_leaked bs + bits then None
+  else Some {|
+    budget_principal := budget_principal bs;
+    budget_per_policy := fun id =>
+      if (id = pid) then remaining - bits
+      else budget_per_policy bs id;
+    total_leaked := total_leaked bs + bits;
+    budget_window := budget_window bs;
+    budget_total_limit := budget_total_limit bs
+  |}"
+
+(* reset_budget (matches Coq: Definition reset_budget) *)
+definition reset_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> Principal \<Rightarrow> option BudgetState" where
+  "reset_budget bs pid new_budget authorizer \<equiv> if principal_eqb authorizer PSystem then
+    Some {|
+      budget_principal := budget_principal bs;
+      budget_per_policy := fun id =>
+        if (id = pid) then new_budget
+        else budget_per_policy bs id;
+      total_leaked := total_leaked bs;
+      budget_window := budget_window bs;
+      budget_total_limit := budget_total_limit bs
+    |}
+  else None"
+
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
-  "low_equiv \<equiv> forall x, public x = true -> s1 x = s2 x"
+  "low_equiv \<equiv> forall x, public x = True -> s1 x = s2 x"
 
 (* robust (matches Coq: Definition robust) *)
 definition robust :: "Expr \<Rightarrow> bool" where
@@ -201,6 +242,17 @@ definition sensitivity_bounded :: "Query \<Rightarrow> nat \<Rightarrow> bool" w
   "sensitivity_bounded q delta \<equiv> forall db1 db2, neighbors db1 db2 ->
     (q db1 <= q db2 + delta) /\ (q db2 <= q db1 + delta)"
 
+(* compose_budget (matches Coq: Definition compose_budget) *)
+definition compose_budget :: "PrivacyBudget \<Rightarrow> option PrivacyBudget" where
+  "compose_budget pb \<equiv> if epsilon_total pb <? epsilon_used pb + eps then None
+  else if delta_total pb <? delta_used pb + delta then None
+  else Some {|
+    epsilon_total := epsilon_total pb;
+    delta_total := delta_total pb;
+    epsilon_used := epsilon_used pb + eps;
+    delta_used := delta_used pb + delta
+  |}"
+
 (* guard_satisfied (matches Coq: Definition guard_satisfied) *)
 definition guard_satisfied :: "DeclassExpr \<Rightarrow> State \<Rightarrow> bool" where
   "guard_satisfied de s \<equiv> guard_fn (declass_policy de) (declass_guard de s)"
@@ -221,7 +273,7 @@ definition revoke_policy :: "DeclassPolicy \<Rightarrow> DeclassPolicy" where
   guard_fn := guard_fn p;
   transform := transform p;
   budget := budget p;
-  policy_active := false
+  policy_active := False
 |}"
 
 (* dp_well_defined (matches Coq: Definition dp_well_defined) *)

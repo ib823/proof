@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CompilerCorrectness - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | ir_ty              | ir_ty                  | OK     |
+ * | ir_expr            | ir_expr                | OK     |
  * | src_ty             | src_ty                 | OK     |
  * | src_expr           | src_expr               | OK     |
  * | ParsingPhase       | parsing_phase          | OK     |
@@ -30,6 +33,8 @@
  * | riina_codegen      | riina_codegen          | OK     |
  * | riina_compiler     | riina_compiler         | OK     |
  * | ir_equiv           | ir_equiv               | OK     |
+ * | compile_ty         | compile_ty             | OK     |
+ * | compile_expr       | compile_expr           | OK     |
  * | src_ir_equiv       | src_ir_equiv           | OK     |
  * | andb_true_iff      | andb_true_iff          | OK     |
  * | CC_001             | CC_001                 | OK     |
@@ -124,10 +129,13 @@ datatype ir_ty =
     IR_TUnit
   |     IR_TBool
   |     IR_TInt
-  |     IR_TFn  (* T1 -> T2 *)
-  |     IR_TProd  (* T1 * T2 *)
+  |     IR_TFn
+  |     IR_TProd
   |     IR_TSum
-  |     IR_Unit
+
+(* ir_expr (matches Coq: Inductive ir_expr) *)
+datatype ir_expr =
+    IR_Unit
   |     IR_Bool
   |     IR_Int
   |     IR_Pair
@@ -213,19 +221,19 @@ definition compiler_verified :: "CompilerConfig \<Rightarrow> bool" where
 
 (* riina_parsing (matches Coq: Definition riina_parsing) *)
 definition riina_parsing :: "ParsingPhase" where
-  "riina_parsing \<equiv> mkParsing true true true"
+  "riina_parsing \<equiv> mkParsing True True True"
 
 (* riina_typecheck (matches Coq: Definition riina_typecheck) *)
 definition riina_typecheck :: "TypeCheckPhase" where
-  "riina_typecheck \<equiv> mkTypeCheck true true true"
+  "riina_typecheck \<equiv> mkTypeCheck True True True"
 
 (* riina_optim (matches Coq: Definition riina_optim) *)
 definition riina_optim :: "OptimizationPhase" where
-  "riina_optim \<equiv> mkOptim true true true"
+  "riina_optim \<equiv> mkOptim True True True"
 
 (* riina_codegen (matches Coq: Definition riina_codegen) *)
 definition riina_codegen :: "CodeGenPhase" where
-  "riina_codegen \<equiv> mkCodeGen true true true true"
+  "riina_codegen \<equiv> mkCodeGen True True True True"
 
 (* riina_compiler (matches Coq: Definition riina_compiler) *)
 definition riina_compiler :: "CompilerConfig" where
@@ -234,6 +242,16 @@ definition riina_compiler :: "CompilerConfig" where
 (* ir_equiv (matches Coq: Definition ir_equiv) *)
 definition ir_equiv :: "bool" where
   "ir_equiv \<equiv> forall v, (e1 ==>* v /\ ir_value v) <-> (e2 ==>* v /\ ir_value v)"
+
+(* compile_ty (matches Coq: Definition compile_ty) *)
+fun compile_ty :: "src_ty \<Rightarrow> ir_ty" where
+  "compile_ty Src_TUnit = IR_TUnit"
+|   "compile_ty Src_TBool = IR_TBool"
+|   "compile_ty Src_TInt = IR_TInt"
+
+(* compile_expr (matches Coq: Definition compile_expr) *)
+fun compile_expr :: "src_expr \<Rightarrow> ir_expr" where
+  "compile_expr Src_Unit = IR_Unit"
 
 (* src_ir_equiv (matches Coq: Definition src_ir_equiv) *)
 definition src_ir_equiv :: "src_expr \<Rightarrow> ir_expr \<Rightarrow> bool" where
@@ -434,11 +452,11 @@ lemma ir_multi_pair_cong2: "\<forall> v1 e2 e2', ir_value v1 \<longrightarrow> e
   by auto
 
 (* opt_if_true_sound (matches Coq) *)
-lemma opt_if_true_sound: "\<forall> e1 e2, IR_If (IR_Bool true) e1 e2 ==>* e1"
+lemma opt_if_true_sound: "\<forall> e1 e2, IR_If (IR_Bool True) e1 e2 ==>* e1"
   by auto
 
 (* opt_if_false_sound (matches Coq) *)
-lemma opt_if_false_sound: "\<forall> e1 e2, IR_If (IR_Bool false) e1 e2 ==>* e2"
+lemma opt_if_false_sound: "\<forall> e1 e2, IR_If (IR_Bool False) e1 e2 ==>* e2"
   by auto
 
 (* opt_fst_pair_sound (matches Coq) *)
@@ -536,12 +554,12 @@ lemma compile_type_safety: "\<forall> e T, src_has_type e T \<longrightarrow> ir
 
 (* Dead code elimination: if (true) e1 e2 is equivalent to e1 *)
 (* opt_dead_code_if_true (matches Coq) *)
-lemma opt_dead_code_if_true: "\<forall> e1 e2, ir_equiv (IR_If (IR_Bool true) e1 e2) e1"
+lemma opt_dead_code_if_true: "\<forall> e1 e2, ir_equiv (IR_If (IR_Bool True) e1 e2) e1"
   by auto
 
 (* Dead code elimination: if (false) e1 e2 is equivalent to e2 *)
 (* opt_dead_code_if_false (matches Coq) *)
-lemma opt_dead_code_if_false: "\<forall> e1 e2, ir_equiv (IR_If (IR_Bool false) e1 e2) e2"
+lemma opt_dead_code_if_false: "\<forall> e1 e2, ir_equiv (IR_If (IR_Bool False) e1 e2) e2"
   by auto
 
 (* Pair projection optimization with type preservation *)

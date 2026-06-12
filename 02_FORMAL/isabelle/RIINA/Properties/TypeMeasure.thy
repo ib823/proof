@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TypeMeasure - Isabelle/HOL Port
@@ -11,7 +13,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
+ * | ty_size            | ty_size                | OK     |
  * | ty_size_lt         | ty_size_lt             | OK     |
+ * | first_order_type   | first_order_type       | OK     |
+ * | fo_compound_depth  | fo_compound_depth      | OK     |
+ * | ty_depth           | ty_depth               | OK     |
+ * | step_ty_measure    | step_ty_measure        | OK     |
  * | ty_size_pos        | ty_size_pos            | OK     |
  * | ty_size_fn_arg     | ty_size_fn_arg         | OK     |
  * | ty_size_fn_res     | ty_size_fn_res         | OK     |
@@ -72,9 +79,41 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
+(* ty_size (matches Coq: Definition ty_size) *)
+fun ty_size :: "ty \<Rightarrow> nat" where
+  "ty_size TUnit = 1"
+|   "ty_size TBool = 1"
+|   "ty_size TInt = 1"
+|   "ty_size TString = 1"
+|   "ty_size TBytes = 1"
+
 (* ty_size_lt (matches Coq: Definition ty_size_lt) *)
 definition ty_size_lt :: "bool" where
   "ty_size_lt \<equiv> ty_size T1 < ty_size T2"
+
+(* first_order_type (matches Coq: Definition first_order_type) *)
+fun first_order_type :: "ty \<Rightarrow> bool" where
+  "first_order_type TUnit = true"
+|   "first_order_type TBool = true"
+|   "first_order_type TInt = true"
+|   "first_order_type TString = true"
+|   "first_order_type TBytes = true"
+
+(* fo_compound_depth (matches Coq: Definition fo_compound_depth) *)
+fun fo_compound_depth :: "ty \<Rightarrow> nat" where
+  "fo_compound_depth _ = 0"
+
+(* ty_depth (matches Coq: Definition ty_depth) *)
+fun ty_depth :: "ty \<Rightarrow> nat" where
+  "ty_depth TUnit = 0"
+|   "ty_depth TBool = 0"
+|   "ty_depth TInt = 0"
+|   "ty_depth TString = 0"
+|   "ty_depth TBytes = 0"
+
+(* step_ty_measure (matches Coq: Definition step_ty_measure) *)
+definition step_ty_measure :: "nat \<Rightarrow> ty \<Rightarrow> nat * nat" where
+  "step_ty_measure n T \<equiv> (n, ty_size T)"
 
 (* ty_size_pos (matches Coq) *)
 lemma ty_size_pos: "\<forall> T, ty_size T > 0"

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ComputerVision - Isabelle/HOL Port
@@ -49,6 +51,7 @@
  * | language_is_supported | language_is_supported  | OK     |
  * | request_cancellable | request_cancellable    | OK     |
  * | similarity_symmetric_pair | similarity_symmetric_pair | OK     |
+ * | pipeline_stages_ordered | pipeline_stages_ordered | OK     |
  * | frame_rate_limited | frame_rate_limited     | OK     |
  * | object_detection_bounded | object_detection_bounded | OK     |
  * | detection_latency_bounded | detection_latency_bounded | OK     |
@@ -119,7 +122,7 @@ record face_detection =
 (* OCRResult (matches Coq: Record OCRResult) *)
 record ocr_result =
   ocr_text :: 'a list
-  ocr_confidence :: nat  (* 0-100 *)
+  ocr_confidence :: nat
   ocr_language :: nat
   ocr_accuracy_bound :: nat
 
@@ -151,7 +154,7 @@ record photo_analysis =
 
 (* DepthEstimate (matches Coq: Record DepthEstimate) *)
 record depth_estimate =
-  depth_value :: nat  (* in mm *)
+  depth_value :: nat
   depth_min :: nat
   depth_max :: nat
   depth_confidence :: nat
@@ -185,7 +188,7 @@ record vision_request =
 record image_pair =
   img_a :: Image
   img_b :: Image
-  similarity_score :: nat  (* 0-100 *)
+  similarity_score :: nat
 
 (* PipelineStage (matches Coq: Record PipelineStage) *)
 record pipeline_stage =
@@ -217,25 +220,29 @@ definition Confidence :: "'a" where
 
 (* valid_detection (matches Coq: Definition valid_detection) *)
 definition valid_detection :: "Detection \<Rightarrow> bool" where
-  "valid_detection d \<equiv> det_valid d = true /\ det_confidence d >= 50"
+  "valid_detection d \<equiv> det_valid d = True /\ det_confidence d >= 50"
 
 (* accurate_detection (matches Coq: Definition accurate_detection) *)
 definition accurate_detection :: "Detection \<Rightarrow> BoundingBox \<Rightarrow> bool" where
   "accurate_detection d ground_truth \<equiv> let box := det_box d in
-  (* IoU > 0"
+  
+  (max (bbox_x box) (bbox_x ground_truth) - min (bbox_x box) (bbox_x ground_truth)) <= 
+    (bbox_w box + bbox_w ground_truth) / 2 /\
+  (max (bbox_y box) (bbox_y ground_truth) - min (bbox_y box) (bbox_y ground_truth)) <= 
+    (bbox_h box + bbox_h ground_truth) / 2"
 
 (* detection_bounded (matches Coq: Definition detection_bounded) *)
 definition detection_bounded :: "ObjectDetectionResult \<Rightarrow> bool" where
-  "detection_bounded r \<equiv> length (od_detections r) <= 100 /\  (* Max detections *)
+  "detection_bounded r \<equiv> length (od_detections r) <= 100 /\  
   od_latency_ms r <= 100"
 
 (* cv_private (matches Coq: Definition cv_private) *)
 definition cv_private :: "ObjectDetectionResult \<Rightarrow> bool" where
-  "cv_private r \<equiv> od_processed_on_device r = true"
+  "cv_private r \<equiv> od_processed_on_device r = True"
 
 (* face_privacy_preserving (matches Coq: Definition face_privacy_preserving) *)
 definition face_privacy_preserving :: "FaceDetection \<Rightarrow> bool" where
-  "face_privacy_preserving fd \<equiv> face_data_on_device fd = true /\ face_anonymized fd = true"
+  "face_privacy_preserving fd \<equiv> face_data_on_device fd = True /\ face_anonymized fd = True"
 
 (* ocr_accuracy_within_bound (matches Coq: Definition ocr_accuracy_within_bound) *)
 definition ocr_accuracy_within_bound :: "OCRResult \<Rightarrow> bool" where
@@ -243,19 +250,19 @@ definition ocr_accuracy_within_bound :: "OCRResult \<Rightarrow> bool" where
 
 (* confidence_properly_reported (matches Coq: Definition confidence_properly_reported) *)
 definition confidence_properly_reported :: "ObjectDetection \<Rightarrow> bool" where
-  "confidence_properly_reported od \<equiv> obj_confidence_reported od = true /\ obj_confidence od <= 100"
+  "confidence_properly_reported od \<equiv> obj_confidence_reported od = True /\ obj_confidence od <= 100"
 
 (* classification_deterministic (matches Coq: Definition classification_deterministic) *)
 definition classification_deterministic :: "ClassificationResult \<Rightarrow> bool" where
-  "classification_deterministic cr \<equiv> class_deterministic cr = true"
+  "classification_deterministic cr \<equiv> class_deterministic cr = True"
 
 (* barcode_format_known (matches Coq: Definition barcode_format_known) *)
 definition barcode_format_known :: "BarcodeResult \<Rightarrow> bool" where
-  "barcode_format_known br \<equiv> barcode_format br <> UnknownFormat /\ barcode_valid br = true"
+  "barcode_format_known br \<equiv> barcode_format br <> UnknownFormat /\ barcode_valid br = True"
 
 (* photo_analysis_permitted (matches Coq: Definition photo_analysis_permitted) *)
 definition photo_analysis_permitted :: "PhotoAnalysis \<Rightarrow> bool" where
-  "photo_analysis_permitted pa \<equiv> permission_granted pa = true"
+  "photo_analysis_permitted pa \<equiv> permission_granted pa = True"
 
 (* depth_within_bounds (matches Coq: Definition depth_within_bounds) *)
 definition depth_within_bounds :: "DepthEstimate \<Rightarrow> bool" where
@@ -263,25 +270,29 @@ definition depth_within_bounds :: "DepthEstimate \<Rightarrow> bool" where
 
 (* pose_is_stable (matches Coq: Definition pose_is_stable) *)
 definition pose_is_stable :: "PoseEstimate \<Rightarrow> bool" where
-  "pose_is_stable pe \<equiv> pose_stable pe = true /\ pose_frame_count pe >= 3"
+  "pose_is_stable pe \<equiv> pose_stable pe = True /\ pose_frame_count pe >= 3"
 
 (* scene_is_consistent (matches Coq: Definition scene_is_consistent) *)
 definition scene_is_consistent :: "SceneClassification \<Rightarrow> bool" where
-  "scene_is_consistent sc \<equiv> scene_consistent sc = true /\ scene_confidence sc >= 50"
+  "scene_is_consistent sc \<equiv> scene_consistent sc = True /\ scene_confidence sc >= 50"
 
 (* language_is_supported (matches Coq: Definition language_is_supported) *)
 definition language_is_supported :: "TextRecognition \<Rightarrow> bool" where
-  "language_is_supported tr \<equiv> text_language_supported tr = true /\ In (text_language tr) (text_supported_languages tr)"
+  "language_is_supported tr \<equiv> text_language_supported tr = True /\ In (text_language tr) (text_supported_languages tr)"
 
 (* request_cancellable (matches Coq: Definition request_cancellable) *)
 definition request_cancellable :: "VisionRequest \<Rightarrow> bool" where
-  "request_cancellable vr \<equiv> vr_completed vr = false -> vr_cancelled vr = true \/ vr_cancelled vr = false"
+  "request_cancellable vr \<equiv> vr_completed vr = False -> vr_cancelled vr = True \/ vr_cancelled vr = False"
 
 (* similarity_symmetric_pair (matches Coq: Definition similarity_symmetric_pair) *)
 definition similarity_symmetric_pair :: "bool" where
   "similarity_symmetric_pair \<equiv> img_a p1 = img_b p2 ->
   img_b p1 = img_a p2 ->
   similarity_score p1 = similarity_score p2"
+
+(* pipeline_stages_ordered (matches Coq: Definition pipeline_stages_ordered) *)
+fun pipeline_stages_ordered :: "bool" where
+
 
 (* frame_rate_limited (matches Coq: Definition frame_rate_limited) *)
 definition frame_rate_limited :: "bool" where

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SIGMA001_VerifiedStorage - Isabelle/HOL Port
@@ -31,10 +33,13 @@
  * | value_type         | value_type             | OK     |
  * | query_contains_raw_string | query_contains_raw_string | OK     |
  * | apply_op           | apply_op               | OK     |
+ * | apply_ops          | apply_ops              | OK     |
  * | all_ops_applied    | all_ops_applied        | OK     |
+ * | exec_txn           | exec_txn               | OK     |
  * | wal_contains       | wal_contains           | OK     |
  * | wal_upto           | wal_upto               | OK     |
  * | wal_recover        | wal_recover            | OK     |
+ * | sorted             | sorted                 | OK     |
  * | checksum           | checksum               | OK     |
  * | verify_checksum    | verify_checksum        | OK     |
  * | is_encrypted       | is_encrypted           | OK     |
@@ -89,7 +94,7 @@
  *)
 
 theory SIGMA001_VerifiedStorage
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ColType (matches Coq: Inductive ColType) *)
@@ -102,7 +107,7 @@ datatype col_type =
 (* Value (matches Coq: Inductive Value) *)
 datatype value =
     VInt
-  |     VString  (* String as nat hash *)
+  |     VString
   |     VBool
   |     VNull
 
@@ -119,17 +124,17 @@ datatype pred_op =
 datatype pred =
     PTrue
   |     PFalse
-  |     PCol  (* column op value *)
+  |     PCol
   |     PAnd
   |     POr
   |     PNot
 
 (* Query (matches Coq: Inductive Query) *)
 datatype query =
-    QSelect  (* SELECT cols FROM table WHERE pred *)
-  |     QJoin  (* JOIN t1 ON c1 = t2.c2 WHERE pred *)
-  |     QInsert  (* INSERT INTO table VALUES row *)
-  |     QUpdate  (* UPDATE table SET col=val WHERE pred *)
+    QSelect
+  |     QJoin
+  |     QInsert
+  |     QUpdate
   |     QDelete
 
 (* TxnStatus (matches Coq: Inductive TxnStatus) *)
@@ -141,7 +146,7 @@ datatype txn_status =
 (* TxnOp (matches Coq: Inductive TxnOp) *)
 datatype txn_op =
     OpInsert
-  |     OpDelete  (* table, row_index *)
+  |     OpDelete
   |     OpUpdate
 
 (* IsolationLevel (matches Coq: Inductive IsolationLevel) *)
@@ -179,7 +184,7 @@ record transaction =
 record wal_entry =
   wal_txn_id :: nat
   wal_op :: TxnOp
-  wal_lsn :: nat  (* Log sequence number *)
+  wal_lsn :: nat
 
 (* Checkpoint (matches Coq: Record Checkpoint) *)
 record checkpoint =
@@ -216,9 +221,16 @@ definition query_contains_raw_string :: "Query \<Rightarrow> nat \<Rightarrow> b
 definition apply_op :: "TxnOp \<Rightarrow> Database \<Rightarrow> Database" where
   "apply_op op db \<equiv> db"
 
+(* apply_ops (matches Coq: Definition apply_ops) *)
+fun apply_ops :: "Database \<Rightarrow> Database" where
+
+
 (* all_ops_applied (matches Coq: Definition all_ops_applied) *)
 definition all_ops_applied :: "bool" where
   "all_ops_applied \<equiv> apply_ops ops db1 = db2"
+
+(* exec_txn - complex match, needs manual translation *)
+definition exec_txn :: "bool" where "exec_txn = undefined"
 
 (* wal_contains (matches Coq: Definition wal_contains) *)
 definition wal_contains :: "WAL \<Rightarrow> Transaction \<Rightarrow> bool" where
@@ -232,17 +244,21 @@ definition wal_upto :: "nat \<Rightarrow> WAL \<Rightarrow> WAL" where
 definition wal_recover :: "WAL \<Rightarrow> Database \<Rightarrow> Database" where
   "wal_recover wal db \<equiv> fold_left (fun d e => apply_op (wal_op e) d) wal db"
 
+(* sorted (matches Coq: Definition sorted) *)
+fun sorted :: "bool" where
+
+
 (* checksum (matches Coq: Definition checksum) *)
 definition checksum :: "nat" where
-  "checksum \<equiv> fold_left Nat"
+  "checksum \<equiv> fold_left Nat.add data 0"
 
 (* verify_checksum (matches Coq: Definition verify_checksum) *)
 definition verify_checksum :: "nat \<Rightarrow> bool" where
-  "verify_checksum expected \<equiv> Nat"
+  "verify_checksum expected \<equiv> ((checksum = data)) expected"
 
 (* is_encrypted (matches Coq: Definition is_encrypted) *)
 definition is_encrypted :: "EncryptedData \<Rightarrow> bool" where
-  "is_encrypted ed \<equiv> negb (Nat"
+  "is_encrypted ed \<equiv> (\<not> (Nat.eqb) (enc_key_id ed) 0)"
 
 (* compute_merkle_root (matches Coq: Definition compute_merkle_root) *)
 definition compute_merkle_root :: "nat" where
@@ -250,35 +266,39 @@ definition compute_merkle_root :: "nat" where
 
 (* verify_merkle (matches Coq: Definition verify_merkle) *)
 definition verify_merkle :: "MerkleTree \<Rightarrow> nat \<Rightarrow> bool" where
-  "verify_merkle tree data \<equiv> if In_dec Nat"
+  "verify_merkle tree data \<equiv> if In_dec Nat.eq_dec data (merkle_leaves tree) then True else False"
 
 (* audit_chain_valid (matches Coq: Definition audit_chain_valid) *)
 fun audit_chain_valid :: "AuditLog \<Rightarrow> bool" where
 
 
-(* type_matches - complex match, manual review needed *)
+(* type_matches - complex match, needs manual translation *)
+definition type_matches :: "bool" where "type_matches = undefined"
 
-(* row_matches_schema - complex match, manual review needed *)
+(* row_matches_schema (matches Coq: Definition row_matches_schema) *)
+definition row_matches_schema :: "Row \<Rightarrow> Schema \<Rightarrow> bool" where
+  "row_matches_schema row schema \<equiv> (length row =? length schema) \<and>
+  forallb (fun p => type_matches (fst p) (col_type (snd p))) (combine row schema)"
 
 (* query_well_typed (matches Coq: Definition query_well_typed) *)
 definition query_well_typed :: "Query \<Rightarrow> Database \<Rightarrow> bool" where
-  "query_well_typed q db \<equiv> true"
+  "query_well_typed q db \<equiv> True"
 
 (* pred_well_typed (matches Coq: Definition pred_well_typed) *)
 definition pred_well_typed :: "Pred \<Rightarrow> Schema \<Rightarrow> bool" where
-  "pred_well_typed p schema \<equiv> true"
+  "pred_well_typed p schema \<equiv> True"
 
 (* is_serializable (matches Coq: Definition is_serializable) *)
 definition is_serializable :: "Schedule \<Rightarrow> bool" where
-  "is_serializable s \<equiv> true"
+  "is_serializable s \<equiv> True"
 
 (* has_dirty_read (matches Coq: Definition has_dirty_read) *)
 definition has_dirty_read :: "Schedule \<Rightarrow> bool" where
-  "has_dirty_read s \<equiv> false"
+  "has_dirty_read s \<equiv> False"
 
 (* has_phantom_read (matches Coq: Definition has_phantom_read) *)
 definition has_phantom_read :: "Schedule \<Rightarrow> bool" where
-  "has_phantom_read s \<equiv> false"
+  "has_phantom_read s \<equiv> False"
 
 (* ===============================================================================
     PROOFS: TYPE-SAFE QUERIES (8 theorems)

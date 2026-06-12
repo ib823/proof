@@ -241,19 +241,19 @@ impl EdwardsPoint {
         result
     }
 
-    /// Constant-time selection: returns a if choice == 0, b if choice == 1
+    /// Constant-time selection: returns `a` if `choice == 0`, `b` if `choice == 1`.
+    ///
+    /// Branchless per-coordinate select (FieldElement::conditional_select). This
+    /// is on the SECRET scalar-bit path in `scalar_mul` (signing/keygen), so the
+    /// previous `if choice == 1 { b } else { a }` was a secret-dependent branch
+    /// leaking the private scalar bits via timing. Now constant-time.
     fn ct_select(a: &Self, b: &Self, choice: u8) -> Self {
         debug_assert!(choice == 0 || choice == 1);
-
-        // Convert choice to mask: 0 -> 0x00...00, 1 -> 0xff...ff
-        let mask = -(choice as i64);
-
-        // We need to implement ct_select for FieldElement
-        // For now, use conditional logic (TODO: make this truly constant-time)
-        if choice == 1 {
-            *b
-        } else {
-            *a
+        Self {
+            x: FieldElement::conditional_select(&a.x, &b.x, choice),
+            y: FieldElement::conditional_select(&a.y, &b.y, choice),
+            z: FieldElement::conditional_select(&a.z, &b.z, choice),
+            t: FieldElement::conditional_select(&a.t, &b.t, choice),
         }
     }
 
@@ -291,6 +291,15 @@ impl EdwardsPoint {
         let x_sign = (y_bytes[31] >> 7) & 1;
         y_bytes[31] &= 0x7f;
 
+        // RFC 8032 §5.1.3 step 1: the y-coordinate is recovered by clearing the
+        // sign bit; if the resulting 255-bit value is >= p the encoding is
+        // non-canonical and decoding MUST fail. `FieldElement::from_bytes` would
+        // otherwise silently reduce it mod p, accepting a second valid encoding of
+        // the same curve point (a malleability gap for keys/commitments).
+        if !is_canonical_y(&y_bytes) {
+            return Err(CryptoError::InvalidSignature);
+        }
+
         let y = FieldElement::from_bytes(&y_bytes);
 
         // Compute x² = (y² - 1) / (d*y² + 1)
@@ -315,6 +324,14 @@ impl EdwardsPoint {
             x
         };
 
+        // RFC 8032 §5.1.3 step 3: if x = 0 and the sign bit x_0 = 1, the encoding
+        // is non-canonical (there is no "negative zero" to request); decoding MUST
+        // fail. Without this, the two-torsion point (0, 1)/(0, -1) family admits a
+        // bogus second encoding.
+        if x.is_zero() && x_sign == 1 {
+            return Err(CryptoError::InvalidSignature);
+        }
+
         // Verify the point is on the curve (defensive check)
         // -x² + y² = 1 + d*x²*y²
         let x2 = x.square();
@@ -332,6 +349,30 @@ impl EdwardsPoint {
             t: x * y,
         })
     }
+}
+
+/// p = 2^255 - 19 (the field modulus) in little-endian bytes.
+const P_BYTES: [u8; 32] = [
+    0xed, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f,
+];
+
+/// Returns `true` iff the little-endian value in `y_bytes` (sign bit already
+/// cleared, so a 255-bit number) is canonical: strictly less than p = 2^255 - 19.
+///
+/// RFC 8032 §5.1.3 requires rejecting a point encoding whose recovered
+/// y-coordinate is >= p; otherwise the same curve point has multiple valid
+/// encodings (a malleability gap, since `FieldElement::from_bytes` reduces mod p
+/// silently). Branchless multi-precision compare: compute `y_bytes - p`
+/// propagating the borrow LSB->MSB; the final borrow out of the top byte is 1
+/// exactly when `y_bytes < p` (mirrors `is_scalar_valid`'s `s < L` check).
+fn is_canonical_y(y_bytes: &[u8; 32]) -> bool {
+    let mut borrow = 0i16;
+    for i in 0..32 {
+        let diff = i16::from(y_bytes[i]) - i16::from(P_BYTES[i]) - borrow;
+        borrow = (diff >> 15) & 1;
+    }
+    borrow == 1
 }
 
 /// Compute sqrt(u/v) using the Ed25519 formula
@@ -926,13 +967,17 @@ fn scalar_mul(a: &Scalar, b: &Scalar) -> Scalar {
                 carry = p >> 8;
             }
         }
-        // Propagate remaining carry
-        let mut k = i + 32;
-        while carry > 0 && k < 64 {
+        // Propagate the remaining carry with a FIXED trip count (constant-time).
+        // The previous `while carry > 0 && k < 64` leaked the carry chain via its
+        // data-dependent iteration count (a real secret-dependent loop in the
+        // signing path — found by `scripts/ct-structural-check.sh`). Once `carry`
+        // reaches 0 the remaining iterations are no-ops (`sum = product[k] + 0`),
+        // so always running to 64 yields the identical product without branching
+        // on the secret.
+        for k in (i + 32)..64 {
             let sum = u32::from(product[k]) + carry;
             product[k] = sum as u8;
             carry = sum >> 8;
-            k += 1;
         }
     }
 
@@ -947,23 +992,23 @@ fn scalar_reduce(bytes: &mut [u8; 32]) {
     let mut borrow: i16 = 0;
     let mut diff = [0u8; 32];
 
-    // Compute bytes - L
+    // Compute bytes - L, branchlessly. `d` is in [-256, 255]; the borrowed low
+    // byte is `d & 0xff` (== d+256 when d<0, == d when d>=0) and the next borrow
+    // is `d >> 8` (arithmetic: -1 if d<0, else 0). The previous `if d < 0` was a
+    // secret-dependent branch despite the "constant time" comment — flagged by
+    // `scripts/ct-structural-check.sh` (same mask idiom as the canonical check at
+    // `scalar_is_canonical`).
     for i in 0..32 {
         let d = i16::from(bytes[i]) - i16::from(L_BYTES[i]) + borrow;
-        if d < 0 {
-            diff[i] = (d + 256) as u8;
-            borrow = -1;
-        } else {
-            diff[i] = d as u8;
-            borrow = 0;
-        }
+        diff[i] = (d & 0xff) as u8;
+        borrow = d >> 8;
     }
 
-    // If borrow == 0, bytes >= L, so use diff
-    // If borrow == -1, bytes < L, so keep bytes
-    // Create mask: 0xff when borrow == -1 (keep bytes), 0x00 when borrow == 0 (use diff)
-    let keep_original = (borrow != 0) as u8; // 1 if borrow == -1, 0 if borrow == 0
-    let mask = keep_original.wrapping_neg(); // 0xff if keep, 0x00 if use diff
+    // borrow is now 0 (bytes >= L, use diff) or -1 (bytes < L, keep original).
+    // mask = borrow as u8 maps that to 0x00 / 0xff directly. `black_box` stops
+    // LLVM from re-deriving the mask via a sign branch on the final `d`
+    // (`cmp $0xff; ja`) — a secret-dependent branch flagged by ct-structural-check.
+    let mask = core::hint::black_box(borrow) as u8; // 0x00 if use diff, 0xff if keep
 
     for i in 0..32 {
         bytes[i] = (bytes[i] & mask) | (diff[i] & !mask);
@@ -1000,7 +1045,7 @@ impl Ed25519SigningKey {
         // 2. Clamp the first 32 bytes to form the scalar
         let mut clamped = [0u8; 32];
         clamped.copy_from_slice(&expanded[..32]);
-        clamped[0] &= 248; // Clear lowest 3 bits
+        clamped[0] &= 0xF8; // Clear lowest 3 bits
         clamped[31] &= 127; // Clear highest bit
         clamped[31] |= 64; // Set second-highest bit
 
@@ -1180,15 +1225,25 @@ impl Ed25519VerifyingKey {
     }
 }
 
-/// Check if a scalar is valid (< L)
+/// Check if a scalar is canonical: `bytes < L` (the Ed25519 group order).
+///
+/// Enforces non-malleability (RFC 8032 requires `0 <= s < L`). Implemented as a
+/// multi-precision subtraction `bytes - L` with the borrow propagated LSB->MSB
+/// (the bytes are little-endian); the final borrow out of the most-significant
+/// byte is 1 exactly when `bytes < L`. Branchless (the borrow bit is the sign of
+/// each i16 difference) — `bytes` here is the public signature scalar, but the
+/// constant-time form keeps the intent honest.
+///
+/// NOTE: a previous version iterated MSB->LSB, which propagated the borrow the
+/// wrong way and mis-classified scalars needing a cross-byte borrow (e.g. L-238)
+/// — both rejecting valid signatures and risking acceptance of malleable s >= L.
 fn is_scalar_valid(bytes: &[u8; 32]) -> bool {
-    // Compare with L in constant time
     let mut borrow = 0i16;
-    for i in (0..32).rev() {
+    for i in 0..32 {
         let diff = i16::from(bytes[i]) - i16::from(L_BYTES[i]) - borrow;
-        borrow = if diff < 0 { 1 } else { 0 };
+        borrow = (diff >> 15) & 1; // 1 iff diff < 0
     }
-    // If borrow == 1, bytes < L, which is valid
+    // Final borrow == 1  <=>  bytes < L.
     borrow == 1
 }
 
@@ -1268,6 +1323,28 @@ impl Signature for Ed25519 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_is_scalar_valid_borrow_propagation() {
+        // s == L is NOT < L (canonical-S boundary).
+        assert!(!is_scalar_valid(&L_BYTES));
+        // 0 < L.
+        assert!(is_scalar_valid(&[0u8; 32]));
+        // L - 1 < L.
+        let mut l_minus_1 = L_BYTES;
+        l_minus_1[0] -= 1;
+        assert!(is_scalar_valid(&l_minus_1));
+        // Cross-byte borrow: L with byte0 += 18 and byte1 -= 1  ==  L - 238 < L.
+        // Only a correct LSB->MSB borrow chain classifies this as < L.
+        let mut borrow_case = L_BYTES;
+        borrow_case[0] = 0xff; // 0xed + 18
+        borrow_case[1] = 0xd2; // 0xd3 - 1
+        assert!(is_scalar_valid(&borrow_case), "L-238 must be < L");
+        // Clearly >= L must be rejected (top byte 0x10 -> 0x11).
+        let mut too_big = L_BYTES;
+        too_big[31] = 0x11;
+        assert!(!is_scalar_valid(&too_big), "value > L must be rejected");
+    }
 
     #[test]
     fn test_ed25519_key_generation() {
@@ -1387,32 +1464,13 @@ mod tests {
         ]);
 
         let d = curve_d();
-        eprintln!("d: {:02x?}", d.to_bytes());
-
         let y2 = by.square();
-        eprintln!("y²: {:02x?}", y2.to_bytes());
 
-        // From curve equation -x² + y² = 1 + d·x²·y²
-        // => y² - 1 = x²(1 + d·y²)
-        // => x² = (y² - 1) / (1 + d·y²)
-        // But actually for -x² + y² = 1 + d·x²·y²:
-        // y² - 1 = x² + d·x²·y²
-        // y² - 1 = x²(1 + d·y²)
-        // x² = (y² - 1) / (1 + d·y²)
-
+        // From the curve equation  -x² + y² = 1 + d·x²·y²:
+        //   y² - 1 = x²(1 + d·y²)  =>  x² = (y² - 1) / (1 + d·y²)
         let numerator = y2 - FieldElement::ONE;
-        eprintln!("y² - 1: {:02x?}", numerator.to_bytes());
-
-        let d_times_y2 = d * y2;
-        eprintln!("d*y²: {:02x?}", d_times_y2.to_bytes());
-
-        let denominator = FieldElement::ONE + d_times_y2;
-        eprintln!("1 + d*y²: {:02x?}", denominator.to_bytes());
-
-        let denom_inv = denominator.invert();
-        eprintln!("(1 + d*y²)^-1: {:02x?}", denom_inv.to_bytes());
-
-        let x2_computed = numerator * denom_inv;
+        let denominator = FieldElement::ONE + d * y2;
+        let x2_computed = numerator * denominator.invert();
 
         // Expected x
         let bx = FieldElement::from_bytes(&[
@@ -1421,20 +1479,11 @@ mod tests {
             0xd3, 0x36, 0x69, 0x21,
         ]);
         let x2_expected = bx.square();
-
-        let x2_computed_bytes = x2_computed.to_bytes();
-        let x2_expected_bytes = x2_expected.to_bytes();
-        eprintln!("x² computed: {:02x?}", x2_computed_bytes);
-        eprintln!("x² expected: {:02x?}", x2_expected_bytes);
-
         assert_eq!(x2_computed.ct_eq(&x2_expected), 1, "x² mismatch!");
 
-        // Now verify the curve equation
+        // Now verify the curve equation directly.
         let lhs = y2 - x2_expected;
         let rhs = FieldElement::ONE + d * x2_expected * y2;
-        eprintln!("LHS (y²-x²): {:02x?}", lhs.to_bytes());
-        eprintln!("RHS (1+dx²y²): {:02x?}", rhs.to_bytes());
-
         assert_eq!(lhs.ct_eq(&rhs), 1, "Basepoint not on curve!");
     }
 
@@ -1529,5 +1578,110 @@ mod tests {
         // Verify the signature
         let result = keypair.public_key().verify(&[0x72], &signature);
         assert!(result.is_ok());
+    }
+
+    // ── RFC 8032 §5.1.3 strict point-decoding (canonicality) ──────────────────
+
+    #[test]
+    fn test_is_canonical_y_boundaries() {
+        // p - 1 (largest canonical value) → canonical.
+        let mut p_minus_1 = P_BYTES;
+        p_minus_1[0] -= 1; // 0xed → 0xec, i.e. p-1
+        assert!(is_canonical_y(&p_minus_1), "p-1 must be canonical");
+
+        // p, p+1 → non-canonical (>= p).
+        assert!(!is_canonical_y(&P_BYTES), "p must be non-canonical");
+        let mut p_plus_1 = P_BYTES;
+        p_plus_1[0] += 1; // 0xed → 0xee, i.e. p+1
+        assert!(!is_canonical_y(&p_plus_1), "p+1 must be non-canonical");
+
+        // 2^255 - 1 (all 255 bits set) → non-canonical.
+        let mut max = [0xffu8; 32];
+        max[31] = 0x7f;
+        assert!(!is_canonical_y(&max), "2^255-1 must be non-canonical");
+
+        // 0, 1, and the basepoint y are canonical.
+        assert!(is_canonical_y(&[0u8; 32]), "0 must be canonical");
+        let mut one = [0u8; 32];
+        one[0] = 1;
+        assert!(is_canonical_y(&one), "1 must be canonical");
+        assert!(
+            is_canonical_y(&basepoint().compress()),
+            "basepoint y must be canonical"
+        );
+    }
+
+    #[test]
+    fn test_decompress_rejects_noncanonical_y() {
+        // y ≡ 1 (mod p) encoded non-canonically as p+1 = 2^255 - 18 (sign bit 0).
+        // This reduces to the identity (0, 1); the canonical encoding [1,0,..,0]
+        // must still decode, but the non-canonical one must be rejected.
+        let mut one_canonical = [0u8; 32];
+        one_canonical[0] = 1;
+        assert!(
+            EdwardsPoint::decompress(&one_canonical).is_ok(),
+            "canonical y=1 must decode"
+        );
+
+        let mut p_plus_1 = P_BYTES; // sign bit (bit 255) already 0 here
+        p_plus_1[0] += 1; // 0xed → 0xee  ⇒  value = p+1 ≡ 1
+        assert!(
+            EdwardsPoint::decompress(&p_plus_1).is_err(),
+            "non-canonical y (>= p) must be rejected"
+        );
+    }
+
+    #[test]
+    fn test_decompress_rejects_x_zero_with_sign_set() {
+        // y = 1 gives x = 0. With the sign bit cleared this is the identity and
+        // must decode; with the sign bit set the encoding is non-canonical and
+        // RFC 8032 requires decode failure.
+        let mut y1_sign0 = [0u8; 32];
+        y1_sign0[0] = 1;
+        assert!(
+            EdwardsPoint::decompress(&y1_sign0).is_ok(),
+            "(x=0, sign=0) is the identity and must decode"
+        );
+
+        let mut y1_sign1 = y1_sign0;
+        y1_sign1[31] |= 0x80; // request the "negative" sign of x=0
+        assert!(
+            EdwardsPoint::decompress(&y1_sign1).is_err(),
+            "(x=0, sign=1) must be rejected as non-canonical"
+        );
+    }
+
+    #[test]
+    fn test_verify_rejects_malleable_s_plus_l() {
+        // Non-malleability: a forged signature (R, s+L) is congruent to (R, s)
+        // mod L and would satisfy the group equation, but RFC 8032 mandates the
+        // strict `0 <= s < L` check, which must reject it.
+        let seed: [u8; 32] = [
+            0x9d, 0x61, 0xb1, 0x9d, 0xef, 0xfd, 0x5a, 0x60, 0xba, 0x84, 0x4a, 0xf4, 0x92, 0xec,
+            0x2c, 0xc4, 0x44, 0x49, 0xc5, 0x69, 0x7b, 0x32, 0x69, 0x19, 0x70, 0x3b, 0xac, 0x03,
+            0x1c, 0xae, 0x7f, 0x60,
+        ];
+        let keypair = Ed25519SigningKey::from_seed(&seed);
+        let msg = b"riina malleability check";
+        let signature = keypair.sign(msg);
+        assert!(
+            keypair.public_key().verify(msg, &signature).is_ok(),
+            "honest signature must verify"
+        );
+
+        // s' = s + L (little-endian add; s < L so the sum stays within 32 bytes).
+        let mut malleable = signature;
+        let mut carry: u16 = 0;
+        for i in 0..32 {
+            carry += u16::from(signature[32 + i]) + u16::from(L_BYTES[i]);
+            malleable[32 + i] = carry as u8;
+            carry >>= 8;
+        }
+        assert_eq!(carry, 0, "s + L must not overflow 32 bytes");
+        assert_ne!(malleable, signature, "s+L must differ from s");
+        assert!(
+            keypair.public_key().verify(msg, &malleable).is_err(),
+            "s >= L (malleable) must be rejected"
+        );
     }
 }

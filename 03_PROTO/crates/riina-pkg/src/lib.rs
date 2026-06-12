@@ -26,12 +26,14 @@ pub mod cache;
 pub mod cli;
 pub mod effects;
 pub mod error;
+pub(crate) mod http;
 pub mod integrity;
 pub mod layout;
 pub mod lockfile;
 pub mod manifest;
 pub mod registry;
 pub mod resolve;
+pub(crate) mod tarball;
 pub mod version;
 pub mod workspace;
 

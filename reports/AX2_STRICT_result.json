@@ -1,0 +1,77 @@
+{
+  "ax_id": "AX2",
+  "mode": "strict",
+  "status": "blocked",
+  "files_changed": [],
+  "lemmas_added": [],
+  "axioms_removed": [],
+  "new_axioms_added": 0,
+  "new_parameters_added": 0,
+  "public_signature_delta": [
+    {
+      "symbol": "val_rel_n_step_up",
+      "changed": false,
+      "notes": "No signature changes applied; axiom retained after failed constructive attempts."
+    },
+    {
+      "symbol": "logical_relation",
+      "changed": false,
+      "notes": "No AX2-related API changes applied."
+    },
+    {
+      "symbol": "non_interference_stmt",
+      "changed": false,
+      "notes": "No AX2-related API changes applied."
+    },
+    {
+      "symbol": "security_non_interference",
+      "changed": false,
+      "notes": "No AX2-related API changes applied."
+    }
+  ],
+  "narrow_checks": [
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/NonInterference_v2.vo (preflight)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_preflight_nonintv2.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo (preflight)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_preflight_logrel.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/ValRelStepLimit_PROOF.vo (preflight)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_preflight_valrelstep.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/SecurityProperties.vo (preflight)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_preflight_securityprops.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/NonInterference_v2.vo (restore)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_restore_nonintv2.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo (restore)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_restore_logrel.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/ValRelStepLimit_PROOF.vo (restore)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_restore_valrelstep.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/SecurityProperties.vo (restore)",
+      "status": "pass",
+      "notes": "see /tmp/ax2_restore_securityprops.log"
+    }
+  ],
+  "full_build_status": "fail",
+  "full_build_notes": "AX2-related failures: none after restore. Known unrelated baseline failure persists at 02_FORMAL/coq/effects/EffectGate.v:97.",
+  "remaining_blocker": "At n=1->2 for non-FO (especially TFn), premises only provide Hrat: True (from val_rel_at_type_n 0), but goal requires val_rel_at_type_n 1 (full semantic relation)."
+}

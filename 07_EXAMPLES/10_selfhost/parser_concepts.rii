@@ -1,0 +1,90 @@
+// parser_concepts.rii — Parser patterns in RIINA
+// Corak penganalisis sintaks dalam RIINA
+// Demonstrates recursive descent concepts for self-hosting
+
+// Padankan kata kunci RIINA kepada nombor ID
+// Match RIINA keywords to numeric IDs
+fungsi padan_kata_kunci(kata: Teks) -> Nombor kesan Bersih {
+    kalau kata == "fungsi" { 1 }
+    lain kalau kata == "biar" { 2 }
+    lain kalau kata == "kalau" { 3 }
+    lain kalau kata == "pulang" { 4 }
+    lain kalau kata == "lain" { 5 }
+    lain kalau kata == "untuk" { 6 }
+    lain kalau kata == "dalam" { 7 }
+    lain kalau kata == "selagi" { 8 }
+    lain kalau kata == "padan" { 9 }
+    lain kalau kata == "kesan" { 10 }
+    lain kalau kata == "bentuk" { 11 }
+    lain kalau kata == "pilihan" { 12 }
+    lain kalau kata == "sifat" { 13 }
+    lain kalau kata == "laksana" { 14 }
+    lain kalau kata == "modul" { 15 }
+    lain kalau kata == "guna" { 16 }
+    lain kalau kata == "awam" { 17 }
+    lain kalau kata == "ubah" { 18 }
+    lain kalau kata == "tetap" { 19 }
+    lain kalau kata == "benar" { 20 }
+    lain kalau kata == "salah" { 21 }
+    lain { 0 }  // bukan kata kunci / not a keyword
+}
+
+// Jenis nod AST sebagai nombor
+// AST node types as numbers
+biar NOD_FUNGSI = 1;     // function declaration
+biar NOD_BIAR = 2;       // variable binding
+biar NOD_KALAU = 3;      // if expression
+biar NOD_PADAN = 4;      // pattern match
+biar NOD_PANGGIL = 5;    // function call
+biar NOD_NOMBOR = 6;     // number literal
+biar NOD_TEKS = 7;       // string literal
+biar NOD_IDENT = 8;      // identifier
+biar NOD_OPERATOR = 9;   // binary operator
+biar NOD_PULANG = 10;    // return expression
+
+// Semak sama ada token ialah kata kunci
+// Check if token is a keyword
+fungsi ialah_kata_kunci(kata: Teks) -> Benar kesan Bersih {
+    kalau padan_kata_kunci(kata) > 0 { benar } lain { salah }
+}
+
+// Keutamaan operator (precedence)
+// Operator precedence levels
+fungsi keutamaan(op: Teks) -> Nombor kesan Bersih {
+    kalau op == "+" { 1 }
+    lain kalau op == "-" { 1 }
+    lain kalau op == "*" { 2 }
+    lain kalau op == "/" { 2 }
+    lain kalau op == "==" { 0 }
+    lain kalau op == "!=" { 0 }
+    lain kalau op == "<" { 0 }
+    lain kalau op == ">" { 0 }
+    lain kalau op == "<=" { 0 }
+    lain kalau op == ">=" { 0 }
+    lain { -1 }
+}
+
+// Semak sama ada operator ialah kiri-asosiatif
+// Check if operator is left-associative
+fungsi kiri_asosiatif(op: Teks) -> Benar kesan Bersih {
+    kalau op == "+" { benar }
+    lain kalau op == "-" { benar }
+    lain kalau op == "*" { benar }
+    lain kalau op == "/" { benar }
+    lain { benar }
+}
+
+// Semak jenis nod daripada kata kunci
+// Determine AST node type from keyword
+fungsi nod_dari_kata_kunci(kata: Teks) -> Nombor kesan Bersih {
+    kalau kata == "fungsi" { NOD_FUNGSI }
+    lain kalau kata == "biar" { NOD_BIAR }
+    lain kalau kata == "kalau" { NOD_KALAU }
+    lain kalau kata == "padan" { NOD_PADAN }
+    lain kalau kata == "pulang" { NOD_PULANG }
+    lain { NOD_IDENT }
+}
+
+// Bukti konsep: parser boleh diungkap dalam RIINA sendiri
+// Proof of concept: parser logic is expressible in RIINA itself
+padan_kata_kunci("fungsi")

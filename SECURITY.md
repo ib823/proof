@@ -2,7 +2,7 @@
 
 ## Reporting
 
-If you discover a security issue in RIINA, please report it responsibly.
+If you discover a security issue in RIINA™, please report it responsibly.
 
 **Security contact:** `ikmal.baharudin@gmail.com` (PGP key on request) — or **Telegram:**
 [@ib823](https://t.me/ib823). A dedicated `security@` alias is being established; until it is live,

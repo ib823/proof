@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ControlFlowIntegrity - Isabelle/HOL Port
@@ -26,6 +28,7 @@
  * | ThreadContext      | thread_context         | OK     |
  * | edge_in_cfg        | edge_in_cfg            | OK     |
  * | shadow_push        | shadow_push            | OK     |
+ * | shadow_pop         | shadow_pop             | OK     |
  * | valid_return       | valid_return           | OK     |
  * | valid_indirect_call | valid_indirect_call    | OK     |
  * | has_perm           | has_perm               | OK     |
@@ -65,10 +68,10 @@ begin
 
 (* EdgeType (matches Coq: Inductive EdgeType) *)
 datatype edge_type =
-    DirectJump  (* Direct jump to known target *)
-  |     ConditionalJump  (* Conditional branch *)
-  |     DirectCall  (* Direct function call *)
-  |     Return  (* Return to caller *)
+    DirectJump
+  |     ConditionalJump
+  |     DirectCall
+  |     Return
   |     FallThrough
 
 (* MemPerm (matches Coq: Inductive MemPerm) *)
@@ -79,7 +82,7 @@ datatype mem_perm =
 
 (* RelocState (matches Coq: Inductive RelocState) *)
 datatype reloc_state =
-    PreReloc  (* Can be written during loading *)
+    PreReloc
   |     PostReloc
 
 (* BasicBlock (matches Coq: Record BasicBlock) *)
@@ -103,7 +106,6 @@ record shadow_entry =
 (* FuncType (matches Coq: Record FuncType) *)
 record func_type =
   ft_arg_types :: 'a list
-  Simplified :: just
   ft_ret_type :: nat
 
 (* TypedFuncPtr (matches Coq: Record TypedFuncPtr) *)
@@ -123,8 +125,8 @@ record typed_object =
 
 (* ExceptionHandler (matches Coq: Record ExceptionHandler) *)
 record exception_handler =
-  eh_type :: nat  (* Exception type handled *)
-  eh_addr :: InstrAddr  (* Handler address *)
+  eh_type :: nat
+  eh_addr :: InstrAddr
 
 (* JmpBuf (matches Coq: Record JmpBuf) *)
 record jmp_buf =
@@ -135,7 +137,7 @@ record jmp_buf =
 (* ThreadContext (matches Coq: Record ThreadContext) *)
 record thread_context =
   tc_id :: nat
-  tc_owner :: nat  (* Owning process/capability *)
+  tc_owner :: nat
   tc_valid :: bool
 
 (* edge_in_cfg (matches Coq: Definition edge_in_cfg) *)
@@ -145,6 +147,10 @@ definition edge_in_cfg :: "CFGEdge \<Rightarrow> ValidCFG \<Rightarrow> bool" wh
 (* shadow_push (matches Coq: Definition shadow_push) *)
 definition shadow_push :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> FuncId \<Rightarrow> ShadowStack" where
   "shadow_push ss ret caller \<equiv> mkShadowEntry ret caller :: ss"
+
+(* shadow_pop (matches Coq: Definition shadow_pop) *)
+fun shadow_pop :: "ShadowStack \<Rightarrow> option (ShadowEntry * ShadowStack)" where
+  "shadow_pop nil = None"
 
 (* valid_return (matches Coq: Definition valid_return) *)
 fun valid_return :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" where
@@ -172,7 +178,7 @@ definition handler_registered :: "ValidHandlers \<Rightarrow> ExceptionHandler \
 
 (* longjmp_safe (matches Coq: Definition longjmp_safe) *)
 definition longjmp_safe :: "JmpBuf \<Rightarrow> bool" where
-  "longjmp_safe jb \<equiv> jb_valid jb = true"
+  "longjmp_safe jb \<equiv> jb_valid jb = True"
 
 (* got_writable (matches Coq: Definition got_writable) *)
 definition got_writable :: "RelocState \<Rightarrow> bool" where
@@ -184,7 +190,7 @@ definition got_protected :: "RelocState \<Rightarrow> bool" where
 
 (* thread_accessible (matches Coq: Definition thread_accessible) *)
 definition thread_accessible :: "ThreadContext \<Rightarrow> nat \<Rightarrow> bool" where
-  "thread_accessible tc accessor \<equiv> tc_owner tc = accessor /\ tc_valid tc = true"
+  "thread_accessible tc accessor \<equiv> tc_owner tc = accessor /\ tc_valid tc = True"
 
 (* ctl_001_rop_impossible (matches Coq) *)
 lemma ctl_001_rop_impossible: "\<forall> (ss : ShadowStack) (attacker_addr : InstrAddr), valid_return ss attacker_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = attacker_addr"

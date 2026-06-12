@@ -77,6 +77,7 @@
 
 pub mod constant_time;
 pub mod crypto;
+pub mod litmus;
 pub mod secret;
 pub mod zeroize;
 

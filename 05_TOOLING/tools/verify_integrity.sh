@@ -4,7 +4,7 @@
 #  Run manually for integrity monitoring
 #═══════════════════════════════════════════════════════════════════════════════════
 
-set -e
+set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -30,8 +30,8 @@ git -C "$REPO_ROOT" log --pretty=format:"%h %G? %s" -20
 echo ""
 echo ""
 
-UNSIGNED=$(git -C "$REPO_ROOT" log --pretty=format:"%H %G?" -50 | grep -v " G$" | grep -v " U$" | grep -v " N$" | wc -l)
-NOSIG=$(git -C "$REPO_ROOT" log --pretty=format:"%H %G?" -50 | grep " N$" | wc -l)
+UNSIGNED=$(git -C "$REPO_ROOT" log --pretty=format:"%H %G?" -50 | awk '$2 != "G" && $2 != "U" && $2 != "N" { c++ } END { print c+0 }')
+NOSIG=$(git -C "$REPO_ROOT" log --pretty=format:"%H %G?" -50 | awk '$2 == "N" { c++ } END { print c+0 }')
 echo "Unsigned (bad sig): $UNSIGNED in last 50 commits"
 echo "No signature:       $NOSIG in last 50 commits"
 echo ""
@@ -58,12 +58,59 @@ else
 fi
 echo ""
 
-# 5. Admitted/Axiom check
+# 5. Proof integrity summary
 echo "=== PROOF INTEGRITY ==="
-ADMITTED_COUNT=$(grep -r "Admitted\." --include="*.v" "$REPO_ROOT/02_FORMAL" 2>/dev/null | grep -v "(\*" | wc -l || echo 0)
-AXIOM_COUNT=$(grep -r "^Axiom " --include="*.v" "$REPO_ROOT/02_FORMAL" 2>/dev/null | wc -l || echo 0)
-echo "Admitted: $ADMITTED_COUNT"
-echo "Axioms:  $AXIOM_COUNT"
+COQ_ROOT="$REPO_ROOT/02_FORMAL/coq"
+COQ_PROJECT="$COQ_ROOT/_CoqProject"
+
+ACTIVE_FILES=0
+ACTIVE_ADMITTED=0
+ACTIVE_AXIOMS=0
+ACTIVE_ASSUMPTIONS=0
+
+if [ -f "$COQ_PROJECT" ]; then
+    while IFS= read -r rel; do
+        path="$COQ_ROOT/$rel"
+        [ -f "$path" ] || continue
+        ACTIVE_FILES=$((ACTIVE_FILES + 1))
+
+        admitted_hits=$(grep -Ec '^[[:space:]]*Admitted\.' "$path" || true)
+        axiom_hits=$(grep -Ec '^[[:space:]]*Axiom[[:space:]]+' "$path" || true)
+        assumption_hits=$(grep -Ec '^[[:space:]]*Parameter[[:space:]]+val_rel_n_step_up[[:space:]]' "$path" || true)
+
+        ACTIVE_ADMITTED=$((ACTIVE_ADMITTED + admitted_hits))
+        ACTIVE_AXIOMS=$((ACTIVE_AXIOMS + axiom_hits))
+        ACTIVE_ASSUMPTIONS=$((ACTIVE_ASSUMPTIONS + assumption_hits))
+    done < <(
+        awk '
+            {
+                line=$0;
+                sub(/^[ \t]+/, "", line);
+                if (line ~ /^[#-]/ || line == "") next;
+                split(line, tok, /[ \t]+/);
+                if (tok[1] ~ /\.v$/) print tok[1];
+            }
+        ' "$COQ_PROJECT"
+    )
+fi
+
+GLOBAL_ADMITTED=0
+GLOBAL_AXIOMS=0
+while IFS= read -r file; do
+    admitted_hits=$(grep -Ec '^[[:space:]]*Admitted\.' "$file" || true)
+    axiom_hits=$(grep -Ec '^[[:space:]]*Axiom[[:space:]]+' "$file" || true)
+    GLOBAL_ADMITTED=$((GLOBAL_ADMITTED + admitted_hits))
+    GLOBAL_AXIOMS=$((GLOBAL_AXIOMS + axiom_hits))
+done < <(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f 2>/dev/null)
+
+echo "Active build (_CoqProject):"
+echo "  Files:              $ACTIVE_FILES"
+echo "  Admitted:           $ACTIVE_ADMITTED"
+echo "  Axioms:             $ACTIVE_AXIOMS"
+echo "  Explicit assumptions: $ACTIVE_ASSUMPTIONS"
+echo "Global repo (includes archived/non-active):"
+echo "  Admitted:           $GLOBAL_ADMITTED"
+echo "  Axioms:             $GLOBAL_AXIOMS"
 echo ""
 
 echo "=== SUMMARY ==="

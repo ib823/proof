@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeCyberTrustMark - Isabelle/HOL Port
@@ -21,6 +23,7 @@
  * | education_meets_tier | education_meets_tier   | OK     |
  * | ai_security_assessed | ai_security_assessed   | OK     |
  * | ctm_certified_at_tier | ctm_certified_at_tier  | OK     |
+ * | all_ctm_tiers      | all_ctm_tiers          | OK     |
  * | cloud_security_assessed | cloud_security_assessed | OK     |
  * | ot_security_assessed | ot_security_assessed   | OK     |
  * | ctm_2025_extensions_compliant | ctm_2025_extensions_compliant | OK     |
@@ -102,7 +105,7 @@ definition education_meets_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Righta
 
 (* ai_security_assessed (matches Coq: Definition ai_security_assessed) *)
 definition ai_security_assessed :: "CTMAssessment \<Rightarrow> bool" where
-  "ai_security_assessed a \<equiv> ctm_ai_security a = true"
+  "ai_security_assessed a \<equiv> ctm_ai_security a = True"
 
 (* ctm_certified_at_tier (matches Coq: Definition ctm_certified_at_tier) *)
 definition ctm_certified_at_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
@@ -112,13 +115,17 @@ definition ctm_certified_at_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Right
   assurance_meets_tier a t /\
   education_meets_tier a t"
 
+(* all_ctm_tiers (matches Coq: Definition all_ctm_tiers) *)
+definition all_ctm_tiers :: "list CTMTier" where
+  "all_ctm_tiers \<equiv> [Essential; Intermediate; Advanced; Expert]"
+
 (* cloud_security_assessed (matches Coq: Definition cloud_security_assessed) *)
 definition cloud_security_assessed :: "CTMAssessment \<Rightarrow> bool" where
-  "cloud_security_assessed a \<equiv> ctm_cloud_security a = true"
+  "cloud_security_assessed a \<equiv> ctm_cloud_security a = True"
 
 (* ot_security_assessed (matches Coq: Definition ot_security_assessed) *)
 definition ot_security_assessed :: "CTMAssessment \<Rightarrow> bool" where
-  "ot_security_assessed a \<equiv> ctm_ot_security a = true"
+  "ot_security_assessed a \<equiv> ctm_ot_security a = True"
 
 (* ctm_2025_extensions_compliant (matches Coq: Definition ctm_2025_extensions_compliant) *)
 definition ctm_2025_extensions_compliant :: "CTMAssessment \<Rightarrow> bool" where
@@ -136,8 +143,8 @@ definition all_domains_above :: "CTMAssessment \<Rightarrow> nat \<Rightarrow> b
 
 (* cssp_ctm_requirement (matches Coq: Definition cssp_ctm_requirement) *)
 definition cssp_ctm_requirement :: "CSSPEntity \<Rightarrow> bool" where
-  "cssp_ctm_requirement e \<equiv> cssp_ctm_certified e = true /\
-  cssp_license_valid e = true"
+  "cssp_ctm_requirement e \<equiv> cssp_ctm_certified e = True /\
+  cssp_license_valid e = True"
 
 (* ctm_governance_check (matches Coq) *)
 lemma ctm_governance_check: "\<forall> (a : CTMAssessment) (t : CTMTier), tier_threshold t \<le> ctm_governance a \<longrightarrow> governance_meets_tier a t"

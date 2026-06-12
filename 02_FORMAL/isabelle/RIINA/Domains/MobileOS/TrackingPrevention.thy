@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TrackingPrevention - Isabelle/HOL Port
@@ -114,7 +116,7 @@ record application =
 record tracking_event =
   tracking_app :: Application
   tracked_user :: User
-  tracking_type :: nat  (* 0=none, 1=analytics, 2=advertising, 3=cross-app *)
+  tracking_type :: nat
   tracking_data :: 'a list
 
 (* PrivacyState (matches Coq: Record PrivacyState) *)
@@ -221,21 +223,21 @@ record tracking_report =
 
 (* consent_scope_invariant (matches Coq: Definition consent_scope_invariant) *)
 definition consent_scope_invariant :: "User \<Rightarrow> bool" where
-  "consent_scope_invariant user \<equiv> (consent_scope user <> []) <-> (tracking_consent_given user = true)"
+  "consent_scope_invariant user \<equiv> (consent_scope user <> []) <-> (tracking_consent_given user = True)"
 
 (* explicit_consent (matches Coq: Definition explicit_consent) *)
 definition explicit_consent :: "User \<Rightarrow> Application \<Rightarrow> bool" where
-  "explicit_consent user app \<equiv> tracking_consent_given user = true /\
+  "explicit_consent user app \<equiv> tracking_consent_given user = True /\
   In (app_id app) (consent_scope user)"
 
 (* tracks (matches Coq: Definition tracks) *)
 definition tracks :: "Application \<Rightarrow> User \<Rightarrow> bool" where
-  "tracks app user \<equiv> tracking_enabled app = true /\
+  "tracks app user \<equiv> tracking_enabled app = True /\
   explicit_consent user app"
 
 (* privacy_state_well_formed (matches Coq: Definition privacy_state_well_formed) *)
 definition privacy_state_well_formed :: "PrivacyState \<Rightarrow> bool" where
-  "privacy_state_well_formed ps \<equiv> tracking_transparency_enabled ps = true /\
+  "privacy_state_well_formed ps \<equiv> tracking_transparency_enabled ps = True /\
   forall aid uid,
     In (aid, uid) (approved_tracking ps) ->
     In (aid, uid) (app_tracking_requests ps)"
@@ -255,65 +257,65 @@ definition tracking_allowed :: "PrivacyState \<Rightarrow> Application \<Rightar
 
 (* tracking_event_well_formed (matches Coq: Definition tracking_event_well_formed) *)
 definition tracking_event_well_formed :: "TrackingEvent \<Rightarrow> bool" where
-  "tracking_event_well_formed event \<equiv> tracking_consent_given (tracked_user event) = false ->
+  "tracking_event_well_formed event \<equiv> tracking_consent_given (tracked_user event) = False ->
   tracking_data event = []"
 
 (* cross_site_tracking_blocked (matches Coq: Definition cross_site_tracking_blocked) *)
 definition cross_site_tracking_blocked :: "CrossSiteRequest \<Rightarrow> bool" where
   "cross_site_tracking_blocked csr \<equiv> csr_source_domain csr <> csr_target_domain csr ->
-  csr_has_tracking_params csr = true ->
-  csr_blocked csr = true"
+  csr_has_tracking_params csr = True ->
+  csr_blocked csr = True"
 
 (* fingerprinting_prevented (matches Coq: Definition fingerprinting_prevented) *)
 definition fingerprinting_prevented :: "FingerprintAttempt \<Rightarrow> bool" where
   "fingerprinting_prevented fa \<equiv> fp_entropy_bits fa > fp_max_allowed_bits fa ->
-  fp_prevented fa = true"
+  fp_prevented fa = True"
 
 (* third_party_cookies_blocked (matches Coq: Definition third_party_cookies_blocked) *)
 definition third_party_cookies_blocked :: "CookieRequest \<Rightarrow> bool" where
-  "third_party_cookies_blocked cr \<equiv> cookie_is_third_party cr = true -> cookie_blocked cr = true"
+  "third_party_cookies_blocked cr \<equiv> cookie_is_third_party cr = True -> cookie_blocked cr = True"
 
 (* tracking_pixel_detected (matches Coq: Definition tracking_pixel_detected) *)
 definition tracking_pixel_detected :: "ResourceLoad \<Rightarrow> bool" where
-  "tracking_pixel_detected rl \<equiv> res_is_tracking_pixel rl = true -> res_detected rl = true"
+  "tracking_pixel_detected rl \<equiv> res_is_tracking_pixel rl = True -> res_detected rl = True"
 
 (* advertising_id_resettable (matches Coq: Definition advertising_id_resettable) *)
 definition advertising_id_resettable :: "AdvertisingId \<Rightarrow> bool" where
-  "advertising_id_resettable aid \<equiv> ad_id_resettable aid = true"
+  "advertising_id_resettable aid \<equiv> ad_id_resettable aid = True"
 
 (* app_tracking_permission_required (matches Coq: Definition app_tracking_permission_required) *)
 definition app_tracking_permission_required :: "AppTrackingRequest \<Rightarrow> bool" where
-  "app_tracking_permission_required atr \<equiv> atr_permission_granted atr = true -> atr_permission_asked atr = true"
+  "app_tracking_permission_required atr \<equiv> atr_permission_granted atr = True -> atr_permission_asked atr = True"
 
 (* link_decoration_stripped (matches Coq: Definition link_decoration_stripped) *)
 definition link_decoration_stripped :: "LinkDecoration \<Rightarrow> bool" where
-  "link_decoration_stripped ld \<equiv> ld_tracking_params ld <> [] -> ld_stripped ld = true"
+  "link_decoration_stripped ld \<equiv> ld_tracking_params ld <> [] -> ld_stripped ld = True"
 
 (* bounce_tracking_prevented (matches Coq: Definition bounce_tracking_prevented) *)
 definition bounce_tracking_prevented :: "BounceTracking \<Rightarrow> bool" where
-  "bounce_tracking_prevented bt \<equiv> bt_bounce_detected bt = true -> bt_prevented bt = true"
+  "bounce_tracking_prevented bt \<equiv> bt_bounce_detected bt = True -> bt_prevented bt = True"
 
 (* cname_cloaking_detected (matches Coq: Definition cname_cloaking_detected) *)
 definition cname_cloaking_detected :: "CNAMERecord \<Rightarrow> bool" where
-  "cname_cloaking_detected cr \<equiv> cname_is_tracker cr = true -> cname_detected cr = true"
+  "cname_cloaking_detected cr \<equiv> cname_is_tracker cr = True -> cname_detected cr = True"
 
 (* storage_access_partitioned (matches Coq: Definition storage_access_partitioned) *)
 definition storage_access_partitioned :: "StorageAccess \<Rightarrow> bool" where
-  "storage_access_partitioned sa \<equiv> sa_origin sa <> sa_top_level_origin sa -> sa_partitioned sa = true"
+  "storage_access_partitioned sa \<equiv> sa_origin sa <> sa_top_level_origin sa -> sa_partitioned sa = True"
 
 (* referrer_policy_strict (matches Coq: Definition referrer_policy_strict) *)
 definition referrer_policy_strict :: "ReferrerConfig \<Rightarrow> bool" where
-  "referrer_policy_strict rc \<equiv> ref_is_strict rc = true /\
+  "referrer_policy_strict rc \<equiv> ref_is_strict rc = True /\
   (ref_policy rc = NoReferrer \/ ref_policy rc = StrictOrigin)"
 
 (* ip_address_masked (matches Coq: Definition ip_address_masked) *)
 definition ip_address_masked :: "NetworkRequest \<Rightarrow> bool" where
-  "ip_address_masked nr \<equiv> nr_ip_masked nr = true \/ nr_uses_relay nr = true"
+  "ip_address_masked nr \<equiv> nr_ip_masked nr = True \/ nr_uses_relay nr = True"
 
 (* device_graph_prevented (matches Coq: Definition device_graph_prevented) *)
 definition device_graph_prevented :: "DeviceGraphAttempt \<Rightarrow> bool" where
   "device_graph_prevented dg \<equiv> length (dg_identifiers_collected dg) > dg_max_identifiers dg ->
-  dg_prevented dg = true"
+  dg_prevented dg = True"
 
 (* tracker_list_updated (matches Coq: Definition tracker_list_updated) *)
 definition tracker_list_updated :: "TrackerList \<Rightarrow> bool" where
@@ -321,7 +323,7 @@ definition tracker_list_updated :: "TrackerList \<Rightarrow> bool" where
 
 (* tracking_report_available (matches Coq: Definition tracking_report_available) *)
 definition tracking_report_available :: "TrackingReport \<Rightarrow> bool" where
-  "tracking_report_available tr \<equiv> tr_report_available tr = true"
+  "tracking_report_available tr \<equiv> tr_report_available tr = True"
 
 (* no_tracking_without_consent (matches Coq) *)
 lemma no_tracking_without_consent: "\<forall> (app : Application) (user : User), tracks app user \<longrightarrow> explicit_consent user app"

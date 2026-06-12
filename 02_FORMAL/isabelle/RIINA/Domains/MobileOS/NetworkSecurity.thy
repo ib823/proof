@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkSecurity - Isabelle/HOL Port
@@ -115,7 +117,7 @@ record session =
 (* SSLConfig (matches Coq: Record SSLConfig) *)
 record ssl_config =
   ssl_min_version :: ProtocolVersion
-  ssl_cipher_strength :: nat  (* bits *)
+  ssl_cipher_strength :: nat
   ssl_revocation_checked :: bool
   ssl_compression_disabled :: bool
 
@@ -158,9 +160,9 @@ definition min_tls_version :: "ProtocolVersion" where
 
 (* vpn_secure (matches Coq: Definition vpn_secure) *)
 definition vpn_secure :: "VPNConnection \<Rightarrow> bool" where
-  "vpn_secure v \<equiv> vpn_encrypted v = true /\
-  vpn_authenticated v = true /\
-  vpn_tunnel_established v = true /\
+  "vpn_secure v \<equiv> vpn_encrypted v = True /\
+  vpn_authenticated v = True /\
+  vpn_tunnel_established v = True /\
   vpn_protocol_version v >= min_tls_version"
 
 (* valid_negotiation (matches Coq: Definition valid_negotiation) *)
@@ -179,11 +181,11 @@ definition secure_negotiation :: "ConnectionNegotiation \<Rightarrow> bool" wher
 
 (* packet_inspected_prop (matches Coq: Definition packet_inspected_prop) *)
 definition packet_inspected_prop :: "Packet \<Rightarrow> bool" where
-  "packet_inspected_prop p \<equiv> pkt_inspected p = true"
+  "packet_inspected_prop p \<equiv> pkt_inspected p = True"
 
 (* malicious_blocked (matches Coq: Definition malicious_blocked) *)
 definition malicious_blocked :: "Packet \<Rightarrow> bool" where
-  "malicious_blocked p \<equiv> pkt_malicious p = true -> pkt_inspected p = true"
+  "malicious_blocked p \<equiv> pkt_malicious p = True -> pkt_inspected p = True"
 
 (* rate_limit_enforced (matches Coq: Definition rate_limit_enforced) *)
 definition rate_limit_enforced :: "RateLimiter \<Rightarrow> bool" where
@@ -207,11 +209,11 @@ definition replay_prevented :: "bool" where
 
 (* session_valid_prop (matches Coq: Definition session_valid_prop) *)
 definition session_valid_prop :: "Session \<Rightarrow> bool" where
-  "session_valid_prop s \<equiv> session_valid s = true /\ session_token s > 0"
+  "session_valid_prop s \<equiv> session_valid s = True /\ session_token s > 0"
 
 (* session_hijack_prevented (matches Coq: Definition session_hijack_prevented) *)
 definition session_hijack_prevented :: "Session \<Rightarrow> nat \<Rightarrow> bool" where
-  "session_hijack_prevented s claimed_ip \<equiv> session_valid s = true ->
+  "session_hijack_prevented s claimed_ip \<equiv> session_valid s = True ->
   session_ip s = claimed_ip"
 
 (* ssl_version_minimum_prop (matches Coq: Definition ssl_version_minimum_prop) *)
@@ -224,7 +226,7 @@ definition cipher_strong :: "SSLConfig \<Rightarrow> bool" where
 
 (* revocation_checked (matches Coq: Definition revocation_checked) *)
 definition revocation_checked :: "SSLConfig \<Rightarrow> bool" where
-  "revocation_checked cfg \<equiv> ssl_revocation_checked cfg = true"
+  "revocation_checked cfg \<equiv> ssl_revocation_checked cfg = True"
 
 (* connection_limit (matches Coq: Definition connection_limit) *)
 definition connection_limit :: "ConnectionTracker \<Rightarrow> bool" where
@@ -232,11 +234,11 @@ definition connection_limit :: "ConnectionTracker \<Rightarrow> bool" where
 
 (* port_scan_limited (matches Coq: Definition port_scan_limited) *)
 definition port_scan_limited :: "PortScanDetector \<Rightarrow> bool" where
-  "port_scan_limited psd \<equiv> psd_ports_probed psd > psd_threshold psd -> psd_blocked psd = true"
+  "port_scan_limited psd \<equiv> psd_ports_probed psd > psd_threshold psd -> psd_blocked psd = True"
 
 (* ssl_stripping_prevented (matches Coq: Definition ssl_stripping_prevented) *)
 definition ssl_stripping_prevented :: "SSLConfig \<Rightarrow> bool" where
-  "ssl_stripping_prevented cfg \<equiv> ssl_min_version cfg >= min_tls_version /\ ssl_compression_disabled cfg = true"
+  "ssl_stripping_prevented cfg \<equiv> ssl_min_version cfg >= min_tls_version /\ ssl_compression_disabled cfg = True"
 
 (* dns_poisoning_detected (matches Coq: Definition dns_poisoning_detected) *)
 definition dns_poisoning_detected :: "bool" where

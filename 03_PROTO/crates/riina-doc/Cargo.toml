@@ -10,3 +10,6 @@ description = "RIINA documentation generator"
 riina-types.workspace = true
 riina-lexer.workspace = true
 riina-parser.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

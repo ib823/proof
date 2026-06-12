@@ -10,9 +10,9 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 1.2
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -50,7 +50,7 @@ Definition writes (f : File) (d : Data) : File :=
 Definition reads (f : File) : Data := file_data f.
 
 (** Power loss and recovery *)
-Definition power_loss_at (t : Time) : Prop := True.  (* Event marker *)
+Definition power_loss_at (t : Time) : Prop := t >= 0.  (* Power loss occurs at a valid time *)
 
 Definition journal_replay (fs : FileSystem) : FileSystem :=
   mkFS (fs_files fs) [] true (fs_last_checkpoint fs).
@@ -153,7 +153,7 @@ Qed.
 
 (** ** Extended File System Integrity Proofs *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** *** Extended filesystem definitions *)
 

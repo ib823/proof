@@ -4,11 +4,11 @@
 (* Proves PLAT-001 through PLAT-005 *)
 (* Spec: 04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md M7.6 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
@@ -210,14 +210,14 @@ Qed.
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
 (* Pure expression evaluation — platform-independent *)
-Fixpoint pure_eval (e : nat) : nat :=
+Definition pure_eval (e : nat) : nat :=
   e.  (* identity for simplified model *)
 
 (* Pure functions produce same result on all platforms *)
-Theorem plat_005_pure_platform_independent : forall p1 p2 e,
+Theorem plat_005_pure_platform_independent : forall (p1 p2 : Platform) e,
   pure_eval e = pure_eval e.
 Proof.
-  intros. reflexivity.
+  intros _ _. reflexivity.
 Qed.
 
 (* Addition is platform-independent *)

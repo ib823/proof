@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FullstackSecurity - Isabelle/HOL Port
@@ -59,15 +61,15 @@
  *)
 
 theory FullstackSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ContentType (matches Coq: Inductive ContentType) *)
 datatype content_type =
-    RawHtml  (* Dangerous - must be sanitized *)
-  |     EscapedHtml  (* Safe - HTML entities escaped *)
-  |     PlainText  (* Safe - no HTML interpretation *)
-  |     SafeUrl  (* Validated URL *)
+    RawHtml
+  |     EscapedHtml
+  |     PlainText
+  |     SafeUrl
   |     TrustedHtml
 
 (* ParamType (matches Coq: Inductive ParamType) *)
@@ -84,7 +86,8 @@ datatype auth_state =
   |     Authenticated
   |     Locked
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* is_safe_content (matches Coq: Definition is_safe_content) *)
 fun is_safe_content :: "ContentType \<Rightarrow> bool" where
@@ -100,13 +103,15 @@ definition template_safe :: "Template \<Rightarrow> bool" where
 
 (* query_parameterized (matches Coq: Definition query_parameterized) *)
 definition query_parameterized :: "ParamQuery \<Rightarrow> bool" where
-  "query_parameterized q \<equiv> List"
+  "query_parameterized q \<equiv> List.length (query_params q) > 0 -> List.length (query_bound q) > 0"
 
 (* csrf_valid (matches Coq: Definition csrf_valid) *)
 definition csrf_valid :: "CsrfToken \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "csrf_valid token session current_time \<equiv> andb (Nat"
+  "csrf_valid token session current_time \<equiv> (((\<and> = (csrf_session)) token) session)
+       ((current_time < (csrf_expiry) token))"
 
-(* post_has_token - complex match, manual review needed *)
+(* post_has_token - complex match, needs manual translation *)
+definition post_has_token :: "bool" where "post_has_token = undefined"
 
 (* url_safe (matches Coq: Definition url_safe) *)
 fun url_safe :: "ContentType \<Rightarrow> bool" where
@@ -119,31 +124,31 @@ definition csp_active :: "nat \<Rightarrow> bool" where
 
 (* cookie_safe (matches Coq: Definition cookie_safe) *)
 definition cookie_safe :: "Cookie \<Rightarrow> bool" where
-  "cookie_safe c \<equiv> andb (cookie_secure c) (andb (cookie_httponly c) (cookie_samesite c))"
+  "cookie_safe c \<equiv> (cookie_secure c \<and> ((cookie_httponly \<and> c)) (cookie_samesite c))"
 
 (* input_validated (matches Coq: Definition input_validated) *)
 definition input_validated :: "bool" where
-  "input_validated \<equiv> Nat"
+  "input_validated \<equiv> (input_type = expected)"
 
 (* rate_ok (matches Coq: Definition rate_ok) *)
 definition rate_ok :: "bool" where
-  "rate_ok \<equiv> Nat"
+  "rate_ok \<equiv> (requests \<le> max_requests)"
 
 (* session_active (matches Coq: Definition session_active) *)
 definition session_active :: "bool" where
-  "session_active \<equiv> Nat"
+  "session_active \<equiv> ((current \<le> -) last_activity) max_idle"
 
 (* password_hashed (matches Coq: Definition password_hashed) *)
 definition password_hashed :: "bool" where
-  "password_hashed \<equiv> Nat"
+  "password_hashed \<equiv> (min_algorithm \<le> hash_algorithm)"
 
 (* https_enforced (matches Coq: Definition https_enforced) *)
 definition https_enforced :: "nat \<Rightarrow> bool" where
-  "https_enforced scheme \<equiv> Nat"
+  "https_enforced scheme \<equiv> (scheme = 443)"
 
 (* error_safe (matches Coq: Definition error_safe) *)
 definition error_safe :: "bool" where
-  "error_safe \<equiv> Nat"
+  "error_safe \<equiv> (error_detail_level \<le> max_level)"
 
 (* event_logged (matches Coq: Definition event_logged) *)
 definition event_logged :: "bool" where
@@ -151,7 +156,7 @@ definition event_logged :: "bool" where
 
 (* web_layers (matches Coq: Definition web_layers) *)
 definition web_layers :: "bool" where
-  "web_layers \<equiv> andb xss (andb sqli (andb csrf (andb auth session)))"
+  "web_layers \<equiv> (xss \<and> (andb) sqli ((csrf \<and> (andb) auth session)))"
 
 (* web_001_escaped_safe (matches Coq) *)
 lemma web_001_escaped_safe: "\<forall> (elem : TemplateElement), elem_type elem = EscapedHtml \<longrightarrow> is_safe_content (elem_type elem) = True"

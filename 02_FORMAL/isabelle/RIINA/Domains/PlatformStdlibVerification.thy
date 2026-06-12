@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PlatformStdlibVerification - Isabelle/HOL Port
@@ -12,11 +14,13 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | Platform           | platform               | OK     |
+ * | Capability         | capability             | OK     |
  * | PlatEffect         | plat_effect            | OK     |
  * | PlatLabel          | plat_label             | OK     |
  * | platform_has_cap   | platform_has_cap       | OK     |
  * | can_compile        | can_compile            | OK     |
  * | io_ni_safe         | io_ni_safe             | OK     |
+ * | pure_eval          | pure_eval              | OK     |
  * | plat_001_universal_console | plat_001_universal_console | OK     |
  * | plat_001_universal_timer | plat_001_universal_timer | OK     |
  * | plat_001_mobile_sensor | plat_001_mobile_sensor | OK     |
@@ -40,28 +44,26 @@
  *)
 
 theory PlatformStdlibVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Platform (matches Coq: Inductive Platform) *)
 datatype platform =
-    PNative  (* POSIX/Windows *)
-  |     PWasm32  (* Browser/Node *)
-  |     PAndroid  (* Android NDK *)
+    PNative
+  |     PWasm32
+  |     PAndroid
   |     PIos
-  |     CapFileSystem
+
+(* Capability (matches Coq: Inductive Capability) *)
+datatype capability =
+    CapFileSystem
   |     CapNetwork
   |     CapConsole
   |     CapTimer
-  |     CapDOM  (* Web only *)
-  |     CapSensor  (* Mobile only *)
-  |     CapCamera  (* Mobile only *)
-  |     CapPushNotif  (* Mobile only *)
-
-(* Platform capability mapping — mirrors platform.rs *)
-Definition platform_has_cap (p : Platform) (c : Capability) : bool :=
-  match p, c with
-  (* Native: filesystem, network, console, timer *)
+  |     CapDOM
+  |     CapSensor
+  |     CapCamera
+  |     CapPushNotif
 
 (* PlatEffect (matches Coq: Inductive PlatEffect) *)
 datatype plat_effect =
@@ -75,7 +77,8 @@ datatype plat_label =
     PLPublic
   |     PLSecret
 
-(* platform_has_cap - complex match, manual review needed *)
+(* platform_has_cap - complex match, needs manual translation *)
+definition platform_has_cap :: "bool" where "platform_has_cap = undefined"
 
 (* can_compile (matches Coq: Definition can_compile) *)
 definition can_compile :: "Platform \<Rightarrow> PlatFunc \<Rightarrow> bool" where
@@ -84,6 +87,10 @@ definition can_compile :: "Platform \<Rightarrow> PlatFunc \<Rightarrow> bool" w
 (* io_ni_safe (matches Coq: Definition io_ni_safe) *)
 definition io_ni_safe :: "IOOp \<Rightarrow> bool" where
   "io_ni_safe op \<equiv> io_input_label op = PLSecret -> io_output_label op = PLSecret"
+
+(* pure_eval (matches Coq: Definition pure_eval) *)
+definition pure_eval :: "nat \<Rightarrow> nat" where
+  "pure_eval e \<equiv> e"
 
 (* plat_001_universal_console (matches Coq) *)
 lemma plat_001_universal_console: "\<forall> p, platform_has_cap p CapConsole = True"
@@ -150,7 +157,7 @@ lemma plat_005_add_independent: "\<forall> (p1 p2 : Platform) a b, a + b = a + b
   by simp
 
 (* plat_005_bool_independent (matches Coq) *)
-lemma plat_005_bool_independent: "\<forall> (p1 p2 : Platform) b, negb b = negb b"
+lemma plat_005_bool_independent: "\<forall> (p1 p2 : Platform) b, (\<not> b) = (\<not> b)"
   by simp
 
 (* plat_006_dom_only_wasm (matches Coq) *)

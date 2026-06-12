@@ -13,11 +13,11 @@
     Phase: 3 (Termination)
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Lists.List.
-Require Import Coq.Strings.String.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
@@ -124,13 +124,13 @@ Proof.
   intros v T1 T2 ε Σ x1 e1 x2 e2 st ctx Hty Hval.
   destruct (value_sum_decompose v T1 T2 ε Σ Hty Hval) as [[v' [Heq Hval']] | [v' [Heq Hval']]].
   - subst v.
-    exists ([x1 := v'] e1), st, ctx.
+    exists (subst[x1 := v'] e1), st, ctx.
     split; [| split].
     + apply ST_CaseInl. assumption.
     + reflexivity.
     + reflexivity.
   - subst v.
-    exists ([x2 := v'] e2), st, ctx.
+    exists (subst[x2 := v'] e2), st, ctx.
     split; [| split].
     + apply ST_CaseInr. assumption.
     + reflexivity.
@@ -161,7 +161,7 @@ Lemma let_typed_steps_once : forall v x e2 st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros v x e2 st ctx Hval.
-  exists ([x := v] e2), st, ctx.
+  exists (subst[x := v] e2), st, ctx.
   split; [| split].
   - apply ST_LetValue. assumption.
   - reflexivity.
@@ -176,7 +176,7 @@ Lemma handle_typed_steps_once : forall v x h st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros v x h st ctx Hval.
-  exists ([x := v] h), st, ctx.
+  exists (subst[x := v] h), st, ctx.
   split; [| split].
   - apply ST_HandleValue. assumption.
   - reflexivity.
@@ -195,11 +195,230 @@ Proof.
   intros f T1 T2 ε ε' Σ a st ctx Hty Hvalf Hvala.
   destruct (value_fn_decompose f T1 T2 ε ε' Σ Hty Hvalf) as [x [body Heq]].
   subst f.
-  exists ([x := a] body), st, ctx.
+  exists (subst[x := a] body), st, ctx.
   split; [| split].
   - apply ST_AppAbs. assumption.
   - reflexivity.
   - reflexivity.
+Qed.
+
+(** ** Additional Reducibility Lemmas *)
+
+(** SN values are irreducible *)
+Lemma SN_value_irreducible : forall v st ctx,
+  value v -> SN st ctx v ->
+  forall e' st' ctx', ~ ((v, st, ctx) --> (e', st', ctx')).
+Proof.
+  intros v st ctx Hval HSN e' st' ctx' Hstep.
+  eapply value_not_step; eauto.
+Qed.
+
+(** Case on inl steps to the left branch *)
+Lemma case_inl_typed_steps : forall v T2 x1 e1 x2 e2 st ctx,
+  value v ->
+  exists e' st' ctx',
+    (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') /\
+    e' = subst[x1 := v] e1 /\ st' = st /\ ctx' = ctx.
+Proof.
+  intros v T2 x1 e1 x2 e2 st ctx Hval.
+  exists (subst[x1 := v] e1), st, ctx.
+  split; [| split; [| split]].
+  - apply ST_CaseInl. exact Hval.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(** Case on inr steps to the right branch *)
+Lemma case_inr_typed_steps : forall v T1 x1 e1 x2 e2 st ctx,
+  value v ->
+  exists e' st' ctx',
+    (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') /\
+    e' = subst[x2 := v] e2 /\ st' = st /\ ctx' = ctx.
+Proof.
+  intros v T1 x1 e1 x2 e2 st ctx Hval.
+  exists (subst[x2 := v] e2), st, ctx.
+  split; [| split; [| split]].
+  - apply ST_CaseInr. exact Hval.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(** Pair of values is a value *)
+Lemma pair_values_value : forall v1 v2,
+  value v1 -> value v2 -> value (EPair v1 v2).
+Proof.
+  intros. apply VPair; assumption.
+Qed.
+
+(** Inl of value is a value *)
+Lemma inl_value_value : forall v T,
+  value v -> value (EInl v T).
+Proof.
+  intros. apply VInl; assumption.
+Qed.
+
+(** Inr of value is a value *)
+Lemma inr_value_value : forall v T,
+  value v -> value (EInr v T).
+Proof.
+  intros. apply VInr; assumption.
+Qed.
+
+(** Lambda is always a value *)
+Lemma lam_value : forall x T body,
+  value (ELam x T body).
+Proof.
+  intros. apply VLam.
+Qed.
+
+(** Unit is a value *)
+Lemma unit_value : value EUnit.
+Proof. apply VUnit. Qed.
+
+(** Bool is a value *)
+Lemma bool_value : forall b, value (EBool b).
+Proof. intros. apply VBool. Qed.
+
+(** Int is a value *)
+Lemma int_value : forall n, value (EInt n).
+Proof. intros. apply VInt. Qed.
+
+(** String is a value *)
+Lemma string_value : forall s, value (EString s).
+Proof. intros. apply VString. Qed.
+
+(** Location is a value *)
+Lemma loc_value : forall l, value (ELoc l).
+Proof. intros. apply VLoc. Qed.
+
+(** ** SN Composition Lemmas *)
+
+(** SN is closed under multiple steps *)
+Lemma SN_multi_step_closed : forall cfg cfg',
+  cfg -->* cfg' ->
+  forall e st ctx e' st' ctx',
+  cfg = (e, st, ctx) ->
+  cfg' = (e', st', ctx') ->
+  SN st ctx e ->
+  SN st' ctx' e'.
+Proof.
+  intros cfg cfg' Hmulti.
+  induction Hmulti; intros e0 st0 ctx0 e0' st0' ctx0' Heq1 Heq2 HSN.
+  - subst. injection Heq2. intros; subst. exact HSN.
+  - subst. destruct cfg2 as [[e_mid st_mid] ctx_mid].
+    assert (SN st_mid ctx_mid e_mid) by (eapply SN_step; eauto).
+    eapply IHHmulti; eauto.
+Qed.
+
+(** Classify of value is a value *)
+Lemma classify_value_value : forall v,
+  value v -> value (EClassify v).
+Proof.
+  intros. apply VClassify; assumption.
+Qed.
+
+(** Classify of value is SN *)
+Lemma classify_value_SN : forall v st ctx,
+  value v -> SN st ctx (EClassify v).
+Proof.
+  intros v st ctx Hval.
+  apply value_SN. apply VClassify. exact Hval.
+Qed.
+
+(** Pair of SN values is SN *)
+Lemma pair_SN : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  SN st ctx (EPair v1 v2).
+Proof.
+  intros v1 v2 st ctx Hval1 Hval2.
+  apply value_SN. apply VPair; assumption.
+Qed.
+
+(** Inl of SN value is SN *)
+Lemma inl_SN : forall v T st ctx,
+  value v -> SN st ctx (EInl v T).
+Proof.
+  intros v T st ctx Hval.
+  apply value_SN. apply VInl; assumption.
+Qed.
+
+(** Inr of SN value is SN *)
+Lemma inr_SN : forall v T st ctx,
+  value v -> SN st ctx (EInr v T).
+Proof.
+  intros v T st ctx Hval.
+  apply value_SN. apply VInr; assumption.
+Qed.
+
+(** Lambda is always SN *)
+Lemma lam_SN : forall x T body st ctx,
+  SN st ctx (ELam x T body).
+Proof.
+  intros. apply value_SN. apply VLam.
+Qed.
+
+(** Unit is always SN *)
+Lemma unit_SN : forall st ctx, SN st ctx EUnit.
+Proof. intros. apply value_SN. apply VUnit. Qed.
+
+(** Bool is always SN *)
+Lemma bool_SN : forall b st ctx, SN st ctx (EBool b).
+Proof. intros. apply value_SN. apply VBool. Qed.
+
+(** Int is always SN *)
+Lemma int_SN : forall n st ctx, SN st ctx (EInt n).
+Proof. intros. apply value_SN. apply VInt. Qed.
+
+(** String is always SN *)
+Lemma string_SN : forall s st ctx, SN st ctx (EString s).
+Proof. intros. apply value_SN. apply VString. Qed.
+
+(** Loc is always SN *)
+Lemma loc_SN : forall l st ctx, SN st ctx (ELoc l).
+Proof. intros. apply value_SN. apply VLoc. Qed.
+
+(** ** Additional Value and SN Lemmas *)
+
+(** Prove of value is a value *)
+Lemma prove_value_value : forall v,
+  value v -> value (EProve v).
+Proof. intros. apply VProve; assumption. Qed.
+
+(** Prove of value is SN *)
+Lemma prove_SN : forall v st ctx,
+  value v -> SN st ctx (EProve v).
+Proof.
+  intros. apply value_SN. apply VProve; assumption.
+Qed.
+
+(** Fst of pair value steps to a value *)
+Lemma fst_pair_step_value : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  exists v, (EFst (EPair v1 v2), st, ctx) --> (v, st, ctx) /\ value v.
+Proof.
+  intros. exists v1. split.
+  - apply ST_Fst; assumption.
+  - assumption.
+Qed.
+
+(** Snd of pair value steps to a value *)
+Lemma snd_pair_step_value : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  exists v, (ESnd (EPair v1 v2), st, ctx) --> (v, st, ctx) /\ value v.
+Proof.
+  intros. exists v2. split.
+  - apply ST_Snd; assumption.
+  - assumption.
+Qed.
+
+(** App with lambda and value steps *)
+Lemma app_lam_steps : forall x T body v st ctx,
+  value v ->
+  (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx).
+Proof.
+  intros. apply ST_AppAbs; assumption.
 Qed.
 
 (** End of Reducibility.v *)

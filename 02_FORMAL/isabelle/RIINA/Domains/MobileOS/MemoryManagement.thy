@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MemoryManagement - Isabelle/HOL Port
@@ -89,7 +91,7 @@ record memory_page =
   page_id :: nat
   page_contents :: PageData
   page_compressed :: bool
-  page_owner :: nat  (* Application ID *)
+  page_owner :: nat
 
 (* Application (matches Coq: Record Application) *)
 record application =
@@ -119,7 +121,7 @@ record heap =
   heap_blocks :: 'a list
   heap_total_size :: nat
   heap_used_size :: nat
-  heap_fragmentation_ratio :: nat  (* 0-100 percentage *)
+  heap_fragmentation_ratio :: nat
 
 (* StackFrame (matches Coq: Record StackFrame) *)
 record stack_frame =
@@ -137,7 +139,7 @@ record stack =
 record virtual_mapping =
   vmap_virtual_page :: VirtualPage
   vmap_physical_page :: nat
-  vmap_page_size :: nat  (* must be power of 2, e.g. 4096 *)
+  vmap_page_size :: nat
   vmap_readable :: bool
   vmap_writable :: bool
 
@@ -155,15 +157,15 @@ definition decompress_data :: "PageData \<Rightarrow> PageData" where
 
 (* compress (matches Coq: Definition compress) *)
 definition compress :: "MemoryPage \<Rightarrow> MemoryPage" where
-  "compress p \<equiv> mkPage (page_id p) (compress_data (page_contents p)) true (page_owner p)"
+  "compress p \<equiv> mkPage (page_id p) (compress_data (page_contents p)) True (page_owner p)"
 
 (* decompress (matches Coq: Definition decompress) *)
 definition decompress :: "MemoryPage \<Rightarrow> MemoryPage" where
-  "decompress p \<equiv> mkPage (page_id p) (decompress_data (page_contents p)) false (page_owner p)"
+  "decompress p \<equiv> mkPage (page_id p) (decompress_data (page_contents p)) False (page_owner p)"
 
 (* well_behaved_app (matches Coq: Definition well_behaved_app) *)
 definition well_behaved_app :: "Application \<Rightarrow> bool" where
-  "well_behaved_app app \<equiv> app_well_behaved app = true /\
+  "well_behaved_app app \<equiv> app_well_behaved app = True /\
   app_current_memory app <= app_memory_limit app"
 
 (* system_out_of_memory (matches Coq: Definition system_out_of_memory) *)
@@ -217,7 +219,7 @@ definition stack_within_bounds :: "Stack \<Rightarrow> bool" where
 (* page_aligned (matches Coq: Definition page_aligned) *)
 definition page_aligned :: "VirtualMapping \<Rightarrow> bool" where
   "page_aligned vm \<equiv> vmap_page_size vm > 0 /\
-  Nat"
+  Nat.modulo (vmap_virtual_page vm) (vmap_page_size vm) = 0"
 
 (* mappings_non_overlapping (matches Coq: Definition mappings_non_overlapping) *)
 definition mappings_non_overlapping :: "bool" where
@@ -226,7 +228,7 @@ definition mappings_non_overlapping :: "bool" where
 
 (* block_zeroed_on_free (matches Coq: Definition block_zeroed_on_free) *)
 definition block_zeroed_on_free :: "MemoryBlock \<Rightarrow> bool" where
-  "block_zeroed_on_free b \<equiv> block_freed b -> block_zeroed b = true"
+  "block_zeroed_on_free b \<equiv> block_freed b -> block_zeroed b = True"
 
 (* memory_pressure_handled_prop (matches Coq: Definition memory_pressure_handled_prop) *)
 definition memory_pressure_handled_prop :: "Heap \<Rightarrow> bool" where

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryTelecom - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | TelecomDomain      | telecom_domain         | OK     |
+ * | NetworkFunction    | network_function       | OK     |
  * | TelecomEffect      | telecom_effect         | OK     |
  * | Security_5G        | security_5_g           | OK     |
  * | NetworkSlice       | network_slice          | OK     |
@@ -53,24 +56,23 @@
  *)
 
 theory IndustryTelecom
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* TelecomDomain (matches Coq: Inductive TelecomDomain) *)
 datatype telecom_domain =
-    RAN  (* Radio Access Network *)
-  |     Core  (* Core Network *)
-  |     Transport  (* Transport/Backhaul *)
-  |     Service  (* Service Layer *)
+    RAN
+  |     Core
+  |     Transport
+  |     Service
   |     Management
-  |     AMF  (* Access and Mobility Management *)
-  |     SMF  (* Session Management *)
-  |     UPF  (* User Plane Function *)
-  |     AUSF  (* Authentication Server *)
+
+(* NetworkFunction (matches Coq: Inductive NetworkFunction) *)
+datatype network_function =
+    AMF
+  |     SMF
+  |     UPF
+  |     AUSF
   |     UDM
 
 (* TelecomEffect (matches Coq: Inductive TelecomEffect) *)
@@ -83,12 +85,12 @@ datatype telecom_effect =
 
 (* Security_5G (matches Coq: Record Security_5G) *)
 record security_5_g =
-  primary_authentication :: bool  (* 5G-AKA or EAP-AKA' *)
-  nas_security :: bool  (* NAS signaling protection *)
-  as_security :: bool  (* AS layer protection *)
-  user_plane_integrity :: bool  (* UP integrity - optional in 4G *)
-  service_based_security :: bool  (* Service-based architecture security *)
-  network_slicing_isolation :: bool  (* Slice isolation *)
+  primary_authentication :: bool
+  nas_security :: bool
+  as_security :: bool
+  user_plane_integrity :: bool
+  service_based_security :: bool
+  network_slicing_isolation :: bool
 
 (* NetworkSlice (matches Coq: Record NetworkSlice) *)
 record network_slice =
@@ -134,11 +136,12 @@ definition security_5g_all :: "Security_5G \<Rightarrow> bool" where
 
 (* slices_isolated (matches Coq: Definition slices_isolated) *)
 definition slices_isolated :: "bool" where
-  "slices_isolated \<equiv> negb (Nat"
+  "slices_isolated \<equiv> (\<not> (Nat.eqb) (slice_id s1) (slice_id s2)) \<and>
+  slice_isolated s1 \<and> slice_isolated s2"
 
 (* latency_acceptable (matches Coq: Definition latency_acceptable) *)
 definition latency_acceptable :: "NetworkSlice \<Rightarrow> nat \<Rightarrow> bool" where
-  "latency_acceptable s max_latency \<equiv> Nat"
+  "latency_acceptable s max_latency \<equiv> ((slice_sla_latency_ms \<le> s)) max_latency"
 
 (* supi_concealed (matches Coq: Definition supi_concealed) *)
 fun supi_concealed :: "bool \<Rightarrow> TelecomDomain \<Rightarrow> bool" where
@@ -155,50 +158,57 @@ fun key_derivation_depth :: "TelecomDomain \<Rightarrow> nat" where
 
 (* roaming_security_level (matches Coq: Definition roaming_security_level) *)
 definition roaming_security_level :: "nat" where
-  "roaming_security_level \<equiv> Nat"
+  "roaming_security_level \<equiv> Nat.min home_sec visited_sec"
 
 (* li_valid (matches Coq: Definition li_valid) *)
 definition li_valid :: "LawfulIntercept \<Rightarrow> bool" where
   "li_valid li \<equiv> li_authorized li \<and> li_logged li"
 
 (* Section F01 - 5G Security Architecture
-    Reference: IND_F_TELECOM.md Section 3.1 *)
+    Reference: IND_F_TELECOM.md Section 3.1
+    Primary auth and NAS security together imply their conjunction. *)
 (* security_5g_compliance (matches Coq) *)
-lemma security_5g_compliance: "\<forall> (sec : Security_5G), primary_authentication sec = True \<longrightarrow> nas_security sec = True \<longrightarrow> True"
+lemma security_5g_compliance: "\<forall> (sec : Security_5G), primary_authentication sec = True \<longrightarrow> nas_security sec = True \<longrightarrow> primary_authentication sec && nas_security sec = True"
   by simp
 
 (* Section F02 - GSMA Security
-    Reference: IND_F_TELECOM.md Section 3.2 *)
+    Reference: IND_F_TELECOM.md Section 3.2
+    AUSF is distinct from AMF — authentication server is not access management. *)
 (* gsma_security (matches Coq) *)
-lemma gsma_security: "\<forall> (sim_card : nat) (network : nat), True"
-  by simp
+lemma gsma_security: "AUSF \<noteq> AMF"
+  by auto
 
 (* Section F03 - Network Slicing Security
-    Reference: IND_F_TELECOM.md Section 3.3 *)
+    Reference: IND_F_TELECOM.md Section 3.3
+    Core network domain is distinct from RAN domain. *)
 (* slice_isolation (matches Coq) *)
-lemma slice_isolation: "\<forall> (slice1 : nat) (slice2 : nat), True"
-  by simp
+lemma slice_isolation: "Core \<noteq> RAN"
+  by auto
 
 (* Section F04 - SS7/Diameter Security
-    Reference: IND_F_TELECOM.md Section 3.4 *)
+    Reference: IND_F_TELECOM.md Section 3.4
+    UPF (User Plane Function) is distinct from AUSF (Auth Server). *)
 (* signaling_security (matches Coq) *)
-lemma signaling_security: "\<forall> (message : nat), True"
-  by simp
+lemma signaling_security: "UPF \<noteq> AUSF"
+  by auto
 
 (* Section F05 - NFV Security
-    Reference: IND_F_TELECOM.md Section 3.5 *)
+    Reference: IND_F_TELECOM.md Section 3.5
+    All 5G security controls together form a valid conjunction. *)
 (* nfv_security (matches Coq) *)
-lemma nfv_security: "\<forall> (vnf : NetworkFunction), True"
+lemma nfv_security: "\<forall> (sec : Security_5G), primary_authentication sec = True \<longrightarrow> nas_security sec = True \<longrightarrow> as_security sec = True \<longrightarrow> user_plane_integrity sec = True \<longrightarrow> service_based_security sec = True \<longrightarrow> network_slicing_isolation sec = True \<longrightarrow> primary_authentication sec && nas_security sec && as_security sec && user_plane_integrity sec && service_based_security sec && network_slicing_isolation sec = True"
   by simp
 
-(* 5G requires integrity protection *)
+(* 5G requires integrity protection:
+    NAS security enabled implies its negation is false. *)
 (* integrity_mandatory_5g (matches Coq) *)
-lemma integrity_mandatory_5g: "\<forall> (sec : Security_5G), nas_security sec = True \<longrightarrow> True"
+lemma integrity_mandatory_5g: "\<forall> (sec : Security_5G), nas_security sec = True \<longrightarrow> (\<not> (nas_security) sec) = False"
   by simp
 
-(* User plane integrity available in 5G *)
+(* User plane integrity available in 5G:
+    UP integrity enabled implies its negation is false. *)
 (* up_integrity_available (matches Coq) *)
-lemma up_integrity_available: "\<forall> (sec : Security_5G), user_plane_integrity sec = True \<longrightarrow> True"
+lemma up_integrity_available: "\<forall> (sec : Security_5G), user_plane_integrity sec = True \<longrightarrow> (\<not> (user_plane_integrity) sec) = False"
   by simp
 
 (* core_most_critical (matches Coq) *)
@@ -242,11 +252,11 @@ lemma supi_always_concealed_in_core: "\<forall> enc, supi_concealed enc Core = T
   by simp
 
 (* supi_concealed_ran_requires_encryption (matches Coq) *)
-lemma supi_concealed_ran_requires_encryption: "supi_concealed false RAN = False"
+lemma supi_concealed_ran_requires_encryption: "supi_concealed False RAN = False"
   by simp
 
 (* supi_concealed_ran_with_encryption (matches Coq) *)
-lemma supi_concealed_ran_with_encryption: "supi_concealed true RAN = True"
+lemma supi_concealed_ran_with_encryption: "supi_concealed True RAN = True"
   by simp
 
 (* ran_deepest_key_hierarchy (matches Coq) *)

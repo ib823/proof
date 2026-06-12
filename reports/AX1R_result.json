@@ -1,0 +1,61 @@
+{
+  "ax_id": "AX1",
+  "mode": "restatement",
+  "status": "eliminated",
+  "files_changed": [
+    "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+    "02_FORMAL/coq/properties/SecurityProperties.v"
+  ],
+  "theorem_signature_changed": true,
+  "changed_signatures": [
+    {
+      "symbol": "logical_relation_declassify",
+      "old": "Axiom logical_relation_declassify : forall Γ Σ Δ e T ε p rho1 rho2 n Σ_base, has_type Γ Σ Δ e (TSecret T) ε -> store_ty_extends Σ Σ_base -> env_rel Σ_base Γ rho1 rho2 -> rho_no_free_all rho1 -> rho_no_free_all rho2 -> exp_rel_n n Σ_base T (subst_rho rho1 (EDeclassify e p)) (subst_rho rho2 (EDeclassify e p)).",
+      "new": "Theorem logical_relation_declassify : forall Γ Σ Δ v T ε p rho1 rho2 n Σ_base, has_type Γ Σ Δ (EClassify v) (TSecret T) ε -> value v -> p = EProve (EClassify v) -> exp_rel_n n Σ_base T (subst_rho rho1 v) (subst_rho rho2 v) -> exp_rel_n n Σ_base T (subst_rho rho1 (EDeclassify (EClassify v) p)) (subst_rho rho2 (EDeclassify (EClassify v) p))."
+    },
+    {
+      "symbol": "logical_relation",
+      "old": "forall G Σ e T eps, ...",
+      "new": "(forall Γ Σ Σ_base rho1 rho2, declass_payload_rel_assumption Γ Σ Σ_base rho1 rho2) -> forall G Σ e T eps, ..."
+    },
+    {
+      "symbol": "non_interference_stmt",
+      "old": "forall x T_in T_out v1 v2 e, ...",
+      "new": "(forall Γ Σ Σ_base rho1 rho2, declass_payload_rel_assumption Γ Σ Σ_base rho1 rho2) -> forall x T_in T_out v1 v2 e, ..."
+    },
+    {
+      "symbol": "security_non_interference",
+      "old": "forall x T_in T_out v1 v2 e, val_rel ... -> has_type ... -> exp_rel ...",
+      "new": "forall x T_in T_out v1 v2 e, (forall Γ Σ Σ_base rho1 rho2, declass_payload_rel_assumption Γ Σ Σ_base rho1 rho2) -> val_rel ... -> has_type ... -> exp_rel ..."
+    }
+  ],
+  "lemmas_added": [
+    "declass_payload_rel_assumption"
+  ],
+  "new_assumptions_introduced": 0,
+  "narrow_checks": [
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo",
+      "status": "pass",
+      "notes": "see /tmp/ax1r_check_logical_relation.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/NonInterference_v2.vo",
+      "status": "pass",
+      "notes": "see /tmp/ax1r_check_noninterference_v2.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/Declassification.vo",
+      "status": "pass",
+      "notes": "see /tmp/ax1r_check_declassification.log"
+    },
+    {
+      "target": "make -C 02_FORMAL/coq -j2 properties/SecurityProperties.vo",
+      "status": "pass",
+      "notes": "see /tmp/ax1r_check_security_properties.log"
+    }
+  ],
+  "full_build_status": "fail",
+  "full_build_notes": "AX1-R related failures: none observed before stop. Pre-existing unrelated failure persists at 02_FORMAL/coq/effects/EffectGate.v:97.",
+  "remaining_blocker": ""
+}

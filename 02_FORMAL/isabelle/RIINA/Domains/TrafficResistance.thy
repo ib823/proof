@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TrafficResistance - Isabelle/HOL Port
@@ -14,6 +16,8 @@
  * | constant_rate      | constant_rate          | OK     |
  * | constant_size      | constant_size          | OK     |
  * | indistinguishable  | indistinguishable      | OK     |
+ * | sender_anonymity_set | sender_anonymity_set   | OK     |
+ * | receiver_anonymity_set | receiver_anonymity_set | OK     |
  * | padding_sufficient | padding_sufficient     | OK     |
  * | decoy_rate_sufficient | decoy_rate_sufficient  | OK     |
  * | jitter_bounded     | jitter_bounded         | OK     |
@@ -53,7 +57,7 @@
  *)
 
 theory TrafficResistance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* constant_rate (matches Coq: Definition constant_rate) *)
@@ -71,6 +75,14 @@ definition constant_size :: "TrafficFlow \<Rightarrow> nat \<Rightarrow> bool" w
 definition indistinguishable :: "bool" where
   "indistinguishable \<equiv> map pkt_size f1 = map pkt_size f2 /\
   map pkt_time f1 = map pkt_time f2"
+
+(* sender_anonymity_set (matches Coq: Definition sender_anonymity_set) *)
+definition sender_anonymity_set :: "list nat" where
+  "sender_anonymity_set \<equiv> map msg_sender batch"
+
+(* receiver_anonymity_set (matches Coq: Definition receiver_anonymity_set) *)
+definition receiver_anonymity_set :: "list nat" where
+  "receiver_anonymity_set \<equiv> map msg_receiver batch"
 
 (* padding_sufficient (matches Coq: Definition padding_sufficient) *)
 definition padding_sufficient :: "bool" where
@@ -114,7 +126,7 @@ definition intersection_resistant :: "bool" where
 
 (* traffic_layers (matches Coq: Definition traffic_layers) *)
 definition traffic_layers :: "bool" where
-  "traffic_layers \<equiv> andb rate (andb size (andb mixing decoy))"
+  "traffic_layers \<equiv> (rate \<and> (andb) size ((mixing \<and> decoy)))"
 
 (* traffic_001_constant_rate_hides (matches Coq) *)
 lemma traffic_001_constant_rate_hides: "\<forall> (flow : TrafficFlow) (interval : nat), constant_rate flow interval \<longrightarrow> \<forall> i p1 p2, nth_error flow i = Some p1 \<longrightarrow> nth_error flow (S i) = Some p2 \<longrightarrow> pkt_time p2 - pkt_time p1 = interval"

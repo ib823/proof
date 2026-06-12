@@ -522,7 +522,7 @@ theorem value_dec : ∀ e, {value e} + {~ value e} := by
 
 -- Substitution with the same variable as the target replaces it.
 /-- subst_same_var (matches Coq) -/
-theorem subst_same_var : ∀ x v, [x := v] (EVar x) = v := by
+theorem subst_same_var : ∀ x v, subst[x := v] (EVar x) = v := by
   rfl
 
 -- Session duality is an involution
@@ -531,11 +531,11 @@ theorem session_dual_involutive : ∀ s, session_dual (session_dual s) = s := by
   rfl
 
 /-- value_subst (matches Coq) -/
-theorem value_subst : ∀ x v1 v2, value v1 → value v2 → value ([x := v2] v1) := by
+theorem value_subst : ∀ x v1 v2, value v1 → value v2 → value (subst[x := v2] v1) := by
   simp_all [Bool.and_eq_true]
 
 /-- declass_ok_subst (matches Coq) -/
-theorem declass_ok_subst : ∀ x v e1 e2, value v → declass_ok e1 e2 → declass_ok ([x := v] e1) ([x := v] e2) := by
+theorem declass_ok_subst : ∀ x v e1 e2, value v → declass_ok e1 e2 → declass_ok (subst[x := v] e1) (subst[x := v] e2) := by
   cases ‹_› <;> simp
 
 /-- value_not_stuck (matches Coq) -/

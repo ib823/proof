@@ -234,7 +234,7 @@ fungsi contoh_selagi() -> Nombor kesan Tulis {
 
 /// ──────────────────────────────────────────────────────────────────────────────
 /// EXAMPLE 15: Infinite Loop (ulang)
-/// Loop forever until keluar (break).
+/// Loop forever until putus (break).
 /// ──────────────────────────────────────────────────────────────────────────────
 
 fungsi contoh_ulang() -> Nombor kesan Tulis {
@@ -243,7 +243,7 @@ fungsi contoh_ulang() -> Nombor kesan Tulis {
         cetak(kiraan);
         kiraan = kiraan + 1;
         kalau kiraan >= 5 {
-            keluar;
+            putus;
         } lain {
             ()
         }

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaMAMPU - Isabelle/HOL Port
@@ -18,6 +20,7 @@
  * | security_assessed  | security_assessed      | OK     |
  * | isms_compliant     | isms_compliant         | OK     |
  * | mampu_fully_compliant | mampu_fully_compliant  | OK     |
+ * | all_gov_classifications | all_gov_classifications | OK     |
  * | rakkssa_passed     | rakkssa_passed         | OK     |
  * | mygovcloud_eligible | mygovcloud_eligible    | OK     |
  * | dkict_compliant    | dkict_compliant        | OK     |
@@ -56,10 +59,10 @@ begin
 
 (* GovClassification (matches Coq: Inductive GovClassification) *)
 datatype gov_classification =
-    Terbuka  (* Open / Public *)
-  |     Terhad  (* Restricted *)
-  |     Sulit  (* Confidential *)
-  |     Rahsia  (* Secret *)
+    Terbuka
+  |     Terhad
+  |     Sulit
+  |     Rahsia
   |     RahsiaBesar
 
 (* classification_level (matches Coq: Definition classification_level) *)
@@ -72,26 +75,35 @@ fun classification_level :: "GovClassification \<Rightarrow> nat" where
 
 (* data_sovereign (matches Coq: Definition data_sovereign) *)
 definition data_sovereign :: "GovSystem \<Rightarrow> bool" where
-  "data_sovereign s \<equiv> gov_data_in_malaysia s = true"
+  "data_sovereign s \<equiv> gov_data_in_malaysia s = True"
 
-(* controls_match_classification - complex match, manual review needed *)
+(* controls_match_classification - complex match, needs manual translation *)
+definition controls_match_classification :: "bool" where "controls_match_classification = undefined"
 
 (* security_assessed (matches Coq: Definition security_assessed) *)
 definition security_assessed :: "GovSystem \<Rightarrow> bool" where
-  "security_assessed s \<equiv> gov_security_assessed s = true"
+  "security_assessed s \<equiv> gov_security_assessed s = True"
 
 (* isms_compliant (matches Coq: Definition isms_compliant) *)
 definition isms_compliant :: "GovSystem \<Rightarrow> bool" where
-  "isms_compliant s \<equiv> gov_isms_certified s = true"
+  "isms_compliant s \<equiv> gov_isms_certified s = True"
 
-(* mampu_fully_compliant - complex match, manual review needed *)
+(* mampu_fully_compliant (matches Coq: Definition mampu_fully_compliant) *)
+definition mampu_fully_compliant :: "GovSystem \<Rightarrow> bool" where
+  "mampu_fully_compliant s \<equiv> data_sovereign s /\
+  controls_match_classification s /\
+  security_assessed s"
+
+(* all_gov_classifications (matches Coq: Definition all_gov_classifications) *)
+definition all_gov_classifications :: "list GovClassification" where
+  "all_gov_classifications \<equiv> [Terbuka; Terhad; Sulit; Rahsia; RahsiaBesar]"
 
 (* rakkssa_passed (matches Coq: Definition rakkssa_passed) *)
 definition rakkssa_passed :: "RAKKSSAAssessment \<Rightarrow> bool" where
-  "rakkssa_passed ra \<equiv> rk_vulnerability_scan ra = true /\
-  rk_penetration_test ra = true /\
-  rk_risk_assessment ra = true /\
-  rk_compliance_check ra = true /\
+  "rakkssa_passed ra \<equiv> rk_vulnerability_scan ra = True /\
+  rk_penetration_test ra = True /\
+  rk_risk_assessment ra = True /\
+  rk_compliance_check ra = True /\
   rk_score ra >= rk_min_score ra"
 
 (* mygovcloud_eligible (matches Coq: Definition mygovcloud_eligible) *)
@@ -102,10 +114,10 @@ definition mygovcloud_eligible :: "GovSystem \<Rightarrow> bool" where
 
 (* dkict_compliant (matches Coq: Definition dkict_compliant) *)
 definition dkict_compliant :: "DKICTCompliance \<Rightarrow> bool" where
-  "dkict_compliant d \<equiv> dkict_password_policy d = true /\
-  dkict_access_review d = true /\
-  dkict_incident_response d = true /\
-  dkict_backup_tested d = true"
+  "dkict_compliant d \<equiv> dkict_password_policy d = True /\
+  dkict_access_review d = True /\
+  dkict_incident_response d = True /\
+  dkict_backup_tested d = True"
 
 (* mampu_sovereignty (matches Coq) *)
 lemma mampu_sovereignty: "\<forall> (s : GovSystem), gov_data_in_malaysia s = True \<longrightarrow> data_sovereign s"

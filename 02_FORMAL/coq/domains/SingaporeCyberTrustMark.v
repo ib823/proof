@@ -17,11 +17,11 @@
 (* Tiers: Essential, Intermediate, Advanced, Expert                          *)
 (* ========================================================================= *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ================================================================ *)
@@ -273,7 +273,7 @@ Proof.
   unfold ctm_certified_at_tier.
   unfold governance_meets_tier, protection_meets_tier,
          resilience_meets_tier, assurance_meets_tier,
-         education_meets_tier in *.
+         education_meets_tier, tier_threshold in *.
   repeat split; lia.
 Qed.
 
@@ -286,7 +286,7 @@ Proof.
   unfold ctm_certified_at_tier.
   unfold governance_meets_tier, protection_meets_tier,
          resilience_meets_tier, assurance_meets_tier,
-         education_meets_tier in *.
+         education_meets_tier, tier_threshold in *.
   repeat split; lia.
 Qed.
 
@@ -299,7 +299,7 @@ Proof.
   unfold ctm_certified_at_tier.
   unfold governance_meets_tier, protection_meets_tier,
          resilience_meets_tier, assurance_meets_tier,
-         education_meets_tier in *.
+         education_meets_tier, tier_threshold in *.
   repeat split; lia.
 Qed.
 

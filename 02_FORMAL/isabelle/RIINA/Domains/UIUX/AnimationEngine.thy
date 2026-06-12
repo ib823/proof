@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AnimationEngine - Isabelle/HOL Port
@@ -15,6 +17,7 @@
  * | frame_budget_120fps | frame_budget_120fps    | OK     |
  * | valid_transition   | valid_transition       | OK     |
  * | bezier_eval        | bezier_eval            | OK     |
+ * | queue_sorted       | queue_sorted           | OK     |
  * | animation_120fps_guaranteed | animation_120fps_guaranteed | OK     |
  * | spring_physics_initial_condition | spring_physics_initial_condition | OK     |
  * | animation_interruption_velocity_continuous | animation_interruption_velocity_continuous | OK     |
@@ -55,7 +58,8 @@ definition spring_position_at_time :: "R" where
 definition frame_budget_120fps :: "R" where
   "frame_budget_120fps \<equiv> 8333"
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* bezier_eval (matches Coq: Definition bezier_eval) *)
 definition bezier_eval :: "BezierCurve \<Rightarrow> R \<Rightarrow> R" where
@@ -64,6 +68,10 @@ definition bezier_eval :: "BezierCurve \<Rightarrow> R \<Rightarrow> R" where
   3 * omt * omt * t * bz_p1 bz +
   3 * omt * t * t * bz_p2 bz +
   t * t * t * bz_p3 bz"
+
+(* queue_sorted (matches Coq: Definition queue_sorted) *)
+fun queue_sorted :: "bool" where
+
 
 (* animation_120fps_guaranteed (matches Coq) *)
 lemma animation_120fps_guaranteed: "\<forall> (af : RIINA_AnimationFrame), frame_time_us (riina_aframe af) \<le> 8333"

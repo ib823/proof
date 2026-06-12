@@ -345,12 +345,12 @@ inductive has_type_full ::
     "has_type_full G S D e T eff_e \<Longrightarrow>
      has_type_full G S D (EGrant eff e) T eff_e"
 
-  (* Classify a value as secret *)
+  (* Classify a is_value as secret *)
 | T_Classify_Full:
     "has_type_full G S D e T eff \<Longrightarrow>
      has_type_full G S D (EClassify e) (TSecret T) eff"
 
-  (* Declassify a secret value with proof *)
+  (* Declassify a secret is_value with proof *)
 | T_Declassify_Full:
     "\<lbrakk> has_type_full G S D e1 (TSecret T) eff1;
        has_type_full G S D e2 (TProof (TSecret T)) eff2;

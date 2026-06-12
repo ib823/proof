@@ -3,7 +3,7 @@
 # RIINA Build System v1.0.0
 
 [toolchain]
-channel = "1.84.0"
+channel = "1.94.1"
 profile = "default"
 components = [
     "rustc",

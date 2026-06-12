@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PhysicsSecurity - Isabelle/HOL Port
@@ -25,6 +27,7 @@
  * | timing_schedulable | timing_schedulable     | OK     |
  * | phys_transition    | phys_transition        | OK     |
  * | is_operational     | is_operational         | OK     |
+ * | phys_run           | phys_run               | OK     |
  * | reading_in_bounds_correct | reading_in_bounds_correct | OK     |
  * | valid_reading_min_le_max | valid_reading_min_le_max | OK     |
  * | reading_value_bounded | reading_value_bounded  | OK     |
@@ -54,12 +57,8 @@
  *)
 
 theory PhysicsSecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* SensorKind (matches Coq: Inductive SensorKind) *)
 datatype sensor_kind =
@@ -79,24 +78,24 @@ datatype phys_state =
 (* SensorReading (matches Coq: Record SensorReading) *)
 record sensor_reading =
   sensor_kind :: SensorKind
-  reading_value :: nat  (* scaled integer value *)
-  reading_min :: nat  (* valid minimum *)
-  reading_max :: nat  (* valid maximum *)
-  timestamp :: nat  (* monotonic timestamp *)
+  reading_value :: nat
+  reading_min :: nat
+  reading_max :: nat
+  timestamp :: nat
   sensor_id :: nat
 
 (* MeasurementSpec (matches Coq: Record MeasurementSpec) *)
 record measurement_spec =
-  meas_tolerance :: nat  (* maximum allowed deviation *)
-  meas_samples :: nat  (* number of samples for averaging *)
-  meas_min_samples :: nat  (* minimum required samples *)
+  meas_tolerance :: nat
+  meas_samples :: nat
+  meas_min_samples :: nat
 
 (* TimingConstraint (matches Coq: Record TimingConstraint) *)
 record timing_constraint =
-  deadline :: nat  (* max allowed time *)
-  wcet :: nat  (* worst-case execution time *)
-  period :: nat  (* task period *)
-  jitter_bound :: nat  (* max jitter *)
+  deadline :: nat
+  wcet :: nat
+  period :: nat
+  jitter_bound :: nat
 
 (* reading_in_bounds (matches Coq: Definition reading_in_bounds) *)
 definition reading_in_bounds :: "SensorReading \<Rightarrow> bool" where
@@ -110,7 +109,9 @@ definition reading_valid :: "SensorReading \<Rightarrow> bool" where
 definition spec_feasible :: "MeasurementSpec \<Rightarrow> bool" where
   "spec_feasible spec \<equiv> (1 <=? meas_min_samples spec) \<and> (meas_min_samples spec <=? meas_samples spec)"
 
-(* readings_avg - complex match, manual review needed *)
+(* readings_avg (matches Coq: Definition readings_avg) *)
+fun readings_avg :: "nat" where
+  "readings_avg _ = fold_left"
 
 (* all_within_tolerance (matches Coq: Definition all_within_tolerance) *)
 definition all_within_tolerance :: "bool" where
@@ -136,6 +137,10 @@ fun phys_transition :: "PhysState \<Rightarrow> bool \<Rightarrow> PhysState" wh
 fun is_operational :: "PhysState \<Rightarrow> bool" where
   "is_operational Error = false"
 |   "is_operational _ = true"
+
+(* phys_run (matches Coq: Definition phys_run) *)
+fun phys_run :: "PhysState \<Rightarrow> PhysState" where
+
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: SENSOR READING VALIDATION
@@ -190,11 +195,11 @@ lemma idle_always_transitions_to_sensing: "\<forall> ok, phys_transition Idle ok
   by simp
 
 (* sensing_error_on_failure (matches Coq) *)
-lemma sensing_error_on_failure: "phys_transition Sensing false = Error"
+lemma sensing_error_on_failure: "phys_transition Sensing False = Error"
   by simp
 
 (* sensing_proceeds_on_success (matches Coq) *)
-lemma sensing_proceeds_on_success: "phys_transition Sensing true = Processing"
+lemma sensing_proceeds_on_success: "phys_transition Sensing True = Processing"
   by simp
 
 (* error_recovers_to_idle (matches Coq) *)
@@ -202,7 +207,7 @@ lemma error_recovers_to_idle: "\<forall> ok, phys_transition Error ok = Idle"
   by simp
 
 (* full_cycle_returns_to_idle (matches Coq) *)
-lemma full_cycle_returns_to_idle: "\<forall> ok, phys_run Idle [true; true; true; ok] = Idle"
+lemma full_cycle_returns_to_idle: "\<forall> ok, phys_run Idle [True; True; True; ok] = Idle"
   by (cases rule: ‹_›.cases; simp)
 
 (* error_state_not_operational (matches Coq) *)
@@ -218,7 +223,7 @@ lemma reading_bounded_values: "\<forall> r, reading_in_bounds r = True \<longrig
   by auto
 
 (* sensing_transitions_depend_on_input (matches Coq) *)
-lemma sensing_transitions_depend_on_input: "phys_transition Sensing true \<noteq> phys_transition Sensing false"
+lemma sensing_transitions_depend_on_input: "phys_transition Sensing True \<noteq> phys_transition Sensing False"
   by auto
 
 (* actuating_transitions_to_idle (matches Coq) *)
@@ -245,7 +250,7 @@ lemma sensing_is_operational: "is_operational Sensing = True"
   by simp
 
 (* error_recovery_cycle (matches Coq) *)
-lemma error_recovery_cycle: "\<forall> ok, phys_run Error [ok; true; true; true; ok] = Idle"
+lemma error_recovery_cycle: "\<forall> ok, phys_run Error [ok; True; True; True; ok] = Idle"
   by (cases rule: ‹_›.cases; simp)
 
 (* reading_bounds_decomposition (matches Coq) *)

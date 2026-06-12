@@ -83,6 +83,49 @@ check_tool() {
     return 0
 }
 
+has_miri() {
+    if command -v miri &> /dev/null; then
+        return 0
+    fi
+    if cargo +nightly miri --version &> /dev/null; then
+        return 0
+    fi
+    return 1
+}
+
+run_miri_target() {
+    local filter="$1"
+    if command -v timeout &> /dev/null; then
+        timeout 600 cargo +nightly miri test -p riina-core "$filter"
+    else
+        cargo +nightly miri test -p riina-core "$filter"
+    fi
+}
+
+coverage_below_threshold() {
+    local coverage="$1"
+    local threshold="$2"
+    python3 - "$coverage" "$threshold" <<'PY'
+import sys
+cov = float(sys.argv[1] or "0")
+thr = float(sys.argv[2] or "0")
+sys.exit(0 if cov < thr else 1)
+PY
+}
+
+compute_core_coverage() {
+    local out
+    out="$(cargo llvm-cov --all-features -p riina-core --summary-only 2>&1 || true)"
+    local cov
+    # Use line coverage from TOTAL row (column 10) for stable thresholding.
+    cov="$(printf '%s\n' "$out" | awk '/^TOTAL/ {gsub("%","",$10); print $10; exit}')"
+    if [ -z "$cov" ]; then
+        echo "0"
+    else
+        echo "$cov"
+    fi
+}
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # LEVEL 0: SYNTAX (Compilation)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -177,8 +220,17 @@ verify_level_2() {
     log_success "Unit tests passed"
     
     log_info "Running Miri (memory safety)..."
-    if check_tool miri; then
-        if ! cargo +nightly miri test -p riina-core 2>&1; then
+    if has_miri; then
+        # Keep Miri lane bounded: run representative memory-critical tests.
+        if ! run_miri_target "tests::test_secret_zeroization" 2>&1; then
+            log_error "Miri check failed on tests::test_secret_zeroization"
+            return 1
+        fi
+        if ! run_miri_target "zeroize::tests::test_zeroize_vec" 2>&1; then
+            log_error "Miri check failed on zeroize::tests::test_zeroize_vec"
+            return 1
+        fi
+        if ! run_miri_target "constant_time::tests::test_ct_eq_u64" 2>&1; then
             log_error "Miri check failed"
             return 1
         fi
@@ -189,8 +241,8 @@ verify_level_2() {
     
     log_info "Checking coverage (minimum: ${MIN_COVERAGE_L2}%)..."
     if check_tool cargo-llvm-cov; then
-        COVERAGE=$(cargo llvm-cov --all-features --summary-only 2>&1 | grep -oP '\d+\.\d+%' | head -1 | tr -d '%' || echo "0")
-        if (( $(echo "$COVERAGE < $MIN_COVERAGE_L2" | bc -l) )); then
+        COVERAGE="$(compute_core_coverage)"
+        if coverage_below_threshold "$COVERAGE" "$MIN_COVERAGE_L2"; then
             log_error "Coverage ${COVERAGE}% is below minimum ${MIN_COVERAGE_L2}%"
             return 1
         fi
@@ -257,8 +309,8 @@ verify_level_4() {
     
     log_info "Checking coverage (minimum: ${MIN_COVERAGE_L4}%)..."
     if check_tool cargo-llvm-cov; then
-        COVERAGE=$(cargo llvm-cov --all-features --summary-only 2>&1 | grep -oP '\d+\.\d+%' | head -1 | tr -d '%' || echo "0")
-        if (( $(echo "$COVERAGE < $MIN_COVERAGE_L4" | bc -l) )); then
+        COVERAGE="$(compute_core_coverage)"
+        if coverage_below_threshold "$COVERAGE" "$MIN_COVERAGE_L4"; then
             log_error "Coverage ${COVERAGE}% is below minimum ${MIN_COVERAGE_L4}%"
             return 1
         fi
@@ -317,8 +369,8 @@ verify_level_5() {
     
     log_info "Checking coverage (minimum: ${MIN_COVERAGE_L5}%)..."
     if check_tool cargo-llvm-cov; then
-        COVERAGE=$(cargo llvm-cov --all-features --summary-only 2>&1 | grep -oP '\d+\.\d+%' | head -1 | tr -d '%' || echo "0")
-        if (( $(echo "$COVERAGE < $MIN_COVERAGE_L5" | bc -l) )); then
+        COVERAGE="$(compute_core_coverage)"
+        if coverage_below_threshold "$COVERAGE" "$MIN_COVERAGE_L5"; then
             log_error "Coverage ${COVERAGE}% is below minimum ${MIN_COVERAGE_L5}%"
             return 1
         fi

@@ -1,0 +1,76 @@
+# RIINA™ Language Rules for Cursor AI
+
+## Before ANY Action
+
+Read `RIINA_MASTER_PLAN.md` (the ONLY planning authority) and `CLAUDE.md` (operational instructions).
+
+## Mandatory Session Protocol
+
+**Follow `RIINA_MASTER_PLAN.md` Part 8 exactly.** 8 steps, no shortcuts:
+ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
+
+## Branch Policy (Absolute)
+
+**Default branch is `main`.** Managed-session feature branches (`claude/*`) are permitted when assigned; they sync back to `main`.
+- NEVER commit to `public` — managed by `scripts/sync-public.sh` only
+- NEVER commit to `gh-pages` — managed by `scripts/deploy-website.sh` only
+
+## Commit-Push-Deploy Chain
+
+```
+Stage specific files → commit [TRACK_X] TYPE: → push origin main (never --no-verify)
+→ sync-public.sh → generate-metrics.sh + sync-metrics.sh → deploy-website.sh
+```
+Numbers flow ONE direction: actual commands → metrics.json → all docs → website → master plan.
+
+## Prime Directives (Root Authority)
+
+1. ALL status verified by running actual commands, NEVER copied from docs
+2. No stubs, no inflated metrics, no shortcuts
+3. `RIINA_MASTER_PLAN.md` is the ONLY planning document — do NOT create new ones
+4. Zero trust on documentation claims — compiler output and grep counts only
+
+## File Extension
+.rii
+
+## Syntax Essentials
+- Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
+- Let bindings: `biar name = value;` (semicolons required)
+- If/else: `kalau condition { ... } lain { ... }` (else required)
+- Match: `padan value { pattern => result, _ => default }`
+- Effects: Declare with `kesan`. Pure=`Bersih`, IO=`Tulis`/`Baca`
+- Secrets: `Rahsia<T>` — cannot be printed. Use `dedah` to declassify.
+- Pipe: `value |> f1 |> f2`
+- Entry: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
+
+## Keywords (Bahasa Melayu | English)
+fungsi|fn, biar|let, ubah|mut, kalau|if, lain|else, untuk|for,
+selagi|while, pulang|return, padan|match, rahsia|secret, dedah|declassify,
+kesan|effect, laku|perform, kendali|handle, sulit|classify, bukti|prove,
+bentuk|struct, pilihan|enum, sifat|trait, laksana|impl, awam|pub
+
+## Types
+Nombor(Int), Teks(String), Benar(Bool), Kosong(Unit),
+Rahsia<T>(Secret), Bukti<T>(Proof), Senarai<T>(List), Mungkin<T>(Option)
+
+## Effects (in order)
+Bersih(0) < Ubah(1) < Baca(2) < Peruntuk(3) < Tulis(4) < SistemFail(5) < Rangkaian(6) < Kripto(8) < Sistem(10) < Masa(11)
+
+## Security Levels
+Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
+
+## Style
+- snake_case for functions/variables (Bahasa Melayu preferred)
+- PascalCase for types
+- 4-space indent
+- Always use Bahasa Melayu keywords
+
+## Forbidden Actions
+- Do NOT create new planning/roadmap/audit documents
+- Do NOT commit Coq proofs with `Admitted`
+- Do NOT count stub prover files as proofs
+- Work on `main` or your assigned managed-session branch (`claude/*`); do NOT create unrequested feature branches
+- Do NOT push with `--no-verify` — the in-repo hooks (`riinac verify` + `audit-docs.sh`) are the source of truth
+- Do NOT commit to `public` or `gh-pages` directly
+- `.github/workflows/verify.yml` only wraps the internal gates; CI is never the source of truth
+- Run tests before committing

@@ -149,12 +149,12 @@ theorem inversion_ref : ∀ Γ St Δ e l T ε, has_type Γ St Δ (ERef e l) T ε
 
 -- Deref inversion
 /-- inversion_deref (matches Coq) -/
-theorem inversion_deref : ∀ Γ St Δ e T ε, has_type Γ St Δ (EDeref e) T ε → ∃ l ε', has_type Γ St Δ e (TRef T l) ε' ∧ ε = effect_join ε' EffectRead := by
+theorem inversion_deref : ∀ Γ St Δ e T ε, has_type Γ St Δ (EDeref e) T ε → ∃ l ε', has_type Γ St Δ e (TRef T l) ε' ∧ sec_leq_dec l Δ = true ∧ ε = effect_join ε' EffectRead := by
   simp_all [Bool.and_eq_true]
 
 -- Assign inversion
 /-- inversion_assign (matches Coq) -/
-theorem inversion_assign : ∀ Γ St Δ e1 e2 T ε, has_type Γ St Δ (EAssign e1 e2) T ε → ∃ T' l ε1 ε2, has_type Γ St Δ e1 (TRef T' l) ε1 ∧ has_type Γ St Δ e2 T' ε2 ∧ T = TUnit ∧ ε = effect_join ε1 (effect_join ε2 EffectWrite) := by
+theorem inversion_assign : ∀ Γ St Δ e1 e2 T ε, has_type Γ St Δ (EAssign e1 e2) T ε → ∃ T' l ε1 ε2, has_type Γ St Δ e1 (TRef T' l) ε1 ∧ has_type Γ St Δ e2 T' ε2 ∧ sec_leq_dec Δ l = true ∧ T = TUnit ∧ ε = effect_join ε1 (effect_join ε2 EffectWrite) := by
   simp_all [Bool.and_eq_true]
 
 -- Perform inversion

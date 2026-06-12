@@ -1,0 +1,10 @@
+{
+  "total_findings": 640,
+  "by_status_kind": {
+    "active:sorry": 227,
+    "archived:admit": 101,
+    "archived:axiom": 3,
+    "inactive:admit": 236,
+    "inactive:axiom": 73
+  }
+}

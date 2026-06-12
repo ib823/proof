@@ -182,8 +182,8 @@ impl<T> TypedArena<T> {
         let index = current_chunk.storage.len();
         let global_index = prefix_sum + index;
 
-        let global_index = u32::try_from(global_index)
-            .expect("arena overflow: more than u32::MAX elements");
+        let global_index =
+            u32::try_from(global_index).expect("arena overflow: more than u32::MAX elements");
 
         current_chunk.storage.push(value);
 
@@ -355,6 +355,9 @@ impl fmt::Debug for Arena {
 }
 
 #[cfg(test)]
+// Tests cast small loop indices to i32 for value comparisons; truncation/wrap
+// cannot occur for these bounded values.
+#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 mod tests {
     use super::*;
 

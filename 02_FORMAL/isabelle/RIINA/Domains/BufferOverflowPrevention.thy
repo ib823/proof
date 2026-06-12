@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BufferOverflowPrevention - Isabelle/HOL Port
@@ -44,12 +46,8 @@
  *)
 
 theory BufferOverflowPrevention
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* Buffer (matches Coq: Record Buffer) *)
 record buffer =
@@ -66,15 +64,15 @@ record overflow_prevention =
 
 (* buffer_valid (matches Coq: Definition buffer_valid) *)
 definition buffer_valid :: "Buffer \<Rightarrow> bool" where
-  "buffer_valid b \<equiv> Nat"
+  "buffer_valid b \<equiv> ((buf_used \<le> b)) (buf_size b)"
 
 (* buffer_can_write (matches Coq: Definition buffer_can_write) *)
 definition buffer_can_write :: "Buffer \<Rightarrow> nat \<Rightarrow> bool" where
-  "buffer_can_write b n \<equiv> Nat"
+  "buffer_can_write b n \<equiv> ((buf_used \<le> b) + n) (buf_size b)"
 
 (* buffer_can_read (matches Coq: Definition buffer_can_read) *)
 definition buffer_can_read :: "Buffer \<Rightarrow> bool" where
-  "buffer_can_read b \<equiv> Nat"
+  "buffer_can_read b \<equiv> ((offset \<le> +) len) (buf_used b)"
 
 (* overflow_protected (matches Coq: Definition overflow_protected) *)
 definition overflow_protected :: "OverflowPrevention \<Rightarrow> bool" where
@@ -87,7 +85,7 @@ definition overflow_protected :: "OverflowPrevention \<Rightarrow> bool" where
 (* riina_overflow_config (matches Coq: Definition riina_overflow_config) *)
 definition riina_overflow_config :: "OverflowPrevention" where
   "riina_overflow_config \<equiv> mkOverflowPrev
-  true true true true true"
+  True True True True True"
 
 (* test_buffer (matches Coq: Definition test_buffer) *)
 definition test_buffer :: "Buffer" where
@@ -149,7 +147,7 @@ lemma BOF_010_stack_canaries: "\<forall> p : OverflowPrevention, overflow_protec
 
 (* BOF_011: Valid Buffer Implies Used <= Size *)
 (* BOF_011_valid_implies_bounds (matches Coq) *)
-lemma BOF_011_valid_implies_bounds: "\<forall> b : Buffer, buffer_valid b = True \<longrightarrow> Nat.leb (buf_used b) (buf_size b) = True"
+lemma BOF_011_valid_implies_bounds: "\<forall> b : Buffer, buffer_valid b = True \<longrightarrow> ((buf_used \<le> b)) (buf_size b) = True"
   by auto
 
 (* BOF_012: RIINA Bounds Write *)

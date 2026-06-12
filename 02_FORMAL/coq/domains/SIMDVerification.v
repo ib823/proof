@@ -4,13 +4,15 @@
 (* Spec: 01_RESEARCH/17_DOMAIN_Π_PERFORMANCE/ *)
 (* Safety Property: Vectorized code semantically equivalent to scalar *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Vectors.Vector.
-Require Import Coq.Vectors.Fin.
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+Set Warnings "-stdlib-vector".
+From Stdlib Require Import Vectors.Vector.
+From Stdlib Require Import Vectors.Fin.
+Set Warnings "stdlib-vector".
+From Stdlib Require Import micromega.Lia.
 Import ListNotations.
 Import VectorNotations.
 
@@ -545,7 +547,7 @@ Theorem PERF_003_20_zero_aligned :
 Proof.
   intros alignment Hpos.
   unfold is_aligned.
-  rewrite Nat.mod_0_l.
+  rewrite Nat.Private_NDivProp.mod_0_l.
   - simpl. reflexivity.
   - lia.
 Qed.

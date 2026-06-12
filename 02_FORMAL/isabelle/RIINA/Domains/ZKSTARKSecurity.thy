@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ZKSTARKSecurity - Isabelle/HOL Port
@@ -160,52 +162,48 @@
  *)
 
 theory ZKSTARKSecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* STARKProperties (matches Coq: Record STARKProperties) *)
 record stark_properties =
-  stark_transparent :: bool  (* No trusted setup *)
-  stark_scalable :: bool  (* Polylogarithmic verification *)
-  stark_post_quantum :: bool  (* Based on hash functions *)
+  stark_transparent :: bool
+  stark_scalable :: bool
+  stark_post_quantum :: bool
 
 (* AIRProperties (matches Coq: Record AIRProperties) *)
 record air_properties =
-  air_algebraic :: bool  (* Algebraic Intermediate Representation *)
-  air_low_degree :: bool  (* Low-degree extension *)
-  air_fri_verified :: bool  (* FRI protocol verified *)
+  air_algebraic :: bool
+  air_low_degree :: bool
+  air_fri_verified :: bool
 
 (* FRIProperties (matches Coq: Record FRIProperties) *)
 record fri_properties =
-  fri_soundness :: bool  (* FRI soundness guarantee *)
-  fri_query_bound :: bool  (* Bounded query complexity *)
-  fri_commitment_binding :: bool  (* Merkle commitment binding *)
-  fri_interactive_to_non :: bool  (* Fiat-Shamir transform valid *)
-  fri_round_complexity :: nat  (* Number of FRI rounds *)
-  fri_proximity_param :: nat  (* Proximity parameter *)
+  fri_soundness :: bool
+  fri_query_bound :: bool
+  fri_commitment_binding :: bool
+  fri_interactive_to_non :: bool
+  fri_round_complexity :: nat
+  fri_proximity_param :: nat
 
 (* ProverState (matches Coq: Record ProverState) *)
 record prover_state =
-  prover_witness :: nat  (* Private witness *)
-  prover_randomness :: nat  (* Randomness for ZK *)
-  prover_committed :: bool  (* Has committed to trace *)
-  prover_fri_complete :: bool  (* FRI rounds complete *)
+  prover_witness :: nat
+  prover_randomness :: nat
+  prover_committed :: bool
+  prover_fri_complete :: bool
 
 (* VerifierState (matches Coq: Record VerifierState) *)
 record verifier_state =
   verifier_challenges :: 'a list
   verifier_queries :: 'a list
-  verifier_accepting :: bool  (* Current acceptance status *)
+  verifier_accepting :: bool
 
 (* SimulatorState (matches Coq: Record SimulatorState) *)
 record simulator_state =
   sim_transcript :: 'a list
-  sim_rewinding :: bool  (* Can rewind verifier *)
-  sim_indistinguishable :: bool  (* Output indistinguishable *)
+  sim_rewinding :: bool
+  sim_indistinguishable :: bool
 
 (* STARKSecurity (matches Coq: Record STARKSecurity) *)
 record stark_security =
@@ -219,9 +217,9 @@ record stark_security =
 record extended_stark_security =
   ext_base :: STARKSecurity
   ext_fri :: FRIProperties
-  ext_simulation_secure :: bool  (* Simulation-based ZK *)
-  ext_extraction_secure :: bool  (* Knowledge extraction *)
-  ext_quantum_resistant :: bool  (* Post-quantum security *)
+  ext_simulation_secure :: bool
+  ext_extraction_secure :: bool
+  ext_quantum_resistant :: bool
 
 (* stark_props_secure (matches Coq: Definition stark_props_secure) *)
 definition stark_props_secure :: "STARKProperties \<Rightarrow> bool" where
@@ -260,35 +258,35 @@ definition simulation_valid :: "SimulatorState \<Rightarrow> bool" where
 
 (* riina_stark_props (matches Coq: Definition riina_stark_props) *)
 definition riina_stark_props :: "STARKProperties" where
-  "riina_stark_props \<equiv> mkSTARKProperties true true true"
+  "riina_stark_props \<equiv> mkSTARKProperties True True True"
 
 (* riina_air (matches Coq: Definition riina_air) *)
 definition riina_air :: "AIRProperties" where
-  "riina_air \<equiv> mkAIRProperties true true true"
+  "riina_air \<equiv> mkAIRProperties True True True"
 
 (* riina_stark (matches Coq: Definition riina_stark) *)
 definition riina_stark :: "STARKSecurity" where
-  "riina_stark \<equiv> mkSTARKSecurity true true true riina_stark_props riina_air"
+  "riina_stark \<equiv> mkSTARKSecurity True True True riina_stark_props riina_air"
 
 (* riina_fri (matches Coq: Definition riina_fri) *)
 definition riina_fri :: "FRIProperties" where
-  "riina_fri \<equiv> mkFRIProperties true true true true 10 128"
+  "riina_fri \<equiv> mkFRIProperties True True True True 10 128"
 
 (* riina_extended (matches Coq: Definition riina_extended) *)
 definition riina_extended :: "ExtendedSTARKSecurity" where
-  "riina_extended \<equiv> mkExtendedSTARKSecurity riina_stark riina_fri true true true"
+  "riina_extended \<equiv> mkExtendedSTARKSecurity riina_stark riina_fri True True True"
 
 (* honest_prover (matches Coq: Definition honest_prover) *)
 definition honest_prover :: "ProverState" where
-  "honest_prover \<equiv> mkProverState 42 123 true true"
+  "honest_prover \<equiv> mkProverState 42 123 True True"
 
 (* honest_verifier (matches Coq: Definition honest_verifier) *)
 definition honest_verifier :: "VerifierState" where
-  "honest_verifier \<equiv> mkVerifierState [1;2;3] [10;20;30] true"
+  "honest_verifier \<equiv> mkVerifierState [1;2;3] [10;20;30] True"
 
 (* valid_simulator (matches Coq: Definition valid_simulator) *)
 definition valid_simulator :: "SimulatorState" where
-  "valid_simulator \<equiv> mkSimulatorState [1;2;3;4;5] true true"
+  "valid_simulator \<equiv> mkSimulatorState [1;2;3;4;5] True True"
 
 (* computational_soundness (matches Coq: Definition computational_soundness) *)
 definition computational_soundness :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
@@ -296,7 +294,7 @@ definition computational_soundness :: "STARKSecurity \<Rightarrow> FRIProperties
 
 (* amplified_soundness (matches Coq: Definition amplified_soundness) *)
 definition amplified_soundness :: "bool \<Rightarrow> nat \<Rightarrow> bool" where
-  "amplified_soundness base_sound rounds \<equiv> base_sound \<and> Nat"
+  "amplified_soundness base_sound rounds \<equiv> base_sound \<and> (0 < rounds)"
 
 (* simulation_based_zk (matches Coq: Definition simulation_based_zk) *)
 definition simulation_based_zk :: "STARKSecurity \<Rightarrow> SimulatorState \<Rightarrow> bool" where
@@ -363,7 +361,7 @@ lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = 
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by auto
 
 (* bool_dec (matches Coq) *)

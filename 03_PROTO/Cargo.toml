@@ -19,13 +19,17 @@ members = [
     "crates/riina-compliance",
     "crates/riina-pkg",
     "crates/riina-wasm",
+    "crates/riina-runtime",
+    "crates/riina-receipt",
+    "crates/riina-ui",
+    "crates/riina-os",
     "crates/riinac",
 ]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-rust-version = "1.84.0"
+rust-version = "1.94.1"
 license = "Proprietary"
 repository = "https://github.com/ib823/riina"
 
@@ -45,10 +49,19 @@ riina-doc = { path = "crates/riina-doc" }
 riina-fmt = { path = "crates/riina-fmt" }
 riina-lsp = { path = "crates/riina-lsp" }
 riina-pkg = { path = "crates/riina-pkg" }
+riina-runtime = { path = "crates/riina-runtime" }
+riina-receipt = { path = "crates/riina-receipt" }
 riina-typechecker = { path = "crates/riina-typechecker" }
 riina-wasm = { path = "crates/riina-wasm" }
 
+# Internal dependencies - Platform crates
+riina-ui = { path = "crates/riina-ui" }
+riina-os = { path = "crates/riina-os" }
+
 # No external dependencies (Law 8)
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
 
 [profile.release]
 lto = true

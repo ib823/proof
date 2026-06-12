@@ -1334,6 +1334,15 @@ Proof.
   apply val_rel_le_build_sum_inr_kripke; auto.
 Qed.
 
+Lemma val_rel_le_extract_struct_0_store : forall n Σ T v1 v2,
+  n >= 1 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_struct (val_rel_le 0) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hge Hrel.
+  eapply val_rel_le_extract_struct_0; eauto.
+Qed.
+
 Lemma val_rel_le_prod_mono_step_store : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->
@@ -1521,6 +1530,320 @@ Lemma val_rel_le_prod_pair_pair_case_store : forall n Σ T1 T2 a1 b1 a2 b2,
 Proof.
   intros n Σ T1 T2 a1 b1 a2 b2 Hn Hrel.
   eapply val_rel_le_prod_pair_pair_case_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_fst_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    multi_step (EFst v1, st1, ctx) (a1, st1, ctx) /\
+    multi_step (EFst v2, st2, ctx) (a2, st2, ctx) /\
+    val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_fst_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_snd_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    multi_step (ESnd v1, st1, ctx) (b1, st1, ctx) /\
+    multi_step (ESnd v2, st2, ctx) (b2, st2, ctx) /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_snd_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_if_store : forall n Σ v1 v2 e2 e2' e3 e3' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  exists b,
+    v1 = EBool b /\ v2 = EBool b /\
+    multi_step (EIf v1 e2 e3, st1, ctx) ((if b then e2 else e3), st1, ctx) /\
+    multi_step (EIf v2 e2' e3', st2, ctx) ((if b then e2' else e3'), st2, ctx).
+Proof.
+  intros n Σ v1 v2 e2 e2' e3 e3' st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_if_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_case_store : forall n Σ T1 T2 v1 v2 x1 e1 e1' x2 e2 e2' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2,
+      v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+      multi_step (ECase v1 x1 e1 x2 e2, st1, ctx) (subst[x1 := a1] e1, st1, ctx) /\
+      multi_step (ECase v2 x1 e1' x2 e2', st2, ctx) (subst[x1 := a2] e1', st2, ctx) /\
+      val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2,
+      v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+      multi_step (ECase v1 x1 e1 x2 e2, st1, ctx) (subst[x2 := b1] e2, st1, ctx) /\
+      multi_step (ECase v2 x1 e1' x2 e2', st2, ctx) (subst[x2 := b2] e2', st2, ctx) /\
+      val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 x1 e1 e1' x2 e2 e2' st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_case_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_let_store : forall n Σ T v1 v2 x e e' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = subst[x := v1] e /\
+    r2 = subst[x := v2] e' /\
+    multi_step (ELet x v1 e, st1, ctx) (r1, st1, ctx) /\
+    multi_step (ELet x v2 e', st2, ctx) (r2, st2, ctx).
+Proof.
+  intros n Σ T v1 v2 x e e' st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_let_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_handle_store : forall n Σ T v1 v2 x h h' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = subst[x := v1] h /\
+    r2 = subst[x := v2] h' /\
+    multi_step (EHandle v1 x h, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EHandle v2 x h', st2, ctx) (r2, st2, ctx).
+Proof.
+  intros n Σ T v1 v2 x h h' st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_handle_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_app_store : forall n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TFn T1 T2 eff) f1 f2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  has_type nil Σ Public f1 (TFn T1 T2 eff) EffectPure ->
+  has_type nil Σ Public f2 (TFn T1 T2 eff) EffectPure ->
+  exists x1 body1 x2 body2,
+    f1 = ELam x1 T1 body1 /\ f2 = ELam x2 T1 body2 /\
+    multi_step (EApp f1 a1, st1, ctx) (subst[x1 := a1] body1, st1, ctx) /\
+    multi_step (EApp f2 a2, st2, ctx) (subst[x2 := a2] body2, st2, ctx).
+Proof.
+  intros n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx Hn Hfrel Harel Htyf1 Htyf2.
+  eapply exp_rel_step1_app_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_perform_store : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EPerform eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EPerform eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_perform_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_require_store : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (ERequire eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (ERequire eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_require_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_grant_store : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EGrant eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EGrant eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_grant_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_classify_store : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = EClassify v1 /\ r2 = EClassify v2 /\
+    multi_step (EClassify v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EClassify v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSecret T) r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_classify_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_prove_store : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = EProve v1 /\ r2 = EProve v2 /\
+    multi_step (EProve v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EProve v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TProof T) r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_prove_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_declassify_store : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EDeclassify (EClassify v1) (EProve (EClassify v1)), st1, ctx) (r1, st1, ctx) /\
+    multi_step (EDeclassify (EClassify v2) (EProve (EClassify v2)), st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_declassify_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_inl_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T1 v1 v2 ->
+  exists r1 r2,
+    r1 = EInl v1 T2 /\
+    r2 = EInl v2 T2 /\
+    multi_step (EInl v1 T2, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EInl v2 T2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSum T1 T2) r1 r2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T1 v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T1 v1 v2 Hn Hrel) as Hv2.
+  pose proof (val_rel_le_closed_left n Σ T1 v1 v2 Hn Hrel) as Hc1.
+  pose proof (val_rel_le_closed_right n Σ T1 v1 v2 Hn Hrel) as Hc2.
+  exists (EInl v1 T2), (EInl v2 T2).
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split.
+  - apply MS_Refl.
+  - split.
+    + apply MS_Refl.
+    + apply val_rel_le_build_sum_inl_kripke; auto.
+Qed.
+
+Lemma exp_rel_step1_inr_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T2 v1 v2 ->
+  exists r1 r2,
+    r1 = EInr v1 T1 /\
+    r2 = EInr v2 T1 /\
+    multi_step (EInr v1 T1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EInr v2 T1, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSum T1 T2) r1 r2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T2 v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T2 v1 v2 Hn Hrel) as Hv2.
+  pose proof (val_rel_le_closed_left n Σ T2 v1 v2 Hn Hrel) as Hc1.
+  pose proof (val_rel_le_closed_right n Σ T2 v1 v2 Hn Hrel) as Hc2.
+  exists (EInr v1 T1), (EInr v2 T1).
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split.
+  - apply MS_Refl.
+  - split.
+    + apply MS_Refl.
+    + apply val_rel_le_build_sum_inr_kripke; auto.
+Qed.
+
+Lemma exp_rel_step1_deref_store : forall n Σ st1 st2 l T sl ctx,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v1 v2,
+    store_lookup l st1 = Some v1 /\
+    store_lookup l st2 = Some v2 /\
+    multi_step (EDeref (ELoc l), st1, ctx) (v1, st1, ctx) /\
+    multi_step (EDeref (ELoc l), st2, ctx) (v2, st2, ctx) /\
+    val_rel_le n Σ T v1 v2.
+Proof.
+  intros n Σ st1 st2 l T sl ctx Hrel Hlook.
+  destruct (store_rel_le_lookup n Σ st1 st2 l T sl Hrel Hlook)
+    as [v1 [v2 [Hst1 [Hst2 Hval]]]].
+  exists v1, v2.
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_DerefLoc. exact Hst1.
+  - apply step_to_multi_step. apply ST_DerefLoc. exact Hst2.
+Qed.
+
+Lemma exp_rel_step1_assign_store : forall n Σ st1 st2 l T sl v v' ctx,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  val_rel_le n Σ T v v' ->
+  value v ->
+  value v' ->
+  exists old1 old2,
+    store_lookup l st1 = Some old1 /\
+    store_lookup l st2 = Some old2 /\
+    multi_step (EAssign (ELoc l) v, st1, ctx) (EUnit, store_update l v st1, ctx) /\
+    multi_step (EAssign (ELoc l) v', st2, ctx) (EUnit, store_update l v' st2, ctx) /\
+    store_rel_le n Σ (store_update l v st1) (store_update l v' st2) /\
+    val_rel_le n Σ TUnit EUnit EUnit.
+Proof.
+  intros n Σ st1 st2 l T sl v v' ctx Hrel Hlook Hval Hv Hv'.
+  destruct (store_rel_le_lookup n Σ st1 st2 l T sl Hrel Hlook)
+    as [old1 [old2 [Hst1 [Hst2 Hold]]]].
+  exists old1, old2.
+  split; [exact Hst1|].
+  split; [exact Hst2|].
+  split.
+  - apply step_to_multi_step. eapply ST_AssignLoc; eauto.
+  - split.
+    + apply step_to_multi_step. eapply ST_AssignLoc; eauto.
+    + split.
+      * eapply store_rel_le_update; eauto.
+      * exact (val_rel_le_build_unit n Σ).
+Qed.
+
+Lemma exp_rel_step1_ref_store : forall n Σ st1 st2 T sl v1 v2 ctx,
+  store_rel_le n Σ st1 st2 ->
+  val_rel_le n Σ T v1 v2 ->
+  value v1 ->
+  value v2 ->
+  store_ty_lookup (fresh_loc st1) Σ = None ->
+  fresh_loc st1 = fresh_loc st2 ->
+  exists l Σ',
+    l = fresh_loc st1 /\
+    Σ' = store_ty_update l T sl Σ /\
+    multi_step (ERef v1 sl, st1, ctx) (ELoc l, store_update l v1 st1, ctx) /\
+    multi_step (ERef v2 sl, st2, ctx) (ELoc l, store_update l v2 st2, ctx) /\
+    val_rel_le n Σ' (TRef T sl) (ELoc l) (ELoc l) /\
+    store_rel_le n Σ' (store_update l v1 st1) (store_update l v2 st2).
+Proof.
+  intros n Σ st1 st2 T sl v1 v2 ctx Hrel Hval Hv1 Hv2 Hfresh_none Hfresh_eq.
+  exists (fresh_loc st1), (store_ty_update (fresh_loc st1) T sl Σ).
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split.
+  - apply step_to_multi_step.
+    apply ST_RefValue.
+    + exact Hv1.
+    + reflexivity.
+  - split.
+    + apply step_to_multi_step.
+      apply ST_RefValue.
+      * exact Hv2.
+      * rewrite <- Hfresh_eq. reflexivity.
+    + split.
+      * apply val_rel_le_build_ref.
+      * assert (Halloc :
+          store_rel_le n
+            (store_ty_update (fresh_loc st1) T sl Σ)
+            (store_update (fresh_loc st1) v1 st1)
+            (store_update (fresh_loc st2) v2 st2)).
+        { eapply store_rel_le_alloc; eauto. }
+        rewrite <- Hfresh_eq in Halloc.
+        exact Halloc.
 Qed.
 
 (** ** Unit Value Relations

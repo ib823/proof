@@ -5,10 +5,61 @@
 (* Layer: L0 Physical *)
 (* Mode: Comprehensive Verification | Zero Trust *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Logic.Classical_Prop.
+(** ═══════════════════════════════════════════════════════════════════════════
+    TRUSTED HARDWARE PRIMITIVES — AXIOMATIC INTERFACE (REQ-23 AUDIT)
+    ═══════════════════════════════════════════════════════════════════════════
+
+    This file declares 29 [Parameter] symbols. Every one of them models a
+    physical-world primitive (sensor, EDA tool output, manufacturing
+    artefact) that cannot be implemented in Coq because it is not a
+    computable function — it is a measurement of, or a specification
+    against, real silicon, real X-ray microscopy, real voltage rails, etc.
+
+    By Coq's type theory, [Parameter] is equivalent to [Axiom]: it asserts
+    that an inhabitant of the declared type exists, without supplying one.
+    These are therefore part of the Trusted Computing Base (TCB) for any
+    property proved in this file. A bug or compromise in the physical
+    primitive invalidates the corresponding proved theorem.
+
+    Each Parameter is categorised below with the external standard or
+    measurement that binds it at deployment time:
+
+      §DESIGN VERIFICATION (lines ~52..103, 8 params)
+        - synthesize, synthesis_preserves_semantics, extract_paths,
+          timing_analysis, timing_analysis_correct, trojan_scan,
+          trojan_scan_sound, operation_cycles, crypto_operation,
+          crypto_constant_time
+        -> Bound by EDA tool reports (Synopsys/Cadence/OpenROAD) and
+           gate-level simulators. Compliance: IEC 61508 §7.4.2 (compiler
+           qualification), trojan scan per IEEE Hardware Trojan Taxonomy.
+
+      §MANUFACTURING (lines ~142..195, 11 params)
+        - x_ray_compare, x_ray_soundness, puf_entropy,
+          puf_physically_unique, different_chips_different_entropy,
+          chip_puf_at_time, puf_temperature_stable, authenticate_chip,
+          authentication_sound, fab_integrity_check, fab_check_sound
+        -> Bound by X-ray microscopy (ISO/IEC 19762), PUF physics
+           (NIST SP 800-90B entropy assessment), and fab-audit programs.
+
+      §TAMPER / SIDE-CHANNEL (lines ~243..292, 8 params)
+        - detect_probe, mesh_detects_probing, voltage_monitor,
+          voltage_monitor_correct, temp_monitor,
+          temp_monitor_triggers_shutdown, power_trace,
+          crypto_power_independent
+        -> Bound by FIPS 140-3 §7.7 physical security requirements
+           (Security Level 3+) and Common Criteria PP-0084 SE-side-channel.
+
+    DISCIPLINE: Do not add new [Parameter] declarations without (a)
+    adding the symbol to the catalogue above, (b) naming the binding
+    standard, and (c) recording it in RIINA_MASTER_PLAN.md Part 2 under
+    "Coq Parameter (active)". Whenever possible, prefer a concrete
+    [Definition] backed by [Lemma] rather than an axiomatic [Parameter].
+    ═══════════════════════════════════════════════════════════════════════════ *)
+
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Logic.Classical_Prop.
 Import ListNotations.
 
 (** ═══════════════════════════════════════════════════════════════════════════

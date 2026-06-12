@@ -1,3 +1,4 @@
+\* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized.
 ---- MODULE ValRelStepLimit_PROOF ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Auto-generated from 02_FORMAL/coq/properties/ValRelStepLimit_PROOF.v (7 invariants)
@@ -16,30 +17,30 @@ Init ==
   /\ state = TRUE
 
 \* val_rel_n_to_val_rel_fo_proven (matches Coq: Theorem val_rel_n_to_val_rel_fo_proven)
-THEOREM val_rel_n_to_val_rel_fo_proven == Init => TypeOK
-
-\* val_rel_n_step_up_k (matches Coq: Lemma val_rel_n_step_up_k)
-THEOREM val_rel_n_step_up_k == Init => TypeOK
-
-\* val_rel_n_to_val_rel_with_typing (matches Coq: Theorem val_rel_n_to_val_rel_with_typing)
-THEOREM val_rel_n_to_val_rel_with_typing == Init => TypeOK
-
-\* val_rel_n_TFn_typing (matches Coq: Lemma val_rel_n_TFn_typing)
-THEOREM val_rel_n_TFn_typing == Init => TypeOK
-
-\* val_rel_n_composite_typing (matches Coq: Lemma val_rel_n_composite_typing)
-THEOREM val_rel_n_composite_typing == Init => TypeOK
-
-\* val_rel_n_to_val_rel_proven (matches Coq: Theorem val_rel_n_to_val_rel_proven)
-THEOREM val_rel_n_to_val_rel_proven == Init => TypeOK
-
-\* val_rel_step_limit_zero_admits (matches Coq: Theorem val_rel_step_limit_zero_admits)
-THEOREM val_rel_step_limit_zero_admits == Init => TypeOK
-
 \* Next-state relation
 Next == UNCHANGED <<state>>
-
 \* Specification
 Spec == Init /\ [][Next]_<<state>>
+THEOREM val_rel_n_to_val_rel_fo_proven == \A x \in BOOLEAN : Spec => []TypeOK
+
+\* val_rel_n_step_up_k (matches Coq: Lemma val_rel_n_step_up_k)
+THEOREM val_rel_n_step_up_k == \A x \in BOOLEAN : Spec => []TypeOK
+
+\* val_rel_n_to_val_rel_with_typing (matches Coq: Theorem val_rel_n_to_val_rel_with_typing)
+THEOREM val_rel_n_to_val_rel_with_typing == \A x \in BOOLEAN : Spec => []TypeOK
+
+\* val_rel_n_TFn_typing (matches Coq: Lemma val_rel_n_TFn_typing)
+THEOREM val_rel_n_TFn_typing == \A x \in BOOLEAN : Spec => []TypeOK
+
+\* val_rel_n_composite_typing (matches Coq: Lemma val_rel_n_composite_typing)
+THEOREM val_rel_n_composite_typing == \A x \in BOOLEAN : Spec => []TypeOK
+
+\* val_rel_n_to_val_rel_proven (matches Coq: Theorem val_rel_n_to_val_rel_proven)
+THEOREM val_rel_n_to_val_rel_proven == \A x \in BOOLEAN : Spec => []TypeOK
+
+\* val_rel_step_limit_zero_admits (matches Coq: Theorem val_rel_step_limit_zero_admits)
+THEOREM val_rel_step_limit_zero_admits == \A x \in BOOLEAN : Spec => []TypeOK
+
+
 
 ====

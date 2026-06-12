@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SensorDrivers - Isabelle/HOL Port
@@ -97,20 +99,21 @@ record bounded_sensor =
   bs_current_rate :: nat
   bs_rate_ok :: bs_current_rate
 
-(* has_sensor_permission - complex match, manual review needed *)
+(* has_sensor_permission - complex match, needs manual translation *)
+definition has_sensor_permission :: "bool" where "has_sensor_permission = undefined"
 
 (* uses_camera (matches Coq: Definition uses_camera) *)
 definition uses_camera :: "Application \<Rightarrow> bool" where
-  "uses_camera app \<equiv> app_camera_perm app = true"
+  "uses_camera app \<equiv> app_camera_perm app = True"
 
 (* uses_microphone (matches Coq: Definition uses_microphone) *)
 definition uses_microphone :: "Application \<Rightarrow> bool" where
-  "uses_microphone app \<equiv> app_microphone_perm app = true"
+  "uses_microphone app \<equiv> app_microphone_perm app = True"
 
 (* indicator_visible (matches Coq: Definition indicator_visible) *)
 definition indicator_visible :: "SystemState \<Rightarrow> bool" where
-  "indicator_visible st \<equiv> (any_camera_active st = true -> camera_indicator st = true) /\
-  (any_mic_active st = true -> mic_indicator st = true)"
+  "indicator_visible st \<equiv> (any_camera_active st = True -> camera_indicator st = True) /\
+  (any_mic_active st = True -> mic_indicator st = True)"
 
 (* rate_limit_ok (matches Coq: Definition rate_limit_ok) *)
 definition rate_limit_ok :: "SensorRateLimit \<Rightarrow> bool" where

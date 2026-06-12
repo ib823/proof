@@ -14,6 +14,8 @@
 | `dalam` | in | see above |
 | `selagi` | while | `selagi x > 0 { ... }` |
 | `ulang` | loop | `ulang { ... }` |
+| `putus` | break | `putus;` |
+| `lanjut` | continue | `lanjut;` |
 | `pulang` | return | `pulang hasil;` |
 | `padan` | match | `padan x { 0 => "kosong", _ => "lain" }` |
 | `betul` | true | boolean true |

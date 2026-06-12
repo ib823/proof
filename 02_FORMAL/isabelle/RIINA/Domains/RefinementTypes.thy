@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA RefinementTypes - Isabelle/HOL Port
@@ -15,8 +17,13 @@
  * | Pred               | pred                   | OK     |
  * | RefTy              | ref_ty                 | OK     |
  * | Expr               | expr                   | OK     |
+ * | sat_pred           | sat_pred               | OK     |
  * | pred_implies       | pred_implies           | OK     |
  * | inhabits_refinement | inhabits_refinement    | OK     |
+ * | lookup             | lookup                 | OK     |
+ * | lookup_val         | lookup_val             | OK     |
+ * | eval               | eval                   | OK     |
+ * | do_subst           | do_subst               | OK     |
  * | is_null            | is_null                | OK     |
  * | is_non_null        | is_non_null            | OK     |
  * | bounds_pred        | bounds_pred            | OK     |
@@ -50,7 +57,7 @@
  *)
 
 theory RefinementTypes
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BaseTy (matches Coq: Inductive BaseTy) *)
@@ -91,6 +98,11 @@ datatype expr =
   |     EPlus
   |     EMult
 
+(* sat_pred (matches Coq: Definition sat_pred) *)
+fun sat_pred :: "nat \<Rightarrow> Pred \<Rightarrow> bool" where
+  "sat_pred PTrue = True"
+|   "sat_pred PFalse = False"
+
 (* pred_implies (matches Coq: Definition pred_implies) *)
 definition pred_implies :: "bool" where
   "pred_implies \<equiv> forall v, sat_pred v p -> sat_pred v q"
@@ -98,6 +110,22 @@ definition pred_implies :: "bool" where
 (* inhabits_refinement (matches Coq: Definition inhabits_refinement) *)
 definition inhabits_refinement :: "nat \<Rightarrow> BaseTy \<Rightarrow> Pred \<Rightarrow> bool" where
   "inhabits_refinement v b p \<equiv> sat_pred v p"
+
+(* lookup (matches Coq: Definition lookup) *)
+fun lookup :: "nat \<Rightarrow> TyEnv \<Rightarrow> option RefTy" where
+
+
+(* lookup_val (matches Coq: Definition lookup_val) *)
+fun lookup_val :: "nat \<Rightarrow> ValEnv \<Rightarrow> option nat" where
+
+
+(* eval (matches Coq: Definition eval) *)
+fun eval :: "ValEnv \<Rightarrow> Expr \<Rightarrow> option nat" where
+
+
+(* do_subst (matches Coq: Definition do_subst) *)
+fun do_subst :: "nat \<Rightarrow> nat \<Rightarrow> Expr \<Rightarrow> Expr" where
+
 
 (* is_null (matches Coq: Definition is_null) *)
 definition is_null :: "nat \<Rightarrow> bool" where

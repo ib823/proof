@@ -4,11 +4,11 @@
 (* Spec: 01_RESEARCH/17_DOMAIN_Π_PERFORMANCE/ *)
 (* Safety Property: Guaranteed timing bounds for real-time systems *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.micromega.Lia.
-Require Import Coq.Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Arith.PeanoNat.
 Import ListNotations.
 
 (* Time units (clock cycles) *)
@@ -381,7 +381,7 @@ Proof.
   intros cfg size1 size2 Hle.
   unfold dma_wcet.
   assert (H: size1 / max 1 (dma_bandwidth cfg) <= size2 / max 1 (dma_bandwidth cfg)).
-  { apply Nat.div_le_mono.
+  { apply Nat.Private_NDivProp.div_le_mono.
     - lia.
     - assumption.
   }

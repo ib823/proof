@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA InjectionPrevention - Isabelle/HOL Port
@@ -26,6 +28,8 @@
  * | tainted_concat     | tainted_concat         | OK     |
  * | secure_xml_config  | secure_xml_config      | OK     |
  * | contains_newline   | contains_newline       | OK     |
+ * | sanitize_log       | sanitize_log           | OK     |
+ * | escape_csv_cell    | escape_csv_cell        | OK     |
  * | secure_pdf         | secure_pdf             | OK     |
  * | inj_001_sql_injection_impossible | inj_001_sql_injection_impossible | OK     |
  * | inj_002_command_injection_impossible | inj_002_command_injection_impossible | OK     |
@@ -56,25 +60,25 @@
  *)
 
 theory InjectionPrevention
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* TaintLevel (matches Coq: Inductive TaintLevel) *)
 datatype taint_level =
-    Trusted  (* Known safe - from code/constants *)
-  |     Untrusted  (* User input - potentially dangerous *)
+    Trusted
+  |     Untrusted
   |     Sanitized
 
 (* SQLPart (matches Coq: Inductive SQLPart) *)
 datatype sql_part =
-    SQLLiteral  (* String literal in query *)
-  |     SQLParam  (* Parameterized placeholder $1, $2 *)
+    SQLLiteral
+  |     SQLParam
   |     SQLKeyword
 
 (* ShellPart (matches Coq: Inductive ShellPart) *)
 datatype shell_part =
     ShellLiteral
-  |     ShellArg  (* Safe argument slot *)
+  |     ShellArg
   |     ShellCmd
 
 (* LDAPPart (matches Coq: Inductive LDAPPart) *)
@@ -86,7 +90,7 @@ datatype ldap_part =
 (* TemplateExpr (matches Coq: Inductive TemplateExpr) *)
 datatype template_expr =
     TmplLiteral
-  |     TmplVar  (* Variable lookup only *)
+  |     TmplVar
   |     TmplConcat
 
 (* RIINAExpr (matches Coq: Inductive RIINAExpr) *)
@@ -99,7 +103,7 @@ datatype riina_expr =
 (* TaintedValue (matches Coq: Record TaintedValue) *)
 record tainted_value =
   tv_data :: 'a list
-  tv_taint :: TaintLevel  (* Taint status *)
+  tv_taint :: TaintLevel
 
 (* XMLParserConfig (matches Coq: Record XMLParserConfig) *)
 record xml_parser_config =
@@ -123,7 +127,8 @@ record length_prefixed_string =
   lpstr_bytes :: 'a list
   lpstr_valid :: List
 
-(* propagate_taint - complex match, manual review needed *)
+(* propagate_taint - complex match, needs manual translation *)
+definition propagate_taint :: "bool" where "propagate_taint = undefined"
 
 (* tainted_concat (matches Coq: Definition tainted_concat) *)
 definition tainted_concat :: "TaintedValue" where
@@ -131,15 +136,23 @@ definition tainted_concat :: "TaintedValue" where
 
 (* secure_xml_config (matches Coq: Definition secure_xml_config) *)
 definition secure_xml_config :: "XMLParserConfig" where
-  "secure_xml_config \<equiv> mkXMLConfig false false"
+  "secure_xml_config \<equiv> mkXMLConfig False False"
 
 (* contains_newline (matches Coq: Definition contains_newline) *)
 definition contains_newline :: "bool" where
-  "contains_newline \<equiv> existsb (fun c => Nat"
+  "contains_newline \<equiv> existsb (fun c => (c = 10) \<or> (c = 13)) data"
+
+(* sanitize_log (matches Coq: Definition sanitize_log) *)
+definition sanitize_log :: "list nat" where
+  "sanitize_log \<equiv> map (fun c => if (c = 10) then 32 else c) data"
+
+(* escape_csv_cell (matches Coq: Definition escape_csv_cell) *)
+fun escape_csv_cell :: "list nat" where
+  "escape_csv_cell nil = nil"
 
 (* secure_pdf (matches Coq: Definition secure_pdf) *)
 definition secure_pdf :: "PDFDocument \<Rightarrow> bool" where
-  "secure_pdf doc \<equiv> pdf_has_js doc = false"
+  "secure_pdf doc \<equiv> pdf_has_js doc = False"
 
 (* inj_001_sql_injection_impossible (matches Coq) *)
 lemma inj_001_sql_injection_impossible: "\<forall> (q : SQLQuery), safe_sql q \<longrightarrow> \<forall> part, In part q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
@@ -186,7 +199,7 @@ lemma inj_011_email_header_safe: "\<forall> (h : EmailHeader), contains_newline 
   by auto
 
 (* csv_escape_safe_helper (matches Coq) *)
-lemma csv_escape_safe_helper: "\<forall> c rest, (Nat.eqb c 61 || Nat.eqb c 43 || Nat.eqb c 45 || Nat.eqb c 64) = False \<longrightarrow> match c :: rest with | 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True end"
+lemma csv_escape_safe_helper: "\<forall> c rest, ((c = 61) || (c = 43) || (c = 45) || (c = 64)) = False \<longrightarrow> match c :: rest with | 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True end"
   by (cases rule: ‹_›.cases; simp)
 
 (* inj_012_csv_injection_impossible (matches Coq) *)

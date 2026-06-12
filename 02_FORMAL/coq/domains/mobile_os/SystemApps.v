@@ -5,10 +5,13 @@
 (*  Formal verification of core system applications correctness          *)
 (* ===================================================================== *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
+
+Definition RESPONSE_TIME_MAX_US : nat := Z.to_nat 100000%Z.
 
 (* ===================== Type Definitions ===================== *)
 
@@ -92,7 +95,7 @@ Definition sync_lossless (sync : SyncOperation) : Prop :=
 
 (* App response is timely (< 100ms) *)
 Definition response_timely (resp : AppResponse) : Prop :=
-  response_time_us resp <= 100000.
+  response_time_us resp <= RESPONSE_TIME_MAX_US.
 
 (* App always responds correctly *)
 Definition app_responds_correctly (resp : AppResponse) : Prop :=
@@ -217,7 +220,7 @@ Qed.
 
 (* ===================== Extended System App Safety Proofs ===================== *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Extended app definitions *)
 

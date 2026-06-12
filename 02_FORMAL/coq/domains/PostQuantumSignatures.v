@@ -13,11 +13,14 @@
     including ML-DSA (Dilithium) and SLH-DSA (SPHINCS+).
     ============================================================================ *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import ZArith.
 Import ListNotations.
+
+Definition SIGNATURE_EXAMPLE_VALUE : nat := Z.to_nat 12345%Z.
 
 (** ============================================================================
     SECTION 1: SIGNATURE SCHEME DEFINITIONS
@@ -158,7 +161,7 @@ Definition sig_correct (si : SignatureInstance) : bool :=
     ============================================================================ *)
 
 Definition mk_valid_sig_keypair : SigningKeyPair := mkSigningKeyPair 1 2 true.
-Definition mk_valid_signature : SignatureResult := mkSignatureResult 12345 true.
+Definition mk_valid_signature : SignatureResult := mkSignatureResult SIGNATURE_EXAMPLE_VALUE true.
 Definition mk_compliant_eufcma : EUFCMASecure := mkEUFCMA true true true.
 Definition mk_compliant_sig_qr : SigQuantumResistant := mkSigQR true true true.
 

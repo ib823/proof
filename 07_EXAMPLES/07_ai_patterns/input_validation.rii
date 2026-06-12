@@ -1,0 +1,192 @@
+/// input_validation.rii
+/// Taint tracking pipeline for untrusted input
+/// Demonstrates: security level transitions, sanitization pipeline,
+/// type-safe progression from untrusted to trusted data
+///
+/// Pattern: Untrusted input enters at low security level. Each
+/// validation step narrows the type until it is safe to use.
+/// The compiler prevents using unsanitized data in sensitive sinks.
+
+modul pengesahan_input;
+
+guna std::teks;
+
+/// Security-labeled wrapper types
+jenis TidakDipercayai<T> = {
+    nilai: T,
+    sumber: Teks,
+};
+
+jenis Disahkan<T> = {
+    nilai: T,
+    peraturan: Teks,
+};
+
+jenis Disanitasi<T> = {
+    nilai: T,
+    kaedah: Teks,
+};
+
+/// Validation error
+jenis RalatPengesahan =
+    | TerlaluPanjang(Nombor)
+    | TerlaluPendek(Nombor)
+    | AksaraTidakSah(Teks)
+    | FormatTidakSah(Teks);
+
+/// Step 1: Mark raw input as untrusted
+/// Kesan: Baca (reading from external source)
+fungsi terima_input(nilai: Teks, sumber: Teks) -> TidakDipercayai<Teks> kesan Baca {
+    pulang {
+        nilai: nilai,
+        sumber: sumber,
+    };
+}
+
+/// Step 2: Validate length constraints (pure — no side effects)
+fungsi sahkan_panjang(
+    input: TidakDipercayai<Teks>,
+    min: Nombor,
+    maks: Nombor
+) -> Hasil<TidakDipercayai<Teks>, RalatPengesahan> kesan Bersih {
+    biar pjg = panjang(input.nilai);
+
+    kalau pjg < min {
+        pulang Ralat(TerlaluPendek(min));
+    }
+    kalau pjg > maks {
+        pulang Ralat(TerlaluPanjang(maks));
+    }
+    pulang Ok(input);
+}
+
+/// Step 3: Validate character set
+fungsi sahkan_aksara(
+    input: TidakDipercayai<Teks>,
+    dibenarkan: Teks
+) -> Hasil<Disahkan<Teks>, RalatPengesahan> kesan Bersih {
+    untuk aksara dalam input.nilai {
+        kalau !mengandungi(dibenarkan, aksara) {
+            pulang Ralat(AksaraTidakSah(aksara));
+        }
+    }
+
+    /// Promote from TidakDipercayai to Disahkan
+    pulang Ok({
+        nilai: input.nilai,
+        peraturan: "panjang+aksara",
+    });
+}
+
+/// Step 4: Sanitize for specific output context
+fungsi sanitasi_html(
+    input: Disahkan<Teks>
+) -> Disanitasi<Teks> kesan Bersih {
+    biar bersih = input.nilai
+        |> ganti_semua("<", "&lt;")
+        |> ganti_semua(">", "&gt;")
+        |> ganti_semua("&", "&amp;")
+        |> ganti_semua("\"", "&quot;");
+
+    pulang {
+        nilai: bersih,
+        kaedah: "html_escape",
+    };
+}
+
+fungsi sanitasi_sql(
+    input: Disahkan<Teks>
+) -> Disanitasi<Teks> kesan Bersih {
+    biar bersih = input.nilai
+        |> ganti_semua("'", "''")
+        |> ganti_semua(";", "")
+        |> ganti_semua("--", "");
+
+    pulang {
+        nilai: bersih,
+        kaedah: "sql_escape",
+    };
+}
+
+/// Step 5: Extract safe value — only possible from Disanitasi
+fungsi nilai_selamat(input: Disanitasi<Teks>) -> Teks kesan Bersih {
+    pulang input.nilai;
+}
+
+/// Complete validation pipeline using |>
+fungsi sahkan_emel(
+    mentah: TidakDipercayai<Teks>
+) -> Hasil<Disahkan<Teks>, RalatPengesahan> kesan Bersih {
+    biar alfanumerik_emel = "abcdefghijklmnopqrstuvwxyz0123456789@._-";
+
+    biar disahkan_panjang = sahkan_panjang(mentah, 5, 254);
+    padan disahkan_panjang {
+        Ralat(e) => pulang Ralat(e),
+        Ok(input) => {
+            /// Check for @ symbol
+            kalau !mengandungi(input.nilai, "@") {
+                pulang Ralat(FormatTidakSah("Emel mesti ada @"));
+            }
+
+            pulang sahkan_aksara(input, alfanumerik_emel);
+        },
+    };
+}
+
+/// Full pipeline: input -> validate -> sanitize -> use
+fungsi proses_borang_pengguna(
+    nama_mentah: Teks,
+    emel_mentah: Teks
+) -> Hasil<Teks, Teks> kesan (Baca, Tulis) {
+    /// Mark as untrusted
+    biar nama_input = terima_input(nama_mentah, "borang_web");
+    biar emel_input = terima_input(emel_mentah, "borang_web");
+
+    /// Validate name
+    biar nama_sah = sahkan_panjang(nama_input, 1, 100);
+    padan nama_sah {
+        Ralat(_) => pulang Ralat("Nama tidak sah"),
+        Ok(n) => {
+            biar nama_disahkan = sahkan_aksara(n, "abcdefghijklmnopqrstuvwxyz ");
+            padan nama_disahkan {
+                Ralat(_) => pulang Ralat("Aksara nama tidak sah"),
+                Ok(nd) => {
+                    biar nama_selamat = sanitasi_html(nd) |> nilai_selamat;
+
+                    /// Validate email
+                    padan sahkan_emel(emel_input) {
+                        Ralat(_) => pulang Ralat("Emel tidak sah"),
+                        Ok(ed) => {
+                            biar emel_selamat = sanitasi_sql(ed) |> nilai_selamat;
+                            cetak_baris("Diterima: " + nama_selamat + " <" + emel_selamat + ">");
+                            pulang Ok("Borang diterima");
+                        },
+                    };
+                },
+            };
+        },
+    };
+}
+
+/// Helpers
+fungsi panjang(t: Teks) -> Nombor kesan Bersih { pulang 0; }
+fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Bersih { pulang betul; }
+fungsi ganti_semua(teks: Teks, lama: Teks, baru: Teks) -> Teks kesan Bersih { pulang teks; }
+
+ujian "sah_emel_betul" {
+    biar input = { nilai: "ahmad@contoh.my", sumber: "ujian" };
+    biar hasil = sahkan_emel(input);
+    tegaskan(hasil.ok?());
+}
+
+ujian "tolak_emel_pendek" {
+    biar input = { nilai: "a@b", sumber: "ujian" };
+    biar hasil = sahkan_emel(input);
+    tegaskan(hasil.ralat?());
+}
+
+ujian "sanitasi_html_buang_tag" {
+    biar disahkan = { nilai: "<script>alert(1)</script>", peraturan: "ujian" };
+    biar bersih = sanitasi_html(disahkan);
+    tegaskan(bersih.kaedah == "html_escape");
+}

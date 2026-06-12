@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SessionTypes - Isabelle/HOL Port
@@ -17,10 +19,12 @@
  * | Channel            | channel                | OK     |
  * | ChannelPair        | channel_pair           | OK     |
  * | msg_type_eqb       | msg_type_eqb           | OK     |
+ * | dual               | dual                   | OK     |
  * | channel_used       | channel_used           | OK     |
  * | is_fresh           | is_fresh               | OK     |
  * | well_formed_pair   | well_formed_pair       | OK     |
  * | is_value           | is_value               | OK     |
+ * | lookup             | lookup                 | OK     |
  * | waiting            | waiting                | OK     |
  * | holding            | holding                | OK     |
  * | waits_for          | waits_for              | OK     |
@@ -75,7 +79,7 @@
  *)
 
 theory SessionTypes
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MsgType (matches Coq: Inductive MsgType) *)
@@ -87,42 +91,47 @@ datatype msg_type =
 
 (* SessionType (matches Coq: Inductive SessionType) *)
 datatype session_type =
-    SSend  (* !T.S - send type T then continue as S *)
-  |     SRecv  (* ?T.S - receive type T then continue as S *)
-  |     SSelect  (* +{L:S} - internal choice *)
-  |     SOffer  (* &{L:S} - external choice *)
+    SSend
+  |     SRecv
+  |     SSelect
+  |     SOffer
   |     SEnd
 
 (* Process (matches Coq: Inductive Process) *)
 datatype process =
-    PSend  (* send value on channel, continue *)
-  |     PRecv  (* receive on channel, continue *)
-  |     PSelect  (* select branch on channel *)
-  |     POffer  (* offer branches *)
-  |     PClose  (* close channel *)
-  |     PEnd  (* terminated process *)
+    PSend
+  |     PRecv
+  |     PSelect
+  |     POffer
+  |     PClose
+  |     PEnd
   |     PPar
 
 (* Channel (matches Coq: Record Channel) *)
 record channel =
   chan_id :: nat
   chan_type :: SessionType
-  chan_linear :: bool  (* Linear flag - must be used exactly once *)
+  chan_linear :: bool
 
 (* ChannelPair (matches Coq: Record ChannelPair) *)
 record channel_pair =
   endpoint_a :: Channel
   endpoint_b :: Channel
 
-(* msg_type_eqb - complex match, manual review needed *)
+(* msg_type_eqb - complex match, needs manual translation *)
+definition msg_type_eqb :: "bool" where "msg_type_eqb = undefined"
+
+(* dual (matches Coq: Definition dual) *)
+fun dual :: "SessionType \<Rightarrow> SessionType" where
+
 
 (* channel_used (matches Coq: Definition channel_used) *)
 definition channel_used :: "Channel \<Rightarrow> Channel" where
-  "channel_used ch \<equiv> mkChan (chan_id ch) (chan_type ch) false"
+  "channel_used ch \<equiv> mkChan (chan_id ch) (chan_type ch) False"
 
 (* is_fresh (matches Coq: Definition is_fresh) *)
 definition is_fresh :: "Channel \<Rightarrow> bool" where
-  "is_fresh ch \<equiv> chan_linear ch = true"
+  "is_fresh ch \<equiv> chan_linear ch = True"
 
 (* well_formed_pair (matches Coq: Definition well_formed_pair) *)
 definition well_formed_pair :: "ChannelPair \<Rightarrow> bool" where
@@ -132,6 +141,10 @@ definition well_formed_pair :: "ChannelPair \<Rightarrow> bool" where
 (* is_value (matches Coq: Definition is_value) *)
 definition is_value :: "Process \<Rightarrow> bool" where
   "is_value p \<equiv> p = PEnd"
+
+(* lookup (matches Coq: Definition lookup) *)
+fun lookup :: "ChanEnv \<Rightarrow> nat \<Rightarrow> option SessionType" where
+
 
 (* waiting (matches Coq: Definition waiting) *)
 definition waiting :: "Config \<Rightarrow> ThreadId \<Rightarrow> Resource \<Rightarrow> bool" where
@@ -158,7 +171,7 @@ definition deadlocked :: "Config \<Rightarrow> bool" where
 
 (* session_typed (matches Coq: Definition session_typed) *)
 definition session_typed :: "Config \<Rightarrow> bool" where
-  "session_typed cfg \<equiv> True"
+  "session_typed cfg \<equiv> forall p, In p cfg -> p = PEnd \/ exists p1 p2, p = PPar p1 p2"
 
 (* ST_001_dual_end (matches Coq) *)
 lemma ST_001_dual_end: "dual SEnd = SEnd"

@@ -24,11 +24,11 @@
     - Appel & McAllester (2001) "An indexed model of recursive types"
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
@@ -574,6 +574,350 @@ Lemma store_ty_extends_refl : forall Σ,
   store_ty_extends Σ Σ.
 Proof.
   intros Σ. unfold store_ty_extends. intros. exact H.
+Qed.
+
+(** ** Value Builders for Primitive Types *)
+
+(** Build val_rel_le for TUnit at any step *)
+Lemma val_rel_le_build_unit : forall n Σ,
+  val_rel_le n Σ TUnit EUnit EUnit.
+Proof.
+  induction n as [|n' IH]; intros Σ.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VUnit.
+      * apply VUnit.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+Qed.
+
+(** Build val_rel_le for TBool at any step *)
+Lemma val_rel_le_build_bool : forall n Σ b,
+  val_rel_le n Σ TBool (EBool b) (EBool b).
+Proof.
+  induction n as [|n' IH]; intros Σ b.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VBool.
+      * apply VBool.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists b. auto.
+Qed.
+
+(** Build val_rel_le for TInt at any step *)
+Lemma val_rel_le_build_int : forall n Σ i,
+  val_rel_le n Σ TInt (EInt i) (EInt i).
+Proof.
+  induction n as [|n' IH]; intros Σ i.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VInt.
+      * apply VInt.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists i. auto.
+Qed.
+
+(** Build val_rel_le for TString at any step *)
+Lemma val_rel_le_build_string : forall n Σ s,
+  val_rel_le n Σ TString (EString s) (EString s).
+Proof.
+  induction n as [|n' IH]; intros Σ s.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VString.
+      * apply VString.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists s. auto.
+Qed.
+
+(** ** Structural Extraction Lemmas *)
+
+(** Extract structural equality from TUnit relation *)
+Lemma val_rel_le_unit_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  v1 = EUnit /\ v2 = EUnit.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Extract structural equality from TBool relation *)
+Lemma val_rel_le_bool_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  exists b, v1 = EBool b /\ v2 = EBool b.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Extract structural equality from TInt relation *)
+Lemma val_rel_le_int_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  exists i, v1 = EInt i /\ v2 = EInt i.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Extract structural equality from TString relation *)
+Lemma val_rel_le_string_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  exists s, v1 = EString s /\ v2 = EString s.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** ** Expression Relation Properties *)
+
+(** Expression relation is monotone in step index *)
+Lemma exp_rel_le_mono_step : forall n m Σ T e1 e2 st1 st2 ctx,
+  m <= n ->
+  exp_rel_le n Σ T e1 e2 st1 st2 ctx ->
+  exp_rel_le m Σ T e1 e2 st1 st2 ctx.
+Proof.
+  intros n m Σ T e1 e2 st1 st2 ctx Hle Hexp.
+  unfold exp_rel_le in *.
+  intros k v1 v2 st1' st2' ctx' Hk Hms1 Hms2 Hval1 Hval2.
+  apply (Hexp k v1 v2 st1' st2' ctx'); auto. lia.
+Qed.
+
+(** Expression relation at step 0 produces trivially related values *)
+Lemma exp_rel_le_zero_val : forall Σ T e1 e2 st1 st2 ctx
+  k v1 v2 st1' st2' ctx',
+  k <= 0 ->
+  exp_rel_le 0 Σ T e1 e2 st1 st2 ctx ->
+  multi_step (e1, st1, ctx) (v1, st1', ctx') ->
+  multi_step (e2, st2, ctx) (v2, st2', ctx') ->
+  value v1 -> value v2 ->
+  val_rel_le 0 Σ T v1 v2.
+Proof.
+  intros. simpl. exact I.
+Qed.
+
+(** ** Value Builders for Compound Types *)
+
+(** Build val_rel_le for TProd from related components *)
+Lemma val_rel_le_build_pair : forall n Σ T1 T2 a1 b1 a2 b2,
+  value a1 -> value a2 -> value b1 -> value b2 ->
+  closed_expr a1 -> closed_expr a2 -> closed_expr b1 -> closed_expr b2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  val_rel_le n Σ T2 b1 b2 ->
+  val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2).
+Proof.
+  induction n as [|n' IH]; intros Σ T1 T2 a1 b1 a2 b2
+    Hva1 Hva2 Hvb1 Hvb2 Hca1 Hca2 Hcb1 Hcb2 Hr1 Hr2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+      * simpl in Hr1. destruct Hr1 as [Hprev _]. exact Hprev.
+      * simpl in Hr2. destruct Hr2 as [Hprev _]. exact Hprev.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VPair; assumption.
+      * apply VPair; assumption.
+      * unfold closed_expr. intros x Hfree. simpl in Hfree.
+        destruct Hfree as [H | H]; [apply (Hca1 x H) | apply (Hcb1 x H)].
+      * unfold closed_expr. intros x Hfree. simpl in Hfree.
+        destruct Hfree as [H | H]; [apply (Hca2 x H) | apply (Hcb2 x H)].
+      * exists a1, b1, a2, b2. repeat split; auto.
+        -- simpl in Hr1. destruct Hr1 as [Hprev _]. exact Hprev.
+        -- simpl in Hr2. destruct Hr2 as [Hprev _]. exact Hprev.
+Qed.
+
+(** Build val_rel_le for TSum left injection *)
+Lemma val_rel_le_build_inl : forall n Σ T1 T2 a1 a2,
+  value a1 -> value a2 ->
+  closed_expr a1 -> closed_expr a2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2).
+Proof.
+  induction n as [|n' IH]; intros Σ T1 T2 a1 a2
+    Hva1 Hva2 Hca1 Hca2 Hr.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+      simpl in Hr. destruct Hr as [Hprev _]. exact Hprev.
+    + unfold val_rel_struct.
+      split; [apply VInl; assumption|].
+      split; [apply VInl; assumption|].
+      split; [unfold closed_expr; intros x Hfree; simpl in Hfree; apply (Hca1 x Hfree)|].
+      split; [unfold closed_expr; intros x Hfree; simpl in Hfree; apply (Hca2 x Hfree)|].
+      left. exists a1, a2. repeat split; auto.
+      simpl in Hr. destruct Hr as [Hprev _]. exact Hprev.
+Qed.
+
+(** Build val_rel_le for TSum right injection *)
+Lemma val_rel_le_build_inr : forall n Σ T1 T2 b1 b2,
+  value b1 -> value b2 ->
+  closed_expr b1 -> closed_expr b2 ->
+  val_rel_le n Σ T2 b1 b2 ->
+  val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1).
+Proof.
+  induction n as [|n' IH]; intros Σ T1 T2 b1 b2
+    Hvb1 Hvb2 Hcb1 Hcb2 Hr.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+      simpl in Hr. destruct Hr as [Hprev _]. exact Hprev.
+    + unfold val_rel_struct.
+      split; [apply VInr; assumption|].
+      split; [apply VInr; assumption|].
+      split; [unfold closed_expr; intros x Hfree; simpl in Hfree; apply (Hcb1 x Hfree)|].
+      split; [unfold closed_expr; intros x Hfree; simpl in Hfree; apply (Hcb2 x Hfree)|].
+      right. exists b1, b2. repeat split; auto.
+      simpl in Hr. destruct Hr as [Hprev _]. exact Hprev.
+Qed.
+
+(** Extract pair components from TProd relation *)
+Lemma val_rel_le_prod_components : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT).
+  destruct HT as (a1 & b1 & a2 & b2 & Heq1 & Heq2 & Hr1 & Hr2).
+  exists a1, b1, a2, b2. simpl. auto.
+Qed.
+
+(** Extract location equality from TRef relation *)
+Lemma val_rel_le_ref_eq : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  exists l, v1 = ELoc l /\ v2 = ELoc l.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Build val_rel_le for TSecret at any step *)
+Lemma val_rel_le_build_secret : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSecret T) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+(** Store relation at step 0 is trivially satisfied *)
+Lemma store_rel_le_at_zero : forall Σ st1 st2,
+  store_max st1 = store_max st2 ->
+  (forall l T sl,
+    store_ty_lookup l Σ = Some (T, sl) ->
+    match store_lookup l st1, store_lookup l st2 with
+    | Some _, Some _ => True
+    | _, _ => False
+    end) ->
+  store_rel_le 0 Σ st1 st2.
+Proof.
+  intros Σ st1 st2 Hmax Hlookup.
+  unfold store_rel_le. split; [exact Hmax|].
+  intros l T sl Hty.
+  specialize (Hlookup l T sl Hty).
+  destruct (store_lookup l st1); destruct (store_lookup l st2);
+  try exact Hlookup; simpl; exact I.
+Qed.
+
+(** ** Additional Structural Extraction Lemmas *)
+
+(** Extract equality from TBytes relation *)
+Lemma val_rel_le_bytes_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  v1 = v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Build val_rel_le for TRef (locations) at any step *)
+Lemma val_rel_le_build_ref : forall n Σ T sl l,
+  val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l).
+Proof.
+  induction n as [|n' IH]; intros Σ T sl l.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VLoc.
+      * apply VLoc.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists l. auto.
+Qed.
+
+(** Extract sum injection from TSum relation *)
+Lemma val_rel_le_sum_extract : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2, v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+                 val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2, v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+                 val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT).
+  simpl. exact HT.
+Qed.
+
+(** Shorthand: val_rel_le for unit *)
+Lemma val_rel_le_unit : forall n Σ,
+  val_rel_le n Σ TUnit EUnit EUnit.
+Proof.
+  intros. apply val_rel_le_build_unit.
+Qed.
+
+(** Store relation simple for identical stores *)
+Lemma store_rel_simple_refl_cum : forall Σ st,
+  store_rel_simple Σ st st.
+Proof.
+  intros. unfold store_rel_simple. reflexivity.
 Qed.
 
 (** End of CumulativeRelation.v *)

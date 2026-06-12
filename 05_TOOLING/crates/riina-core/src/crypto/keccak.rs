@@ -2,7 +2,7 @@
 
 //! Keccak and SHAKE Implementation (FIPS 202)
 //!
-//! This module implements the Keccak-f[1600] permutation and the SHAKE128/SHAKE256
+//! This module implements the `Keccak-f[1600]` permutation and the SHAKE128/SHAKE256
 //! extendable-output functions (XOFs) as specified in FIPS 202.
 //!
 //! # FIPS 202 Compliance
@@ -27,8 +27,8 @@
 //!
 //! # References
 //!
-//! - FIPS 202: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
-//! - Keccak Reference: https://keccak.team/keccak_specs_summary.html
+//! - FIPS 202: <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf>
+//! - Keccak Reference: <https://keccak.team/keccak_specs_summary.html>
 
 use crate::zeroize::Zeroize;
 
@@ -36,12 +36,12 @@ use crate::zeroize::Zeroize;
 // Keccak-f[1600] Constants (FIPS 202, Section 3.2)
 // =============================================================================
 
-/// Number of rounds for Keccak-f[1600]
+/// Number of rounds for `Keccak-f[1600]`
 /// nr = 12 + 2*l where l = log2(64) = 6, so nr = 12 + 12 = 24
 const KECCAK_ROUNDS: usize = 24;
 
 /// Round constants for the ι (iota) step
-/// RC[i] for i = 0..23, computed as per FIPS 202 Algorithm 5
+/// `RC[i]` for `i = 0..23`, computed as per FIPS 202 Algorithm 5
 /// Each constant is a 64-bit value with bits set at positions 2^j - 1 for j = 0..6
 const RC: [u64; 24] = [
     0x0000000000000001,
@@ -71,8 +71,8 @@ const RC: [u64; 24] = [
 ];
 
 /// Rotation offsets for the ρ (rho) step
-/// r[x,y] for the lane at position (x,y), computed per FIPS 202 Section 3.2.2
-/// Indexed as ROTATION_OFFSETS[x + 5*y]
+/// `r[x,y]` for the lane at position `(x,y)`, computed per FIPS 202 Section 3.2.2
+/// Indexed as `ROTATION_OFFSETS[x + 5*y]`
 const ROTATION_OFFSETS: [u32; 25] = [
     //  x=0   x=1   x=2   x=3   x=4
     0, 1, 62, 28, 27, // y=0
@@ -83,11 +83,11 @@ const ROTATION_OFFSETS: [u32; 25] = [
 ];
 
 /// π (pi) step permutation indices
-/// Maps position i to position π(i) where B[y, (2x+3y) mod 5] = A[x,y]
-/// PI_LANE[j] gives the source lane index for destination lane j
+/// Maps position `i` to position `π(i)` where `B[y, (2x+3y) mod 5] = A[x,y]`
+/// `PI_LANE[j]` gives the source lane index for destination lane `j`
 ///
 /// Computed from: input (x,y) → output (y, (2x+3y) mod 5)
-/// With linear indexing: input[x + 5*y] → output[y + 5*((2x+3y) mod 5)]
+/// With linear indexing: `input[x + 5*y] → output[y + 5*((2x+3y) mod 5)]`
 ///
 /// For each output position j, find which input position i maps to it:
 /// j=0←i=0, j=1←i=6, j=2←i=12, j=3←i=18, j=4←i=24,
@@ -169,7 +169,7 @@ impl KeccakState {
         }
     }
 
-    /// Apply the Keccak-f[1600] permutation
+    /// Apply the `Keccak-f[1600]` permutation
     ///
     /// This is the core of Keccak, applying 24 rounds of:
     /// θ (theta) → ρ (rho) → π (pi) → χ (chi) → ι (iota)
@@ -179,7 +179,7 @@ impl KeccakState {
         }
     }
 
-    /// Apply a single round of Keccak-f[1600]
+    /// Apply a single round of `Keccak-f[1600]`
     #[inline]
     fn round(&mut self, round_idx: usize) {
         // θ (theta) step - Column parity mixing
@@ -200,9 +200,9 @@ impl KeccakState {
 
     /// θ (theta) step: Column parity diffusion
     ///
-    /// C[x] = A[x,0] ⊕ A[x,1] ⊕ A[x,2] ⊕ A[x,3] ⊕ A[x,4]
-    /// D[x] = C[x-1] ⊕ rot(C[x+1], 1)
-    /// A'[x,y] = A[x,y] ⊕ D[x]
+    /// `C[x] = A[x,0] ⊕ A[x,1] ⊕ A[x,2] ⊕ A[x,3] ⊕ A[x,4]`
+    /// `D[x] = C[x-1] ⊕ rot(C[x+1], 1)`
+    /// `A'[x,y] = A[x,y] ⊕ D[x]`
     #[inline]
     fn theta(&mut self) {
         // Compute column parities C[x] for x = 0..4
@@ -231,8 +231,8 @@ impl KeccakState {
 
     /// ρ (rho) step: Bit rotation within lanes
     ///
-    /// A'[x,y] = rot(A[x,y], r[x,y])
-    /// where r[x,y] are fixed rotation offsets per FIPS 202
+    /// `A'[x,y] = rot(A[x,y], r[x,y])`
+    /// where `r[x,y]` are fixed rotation offsets per FIPS 202
     #[inline]
     fn rho(&mut self) {
         for i in 0..25 {
@@ -242,8 +242,8 @@ impl KeccakState {
 
     /// π (pi) step: Lane permutation
     ///
-    /// A'[y, 2x+3y mod 5] = A[x,y]
-    /// Equivalently: A'[π(x,y)] = A[x,y]
+    /// `A'[y, 2x+3y mod 5] = A[x,y]`
+    /// Equivalently: `A'[π(x,y)] = A[x,y]`
     #[inline]
     fn pi(&mut self) {
         let mut temp = [0u64; 25];
@@ -255,7 +255,7 @@ impl KeccakState {
 
     /// χ (chi) step: Non-linear row mixing
     ///
-    /// A'[x,y] = A[x,y] ⊕ ((¬A[x+1,y]) ∧ A[x+2,y])
+    /// `A'[x,y] = A[x,y] ⊕ ((¬A[x+1,y]) ∧ A[x+2,y])`
     ///
     /// This is the only non-linear step in Keccak.
     #[inline]
@@ -281,7 +281,7 @@ impl KeccakState {
 
     /// ι (iota) step: Round constant addition
     ///
-    /// A'[0,0] = A[0,0] ⊕ RC[round]
+    /// `A'[0,0] = A[0,0] ⊕ RC[round]`
     #[inline]
     fn iota(&mut self, round_idx: usize) {
         self.lanes[0] ^= RC[round_idx];
@@ -675,6 +675,30 @@ impl Default for Sha3_512 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Coq ⇄ Rust formal-equivalence bridge for SHA3-256.
+    ///
+    /// `02_FORMAL/coq/crypto/Keccak.v` is a faithful Coq model of Keccak-f[1600]
+    /// (θ/ρ/π/χ/ι, the RC/ROTATION/PI_LANE tables) and the SHA3-256 sponge, and
+    /// proves by `vm_compute` the FIPS 202 digests for "" and "abc". This asserts
+    /// the Rust `Sha3_256::hash` returns those byte-identical digests.
+    #[test]
+    fn test_sha3_256_matches_coq_model() {
+        // Coq `sha3_256_empty` (vm_compute).
+        let empty: [u8; 32] = [
+            0xa7, 0xff, 0xc6, 0xf8, 0xbf, 0x1e, 0xd7, 0x66, 0x51, 0xc1, 0x47, 0x56, 0xa0, 0x61,
+            0xd6, 0x62, 0xf5, 0x80, 0xff, 0x4d, 0xe4, 0x3b, 0x49, 0xfa, 0x82, 0xd8, 0x0a, 0x4b,
+            0x80, 0xf8, 0x43, 0x4a,
+        ];
+        assert_eq!(Sha3_256::hash(b""), empty, "SHA3-256(\"\") must match the Coq model");
+        // Coq `sha3_256_abc` (vm_compute).
+        let abc: [u8; 32] = [
+            0x3a, 0x98, 0x5d, 0xa7, 0x4f, 0xe2, 0x25, 0xb2, 0x04, 0x5c, 0x17, 0x2d, 0x6b, 0xd3,
+            0x90, 0xbd, 0x85, 0x5f, 0x08, 0x6e, 0x3e, 0x9d, 0x52, 0x5b, 0x46, 0xbf, 0xe2, 0x45,
+            0x11, 0x43, 0x15, 0x32,
+        ];
+        assert_eq!(Sha3_256::hash(b"abc"), abc, "SHA3-256(abc) must match the Coq model");
+    }
 
     // =========================================================================
     // Keccak-f[1600] Permutation Tests

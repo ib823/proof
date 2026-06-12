@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaDigitalSignature - Isabelle/HOL Port
@@ -23,6 +25,8 @@
  * | relying_party_diligent | relying_party_diligent | OK     |
  * | cert_on_crl        | cert_on_crl            | OK     |
  * | dsa_fully_compliant | dsa_fully_compliant    | OK     |
+ * | all_cert_statuses  | all_cert_statuses      | OK     |
+ * | all_ca_license_statuses | all_ca_license_statuses | OK     |
  * | cert_validity      | cert_validity          | OK     |
  * | suspended_invalid  | suspended_invalid      | OK     |
  * | revoked_invalid    | revoked_invalid        | OK     |
@@ -79,7 +83,7 @@ definition presumed_secure :: "Certificate \<Rightarrow> bool" where
 
 (* signature_legally_valid (matches Coq: Definition signature_legally_valid) *)
 definition signature_legally_valid :: "DigitalSignature \<Rightarrow> Certificate \<Rightarrow> nat \<Rightarrow> bool" where
-  "signature_legally_valid s c t \<equiv> sig_verified s = true /\
+  "signature_legally_valid s c t \<equiv> sig_verified s = True /\
   sig_cert_id s = cert_id c /\
   cert_valid c t"
 
@@ -89,7 +93,7 @@ definition key_strength_adequate :: "Certificate \<Rightarrow> nat \<Rightarrow>
 
 (* private_key_protected (matches Coq: Definition private_key_protected) *)
 definition private_key_protected :: "bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "private_key_protected key_encrypted key_on_hsm \<equiv> key_encrypted = true \/ key_on_hsm = true"
+  "private_key_protected key_encrypted key_on_hsm \<equiv> key_encrypted = True \/ key_on_hsm = True"
 
 (* cert_status_active (matches Coq: Definition cert_status_active) *)
 definition cert_status_active :: "Certificate \<Rightarrow> bool" where
@@ -101,10 +105,10 @@ definition cert_status_terminated :: "Certificate \<Rightarrow> bool" where
 
 (* relying_party_diligent (matches Coq: Definition relying_party_diligent) *)
 definition relying_party_diligent :: "RelyingPartyCheck \<Rightarrow> bool" where
-  "relying_party_diligent rpc \<equiv> rpc_status_checked rpc = true /\
-  rpc_expiry_checked rpc = true /\
-  rpc_ca_verified rpc = true /\
-  rpc_signature_verified rpc = true"
+  "relying_party_diligent rpc \<equiv> rpc_status_checked rpc = True /\
+  rpc_expiry_checked rpc = True /\
+  rpc_ca_verified rpc = True /\
+  rpc_signature_verified rpc = True"
 
 (* cert_on_crl (matches Coq: Definition cert_on_crl) *)
 definition cert_on_crl :: "nat \<Rightarrow> bool" where
@@ -116,6 +120,14 @@ definition dsa_fully_compliant :: "Certificate \<Rightarrow> DigitalSignature \<
   signature_legally_valid s c t /\
   key_strength_adequate c 2048 /\
   private_key_protected key_enc key_hsm"
+
+(* all_cert_statuses (matches Coq: Definition all_cert_statuses) *)
+definition all_cert_statuses :: "list CertStatus" where
+  "all_cert_statuses \<equiv> [CertActive; CertSuspended; CertRevoked; CertExpired]"
+
+(* all_ca_license_statuses (matches Coq: Definition all_ca_license_statuses) *)
+definition all_ca_license_statuses :: "list CALicenseStatus" where
+  "all_ca_license_statuses \<equiv> [CALicensed; CAUnlicensed]"
 
 (* cert_validity (matches Coq) *)
 lemma cert_validity: "\<forall> (c : Certificate) (t : nat), cert_status c = CertActive \<longrightarrow> t \<le> cert_expiry c \<longrightarrow> cert_ca_licensed c = CALicensed \<longrightarrow> cert_valid c t"

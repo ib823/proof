@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedIdentity - Isabelle/HOL Port
@@ -27,6 +29,7 @@
  * | RateLimitState     | rate_limit_state       | OK     |
  * | Adversary          | adversary              | OK     |
  * | MFAConfig          | mfa_config             | OK     |
+ * | list_eq            | list_eq                | OK     |
  * | SECURE_MEMORY_COST | SECURE_MEMORY_COST     | OK     |
  * | SECURE_TIME_COST   | SECURE_TIME_COST       | OK     |
  * | SECURE_PARALLELISM | SECURE_PARALLELISM     | OK     |
@@ -35,6 +38,7 @@
  * | params_secure      | params_secure          | OK     |
  * | hash_deterministic_prop | hash_deterministic_prop | OK     |
  * | hash_collision_resistant | hash_collision_resistant | OK     |
+ * | constant_time_eq   | constant_time_eq       | OK     |
  * | empty_used_set     | empty_used_set         | OK     |
  * | mark_used          | mark_used              | OK     |
  * | is_used            | is_used                | OK     |
@@ -63,7 +67,9 @@
  * | factor_strength    | factor_strength        | OK     |
  * | factor_secure      | factor_secure          | OK     |
  * | mfa_combine        | mfa_combine            | OK     |
+ * | sum_factor_strengths | sum_factor_strengths   | OK     |
  * | mfa_strength       | mfa_strength           | OK     |
+ * | all_factors_secure | all_factors_secure     | OK     |
  * | mfa_secure         | mfa_secure             | OK     |
  * | password_in_breach | password_in_breach     | OK     |
  * | list_eq_refl       | list_eq_refl           | OK     |
@@ -109,7 +115,7 @@
  *)
 
 theory VerifiedIdentity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Credential (matches Coq: Inductive Credential) *)
@@ -147,7 +153,7 @@ record argon2_params =
 record pepper =
   pepper_value :: 'a list
   pepper_hsm_id :: nat
-  pepper_bound :: bool  (* true if bound to HSM *)
+  pepper_bound :: bool
 
 (* TokenClaims (matches Coq: Record TokenClaims) *)
 record token_claims =
@@ -215,6 +221,9 @@ record mfa_config =
   mfa_factors :: 'a list
   mfa_required :: nat
 
+(* list_eq - complex match, needs manual translation *)
+definition list_eq :: "bool" where "list_eq = undefined"
+
 (* SECURE_MEMORY_COST (matches Coq: Definition SECURE_MEMORY_COST) *)
 definition SECURE_MEMORY_COST :: "nat" where
   "SECURE_MEMORY_COST \<equiv> 100"
@@ -240,7 +249,14 @@ definition secure_params :: "Argon2Params" where
 
 (* params_secure (matches Coq: Definition params_secure) *)
 definition params_secure :: "Argon2Params \<Rightarrow> bool" where
-  "params_secure p \<equiv> Nat"
+  "params_secure p \<equiv> (SECURE_MEMORY_COST \<le> (memory_cost) p) \<and>
+  (SECURE_TIME_COST \<le> (time_cost) p) \<and>
+  (1 \<le> (parallelism) p) \<and>
+  (SECURE_OUTPUT_LEN \<le> (output_len) p).
+
+
+
+Parameter argon2id_hash : list nat -> list nat -> Argon2Params -> list nat"
 
 (* hash_deterministic_prop (matches Coq: Definition hash_deterministic_prop) *)
 definition hash_deterministic_prop :: "bool" where
@@ -251,13 +267,16 @@ definition hash_deterministic_prop :: "bool" where
 definition hash_collision_resistant :: "Argon2Params \<Rightarrow> bool" where
   "hash_collision_resistant params \<equiv> pw1 <> pw2 -> argon2id_hash pw1 salt params <> argon2id_hash pw2 salt params"
 
+(* constant_time_eq - complex match, needs manual translation *)
+definition constant_time_eq :: "bool" where "constant_time_eq = undefined"
+
 (* empty_used_set (matches Coq: Definition empty_used_set) *)
 definition empty_used_set :: "TokenUsedSet" where
-  "empty_used_set \<equiv> fun _ => false"
+  "empty_used_set \<equiv> fun _ => False"
 
 (* mark_used (matches Coq: Definition mark_used) *)
 definition mark_used :: "TokenUsedSet \<Rightarrow> nat \<Rightarrow> TokenUsedSet" where
-  "mark_used s jti \<equiv> fun j => if Nat"
+  "mark_used s jti \<equiv> fun j => if (j = jti) then True else s j"
 
 (* is_used (matches Coq: Definition is_used) *)
 definition is_used :: "TokenUsedSet \<Rightarrow> nat \<Rightarrow> bool" where
@@ -270,11 +289,11 @@ definition verify_token_binding :: "BoundToken \<Rightarrow> ChannelBinding \<Ri
 
 (* verify_token_expiry (matches Coq: Definition verify_token_expiry) *)
 definition verify_token_expiry :: "BoundToken \<Rightarrow> Timestamp \<Rightarrow> bool" where
-  "verify_token_expiry token now \<equiv> Nat"
+  "verify_token_expiry token now \<equiv> (now \<le> (claim_exp) (token_claims token))"
 
 (* verify_token_not_replayed (matches Coq: Definition verify_token_not_replayed) *)
 definition verify_token_not_replayed :: "BoundToken \<Rightarrow> TokenUsedSet \<Rightarrow> bool" where
-  "verify_token_not_replayed token used \<equiv> negb (is_used used (claim_jti (token_claims token)))"
+  "verify_token_not_replayed token used \<equiv> (\<not> (is_used) used (claim_jti (token_claims token)))"
 
 (* verify_token (matches Coq: Definition verify_token) *)
 definition verify_token :: "BoundToken \<Rightarrow> ChannelBinding \<Rightarrow> Timestamp \<Rightarrow> TokenUsedSet \<Rightarrow> bool" where
@@ -284,11 +303,11 @@ definition verify_token :: "BoundToken \<Rightarrow> ChannelBinding \<Rightarrow
 
 (* empty_revoked (matches Coq: Definition empty_revoked) *)
 definition empty_revoked :: "RevokedSet" where
-  "empty_revoked \<equiv> fun _ => false"
+  "empty_revoked \<equiv> fun _ => False"
 
 (* revoke_token (matches Coq: Definition revoke_token) *)
 definition revoke_token :: "RevokedSet \<Rightarrow> nat \<Rightarrow> RevokedSet" where
-  "revoke_token r jti \<equiv> fun j => if Nat"
+  "revoke_token r jti \<equiv> fun j => if (j = jti) then True else r j"
 
 (* is_revoked (matches Coq: Definition is_revoked) *)
 definition is_revoked :: "RevokedSet \<Rightarrow> nat \<Rightarrow> bool" where
@@ -300,11 +319,13 @@ definition empty_session_store :: "SessionStore" where
 
 (* add_session (matches Coq: Definition add_session) *)
 definition add_session :: "SessionStore \<Rightarrow> Session \<Rightarrow> SessionStore" where
-  "add_session store s \<equiv> fun id => if Nat"
+  "add_session store s \<equiv> fun id => if (id = (session_id) s) then Some s else store id"
 
 (* session_valid (matches Coq: Definition session_valid) *)
 definition session_valid :: "Session \<Rightarrow> ChannelBinding \<Rightarrow> Timestamp \<Rightarrow> bool" where
-  "session_valid s binding now \<equiv> Nat"
+  "session_valid s binding now \<equiv> (now \<le> (session_expires) s) \<and>
+  list_eq (binding_tls_exporter (session_binding s))
+          (binding_tls_exporter binding)"
 
 (* session_regenerated (matches Coq: Definition session_regenerated) *)
 definition session_regenerated :: "bool" where
@@ -312,25 +333,34 @@ definition session_regenerated :: "bool" where
 
 (* fido2_origin_matches (matches Coq: Definition fido2_origin_matches) *)
 definition fido2_origin_matches :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
-  "fido2_origin_matches cred assertion \<equiv> String"
+  "fido2_origin_matches cred assertion \<equiv> String.((fido2_origin = cred)) (assertion_origin assertion)"
 
 (* fido2_counter_valid (matches Coq: Definition fido2_counter_valid) *)
 definition fido2_counter_valid :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
-  "fido2_counter_valid cred assertion \<equiv> Nat"
+  "fido2_counter_valid cred assertion \<equiv> ((fido2_counter < cred)) (assertion_counter assertion)"
 
 (* fido2_user_verified (matches Coq: Definition fido2_user_verified) *)
 definition fido2_user_verified :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
-  "fido2_user_verified cred assertion \<equiv> (negb (fido2_user_verification cred)) \<or> (assertion_user_verified assertion)"
+  "fido2_user_verified cred assertion \<equiv> ((\<not> (fido2_user_verification) cred)) \<or> (assertion_user_verified assertion)"
 
-(* verify_fido2 - complex match, manual review needed *)
+(* verify_fido2 (matches Coq: Definition verify_fido2) *)
+definition verify_fido2 :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
+  "verify_fido2 cred assertion \<equiv> fido2_origin_matches cred assertion \<and>
+  fido2_counter_valid cred assertion \<and>
+  fido2_user_verified cred assertion"
 
 (* valid_credential (matches Coq: Definition valid_credential) *)
 definition valid_credential :: "CredentialStore \<Rightarrow> Principal \<Rightarrow> Credential \<Rightarrow> bool" where
   "valid_credential store p c \<equiv> In c (store (principal_id p))"
 
-(* credential_matches - complex match, manual review needed *)
+(* credential_matches - complex match, needs manual translation *)
+definition credential_matches :: "bool" where "credential_matches = undefined"
 
-(* authenticate - complex match, manual review needed *)
+(* authenticate (matches Coq: Definition authenticate) *)
+definition authenticate :: "CredentialStore \<Rightarrow> Principal \<Rightarrow> Credential \<Rightarrow> AuthResult" where
+  "authenticate store p c \<equiv> if existsb (fun stored_c => credential_matches stored_c c) (store (principal_id p))
+  then AuthSuccess (principal_id p)
+  else AuthFailure "Invalid credentials""
 
 (* log_auth_attempt (matches Coq: Definition log_auth_attempt) *)
 definition log_auth_attempt :: "AuthLogStore \<Rightarrow> PrincipalId \<Rightarrow> Timestamp \<Rightarrow> bool \<Rightarrow> AuthLogStore" where
@@ -338,11 +368,21 @@ definition log_auth_attempt :: "AuthLogStore \<Rightarrow> PrincipalId \<Rightar
 
 (* rate_limit_check (matches Coq: Definition rate_limit_check) *)
 definition rate_limit_check :: "RateLimitState \<Rightarrow> Timestamp \<Rightarrow> bool" where
-  "rate_limit_check state now \<equiv> if Nat"
+  "rate_limit_check state now \<equiv> if ((rate_window_size < state)) (now - rate_window_start state)
+  then True  
+  else ((rate_attempts < state)) (rate_max_attempts state)"
 
 (* rate_limit_update (matches Coq: Definition rate_limit_update) *)
 definition rate_limit_update :: "RateLimitState \<Rightarrow> Timestamp \<Rightarrow> RateLimitState" where
-  "rate_limit_update state now \<equiv> if Nat"
+  "rate_limit_update state now \<equiv> if ((rate_window_size < state)) (now - rate_window_start state)
+  then {| rate_attempts := 1;
+          rate_window_start := now;
+          rate_max_attempts := rate_max_attempts state;
+          rate_window_size := rate_window_size state |}
+  else {| rate_attempts := S (rate_attempts state);
+          rate_window_start := rate_window_start state;
+          rate_max_attempts := rate_max_attempts state;
+          rate_window_size := rate_window_size state |}"
 
 (* has_key (matches Coq: Definition has_key) *)
 definition has_key :: "Adversary \<Rightarrow> bool" where
@@ -354,20 +394,29 @@ fun factor_strength :: "Factor \<Rightarrow> nat" where
 
 (* factor_secure (matches Coq: Definition factor_secure) *)
 definition factor_secure :: "Factor \<Rightarrow> bool" where
-  "factor_secure f \<equiv> Nat"
+  "factor_secure f \<equiv> (1 \<le> (factor_strength) f)"
 
 (* mfa_combine (matches Coq: Definition mfa_combine) *)
 definition mfa_combine :: "MFAConfig" where
   "mfa_combine \<equiv> {| mfa_factors := [f1; f2];
      mfa_required := 2 |}"
 
+(* sum_factor_strengths (matches Coq: Definition sum_factor_strengths) *)
+fun sum_factor_strengths :: "nat" where
+
+
 (* mfa_strength (matches Coq: Definition mfa_strength) *)
 definition mfa_strength :: "MFAConfig \<Rightarrow> nat" where
   "mfa_strength config \<equiv> sum_factor_strengths (mfa_factors config)"
 
+(* all_factors_secure (matches Coq: Definition all_factors_secure) *)
+fun all_factors_secure :: "bool" where
+
+
 (* mfa_secure (matches Coq: Definition mfa_secure) *)
 definition mfa_secure :: "MFAConfig \<Rightarrow> bool" where
-  "mfa_secure config \<equiv> Nat"
+  "mfa_secure config \<equiv> ((mfa_required \<le> config)) (List.length (mfa_factors config)) \<and>
+  all_factors_secure (mfa_factors config)"
 
 (* password_in_breach (matches Coq: Definition password_in_breach) *)
 definition password_in_breach :: "BreachDB \<Rightarrow> bool" where

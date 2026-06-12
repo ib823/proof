@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CognitiveAccessibility - Isabelle/HOL Port
@@ -23,6 +25,7 @@
  * | is_destructive     | is_destructive         | OK     |
  * | error_field_idx    | error_field_idx        | OK     |
  * | errors_are_inline  | errors_are_inline      | OK     |
+ * | min_error_idx      | min_error_idx          | OK     |
  * | form_error_count   | form_error_count       | OK     |
  * | suggest_fix        | suggest_fix            | OK     |
  * | fix_targets_same_field | fix_targets_same_field | OK     |
@@ -32,6 +35,7 @@
  * | is_user_initiated  | is_user_initiated      | OK     |
  * | handle_ui_event    | handle_ui_event        | OK     |
  * | label_to_effect    | label_to_effect        | OK     |
+ * | nav_apply          | nav_apply              | OK     |
  * | ui_behavior_predictable | ui_behavior_predictable | OK     |
  * | ui_behavior_predictable_direct | ui_behavior_predictable_direct | OK     |
  * | interaction_type_decidable | interaction_type_decidable | OK     |
@@ -144,6 +148,11 @@ fun error_field_idx :: "ValidationError \<Rightarrow> nat" where
 definition errors_are_inline :: "FormState \<Rightarrow> bool" where
   "errors_are_inline fs \<equiv> forall e, In e (fs_errors fs) -> error_field_idx e < fs_field_count fs"
 
+(* min_error_idx (matches Coq: Definition min_error_idx) *)
+fun min_error_idx :: "option nat" where
+  "min_error_idx nil = None"
+|   "min_error_idx None = Some"
+
 (* form_error_count (matches Coq: Definition form_error_count) *)
 definition form_error_count :: "FormState \<Rightarrow> nat" where
   "form_error_count fs \<equiv> length (fs_errors fs)"
@@ -152,7 +161,8 @@ definition form_error_count :: "FormState \<Rightarrow> nat" where
 fun suggest_fix :: "ValidationError \<Rightarrow> FixSuggestion" where
 
 
-(* fix_targets_same_field - complex match, manual review needed *)
+(* fix_targets_same_field - complex match, needs manual translation *)
+definition fix_targets_same_field :: "bool" where "fix_targets_same_field = undefined"
 
 (* easing_consistent (matches Coq: Definition easing_consistent) *)
 definition easing_consistent :: "bool" where
@@ -166,7 +176,8 @@ definition layout_eq :: "bool" where
   "layout_eq \<equiv> le_x l1 = le_x l2 /\ le_y l1 = le_y l2 /\
   le_w l1 = le_w l2 /\ le_h l1 = le_h l2"
 
-(* reverse_transition - complex match, manual review needed *)
+(* reverse_transition - complex match, needs manual translation *)
+definition reverse_transition :: "bool" where "reverse_transition = undefined"
 
 (* is_user_initiated (matches Coq: Definition is_user_initiated) *)
 fun is_user_initiated :: "UIEvent \<Rightarrow> bool" where
@@ -185,6 +196,11 @@ fun label_to_effect :: "ButtonLabel \<Rightarrow> ButtonEffect" where
 |   "label_to_effect BLCancel = BECancel"
 |   "label_to_effect BLSubmit = BESubmit"
 |   "label_to_effect BLReset = BEReset"
+
+(* nav_apply (matches Coq: Definition nav_apply) *)
+fun nav_apply :: "NavAction \<Rightarrow> list nat" where
+  "nav_apply NavPop = match"
+|   "nav_apply nil = nil"
 
 (* ui_behavior_predictable (matches Coq) *)
 lemma ui_behavior_predictable: "\<forall> (pui : RIINA_PredictableUI) (interaction : UserInteraction), outcome interaction = expected_outcome interaction"

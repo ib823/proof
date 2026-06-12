@@ -7,12 +7,12 @@
    All theorems fully proven — zero Admitted/admit/Axiom.
 *)
 
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.Arith.PeanoNat.
-Require Import Stdlib.Arith.EqNat.
-Require Import Stdlib.micromega.Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import micromega.Lia.
 Import ListNotations.
 
 (* ============================================================ *)

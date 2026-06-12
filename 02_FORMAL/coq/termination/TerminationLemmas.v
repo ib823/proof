@@ -21,11 +21,11 @@
     Phase: 3 (Termination)
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Lists.List.
-Require Import Coq.Strings.String.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
@@ -109,10 +109,10 @@ Lemma exp_rel_step1_case_typed : forall Σ T T1 T2 v v' x1 e1 e1' x2 e2 e2' st1 
   value v -> value v' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  (forall v1, value v1 -> terminates ([x1 := v1] e1) st1 ctx) ->
-  (forall v2, value v2 -> terminates ([x2 := v2] e2) st1 ctx) ->
-  (forall v1', value v1' -> terminates ([x1 := v1'] e1') st2 ctx) ->
-  (forall v2', value v2' -> terminates ([x2 := v2'] e2') st2 ctx) ->
+  (forall v1, value v1 -> terminates (subst[x1 := v1] e1) st1 ctx) ->
+  (forall v2, value v2 -> terminates (subst[x2 := v2] e2) st1 ctx) ->
+  (forall v1', value v1' -> terminates (subst[x1 := v1'] e1') st2 ctx) ->
+  (forall v2', value v2' -> terminates (subst[x2 := v2'] e2') st2 ctx) ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -132,10 +132,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -146,10 +146,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -160,10 +160,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -174,10 +174,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -274,8 +274,8 @@ Lemma exp_rel_step1_let_typed : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
   value v -> value v' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  terminates ([x := v] e2) st1 ctx ->
-  terminates ([x := v'] e2') st2 ctx ->
+  terminates (subst[x := v] e2) st1 ctx ->
+  terminates (subst[x := v'] e2') st2 ctx ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (ELet x v e2, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -290,10 +290,10 @@ Proof.
   exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
   repeat split.
   - apply store_ty_extends_refl.
-  - apply multi_step_trans with (e2 := [x := v] e2) (st2 := st1) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v] e2) (st2 := st1) (ctx2 := ctx).
     + apply step_to_multi. apply ST_LetValue. exact Hval.
     + exact Hmulti1.
-  - apply multi_step_trans with (e2 := [x := v'] e2') (st2 := st2) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v'] e2') (st2 := st2) (ctx2 := ctx).
     + apply step_to_multi. apply ST_LetValue. exact Hval'.
     + exact Hmulti2.
   - exact Hvalr1.
@@ -306,8 +306,8 @@ Lemma exp_rel_step1_handle_typed : forall Σ T v v' x h h' st1 st2 ctx Σ',
   value v -> value v' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  terminates ([x := v] h) st1 ctx ->
-  terminates ([x := v'] h') st2 ctx ->
+  terminates (subst[x := v] h) st1 ctx ->
+  terminates (subst[x := v'] h') st2 ctx ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (EHandle v x h, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -322,10 +322,10 @@ Proof.
   exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
   repeat split.
   - apply store_ty_extends_refl.
-  - apply multi_step_trans with (e2 := [x := v] h) (st2 := st1) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v] h) (st2 := st1) (ctx2 := ctx).
     + apply step_to_multi. apply ST_HandleValue. exact Hval.
     + exact Hmulti1.
-  - apply multi_step_trans with (e2 := [x := v'] h') (st2 := st2) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v'] h') (st2 := st2) (ctx2 := ctx).
     + apply step_to_multi. apply ST_HandleValue. exact Hval'.
     + exact Hmulti2.
   - exact Hvalr1.
@@ -340,8 +340,8 @@ Lemma exp_rel_step1_app_typed : forall Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε'
   value f -> value f' -> value a -> value a' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  (forall x body, f = ELam x T1 body -> terminates ([x := a] body) st1 ctx) ->
-  (forall x body, f' = ELam x T1 body -> terminates ([x := a'] body) st2 ctx) ->
+  (forall x body, f = ELam x T1 body -> terminates (subst[x := a] body) st1 ctx) ->
+  (forall x body, f' = ELam x T1 body -> terminates (subst[x := a'] body) st2 ctx) ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (EApp f a, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -360,10 +360,10 @@ Proof.
   exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
   repeat split.
   - apply store_ty_extends_refl.
-  - apply multi_step_trans with (e2 := [x := a] body) (st2 := st1) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := a] body) (st2 := st1) (ctx2 := ctx).
     + apply step_to_multi. apply ST_AppAbs. exact Hvala.
     + exact Hmulti1.
-  - apply multi_step_trans with (e2 := [x' := a'] body') (st2 := st2) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x' := a'] body') (st2 := st2) (ctx2 := ctx).
     + apply step_to_multi. apply ST_AppAbs. exact Hvala'.
     + exact Hmulti2.
   - exact Hvalr1.
@@ -389,5 +389,247 @@ Qed.
     2. Termination premises for non-immediate cases
     3. Separate effect contexts for each reduction path
 *)
+
+(** ** Additional Termination Infrastructure *)
+
+(** Multi-step composed with single step *)
+Lemma multi_step_step_left : forall cfg1 cfg2 cfg3,
+  cfg1 --> cfg2 ->
+  cfg2 -->* cfg3 ->
+  cfg1 -->* cfg3.
+Proof.
+  intros. eapply MS_Step; eauto.
+Qed.
+
+(** val_rel_0 is trivially true for any type *)
+Lemma val_rel_0_trivial : forall Σ T v1 v2, val_rel_0 Σ T v1 v2.
+Proof.
+  intros. unfold val_rel_0. exact I.
+Qed.
+
+(** store_rel_0 is trivially true for any stores *)
+Lemma store_rel_0_trivial : forall Σ st1 st2, store_rel_0 Σ st1 st2.
+Proof.
+  intros. unfold store_rel_0. exact I.
+Qed.
+
+(** val_rel_0 is irrelevant to the type parameter *)
+Lemma val_rel_0_type_irrelevant : forall Σ T1 T2 v1 v2,
+  val_rel_0 Σ T1 v1 v2 <-> val_rel_0 Σ T2 v1 v2.
+Proof.
+  intros. unfold val_rel_0. tauto.
+Qed.
+
+(** val_rel_0 is irrelevant to the store typing *)
+Lemma val_rel_0_store_irrelevant : forall Σ1 Σ2 T v1 v2,
+  val_rel_0 Σ1 T v1 v2 <-> val_rel_0 Σ2 T v1 v2.
+Proof.
+  intros. unfold val_rel_0. tauto.
+Qed.
+
+(** store_rel_0 is symmetric *)
+Lemma store_rel_0_sym : forall Σ st1 st2,
+  store_rel_0 Σ st1 st2 -> store_rel_0 Σ st2 st1.
+Proof.
+  intros. unfold store_rel_0. exact I.
+Qed.
+
+(** Fst terminates in exactly one step on a pair value *)
+Lemma fst_terminates : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  terminates (EFst (EPair v1 v2)) st ctx.
+Proof.
+  intros v1 v2 st ctx Hv1 Hv2.
+  exists v1, st, ctx.
+  split.
+  - apply step_to_multi. apply ST_Fst; assumption.
+  - exact Hv1.
+Qed.
+
+(** Snd terminates in exactly one step on a pair value *)
+Lemma snd_terminates : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  terminates (ESnd (EPair v1 v2)) st ctx.
+Proof.
+  intros v1 v2 st ctx Hv1 Hv2.
+  exists v2, st, ctx.
+  split.
+  - apply step_to_multi. apply ST_Snd; assumption.
+  - exact Hv2.
+Qed.
+
+(** If with true terminates if the true branch terminates *)
+Lemma if_true_terminates : forall e2 e3 st ctx,
+  terminates e2 st ctx ->
+  terminates (EIf (EBool true) e2 e3) st ctx.
+Proof.
+  intros e2 e3 st ctx [v [st' [ctx' [Hms Hval]]]].
+  exists v, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_IfTrue. exact Hms.
+  - exact Hval.
+Qed.
+
+(** If with false terminates if the false branch terminates *)
+Lemma if_false_terminates : forall e2 e3 st ctx,
+  terminates e3 st ctx ->
+  terminates (EIf (EBool false) e2 e3) st ctx.
+Proof.
+  intros e2 e3 st ctx [v [st' [ctx' [Hms Hval]]]].
+  exists v, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_IfFalse. exact Hms.
+  - exact Hval.
+Qed.
+
+(** Let terminates if the substituted body terminates *)
+Lemma let_terminates : forall x v e2 st ctx,
+  value v ->
+  terminates (subst[x := v] e2) st ctx ->
+  terminates (ELet x v e2) st ctx.
+Proof.
+  intros x v e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_LetValue. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** App terminates if the substituted body terminates *)
+Lemma app_lam_terminates : forall x T body v st ctx,
+  value v ->
+  terminates (subst[x := v] body) st ctx ->
+  terminates (EApp (ELam x T body) v) st ctx.
+Proof.
+  intros x T body v st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_AppAbs. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** Values terminate immediately *)
+Lemma value_terminates : forall v st ctx,
+  value v -> terminates v st ctx.
+Proof.
+  intros v st ctx Hval.
+  exists v, st, ctx.
+  split.
+  - apply MS_Refl.
+  - exact Hval.
+Qed.
+
+(** ** Case-Inl Terminates *)
+
+Lemma case_inl_terminates : forall v T x1 e1 x2 e2 st ctx,
+  value v ->
+  terminates (subst[x1 := v] e1) st ctx ->
+  terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx.
+Proof.
+  intros v T x1 e1 x2 e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_CaseInl. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** ** Case-Inr Terminates *)
+
+Lemma case_inr_terminates : forall v T x1 e1 x2 e2 st ctx,
+  value v ->
+  terminates (subst[x2 := v] e2) st ctx ->
+  terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx.
+Proof.
+  intros v T x1 e1 x2 e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_CaseInr. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** ** Handle Terminates *)
+
+Lemma handle_terminates : forall x v h st ctx,
+  value v ->
+  terminates (subst[x := v] h) st ctx ->
+  terminates (EHandle v x h) st ctx.
+Proof.
+  intros x v h st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_HandleValue. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** ** Multi-step terminates transitivity *)
+
+Lemma terminates_trans : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  terminates e' st' ctx' ->
+  terminates e st ctx.
+Proof.
+  intros e e' st st' ctx ctx' Hms [v [st'' [ctx'' [Hms' Hval]]]].
+  exists v, st'', ctx''.
+  split.
+  - eapply multi_step_trans; eauto.
+  - exact Hval.
+Qed.
+
+(** ** Termination is preserved by values *)
+
+Lemma value_terminates_refl : forall v st ctx,
+  value v ->
+  terminates v st ctx.
+Proof.
+  intros v st ctx Hval.
+  exists v, st, ctx. split; [apply MS_Refl | exact Hval].
+Qed.
+
+(** ** val_rel_0 Structural Properties *)
+
+(** val_rel_0 is reflexive *)
+Lemma val_rel_0_refl : forall Σ T v, val_rel_0 Σ T v v.
+Proof.
+  intros. unfold val_rel_0. exact I.
+Qed.
+
+(** val_rel_0 is symmetric *)
+Lemma val_rel_0_sym : forall Σ T v1 v2,
+  val_rel_0 Σ T v1 v2 -> val_rel_0 Σ T v2 v1.
+Proof.
+  intros. unfold val_rel_0. exact I.
+Qed.
+
+(** store_rel_0 is transitive *)
+Lemma store_rel_0_trans : forall Σ st1 st2 st3,
+  store_rel_0 Σ st1 st2 -> store_rel_0 Σ st2 st3 -> store_rel_0 Σ st1 st3.
+Proof.
+  intros. unfold store_rel_0. exact I.
+Qed.
+
+(** If e steps to e' and e' terminates, then e terminates *)
+Lemma terminates_step : forall e e' st st' ctx ctx',
+  (e, st, ctx) --> (e', st', ctx') ->
+  terminates e' st' ctx' ->
+  terminates e st ctx.
+Proof.
+  intros e e' st st' ctx ctx' Hstep [v [st'' [ctx'' [Hms Hval]]]].
+  exists v, st'', ctx''.
+  split.
+  - eapply MS_Step; eauto.
+  - exact Hval.
+Qed.
+
+(** Combined if termination: if value is a bool and both branches terminate *)
+Lemma if_terminates : forall b e2 e3 st ctx,
+  terminates e2 st ctx ->
+  terminates e3 st ctx ->
+  terminates (EIf (EBool b) e2 e3) st ctx.
+Proof.
+  intros b e2 e3 st ctx Hterm2 Hterm3.
+  destruct b.
+  - exact (if_true_terminates e2 e3 st ctx Hterm2).
+  - exact (if_false_terminates e2 e3 st ctx Hterm3).
+Qed.
 
 (** End of TerminationLemmas.v *)

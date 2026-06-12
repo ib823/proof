@@ -3,34 +3,31 @@
 /// Demonstrates: +, -, *, /, %, operator precedence
 
 fungsi operasiMatematik() -> Nombor kesan Bersih {
-    /// Penambahan
-    biar penambahan = 5 + 3;        /// Addition: 8
+    /// Penambahan / Addition: 8
+    biar penambahan = 5 + 3;
 
-    /// Penolakan
-    biar penolakan = 10 - 4;         /// Subtraction: 6
+    /// Penolakan / Subtraction: 6
+    biar penolakan = 10 - 4;
 
-    /// Pendaraban
-    biar pendaraban = 6 * 7;         /// Multiplication: 42
+    /// Pendaraban / Multiplication: 42
+    biar pendaraban = 6 * 7;
 
-    /// Pembahagian
-    biar pembahagian = 20 / 4;       /// Division: 5
+    /// Pembahagian / Division: 5
+    biar pembahagian = 20 / 4;
 
-    /// Modulo (sisa)
-    biar sisa = 17 % 5;              /// Modulo: 2
+    /// Modulo (sisa) / Modulo: 2
+    biar sisa = 17 % 5;
 
-    /// Gabung operasi dengan preseden
-    /// Combine operations with precedence
-    biar gabung = 2 + 3 * 4;         /// 2 + (3*4) = 14
+    /// Operasi dengan preseden / precedence: 2 + (3*4) = 14
+    biar campuran = 2 + 3 * 4;
 
-    /// Gunakan kurungan untuk ubah preseden
-    /// Use parentheses to change precedence
-    biar ubahPreseden = (2 + 3) * 4; /// (2+3)*4 = 20
+    /// Gunakan kurungan untuk ubah preseden / (2+3)*4 = 20
+    biar dalam_kurungan = (2 + 3) * 4;
 
-    /// Operasi rantaian
-    /// Chained operations
-    biar rantai = 100 - 25 + 15 / 3;
+    /// Operasi rantaian / Chained operations
+    biar rantaian = 100 - 25 + 15 / 3;
 
-    pulang gabung + ubahPreseden;
+    pulang campuran + dalam_kurungan;
 }
 
 fungsi utama() -> Nombor kesan Tulis {
@@ -43,4 +40,3 @@ fungsi utama() -> Nombor kesan Tulis {
 
 /// NUMERIC TYPES: Nombor is a fixed-width integer type.
 /// All operations are on machine integers with defined overflow semantics.
-/// For arbitrary precision, use the Nombor.Besar type (future).

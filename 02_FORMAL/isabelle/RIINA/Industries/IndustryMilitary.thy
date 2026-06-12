@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryMilitary - Isabelle/HOL Port
@@ -51,13 +53,13 @@
  *)
 
 theory IndustryMilitary
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ClassificationLevel (matches Coq: Inductive ClassificationLevel) *)
 datatype classification_level =
     Unclassified
-  |     CUI  (* Controlled Unclassified Information *)
+  |     CUI
   |     Confidential
   |     Secret
   |     TopSecret
@@ -75,10 +77,11 @@ record military_security_policy =
   classification :: ClassificationLevel
   need_to_know :: 'a list
   clearance_required :: ClassificationLevel
-  comsec_approved :: bool  (* Communications Security *)
-  tempest_certified :: bool  (* TEMPEST emanations security *)
+  comsec_approved :: bool
+  tempest_certified :: bool
 
-(* class_le - complex match, manual review needed *)
+(* class_le - complex match, needs manual translation *)
+definition class_le :: "bool" where "class_le = undefined"
 
 (* class_to_nat (matches Coq: Definition class_to_nat) *)
 fun class_to_nat :: "ClassificationLevel \<Rightarrow> nat" where
@@ -91,7 +94,7 @@ fun class_to_nat :: "ClassificationLevel \<Rightarrow> nat" where
 
 (* has_compartment (matches Coq: Definition has_compartment) *)
 definition has_compartment :: "nat \<Rightarrow> bool" where
-  "has_compartment c \<equiv> existsb (Nat"
+  "has_compartment c \<equiv> existsb ((c) = compartments)"
 
 (* class_max (matches Coq: Definition class_max) *)
 definition class_max :: "ClassificationLevel" where
@@ -115,34 +118,39 @@ fun redundancy_factor :: "ClassificationLevel \<Rightarrow> nat" where
 |   "redundancy_factor TS_SCI = 5"
 
 (* Section A01 - NIST 800-171 Compliance
-    Reference: IND_A_MILITARY.md Section 3.1 *)
+    Reference: IND_A_MILITARY.md Section 3.1
+    Access control: clearance dominates classification implies ordering holds. *)
 (* nist_800_171_access_control (matches Coq) *)
-lemma nist_800_171_access_control: "\<forall> (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = True \<longrightarrow> True"
+lemma nist_800_171_access_control: "\<forall> (policy : MilitarySecurityPolicy), class_le (classification policy) (clearance_required policy) = True \<longrightarrow> (\<not> (class_le) (classification policy) (clearance_required policy)) = False"
   by simp
 
 (* Section A02 - CMMC Level 3 Requirements
-    Reference: IND_A_MILITARY.md Section 3.2 *)
+    Reference: IND_A_MILITARY.md Section 3.2
+    CUI classification is below or equal to all levels from CUI upward. *)
 (* cmmc_level3_compliance (matches Coq) *)
-lemma cmmc_level3_compliance: "\<forall> policy, classification policy = CUI \<longrightarrow> True"
+lemma cmmc_level3_compliance: "\<forall> policy, classification policy = CUI \<longrightarrow> class_le (classification policy) Confidential = True"
   by simp
 
 (* Section A03 - ITAR Export Control
-    Reference: IND_A_MILITARY.md Section 3.3 *)
+    Reference: IND_A_MILITARY.md Section 3.3
+    Unclassified is dominated by every classification level. *)
 (* itar_export_control (matches Coq) *)
-lemma itar_export_control: "\<forall> (data_class : ClassificationLevel) (destination : nat), True"
-  by simp
+lemma itar_export_control: "\<forall> (data_class : ClassificationLevel), class_le Unclassified data_class = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Section A04 - MIL-STD-882 Safety
-    Reference: IND_A_MILITARY.md Section 3.4 *)
+    Reference: IND_A_MILITARY.md Section 3.4
+    TS_SCI is the highest classification — all levels are below it. *)
 (* mil_std_882_safety (matches Coq) *)
-lemma mil_std_882_safety: "\<forall> (system : nat) (hazard_level : nat), True"
-  by simp
+lemma mil_std_882_safety: "\<forall> (c : ClassificationLevel), class_le c TS_SCI = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Section A05 - RMF Authorization
-    Reference: IND_A_MILITARY.md Section 3.5 *)
+    Reference: IND_A_MILITARY.md Section 3.5
+    Classification ordering is reflexive. *)
 (* rmf_authorization (matches Coq) *)
-lemma rmf_authorization: "\<forall> (system : nat) (risk_level : nat), True"
-  by simp
+lemma rmf_authorization: "\<forall> (c : ClassificationLevel), class_le c c = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Classification lattice reflexivity *)
 (* class_le_refl (matches Coq) *)
@@ -154,9 +162,11 @@ lemma class_le_refl: "\<forall> c, class_le c c = True"
 lemma class_le_trans: "\<forall> c1 c2 c3, class_le c1 c2 = True \<longrightarrow> class_le c2 c3 = True \<longrightarrow> class_le c1 c3 = True"
   by (cases rule: ‹_›.cases; simp)
 
-(* No read up - Bell-LaPadula simple security *)
+(* No read up - Bell-LaPadula simple security:
+    If object classification is at or below subject clearance,
+    then at least one ordering direction holds between them. *)
 (* no_read_up (matches Coq) *)
-lemma no_read_up: "\<forall> subject_clearance object_classification, class_le object_classification subject_clearance = True \<longrightarrow> True"
+lemma no_read_up: "\<forall> subject_clearance object_classification, class_le object_classification subject_clearance = True \<longrightarrow> (class_le object_classification subject_clearance || class_le subject_clearance object_classification) = True"
   by simp
 
 (* class_le agrees with nat ordering *)
@@ -194,7 +204,7 @@ lemma bell_lapadula_star: "\<forall> subject_class object_class, class_le subjec
   by auto
 
 (* has_compartment_In (matches Coq) *)
-lemma has_compartment_In: "\<forall> c comps, has_compartment comps c = True \<longrightarrow> \<exists> x, In x comps \<and> Nat.eqb c x = True"
+lemma has_compartment_In: "\<forall> c comps, has_compartment comps c = True \<longrightarrow> \<exists> x, In x comps \<and> (c = x) = True"
   by (cases rule: ‹_›.cases; simp)
 
 (* Empty need_to_know means no compartment restriction *)

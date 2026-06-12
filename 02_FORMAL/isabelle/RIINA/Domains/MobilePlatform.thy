@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MobilePlatform - Isabelle/HOL Port
@@ -63,7 +65,7 @@
  *)
 
 theory MobilePlatform
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Resource (matches Coq: Inductive Resource) *)
@@ -101,56 +103,53 @@ definition sandbox_valid :: "Sandbox \<Rightarrow> AppId \<Rightarrow> bool" whe
 
 (* file_isolated (matches Coq: Definition file_isolated) *)
 definition file_isolated :: "bool" where
-  "file_isolated \<equiv> Nat"
+  "file_isolated \<equiv> ((app_uid = file_owner)) (app_uid accessor)"
 
-(* requires_user_consent - complex match, manual review needed *)
+(* requires_user_consent - complex match, needs manual translation *)
+definition requires_user_consent :: "bool" where "requires_user_consent = undefined"
 
 (* signature_matches (matches Coq: Definition signature_matches) *)
 definition signature_matches :: "AppId \<Rightarrow> nat \<Rightarrow> bool" where
-  "signature_matches app required_sig \<equiv> Nat"
+  "signature_matches app required_sig \<equiv> ((app_signature = app)) required_sig"
 
 (* is_system_app (matches Coq: Definition is_system_app) *)
 definition is_system_app :: "AppId \<Rightarrow> bool" where
-  "is_system_app app \<equiv> existsb (fun uid => Nat"
+  "is_system_app app \<equiv> existsb (fun uid => ((app_uid = app)) uid) system_uids"
 
 (* ipc_allowed (matches Coq: Definition ipc_allowed) *)
 definition ipc_allowed :: "Intent \<Rightarrow> bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "ipc_allowed intent target_exported same_app \<equiv> orb target_exported same_app"
+  "ipc_allowed intent target_exported same_app \<equiv> (target_exported \<or> same_app)"
 
 (* key_extractable (matches Coq: Definition key_extractable) *)
 definition key_extractable :: "KeyProps \<Rightarrow> bool" where
-  "key_extractable props \<equiv> negb (key_hardware_backed props)"
+  "key_extractable props \<equiv> (\<not> (key_hardware_backed) props)"
 
 (* auth_recent (matches Coq: Definition auth_recent) *)
 definition auth_recent :: "bool" where
-  "auth_recent \<equiv> Nat"
+  "auth_recent \<equiv> ((current \<le> -) last_auth) max_age"
 
-(* grant_valid - complex match, manual review needed *)
+(* grant_valid - complex match, needs manual translation *)
+definition grant_valid :: "bool" where "grant_valid = undefined"
 
-(* has_network_permission (matches Coq: Definition has_network_permission) *)
-definition has_network_permission :: "AppId \<Rightarrow> bool" where
-  "has_network_permission app \<equiv> existsb (fun g =>
-    andb (Nat"
+(* has_network_permission - complex match, needs manual translation *)
+definition has_network_permission :: "bool" where "has_network_permission = undefined"
 
-(* has_location_permission (matches Coq: Definition has_location_permission) *)
-definition has_location_permission :: "AppId \<Rightarrow> bool" where
-  "has_location_permission app \<equiv> existsb (fun g =>
-    andb (Nat"
+(* has_location_permission - complex match, needs manual translation *)
+definition has_location_permission :: "bool" where "has_location_permission = undefined"
 
-(* has_camera_permission (matches Coq: Definition has_camera_permission) *)
-definition has_camera_permission :: "AppId \<Rightarrow> bool" where
-  "has_camera_permission app \<equiv> existsb (fun g =>
-    andb (Nat"
+(* has_camera_permission - complex match, needs manual translation *)
+definition has_camera_permission :: "bool" where "has_camera_permission = undefined"
 
 (* intent_matches (matches Coq: Definition intent_matches) *)
 definition intent_matches :: "Intent \<Rightarrow> nat \<Rightarrow> bool" where
-  "intent_matches intent filter_action \<equiv> Nat"
+  "intent_matches intent filter_action \<equiv> ((intent_action = intent)) filter_action"
 
-(* explicit_intent - complex match, manual review needed *)
+(* explicit_intent - complex match, needs manual translation *)
+definition explicit_intent :: "bool" where "explicit_intent = undefined"
 
 (* processes_isolated (matches Coq: Definition processes_isolated) *)
 definition processes_isolated :: "bool" where
-  "processes_isolated \<equiv> negb (Nat"
+  "processes_isolated \<equiv> (\<not> (Nat.eqb) pid1 pid2)"
 
 (* boot_verified (matches Coq: Definition boot_verified) *)
 definition boot_verified :: "bool" where
@@ -162,15 +161,15 @@ definition enclave_isolated :: "bool" where
 
 (* biometric_in_tee (matches Coq: Definition biometric_in_tee) *)
 definition biometric_in_tee :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "biometric_in_tee storage_location tee_location \<equiv> Nat"
+  "biometric_in_tee storage_location tee_location \<equiv> (storage_location = tee_location)"
 
 (* signature_valid (matches Coq: Definition signature_valid) *)
 definition signature_valid :: "AppId \<Rightarrow> bool" where
-  "signature_valid app \<equiv> existsb (fun sig => Nat"
+  "signature_valid app \<equiv> existsb (fun sig => ((app_signature = app)) sig) trusted_sigs"
 
 (* mobile_layers (matches Coq: Definition mobile_layers) *)
 definition mobile_layers :: "bool" where
-  "mobile_layers \<equiv> andb sandbox (andb perm (andb ipc (andb keystore boot)))"
+  "mobile_layers \<equiv> (sandbox \<and> (andb) perm ((ipc \<and> (andb) keystore boot)))"
 
 (* mobile_001_unique_uids (matches Coq) *)
 lemma mobile_001_unique_uids: "\<forall> (apps : list AppId), uids_unique apps \<longrightarrow> NoDup (map app_uid apps)"
@@ -197,11 +196,11 @@ lemma mobile_006_system_permission: "\<forall> (app : AppId) (system_uids : list
   by auto
 
 (* mobile_007_unexported_denied (matches Coq) *)
-lemma mobile_007_unexported_denied: "\<forall> (intent : Intent), intent_exported intent = False \<longrightarrow> ipc_allowed intent false false = False"
+lemma mobile_007_unexported_denied: "\<forall> (intent : Intent), intent_exported intent = False \<longrightarrow> ipc_allowed intent False False = False"
   by simp
 
 (* mobile_008_same_app_ipc (matches Coq) *)
-lemma mobile_008_same_app_ipc: "\<forall> (intent : Intent) (exported : bool), ipc_allowed intent exported true = True"
+lemma mobile_008_same_app_ipc: "\<forall> (intent : Intent) (exported : bool), ipc_allowed intent exported True = True"
   by simp
 
 (* mobile_009_hw_key_protected (matches Coq) *)

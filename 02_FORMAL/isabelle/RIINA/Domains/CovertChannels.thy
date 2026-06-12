@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CovertChannels - Isabelle/HOL Port
@@ -53,6 +55,7 @@
  * | secure_branch      | secure_branch          | OK     |
  * | storage_no_leak    | storage_no_leak        | OK     |
  * | secure_storage     | secure_storage         | OK     |
+ * | zeroed_memory      | zeroed_memory          | OK     |
  * | public_partition   | public_partition       | OK     |
  * | secret_partition   | secret_partition       | OK     |
  * | secure_execute_deterministic | secure_execute_deterministic | OK     |
@@ -84,7 +87,7 @@
  *)
 
 theory CovertChannels
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SecLevel (matches Coq: Inductive SecLevel) *)
@@ -164,37 +167,39 @@ record storage_state =
   storage_contents :: 'a list
   storage_level :: SecLevel
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
-(* level_eq - complex match, manual review needed *)
+(* level_eq - complex match, needs manual translation *)
+definition level_eq :: "bool" where "level_eq = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
-  "low_equiv \<equiv> Nat"
+  "low_equiv \<equiv> ((state_public = s1)) (state_public s2)"
 
 (* constant_time (matches Coq: Definition constant_time) *)
 definition constant_time :: "bool" where
-  "constant_time \<equiv> low_equiv s1 s2 = true -> trace_time t1 = trace_time t2"
+  "constant_time \<equiv> low_equiv s1 s2 = True -> trace_time t1 = trace_time t2"
 
 (* constant_memory_pattern (matches Coq: Definition constant_memory_pattern) *)
 definition constant_memory_pattern :: "bool" where
-  "constant_memory_pattern \<equiv> low_equiv s1 s2 = true -> trace_mem_accesses t1 = trace_mem_accesses t2"
+  "constant_memory_pattern \<equiv> low_equiv s1 s2 = True -> trace_mem_accesses t1 = trace_mem_accesses t2"
 
 (* constant_cache (matches Coq: Definition constant_cache) *)
 definition constant_cache :: "bool" where
-  "constant_cache \<equiv> low_equiv s1 s2 = true -> trace_cache_pattern t1 = trace_cache_pattern t2"
+  "constant_cache \<equiv> low_equiv s1 s2 = True -> trace_cache_pattern t1 = trace_cache_pattern t2"
 
 (* constant_termination (matches Coq: Definition constant_termination) *)
 definition constant_termination :: "bool" where
-  "constant_termination \<equiv> low_equiv s1 s2 = true -> trace_terminated t1 = trace_terminated t2"
+  "constant_termination \<equiv> low_equiv s1 s2 = True -> trace_terminated t1 = trace_terminated t2"
 
 (* constant_exception (matches Coq: Definition constant_exception) *)
 definition constant_exception :: "bool" where
-  "constant_exception \<equiv> low_equiv s1 s2 = true -> trace_exception t1 = trace_exception t2"
+  "constant_exception \<equiv> low_equiv s1 s2 = True -> trace_exception t1 = trace_exception t2"
 
 (* constant_output (matches Coq: Definition constant_output) *)
 definition constant_output :: "bool" where
-  "constant_output \<equiv> low_equiv s1 s2 = true -> trace_output t1 = trace_output t2"
+  "constant_output \<equiv> low_equiv s1 s2 = True -> trace_output t1 = trace_output t2"
 
 (* channel_bandwidth (matches Coq: Definition channel_bandwidth) *)
 definition channel_bandwidth :: "nat \<Rightarrow> nat" where
@@ -206,30 +211,31 @@ definition bandwidth_threshold :: "nat" where
 
 (* constant_resources (matches Coq: Definition constant_resources) *)
 definition constant_resources :: "bool" where
-  "constant_resources \<equiv> low_equiv s1 s2 = true -> r1 = r2"
+  "constant_resources \<equiv> low_equiv s1 s2 = True -> r1 = r2"
 
-(* memory_zeroed - complex match, manual review needed *)
+(* memory_zeroed - complex match, needs manual translation *)
+definition memory_zeroed :: "bool" where "memory_zeroed = undefined"
 
 (* partitions_disjoint (matches Coq: Definition partitions_disjoint) *)
 definition partitions_disjoint :: "bool" where
-  "partitions_disjoint \<equiv> forallb (fun a => negb (existsb (Nat"
+  "partitions_disjoint \<equiv> forallb (fun a => (\<not> (existsb) ((a) = (part_addresses) p2))) (part_addresses p1)"
 
 (* secure_execute (matches Coq: Definition secure_execute) *)
 definition secure_execute :: "State \<Rightarrow> Trace" where
   "secure_execute s \<equiv> mkTrace
-    (state_public s)           (* time depends only on public *)
-    [state_public s]           (* mem access depends only on public *)
-    [true]                     (* constant cache pattern *)
-    (state_public s)           (* output depends only on public *)
-    true                       (* always terminates *)
+    (state_public s)           
+    [state_public s]           
+    [True]                     
+    (state_public s)           
+    True                       
     None"
 
 (* secure_resources (matches Coq: Definition secure_resources) *)
 definition secure_resources :: "State \<Rightarrow> ResourceUsage" where
   "secure_resources s \<equiv> mkRes
-    100                        (* constant CPU cycles *)
-    256                        (* constant memory allocation *)
-    0                          (* constant cache misses *)
+    100                        
+    256                        
+    0                          
     0"
 
 (* riina_program (matches Coq: Definition riina_program) *)
@@ -238,7 +244,7 @@ definition riina_program :: "SecureProgram" where
 
 (* constant_network (matches Coq: Definition constant_network) *)
 definition constant_network :: "bool" where
-  "constant_network \<equiv> low_equiv s1 s2 = true -> n1 = n2"
+  "constant_network \<equiv> low_equiv s1 s2 = True -> n1 = n2"
 
 (* secure_network (matches Coq: Definition secure_network) *)
 definition secure_network :: "State \<Rightarrow> NetworkTrace" where
@@ -246,7 +252,7 @@ definition secure_network :: "State \<Rightarrow> NetworkTrace" where
 
 (* constant_schedule (matches Coq: Definition constant_schedule) *)
 definition constant_schedule :: "bool" where
-  "constant_schedule \<equiv> low_equiv s1 s2 = true -> sc1 = sc2"
+  "constant_schedule \<equiv> low_equiv s1 s2 = True -> sc1 = sc2"
 
 (* secure_schedule (matches Coq: Definition secure_schedule) *)
 definition secure_schedule :: "State \<Rightarrow> ScheduleTrace" where
@@ -254,7 +260,7 @@ definition secure_schedule :: "State \<Rightarrow> ScheduleTrace" where
 
 (* constant_power (matches Coq: Definition constant_power) *)
 definition constant_power :: "bool" where
-  "constant_power \<equiv> low_equiv s1 s2 = true -> p1 = p2"
+  "constant_power \<equiv> low_equiv s1 s2 = True -> p1 = p2"
 
 (* secure_power (matches Coq: Definition secure_power) *)
 definition secure_power :: "State \<Rightarrow> PowerTrace" where
@@ -262,7 +268,7 @@ definition secure_power :: "State \<Rightarrow> PowerTrace" where
 
 (* constant_em (matches Coq: Definition constant_em) *)
 definition constant_em :: "bool" where
-  "constant_em \<equiv> low_equiv s1 s2 = true -> e1 = e2"
+  "constant_em \<equiv> low_equiv s1 s2 = True -> e1 = e2"
 
 (* secure_em (matches Coq: Definition secure_em) *)
 definition secure_em :: "State \<Rightarrow> EMTrace" where
@@ -270,15 +276,15 @@ definition secure_em :: "State \<Rightarrow> EMTrace" where
 
 (* constant_branch (matches Coq: Definition constant_branch) *)
 definition constant_branch :: "bool" where
-  "constant_branch \<equiv> low_equiv s1 s2 = true -> b1 = b2"
+  "constant_branch \<equiv> low_equiv s1 s2 = True -> b1 = b2"
 
 (* secure_branch (matches Coq: Definition secure_branch) *)
 definition secure_branch :: "State \<Rightarrow> BranchTrace" where
-  "secure_branch s \<equiv> mkBranchTrace [true; true; false] [true; true; false]"
+  "secure_branch s \<equiv> mkBranchTrace [True; True; False] [True; True; False]"
 
 (* storage_no_leak (matches Coq: Definition storage_no_leak) *)
 definition storage_no_leak :: "bool" where
-  "storage_no_leak \<equiv> low_equiv s1 s2 = true -> 
+  "storage_no_leak \<equiv> low_equiv s1 s2 = True -> 
   storage_level st1 = Public ->
   storage_level st2 = Public ->
   st1 = st2"
@@ -286,6 +292,10 @@ definition storage_no_leak :: "bool" where
 (* secure_storage (matches Coq: Definition secure_storage) *)
 definition secure_storage :: "State \<Rightarrow> StorageState" where
   "secure_storage s \<equiv> mkStorageState [0; 0; 0; 0] Public"
+
+(* zeroed_memory (matches Coq: Definition zeroed_memory) *)
+definition zeroed_memory :: "list nat" where
+  "zeroed_memory \<equiv> [0; 0; 0; 0; 0; 0; 0; 0]"
 
 (* public_partition (matches Coq: Definition public_partition) *)
 definition public_partition :: "Partition" where

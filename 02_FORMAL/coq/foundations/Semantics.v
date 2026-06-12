@@ -9,9 +9,9 @@
     Mode: Comprehensive Verification | Zero Trust
 *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
 Require Import RIINA.foundations.Syntax.
 Import ListNotations.
 
@@ -97,7 +97,7 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
   (* Beta reduction *)
   | ST_AppAbs : forall x T body v st ctx,
       value v ->
-      (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx)
+      (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx)
   
   (* Application congruence *)
   | ST_App1 : forall e1 e1' e2 st st' ctx ctx',
@@ -139,11 +139,11 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
   (* Sum elimination *)
   | ST_CaseInl : forall v T x1 e1 x2 e2 st ctx,
       value v ->
-      (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx)
+      (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst[x1 := v] e1, st, ctx)
   
   | ST_CaseInr : forall v T x1 e1 x2 e2 st ctx,
       value v ->
-      (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx)
+      (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst[x2 := v] e2, st, ctx)
   
   | ST_CaseStep : forall e e' x1 e1 x2 e2 st st' ctx ctx',
       (e, st, ctx) --> (e', st', ctx') ->
@@ -172,7 +172,7 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
   (* Let binding *)
   | ST_LetValue : forall x v e2 st ctx,
       value v ->
-      (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx)
+      (ELet x v e2, st, ctx) --> (subst[x := v] e2, st, ctx)
   
   | ST_LetStep : forall x e1 e1' e2 st st' ctx ctx',
       (e1, st, ctx) --> (e1', st', ctx') ->
@@ -193,7 +193,7 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
 
   | ST_HandleValue : forall v x h st ctx,
       value v ->
-      (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx)
+      (EHandle v x h, st, ctx) --> (subst[x := v] h, st, ctx)
 
   (* References *)
   | ST_RefStep : forall e e' l st st' ctx ctx',
@@ -584,6 +584,288 @@ Proof.
     destruct cfg2 as [[e2 st2] ctx2].
     simpl in *.
     apply (step_preserves_store_values e1 st1 ctx1 e2 st2 ctx2 H Hst).
+Qed.
+
+(** ** Multi-step Structural Properties *)
+
+(** Multi-step transitivity: if cfg1 -->* cfg2 and cfg2 -->* cfg3
+    then cfg1 -->* cfg3. This is the fundamental composition property
+    for reasoning about program evaluation sequences. *)
+Theorem multi_step_trans : forall cfg1 cfg2 cfg3,
+  multi_step cfg1 cfg2 ->
+  multi_step cfg2 cfg3 ->
+  multi_step cfg1 cfg3.
+Proof.
+  intros cfg1 cfg2 cfg3 H12 H23.
+  induction H12.
+  - exact H23.
+  - eapply MS_Step. exact H. apply IHmulti_step. exact H23.
+Qed.
+
+(** A single step embeds into multi-step. *)
+Lemma step_to_multi_step : forall cfg1 cfg2,
+  step cfg1 cfg2 ->
+  multi_step cfg1 cfg2.
+Proof.
+  intros cfg1 cfg2 Hstep.
+  eapply MS_Step. exact Hstep. apply MS_Refl.
+Qed.
+
+(** General multi-step congruence helper: if e -->* e' in some context,
+    and f wraps single steps, then f(e) -->* f(e'). *)
+Lemma multi_step_congruence_1 :
+  forall (f : expr -> expr)
+         (step_compat : forall e e' st st' ctx ctx',
+            (e, st, ctx) --> (e', st', ctx') ->
+            (f e, st, ctx) --> (f e', st', ctx')),
+  forall e e' st st' ctx ctx',
+    (e, st, ctx) -->* (e', st', ctx') ->
+    (f e, st, ctx) -->* (f e', st', ctx').
+Proof.
+  intros f Hcompat e e' st st' ctx ctx' Hms.
+  remember (e, st, ctx) as cfg1.
+  remember (e', st', ctx') as cfg2.
+  revert e st ctx e' st' ctx' Heqcfg1 Heqcfg2.
+  induction Hms; intros e0 st0 ctx0 e0' st0' ctx0' Heq1 Heq2.
+  - subst. inversion Heq2; subst. apply MS_Refl.
+  - subst. destruct cfg2 as [[em stm] ctxm].
+    eapply MS_Step.
+    + apply Hcompat. exact H.
+    + eapply IHHms; reflexivity.
+Qed.
+
+(** Multi-step congruence for application (function position):
+    if e1 -->* e1' then (e1 e2) -->* (e1' e2). *)
+Lemma multi_step_app1 : forall e1 e1' e2 st st' ctx ctx',
+  (e1, st, ctx) -->* (e1', st', ctx') ->
+  (EApp e1 e2, st, ctx) -->* (EApp e1' e2, st', ctx').
+Proof.
+  intros e1 e1' e2 st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e => EApp e e2)); auto.
+  intros. apply ST_App1. exact H.
+Qed.
+
+(** Multi-step congruence for application (argument position):
+    if v1 is a value and e2 -->* e2' then (v1 e2) -->* (v1 e2'). *)
+Lemma multi_step_app2 : forall v1 e2 e2' st st' ctx ctx',
+  value v1 ->
+  (e2, st, ctx) -->* (e2', st', ctx') ->
+  (EApp v1 e2, st, ctx) -->* (EApp v1 e2', st', ctx').
+Proof.
+  intros v1 e2 e2' st st' ctx ctx' Hval Hms.
+  apply (multi_step_congruence_1 (fun e => EApp v1 e)); auto.
+  intros. apply ST_App2; assumption.
+Qed.
+
+(** Multi-step congruence for pair (first component):
+    if e1 -->* e1' then (e1, e2) -->* (e1', e2). *)
+Lemma multi_step_pair1 : forall e1 e1' e2 st st' ctx ctx',
+  (e1, st, ctx) -->* (e1', st', ctx') ->
+  (EPair e1 e2, st, ctx) -->* (EPair e1' e2, st', ctx').
+Proof.
+  intros e1 e1' e2 st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e => EPair e e2)); auto.
+  intros. apply ST_Pair1. exact H.
+Qed.
+
+(** Multi-step congruence for pair (second component):
+    if v1 is a value and e2 -->* e2' then (v1, e2) -->* (v1, e2'). *)
+Lemma multi_step_pair2 : forall v1 e2 e2' st st' ctx ctx',
+  value v1 ->
+  (e2, st, ctx) -->* (e2', st', ctx') ->
+  (EPair v1 e2, st, ctx) -->* (EPair v1 e2', st', ctx').
+Proof.
+  intros v1 e2 e2' st st' ctx ctx' Hval Hms.
+  apply (multi_step_congruence_1 (fun e => EPair v1 e)); auto.
+  intros. apply ST_Pair2; assumption.
+Qed.
+
+(** Multi-step congruence for fst:
+    if e -->* e' then fst(e) -->* fst(e'). *)
+Lemma multi_step_fst : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EFst e, st, ctx) -->* (EFst e', st', ctx').
+Proof.
+  intros e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 EFst); auto.
+  intros. apply ST_FstStep. exact H.
+Qed.
+
+(** Multi-step congruence for snd:
+    if e -->* e' then snd(e) -->* snd(e'). *)
+Lemma multi_step_snd : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (ESnd e, st, ctx) -->* (ESnd e', st', ctx').
+Proof.
+  intros e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 ESnd); auto.
+  intros. apply ST_SndStep. exact H.
+Qed.
+
+(** Multi-step congruence for if (condition position):
+    if e1 -->* e1' then if(e1, e2, e3) -->* if(e1', e2, e3). *)
+Lemma multi_step_if : forall e1 e1' e2 e3 st st' ctx ctx',
+  (e1, st, ctx) -->* (e1', st', ctx') ->
+  (EIf e1 e2 e3, st, ctx) -->* (EIf e1' e2 e3, st', ctx').
+Proof.
+  intros e1 e1' e2 e3 st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e => EIf e e2 e3)); auto.
+  intros. apply ST_IfStep. exact H.
+Qed.
+
+(** Multi-step congruence for let (binding expression):
+    if e1 -->* e1' then let x = e1 in e2 -->* let x = e1' in e2. *)
+Lemma multi_step_let : forall x e1 e1' e2 st st' ctx ctx',
+  (e1, st, ctx) -->* (e1', st', ctx') ->
+  (ELet x e1 e2, st, ctx) -->* (ELet x e1' e2, st', ctx').
+Proof.
+  intros x e1 e1' e2 st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e => ELet x e e2)); auto.
+  intros. apply ST_LetStep. exact H.
+Qed.
+
+(** Multi-step congruence for case (scrutinee position):
+    if e -->* e' then case e of ... -->* case e' of .... *)
+Lemma multi_step_case : forall e e' x1 e1 x2 e2 st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (ECase e x1 e1 x2 e2, st, ctx) -->* (ECase e' x1 e1 x2 e2, st', ctx').
+Proof.
+  intros e e' x1 e1 x2 e2 st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => ECase e0 x1 e1 x2 e2)); auto.
+  intros. apply ST_CaseStep. exact H.
+Qed.
+
+(** Multi-step congruence for classify:
+    if e -->* e' then classify(e) -->* classify(e'). *)
+Lemma multi_step_classify : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EClassify e, st, ctx) -->* (EClassify e', st', ctx').
+Proof.
+  intros e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 EClassify); auto.
+  intros. apply ST_ClassifyStep. exact H.
+Qed.
+
+(** Multi-step congruence for prove:
+    if e -->* e' then prove(e) -->* prove(e'). *)
+Lemma multi_step_prove : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EProve e, st, ctx) -->* (EProve e', st', ctx').
+Proof.
+  intros e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 EProve); auto.
+  intros. apply ST_ProveStep. exact H.
+Qed.
+
+(** Multi-step congruence for ref:
+    if e -->* e' then ref(e, sl) -->* ref(e', sl). *)
+Lemma multi_step_ref : forall e e' sl st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (ERef e sl, st, ctx) -->* (ERef e' sl, st', ctx').
+Proof.
+  intros e e' sl st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => ERef e0 sl)); auto.
+  intros. apply ST_RefStep. exact H.
+Qed.
+
+(** Multi-step congruence for deref:
+    if e -->* e' then deref(e) -->* deref(e'). *)
+Lemma multi_step_deref : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EDeref e, st, ctx) -->* (EDeref e', st', ctx').
+Proof.
+  intros e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 EDeref); auto.
+  intros. apply ST_DerefStep. exact H.
+Qed.
+
+(** Multi-step congruence for handle (body position):
+    if e -->* e' then handle e with x -> h -->* handle e' with x -> h. *)
+Lemma multi_step_handle : forall e e' x h st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EHandle e x h, st, ctx) -->* (EHandle e' x h, st', ctx').
+Proof.
+  intros e e' x h st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => EHandle e0 x h)); auto.
+  intros. apply ST_HandleStep. exact H.
+Qed.
+
+(** Multi-step congruence for perform:
+    if e -->* e' then perform eff e -->* perform eff e'. *)
+Lemma multi_step_perform : forall eff e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EPerform eff e, st, ctx) -->* (EPerform eff e', st', ctx').
+Proof.
+  intros eff e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => EPerform eff e0)); auto.
+  intros. apply ST_PerformStep. exact H.
+Qed.
+
+(** Multi-step congruence for inl:
+    if e -->* e' then inl(e, T) -->* inl(e', T). *)
+Lemma multi_step_inl : forall e e' T st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EInl e T, st, ctx) -->* (EInl e' T, st', ctx').
+Proof.
+  intros e e' T st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => EInl e0 T)); auto.
+  intros. apply ST_InlStep. exact H.
+Qed.
+
+(** Multi-step congruence for inr:
+    if e -->* e' then inr(e, T) -->* inr(e', T). *)
+Lemma multi_step_inr : forall e e' T st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EInr e T, st, ctx) -->* (EInr e' T, st', ctx').
+Proof.
+  intros e e' T st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => EInr e0 T)); auto.
+  intros. apply ST_InrStep. exact H.
+Qed.
+
+(** Multi-step congruence for assign (left position):
+    if e1 -->* e1' then (e1 := e2) -->* (e1' := e2). *)
+Lemma multi_step_assign1 : forall e1 e1' e2 st st' ctx ctx',
+  (e1, st, ctx) -->* (e1', st', ctx') ->
+  (EAssign e1 e2, st, ctx) -->* (EAssign e1' e2, st', ctx').
+Proof.
+  intros e1 e1' e2 st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e => EAssign e e2)); auto.
+  intros. apply ST_Assign1. exact H.
+Qed.
+
+(** Multi-step congruence for assign (right position):
+    if v1 is a value and e2 -->* e2' then (v1 := e2) -->* (v1 := e2'). *)
+Lemma multi_step_assign2 : forall v1 e2 e2' st st' ctx ctx',
+  value v1 ->
+  (e2, st, ctx) -->* (e2', st', ctx') ->
+  (EAssign v1 e2, st, ctx) -->* (EAssign v1 e2', st', ctx').
+Proof.
+  intros v1 e2 e2' st st' ctx ctx' Hval Hms.
+  apply (multi_step_congruence_1 (fun e => EAssign v1 e)); auto.
+  intros. apply ST_Assign2; assumption.
+Qed.
+
+(** Multi-step congruence for require:
+    if e -->* e' then require eff e -->* require eff e'. *)
+Lemma multi_step_require : forall eff e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (ERequire eff e, st, ctx) -->* (ERequire eff e', st', ctx').
+Proof.
+  intros eff e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => ERequire eff e0)); auto.
+  intros. apply ST_RequireStep. exact H.
+Qed.
+
+(** Multi-step congruence for grant:
+    if e -->* e' then grant eff e -->* grant eff e'. *)
+Lemma multi_step_grant : forall eff e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  (EGrant eff e, st, ctx) -->* (EGrant eff e', st', ctx').
+Proof.
+  intros eff e e' st st' ctx ctx' Hms.
+  apply (multi_step_congruence_1 (fun e0 => EGrant eff e0)); auto.
+  intros. apply ST_GrantStep. exact H.
 Qed.
 
 (** End of Semantics.v *)

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BinarySizeBounds - Isabelle/HOL Port
@@ -21,13 +23,25 @@
  * | LoopInfo           | loop_info              | OK     |
  * | GenericInfo        | generic_info           | OK     |
  * | ROMLayout          | rom_layout             | OK     |
+ * | FLASH_64K          | FLASH_64K              | OK     |
+ * | FLASH_256K         | FLASH_256K             | OK     |
+ * | FLASH_128K         | FLASH_128K             | OK     |
+ * | RAM_8K             | RAM_8K                 | OK     |
+ * | RAM_64K            | RAM_64K                | OK     |
+ * | RAM_32K            | RAM_32K                | OK     |
  * | arm_cortex_m0      | arm_cortex_m0          | OK     |
  * | arm_cortex_m4      | arm_cortex_m4          | OK     |
  * | riscv32            | riscv32                | OK     |
  * | instr_size         | instr_size             | OK     |
+ * | bb_size            | bb_size                | OK     |
+ * | sum_bb_sizes       | sum_bb_sizes           | OK     |
  * | func_size          | func_size              | OK     |
+ * | sum_func_sizes     | sum_func_sizes         | OK     |
  * | mod_size           | mod_size               | OK     |
+ * | sum_mod_sizes      | sum_mod_sizes          | OK     |
  * | prog_size          | prog_size              | OK     |
+ * | data_section_size  | data_section_size      | OK     |
+ * | bss_section_size   | bss_section_size       | OK     |
  * | stack_frame_size   | stack_frame_size       | OK     |
  * | inline_expanded_size | inline_expanded_size   | OK     |
  * | unrolled_loop_size | unrolled_loop_size     | OK     |
@@ -75,28 +89,28 @@ datatype instr =
 
 (* ArchParams (matches Coq: Record ArchParams) *)
 record arch_params =
-  arch_word_size :: Size  (* 4 for 32-bit, 8 for 64-bit *)
-  arch_max_instr_size :: Size  (* Max instruction bytes *)
-  arch_call_overhead :: Size  (* Call instruction size *)
-  arch_ret_overhead :: Size  (* Return instruction size *)
-  arch_flash_size :: Size  (* Total flash available *)
-  arch_ram_size :: Size  (* Total RAM available *)
+  arch_word_size :: Size
+  arch_max_instr_size :: Size
+  arch_call_overhead :: Size
+  arch_ret_overhead :: Size
+  arch_flash_size :: Size
+  arch_ram_size :: Size
 
 (* Function (matches Coq: Record Function) *)
 record function =
   func_blocks :: 'a list
-  func_locals :: nat  (* Local variable count *)
+  func_locals :: nat
 
 (* Module (matches Coq: Record Module) *)
 record module =
   mod_functions :: 'a list
-  mod_data :: Size  (* Initialized data *)
-  mod_bss :: Size  (* Zero-initialized data *)
+  mod_data :: Size
+  mod_bss :: Size
 
 (* Program (matches Coq: Record Program) *)
 record program =
   prog_modules :: 'a list
-  prog_startup :: Size  (* Startup code size *)
+  prog_startup :: Size
 
 (* StackFrame (matches Coq: Record StackFrame) *)
 record stack_frame =
@@ -120,38 +134,86 @@ record generic_info =
 
 (* ROMLayout (matches Coq: Record ROMLayout) *)
 record rom_layout =
-  rom_text :: Size  (* Code section *)
-  rom_rodata :: Size  (* Read-only data *)
-  rom_init_data :: Size  (* Initialized data *)
+  rom_text :: Size
+  rom_rodata :: Size
+  rom_init_data :: Size
+
+(* FLASH_64K (matches Coq: Definition FLASH_64K) *)
+definition FLASH_64K :: "nat" where
+  "FLASH_64K \<equiv> Z.to_nat 65536%Z"
+
+(* FLASH_256K (matches Coq: Definition FLASH_256K) *)
+definition FLASH_256K :: "nat" where
+  "FLASH_256K \<equiv> Z.to_nat 262144%Z"
+
+(* FLASH_128K (matches Coq: Definition FLASH_128K) *)
+definition FLASH_128K :: "nat" where
+  "FLASH_128K \<equiv> Z.to_nat 131072%Z"
+
+(* RAM_8K (matches Coq: Definition RAM_8K) *)
+definition RAM_8K :: "nat" where
+  "RAM_8K \<equiv> Z.to_nat 8192%Z"
+
+(* RAM_64K (matches Coq: Definition RAM_64K) *)
+definition RAM_64K :: "nat" where
+  "RAM_64K \<equiv> Z.to_nat 65536%Z"
+
+(* RAM_32K (matches Coq: Definition RAM_32K) *)
+definition RAM_32K :: "nat" where
+  "RAM_32K \<equiv> Z.to_nat 32768%Z"
 
 (* arm_cortex_m0 (matches Coq: Definition arm_cortex_m0) *)
 definition arm_cortex_m0 :: "ArchParams" where
-  "arm_cortex_m0 \<equiv> mkArch 4 4 4 2 65536 8192"
+  "arm_cortex_m0 \<equiv> mkArch 4 4 4 2 FLASH_64K RAM_8K"
 
 (* arm_cortex_m4 (matches Coq: Definition arm_cortex_m4) *)
 definition arm_cortex_m4 :: "ArchParams" where
-  "arm_cortex_m4 \<equiv> mkArch 4 4 4 2 262144 65536"
+  "arm_cortex_m4 \<equiv> mkArch 4 4 4 2 FLASH_256K RAM_64K"
 
 (* riscv32 (matches Coq: Definition riscv32) *)
 definition riscv32 :: "ArchParams" where
-  "riscv32 \<equiv> mkArch 4 4 4 4 131072 32768"
+  "riscv32 \<equiv> mkArch 4 4 4 4 FLASH_128K RAM_32K"
 
 (* instr_size (matches Coq: Definition instr_size) *)
 definition instr_size :: "ArchParams \<Rightarrow> Instr \<Rightarrow> Size" where
   "instr_size arch i \<equiv> arch_max_instr_size arch"
+
+(* bb_size (matches Coq: Definition bb_size) *)
+fun bb_size :: "ArchParams \<Rightarrow> BasicBlock \<Rightarrow> Size" where
+
+
+(* sum_bb_sizes (matches Coq: Definition sum_bb_sizes) *)
+fun sum_bb_sizes :: "ArchParams \<Rightarrow> Size" where
+
 
 (* func_size (matches Coq: Definition func_size) *)
 definition func_size :: "ArchParams \<Rightarrow> Function \<Rightarrow> Size" where
   "func_size arch f \<equiv> sum_bb_sizes arch (func_blocks f) +
   arch_call_overhead arch + arch_ret_overhead arch"
 
+(* sum_func_sizes (matches Coq: Definition sum_func_sizes) *)
+fun sum_func_sizes :: "ArchParams \<Rightarrow> Size" where
+
+
 (* mod_size (matches Coq: Definition mod_size) *)
 definition mod_size :: "ArchParams \<Rightarrow> Module \<Rightarrow> Size" where
   "mod_size arch m \<equiv> sum_func_sizes arch (mod_functions m) + mod_data m"
 
+(* sum_mod_sizes (matches Coq: Definition sum_mod_sizes) *)
+fun sum_mod_sizes :: "ArchParams \<Rightarrow> Size" where
+
+
 (* prog_size (matches Coq: Definition prog_size) *)
 definition prog_size :: "ArchParams \<Rightarrow> Program \<Rightarrow> Size" where
   "prog_size arch p \<equiv> sum_mod_sizes arch (prog_modules p) + prog_startup p"
+
+(* data_section_size (matches Coq: Definition data_section_size) *)
+fun data_section_size :: "DataSection \<Rightarrow> Size" where
+
+
+(* bss_section_size (matches Coq: Definition bss_section_size) *)
+fun bss_section_size :: "BSSSection \<Rightarrow> Size" where
+
 
 (* stack_frame_size (matches Coq: Definition stack_frame_size) *)
 definition stack_frame_size :: "ArchParams \<Rightarrow> StackFrame \<Rightarrow> Size" where

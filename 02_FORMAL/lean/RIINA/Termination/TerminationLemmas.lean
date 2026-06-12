@@ -87,7 +87,7 @@ theorem exp_rel_step1_snd_typed : ∀ St T1 T2 v v' st1 st2 ctx St' ε, has_type
   simp_all [Bool.and_eq_true]
 
 /-- exp_rel_step1_case_typed (matches Coq) -/
-theorem exp_rel_step1_case_typed : ∀ St T T1 T2 v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx St' ε, has_type nil St' Public v (TSum T1 T2) ε → has_type nil St' Public v' (TSum T1 T2) ε → value v → value v' → store_rel_0 St' st1 st2 → store_ty_extends St St' → (∀ v1, value v1 → terminates ([x1 := v1] e1) st1 ctx) → (∀ v2, value v2 → terminates ([x2 := v2] e2) st1 ctx) → (∀ v1', value v1' → terminates ([x1 := v1'] e1') st2 ctx) → (∀ v2', value v2' → terminates ([x2 := v2'] e2') st2 ctx) → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx1') ∧ (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T r1 r2 ∧ store_rel_0 St'' st1' st2' := by
+theorem exp_rel_step1_case_typed : ∀ St T T1 T2 v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx St' ε, has_type nil St' Public v (TSum T1 T2) ε → has_type nil St' Public v' (TSum T1 T2) ε → value v → value v' → store_rel_0 St' st1 st2 → store_ty_extends St St' → (∀ v1, value v1 → terminates (subst[x1 := v1] e1) st1 ctx) → (∀ v2, value v2 → terminates (subst[x2 := v2] e2) st1 ctx) → (∀ v1', value v1' → terminates (subst[x1 := v1'] e1') st2 ctx) → (∀ v2', value v2' → terminates (subst[x2 := v2'] e2') st2 ctx) → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx1') ∧ (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T r1 r2 ∧ store_rel_0 St'' st1' st2' := by
   simp_all [Bool.and_eq_true]
 
 /-- exp_rel_step1_if_typed (matches Coq) -/
@@ -95,15 +95,15 @@ theorem exp_rel_step1_if_typed : ∀ St T v v' e2 e2' e3 e3' st1 st2 ctx St' ε,
   simp_all [Bool.and_eq_true]
 
 /-- exp_rel_step1_let_typed (matches Coq) -/
-theorem exp_rel_step1_let_typed : ∀ St T v v' x e2 e2' st1 st2 ctx St', value v → value v' → store_rel_0 St' st1 st2 → store_ty_extends St St' → terminates ([x := v] e2) st1 ctx → terminates ([x := v'] e2') st2 ctx → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (ELet x v e2, st1, ctx) -->* (r1, st1', ctx1') ∧ (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T r1 r2 ∧ store_rel_0 St'' st1' st2' := by
+theorem exp_rel_step1_let_typed : ∀ St T v v' x e2 e2' st1 st2 ctx St', value v → value v' → store_rel_0 St' st1 st2 → store_ty_extends St St' → terminates (subst[x := v] e2) st1 ctx → terminates (subst[x := v'] e2') st2 ctx → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (ELet x v e2, st1, ctx) -->* (r1, st1', ctx1') ∧ (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T r1 r2 ∧ store_rel_0 St'' st1' st2' := by
   simp_all [Bool.and_eq_true]
 
 /-- exp_rel_step1_handle_typed (matches Coq) -/
-theorem exp_rel_step1_handle_typed : ∀ St T v v' x h h' st1 st2 ctx St', value v → value v' → store_rel_0 St' st1 st2 → store_ty_extends St St' → terminates ([x := v] h) st1 ctx → terminates ([x := v'] h') st2 ctx → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (EHandle v x h, st1, ctx) -->* (r1, st1', ctx1') ∧ (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T r1 r2 ∧ store_rel_0 St'' st1' st2' := by
+theorem exp_rel_step1_handle_typed : ∀ St T v v' x h h' st1 st2 ctx St', value v → value v' → store_rel_0 St' st1 st2 → store_ty_extends St St' → terminates (subst[x := v] h) st1 ctx → terminates (subst[x := v'] h') st2 ctx → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (EHandle v x h, st1, ctx) -->* (r1, st1', ctx1') ∧ (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T r1 r2 ∧ store_rel_0 St'' st1' st2' := by
   simp_all [Bool.and_eq_true]
 
 /-- exp_rel_step1_app_typed (matches Coq) -/
-theorem exp_rel_step1_app_typed : ∀ St T1 T2 f f' a a' st1 st2 ctx St' ε ε', has_type nil St' Public f (TFn T1 T2 ε) ε' → has_type nil St' Public f' (TFn T1 T2 ε) ε' → value f → value f' → value a → value a' → store_rel_0 St' st1 st2 → store_ty_extends St St' → (∀ x body, f = ELam x T1 body → terminates ([x := a] body) st1 ctx) → (∀ x body, f' = ELam x T1 body → terminates ([x := a'] body) st2 ctx) → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx1') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T2 r1 r2 ∧ store_rel_0 St'' st1' st2' := by
+theorem exp_rel_step1_app_typed : ∀ St T1 T2 f f' a a' st1 st2 ctx St' ε ε', has_type nil St' Public f (TFn T1 T2 ε) ε' → has_type nil St' Public f' (TFn T1 T2 ε) ε' → value f → value f' → value a → value a' → store_rel_0 St' st1 st2 → store_ty_extends St St' → (∀ x body, f = ELam x T1 body → terminates (subst[x := a] body) st1 ctx) → (∀ x body, f' = ELam x T1 body → terminates (subst[x := a'] body) st2 ctx) → ∃ r1 r2 st1' st2' ctx1' ctx2' St'', store_ty_extends St' St'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx1') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx2') ∧ value r1 ∧ value r2 ∧ val_rel_0 St'' T2 r1 r2 ∧ store_rel_0 St'' st1' st2' := by
   simp_all [Bool.and_eq_true]
 
 -- Multi-step composed with single step
@@ -158,12 +158,12 @@ theorem if_false_terminates : ∀ e2 e3 st ctx, terminates e3 st ctx → termina
 
 -- Let terminates if the substituted body terminates
 /-- let_terminates (matches Coq) -/
-theorem let_terminates : ∀ x v e2 st ctx, value v → terminates ([x := v] e2) st ctx → terminates (ELet x v e2) st ctx := by
+theorem let_terminates : ∀ x v e2 st ctx, value v → terminates (subst[x := v] e2) st ctx → terminates (ELet x v e2) st ctx := by
   simp_all [Bool.and_eq_true]
 
 -- App terminates if the substituted body terminates
 /-- app_lam_terminates (matches Coq) -/
-theorem app_lam_terminates : ∀ x T body v st ctx, value v → terminates ([x := v] body) st ctx → terminates (EApp (ELam x T body) v) st ctx := by
+theorem app_lam_terminates : ∀ x T body v st ctx, value v → terminates (subst[x := v] body) st ctx → terminates (EApp (ELam x T body) v) st ctx := by
   simp_all [Bool.and_eq_true]
 
 -- Values terminate immediately
@@ -172,15 +172,15 @@ theorem value_terminates : ∀ v st ctx, value v → terminates v st ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- case_inl_terminates (matches Coq) -/
-theorem case_inl_terminates : ∀ v T x1 e1 x2 e2 st ctx, value v → terminates ([x1 := v] e1) st ctx → terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx := by
+theorem case_inl_terminates : ∀ v T x1 e1 x2 e2 st ctx, value v → terminates (subst[x1 := v] e1) st ctx → terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- case_inr_terminates (matches Coq) -/
-theorem case_inr_terminates : ∀ v T x1 e1 x2 e2 st ctx, value v → terminates ([x2 := v] e2) st ctx → terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx := by
+theorem case_inr_terminates : ∀ v T x1 e1 x2 e2 st ctx, value v → terminates (subst[x2 := v] e2) st ctx → terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- handle_terminates (matches Coq) -/
-theorem handle_terminates : ∀ x v h st ctx, value v → terminates ([x := v] h) st ctx → terminates (EHandle v x h) st ctx := by
+theorem handle_terminates : ∀ x v h st ctx, value v → terminates (subst[x := v] h) st ctx → terminates (EHandle v x h) st ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- terminates_trans (matches Coq) -/

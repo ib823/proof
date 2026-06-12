@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WirelessProtocols - Isabelle/HOL Port
@@ -102,7 +104,7 @@ record wireless_connection =
 (* BluetoothPairing (matches Coq: Record BluetoothPairing) *)
 record bluetooth_pairing =
   bt_device_id :: nat
-  bt_pairing_method :: nat  (* 0=none, 1=pin, 2=oob, 3=numeric_comparison *)
+  bt_pairing_method :: nat
   bt_authenticated :: bool
   bt_bonded :: bool
 
@@ -187,9 +189,10 @@ record wireless_coexistence =
 
 (* secure_connection (matches Coq: Definition secure_connection) *)
 definition secure_connection :: "WirelessConnection \<Rightarrow> bool" where
-  "secure_connection c \<equiv> conn_encrypted c = true /\ conn_authenticated c = true"
+  "secure_connection c \<equiv> conn_encrypted c = True /\ conn_authenticated c = True"
 
-(* protocol_secure - complex match, manual review needed *)
+(* protocol_secure - complex match, needs manual translation *)
+definition protocol_secure :: "bool" where "protocol_secure = undefined"
 
 (* well_formed_wireless (matches Coq: Definition well_formed_wireless) *)
 definition well_formed_wireless :: "WirelessConnection \<Rightarrow> bool" where
@@ -197,11 +200,11 @@ definition well_formed_wireless :: "WirelessConnection \<Rightarrow> bool" where
 
 (* bt_pairing_authenticated (matches Coq: Definition bt_pairing_authenticated) *)
 definition bt_pairing_authenticated :: "BluetoothPairing \<Rightarrow> bool" where
-  "bt_pairing_authenticated bp \<equiv> bt_authenticated bp = true /\ bt_pairing_method bp > 0"
+  "bt_pairing_authenticated bp \<equiv> bt_authenticated bp = True /\ bt_pairing_method bp > 0"
 
 (* wifi_connection_encrypted (matches Coq: Definition wifi_connection_encrypted) *)
 definition wifi_connection_encrypted :: "WiFiConnection \<Rightarrow> bool" where
-  "wifi_connection_encrypted wc \<equiv> wifi_encrypted wc = true /\ (wifi_security wc = WPA3 \/ wifi_security wc = WPA2)"
+  "wifi_connection_encrypted wc \<equiv> wifi_encrypted wc = True /\ (wifi_security wc = WPA3 \/ wifi_security wc = WPA2)"
 
 (* nfc_range_limited (matches Coq: Definition nfc_range_limited) *)
 definition nfc_range_limited :: "NFCTransaction \<Rightarrow> bool" where
@@ -213,15 +216,15 @@ definition uwb_distance_accurate :: "UWBRanging \<Rightarrow> bool" where
 
 (* bt_data_is_encrypted (matches Coq: Definition bt_data_is_encrypted) *)
 definition bt_data_is_encrypted :: "BTDataTransfer \<Rightarrow> bool" where
-  "bt_data_is_encrypted td \<equiv> bt_data_encrypted td = true"
+  "bt_data_is_encrypted td \<equiv> bt_data_encrypted td = True"
 
 (* wifi_password_secure (matches Coq: Definition wifi_password_secure) *)
 definition wifi_password_secure :: "WiFiConnection \<Rightarrow> bool" where
-  "wifi_password_secure wc \<equiv> wifi_password_stored_plaintext wc = false"
+  "wifi_password_secure wc \<equiv> wifi_password_stored_plaintext wc = False"
 
 (* airdrop_permitted (matches Coq: Definition airdrop_permitted) *)
 definition airdrop_permitted :: "AirDropSession \<Rightarrow> bool" where
-  "airdrop_permitted a \<equiv> airdrop_permission_granted a = true /\ airdrop_encrypted a = true"
+  "airdrop_permitted a \<equiv> airdrop_permission_granted a = True /\ airdrop_encrypted a = True"
 
 (* bt_discovery_bounded (matches Coq: Definition bt_discovery_bounded) *)
 definition bt_discovery_bounded :: "BTServiceDiscovery \<Rightarrow> bool" where
@@ -233,11 +236,11 @@ definition wifi_scan_throttled :: "WiFiScan \<Rightarrow> bool" where
 
 (* nfc_transaction_atomic (matches Coq: Definition nfc_transaction_atomic) *)
 definition nfc_transaction_atomic :: "NFCTransaction \<Rightarrow> bool" where
-  "nfc_transaction_atomic tx \<equiv> nfc_atomic tx = true"
+  "nfc_transaction_atomic tx \<equiv> nfc_atomic tx = True"
 
 (* uwb_anchor_is_validated (matches Coq: Definition uwb_anchor_is_validated) *)
 definition uwb_anchor_is_validated :: "UWBAnchor \<Rightarrow> bool" where
-  "uwb_anchor_is_validated a \<equiv> anchor_validated a = true /\ anchor_certificate a > 0"
+  "uwb_anchor_is_validated a \<equiv> anchor_validated a = True /\ anchor_certificate a > 0"
 
 (* bt_connection_has_timeout (matches Coq: Definition bt_connection_has_timeout) *)
 definition bt_connection_has_timeout :: "BTConnection \<Rightarrow> bool" where
@@ -245,15 +248,15 @@ definition bt_connection_has_timeout :: "BTConnection \<Rightarrow> bool" where
 
 (* wifi_roaming_is_seamless (matches Coq: Definition wifi_roaming_is_seamless) *)
 definition wifi_roaming_is_seamless :: "WiFiRoaming \<Rightarrow> bool" where
-  "wifi_roaming_is_seamless wr \<equiv> roaming_seamless wr = true /\ roaming_encrypted wr = true"
+  "wifi_roaming_is_seamless wr \<equiv> roaming_seamless wr = True /\ roaming_encrypted wr = True"
 
 (* nfc_emulation_is_authorized (matches Coq: Definition nfc_emulation_is_authorized) *)
 definition nfc_emulation_is_authorized :: "NFCEmulation \<Rightarrow> bool" where
-  "nfc_emulation_is_authorized ne \<equiv> nfc_emu_authorized ne = true /\ nfc_emu_secure_element ne = true"
+  "nfc_emulation_is_authorized ne \<equiv> nfc_emu_authorized ne = True /\ nfc_emu_secure_element ne = True"
 
 (* coexistence_is_managed (matches Coq: Definition coexistence_is_managed) *)
 definition coexistence_is_managed :: "WirelessCoexistence \<Rightarrow> bool" where
-  "coexistence_is_managed wc \<equiv> coexistence_managed wc = true /\ interference_level wc <= max_interference wc"
+  "coexistence_is_managed wc \<equiv> coexistence_managed wc = True /\ interference_level wc <= max_interference wc"
 
 (* wifi_requires_wpa (matches Coq) *)
 lemma wifi_requires_wpa: "\<forall> (c : WirelessConnection), conn_protocol c = WiFi \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = WPA3 \<or> conn_security c = WPA2"

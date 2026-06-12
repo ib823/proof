@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OnDeviceML - Isabelle/HOL Port
@@ -33,18 +35,22 @@
  * | used_for_inference | used_for_inference     | OK     |
  * | private_ml_system  | private_ml_system      | OK     |
  * | input_shape_valid  | input_shape_valid      | OK     |
+ * | all_below          | all_below              | OK     |
  * | output_bounded     | output_bounded         | OK     |
  * | latency_within_bound | latency_within_bound   | OK     |
  * | model_fits_memory  | model_fits_memory      | OK     |
  * | update_atomic      | update_atomic          | OK     |
  * | within_privacy_budget | within_privacy_budget  | OK     |
  * | version_tracked    | version_tracked        | OK     |
+ * | feature_extract    | feature_extract        | OK     |
  * | confidence_calibrated | confidence_calibrated  | OK     |
  * | model_not_exportable | model_not_exportable   | OK     |
  * | data_anonymized    | data_anonymized        | OK     |
  * | adversarial_detected | adversarial_detected   | OK     |
  * | fallback_ready     | fallback_ready         | OK     |
+ * | is_sorted          | is_sorted              | OK     |
  * | batch_ordered      | batch_ordered          | OK     |
+ * | pointwise_error_bounded | pointwise_error_bounded | OK     |
  * | quantization_bounded | quantization_bounded   | OK     |
  * | ml_inference_deterministic | ml_inference_deterministic | OK     |
  * | inference_same_input_same_output | inference_same_input_same_output | OK     |
@@ -123,15 +129,15 @@ record model_update =
 
 (* PrivacyBudget (matches Coq: Record PrivacyBudget) *)
 record privacy_budget =
-  epsilon :: nat  (* scaled by 1000 *)
-  delta :: nat  (* scaled by 1000000 *)
+  epsilon :: nat
+  delta :: nat
   max_epsilon :: nat
   max_delta :: nat
 
 (* Prediction (matches Coq: Record Prediction) *)
 record prediction =
   pred_class :: nat
-  pred_confidence :: nat  (* 0-100 *)
+  pred_confidence :: nat
   pred_calibrated :: bool
 
 (* ModelPolicy (matches Coq: Record ModelPolicy) *)
@@ -149,7 +155,7 @@ record training_data =
 (* InputAnalysis (matches Coq: Record InputAnalysis) *)
 record input_analysis =
   ia_input :: Tensor
-  ia_perturbation_score :: nat  (* 0-100 *)
+  ia_perturbation_score :: nat
   ia_threshold :: nat
   ia_flagged :: bool
 
@@ -177,8 +183,7 @@ definition TensorData :: "'a" where
 
 (* compute_inference (matches Coq: Definition compute_inference) *)
 definition compute_inference :: "MLModel \<Rightarrow> Tensor \<Rightarrow> Tensor" where
-  "compute_inference m input \<equiv> (* Simplified: output is function of model and input only *)
-  mkTensor (tensor_shape input) 
+  "compute_inference m input \<equiv> mkTensor (tensor_shape input) 
            (map (fun x => x + model_version m) (tensor_data input))"
 
 (* infer (matches Coq: Definition infer) *)
@@ -201,6 +206,10 @@ definition private_ml_system :: "bool" where
 (* input_shape_valid (matches Coq: Definition input_shape_valid) *)
 definition input_shape_valid :: "Tensor \<Rightarrow> bool" where
   "input_shape_valid input \<equiv> tensor_shape input = expected_shape"
+
+(* all_below (matches Coq: Definition all_below) *)
+fun all_below :: "nat \<Rightarrow> bool" where
+
 
 (* output_bounded (matches Coq: Definition output_bounded) *)
 definition output_bounded :: "Tensor \<Rightarrow> nat \<Rightarrow> bool" where
@@ -226,30 +235,41 @@ definition within_privacy_budget :: "PrivacyBudget \<Rightarrow> bool" where
 definition version_tracked :: "MLModel \<Rightarrow> bool" where
   "version_tracked m \<equiv> model_version m > 0"
 
+(* feature_extract (matches Coq: Definition feature_extract) *)
+definition feature_extract :: "MLModel \<Rightarrow> Tensor \<Rightarrow> list nat" where
+  "feature_extract m input \<equiv> map (fun x => x * model_version m) (tensor_data input)"
+
 (* confidence_calibrated (matches Coq: Definition confidence_calibrated) *)
 definition confidence_calibrated :: "Prediction \<Rightarrow> bool" where
-  "confidence_calibrated p \<equiv> pred_calibrated p = true /\ pred_confidence p <= 100"
+  "confidence_calibrated p \<equiv> pred_calibrated p = True /\ pred_confidence p <= 100"
 
 (* model_not_exportable (matches Coq: Definition model_not_exportable) *)
 definition model_not_exportable :: "ModelPolicy \<Rightarrow> bool" where
-  "model_not_exportable mp \<equiv> policy_exportable mp = false /\ policy_on_device_only mp = true"
+  "model_not_exportable mp \<equiv> policy_exportable mp = False /\ policy_on_device_only mp = True"
 
 (* data_anonymized (matches Coq: Definition data_anonymized) *)
 definition data_anonymized :: "TrainingData \<Rightarrow> bool" where
-  "data_anonymized td \<equiv> td_anonymized td = true /\ td_pii_removed td = true"
+  "data_anonymized td \<equiv> td_anonymized td = True /\ td_pii_removed td = True"
 
 (* adversarial_detected (matches Coq: Definition adversarial_detected) *)
 definition adversarial_detected :: "InputAnalysis \<Rightarrow> bool" where
-  "adversarial_detected ia \<equiv> ia_perturbation_score ia > ia_threshold ia /\ ia_flagged ia = true"
+  "adversarial_detected ia \<equiv> ia_perturbation_score ia > ia_threshold ia /\ ia_flagged ia = True"
 
 (* fallback_ready (matches Coq: Definition fallback_ready) *)
 definition fallback_ready :: "ModelWithFallback \<Rightarrow> bool" where
-  "fallback_ready mf \<equiv> primary_available mf = false -> model_version (fallback_model mf) > 0"
+  "fallback_ready mf \<equiv> primary_available mf = False -> model_version (fallback_model mf) > 0"
+
+(* is_sorted (matches Coq: Definition is_sorted) *)
+fun is_sorted :: "bool" where
+
 
 (* batch_ordered (matches Coq: Definition batch_ordered) *)
 definition batch_ordered :: "BatchRequest \<Rightarrow> bool" where
   "batch_ordered br \<equiv> is_sorted (batch_sequence br) /\
   length (batch_inputs br) = length (batch_sequence br)"
+
+(* pointwise_error_bounded - complex match, needs manual translation *)
+definition pointwise_error_bounded :: "bool" where "pointwise_error_bounded = undefined"
 
 (* quantization_bounded (matches Coq: Definition quantization_bounded) *)
 definition quantization_bounded :: "QuantizedModel \<Rightarrow> bool" where

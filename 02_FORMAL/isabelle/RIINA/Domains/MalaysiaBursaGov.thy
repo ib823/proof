@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaBursaGov - Isabelle/HOL Port
@@ -18,6 +20,7 @@
  * | connectivity_secured | connectivity_secured   | OK     |
  * | bcp_ready          | bcp_ready              | OK     |
  * | bursa_fully_compliant | bursa_fully_compliant  | OK     |
+ * | all_participant_types | all_participant_types  | OK     |
  * | risk_managed       | risk_managed           | OK     |
  * | ts_availability_adequate | ts_availability_adequate | OK     |
  * | ts_resilient       | ts_resilient           | OK     |
@@ -60,23 +63,23 @@ datatype participant_type =
 
 (* it_governance_established (matches Coq: Definition it_governance_established) *)
 definition it_governance_established :: "MarketParticipant \<Rightarrow> bool" where
-  "it_governance_established p \<equiv> mp_it_governance p = true"
+  "it_governance_established p \<equiv> mp_it_governance p = True"
 
 (* system_integrity (matches Coq: Definition system_integrity) *)
 definition system_integrity :: "MarketParticipant \<Rightarrow> bool" where
-  "system_integrity p \<equiv> mp_system_integrity p = true"
+  "system_integrity p \<equiv> mp_system_integrity p = True"
 
 (* data_protected (matches Coq: Definition data_protected) *)
 definition data_protected :: "MarketParticipant \<Rightarrow> bool" where
-  "data_protected p \<equiv> mp_data_protected p = true"
+  "data_protected p \<equiv> mp_data_protected p = True"
 
 (* connectivity_secured (matches Coq: Definition connectivity_secured) *)
 definition connectivity_secured :: "MarketParticipant \<Rightarrow> bool" where
-  "connectivity_secured p \<equiv> mp_connectivity_secured p = true"
+  "connectivity_secured p \<equiv> mp_connectivity_secured p = True"
 
 (* bcp_ready (matches Coq: Definition bcp_ready) *)
 definition bcp_ready :: "MarketParticipant \<Rightarrow> bool" where
-  "bcp_ready p \<equiv> mp_bcp_tested p = true"
+  "bcp_ready p \<equiv> mp_bcp_tested p = True"
 
 (* bursa_fully_compliant (matches Coq: Definition bursa_fully_compliant) *)
 definition bursa_fully_compliant :: "MarketParticipant \<Rightarrow> bool" where
@@ -86,9 +89,13 @@ definition bursa_fully_compliant :: "MarketParticipant \<Rightarrow> bool" where
   connectivity_secured p /\
   bcp_ready p"
 
+(* all_participant_types (matches Coq: Definition all_participant_types) *)
+definition all_participant_types :: "list ParticipantType" where
+  "all_participant_types \<equiv> [TradingParticipant; ClearingParticipant; Depository; AuthorisedDepositoryAgent]"
+
 (* risk_managed (matches Coq: Definition risk_managed) *)
 definition risk_managed :: "MarketParticipant \<Rightarrow> bool" where
-  "risk_managed p \<equiv> mp_risk_managed p = true"
+  "risk_managed p \<equiv> mp_risk_managed p = True"
 
 (* ts_availability_adequate (matches Coq: Definition ts_availability_adequate) *)
 definition ts_availability_adequate :: "TradingSystem \<Rightarrow> bool" where
@@ -96,7 +103,7 @@ definition ts_availability_adequate :: "TradingSystem \<Rightarrow> bool" where
 
 (* ts_resilient (matches Coq: Definition ts_resilient) *)
 definition ts_resilient :: "TradingSystem \<Rightarrow> bool" where
-  "ts_resilient ts \<equiv> ts_redundant ts = true /\ ts_failover_tested ts = true"
+  "ts_resilient ts \<equiv> ts_redundant ts = True /\ ts_failover_tested ts = True"
 
 (* bursa_fully_compliant_v2 (matches Coq: Definition bursa_fully_compliant_v2) *)
 definition bursa_fully_compliant_v2 :: "MarketParticipant \<Rightarrow> bool" where

@@ -16,11 +16,11 @@
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
 Require Import RIINA.foundations.Typing.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Wellfounded.Inverse_Image.
-Require Import Coq.Wellfounded.Lexicographic_Product.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Wellfounded.Inverse_Image.
+From Stdlib Require Import Wellfounded.Lexicographic_Product.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** ========================================================================
@@ -120,7 +120,7 @@ Qed.
 Lemma SN_app_value_left_aux : forall v cfg,
   value v ->
   SN cfg ->
-  (forall x body v' st' ctx', value v' -> SN ([x := v'] body, st', ctx')) ->
+  (forall x body v' st' ctx', value v' -> SN (subst[x := v'] body, st', ctx')) ->
   SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg).
 Proof.
   intros v cfg Hv Hsn2 Hbeta.
@@ -141,7 +141,7 @@ Qed.
 Lemma SN_app_value_left : forall v e2 st ctx,
   value v ->
   SN (e2, st, ctx) ->
-  (forall x body v' st' ctx', value v' -> SN ([x := v'] body, st', ctx')) ->
+  (forall x body v' st' ctx', value v' -> SN (subst[x := v'] body, st', ctx')) ->
   SN (EApp v e2, st, ctx).
 Proof.
   intros v e2 st ctx Hv Hsn2 Hbeta.
@@ -152,7 +152,7 @@ Qed.
 Lemma SN_app_aux : forall cfg e2,
   SN cfg ->
   (forall st ctx, SN (e2, st, ctx)) ->
-  (forall x body v st' ctx', value v -> SN ([x := v] body, st', ctx')) ->
+  (forall x body v st' ctx', value v -> SN (subst[x := v] body, st', ctx')) ->
   SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg).
 Proof.
   intros cfg e2 Hsn1 Hsn2 Hbeta.
@@ -179,7 +179,7 @@ Lemma SN_app : forall e1 e2 st ctx,
   (* Beta reduction premise: for any substitution of a value into a body, result is SN *)
   (forall x body v st' ctx',
     value v ->
-    SN ([x := v] body, st', ctx')) ->
+    SN (subst[x := v] body, st', ctx')) ->
   SN (EApp e1 e2, st, ctx).
 Proof.
   intros e1 e2 st ctx Hsn1 Hsn2 Hbeta.
@@ -202,7 +202,7 @@ Qed.
 (** Direct lambda premise: when e1 IS a lambda, substitution is SN *)
 Definition direct_lambda_SN (e1 : expr) : Prop :=
   forall x T body, e1 = ELam x T body ->
-    forall v st ctx, value v -> SN ([x := v] body, st, ctx).
+    forall v st ctx, value v -> SN (subst[x := v] body, st, ctx).
 
 (** Helper: SN_app for values *)
 Lemma SN_app_value_left_direct_aux : forall f cfg,
@@ -474,8 +474,8 @@ Proof. intros. exact (SN_inr_aux (e, st, ctx) T H). Qed.
 
 Lemma SN_case_aux : forall cfg x1 e1 x2 e2,
   SN cfg ->
-  (forall v st' ctx', value v -> SN ([x1 := v] e1, st', ctx')) ->
-  (forall v st' ctx', value v -> SN ([x2 := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x1 := v] e1, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x2 := v] e2, st', ctx')) ->
   SN (ECase (fst (fst cfg)) x1 e1 x2 e2, snd (fst cfg), snd cfg).
 Proof.
   intros cfg x1 e1 x2 e2 Hsn Hinl Hinr.
@@ -491,8 +491,8 @@ Qed.
 
 Lemma SN_case : forall e x1 e1 x2 e2 st ctx,
   SN (e, st, ctx) ->
-  (forall v st' ctx', value v -> SN ([x1 := v] e1, st', ctx')) ->
-  (forall v st' ctx', value v -> SN ([x2 := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x1 := v] e1, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x2 := v] e2, st', ctx')) ->
   SN (ECase e x1 e1 x2 e2, st, ctx).
 Proof. intros. exact (SN_case_aux (e, st, ctx) x1 e1 x2 e2 H H0 H1). Qed.
 
@@ -529,7 +529,7 @@ Proof. intros. exact (SN_if_aux (e1, st, ctx) e2 e3 H H0 H1). Qed.
 
 Lemma SN_let_aux : forall cfg x e2,
   SN cfg ->
-  (forall v st' ctx', value v -> SN ([x := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x := v] e2, st', ctx')) ->
   SN (ELet x (fst (fst cfg)) e2, snd (fst cfg), snd cfg).
 Proof.
   intros cfg x e2 Hsn Hbody.
@@ -543,7 +543,7 @@ Qed.
 
 Lemma SN_let : forall x e1 e2 st ctx,
   SN (e1, st, ctx) ->
-  (forall v st' ctx', value v -> SN ([x := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x := v] e2, st', ctx')) ->
   SN (ELet x e1 e2, st, ctx).
 Proof. intros. exact (SN_let_aux (e1, st, ctx) x e2 H H0). Qed.
 
@@ -717,7 +717,7 @@ Qed.
 
 Lemma SN_handle_aux : forall cfg x h,
   SN cfg ->
-  (forall v st' ctx', value v -> SN ([x := v] h, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x := v] h, st', ctx')) ->
   SN (EHandle (fst (fst cfg)) x h, snd (fst cfg), snd cfg).
 Proof.
   intros cfg x h Hsn Hhandler.
@@ -731,7 +731,7 @@ Qed.
 
 Lemma SN_handle : forall e x h st ctx,
   SN (e, st, ctx) ->
-  (forall v st' ctx', value v -> SN ([x := v] h, st', ctx')) ->
+  (forall v st' ctx', value v -> SN (subst[x := v] h, st', ctx')) ->
   SN (EHandle e x h, st, ctx).
 Proof. intros. exact (SN_handle_aux (e, st, ctx) x h H H0). Qed.
 

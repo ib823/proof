@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HumanFactorSecurity - Isabelle/HOL Port
@@ -19,6 +21,7 @@
  * | PhysicalAccessLevel | physical_access_level  | OK     |
  * | DisposalMethod     | disposal_method        | OK     |
  * | PasswordPolicy     | password_policy        | OK     |
+ * | ConfigManagement   | config_management      | OK     |
  * | ReviewProcess      | review_process         | OK     |
  * | SecurityPolicyState | security_policy_state  | OK     |
  * | webauthn_is_phishing_resistant | webauthn_is_phishing_resistant | OK     |
@@ -111,8 +114,8 @@ begin
 (* AuthMechanism (matches Coq: Inductive AuthMechanism) *)
 datatype auth_mechanism =
     PasswordOnly
-  |     WebAuthn  (* Phishing-resistant FIDO2 *)
-  |     TOTP  (* Time-based OTP *)
+  |     WebAuthn
+  |     TOTP
   |     HardwareToken
   |     Biometric
   |     MultiFactorAuth
@@ -182,11 +185,14 @@ datatype disposal_method =
 (* PasswordPolicy (matches Coq: Inductive PasswordPolicy) *)
 datatype password_policy =
     NoPolicy
-  |     BasicPolicy  (* Length only *)
-  |     StrongPolicy  (* Length + complexity *)
-  |     EnterprisePolicy  (* + rotation + history *)
+  |     BasicPolicy
+  |     StrongPolicy
+  |     EnterprisePolicy
   |     ZeroTrustPolicy
-  |     ManualConfig
+
+(* ConfigManagement (matches Coq: Inductive ConfigManagement) *)
+datatype config_management =
+    ManualConfig
   |     ScriptedConfig
   |     InfraAsCode
   |     AutomatedWithValidation
@@ -204,31 +210,31 @@ datatype review_process =
 record security_policy_state =
   auth_mechanism :: AuthMechanism
   mfa_enabled :: bool
-  webauthn_enforced :: bool  (* Training and awareness *)
+  webauthn_enforced :: bool
   training_status :: TrainingStatus
   phishing_training_complete :: bool
-  social_engineering_awareness :: bool  (* Verification procedures *)
+  social_engineering_awareness :: bool
   verification_level :: VerificationLevel
   callback_verification :: bool
-  out_of_band_verification :: bool  (* Physical security *)
+  out_of_band_verification :: bool
   physical_access_level :: PhysicalAccessLevel
-  privacy_screens_deployed :: bool  (* Data handling *)
+  privacy_screens_deployed :: bool
   disposal_method :: DisposalMethod
   device_control_policy :: bool
-  url_filtering_enabled :: bool  (* Access control *)
+  url_filtering_enabled :: bool
   least_privilege_enforced :: bool
   audit_logging_enabled :: bool
-  credential_monitoring :: bool  (* Resilience controls *)
+  credential_monitoring :: bool
   duress_codes_enabled :: bool
-  plausible_deniability_possible :: bool  (* Personnel security *)
+  plausible_deniability_possible :: bool
   background_checks_performed :: bool
   behavioral_monitoring :: bool
-  security_culture_established :: bool  (* Password controls *)
+  security_culture_established :: bool
   password_policy :: PasswordPolicy
   unique_passwords_enforced :: bool
-  breach_detection_enabled :: bool  (* Technical controls *)
+  breach_detection_enabled :: bool
   technical_controls_active :: bool
-  config_management :: ConfigManagement  (* Review process *)
+  config_management :: ConfigManagement
   review_process :: ReviewProcess
   multi_maintainer_required :: bool
 
@@ -238,52 +244,56 @@ definition webauthn_is_phishing_resistant :: "AuthMechanism \<Rightarrow> bool" 
 
 (* is_phishing_resistant_auth (matches Coq: Definition is_phishing_resistant_auth) *)
 definition is_phishing_resistant_auth :: "SecurityPolicyState \<Rightarrow> bool" where
-  "is_phishing_resistant_auth state \<equiv> webauthn_enforced state = true /\ auth_mechanism state = WebAuthn"
+  "is_phishing_resistant_auth state \<equiv> webauthn_enforced state = True /\ auth_mechanism state = WebAuthn"
 
-(* verification_procedures_adequate - complex match, manual review needed *)
+(* verification_procedures_adequate - complex match, needs manual translation *)
+definition verification_procedures_adequate :: "bool" where "verification_procedures_adequate = undefined"
 
-(* training_effective - complex match, manual review needed *)
+(* training_effective - complex match, needs manual translation *)
+definition training_effective :: "bool" where "training_effective = undefined"
 
 (* executive_verification_enhanced (matches Coq: Definition executive_verification_enhanced) *)
 definition executive_verification_enhanced :: "SecurityPolicyState \<Rightarrow> bool" where
   "executive_verification_enhanced state \<equiv> verification_level state = MultiPartyVerification /\
-  out_of_band_verification state = true"
+  out_of_band_verification state = True"
 
 (* callback_verification_active (matches Coq: Definition callback_verification_active) *)
 definition callback_verification_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "callback_verification_active state \<equiv> callback_verification state = true /\ out_of_band_verification state = true"
+  "callback_verification_active state \<equiv> callback_verification state = True /\ out_of_band_verification state = True"
 
 (* smishing_controls_active (matches Coq: Definition smishing_controls_active) *)
 definition smishing_controls_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "smishing_controls_active state \<equiv> url_filtering_enabled state = true /\ training_effective state"
+  "smishing_controls_active state \<equiv> url_filtering_enabled state = True /\ training_effective state"
 
 (* device_control_active (matches Coq: Definition device_control_active) *)
 definition device_control_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "device_control_active state \<equiv> device_control_policy state = true /\ technical_controls_active state = true"
+  "device_control_active state \<equiv> device_control_policy state = True /\ technical_controls_active state = True"
 
-(* physical_access_controlled - complex match, manual review needed *)
+(* physical_access_controlled - complex match, needs manual translation *)
+definition physical_access_controlled :: "bool" where "physical_access_controlled = undefined"
 
-(* secure_disposal_implemented - complex match, manual review needed *)
+(* secure_disposal_implemented - complex match, needs manual translation *)
+definition secure_disposal_implemented :: "bool" where "secure_disposal_implemented = undefined"
 
 (* privacy_protection_active (matches Coq: Definition privacy_protection_active) *)
 definition privacy_protection_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "privacy_protection_active state \<equiv> privacy_screens_deployed state = true"
+  "privacy_protection_active state \<equiv> privacy_screens_deployed state = True"
 
 (* insider_threat_controls_active (matches Coq: Definition insider_threat_controls_active) *)
 definition insider_threat_controls_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "insider_threat_controls_active state \<equiv> least_privilege_enforced state = true /\ audit_logging_enabled state = true"
+  "insider_threat_controls_active state \<equiv> least_privilege_enforced state = True /\ audit_logging_enabled state = True"
 
 (* coercion_resilience_active (matches Coq: Definition coercion_resilience_active) *)
 definition coercion_resilience_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "coercion_resilience_active state \<equiv> duress_codes_enabled state = true /\ plausible_deniability_possible state = true"
+  "coercion_resilience_active state \<equiv> duress_codes_enabled state = True /\ plausible_deniability_possible state = True"
 
 (* bribery_controls_active (matches Coq: Definition bribery_controls_active) *)
 definition bribery_controls_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "bribery_controls_active state \<equiv> background_checks_performed state = true /\ behavioral_monitoring state = true"
+  "bribery_controls_active state \<equiv> background_checks_performed state = True /\ behavioral_monitoring state = True"
 
 (* security_culture_active (matches Coq: Definition security_culture_active) *)
 definition security_culture_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "security_culture_active state \<equiv> security_culture_established state = true /\ training_effective state"
+  "security_culture_active state \<equiv> security_culture_established state = True /\ training_effective state"
 
 (* social_engineering_controls_active (matches Coq: Definition social_engineering_controls_active) *)
 definition social_engineering_controls_active :: "SecurityPolicyState \<Rightarrow> bool" where
@@ -291,21 +301,24 @@ definition social_engineering_controls_active :: "SecurityPolicyState \<Rightarr
 
 (* credential_sharing_controls_active (matches Coq: Definition credential_sharing_controls_active) *)
 definition credential_sharing_controls_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "credential_sharing_controls_active state \<equiv> mfa_enabled state = true /\ credential_monitoring state = true"
+  "credential_sharing_controls_active state \<equiv> mfa_enabled state = True /\ credential_monitoring state = True"
 
-(* password_policy_strong - complex match, manual review needed *)
+(* password_policy_strong - complex match, needs manual translation *)
+definition password_policy_strong :: "bool" where "password_policy_strong = undefined"
 
 (* unique_passwords_active (matches Coq: Definition unique_passwords_active) *)
 definition unique_passwords_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "unique_passwords_active state \<equiv> unique_passwords_enforced state = true /\ breach_detection_enabled state = true"
+  "unique_passwords_active state \<equiv> unique_passwords_enforced state = True /\ breach_detection_enabled state = True"
 
 (* unsafe_behavior_controls_active (matches Coq: Definition unsafe_behavior_controls_active) *)
 definition unsafe_behavior_controls_active :: "SecurityPolicyState \<Rightarrow> bool" where
-  "unsafe_behavior_controls_active state \<equiv> training_effective state /\ technical_controls_active state = true"
+  "unsafe_behavior_controls_active state \<equiv> training_effective state /\ technical_controls_active state = True"
 
-(* automated_config_active - complex match, manual review needed *)
+(* automated_config_active - complex match, needs manual translation *)
+definition automated_config_active :: "bool" where "automated_config_active = undefined"
 
-(* multi_maintainer_review_active - complex match, manual review needed *)
+(* multi_maintainer_review_active - complex match, needs manual translation *)
+definition multi_maintainer_review_active :: "bool" where "multi_maintainer_review_active = undefined"
 
 (* threat_mitigated (matches Coq: Definition threat_mitigated) *)
 fun threat_mitigated :: "HumanThreat \<Rightarrow> SecurityPolicyState \<Rightarrow> bool" where
@@ -337,7 +350,7 @@ definition attack_success_rate :: "HumanThreat \<Rightarrow> bool \<Rightarrow> 
 
 (* control_effective (matches Coq: Definition control_effective) *)
 definition control_effective :: "HumanThreat \<Rightarrow> SecurityPolicyState \<Rightarrow> bool" where
-  "control_effective threat state \<equiv> threat_mitigated threat state -> attack_success_rate threat true = 0"
+  "control_effective threat state \<equiv> threat_mitigated threat state -> attack_success_rate threat True = 0"
 
 (* fully_secured_state (matches Coq: Definition fully_secured_state) *)
 definition fully_secured_state :: "SecurityPolicyState \<Rightarrow> bool" where
@@ -366,17 +379,17 @@ definition fully_secured_state :: "SecurityPolicyState \<Rightarrow> bool" where
 (* example_secure_state (matches Coq: Definition example_secure_state) *)
 definition example_secure_state :: "SecurityPolicyState" where
   "example_secure_state \<equiv> mkSecurityPolicy
-    WebAuthn true true                                (* Auth *)
-    CertifiedTrained true true                        (* Training *)
-    MultiPartyVerification true true                  (* Verification *)
-    MantrapRequired true                              (* Physical *)
-    CrossCutShredding true true                       (* Data handling *)
-    true true true                                    (* Access control *)
-    true true                                         (* Resilience *)
-    true true true                                    (* Personnel *)
-    ZeroTrustPolicy true true                         (* Password *)
-    true ImmutableInfrastructure                      (* Technical *)
-    MultiMaintainerReview true"
+    WebAuthn True True                                
+    CertifiedTrained True True                        
+    MultiPartyVerification True True                  
+    MantrapRequired True                              
+    CrossCutShredding True True                       
+    True True True                                    
+    True True                                         
+    True True True                                    
+    ZeroTrustPolicy True True                         
+    True ImmutableInfrastructure                      
+    MultiMaintainerReview True"
 
 (* bool_eq_true (matches Coq) *)
 lemma bool_eq_true: "\<forall> b : bool, b = True <-> b = True"

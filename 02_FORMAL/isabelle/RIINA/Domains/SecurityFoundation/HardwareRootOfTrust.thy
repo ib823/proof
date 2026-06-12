@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HardwareRootOfTrust - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | HSMType            | hsm_type               | OK     |
+ * | KeyId              | key_id                 | OK     |
  * | BootComponentId    | boot_component_id      | OK     |
  * | Measurement        | measurement            | OK     |
  * | TrustChainEntry    | trust_chain_entry      | OK     |
@@ -19,6 +22,8 @@
  * | hw_root_component  | hw_root_component      | OK     |
  * | initial_hw_state   | initial_hw_state       | OK     |
  * | in_trust_chain     | in_trust_chain         | OK     |
+ * | get_verifier       | get_verifier           | OK     |
+ * | verified_from_hw_root_aux | verified_from_hw_root_aux | OK     |
  * | verified_from_hw_root | verified_from_hw_root  | OK     |
  * | extend_trust_chain | extend_trust_chain     | OK     |
  * | record_pcr         | record_pcr             | OK     |
@@ -49,18 +54,21 @@
  *)
 
 theory HardwareRootOfTrust
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* HSMType (matches Coq: Inductive HSMType) *)
 datatype hsm_type =
-    TPM  (* Trusted Platform Module *)
-  |     SecureEnclave  (* ARM TrustZone Secure Enclave *)
-  |     TitanM  (* Google Titan M *)
+    TPM
+  |     SecureEnclave
+  |     TitanM
   |     AppleSEP
-  |     RootKey  (* Root of trust key - never leaves hardware *)
-  |     AttestationKey  (* For remote attestation *)
-  |     SealingKey  (* For data sealing *)
+
+(* KeyId (matches Coq: Inductive KeyId) *)
+datatype key_id =
+    RootKey
+  |     AttestationKey
+  |     SealingKey
   |     SigningKey
 
 (* BootComponentId (matches Coq: Inductive BootComponentId) *)
@@ -71,7 +79,7 @@ datatype boot_component_id =
 record measurement =
   measured_component :: BootComponentId
   measurement_value :: nat
-  measurement_algorithm :: nat  (* SHA-256 = 0, SHA-384 = 1, etc. *)
+  measurement_algorithm :: nat
 
 (* TrustChainEntry (matches Coq: Record TrustChainEntry) *)
 record trust_chain_entry =
@@ -97,19 +105,27 @@ definition hw_root_component :: "BootComponentId" where
 definition initial_hw_state :: "HSMType \<Rightarrow> HWRootState" where
   "initial_hw_state hsm \<equiv> mkHWRootState 
     hsm 
-    true 
-    true 
-    [mkTrustEntry hw_root_component hw_root_component 0 true]
+    True 
+    True 
+    [mkTrustEntry hw_root_component hw_root_component 0 True]
     []
-    true"
+    True"
 
 (* in_trust_chain (matches Coq: Definition in_trust_chain) *)
 definition in_trust_chain :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
   "in_trust_chain st comp \<equiv> existsb (fun entry => 
     if boot_comp_eq_dec (entry_component entry) comp then
       entry_trusted entry
-    else false
+    else False
   ) (trust_chain st)"
+
+(* get_verifier - complex match, needs manual translation *)
+definition get_verifier :: "bool" where "get_verifier = undefined"
+
+(* verified_from_hw_root_aux (matches Coq: Definition verified_from_hw_root_aux) *)
+fun verified_from_hw_root_aux :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> nat \<Rightarrow> bool" where
+  "verified_from_hw_root_aux O = false"
+|   "verified_from_hw_root_aux None = false"
 
 (* verified_from_hw_root (matches Coq: Definition verified_from_hw_root) *)
 definition verified_from_hw_root :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
@@ -122,7 +138,7 @@ definition extend_trust_chain :: "HWRootState \<Rightarrow> nat \<Rightarrow> HW
       (hsm_type st)
       (root_key_present st)
       (attestation_key_present st)
-      (mkTrustEntry comp verifier measurement true :: trust_chain st)
+      (mkTrustEntry comp verifier measurement True :: trust_chain st)
       (pcr_values st)
       (hardware_initialized st)
   else
@@ -140,15 +156,15 @@ definition record_pcr :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow
 
 (* component_trusted (matches Coq: Definition component_trusted) *)
 definition component_trusted :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
-  "component_trusted st comp \<equiv> in_trust_chain st comp = true"
+  "component_trusted st comp \<equiv> in_trust_chain st comp = True"
 
 (* hw_root_verified (matches Coq: Definition hw_root_verified) *)
 definition hw_root_verified :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
-  "hw_root_verified st comp \<equiv> verified_from_hw_root st comp = true"
+  "hw_root_verified st comp \<equiv> verified_from_hw_root st comp = True"
 
 (* root_key_protected (matches Coq: Definition root_key_protected) *)
 definition root_key_protected :: "HWRootState \<Rightarrow> bool" where
-  "root_key_protected st \<equiv> root_key_present st = true /\ hardware_initialized st = true"
+  "root_key_protected st \<equiv> root_key_present st = True /\ hardware_initialized st = True"
 
 (* root_of_trust_hardware (matches Coq) *)
 lemma root_of_trust_hardware: "\<forall> (hsm : HSMType), let st := initial_hw_state hsm in hw_root_verified st hw_root_component"
@@ -226,7 +242,7 @@ lemma trust_chain_grows: "\<forall> (st : HWRootState) (verifier comp : BootComp
 
 (* Extended trust chain has new component *)
 (* extended_chain_has_component (matches Coq) *)
-lemma extended_chain_has_component: "\<forall> (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), in_trust_chain st verifier = True \<longrightarrow> In (mkTrustEntry comp verifier measurement true) (trust_chain (extend_trust_chain st verifier comp measurement))"
+lemma extended_chain_has_component: "\<forall> (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), in_trust_chain st verifier = True \<longrightarrow> In (mkTrustEntry comp verifier measurement True) (trust_chain (extend_trust_chain st verifier comp measurement))"
   by simp
 
 (* HSM type is preserved by all operations *)

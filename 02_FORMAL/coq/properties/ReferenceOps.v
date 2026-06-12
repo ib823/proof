@@ -22,12 +22,12 @@
     - Dreyer et al. (2011) "Logical Step-Indexed Logical Relations"
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
-Require Import Arith.PeanoNat.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
@@ -511,5 +511,114 @@ Qed.
 (** Summary: All admits eliminated *)
 Theorem reference_ops_zero_admits : True.
 Proof. exact I. Qed.
+
+(** ** Reference Operation Properties *)
+
+(** Multi-step context is preserved for ref *)
+Lemma ref_preserves_ctx : forall e sl st v st' ctx ctx',
+  multi_step (ERef e sl, st, ctx) (v, st', ctx') ->
+  value v ->
+  ctx' = ctx.
+Proof.
+  intros. eapply multi_step_preserves_ctx. exact H.
+Qed.
+
+(** Multi-step context is preserved for deref *)
+Lemma deref_preserves_ctx : forall e st v st' ctx ctx',
+  multi_step (EDeref e, st, ctx) (v, st', ctx') ->
+  value v ->
+  ctx' = ctx.
+Proof.
+  intros. eapply multi_step_preserves_ctx. exact H.
+Qed.
+
+(** Multi-step context is preserved for assign *)
+Lemma assign_preserves_ctx : forall e1 e2 st v st' ctx ctx',
+  multi_step (EAssign e1 e2, st, ctx) (v, st', ctx') ->
+  value v ->
+  ctx' = ctx.
+Proof.
+  intros. eapply multi_step_preserves_ctx. exact H.
+Qed.
+
+(** Store relation simple is symmetric in structure *)
+Lemma store_rel_simple_refl : forall Σ st,
+  store_rel_simple Σ st st.
+Proof.
+  intros Σ st. unfold store_rel_simple.
+  reflexivity.
+Qed.
+
+(** Reference creation on related values produces same-length stores *)
+Lemma ref_same_store_max : forall st1 st2 v1 v2 l,
+  store_max st1 = store_max st2 ->
+  store_max (store_update l v1 st1) = store_max (store_update l v2 st2).
+Proof.
+  intros st1 st2 v1 v2 l Hmax.
+  apply store_max_update_eq. exact Hmax.
+Qed.
+
+(** ** Direct Step Lemmas for Reference Operations *)
+
+(** ELoc is always a value *)
+Lemma loc_is_value : forall l, value (ELoc l).
+Proof. intros. apply VLoc. Qed.
+
+(** Deref of location steps to looked-up value *)
+Lemma deref_of_loc_steps : forall l v st ctx,
+  store_lookup l st = Some v ->
+  (EDeref (ELoc l), st, ctx) --> (v, st, ctx).
+Proof. intros. apply ST_DerefLoc. exact H. Qed.
+
+(** Assignment at location with value takes a single step *)
+Lemma assign_loc_value_steps : forall l v v_old st ctx,
+  value v ->
+  store_lookup l st = Some v_old ->
+  (EAssign (ELoc l) v, st, ctx) --> (EUnit, store_update l v st, ctx).
+Proof. intros. eapply ST_AssignLoc; eassumption. Qed.
+
+(** Ref with value takes a single step producing a location *)
+Lemma ref_value_steps : forall v sl st ctx,
+  value v ->
+  (ERef v sl, st, ctx) --> (ELoc (fresh_loc st), store_update (fresh_loc st) v st, ctx).
+Proof. intros. apply ST_RefValue; auto. Qed.
+
+(** Deref of location doesn't change store *)
+Lemma deref_step_preserves_store : forall l v st ctx,
+  store_lookup l st = Some v ->
+  exists st', (EDeref (ELoc l), st, ctx) --> (v, st', ctx) /\ st' = st.
+Proof.
+  intros l v st ctx Hlook.
+  exists st. split; [apply ST_DerefLoc; exact Hlook | reflexivity].
+Qed.
+
+(** ** Value Exclusion for Reference Expressions *)
+
+Lemma value_not_ref_expr : forall e sl, ~ value (ERef e sl).
+Proof. intros e sl H. inversion H. Qed.
+
+Lemma value_not_deref_expr : forall e, ~ value (EDeref e).
+Proof. intros e H. inversion H. Qed.
+
+Lemma value_not_assign_expr : forall e1 e2, ~ value (EAssign e1 e2).
+Proof. intros e1 e2 H. inversion H. Qed.
+
+(** Reference creation on a value produces a location *)
+Lemma ref_result_is_loc : forall v sl st v' st' ctx,
+  value v ->
+  (ERef v sl, st, ctx) --> (v', st', ctx) ->
+  exists l, v' = ELoc l.
+Proof.
+  intros v sl st v' st' ctx Hval Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step; eauto.
+  - exists (fresh_loc st). reflexivity.
+Qed.
+
+(** Subexpression stepping lifts to ERef context *)
+Lemma ref_arg_steps : forall e sl e' st st' ctx,
+  (e, st, ctx) --> (e', st', ctx) ->
+  (ERef e sl, st, ctx) --> (ERef e' sl, st', ctx).
+Proof. intros. apply ST_RefStep; auto. Qed.
 
 (** End of ReferenceOps.v *)

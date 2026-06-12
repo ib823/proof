@@ -26,11 +26,11 @@
 (*   - Penalties increased to RM1,000,000                                    *)
 (* ========================================================================= *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ================================================================ *)
@@ -369,7 +369,7 @@ Theorem pdpa_composition :
   pdpa_fully_compliant r dpo t.
 Proof.
   intros r dpo t Hconsent Hsec Hret Hdpo.
-  unfold pdpa_fully_compliant. repeat split.
+  unfold pdpa_fully_compliant. split; [| split; [| split; [| split]]].
   - exact Hconsent.
   - apply principle_2_purpose_limitation.
   - exact Hsec.

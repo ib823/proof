@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA UIComponents - Isabelle/HOL Port
@@ -232,20 +234,22 @@ record search_bar =
 
 (* visible (matches Coq: Definition visible) *)
 definition visible :: "UIElement \<Rightarrow> bool" where
-  "visible e \<equiv> element_visible e = true"
+  "visible e \<equiv> element_visible e = True"
 
-(* has_accessibility_label - complex match, manual review needed *)
+(* has_accessibility_label - complex match, needs manual translation *)
+definition has_accessibility_label :: "bool" where "has_accessibility_label = undefined"
 
 (* navigable_by_voiceover (matches Coq: Definition navigable_by_voiceover) *)
 definition navigable_by_voiceover :: "UIElement \<Rightarrow> bool" where
-  "navigable_by_voiceover e \<equiv> element_voiceover_navigable e = true"
+  "navigable_by_voiceover e \<equiv> element_voiceover_navigable e = True"
 
-(* valid_state_transition - complex match, manual review needed *)
+(* valid_state_transition - complex match, needs manual translation *)
+definition valid_state_transition :: "bool" where "valid_state_transition = undefined"
 
 (* valid_source_state (matches Coq: Definition valid_source_state) *)
 definition valid_source_state :: "Transition \<Rightarrow> bool" where
-  "valid_source_state t \<equiv> trans_valid t = true /\
-  valid_state_transition (trans_from t) (trans_to t) = true"
+  "valid_source_state t \<equiv> trans_valid t = True /\
+  valid_state_transition (trans_from t) (trans_to t) = True"
 
 (* apply_transition (matches Coq: Definition apply_transition) *)
 definition apply_transition :: "Transition \<Rightarrow> Screen \<Rightarrow> Screen" where
@@ -254,7 +258,8 @@ definition apply_transition :: "Transition \<Rightarrow> Screen \<Rightarrow> Sc
   else
     s"
 
-(* valid_target_state - complex match, manual review needed *)
+(* valid_target_state - complex match, needs manual translation *)
+definition valid_target_state :: "bool" where "valid_target_state = undefined"
 
 (* accessible_element (matches Coq: Definition accessible_element) *)
 definition accessible_element :: "UIElement \<Rightarrow> bool" where
@@ -266,32 +271,32 @@ definition well_formed_accessible_ui :: "bool" where
 
 (* button_state_valid (matches Coq: Definition button_state_valid) *)
 definition button_state_valid :: "Button \<Rightarrow> bool" where
-  "button_state_valid b \<equiv> (btn_enabled b = false -> btn_state b = BtnDisabled) /\
-  (btn_enabled b = true -> btn_state b <> BtnDisabled)"
+  "button_state_valid b \<equiv> (btn_enabled b = False -> btn_state b = BtnDisabled) /\
+  (btn_enabled b = True -> btn_state b <> BtnDisabled)"
 
 (* text_field_input_sanitized (matches Coq: Definition text_field_input_sanitized) *)
 definition text_field_input_sanitized :: "TextField \<Rightarrow> bool" where
-  "text_field_input_sanitized tf \<equiv> tf_sanitized tf = true /\ List"
+  "text_field_input_sanitized tf \<equiv> tf_sanitized tf = True /\ List.length (tf_input tf) <= tf_max_length tf"
 
 (* list_view_recycling_correct (matches Coq: Definition list_view_recycling_correct) *)
 definition list_view_recycling_correct :: "ListView \<Rightarrow> bool" where
-  "list_view_recycling_correct lv \<equiv> lv_recycling_correct lv = true /\
+  "list_view_recycling_correct lv \<equiv> lv_recycling_correct lv = True /\
   lv_visible_items lv <= lv_total_items lv"
 
 (* scroll_view_bounds_checked (matches Coq: Definition scroll_view_bounds_checked) *)
 definition scroll_view_bounds_checked :: "ScrollView \<Rightarrow> bool" where
-  "scroll_view_bounds_checked sv \<equiv> sv_bounds_checked sv = true /\
+  "scroll_view_bounds_checked sv \<equiv> sv_bounds_checked sv = True /\
   sv_content_offset sv <= sv_content_size sv"
 
 (* image_view_loading_handled (matches Coq: Definition image_view_loading_handled) *)
 definition image_view_loading_handled :: "ImageView \<Rightarrow> bool" where
-  "image_view_loading_handled iv \<equiv> iv_loading_handled iv = true /\
-  (iv_load_state iv = ImgLoading -> iv_placeholder_shown iv = true)"
+  "image_view_loading_handled iv \<equiv> iv_loading_handled iv = True /\
+  (iv_load_state iv = ImgLoading -> iv_placeholder_shown iv = True)"
 
 (* switch_toggle_atomic (matches Coq: Definition switch_toggle_atomic) *)
 definition switch_toggle_atomic :: "SwitchToggle \<Rightarrow> bool" where
-  "switch_toggle_atomic sw \<equiv> sw_atomic sw = true /\
-  (sw_transitioning sw = false -> (sw_on sw = true \/ sw_on sw = false))"
+  "switch_toggle_atomic sw \<equiv> sw_atomic sw = True /\
+  (sw_transitioning sw = False -> (sw_on sw = True \/ sw_on sw = False))"
 
 (* slider_value_bounded (matches Coq: Definition slider_value_bounded) *)
 definition slider_value_bounded :: "Slider \<Rightarrow> bool" where
@@ -299,36 +304,36 @@ definition slider_value_bounded :: "Slider \<Rightarrow> bool" where
 
 (* progress_bar_monotonic (matches Coq: Definition progress_bar_monotonic) *)
 definition progress_bar_monotonic :: "ProgressBar \<Rightarrow> bool" where
-  "progress_bar_monotonic pb \<equiv> pb_monotonic pb = true /\
+  "progress_bar_monotonic pb \<equiv> pb_monotonic pb = True /\
   pb_previous pb <= pb_current pb /\
   pb_current pb <= pb_max pb"
 
 (* tab_bar_selection_exclusive (matches Coq: Definition tab_bar_selection_exclusive) *)
 definition tab_bar_selection_exclusive :: "TabBar \<Rightarrow> bool" where
-  "tab_bar_selection_exclusive tb \<equiv> tb_selection_exclusive tb = true /\
-  tb_selected_index tb < List"
+  "tab_bar_selection_exclusive tb \<equiv> tb_selection_exclusive tb = True /\
+  tb_selected_index tb < List.length (tb_tabs tb)"
 
 (* navigation_stack_valid (matches Coq: Definition navigation_stack_valid) *)
 definition navigation_stack_valid :: "NavigationStack \<Rightarrow> bool" where
-  "navigation_stack_valid ns \<equiv> ns_stack_valid ns = true /\ ns_stack ns <> []"
+  "navigation_stack_valid ns \<equiv> ns_stack_valid ns = True /\ ns_stack ns <> []"
 
 (* alert_dialog_modal (matches Coq: Definition alert_dialog_modal) *)
 definition alert_dialog_modal :: "AlertDialog \<Rightarrow> bool" where
-  "alert_dialog_modal ad \<equiv> ad_modal ad = true /\ ad_blocking_input ad = true"
+  "alert_dialog_modal ad \<equiv> ad_modal ad = True /\ ad_blocking_input ad = True"
 
 (* action_sheet_dismissible (matches Coq: Definition action_sheet_dismissible) *)
 definition action_sheet_dismissible :: "ActionSheet \<Rightarrow> bool" where
-  "action_sheet_dismissible a \<equiv> as_dismissible a = true /\ as_cancel_available a = true"
+  "action_sheet_dismissible a \<equiv> as_dismissible a = True /\ as_cancel_available a = True"
 
 (* date_picker_range_valid (matches Coq: Definition date_picker_range_valid) *)
 definition date_picker_range_valid :: "DatePicker \<Rightarrow> bool" where
-  "date_picker_range_valid dp \<equiv> dp_range_valid dp = true /\
+  "date_picker_range_valid dp \<equiv> dp_range_valid dp = True /\
   dp_min_date dp <= dp_selected dp /\
   dp_selected dp <= dp_max_date dp"
 
 (* color_picker_gamut_valid (matches Coq: Definition color_picker_gamut_valid) *)
 definition color_picker_gamut_valid :: "ColorPicker \<Rightarrow> bool" where
-  "color_picker_gamut_valid cp \<equiv> cp_gamut_valid cp = true /\
+  "color_picker_gamut_valid cp \<equiv> cp_gamut_valid cp = True /\
   cp_red cp <= 255 /\ cp_green cp <= 255 /\ cp_blue cp <= 255"
 
 (* search_bar_input_debounced (matches Coq: Definition search_bar_input_debounced) *)

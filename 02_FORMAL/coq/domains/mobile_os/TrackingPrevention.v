@@ -5,9 +5,9 @@
 (*  Formal verification of tracking consent and privacy guarantees       *)
 (* ===================================================================== *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (* ===================== Type Definitions ===================== *)
@@ -189,7 +189,7 @@ Qed.
 
 (** ** Extended Definitions for Anti-Tracking *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Cross-site tracking *)
 Record CrossSiteRequest : Type := mkCrossSiteReq {

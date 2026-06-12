@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA EnterpriseERP - Isabelle/HOL Port
@@ -62,7 +64,7 @@
  *)
 
 theory EnterpriseERP
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DocState (matches Coq: Inductive DocState) *)
@@ -81,70 +83,75 @@ definition sod_satisfied :: "ConflictingRoles \<Rightarrow> bool" where
        user_id (assign_user a1) = u /\ user_id (assign_user a2) = u /\
        role_id (assign_role a1) = r1 /\ role_id (assign_role a2) = r2)"
 
-(* assignment_active (matches Coq: Definition assignment_active) *)
-definition assignment_active :: "RoleAssignment \<Rightarrow> nat \<Rightarrow> bool" where
-  "assignment_active a current_time \<equiv> andb (Nat"
+(* assignment_active - complex match, needs manual translation *)
+definition assignment_active :: "bool" where "assignment_active = undefined"
 
 (* check_sod (matches Coq: Definition check_sod) *)
 definition check_sod :: "ConflictingRoles \<Rightarrow> bool" where
-  "check_sod conflicts \<equiv> negb (existsb (fun conflict =>
-    andb (existsb (fun r => Nat"
+  "check_sod conflicts \<equiv> (\<not> (existsb) (fun conflict =>
+    ((existsb \<and> (fun) r => (r = (fst) conflict)) user_roles)
+         (existsb (fun r => (r = (snd) conflict)) user_roles)) conflicts)"
 
 (* txn_authorized (matches Coq: Definition txn_authorized) *)
 definition txn_authorized :: "Transaction \<Rightarrow> nat \<Rightarrow> bool" where
   "txn_authorized txn approver_role \<equiv> forallb (fun rule =>
-    orb (negb (Nat"
+    ((\<not> (Nat.eqb) (approval_txn_type rule \<or> txn_type txn)))
+        ((((txn_amount < txn) \<or> approval_threshold rule))
+             ((txn_approved txn \<and> (approver_role = (approval_role) rule))))) rules"
 
 (* not_self_approved (matches Coq: Definition not_self_approved) *)
 definition not_self_approved :: "Transaction \<Rightarrow> User \<Rightarrow> bool" where
-  "not_self_approved txn approver \<equiv> negb (Nat"
+  "not_self_approved txn approver \<equiv> (\<not> (Nat.eqb) (user_id (txn_user txn)) (user_id approver))"
 
 (* action_audited (matches Coq: Definition action_audited) *)
 definition action_audited :: "bool" where
   "action_audited \<equiv> existsb (fun a =>
-    andb (Nat"
+    (((\<and> = (audit_user)) a) user)
+         ((((\<and> = (audit_action)) a) action)
+               (((audit_resource = a)) resource))) audits"
 
 (* same_tenant (matches Coq: Definition same_tenant) *)
 definition same_tenant :: "bool" where
-  "same_tenant \<equiv> Nat"
+  "same_tenant \<equiv> ((user_tenant = u1)) (user_tenant u2)"
 
 (* role_level_sufficient (matches Coq: Definition role_level_sufficient) *)
 definition role_level_sufficient :: "bool" where
-  "role_level_sufficient \<equiv> Nat"
+  "role_level_sufficient \<equiv> (required \<le> actual)"
 
 (* approvals_sufficient (matches Coq: Definition approvals_sufficient) *)
 definition approvals_sufficient :: "bool" where
-  "approvals_sufficient \<equiv> Nat"
+  "approvals_sufficient \<equiv> (required \<le> obtained)"
 
 (* within_budget (matches Coq: Definition within_budget) *)
 definition within_budget :: "bool" where
-  "within_budget \<equiv> Nat"
+  "within_budget \<equiv> (spent \<le> limit)"
 
 (* period_closed (matches Coq: Definition period_closed) *)
 definition period_closed :: "bool" where
-  "period_closed \<equiv> Nat"
+  "period_closed \<equiv> (period_end < current)"
 
-(* valid_doc_transition - complex match, manual review needed *)
+(* valid_doc_transition - complex match, needs manual translation *)
+definition valid_doc_transition :: "bool" where "valid_doc_transition = undefined"
 
 (* maker_checker (matches Coq: Definition maker_checker) *)
 definition maker_checker :: "bool" where
-  "maker_checker \<equiv> negb (Nat"
+  "maker_checker \<equiv> (\<not> (Nat.eqb) (user_id maker) (user_id checker))"
 
 (* access_time_limited (matches Coq: Definition access_time_limited) *)
 definition access_time_limited :: "bool" where
-  "access_time_limited \<equiv> Nat"
+  "access_time_limited \<equiv> (current < grant_end)"
 
 (* field_accessible (matches Coq: Definition field_accessible) *)
 definition field_accessible :: "bool" where
-  "field_accessible \<equiv> Nat"
+  "field_accessible \<equiv> (field_sensitivity \<le> user_clearance)"
 
 (* lock_exclusive (matches Coq: Definition lock_exclusive) *)
 definition lock_exclusive :: "bool" where
-  "lock_exclusive \<equiv> Nat"
+  "lock_exclusive \<equiv> (lock_holder = requester)"
 
 (* concurrent_safe (matches Coq: Definition concurrent_safe) *)
 definition concurrent_safe :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "concurrent_safe active_locks max_locks \<equiv> Nat"
+  "concurrent_safe active_locks max_locks \<equiv> (active_locks \<le> max_locks)"
 
 (* data_valid (matches Coq: Definition data_valid) *)
 definition data_valid :: "bool \<Rightarrow> bool" where
@@ -152,19 +159,19 @@ definition data_valid :: "bool \<Rightarrow> bool" where
 
 (* ref_exists (matches Coq: Definition ref_exists) *)
 definition ref_exists :: "nat \<Rightarrow> bool" where
-  "ref_exists ref_id \<equiv> existsb (fun r => Nat"
+  "ref_exists ref_id \<equiv> existsb (fun r => (r = ref_id)) valid_refs"
 
 (* soft_deleted (matches Coq: Definition soft_deleted) *)
 definition soft_deleted :: "bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "soft_deleted deleted_flag actual_data_present \<equiv> deleted_flag = true -> actual_data_present = true"
+  "soft_deleted deleted_flag actual_data_present \<equiv> deleted_flag = True -> actual_data_present = True"
 
 (* data_encrypted (matches Coq: Definition data_encrypted) *)
 definition data_encrypted :: "nat \<Rightarrow> bool" where
-  "data_encrypted encryption_key_id \<equiv> Nat"
+  "data_encrypted encryption_key_id \<equiv> (0 < encryption_key_id)"
 
 (* erp_layers (matches Coq: Definition erp_layers) *)
 definition erp_layers :: "bool" where
-  "erp_layers \<equiv> andb rbac (andb sod (andb audit (andb tenant encryption)))"
+  "erp_layers \<equiv> (rbac \<and> (andb) sod ((audit \<and> (andb) tenant encryption)))"
 
 (* erp_001_rbac_enforced (matches Coq) *)
 lemma erp_001_rbac_enforced: "\<forall> (user : User) (perm : Permission) (assignments : list RoleAssignment) (role_perms : list (nat * nat)), user_has_permission user perm assignments role_perms = True \<longrightarrow> \<exists> a, In a assignments \<and> user_id (assign_user a) = user_id user"

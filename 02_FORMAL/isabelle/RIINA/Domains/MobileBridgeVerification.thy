@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MobileBridgeVerification - Isabelle/HOL Port
@@ -13,6 +15,7 @@
  * |--------------------|------------------------|--------|
  * | RValue             | r_value                | OK     |
  * | JNIValue           | jni_value              | OK     |
+ * | SwiftValue         | swift_value            | OK     |
  * | BridgeEffect       | bridge_effect          | OK     |
  * | BridgeResult       | bridge_result          | OK     |
  * | SwiftTypeTag       | swift_type_tag         | OK     |
@@ -23,6 +26,7 @@
  * | no_secret_in_error | no_secret_in_error     | OK     |
  * | c_to_jni_string    | c_to_jni_string        | OK     |
  * | jni_to_c_string    | jni_to_c_string        | OK     |
+ * | swift_type_of      | swift_type_of          | OK     |
  * | swift_value_tag    | swift_value_tag        | OK     |
  * | callback_ret_safe  | callback_ret_safe      | OK     |
  * | callback_args_safe | callback_args_safe     | OK     |
@@ -70,7 +74,7 @@ begin
 datatype r_value =
     RVInt
   |     RVBool
-  |     RVString  (* length-tagged *)
+  |     RVString
   |     RVUnit
   |     RVSecret
 
@@ -81,7 +85,10 @@ datatype jni_value =
   |     JString
   |     JVoid
   |     JObject
-  |     SwInt
+
+(* SwiftValue (matches Coq: Inductive SwiftValue) *)
+datatype swift_value =
+    SwInt
   |     SwBool
   |     SwString
   |     SwVoid
@@ -112,11 +119,12 @@ datatype bridge_sec_label =
     BPublic
   |     BSecret
 
-(* cap_allows - complex match, manual review needed *)
+(* cap_allows - complex match, needs manual translation *)
+definition cap_allows :: "bool" where "cap_allows = undefined"
 
 (* bridge_call_safe (matches Coq: Definition bridge_call_safe) *)
 definition bridge_call_safe :: "BridgeCall \<Rightarrow> bool" where
-  "bridge_call_safe call \<equiv> cap_allows (bc_cap call) (bc_effect call) = true"
+  "bridge_call_safe call \<equiv> cap_allows (bc_cap call) (bc_effect call) = True"
 
 (* error_safe (matches Coq: Definition error_safe) *)
 fun error_safe :: "BridgeResult \<Rightarrow> bool" where
@@ -128,11 +136,15 @@ fun no_secret_in_error :: "BridgeResult \<Rightarrow> bool" where
 
 (* c_to_jni_string (matches Coq: Definition c_to_jni_string) *)
 definition c_to_jni_string :: "CString \<Rightarrow> JNIString" where
-  "c_to_jni_string s \<equiv> mkJStr (cstr_len s) (cstr_hash s) true"
+  "c_to_jni_string s \<equiv> mkJStr (cstr_len s) (cstr_hash s) True"
 
 (* jni_to_c_string (matches Coq: Definition jni_to_c_string) *)
 definition jni_to_c_string :: "JNIString \<Rightarrow> CString" where
   "jni_to_c_string js \<equiv> mkCStr (jstr_len js) (jstr_hash js)"
+
+(* swift_type_of (matches Coq: Definition swift_type_of) *)
+fun swift_type_of :: "RValue \<Rightarrow> SwiftTypeTag" where
+  "swift_type_of RVUnit = STVoid"
 
 (* swift_value_tag (matches Coq: Definition swift_value_tag) *)
 fun swift_value_tag :: "SwiftValue \<Rightarrow> SwiftTypeTag" where
@@ -187,11 +199,11 @@ lemma bridge_003_swift_pure_always_allowed: "\<forall> cap, cap_valid cap = True
   by (cases rule: ‹_›.cases; simp)
 
 (* bridge_003_swift_net_requires_net (matches Coq) *)
-lemma bridge_003_swift_net_requires_net: "\<forall> id, cap_allows (mkCap id BNet true) BNet = True"
+lemma bridge_003_swift_net_requires_net: "\<forall> id, cap_allows (mkCap id BNet True) BNet = True"
   by simp
 
 (* bridge_003_swift_ui_requires_ui (matches Coq) *)
-lemma bridge_003_swift_ui_requires_ui: "\<forall> id, cap_allows (mkCap id BUI true) BUI = True"
+lemma bridge_003_swift_ui_requires_ui: "\<forall> id, cap_allows (mkCap id BUI True) BUI = True"
   by simp
 
 (* bridge_004_safe_call_requires_cap (matches Coq) *)

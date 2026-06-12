@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PowerManagement - Isabelle/HOL Port
@@ -21,6 +23,9 @@
  * | CpuState           | cpu_state              | OK     |
  * | Temperature        | Temperature            | OK     |
  * | PowerLevel         | PowerLevel             | OK     |
+ * | critical_temp_const | critical_temp_const    | OK     |
+ * | throttle_temp_const | throttle_temp_const    | OK     |
+ * | charge_rate_max_const | charge_rate_max_const  | OK     |
  * | critical_temp      | critical_temp          | OK     |
  * | throttle_temp      | throttle_temp          | OK     |
  * | safe_temp          | safe_temp              | OK     |
@@ -87,30 +92,30 @@ record power_manager =
 
 (* BatteryInfo (matches Coq: Record BatteryInfo) *)
 record battery_info =
-  bat_level :: nat  (* 0-100 percentage *)
-  bat_health :: nat  (* 0-100 percentage *)
-  bat_temperature :: nat  (* centidegrees *)
+  bat_level :: nat
+  bat_health :: nat
+  bat_temperature :: nat
   bat_is_charging :: bool
-  bat_charge_rate :: nat  (* milliwatts *)
-  bat_discharge_rate :: nat  (* milliwatts *)
+  bat_charge_rate :: nat
+  bat_discharge_rate :: nat
 
 (* AppPowerBudget (matches Coq: Record AppPowerBudget) *)
 record app_power_budget =
   app_power_id :: nat
-  app_power_budget_mw :: nat  (* milliwatts *)
-  app_power_actual_mw :: nat  (* actual usage *)
+  app_power_budget_mw :: nat
+  app_power_actual_mw :: nat
   app_is_background :: bool
 
 (* WakeLock (matches Coq: Record WakeLock) *)
 record wake_lock =
   wake_lock_id :: nat
-  wake_lock_timeout :: nat  (* milliseconds *)
-  wake_lock_elapsed :: nat  (* milliseconds *)
+  wake_lock_timeout :: nat
+  wake_lock_elapsed :: nat
   wake_lock_active :: bool
 
 (* DisplayState (matches Coq: Record DisplayState) *)
 record display_state =
-  display_brightness :: nat  (* 0-100 *)
+  display_brightness :: nat
   display_adaptive :: bool
   display_on :: bool
 
@@ -128,13 +133,25 @@ definition Temperature :: "'a" where
 definition PowerLevel :: "'a" where
   "PowerLevel \<equiv> nat"
 
+(* critical_temp_const (matches Coq: Definition critical_temp_const) *)
+definition critical_temp_const :: "Temperature" where
+  "critical_temp_const \<equiv> Z.to_nat 9500%Z"
+
+(* throttle_temp_const (matches Coq: Definition throttle_temp_const) *)
+definition throttle_temp_const :: "Temperature" where
+  "throttle_temp_const \<equiv> Z.to_nat 8000%Z"
+
+(* charge_rate_max_const (matches Coq: Definition charge_rate_max_const) *)
+definition charge_rate_max_const :: "nat" where
+  "charge_rate_max_const \<equiv> Z.to_nat 25000%Z"
+
 (* critical_temp (matches Coq: Definition critical_temp) *)
 definition critical_temp :: "Temperature" where
-  "critical_temp \<equiv> 9500"
+  "critical_temp \<equiv> critical_temp_const"
 
 (* throttle_temp (matches Coq: Definition throttle_temp) *)
 definition throttle_temp :: "Temperature" where
-  "throttle_temp \<equiv> 8000"
+  "throttle_temp \<equiv> throttle_temp_const"
 
 (* safe_temp (matches Coq: Definition safe_temp) *)
 definition safe_temp :: "Temperature" where
@@ -155,13 +172,15 @@ definition should_throttle :: "ThermalState \<Rightarrow> bool" where
 (* apply_throttling (matches Coq: Definition apply_throttling) *)
 definition apply_throttling :: "ThermalState \<Rightarrow> ThermalState" where
   "apply_throttling ts \<equiv> if should_throttle ts then
-    mkThermal (cpu_temp ts) (gpu_temp ts) (battery_temp ts) true
+    mkThermal (cpu_temp ts) (gpu_temp ts) (battery_temp ts) True
   else
     ts"
 
-(* valid_power_transition - complex match, manual review needed *)
+(* valid_power_transition - complex match, needs manual translation *)
+definition valid_power_transition :: "bool" where "valid_power_transition = undefined"
 
-(* battery_optimized - complex match, manual review needed *)
+(* battery_optimized - complex match, needs manual translation *)
+definition battery_optimized :: "bool" where "battery_optimized = undefined"
 
 (* battery_safe_temp (matches Coq: Definition battery_safe_temp) *)
 definition battery_safe_temp :: "nat" where
@@ -169,7 +188,7 @@ definition battery_safe_temp :: "nat" where
 
 (* charge_rate_max (matches Coq: Definition charge_rate_max) *)
 definition charge_rate_max :: "nat" where
-  "charge_rate_max \<equiv> 25000"
+  "charge_rate_max \<equiv> charge_rate_max_const"
 
 (* background_power_limit (matches Coq: Definition background_power_limit) *)
 definition background_power_limit :: "nat" where
@@ -191,12 +210,12 @@ definition well_formed_cpu :: "CpuState \<Rightarrow> bool" where
 (* well_formed_wake_lock (matches Coq: Definition well_formed_wake_lock) *)
 definition well_formed_wake_lock :: "WakeLock \<Rightarrow> bool" where
   "well_formed_wake_lock w \<equiv> wake_lock_timeout w > 0 /\
-  (wake_lock_active w = true -> wake_lock_elapsed w <= wake_lock_timeout w)"
+  (wake_lock_active w = True -> wake_lock_elapsed w <= wake_lock_timeout w)"
 
 (* well_formed_app_power (matches Coq: Definition well_formed_app_power) *)
 definition well_formed_app_power :: "AppPowerBudget \<Rightarrow> bool" where
   "well_formed_app_power a \<equiv> app_power_actual_mw a <= app_power_budget_mw a /\
-  (app_is_background a = true -> app_power_budget_mw a <= background_power_limit)"
+  (app_is_background a = True -> app_power_budget_mw a <= background_power_limit)"
 
 (* thermal_bounds_enforced (matches Coq) *)
 lemma thermal_bounds_enforced: "\<forall> (ts : ThermalState), thermally_safe ts \<longrightarrow> cpu_temp ts \<le> critical_temp"
@@ -271,11 +290,11 @@ lemma battery_temperature_safe: "\<forall> (b : BatteryInfo), well_formed_batter
   by auto
 
 (* charge_rate_safe (matches Coq) *)
-lemma charge_rate_safe: "\<forall> (b : BatteryInfo), well_formed_battery b \<longrightarrow> bat_charge_rate b \<le> 25000"
+lemma charge_rate_safe: "\<forall> (b : BatteryInfo), well_formed_battery b \<longrightarrow> bat_charge_rate b \<le> charge_rate_max_const"
   by auto
 
 (* discharge_rate_bounded (matches Coq) *)
-lemma discharge_rate_bounded: "\<forall> (b : BatteryInfo), bat_discharge_rate b \<le> charge_rate_max \<longrightarrow> bat_discharge_rate b \<le> 25000"
+lemma discharge_rate_bounded: "\<forall> (b : BatteryInfo), bat_discharge_rate b \<le> charge_rate_max \<longrightarrow> bat_discharge_rate b \<le> charge_rate_max_const"
   by auto
 
 (* power_budget_per_app (matches Coq) *)

@@ -6,9 +6,9 @@
 (* Reference: RESEARCH_MOBILEOS01_FOUNDATION.md Section 6.2             *)
 (* ===================================================================== *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
 Import ListNotations.
 
 (* ===================================================================== *)
@@ -263,7 +263,7 @@ Qed.
 (* Section 7: Extended Rollback Protection Theorems                      *)
 (* ===================================================================== *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Version comparison is irreflexive: no version is less than itself *)
 Theorem version_lt_irreflexive :

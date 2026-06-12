@@ -6,9 +6,9 @@
 (* Reference: RESEARCH_MOBILEOS01_FOUNDATION.md Section 6.3             *)
 (* ===================================================================== *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
 Import ListNotations.
 
 (* ===================================================================== *)

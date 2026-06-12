@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkingStack - Isabelle/HOL Port
@@ -25,6 +27,7 @@
  * | Time               | Time                   | OK     |
  * | PublicKey          | PublicKey              | OK     |
  * | Signature          | Signature              | OK     |
+ * | NETWORK_TIMEOUT_MAX_MS | NETWORK_TIMEOUT_MAX_MS | OK     |
  * | current_time       | current_time           | OK     |
  * | valid_chain        | valid_chain            | OK     |
  * | not_expired        | not_expired            | OK     |
@@ -109,7 +112,7 @@ record connection =
 (* DNSQuery (matches Coq: Record DNSQuery) *)
 record dns_query =
   dns_query_id :: nat
-  dns_domain :: nat  (* hashed domain name *)
+  dns_domain :: nat
   dns_resolved_ip :: nat
   dns_validated :: bool
   dns_dnssec_verified :: bool
@@ -170,13 +173,17 @@ definition PublicKey :: "'a" where
 definition Signature :: "'a" where
   "Signature \<equiv> nat"
 
+(* NETWORK_TIMEOUT_MAX_MS (matches Coq: Definition NETWORK_TIMEOUT_MAX_MS) *)
+definition NETWORK_TIMEOUT_MAX_MS :: "nat" where
+  "NETWORK_TIMEOUT_MAX_MS \<equiv> Z.to_nat 30000%Z"
+
 (* current_time (matches Coq: Definition current_time) *)
 definition current_time :: "Time" where
   "current_time \<equiv> 1000"
 
 (* valid_chain (matches Coq: Definition valid_chain) *)
 definition valid_chain :: "Certificate \<Rightarrow> bool" where
-  "valid_chain c \<equiv> cert_chain_valid c = true"
+  "valid_chain c \<equiv> cert_chain_valid c = True"
 
 (* not_expired (matches Coq: Definition not_expired) *)
 definition not_expired :: "Certificate \<Rightarrow> bool" where
@@ -185,7 +192,7 @@ definition not_expired :: "Certificate \<Rightarrow> bool" where
 
 (* not_revoked (matches Coq: Definition not_revoked) *)
 definition not_revoked :: "Certificate \<Rightarrow> bool" where
-  "not_revoked c \<equiv> cert_revoked c = false"
+  "not_revoked c \<equiv> cert_revoked c = False"
 
 (* acceptable_cert (matches Coq: Definition acceptable_cert) *)
 definition acceptable_cert :: "Certificate \<Rightarrow> bool" where
@@ -195,11 +202,12 @@ definition acceptable_cert :: "Certificate \<Rightarrow> bool" where
 definition accepted :: "Certificate \<Rightarrow> bool" where
   "accepted c \<equiv> acceptable_cert c"
 
-(* encrypted - complex match, manual review needed *)
+(* encrypted - complex match, needs manual translation *)
+definition encrypted :: "bool" where "encrypted = undefined"
 
 (* transmitted (matches Coq: Definition transmitted) *)
 definition transmitted :: "Packet \<Rightarrow> bool" where
-  "transmitted p \<equiv> packet_transmitted p = true"
+  "transmitted p \<equiv> packet_transmitted p = True"
 
 (* secure_stack (matches Coq: Definition secure_stack) *)
 definition secure_stack :: "bool" where
@@ -220,7 +228,7 @@ definition cert_validation_complete_prop :: "Certificate \<Rightarrow> bool" whe
 
 (* dns_validated_prop (matches Coq: Definition dns_validated_prop) *)
 definition dns_validated_prop :: "DNSQuery \<Rightarrow> bool" where
-  "dns_validated_prop q \<equiv> dns_validated q = true /\ dns_dnssec_verified q = true"
+  "dns_validated_prop q \<equiv> dns_validated q = True /\ dns_dnssec_verified q = True"
 
 (* no_plaintext_password (matches Coq: Definition no_plaintext_password) *)
 definition no_plaintext_password :: "HTTPConnection \<Rightarrow> bool" where
@@ -228,12 +236,12 @@ definition no_plaintext_password :: "HTTPConnection \<Rightarrow> bool" where
 
 (* connection_timeout_enforced_prop (matches Coq: Definition connection_timeout_enforced_prop) *)
 definition connection_timeout_enforced_prop :: "Socket \<Rightarrow> bool" where
-  "connection_timeout_enforced_prop sock \<equiv> socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= 30000"
+  "connection_timeout_enforced_prop sock \<equiv> socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= NETWORK_TIMEOUT_MAX_MS"
 
 (* socket_cleanup_prop (matches Coq: Definition socket_cleanup_prop) *)
 definition socket_cleanup_prop :: "Socket \<Rightarrow> bool" where
-  "socket_cleanup_prop sock \<equiv> socket_closed sock = true ->
-  socket_connected sock = false"
+  "socket_cleanup_prop sock \<equiv> socket_closed sock = True ->
+  socket_connected sock = False"
 
 (* firewall_applied (matches Coq: Definition firewall_applied) *)
 definition firewall_applied :: "bool" where
@@ -241,23 +249,23 @@ definition firewall_applied :: "bool" where
 
 (* vpn_traffic_encrypted_prop (matches Coq: Definition vpn_traffic_encrypted_prop) *)
 definition vpn_traffic_encrypted_prop :: "VPNTunnel \<Rightarrow> bool" where
-  "vpn_traffic_encrypted_prop t \<equiv> tunnel_active t = true -> tunnel_encrypted t = true"
+  "vpn_traffic_encrypted_prop t \<equiv> tunnel_active t = True -> tunnel_encrypted t = True"
 
 (* hsts_enforced (matches Coq: Definition hsts_enforced) *)
 definition hsts_enforced :: "HTTPConnection \<Rightarrow> bool" where
-  "hsts_enforced conn \<equiv> http_strict_transport conn = true -> http_tls_version conn >= 13"
+  "hsts_enforced conn \<equiv> http_strict_transport conn = True -> http_tls_version conn >= 13"
 
 (* cors_enforced (matches Coq: Definition cors_enforced) *)
 definition cors_enforced :: "HTTPConnection \<Rightarrow> bool" where
-  "cors_enforced conn \<equiv> http_cors_allowed conn = true"
+  "cors_enforced conn \<equiv> http_cors_allowed conn = True"
 
 (* ws_origin_valid (matches Coq: Definition ws_origin_valid) *)
 definition ws_origin_valid :: "WebSocketConn \<Rightarrow> bool" where
-  "ws_origin_valid ws \<equiv> ws_origin_validated ws = true /\ ws_encrypted ws = true"
+  "ws_origin_valid ws \<equiv> ws_origin_validated ws = True /\ ws_encrypted ws = True"
 
 (* cert_pinning_holds (matches Coq: Definition cert_pinning_holds) *)
 definition cert_pinning_holds :: "CertPin \<Rightarrow> bool" where
-  "cert_pinning_holds pin \<equiv> pin_enforced pin = true -> pin_public_key_hash pin > 0"
+  "cert_pinning_holds pin \<equiv> pin_enforced pin = True -> pin_public_key_hash pin > 0"
 
 (* network_change_notified_prop (matches Coq: Definition network_change_notified_prop) *)
 definition network_change_notified_prop :: "bool" where
@@ -305,7 +313,7 @@ lemma no_plaintext_passwords: "\<forall> (conn : HTTPConnection), no_plaintext_p
   by auto
 
 (* connection_timeout_enforced (matches Coq) *)
-lemma connection_timeout_enforced: "\<forall> (sock : Socket), connection_timeout_enforced_prop sock \<longrightarrow> socket_timeout_ms sock > 0 \<and> socket_timeout_ms sock \<le> 30000"
+lemma connection_timeout_enforced: "\<forall> (sock : Socket), connection_timeout_enforced_prop sock \<longrightarrow> socket_timeout_ms sock > 0 \<and> socket_timeout_ms sock \<le> NETWORK_TIMEOUT_MAX_MS"
   by auto
 
 (* socket_cleanup_complete (matches Coq) *)
@@ -313,7 +321,7 @@ lemma socket_cleanup_complete: "\<forall> (sock : Socket), socket_cleanup_prop s
   by auto
 
 (* bandwidth_throttled (matches Coq) *)
-lemma bandwidth_throttled: "\<forall> (sock : Socket), connection_timeout_enforced_prop sock \<longrightarrow> socket_timeout_ms sock \<le> 30000"
+lemma bandwidth_throttled: "\<forall> (sock : Socket), connection_timeout_enforced_prop sock \<longrightarrow> socket_timeout_ms sock \<le> NETWORK_TIMEOUT_MAX_MS"
   by auto
 
 (* no_ip_spoofing (matches Coq) *)

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PhysicalSecurity - Isabelle/HOL Port
@@ -150,11 +152,23 @@ record device_state =
 
 (* semantic_equivalent (matches Coq: Definition semantic_equivalent) *)
 definition semantic_equivalent :: "RTLModule \<Rightarrow> Netlist \<Rightarrow> bool" where
-  "semantic_equivalent rtl nl \<equiv> forall inputs, rtl_behavior rtl inputs = nl_behavior nl inputs"
+  "semantic_equivalent rtl nl \<equiv> forall inputs, rtl_behavior rtl inputs = nl_behavior nl inputs.
+
+
+Parameter synthesize : RTLModule -> Netlist.
+
+
+Parameter synthesis_preserves_semantics : forall rtl,
+  semantic_equivalent rtl (synthesize rtl)"
 
 (* timing_met (matches Coq: Definition timing_met) *)
 definition timing_met :: "Netlist \<Rightarrow> ClockPeriod \<Rightarrow> bool" where
-  "timing_met nl clk \<equiv> forall path, In path (extract_paths nl) -> path_delay path <= clk"
+  "timing_met nl clk \<equiv> forall path, In path (extract_paths nl) -> path_delay path <= clk.
+
+
+Parameter timing_analysis : Netlist -> ClockPeriod -> bool.
+Parameter timing_analysis_correct : forall nl clk,
+  timing_analysis nl clk = True -> timing_met nl clk"
 
 (* no_hardware_trojans (matches Coq: Definition no_hardware_trojans) *)
 definition no_hardware_trojans :: "RTLModule \<Rightarrow> bool" where
@@ -162,7 +176,11 @@ definition no_hardware_trojans :: "RTLModule \<Rightarrow> bool" where
 
 (* constant_time_hw (matches Coq: Definition constant_time_hw) *)
 definition constant_time_hw :: "Operation \<Rightarrow> bool" where
-  "constant_time_hw op \<equiv> forall inputs1 inputs2, operation_cycles op inputs1 = operation_cycles op inputs2"
+  "constant_time_hw op \<equiv> forall inputs1 inputs2, operation_cycles op inputs1 = operation_cycles op inputs2.
+
+Parameter crypto_operation : Operation -> bool.
+Parameter crypto_constant_time : forall op,
+  crypto_operation op = True -> constant_time_hw op"
 
 (* deterministic_design (matches Coq: Definition deterministic_design) *)
 definition deterministic_design :: "RTLModule \<Rightarrow> bool" where
@@ -170,12 +188,32 @@ definition deterministic_design :: "RTLModule \<Rightarrow> bool" where
 
 (* structurally_equivalent (matches Coq: Definition structurally_equivalent) *)
 definition structurally_equivalent :: "Chip \<Rightarrow> GoldenSample \<Rightarrow> bool" where
-  "structurally_equivalent c g \<equiv> x_ray_compare c g = Match"
+  "structurally_equivalent c g \<equiv> x_ray_compare c g = Match.
+
+
+Parameter x_ray_soundness : forall c g,
+  x_ray_compare c g = Match -> chip_xray c = golden_xray g.
+
+
+Parameter puf_entropy : Chip -> nat.
+
+
+Parameter puf_physically_unique : forall c1 c2 challenge,
+  chip_id c1 <> chip_id c2 ->
+  puf_entropy c1 <> puf_entropy c2 ->
+  chip_puf c1 challenge <> chip_puf c2 challenge.
+
+
+Parameter different_chips_different_entropy : forall c1 c2,
+  chip_id c1 <> chip_id c2 -> puf_entropy c1 <> puf_entropy c2"
 
 (* is_genuine (matches Coq: Definition is_genuine) *)
 definition is_genuine :: "Chip \<Rightarrow> GoldenSample \<Rightarrow> bool" where
   "is_genuine c g \<equiv> structurally_equivalent c g /\
-  forall challenge, chip_puf c challenge = golden_puf g challenge"
+  forall challenge, chip_puf c challenge = golden_puf g challenge.
+
+Parameter authentication_sound : forall c g,
+  ~ is_genuine c g -> authenticate_chip c g = Counterfeit"
 
 (* V_MIN (matches Coq: Definition V_MIN) *)
 definition V_MIN :: "Voltage" where
@@ -203,25 +241,37 @@ definition temp_ok :: "DeviceState \<Rightarrow> bool" where
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "DeviceState \<Rightarrow> bool" where
-  "tamper_detected d \<equiv> dev_mesh_intact d = false \/
+  "tamper_detected d \<equiv> dev_mesh_intact d = False \/
   ~ voltage_ok d \/
   ~ temp_ok d"
 
 (* keys_zeroized (matches Coq: Definition keys_zeroized) *)
 definition keys_zeroized :: "DeviceState \<Rightarrow> bool" where
-  "keys_zeroized d \<equiv> dev_keys_valid d = false"
+  "keys_zeroized d \<equiv> dev_keys_valid d = False"
 
 (* voltage_glitch (matches Coq: Definition voltage_glitch) *)
 definition voltage_glitch :: "DeviceState \<Rightarrow> bool" where
-  "voltage_glitch d \<equiv> dev_voltage d < V_MIN \/ dev_voltage d > V_MAX"
+  "voltage_glitch d \<equiv> dev_voltage d < V_MIN \/ dev_voltage d > V_MAX.
+
+Parameter voltage_monitor : DeviceState -> bool.
+Parameter voltage_monitor_correct : forall d,
+  voltage_glitch d -> voltage_monitor d = True"
 
 (* temp_violation (matches Coq: Definition temp_violation) *)
 definition temp_violation :: "DeviceState \<Rightarrow> bool" where
-  "temp_violation d \<equiv> dev_temperature d < T_MIN \/ dev_temperature d > T_MAX"
+  "temp_violation d \<equiv> dev_temperature d < T_MIN \/ dev_temperature d > T_MAX.
+
+Parameter temp_monitor : DeviceState -> bool.
+Parameter temp_monitor_triggers_shutdown : forall d,
+  temp_violation d -> temp_monitor d = True"
 
 (* power_independent (matches Coq: Definition power_independent) *)
 definition power_independent :: "Operation \<Rightarrow> bool" where
-  "power_independent op \<equiv> forall s1 s2, power_trace op s1 = power_trace op s2"
+  "power_independent op \<equiv> forall s1 s2, power_trace op s1 = power_trace op s2.
+
+
+Parameter crypto_power_independent : forall op,
+  crypto_operation op = True -> power_independent op"
 
 (* PHY_001_01_rtl_gate_equivalent (matches Coq) *)
 lemma PHY_001_01_rtl_gate_equivalent: "\<forall> rtl nl, synthesize rtl = nl \<longrightarrow> semantic_equivalent rtl nl"

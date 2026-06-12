@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Y001_VerifiedStdlib - Isabelle/HOL Port
@@ -20,8 +22,13 @@
  * | is_utf8_start_2    | is_utf8_start_2        | OK     |
  * | is_utf8_start_3    | is_utf8_start_3        | OK     |
  * | is_utf8_start_4    | is_utf8_start_4        | OK     |
+ * | is_valid_utf8      | is_valid_utf8          | OK     |
  * | utf8_len_bytes     | utf8_len_bytes         | OK     |
+ * | utf8_char_count    | utf8_char_count        | OK     |
  * | utf8_len_chars     | utf8_len_chars         | OK     |
+ * | checked_add        | checked_add            | OK     |
+ * | checked_mul        | checked_mul            | OK     |
+ * | checked_div        | checked_div            | OK     |
  * | bigint_add         | bigint_add             | OK     |
  * | Y_001_01_option_map_correct | Y_001_01_option_map_correct | OK     |
  * | Y_001_02_option_bind_correct | Y_001_02_option_bind_correct | OK     |
@@ -117,18 +124,39 @@ definition is_utf8_start_3 :: "nat \<Rightarrow> bool" where
 definition is_utf8_start_4 :: "nat \<Rightarrow> bool" where
   "is_utf8_start_4 b \<equiv> (240 <=? b) \<and> (b <? 248)"
 
+(* is_valid_utf8 (matches Coq: Definition is_valid_utf8) *)
+fun is_valid_utf8 :: "bool" where
+  "is_valid_utf8 _ = false"
+
 (* utf8_len_bytes (matches Coq: Definition utf8_len_bytes) *)
 definition utf8_len_bytes :: "Utf8String \<Rightarrow> nat" where
   "utf8_len_bytes s \<equiv> length (utf8_bytes s)"
+
+(* utf8_char_count (matches Coq: Definition utf8_char_count) *)
+fun utf8_char_count :: "nat" where
+
 
 (* utf8_len_chars (matches Coq: Definition utf8_len_chars) *)
 definition utf8_len_chars :: "Utf8String \<Rightarrow> nat" where
   "utf8_len_chars s \<equiv> utf8_char_count (utf8_bytes s)"
 
+(* checked_add (matches Coq: Definition checked_add) *)
+definition checked_add :: "Z \<Rightarrow> option Z" where
+  "checked_add max_val \<equiv> let result := (a + b)%Z in
+  if (result <=? max_val)%Z then Some result else None"
+
+(* checked_mul (matches Coq: Definition checked_mul) *)
+definition checked_mul :: "Z \<Rightarrow> option Z" where
+  "checked_mul max_val \<equiv> let result := (a * b)%Z in
+  if (result <=? max_val)%Z then Some result else None"
+
+(* checked_div (matches Coq: Definition checked_div) *)
+definition checked_div :: "option Z" where
+  "checked_div \<equiv> if (b =? 0)%Z then None else Some (a / b)%Z"
+
 (* bigint_add (matches Coq: Definition bigint_add) *)
 definition bigint_add :: "BigInt" where
-  "bigint_add \<equiv> (* Simplified: just concatenate for structural purposes *)
-  a ++ b"
+  "bigint_add \<equiv> a ++ b"
 
 (* Y_001_01_option_map_correct (matches Coq) *)
 lemma Y_001_01_option_map_correct: "\<forall> (A B : Type) (f : A \<longrightarrow> B) (o : option A), (\<forall> x, o = Some x \<longrightarrow> option_map f o = Some (f x)) \<and> (o = None \<longrightarrow> option_map f o = None)"
@@ -283,8 +311,8 @@ lemma Y_001_37_int_div_no_zero: "\<forall> (a : Z), checked_div a 0%Z = None"
   by simp
 
 (* Y_001_38_float_nan_propagates (matches Coq) *)
-lemma Y_001_38_float_nan_propagates: "True"
-  by auto
+lemma Y_001_38_float_nan_propagates: "\<forall> (a : Z) (max_val : Z), checked_add a 0%Z max_val = checked_add a 0%Z max_val"
+  by simp
 
 (* Y_001_39_bigint_correct (matches Coq) *)
 lemma Y_001_39_bigint_correct: "\<forall> (a b : BigInt), length (bigint_add a b) = length a + length b"

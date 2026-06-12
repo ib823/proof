@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SpectreDefense - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | SpectreVariant     | spectre_variant        | OK     |
+ * | DefenseMechanism   | defense_mechanism      | OK     |
  * | SpectreDefenseConfig | spectre_defense_config | OK     |
  * | all_variants_protected | all_variants_protected | OK     |
  * | defense_mechanisms_enabled | defense_mechanisms_enabled | OK     |
@@ -50,15 +53,20 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* SpectreVariant (matches Coq: Inductive SpectreVariant) *)
 datatype spectre_variant =
-    Spectre_V1  (* Bounds Check Bypass - CVE-2017-5753 *)
-  |     Spectre_V2  (* Branch Target Injection - CVE-2017-5715 *)
-  |     Spectre_V4  (* Speculative Store Bypass - CVE-2018-3639 *)
-  |     Spectre_RSB  (* Return Stack Buffer *)
-  |     Serialization  (* lfence, speculation barriers *)
-  |     ArrayMasking  (* Index masking for bounds *)
-  |     RetpolineIndirect  (* Replace indirect branches *)
-  |     IBRS  (* Indirect Branch Restricted Speculation *)
-  |     STIBP  (* Single Thread Indirect Branch Predictors *)
+    Spectre_V1
+  |     Spectre_V2
+  |     Spectre_V4
+  |     Spectre_RSB
+  |     Spectre_BHB
+
+(* DefenseMechanism (matches Coq: Inductive DefenseMechanism) *)
+datatype defense_mechanism =
+    Serialization
+  |     ArrayMasking
+  |     RetpolineIndirect
+  |     IBRS
+  |     STIBP
+  |     Flushing
 
 (* SpectreDefenseConfig (matches Coq: Record SpectreDefenseConfig) *)
 record spectre_defense_config =
@@ -92,7 +100,7 @@ definition fully_protected :: "SpectreDefenseConfig \<Rightarrow> bool" where
 (* riina_spectre_config (matches Coq: Definition riina_spectre_config) *)
 definition riina_spectre_config :: "SpectreDefenseConfig" where
   "riina_spectre_config \<equiv> mkSpectreConfig
-  true true true true true true true true"
+  True True True True True True True True"
 
 (* Helper lemma *)
 (* andb_true_iff (matches Coq) *)

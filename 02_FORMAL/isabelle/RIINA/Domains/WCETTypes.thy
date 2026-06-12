@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WCETTypes - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | expr               | expr                   | OK     |
+ * | wcet_bound         | wcet_bound             | OK     |
  * | 1                  | 1                      | OK     |
  * | 2                  | 2                      | OK     |
  * | 3                  | 3                      | OK     |
@@ -47,6 +50,10 @@ datatype expr =
   |     EPlus
   |     EIf
   |     ESeq
+
+(* wcet_bound (matches Coq: Definition wcet_bound) *)
+fun wcet_bound :: "expr \<Rightarrow> cost" where
+
 
 (* 1 (matches Coq) *)
 lemma 1: "WCET bound is always positive Theorem wcet_positive : \<forall> ex, 1 \<le> wcet_bound ex"

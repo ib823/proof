@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CryptographicSecurity - Isabelle/HOL Port
@@ -28,6 +30,7 @@
  * | MACConfig          | mac_config             | OK     |
  * | CounterNonce       | counter_nonce          | OK     |
  * | FullCryptoConfig   | full_crypto_config     | OK     |
+ * | KDF_MIN_ITERATIONS | KDF_MIN_ITERATIONS     | OK     |
  * | ct_valid           | ct_valid               | OK     |
  * | riina_ct_op        | riina_ct_op            | OK     |
  * | key_secure         | key_secure             | OK     |
@@ -140,17 +143,14 @@
  *)
 
 theory CryptographicSecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* TagVerifyResult (matches Coq: Inductive TagVerifyResult) *)
 datatype tag_verify_result =
-    TagValid  (* Tag matches *)
-  |     TagInvalid  (* Tag doesn't match *)
+    TagValid
+  |     TagInvalid
+  |     TagError
 
 (* ConstantTimeOp (matches Coq: Record ConstantTimeOp) *)
 record constant_time_op =
@@ -163,7 +163,7 @@ record constant_time_op =
 (* CryptoKey (matches Coq: Record CryptoKey) *)
 record crypto_key =
   key_bits :: nat
-  key_algorithm :: nat  (* 0=AES, 1=ChaCha, 2=ML-KEM *)
+  key_algorithm :: nat
   key_usage :: 'a list
   key_extractable :: bool
   key_hardware_bound :: bool
@@ -176,7 +176,7 @@ record nonce_tracker =
 
 (* AEADConfig (matches Coq: Record AEADConfig) *)
 record aead_config =
-  aead_algorithm :: nat  (* 0=AES-GCM, 1=ChaCha20-Poly1305 *)
+  aead_algorithm :: nat
   aead_key_bits :: nat
   aead_nonce_bits :: nat
   aead_tag_bits :: nat
@@ -184,7 +184,7 @@ record aead_config =
 
 (* HashConfig (matches Coq: Record HashConfig) *)
 record hash_config =
-  hash_algorithm :: nat  (* 0=SHA-256, 1=SHA-3, 2=BLAKE3 *)
+  hash_algorithm :: nat
   hash_output_bits :: nat
   hash_length_ext_safe :: bool
 
@@ -197,27 +197,27 @@ record rng_config =
 
 (* ProtocolConfig (matches Coq: Record ProtocolConfig) *)
 record protocol_config =
-  proto_min_version :: nat  (* 3=TLS1.2, 4=TLS1.3 *)
+  proto_min_version :: nat
   proto_allowed_ciphers :: 'a list
   proto_fallback_disabled :: bool
   proto_forward_secrecy :: bool
 
 (* PQConfig (matches Coq: Record PQConfig) *)
 record pq_config =
-  pq_kem_algorithm :: nat  (* 0=ML-KEM *)
-  pq_sig_algorithm :: nat  (* 0=ML-DSA *)
-  pq_security_level :: nat  (* 1=128, 3=192, 5=256 *)
-  pq_hybrid_mode :: bool  (* Combined with classical *)
+  pq_kem_algorithm :: nat
+  pq_sig_algorithm :: nat
+  pq_security_level :: nat
+  pq_hybrid_mode :: bool
 
 (* MRAEADConfig (matches Coq: Record MRAEADConfig) *)
 record mraead_config =
-  mraead_siv_mode :: bool  (* Synthetic IV mode *)
+  mraead_siv_mode :: bool
   mraead_deterministic :: bool
   mraead_base :: AEADConfig
 
 (* CertConfig (matches Coq: Record CertConfig) *)
 record cert_config =
-  cert_ct_required :: bool  (* Certificate Transparency *)
+  cert_ct_required :: bool
   cert_pinning :: bool
   cert_revocation_check :: bool
   cert_ocsp_stapling :: bool
@@ -232,23 +232,23 @@ record encryption_scheme =
 
 (* KDFConfig (matches Coq: Record KDFConfig) *)
 record kdf_config =
-  kdf_algorithm :: nat  (* 0=HKDF, 1=PBKDF2, 2=Argon2 *)
+  kdf_algorithm :: nat
   kdf_output_bits :: nat
   kdf_salt_bits :: nat
-  kdf_iterations :: nat  (* For PBKDF2/Argon2 *)
-  kdf_memory_cost :: nat  (* For Argon2 *)
+  kdf_iterations :: nat
+  kdf_memory_cost :: nat
 
 (* DerivedKey (matches Coq: Record DerivedKey) *)
 record derived_key =
   dk_parent_key :: Key
   dk_derived_key :: Key
   dk_context :: 'a list
-  dk_purpose :: nat  (* 0=encryption, 1=authentication, 2=signing *)
+  dk_purpose :: nat
   dk_kdf_config :: KDFConfig
 
 (* MACConfig (matches Coq: Record MACConfig) *)
 record mac_config =
-  mac_algorithm :: nat  (* 0=HMAC-SHA256, 1=HMAC-SHA3, 2=Poly1305 *)
+  mac_algorithm :: nat
   mac_key_bits :: nat
   mac_tag_bits :: nat
   mac_constant_time :: bool
@@ -256,8 +256,8 @@ record mac_config =
 (* CounterNonce (matches Coq: Record CounterNonce) *)
 record counter_nonce =
   cn_prefix :: 'a list
-  cn_counter :: nat  (* Monotonic counter *)
-  cn_max_value :: nat  (* Maximum counter value *)
+  cn_counter :: nat
+  cn_max_value :: nat
 
 (* FullCryptoConfig (matches Coq: Record FullCryptoConfig) *)
 record full_crypto_config =
@@ -274,6 +274,10 @@ record full_crypto_config =
   fc_mac :: MACConfig
   fc_enc :: EncryptionScheme
 
+(* KDF_MIN_ITERATIONS (matches Coq: Definition KDF_MIN_ITERATIONS) *)
+definition KDF_MIN_ITERATIONS :: "nat" where
+  "KDF_MIN_ITERATIONS \<equiv> Z.to_nat 100000%Z"
+
 (* ct_valid (matches Coq: Definition ct_valid) *)
 definition ct_valid :: "ConstantTimeOp \<Rightarrow> bool" where
   "ct_valid op \<equiv> ct_no_secret_branch op \<and> ct_no_secret_addr op \<and>
@@ -282,26 +286,28 @@ definition ct_valid :: "ConstantTimeOp \<Rightarrow> bool" where
 (* riina_ct_op (matches Coq: Definition riina_ct_op) *)
 definition riina_ct_op :: "ConstantTimeOp" where
   "riina_ct_op \<equiv> mkCTOp
-  (fun x y => x + y)  (* placeholder operation *)
-  true true true true"
+  (fun x y => x + y)  
+  True True True True"
 
 (* key_secure (matches Coq: Definition key_secure) *)
 definition key_secure :: "CryptoKey \<Rightarrow> bool" where
-  "key_secure k \<equiv> (128 <=? key_bits k) \<and> negb (key_extractable k)"
+  "key_secure k \<equiv> (128 <=? key_bits k) \<and> (\<not> (key_extractable) k)"
 
 (* key_strong (matches Coq: Definition key_strong) *)
 definition key_strong :: "CryptoKey \<Rightarrow> bool" where
-  "key_strong k \<equiv> (256 <=? key_bits k) \<and> key_hardware_bound k \<and> negb (key_extractable k)"
+  "key_strong k \<equiv> (256 <=? key_bits k) \<and> key_hardware_bound k \<and> (\<not> (key_extractable) k)"
 
 (* riina_key (matches Coq: Definition riina_key) *)
 definition riina_key :: "CryptoKey" where
   "riina_key \<equiv> mkKey
-  256 0 [0;1] false true"
+  256 0 [0;1] False True"
 
 (* nonce_fresh (matches Coq: Definition nonce_fresh) *)
 definition nonce_fresh :: "NonceTracker \<Rightarrow> bool" where
-  "nonce_fresh nt \<equiv> negb (existsb (fun x =>
-    Nat"
+  "nonce_fresh nt \<equiv> (\<not> (existsb) (fun x =>
+    ((length = x)) (length n) \<and>
+    forallb (fun p => ((fst = p)) (snd p)) (combine x n)
+  ) (nt_used nt))"
 
 (* nonce_counter_safe (matches Coq: Definition nonce_counter_safe) *)
 definition nonce_counter_safe :: "NonceTracker \<Rightarrow> bool" where
@@ -309,16 +315,16 @@ definition nonce_counter_safe :: "NonceTracker \<Rightarrow> bool" where
 
 (* aead_secure (matches Coq: Definition aead_secure) *)
 definition aead_secure :: "AEADConfig \<Rightarrow> bool" where
-  "aead_secure cfg \<equiv> (aead_algorithm cfg <=? 1) \<and>       (* approved algorithm *)
-  (128 <=? aead_key_bits cfg) \<and>      (* min 128-bit key *)
-  (96 <=? aead_nonce_bits cfg) \<and>     (* min 96-bit nonce *)
-  (128 <=? aead_tag_bits cfg) \<and>      (* min 128-bit tag *)
+  "aead_secure cfg \<equiv> (aead_algorithm cfg <=? 1) \<and>       
+  (128 <=? aead_key_bits cfg) \<and>      
+  (96 <=? aead_nonce_bits cfg) \<and>     
+  (128 <=? aead_tag_bits cfg) \<and>      
   aead_constant_time cfg"
 
 (* riina_aead (matches Coq: Definition riina_aead) *)
 definition riina_aead :: "AEADConfig" where
   "riina_aead \<equiv> mkAEAD
-  1 256 96 128 true"
+  1 256 96 128 True"
 
 (* hash_secure (matches Coq: Definition hash_secure) *)
 definition hash_secure :: "HashConfig \<Rightarrow> bool" where
@@ -327,7 +333,7 @@ definition hash_secure :: "HashConfig \<Rightarrow> bool" where
 (* riina_hash (matches Coq: Definition riina_hash) *)
 definition riina_hash :: "HashConfig" where
   "riina_hash \<equiv> mkHashConfig
-  1 256 true"
+  1 256 True"
 
 (* rng_secure (matches Coq: Definition rng_secure) *)
 definition rng_secure :: "RNGConfig \<Rightarrow> bool" where
@@ -339,7 +345,7 @@ definition rng_secure :: "RNGConfig \<Rightarrow> bool" where
 (* riina_rng (matches Coq: Definition riina_rng) *)
 definition riina_rng :: "RNGConfig" where
   "riina_rng \<equiv> mkRNGConfig
-  true true true 256"
+  True True True 256"
 
 (* proto_secure (matches Coq: Definition proto_secure) *)
 definition proto_secure :: "ProtocolConfig \<Rightarrow> bool" where
@@ -350,7 +356,7 @@ definition proto_secure :: "ProtocolConfig \<Rightarrow> bool" where
 (* riina_proto (matches Coq: Definition riina_proto) *)
 definition riina_proto :: "ProtocolConfig" where
   "riina_proto \<equiv> mkProtoConfig
-  4 [0] true true"
+  4 [0] True True"
 
 (* pq_secure (matches Coq: Definition pq_secure) *)
 definition pq_secure :: "PQConfig \<Rightarrow> bool" where
@@ -362,7 +368,7 @@ definition pq_secure :: "PQConfig \<Rightarrow> bool" where
 (* riina_pq (matches Coq: Definition riina_pq) *)
 definition riina_pq :: "PQConfig" where
   "riina_pq \<equiv> mkPQConfig
-  0 0 5 true"
+  0 0 5 True"
 
 (* mraead_secure (matches Coq: Definition mraead_secure) *)
 definition mraead_secure :: "MRAEADConfig \<Rightarrow> bool" where
@@ -371,7 +377,7 @@ definition mraead_secure :: "MRAEADConfig \<Rightarrow> bool" where
 (* riina_mraead (matches Coq: Definition riina_mraead) *)
 definition riina_mraead :: "MRAEADConfig" where
   "riina_mraead \<equiv> mkMRAEAD
-  true true riina_aead"
+  True True riina_aead"
 
 (* cert_secure (matches Coq: Definition cert_secure) *)
 definition cert_secure :: "CertConfig \<Rightarrow> bool" where
@@ -380,7 +386,7 @@ definition cert_secure :: "CertConfig \<Rightarrow> bool" where
 (* riina_cert (matches Coq: Definition riina_cert) *)
 definition riina_cert :: "CertConfig" where
   "riina_cert \<equiv> mkCertConfig
-  true true true true"
+  True True True True"
 
 (* encrypt_decrypt_inverse_property (matches Coq: Definition encrypt_decrypt_inverse_property) *)
 definition encrypt_decrypt_inverse_property :: "EncryptionScheme \<Rightarrow> bool" where
@@ -393,15 +399,15 @@ definition encrypt_decrypt_inverse_property :: "EncryptionScheme \<Rightarrow> b
 (* riina_enc_scheme (matches Coq: Definition riina_enc_scheme) *)
 definition riina_enc_scheme :: "EncryptionScheme" where
   "riina_enc_scheme \<equiv> mkEncScheme
-  256 96 128 64 true"
+  256 96 128 64 True"
 
 (* kdf_secure (matches Coq: Definition kdf_secure) *)
 definition kdf_secure :: "KDFConfig \<Rightarrow> bool" where
-  "kdf_secure cfg \<equiv> (kdf_algorithm cfg <=? 2) \<and>           (* approved algorithm *)
-  (256 <=? kdf_output_bits cfg) \<and>       (* min 256-bit output *)
-  (128 <=? kdf_salt_bits cfg) \<and>         (* min 128-bit salt *)
-  ((kdf_algorithm cfg =? 0) \<or>           (* HKDF doesn't need iterations *)
-   (100000 <=? kdf_iterations cfg))"
+  "kdf_secure cfg \<equiv> (kdf_algorithm cfg <=? 2) \<and>           
+  (256 <=? kdf_output_bits cfg) \<and>       
+  (128 <=? kdf_salt_bits cfg) \<and>         
+  ((kdf_algorithm cfg =? 0) \<or>           
+   (KDF_MIN_ITERATIONS <=? kdf_iterations cfg))"
 
 (* riina_kdf (matches Coq: Definition riina_kdf) *)
 definition riina_kdf :: "KDFConfig" where
@@ -416,19 +422,25 @@ definition derived_key_valid :: "DerivedKey \<Rightarrow> bool" where
 
 (* mac_secure (matches Coq: Definition mac_secure) *)
 definition mac_secure :: "MACConfig \<Rightarrow> bool" where
-  "mac_secure cfg \<equiv> (mac_algorithm cfg <=? 2) \<and>       (* approved algorithm *)
-  (128 <=? mac_key_bits cfg) \<and>      (* min 128-bit key *)
-  (128 <=? mac_tag_bits cfg) \<and>      (* min 128-bit tag *)
+  "mac_secure cfg \<equiv> (mac_algorithm cfg <=? 2) \<and>       
+  (128 <=? mac_key_bits cfg) \<and>      
+  (128 <=? mac_tag_bits cfg) \<and>      
   mac_constant_time cfg"
 
 (* riina_mac (matches Coq: Definition riina_mac) *)
 definition riina_mac :: "MACConfig" where
   "riina_mac \<equiv> mkMACConfig
-  1 256 256 true"
+  1 256 256 True"
 
 (* tag_compare_ct (matches Coq: Definition tag_compare_ct) *)
 definition tag_compare_ct :: "TagVerifyResult" where
-  "tag_compare_ct \<equiv> if Nat"
+  "tag_compare_ct \<equiv> if ((length = expected)) (length actual) then
+    if forallb (fun p => ((fst = p)) (snd p)) (combine expected actual) then
+      TagValid
+    else
+      TagInvalid
+  else
+    TagInvalid"
 
 (* counter_nonce_valid (matches Coq: Definition counter_nonce_valid) *)
 definition counter_nonce_valid :: "CounterNonce \<Rightarrow> bool" where
@@ -438,7 +450,9 @@ definition counter_nonce_valid :: "CounterNonce \<Rightarrow> bool" where
 (* nonce_in_set (matches Coq: Definition nonce_in_set) *)
 definition nonce_in_set :: "NonceSet \<Rightarrow> bool" where
   "nonce_in_set ns \<equiv> existsb (fun x =>
-    Nat"
+    ((length = x)) (length n) \<and>
+    forallb (fun p => ((fst = p)) (snd p)) (combine x n)
+  ) ns"
 
 (* full_crypto_secure (matches Coq: Definition full_crypto_secure) *)
 definition full_crypto_secure :: "FullCryptoConfig \<Rightarrow> bool" where
@@ -474,7 +488,7 @@ lemma andb3_true_iff: "\<forall> a b c : bool, a && b && c = True <-> a = True \
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* leb_le (matches Coq) *)

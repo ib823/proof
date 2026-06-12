@@ -4,11 +4,11 @@
 (* Proves BRIDGE-001 through BRIDGE-005 *)
 (* Spec: 04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md M7.6 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
@@ -257,6 +257,220 @@ Proof.
 Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
+(* SECTION I: BRIDGE-006 — JNI String Marshaling Roundtrip                     *)
+(* jstring ↔ C string (UTF-8 byte sequence) roundtrip preservation             *)
+(* ═══════════════════════════════════════════════════════════════════════════ *)
+
+(* C string model: length-tagged byte sequence *)
+Record CString := mkCStr {
+  cstr_len : nat;
+  cstr_hash : nat;  (* content identity *)
+}.
+
+(* JNI string model *)
+Record JNIString := mkJStr {
+  jstr_len : nat;
+  jstr_hash : nat;
+  jstr_is_utf8 : bool;
+}.
+
+Definition c_to_jni_string (s : CString) : JNIString :=
+  mkJStr (cstr_len s) (cstr_hash s) true.
+
+Definition jni_to_c_string (js : JNIString) : CString :=
+  mkCStr (jstr_len js) (jstr_hash js).
+
+Theorem bridge_006_jni_string_roundtrip_len : forall s,
+  cstr_len (jni_to_c_string (c_to_jni_string s)) = cstr_len s.
+Proof.
+  intros. unfold jni_to_c_string, c_to_jni_string. simpl. reflexivity.
+Qed.
+
+Theorem bridge_006_jni_string_roundtrip_hash : forall s,
+  cstr_hash (jni_to_c_string (c_to_jni_string s)) = cstr_hash s.
+Proof.
+  intros. unfold jni_to_c_string, c_to_jni_string. simpl. reflexivity.
+Qed.
+
+Theorem bridge_006_jni_string_is_utf8 : forall s,
+  jstr_is_utf8 (c_to_jni_string s) = true.
+Proof.
+  intros. unfold c_to_jni_string. simpl. reflexivity.
+Qed.
+
+(* Full roundtrip: CString → JNIString → CString preserves identity *)
+Theorem bridge_006_jni_string_full_roundtrip : forall s,
+  jni_to_c_string (c_to_jni_string s) = s.
+Proof.
+  intros. destruct s. unfold c_to_jni_string, jni_to_c_string. simpl. reflexivity.
+Qed.
+
+(* RValue string roundtrip through JNI *)
+Theorem bridge_006_rvalue_string_jni_roundtrip : forall n,
+  exists jv rv,
+    marshal_jni (RVString n) jv /\ unmarshal_jni jv rv /\ rv = RVString n.
+Proof.
+  intros. exists (JString n), (RVString n).
+  split; [apply mj_string | split; [apply uj_string | reflexivity]].
+Qed.
+
+(* ═══════════════════════════════════════════════════════════════════════════ *)
+(* SECTION J: BRIDGE-007 — Swift Bridge Type Safety                            *)
+(* Swift types preserve RIINA type structure through bridging                  *)
+(* ═══════════════════════════════════════════════════════════════════════════ *)
+
+(* Swift type tags *)
+Inductive SwiftTypeTag : Type :=
+  | STInt : SwiftTypeTag
+  | STBool : SwiftTypeTag
+  | STString : SwiftTypeTag
+  | STVoid : SwiftTypeTag
+  | STOptional : SwiftTypeTag.
+
+(* Compute expected Swift type tag for a RIINA value *)
+Fixpoint swift_type_of (rv : RValue) : SwiftTypeTag :=
+  match rv with
+  | RVInt _ => STInt
+  | RVBool _ => STBool
+  | RVString _ => STString
+  | RVUnit => STVoid
+  | RVSecret inner => swift_type_of inner
+  end.
+
+(* Compute Swift type tag of a SwiftValue *)
+Definition swift_value_tag (sv : SwiftValue) : SwiftTypeTag :=
+  match sv with
+  | SwInt _ => STInt
+  | SwBool _ => STBool
+  | SwString _ => STString
+  | SwVoid => STVoid
+  | SwOptional _ => STOptional
+  end.
+
+(* Marshaling preserves type tag *)
+Theorem bridge_007_swift_type_preserved_int : forall n,
+  swift_value_tag (SwInt n) = swift_type_of (RVInt n).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem bridge_007_swift_type_preserved_bool : forall b,
+  swift_value_tag (SwBool b) = swift_type_of (RVBool b).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem bridge_007_swift_type_preserved_string : forall n,
+  swift_value_tag (SwString n) = swift_type_of (RVString n).
+Proof.
+  reflexivity.
+Qed.
+
+Theorem bridge_007_swift_type_preserved_unit :
+  swift_value_tag SwVoid = swift_type_of RVUnit.
+Proof.
+  reflexivity.
+Qed.
+
+(* Marshaling produces value with correct tag *)
+Theorem bridge_007_marshal_swift_type_safe : forall rv sv,
+  marshal_swift rv sv ->
+  swift_value_tag sv = swift_type_of rv.
+Proof.
+  intros. inversion H; subst; reflexivity.
+Qed.
+
+(* Unmarshaling produces value with correct tag *)
+Theorem bridge_007_unmarshal_swift_type_safe : forall sv rv,
+  unmarshal_swift sv rv ->
+  swift_type_of rv = swift_value_tag sv.
+Proof.
+  intros. inversion H; subst; reflexivity.
+Qed.
+
+(* RValue string roundtrip through Swift *)
+Theorem bridge_007_rvalue_string_swift_roundtrip : forall n,
+  exists sv rv,
+    marshal_swift (RVString n) sv /\ unmarshal_swift sv rv /\ rv = RVString n.
+Proof.
+  intros. exists (SwString n), (RVString n).
+  split; [apply ms_string | split; [apply us_string | reflexivity]].
+Qed.
+
+(* ═══════════════════════════════════════════════════════════════════════════ *)
+(* SECTION K: BRIDGE-008 — Callback Safety (No Secret Leak)                    *)
+(* Callbacks from platform code back to RIINA cannot leak secret values        *)
+(* ═══════════════════════════════════════════════════════════════════════════ *)
+
+(* Security label for bridge values *)
+Inductive BridgeSecLabel : Type :=
+  | BPublic : BridgeSecLabel
+  | BSecret : BridgeSecLabel.
+
+(* A callback descriptor *)
+Record Callback := mkCallback {
+  cb_id : nat;
+  cb_arg_labels : list BridgeSecLabel;
+  cb_ret_label : BridgeSecLabel;
+  cb_effect : BridgeEffect;
+}.
+
+(* A callback is safe if it never returns secret data *)
+Definition callback_ret_safe (cb : Callback) : Prop :=
+  cb_ret_label cb = BPublic.
+
+(* A callback argument list is safe if no secret args are exposed *)
+Definition callback_args_safe (cb : Callback) : Prop :=
+  forall l, In l (cb_arg_labels cb) -> l = BPublic.
+
+(* Full callback safety: return safe AND args safe *)
+Definition callback_safe (cb : Callback) : Prop :=
+  callback_ret_safe cb /\ callback_args_safe cb.
+
+Theorem bridge_008_pure_callback_safe : forall id,
+  callback_safe (mkCallback id [] BPublic BPure).
+Proof.
+  intros. unfold callback_safe, callback_ret_safe, callback_args_safe.
+  simpl. split; [reflexivity | intros; contradiction].
+Qed.
+
+Theorem bridge_008_public_args_safe : forall id n eff,
+  callback_args_safe (mkCallback id (repeat BPublic n) BPublic eff).
+Proof.
+  intros. unfold callback_args_safe. simpl. intros.
+  apply repeat_spec in H. exact H.
+Qed.
+
+(* Secret callbacks are rejected at bridge boundary *)
+Definition callback_rejected (cb : Callback) : Prop :=
+  cb_ret_label cb = BSecret \/ exists l, In l (cb_arg_labels cb) /\ l = BSecret.
+
+Theorem bridge_008_secret_ret_rejected : forall id args eff,
+  callback_rejected (mkCallback id args BSecret eff).
+Proof.
+  intros. unfold callback_rejected. left. simpl. reflexivity.
+Qed.
+
+(* Safe callback cannot be rejected (consistency) *)
+Theorem bridge_008_safe_not_rejected : forall cb,
+  callback_safe cb ->
+  ~ (cb_ret_label cb = BSecret).
+Proof.
+  intros. unfold callback_safe, callback_ret_safe in H.
+  destruct H as [Hret _]. rewrite Hret. discriminate.
+Qed.
+
+(* No secret value can escape through any safe callback *)
+Theorem bridge_008_no_secret_through_safe_callback : forall cb,
+  callback_safe cb ->
+  cb_ret_label cb = BPublic /\
+  (forall l, In l (cb_arg_labels cb) -> l = BPublic).
+Proof.
+  intros. unfold callback_safe, callback_ret_safe, callback_args_safe in H.
+  exact H.
+Qed.
+
+(* ═══════════════════════════════════════════════════════════════════════════ *)
 (* SUMMARY: All bridge verification theorems proven                            *)
 (*                                                                             *)
 (* BRIDGE-001: Value marshaling roundtrip (JNI + Swift, int + bool)            *)
@@ -264,4 +478,7 @@ Qed.
 (* BRIDGE-003: Swift capability token preservation                             *)
 (* BRIDGE-004: Effect gates preserved through bridge calls                     *)
 (* BRIDGE-005: No secret data leaked through bridge error paths                *)
+(* BRIDGE-006: JNI string marshaling roundtrip (jstring ↔ C string)            *)
+(* BRIDGE-007: Swift bridge type safety                                        *)
+(* BRIDGE-008: Callback safety — no secret leak through callbacks              *)
 (* ═══════════════════════════════════════════════════════════════════════════ *)

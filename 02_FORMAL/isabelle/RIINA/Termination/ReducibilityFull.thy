@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ReducibilityFull - Isabelle/HOL Port
@@ -16,6 +18,7 @@
  * | SN_expr            | SN_expr                | OK     |
  * | id_rho             | id_rho                 | OK     |
  * | extend_rho         | extend_rho             | OK     |
+ * | subst_env          | subst_env              | OK     |
  * | closed_rho         | closed_rho             | OK     |
  * | Reducible          | Reducible              | OK     |
  * | value_not_step     | value_not_step         | OK     |
@@ -61,7 +64,7 @@
  *)
 
 theory ReducibilityFull
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* step_inv (matches Coq: Definition step_inv) *)
@@ -84,7 +87,11 @@ definition id_rho :: "subst_rho" where
 
 (* extend_rho (matches Coq: Definition extend_rho) *)
 definition extend_rho :: "subst_rho \<Rightarrow> ident \<Rightarrow> expr \<Rightarrow> subst_rho" where
-  "extend_rho ρ x v \<equiv> fun y => if String"
+  "extend_rho ρ x v \<equiv> fun y => if String.(y = x) then v else ρ y"
+
+(* subst_env (matches Coq: Definition subst_env) *)
+fun subst_env :: "subst_rho \<Rightarrow> expr \<Rightarrow> expr" where
+  "subst_env EUnit = EUnit"
 
 (* closed_rho (matches Coq: Definition closed_rho) *)
 definition closed_rho :: "subst_rho \<Rightarrow> bool" where
@@ -183,7 +190,7 @@ lemma subst_env_id: "\<forall> e, subst_env id_rho e = e"
 
 (* Helper: substitution has no effect when variable is not free *)
 (* subst_not_free_in (matches Coq) *)
-lemma subst_not_free_in: "\<forall> x v e, ~ free_in x e \<longrightarrow> [x := v] e = e"
+lemma subst_not_free_in: "\<forall> x v e, ~ free_in x e \<longrightarrow> subst[x := v] e = e"
   by (cases rule: ‹_›.cases; simp)
 
 (* Helper: free_in only holds for the same variable in EVar *)
@@ -213,12 +220,12 @@ lemma subst_env_ext: "\<forall> ρ1 ρ2 e, (\<forall> y, ρ1 y = ρ2 y) \<longri
 
 (* Generalized substitution commutation lemma *)
 (* subst_subst_env_commute_gen (matches Coq) *)
-lemma subst_subst_env_commute_gen: "\<forall> e ρ x v, (\<forall> y, y \<noteq> x \<longrightarrow> ~ free_in x (ρ y)) \<longrightarrow> [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e"
+lemma subst_subst_env_commute_gen: "\<forall> e ρ x v, (\<forall> y, y \<noteq> x \<longrightarrow> ~ free_in x (ρ y)) \<longrightarrow> subst[x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e"
   by (cases rule: ‹_›.cases; simp)
 
 (* Main lemma with closed_rho hypothesis *)
 (* subst_subst_env_commute (matches Coq) *)
-lemma subst_subst_env_commute: "\<forall> ρ x v e, closed_rho ρ \<longrightarrow> [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e"
+lemma subst_subst_env_commute: "\<forall> ρ x v e, closed_rho ρ \<longrightarrow> subst[x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e"
   by auto
 
 (* CR1: Reducible terms are SN - trivial with simplified definition *)
@@ -291,7 +298,7 @@ lemma SN_closed_step: "\<forall> e st ctx, SN (e, st, ctx) \<longrightarrow> \<f
 
 (* SN of beta when body is SN *)
 (* SN_beta_value (matches Coq) *)
-lemma SN_beta_value: "\<forall> x T body a st ctx, value a \<longrightarrow> SN (([x := a] body), st, ctx) \<longrightarrow> SN (EApp (ELam x T body) a, st, ctx)"
+lemma SN_beta_value: "\<forall> x T body a st ctx, value a \<longrightarrow> SN ((subst[x := a] body), st, ctx) \<longrightarrow> SN (EApp (ELam x T body) a, st, ctx)"
   by auto
 
 end

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SmartContractSecurity - Isabelle/HOL Port
@@ -92,8 +94,9 @@ datatype contract_vulnerability =
 
 (* CEIPhase (matches Coq: Inductive CEIPhase) *)
 datatype cei_phase =
-    Checks  (* Validate conditions *)
-  |     Effects  (* Update state *)
+    Checks
+  |     Effects
+  |     Interactions
 
 (* ReentrancyGuard (matches Coq: Record ReentrancyGuard) *)
 record reentrancy_guard =
@@ -164,23 +167,23 @@ definition fully_secure_contract :: "SmartContractSecurity \<Rightarrow> bool" w
 
 (* riina_reentrancy (matches Coq: Definition riina_reentrancy) *)
 definition riina_reentrancy :: "ReentrancyGuard" where
-  "riina_reentrancy \<equiv> mkReentrancyGuard true true true"
+  "riina_reentrancy \<equiv> mkReentrancyGuard True True True"
 
 (* riina_integer (matches Coq: Definition riina_integer) *)
 definition riina_integer :: "IntegerSafety" where
-  "riina_integer \<equiv> mkIntegerSafety true true true"
+  "riina_integer \<equiv> mkIntegerSafety True True True"
 
 (* riina_access (matches Coq: Definition riina_access) *)
 definition riina_access :: "AccessControlPolicy" where
-  "riina_access \<equiv> mkAccessControl true true true true"
+  "riina_access \<equiv> mkAccessControl True True True True"
 
 (* riina_delegate (matches Coq: Definition riina_delegate) *)
 definition riina_delegate :: "DelegateCallSafety" where
-  "riina_delegate \<equiv> mkDelegateCall true true true"
+  "riina_delegate \<equiv> mkDelegateCall True True True"
 
 (* riina_flash (matches Coq: Definition riina_flash) *)
 definition riina_flash :: "FlashLoanDefense" where
-  "riina_flash \<equiv> mkFlashLoan true true true"
+  "riina_flash \<equiv> mkFlashLoan True True True"
 
 (* riina_contract_security (matches Coq: Definition riina_contract_security) *)
 definition riina_contract_security :: "SmartContractSecurity" where

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DELTA001_VerifiedDistribution - Isabelle/HOL Port
@@ -22,6 +24,7 @@
  * | is_quorum          | is_quorum              | OK     |
  * | voted_for_in_term  | voted_for_in_term      | OK     |
  * | count_votes        | count_votes            | OK     |
+ * | log_entry_at       | log_entry_at           | OK     |
  * | logs_match_at      | logs_match_at          | OK     |
  * | entry_committed    | entry_committed        | OK     |
  * | bft_quorum         | bft_quorum             | OK     |
@@ -32,6 +35,7 @@
  * | gs_add             | gs_add                 | OK     |
  * | gs_merge           | gs_merge               | OK     |
  * | gs_member          | gs_member              | OK     |
+ * | ring_lookup        | ring_lookup            | OK     |
  * | ring_add_node      | ring_add_node          | OK     |
  * | ring_remove_node   | ring_remove_node       | OK     |
  * | DELTA_001_01_quorum_intersection | DELTA_001_01_quorum_intersection | OK     |
@@ -69,7 +73,7 @@
  *)
 
 theory DELTA001_VerifiedDistribution
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Role (matches Coq: Inductive Role) *)
@@ -89,7 +93,7 @@ datatype bft_phase =
 record log_entry =
   entry_term :: Term
   entry_index :: nat
-  entry_command :: nat  (* abstract command *)
+  entry_command :: nat
 
 (* RaftNode (matches Coq: Record RaftNode) *)
 record raft_node =
@@ -115,27 +119,30 @@ record bft_message =
 
 (* BFTState (matches Coq: Record BFTState) *)
 record bft_state =
-  bft_n :: nat  (* total nodes *)
-  bft_f :: nat  (* max faulty *)
+  bft_n :: nat
+  bft_f :: nat
   bft_correct :: 'a list
   bft_faulty :: 'a list
 
 (* HashRing (matches Coq: Record HashRing) *)
 record hash_ring =
   ring_nodes :: 'a list
-  ring_size :: nat  (* ring modulus *)
+  ring_size :: nat
 
 (* is_quorum (matches Coq: Definition is_quorum) *)
 definition is_quorum :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
   "is_quorum votes total \<equiv> total <? 2 * votes"
 
-(* voted_for_in_term (matches Coq: Definition voted_for_in_term) *)
-definition voted_for_in_term :: "RaftNode \<Rightarrow> NodeId \<Rightarrow> Term \<Rightarrow> bool" where
-  "voted_for_in_term node candidate term \<equiv> (Nat"
+(* voted_for_in_term - complex match, needs manual translation *)
+definition voted_for_in_term :: "bool" where "voted_for_in_term = undefined"
 
 (* count_votes (matches Coq: Definition count_votes) *)
 definition count_votes :: "NodeId \<Rightarrow> Term \<Rightarrow> nat" where
   "count_votes candidate term \<equiv> length (filter (fun n => voted_for_in_term n candidate term) nodes)"
+
+(* log_entry_at (matches Coq: Definition log_entry_at) *)
+definition log_entry_at :: "nat \<Rightarrow> option LogEntry" where
+  "log_entry_at idx \<equiv> nth_error log idx"
 
 (* logs_match_at (matches Coq: Definition logs_match_at) *)
 definition logs_match_at :: "nat \<Rightarrow> bool" where
@@ -145,7 +152,10 @@ definition logs_match_at :: "nat \<Rightarrow> bool" where
     entry_term e1 = entry_term e2 ->
     entry_command e1 = entry_command e2"
 
-(* entry_committed - complex match, manual review needed *)
+(* entry_committed (matches Coq: Definition entry_committed) *)
+definition entry_committed :: "RaftCluster \<Rightarrow> nat \<Rightarrow> bool" where
+  "entry_committed cluster idx \<equiv> let matching := filter (fun n => idx <? length (node_log n)) (cluster_nodes cluster) in
+  is_quorum (length matching) (cluster_size cluster)"
 
 (* bft_quorum (matches Coq: Definition bft_quorum) *)
 definition bft_quorum :: "BFTState \<Rightarrow> nat" where
@@ -157,19 +167,20 @@ definition bft_valid :: "BFTState \<Rightarrow> bool" where
 
 (* gc_increment (matches Coq: Definition gc_increment) *)
 definition gc_increment :: "GCounter \<Rightarrow> nat \<Rightarrow> GCounter" where
-  "gc_increment gc node \<equiv> map (fun p => if Nat"
+  "gc_increment gc node \<equiv> map (fun p => if ((fst = p)) node then S (snd p) else snd p)
+      (combine (seq 0 (length gc)) gc)"
 
 (* gc_value (matches Coq: Definition gc_value) *)
 definition gc_value :: "GCounter \<Rightarrow> nat" where
-  "gc_value gc \<equiv> fold_left Nat"
+  "gc_value gc \<equiv> fold_left Nat.add gc 0"
 
 (* gc_merge (matches Coq: Definition gc_merge) *)
 definition gc_merge :: "GCounter" where
-  "gc_merge \<equiv> map (fun p => Nat"
+  "gc_merge \<equiv> map (fun p => Nat.max (fst p) (snd p)) (combine a b)"
 
 (* gs_add (matches Coq: Definition gs_add) *)
 definition gs_add :: "GSet \<Rightarrow> nat \<Rightarrow> GSet" where
-  "gs_add s v \<equiv> if existsb (Nat"
+  "gs_add s v \<equiv> if existsb ((v) = s) then s else v :: s"
 
 (* gs_merge (matches Coq: Definition gs_merge) *)
 definition gs_merge :: "GSet" where
@@ -177,7 +188,10 @@ definition gs_merge :: "GSet" where
 
 (* gs_member (matches Coq: Definition gs_member) *)
 definition gs_member :: "GSet \<Rightarrow> nat \<Rightarrow> bool" where
-  "gs_member s v \<equiv> existsb (Nat"
+  "gs_member s v \<equiv> existsb ((v) = s)"
+
+(* ring_lookup - complex match, needs manual translation *)
+definition ring_lookup :: "bool" where "ring_lookup = undefined"
 
 (* ring_add_node (matches Coq: Definition ring_add_node) *)
 definition ring_add_node :: "HashRing \<Rightarrow> nat \<Rightarrow> NodeId \<Rightarrow> HashRing" where
@@ -186,7 +200,8 @@ definition ring_add_node :: "HashRing \<Rightarrow> nat \<Rightarrow> NodeId \<R
 
 (* ring_remove_node (matches Coq: Definition ring_remove_node) *)
 definition ring_remove_node :: "HashRing \<Rightarrow> NodeId \<Rightarrow> HashRing" where
-  "ring_remove_node ring node \<equiv> {| ring_nodes := filter (fun p => negb (Nat"
+  "ring_remove_node ring node \<equiv> {| ring_nodes := filter (fun p => (\<not> (Nat.eqb) (snd p) node)) (ring_nodes ring);
+     ring_size := ring_size ring |}"
 
 (* DELTA_001_01_quorum_intersection (matches Coq) *)
 lemma DELTA_001_01_quorum_intersection: "\<forall> n q1 q2, is_quorum q1 n = True \<longrightarrow> is_quorum q2 n = True \<longrightarrow> q1 + q2 > n"

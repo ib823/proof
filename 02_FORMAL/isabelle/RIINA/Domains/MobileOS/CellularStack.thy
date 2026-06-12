@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CellularStack - Isabelle/HOL Port
@@ -94,7 +96,7 @@ datatype cellular_generation =
 record memory =
   mem_start :: MemoryAddress
   mem_size :: nat
-  mem_is_ap :: bool  (* Application processor memory *)
+  mem_is_ap :: bool
 
 (* BasebandProcessor (matches Coq: Record BasebandProcessor) *)
 record baseband_processor =
@@ -197,8 +199,8 @@ record cellular_failover =
 
 (* SignalMeasurement (matches Coq: Record SignalMeasurement) *)
 record signal_measurement =
-  sm_rssi :: nat  (* received signal strength indicator *)
-  sm_rsrp :: nat  (* reference signal received power *)
+  sm_rssi :: nat
+  sm_rsrp :: nat
   sm_accurate :: bool
   sm_timestamp :: nat
 
@@ -220,7 +222,7 @@ definition MemoryAddress :: "'a" where
 
 (* is_ap_memory (matches Coq: Definition is_ap_memory) *)
 definition is_ap_memory :: "Memory \<Rightarrow> bool" where
-  "is_ap_memory m \<equiv> mem_is_ap m = true"
+  "is_ap_memory m \<equiv> mem_is_ap m = True"
 
 (* can_access_mem (matches Coq: Definition can_access_mem) *)
 definition can_access_mem :: "BasebandProcessor \<Rightarrow> Memory \<Rightarrow> bool" where
@@ -228,86 +230,86 @@ definition can_access_mem :: "BasebandProcessor \<Rightarrow> Memory \<Rightarro
 
 (* baseband_properly_isolated (matches Coq: Definition baseband_properly_isolated) *)
 definition baseband_properly_isolated :: "BasebandProcessor \<Rightarrow> bool" where
-  "baseband_properly_isolated bb \<equiv> bb_isolated bb = true ->
+  "baseband_properly_isolated bb \<equiv> bb_isolated bb = True ->
   forall m, is_ap_memory m -> ~ can_access_mem bb m"
 
 (* during_call (matches Coq: Definition during_call) *)
 definition during_call :: "Call \<Rightarrow> Handoff \<Rightarrow> bool" where
-  "during_call c h \<equiv> call_active c = true"
+  "during_call c h \<equiv> call_active c = True"
 
 (* no_audio_gap (matches Coq: Definition no_audio_gap) *)
 definition no_audio_gap :: "Call \<Rightarrow> bool" where
-  "no_audio_gap c \<equiv> call_has_audio_gap c = false"
+  "no_audio_gap c \<equiv> call_has_audio_gap c = False"
 
 (* seamless_handoff_system (matches Coq: Definition seamless_handoff_system) *)
 definition seamless_handoff_system :: "Call \<Rightarrow> Handoff \<Rightarrow> bool" where
-  "seamless_handoff_system c h \<equiv> during_call c h /\ handoff_seamless h = true -> no_audio_gap c"
+  "seamless_handoff_system c h \<equiv> during_call c h /\ handoff_seamless h = True -> no_audio_gap c"
 
 (* imsi_protected (matches Coq: Definition imsi_protected) *)
 definition imsi_protected :: "IMSIProtection \<Rightarrow> bool" where
-  "imsi_protected ip \<equiv> imsi_encrypted ip = true /\ imsi_exposed ip = false"
+  "imsi_protected ip \<equiv> imsi_encrypted ip = True /\ imsi_exposed ip = False"
 
 (* baseband_fully_isolated (matches Coq: Definition baseband_fully_isolated) *)
 definition baseband_fully_isolated :: "BasebandIsolation \<Rightarrow> bool" where
-  "baseband_fully_isolated bbi \<equiv> bbi_memory_isolated bbi = true /\
-  bbi_dma_blocked bbi = true /\
-  bbi_firmware_verified bbi = true"
+  "baseband_fully_isolated bbi \<equiv> bbi_memory_isolated bbi = True /\
+  bbi_dma_blocked bbi = True /\
+  bbi_firmware_verified bbi = True"
 
 (* sim_authentication_complete (matches Coq: Definition sim_authentication_complete) *)
 definition sim_authentication_complete :: "SIMAuth \<Rightarrow> bool" where
-  "sim_authentication_complete sa \<equiv> sim_auth_complete sa = true /\
-  sim_mutual_auth sa = true /\
-  sim_key_agreement sa = true"
+  "sim_authentication_complete sa \<equiv> sim_auth_complete sa = True /\
+  sim_mutual_auth sa = True /\
+  sim_key_agreement sa = True"
 
 (* data_roaming_permitted (matches Coq: Definition data_roaming_permitted) *)
 definition data_roaming_permitted :: "RoamingConfig \<Rightarrow> bool" where
-  "data_roaming_permitted rc \<equiv> roaming_enabled rc = true -> roaming_user_consented rc = true"
+  "data_roaming_permitted rc \<equiv> roaming_enabled rc = True -> roaming_user_consented rc = True"
 
 (* cellular_encryption_enforced (matches Coq: Definition cellular_encryption_enforced) *)
 definition cellular_encryption_enforced :: "CellularEncryption \<Rightarrow> bool" where
-  "cellular_encryption_enforced ce \<equiv> cell_encrypted ce = true /\ cell_integrity_protected ce = true"
+  "cellular_encryption_enforced ce \<equiv> cell_encrypted ce = True /\ cell_integrity_protected ce = True"
 
 (* stingray_detection (matches Coq: Definition stingray_detection) *)
 definition stingray_detection :: "CellTowerInfo \<Rightarrow> bool" where
-  "stingray_detection ct \<equiv> tower_anomaly_detected ct = true -> tower_stingray_suspected ct = true"
+  "stingray_detection ct \<equiv> tower_anomaly_detected ct = True -> tower_stingray_suspected ct = True"
 
 (* sms_encryption_available (matches Coq: Definition sms_encryption_available) *)
 definition sms_encryption_available :: "SMSMessage \<Rightarrow> bool" where
-  "sms_encryption_available sms \<equiv> sms_rcs_enabled sms = true -> sms_encrypted sms = true"
+  "sms_encryption_available sms \<equiv> sms_rcs_enabled sms = True -> sms_encrypted sms = True"
 
 (* volte_quality_guaranteed (matches Coq: Definition volte_quality_guaranteed) *)
 definition volte_quality_guaranteed :: "VoLTECall \<Rightarrow> bool" where
-  "volte_quality_guaranteed vc \<equiv> volte_hd_voice vc = true /\ volte_quality_score vc >= volte_min_quality vc"
+  "volte_quality_guaranteed vc \<equiv> volte_hd_voice vc = True /\ volte_quality_score vc >= volte_min_quality vc"
 
 (* esim_activation_secure (matches Coq: Definition esim_activation_secure) *)
 definition esim_activation_secure :: "eSIMActivation \<Rightarrow> bool" where
-  "esim_activation_secure ea \<equiv> esim_profile_encrypted ea = true /\
-  esim_activation_code_valid ea = true"
+  "esim_activation_secure ea \<equiv> esim_profile_encrypted ea = True /\
+  esim_activation_code_valid ea = True"
 
 (* carrier_settings_validated (matches Coq: Definition carrier_settings_validated) *)
 definition carrier_settings_validated :: "CarrierSettings \<Rightarrow> bool" where
-  "carrier_settings_validated cs \<equiv> carrier_validated cs = true /\ carrier_version cs > 0"
+  "carrier_settings_validated cs \<equiv> carrier_validated cs = True /\ carrier_version cs > 0"
 
 (* data_usage_tracked (matches Coq: Definition data_usage_tracked) *)
 definition data_usage_tracked :: "DataUsage \<Rightarrow> bool" where
-  "data_usage_tracked du \<equiv> du_tracked du = true /\
-  (du_bytes_used du > du_bytes_limit du -> du_warning_sent du = true)"
+  "data_usage_tracked du \<equiv> du_tracked du = True /\
+  (du_bytes_used du > du_bytes_limit du -> du_warning_sent du = True)"
 
 (* cellular_failover_handled (matches Coq: Definition cellular_failover_handled) *)
 definition cellular_failover_handled :: "CellularFailover \<Rightarrow> bool" where
-  "cellular_failover_handled cf \<equiv> fo_failover_handled cf = true"
+  "cellular_failover_handled cf \<equiv> fo_failover_handled cf = True"
 
 (* signal_strength_accurate (matches Coq: Definition signal_strength_accurate) *)
 definition signal_strength_accurate :: "SignalMeasurement \<Rightarrow> bool" where
-  "signal_strength_accurate sm \<equiv> sm_accurate sm = true /\ sm_timestamp sm > 0"
+  "signal_strength_accurate sm \<equiv> sm_accurate sm = True /\ sm_timestamp sm > 0"
 
 (* emergency_call_always_available (matches Coq: Definition emergency_call_always_available) *)
 definition emergency_call_always_available :: "EmergencyCall \<Rightarrow> bool" where
-  "emergency_call_always_available ec \<equiv> ec_available ec = true /\ ec_any_network ec = true"
+  "emergency_call_always_available ec \<equiv> ec_available ec = True /\ ec_any_network ec = True"
 
 (* carrier_lock_enforced (matches Coq: Definition carrier_lock_enforced) *)
 definition carrier_lock_enforced :: "CarrierLock \<Rightarrow> bool" where
-  "carrier_lock_enforced cl \<equiv> cl_locked cl = true -> cl_enforced cl = true"
+  "carrier_lock_enforced cl \<equiv> cl_locked cl = True -> cl_enforced cl = True"
 
 (* baseband_isolation (matches Coq) *)
 lemma baseband_isolation: "\<forall> (baseband : BasebandProcessor) (ap_mem : Memory), baseband_properly_isolated baseband \<longrightarrow> bb_isolated baseband = True \<longrightarrow> is_ap_memory ap_mem \<longrightarrow> ~ can_access_mem baseband ap_mem"

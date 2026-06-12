@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TimeSecurity - Isabelle/HOL Port
@@ -64,7 +66,7 @@
  *)
 
 theory TimeSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AtomicOp (matches Coq: Inductive AtomicOp) *)
@@ -75,27 +77,27 @@ datatype atomic_op =
 
 (* nonce_unique (matches Coq: Definition nonce_unique) *)
 definition nonce_unique :: "nat \<Rightarrow> bool" where
-  "nonce_unique nonce \<equiv> negb (existsb (fun n => Nat"
+  "nonce_unique nonce \<equiv> (\<not> (existsb) (fun n => (n = nonce)) seen)"
 
 (* is_replay (matches Coq: Definition is_replay) *)
 definition is_replay :: "ProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
-  "is_replay msg window \<equiv> existsb (fun n => Nat"
+  "is_replay msg window \<equiv> existsb (fun n => (n = (nonce_value) (msg_nonce msg))) (window_seen window)"
 
 (* seq_increasing (matches Coq: Definition seq_increasing) *)
 definition seq_increasing :: "ProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
-  "seq_increasing msg window \<equiv> Nat"
+  "seq_increasing msg window \<equiv> ((window_last_seq < window)) (msg_sequence msg)"
 
 (* timestamp_fresh (matches Coq: Definition timestamp_fresh) *)
 definition timestamp_fresh :: "AuthTimestamp \<Rightarrow> bool" where
-  "timestamp_fresh ts \<equiv> Nat"
+  "timestamp_fresh ts \<equiv> ((current \<le> -) ts_value ts) max_age"
 
 (* capability_valid (matches Coq: Definition capability_valid) *)
 definition capability_valid :: "Capability \<Rightarrow> nat \<Rightarrow> bool" where
-  "capability_valid cap current_time \<equiv> Nat"
+  "capability_valid cap current_time \<equiv> (current_time < (cap_valid_until) cap)"
 
 (* owner_matches (matches Coq: Definition owner_matches) *)
 definition owner_matches :: "Capability \<Rightarrow> nat \<Rightarrow> bool" where
-  "owner_matches cap requester \<equiv> Nat"
+  "owner_matches cap requester \<equiv> ((cap_owner = cap)) requester"
 
 (* atomic_complete (matches Coq: Definition atomic_complete) *)
 definition atomic_complete :: "bool" where
@@ -103,15 +105,15 @@ definition atomic_complete :: "bool" where
 
 (* cas_succeeds (matches Coq: Definition cas_succeeds) *)
 definition cas_succeeds :: "bool" where
-  "cas_succeeds \<equiv> Nat"
+  "cas_succeeds \<equiv> (current = expected)"
 
 (* clock_monotonic (matches Coq: Definition clock_monotonic) *)
 definition clock_monotonic :: "bool" where
-  "clock_monotonic \<equiv> Nat"
+  "clock_monotonic \<equiv> (old_time \<le> new_time)"
 
 (* happens_before (matches Coq: Definition happens_before) *)
 definition happens_before :: "bool" where
-  "happens_before \<equiv> Nat"
+  "happens_before \<equiv> (event1_time < event2_time)"
 
 (* logical_clock_update (matches Coq: Definition logical_clock_update) *)
 definition logical_clock_update :: "nat" where
@@ -119,55 +121,55 @@ definition logical_clock_update :: "nat" where
 
 (* signature_valid (matches Coq: Definition signature_valid) *)
 definition signature_valid :: "bool" where
-  "signature_valid \<equiv> Nat"
+  "signature_valid \<equiv> (expected = actual)"
 
 (* sources_sufficient (matches Coq: Definition sources_sufficient) *)
 definition sources_sufficient :: "bool" where
-  "sources_sufficient \<equiv> Nat"
+  "sources_sufficient \<equiv> (min_sources \<le> count)"
 
 (* skew_bounded (matches Coq: Definition skew_bounded) *)
 definition skew_bounded :: "bool" where
-  "skew_bounded \<equiv> Nat"
+  "skew_bounded \<equiv> (skew \<le> max_skew)"
 
 (* deadline_met (matches Coq: Definition deadline_met) *)
 definition deadline_met :: "bool" where
-  "deadline_met \<equiv> Nat"
+  "deadline_met \<equiv> (current \<le> deadline)"
 
 (* timeout_triggered (matches Coq: Definition timeout_triggered) *)
 definition timeout_triggered :: "bool" where
-  "timeout_triggered \<equiv> Nat"
+  "timeout_triggered \<equiv> (timeout < elapsed)"
 
 (* lock_order_valid (matches Coq: Definition lock_order_valid) *)
 definition lock_order_valid :: "bool" where
-  "lock_order_valid \<equiv> Nat"
+  "lock_order_valid \<equiv> (lock1 < lock2)"
 
 (* progress_made (matches Coq: Definition progress_made) *)
 definition progress_made :: "bool" where
-  "progress_made \<equiv> Nat"
+  "progress_made \<equiv> (before < after)"
 
 (* wait_bounded (matches Coq: Definition wait_bounded) *)
 definition wait_bounded :: "bool" where
-  "wait_bounded \<equiv> Nat"
+  "wait_bounded \<equiv> (wait_time \<le> max_wait)"
 
 (* rate_ok (matches Coq: Definition rate_ok) *)
 definition rate_ok :: "bool" where
-  "rate_ok \<equiv> Nat"
+  "rate_ok \<equiv> (requests \<le> max_rate)"
 
 (* order_preserved (matches Coq: Definition order_preserved) *)
 definition order_preserved :: "bool" where
-  "order_preserved \<equiv> Nat"
+  "order_preserved \<equiv> (seq1 \<le> seq2)"
 
 (* audit_timestamp_ok (matches Coq: Definition audit_timestamp_ok) *)
 definition audit_timestamp_ok :: "bool" where
-  "audit_timestamp_ok \<equiv> Nat"
+  "audit_timestamp_ok \<equiv> (event_time \<le> audit_time)"
 
 (* session_valid (matches Coq: Definition session_valid) *)
 definition session_valid :: "bool" where
-  "session_valid \<equiv> Nat"
+  "session_valid \<equiv> ((current \<le> -) created) max_age"
 
 (* time_layers (matches Coq: Definition time_layers) *)
 definition time_layers :: "bool" where
-  "time_layers \<equiv> andb replay (andb toctou (andb atomic timestamp))"
+  "time_layers \<equiv> (replay \<and> (andb) toctou ((atomic \<and> timestamp)))"
 
 (* time_001_nonce_unique (matches Coq) *)
 lemma time_001_nonce_unique: "\<forall> (nonce : nat) (seen : list nat), nonce_unique nonce seen = True \<longrightarrow> ~ In nonce seen"

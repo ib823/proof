@@ -20,12 +20,12 @@
     Phase: 3 (Termination)
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Wf_nat.
-Require Import Coq.Lists.List.
-Require Import Coq.Strings.String.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Arith.Wf_nat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
@@ -200,7 +200,7 @@ Qed.
 (** Case on Inl steps in one step *)
 Lemma case_inl_steps_once : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx).
+  (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst[x1 := v] e1, st, ctx).
 Proof.
   intros. apply ST_CaseInl; assumption.
 Qed.
@@ -208,7 +208,7 @@ Qed.
 (** Case on Inr steps in one step *)
 Lemma case_inr_steps_once : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx).
+  (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst[x2 := v] e2, st, ctx).
 Proof.
   intros. apply ST_CaseInr; assumption.
 Qed.
@@ -230,7 +230,7 @@ Qed.
 (** Let with value steps in one step *)
 Lemma let_value_steps_once : forall x v e2 st ctx,
   value v ->
-  (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx).
+  (ELet x v e2, st, ctx) --> (subst[x := v] e2, st, ctx).
 Proof.
   intros. apply ST_LetValue; assumption.
 Qed.
@@ -238,7 +238,7 @@ Qed.
 (** Handle with value steps in one step *)
 Lemma handle_value_steps_once : forall v x h st ctx,
   value v ->
-  (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx).
+  (EHandle v x h, st, ctx) --> (subst[x := v] h, st, ctx).
 Proof.
   intros. apply ST_HandleValue; assumption.
 Qed.
@@ -246,7 +246,7 @@ Qed.
 (** App with lambda and value steps in one step *)
 Lemma app_lam_steps_once : forall x T body v st ctx,
   value v ->
-  (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx).
+  (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx).
 Proof.
   intros. apply ST_AppAbs; assumption.
 Qed.
@@ -277,5 +277,136 @@ Proof.
   - exact H2.
   - apply MS_Step with cfg2; [exact H | apply IHmulti_step; exact H2].
 Qed.
+
+(** ** Expression Size Lemmas *)
+
+(** Expression size for compound expressions *)
+Lemma expr_size_app : forall e1 e2,
+  expr_size (EApp e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_pair : forall e1 e2,
+  expr_size (EPair e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_fst : forall e,
+  expr_size (EFst e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_snd : forall e,
+  expr_size (ESnd e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_if : forall e1 e2 e3,
+  expr_size (EIf e1 e2 e3) = 1 + expr_size e1 + expr_size e2 + expr_size e3.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_let : forall x e1 e2,
+  expr_size (ELet x e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_lam : forall x T body,
+  expr_size (ELam x T body) = 1 + expr_size body.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_inl : forall e T,
+  expr_size (EInl e T) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_inr : forall e T,
+  expr_size (EInr e T) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+(** Expression size is at least 1 *)
+Lemma expr_size_ge_1 : forall e, 1 <= expr_size e.
+Proof. intros. pose proof (expr_size_pos e). lia. Qed.
+
+(** Subexpression size is strictly less than parent *)
+Lemma expr_size_fst_sub : forall e,
+  expr_size e < expr_size (EFst e).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_snd_sub : forall e,
+  expr_size e < expr_size (ESnd e).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_app_l : forall e1 e2,
+  expr_size e1 < expr_size (EApp e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_app_r : forall e1 e2,
+  expr_size e2 < expr_size (EApp e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+(** ** Termination Properties *)
+
+(** Values terminate trivially *)
+Lemma value_terminates : forall v st ctx,
+  value v -> terminates v st ctx.
+Proof.
+  intros v st ctx Hv.
+  exists v, st, ctx. split; [apply MS_Refl | exact Hv].
+Qed.
+
+(** Values can step (trivially — they provide themselves) *)
+Lemma value_step_terminates_trivially : forall v st ctx,
+  value v -> terminates v st ctx.
+Proof. exact value_terminates. Qed.
+
+(** ** Expression Size for Additional Constructs *)
+
+Lemma expr_size_case : forall e x1 e1 x2 e2,
+  expr_size (ECase e x1 e1 x2 e2) = 1 + expr_size e + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_ref : forall e sl,
+  expr_size (ERef e sl) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_deref : forall e,
+  expr_size (EDeref e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_assign : forall e1 e2,
+  expr_size (EAssign e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_classify : forall e,
+  expr_size (EClassify e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+(** ** Additional Subexpression Bounds *)
+
+Lemma expr_size_pair_l : forall e1 e2,
+  expr_size e1 < expr_size (EPair e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_pair_r : forall e1 e2,
+  expr_size e2 < expr_size (EPair e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+(** ** Additional Subexpression Size Bounds *)
+
+Lemma expr_size_case_guard : forall e x1 e1 x2 e2,
+  expr_size e < expr_size (ECase e x1 e1 x2 e2).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_if_guard : forall e1 e2 e3,
+  expr_size e1 < expr_size (EIf e1 e2 e3).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_let_body : forall x e1 e2,
+  expr_size e2 < expr_size (ELet x e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+(** ** Sized Type Projection Properties *)
+
+Lemma sized_ty_base_STBase : forall T,
+  sized_ty_base (STBase T) = T.
+Proof. intros. reflexivity. Qed.
+
+Lemma sized_ty_bound_STSized : forall n T,
+  sized_ty_bound (STSized n T) = n.
+Proof. intros. reflexivity. Qed.
 
 (** End of SizedTypes.v *)

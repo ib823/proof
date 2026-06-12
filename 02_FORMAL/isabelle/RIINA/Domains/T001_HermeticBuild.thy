@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA T001_HermeticBuild - Isabelle/HOL Port
@@ -116,11 +118,11 @@ definition hex0_size :: "nat" where
 
 (* is_auditable (matches Coq: Definition is_auditable) *)
 definition is_auditable :: "Hex0 \<Rightarrow> bool" where
-  "is_auditable h \<equiv> List"
+  "is_auditable h \<equiv> List.length h <= hex0_size"
 
 (* valid_hex0 (matches Coq: Definition valid_hex0) *)
 definition valid_hex0 :: "Hex0 \<Rightarrow> bool" where
-  "valid_hex0 h \<equiv> List"
+  "valid_hex0 h \<equiv> List.length h <= hex0_size /\ List.length h > 0"
 
 (* hex0_semantics (matches Coq: Definition hex0_semantics) *)
 definition hex0_semantics :: "Binary" where
@@ -128,9 +130,9 @@ definition hex0_semantics :: "Binary" where
 
 (* is_hermetic (matches Coq: Definition is_hermetic) *)
 definition is_hermetic :: "BuildEnv \<Rightarrow> bool" where
-  "is_hermetic env \<equiv> env_network env = false /\
+  "is_hermetic env \<equiv> env_network env = False /\
   env_clock env = 0 /\
-  List"
+  List.length (env_filesystem env) > 0"
 
 (* hermetic_build (matches Coq: Definition hermetic_build) *)
 definition hermetic_build :: "Build \<Rightarrow> bool" where
@@ -162,7 +164,7 @@ definition functionally_equivalent :: "bool" where
 (* valid_ddc (matches Coq: Definition valid_ddc) *)
 definition valid_ddc :: "DDCResult \<Rightarrow> bool" where
   "valid_ddc ddc \<equiv> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc) /\
-  equivalent ddc = true"
+  equivalent ddc = True"
 
 (* has_trojan (matches Coq: Definition has_trojan) *)
 definition has_trojan :: "Compiler \<Rightarrow> bool" where

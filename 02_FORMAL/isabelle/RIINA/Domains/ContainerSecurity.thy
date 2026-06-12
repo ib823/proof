@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ContainerSecurity - Isabelle/HOL Port
@@ -167,7 +169,7 @@
  *)
 
 theory ContainerSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SyscallCategory (matches Coq: Inductive SyscallCategory) *)
@@ -183,22 +185,22 @@ datatype syscall_category =
 
 (* NamespaceIsolation (matches Coq: Record NamespaceIsolation) *)
 record namespace_isolation =
-  ns_pid_isolated :: bool  (* Process ID namespace *)
-  ns_net_isolated :: bool  (* Network namespace *)
-  ns_mount_isolated :: bool  (* Mount namespace *)
-  ns_user_isolated :: bool  (* User namespace *)
-  ns_uts_isolated :: bool  (* UTS namespace (hostname) *)
-  ns_ipc_isolated :: bool  (* IPC namespace *)
-  ns_cgroup_isolated :: bool  (* Cgroup namespace *)
-  ns_time_isolated :: bool  (* Time namespace *)
+  ns_pid_isolated :: bool
+  ns_net_isolated :: bool
+  ns_mount_isolated :: bool
+  ns_user_isolated :: bool
+  ns_uts_isolated :: bool
+  ns_ipc_isolated :: bool
+  ns_cgroup_isolated :: bool
+  ns_time_isolated :: bool
 
 (* CgroupLimits (matches Coq: Record CgroupLimits) *)
 record cgroup_limits =
-  cg_cpu_limited :: bool  (* CPU quota enforced *)
-  cg_memory_limited :: bool  (* Memory limit enforced *)
-  cg_swap_disabled :: bool  (* Swap disabled *)
-  cg_pids_limited :: bool  (* PID limit enforced *)
-  cg_io_limited :: bool  (* I/O limits enforced *)
+  cg_cpu_limited :: bool
+  cg_memory_limited :: bool
+  cg_swap_disabled :: bool
+  cg_pids_limited :: bool
+  cg_io_limited :: bool
 
 (* SeccompConfig (matches Coq: Record SeccompConfig) *)
 record seccomp_config =
@@ -322,21 +324,21 @@ definition seccomp_fully_hardened :: "SeccompConfig \<Rightarrow> bool" where
 
 (* caps_dangerous_dropped (matches Coq: Definition caps_dangerous_dropped) *)
 definition caps_dangerous_dropped :: "Capabilities \<Rightarrow> bool" where
-  "caps_dangerous_dropped c \<equiv> negb (cap_sys_admin c) \<and> negb (cap_sys_ptrace c) \<and>
-  negb (cap_sys_module c) \<and> negb (cap_sys_rawio c)"
+  "caps_dangerous_dropped c \<equiv> (\<not> (cap_sys_admin) c) \<and> (\<not> (cap_sys_ptrace) c) \<and>
+  (\<not> (cap_sys_module) c) \<and> (\<not> (cap_sys_rawio) c)"
 
 (* caps_minimal (matches Coq: Definition caps_minimal) *)
 definition caps_minimal :: "Capabilities \<Rightarrow> bool" where
-  "caps_minimal c \<equiv> caps_dangerous_dropped c \<and> negb (cap_net_raw c) \<and>
-  negb (cap_dac_override c) \<and> negb (cap_mknod c)"
+  "caps_minimal c \<equiv> caps_dangerous_dropped c \<and> (\<not> (cap_net_raw) c) \<and>
+  (\<not> (cap_dac_override) c) \<and> (\<not> (cap_mknod) c)"
 
 (* caps_rootless_safe (matches Coq: Definition caps_rootless_safe) *)
 definition caps_rootless_safe :: "Capabilities \<Rightarrow> bool" where
-  "caps_rootless_safe c \<equiv> caps_minimal c \<and> negb (cap_setuid c) \<and> negb (cap_setgid c) \<and> negb (cap_chown c)"
+  "caps_rootless_safe c \<equiv> caps_minimal c \<and> (\<not> (cap_setuid) c) \<and> (\<not> (cap_setgid) c) \<and> (\<not> (cap_chown) c)"
 
 (* caps_network_minimal (matches Coq: Definition caps_network_minimal) *)
 definition caps_network_minimal :: "Capabilities \<Rightarrow> bool" where
-  "caps_network_minimal c \<equiv> negb (cap_net_raw c) \<and> cap_net_bind c"
+  "caps_network_minimal c \<equiv> (\<not> (cap_net_raw) c) \<and> cap_net_bind c"
 
 (* image_authenticity_verified (matches Coq: Definition image_authenticity_verified) *)
 definition image_authenticity_verified :: "ImageIntegrity \<Rightarrow> bool" where
@@ -403,31 +405,31 @@ definition container_fully_secure :: "ContainerConfig \<Rightarrow> bool" where
 
 (* riina_ns (matches Coq: Definition riina_ns) *)
 definition riina_ns :: "NamespaceIsolation" where
-  "riina_ns \<equiv> mkNS true true true true true true true true"
+  "riina_ns \<equiv> mkNS True True True True True True True True"
 
 (* riina_cgroup (matches Coq: Definition riina_cgroup) *)
 definition riina_cgroup :: "CgroupLimits" where
-  "riina_cgroup \<equiv> mkCgroup true true true true true"
+  "riina_cgroup \<equiv> mkCgroup True True True True True"
 
 (* riina_seccomp (matches Coq: Definition riina_seccomp) *)
 definition riina_seccomp :: "SeccompConfig" where
-  "riina_seccomp \<equiv> mkSeccomp true true true true true true true true true true true"
+  "riina_seccomp \<equiv> mkSeccomp True True True True True True True True True True True"
 
 (* riina_caps (matches Coq: Definition riina_caps) *)
 definition riina_caps :: "Capabilities" where
-  "riina_caps \<equiv> mkCaps false false false false false false true false false false false false false false"
+  "riina_caps \<equiv> mkCaps False False False False False False True False False False False False False False"
 
 (* riina_image (matches Coq: Definition riina_image) *)
 definition riina_image :: "ImageIntegrity" where
-  "riina_image \<equiv> mkImage true true true true true true true true"
+  "riina_image \<equiv> mkImage True True True True True True True True"
 
 (* riina_escape (matches Coq: Definition riina_escape) *)
 definition riina_escape :: "EscapePrevention" where
-  "riina_escape \<equiv> mkEscape true true true true true true true true true true"
+  "riina_escape \<equiv> mkEscape True True True True True True True True True True"
 
 (* riina_container (matches Coq: Definition riina_container) *)
 definition riina_container :: "ContainerConfig" where
-  "riina_container \<equiv> mkContainer riina_ns riina_cgroup riina_seccomp riina_caps riina_image riina_escape true"
+  "riina_container \<equiv> mkContainer riina_ns riina_cgroup riina_seccomp riina_caps riina_image riina_escape True"
 
 (* ============================================================================
     SECTION 1: CORE BOOLEAN LEMMAS

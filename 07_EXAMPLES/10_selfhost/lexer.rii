@@ -1,0 +1,111 @@
+// lexer.rii — RIINA lexer in RIINA (self-hosting proof of concept)
+// Penganalisis leksikal RIINA ditulis dalam RIINA sendiri
+// Tokenizes a subset of RIINA syntax
+
+// Semak sama ada aksara ialah huruf (A-Z atau a-z)
+// Check if character is a letter
+fungsi ialah_huruf(c: Nombor) -> Benar kesan Bersih {
+    kalau c >= 65 {
+        kalau c <= 90 {
+            benar
+        } lain {
+            kalau c >= 97 {
+                kalau c <= 122 {
+                    benar
+                } lain {
+                    salah
+                }
+            } lain {
+                salah
+            }
+        }
+    } lain {
+        salah
+    }
+}
+
+// Semak sama ada aksara ialah digit (0-9)
+// Check if character is a digit
+fungsi ialah_digit(c: Nombor) -> Benar kesan Bersih {
+    kalau c >= 48 {
+        kalau c <= 57 {
+            benar
+        } lain {
+            salah
+        }
+    } lain {
+        salah
+    }
+}
+
+// Semak sama ada aksara ialah ruang putih (space, newline, tab)
+// Check if character is whitespace
+fungsi ialah_ruang(c: Nombor) -> Benar kesan Bersih {
+    kalau c == 32 {
+        benar
+    } lain {
+        kalau c == 10 {
+            benar
+        } lain {
+            kalau c == 9 {
+                benar
+            } lain {
+                salah
+            }
+        }
+    }
+}
+
+// Semak sama ada aksara ialah huruf atau digit
+// Check if character is alphanumeric
+fungsi ialah_huruf_digit(c: Nombor) -> Benar kesan Bersih {
+    kalau ialah_huruf(c) { benar } lain { ialah_digit(c) }
+}
+
+// Semak sama ada aksara ialah simbol operator
+// Check if character is an operator symbol
+fungsi ialah_operator(c: Nombor) -> Benar kesan Bersih {
+    kalau c == 43 { benar }           // +
+    lain kalau c == 45 { benar }      // -
+    lain kalau c == 42 { benar }      // *
+    lain kalau c == 47 { benar }      // /
+    lain kalau c == 61 { benar }      // =
+    lain kalau c == 60 { benar }      // <
+    lain kalau c == 62 { benar }      // >
+    lain { salah }
+}
+
+// Jenis token sebagai nombor
+// Token types as numbers
+biar TOKEN_EOF = 0;
+biar TOKEN_IDENT = 1;
+biar TOKEN_NUMBER = 2;
+biar TOKEN_STRING = 3;
+biar TOKEN_OPERATOR = 4;
+biar TOKEN_PAREN_BUKA = 5;    // (
+biar TOKEN_PAREN_TUTUP = 6;   // )
+biar TOKEN_KURUNGAN_BUKA = 7; // {
+biar TOKEN_KURUNGAN_TUTUP = 8;// }
+biar TOKEN_KOMA = 9;          // ,
+biar TOKEN_TITIK_KOMA = 10;   // ;
+biar TOKEN_KATA_KUNCI = 11;   // keyword
+
+// Kenalpasti jenis aksara tunggal
+// Classify a single character into token type
+fungsi jenis_aksara(c: Nombor) -> Nombor kesan Bersih {
+    kalau ialah_huruf(c) { TOKEN_IDENT }
+    lain kalau ialah_digit(c) { TOKEN_NUMBER }
+    lain kalau ialah_ruang(c) { TOKEN_EOF }
+    lain kalau ialah_operator(c) { TOKEN_OPERATOR }
+    lain kalau c == 40 { TOKEN_PAREN_BUKA }
+    lain kalau c == 41 { TOKEN_PAREN_TUTUP }
+    lain kalau c == 123 { TOKEN_KURUNGAN_BUKA }
+    lain kalau c == 125 { TOKEN_KURUNGAN_TUTUP }
+    lain kalau c == 44 { TOKEN_KOMA }
+    lain kalau c == 59 { TOKEN_TITIK_KOMA }
+    lain { TOKEN_EOF }
+}
+
+// Bukti konsep: lexer boleh diungkap dalam RIINA sendiri
+// Proof of concept: the lexer is expressible in RIINA itself
+TOKEN_IDENT

@@ -10,7 +10,7 @@
     Zero admits. Zero axioms. All theorems proven.
     ============================================================================ *)
 
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Bool.Bool.
 
 Lemma andb_true_iff : forall a b : bool, a && b = true <-> a = true /\ b = true.
 Proof. intros a b. split.

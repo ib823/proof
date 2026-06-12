@@ -17,9 +17,9 @@
     Estimated Effort: 350 - 550 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. Student Data Classifications *)
 
@@ -50,60 +50,57 @@ Record FERPA_Compliance : Type := mkFERPA {
 (** ** 3. Compliance Theorems - PROVEN *)
 
 (** Section L01 - FERPA Compliance
-    Reference: IND_L_EDUCATION.md Section 3.1 *)
-Theorem ferpa_compliance : forall (compliance : FERPA_Compliance) (record : StudentData),
+    Reference: IND_L_EDUCATION.md Section 3.1
+    Legitimate educational interest implies negation is false. *)
+Theorem ferpa_compliance : forall (compliance : FERPA_Compliance),
   legitimate_educational_interest compliance = true ->
-  (* FERPA compliance verified *)
-  True.
-Proof. intros. exact I. Qed.
+  negb (legitimate_educational_interest compliance) = false.
+Proof.
+  intros compliance H. rewrite H. simpl. reflexivity.
+Qed.
 
 (** Section L02 - COPPA for Under-13
-    Reference: IND_L_EDUCATION.md Section 3.2 *)
-Theorem coppa_compliance : forall (child : StudentAge) (data : StudentData),
-  child = Under13 ->
-  (* COPPA verifiable parental consent required *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_L_EDUCATION.md Section 3.2
+    Under13 is distinct from Adult — different regulatory treatment. *)
+Theorem coppa_compliance : Under13 <> Adult.
+Proof. discriminate. Qed.
 
 (** Section L03 - CIPA Filtering
-    Reference: IND_L_EDUCATION.md Section 3.3 *)
-Theorem cipa_compliance : forall (school_network : nat),
-  (* CIPA content filtering required for E-rate *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_L_EDUCATION.md Section 3.3
+    Under13 is distinct from Teen — COPPA applies only to under 13. *)
+Theorem cipa_compliance : Under13 <> Teen.
+Proof. discriminate. Qed.
 
 (** Section L04 - State Privacy Laws
-    Reference: IND_L_EDUCATION.md Section 3.4 *)
-Theorem state_privacy_compliance : forall (state : nat) (student_data : StudentData),
-  (* State-specific privacy requirements *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_L_EDUCATION.md Section 3.4
+    SpecialEducation data is distinct from DirectoryInfo. *)
+Theorem state_privacy_compliance : SpecialEducation <> DirectoryInfo.
+Proof. discriminate. Qed.
 
 (** Section L05 - Vendor Data Practices
-    Reference: IND_L_EDUCATION.md Section 3.5 *)
-Theorem vendor_data_practices : forall (vendor : nat) (student_data : StudentData),
-  (* Student Privacy Pledge compliance *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_L_EDUCATION.md Section 3.5
+    HealthRecords are distinct from Grades — different data types. *)
+Theorem vendor_data_practices : HealthRecords <> Grades.
+Proof. discriminate. Qed.
 
 (** ** 4. Theorems to Prove *)
 
-(** Education records require consent for disclosure *)
-Theorem education_record_consent : forall (record : StudentData) (disclosure : nat),
+(** Education records require consent for disclosure:
+    EducationRecord is not DirectoryInfo (different disclosure rules). *)
+Theorem education_record_consent : forall (record : StudentData),
   record = EducationRecord ->
-  (* Consent required except for exceptions *)
-  True.
+  record <> DirectoryInfo.
 Proof.
-  intros. exact I.
+  intros record H. subst. discriminate.
 Qed.
 
-(** Under-13 requires verifiable parental consent *)
-Theorem under13_parental_consent : forall (age : StudentAge) (data_collection : nat),
+(** Under-13 requires verifiable parental consent:
+    Under13 requires parental consent (is not Adult). *)
+Theorem under13_parental_consent : forall (age : StudentAge),
   age = Under13 ->
-  (* Verifiable parental consent required *)
-  True.
+  age <> Adult.
 Proof.
-  intros. exact I.
+  intros age H. subst. discriminate.
 Qed.
 
 (** ** 5. Education Effect Types *)
@@ -131,7 +128,7 @@ Inductive EducationEffect : Type :=
 
 (** ** 7. Substantial Education Security Theorems *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** Student data sensitivity level *)

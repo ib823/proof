@@ -208,8 +208,13 @@ fn parse_array(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<J
         arr.push(parse_value(chars)?);
         skip_whitespace(chars);
         match chars.peek() {
-            Some(',') => { chars.next(); }
-            Some(']') => { chars.next(); return Ok(JsonValue::Array(arr)); }
+            Some(',') => {
+                chars.next();
+            }
+            Some(']') => {
+                chars.next();
+                return Ok(JsonValue::Array(arr));
+            }
             _ => return Err("Expected ',' or ']'".into()),
         }
     }
@@ -235,8 +240,13 @@ fn parse_object(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<
         map.insert(key, val);
         skip_whitespace(chars);
         match chars.peek() {
-            Some(',') => { chars.next(); }
-            Some('}') => { chars.next(); return Ok(JsonValue::Object(map)); }
+            Some(',') => {
+                chars.next();
+            }
+            Some('}') => {
+                chars.next();
+                return Ok(JsonValue::Object(map));
+            }
             _ => return Err("Expected ',' or '}'".into()),
         }
     }
@@ -267,6 +277,8 @@ mod tests {
     }
 
     #[test]
+    // -3.14 is an arbitrary number-parsing test value, not an approximation of π.
+    #[allow(clippy::approx_constant)]
     fn test_parse_number() {
         assert_eq!(parse("42").unwrap(), JsonValue::Number(42.0));
         assert_eq!(parse("-3.14").unwrap(), JsonValue::Number(-3.14));
@@ -274,8 +286,14 @@ mod tests {
 
     #[test]
     fn test_parse_string() {
-        assert_eq!(parse(r#""hello""#).unwrap(), JsonValue::String("hello".into()));
-        assert_eq!(parse(r#""a\nb""#).unwrap(), JsonValue::String("a\nb".into()));
+        assert_eq!(
+            parse(r#""hello""#).unwrap(),
+            JsonValue::String("hello".into())
+        );
+        assert_eq!(
+            parse(r#""a\nb""#).unwrap(),
+            JsonValue::String("a\nb".into())
+        );
     }
 
     #[test]

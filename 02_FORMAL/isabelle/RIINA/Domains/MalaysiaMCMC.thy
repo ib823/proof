@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaMCMC - Isabelle/HOL Port
@@ -15,6 +17,7 @@
  * | no_unauthorized_interception | no_unauthorized_interception | OK     |
  * | fraud_controls_active | fraud_controls_active  | OK     |
  * | mcmc_fully_compliant | mcmc_fully_compliant   | OK     |
+ * | all_mcmc_licenses  | all_mcmc_licenses      | OK     |
  * | license_level      | license_level          | OK     |
  * | count_mcmc_controls | count_mcmc_controls    | OK     |
  * | license_eqb        | license_eqb            | OK     |
@@ -41,32 +44,36 @@
  *)
 
 theory MalaysiaMCMC
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MCMCLicense (matches Coq: Inductive MCMCLicense) *)
 datatype mcmc_license =
-    NFP  (* Network Facilities Provider *)
-  |     NSP  (* Network Service Provider *)
-  |     ASP  (* Application Service Provider *)
+    NFP
+  |     NSP
+  |     ASP
   |     CSP
 
 (* no_unauthorized_interception (matches Coq: Definition no_unauthorized_interception) *)
 definition no_unauthorized_interception :: "bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "no_unauthorized_interception communications_encrypted access_authorized \<equiv> communications_encrypted = true \/
-  access_authorized = true"
+  "no_unauthorized_interception communications_encrypted access_authorized \<equiv> communications_encrypted = True \/
+  access_authorized = True"
 
 (* fraud_controls_active (matches Coq: Definition fraud_controls_active) *)
 definition fraud_controls_active :: "bool \<Rightarrow> bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "fraud_controls_active identity_verified transaction_signed audit_logged \<equiv> identity_verified = true /\ transaction_signed = true /\ audit_logged = true"
+  "fraud_controls_active identity_verified transaction_signed audit_logged \<equiv> identity_verified = True /\ transaction_signed = True /\ audit_logged = True"
 
 (* mcmc_fully_compliant (matches Coq: Definition mcmc_fully_compliant) *)
 definition mcmc_fully_compliant :: "MCMCCompliance \<Rightarrow> bool" where
-  "mcmc_fully_compliant c \<equiv> mcmc_licensed c = true /\
-  mcmc_technical_standards_met c = true /\
-  mcmc_consumer_code_adopted c = true /\
-  mcmc_interception_protected c = true /\
-  mcmc_fraud_controls c = true"
+  "mcmc_fully_compliant c \<equiv> mcmc_licensed c = True /\
+  mcmc_technical_standards_met c = True /\
+  mcmc_consumer_code_adopted c = True /\
+  mcmc_interception_protected c = True /\
+  mcmc_fraud_controls c = True"
+
+(* all_mcmc_licenses (matches Coq: Definition all_mcmc_licenses) *)
+definition all_mcmc_licenses :: "list MCMCLicense" where
+  "all_mcmc_licenses \<equiv> [NFP; NSP; ASP; CSP]"
 
 (* license_level (matches Coq: Definition license_level) *)
 fun license_level :: "MCMCLicense \<Rightarrow> nat" where
@@ -85,7 +92,7 @@ definition count_mcmc_controls :: "MCMCCompliance \<Rightarrow> nat" where
 
 (* license_eqb (matches Coq: Definition license_eqb) *)
 definition license_eqb :: "bool" where
-  "license_eqb \<equiv> Nat"
+  "license_eqb \<equiv> ((license_level = a)) (license_level b)"
 
 (* s234_encrypted_compliant (matches Coq) *)
 lemma s234_encrypted_compliant: "\<forall> (enc auth : bool), enc = True \<longrightarrow> no_unauthorized_interception enc auth"

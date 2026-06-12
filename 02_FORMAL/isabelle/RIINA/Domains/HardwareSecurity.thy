@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HardwareSecurity - Isabelle/HOL Port
@@ -61,53 +63,53 @@ begin
 
 (* SpeculationBarrier (matches Coq: Record SpeculationBarrier) *)
 record speculation_barrier =
-  sb_lfence :: bool  (* x86 load fence *)
-  sb_csdb :: bool  (* ARM speculation barrier *)
-  sb_after_branch :: bool  (* Barrier placed after conditional branch *)
+  sb_lfence :: bool
+  sb_csdb :: bool
+  sb_after_branch :: bool
 
 (* MemoryProtection (matches Coq: Record MemoryProtection) *)
 record memory_protection =
-  mp_kpti_enabled :: bool  (* Kernel page table isolation *)
-  mp_smap_enabled :: bool  (* Supervisor mode access prevention *)
-  mp_smep_enabled :: bool  (* Supervisor mode execution prevention *)
-  mp_mem_encryption :: bool  (* Memory encryption (AMD SEV/Intel TME) *)
+  mp_kpti_enabled :: bool
+  mp_smap_enabled :: bool
+  mp_smep_enabled :: bool
+  mp_mem_encryption :: bool
 
 (* FirmwareState (matches Coq: Record FirmwareState) *)
 record firmware_state =
-  fw_signed :: bool  (* Firmware is cryptographically signed *)
-  fw_verified :: bool  (* Signature has been verified *)
-  fw_version :: nat  (* Current firmware version *)
-  fw_min_version :: nat  (* Minimum required version *)
+  fw_signed :: bool
+  fw_verified :: bool
+  fw_version :: nat
+  fw_min_version :: nat
 
 (* IOMMUConfig (matches Coq: Record IOMMUConfig) *)
 record iommu_config =
-  iommu_enabled :: bool  (* IOMMU is active *)
-  iommu_strict :: bool  (* Strict mode - no legacy bypass *)
-  iommu_no_bypass :: bool  (* No DMA bypass allowed *)
+  iommu_enabled :: bool
+  iommu_strict :: bool
+  iommu_no_bypass :: bool
 
 (* MeasuredBoot (matches Coq: Record MeasuredBoot) *)
 record measured_boot =
-  mb_pcr_extended :: bool  (* PCR registers extended with measurements *)
-  mb_sealed_to_pcr :: bool  (* Secrets sealed to PCR values *)
-  mb_attestation_available :: bool  (* Remote attestation capability *)
+  mb_pcr_extended :: bool
+  mb_sealed_to_pcr :: bool
+  mb_attestation_available :: bool
 
 (* ECCMemory (matches Coq: Record ECCMemory) *)
 record ecc_memory =
-  ecc_enabled :: bool  (* Error-correcting code enabled *)
-  ecc_scrubbing :: bool  (* Memory scrubbing active *)
-  ecc_trr_enabled :: bool  (* Target row refresh for Rowhammer mitigation *)
+  ecc_enabled :: bool
+  ecc_scrubbing :: bool
+  ecc_trr_enabled :: bool
 
 (* CacheConfig (matches Coq: Record CacheConfig) *)
 record cache_config =
-  cache_partitioned :: bool  (* Cache partitioning enabled *)
-  cache_way_isolation :: bool  (* Way isolation for security domains *)
-  cache_flush_on_switch :: bool  (* Flush cache on context switch *)
+  cache_partitioned :: bool
+  cache_way_isolation :: bool
+  cache_flush_on_switch :: bool
 
 (* TimingProtection (matches Coq: Record TimingProtection) *)
 record timing_protection =
-  tp_constant_time :: bool  (* Constant-time operations enforced *)
-  tp_fixed_frequency :: bool  (* CPU frequency locked *)
-  tp_no_rapl :: bool  (* RAPL interface disabled for unprivileged *)
+  tp_constant_time :: bool
+  tp_fixed_frequency :: bool
+  tp_no_rapl :: bool
 
 (* hw_001_spectre_v1_mitigated (matches Coq) *)
 lemma hw_001_spectre_v1_mitigated: "\<forall> (sb : SpeculationBarrier), sb_lfence sb = True \<longrightarrow> sb_after_branch sb = True \<longrightarrow> True"

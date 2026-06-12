@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaSCGTRM - Isabelle/HOL Port
@@ -20,10 +22,11 @@
  * | gtrm_incident_ready | gtrm_incident_ready    | OK     |
  * | gtrm_data_protected | gtrm_data_protected    | OK     |
  * | gtrm_fully_compliant | gtrm_fully_compliant   | OK     |
+ * | all_cm_entity_types | all_cm_entity_types    | OK     |
  * | sc_incident_deadline | sc_incident_deadline   | OK     |
  * | sc_incident_timely | sc_incident_timely     | OK     |
  * | ai_risk_managed    | ai_risk_managed        | OK     |
- * | cm_cloud_risk_assessed | cm_cloud_risk_assessed | OK     |
+ * | cmc_cloud_risk_assessed | cmc_cloud_risk_assessed | OK     |
  * | gtrm_req_1         | gtrm_req_1             | OK     |
  * | gtrm_req_2         | gtrm_req_2             | OK     |
  * | gtrm_req_3         | gtrm_req_3             | OK     |
@@ -65,32 +68,32 @@ datatype cm_entity_type =
 
 (* gtrm_board_accountable (matches Coq: Definition gtrm_board_accountable) *)
 definition gtrm_board_accountable :: "CMEntity \<Rightarrow> bool" where
-  "gtrm_board_accountable e \<equiv> cm_board_accountability e = true"
+  "gtrm_board_accountable e \<equiv> cm_board_accountability e = True"
 
 (* gtrm_risk_framework (matches Coq: Definition gtrm_risk_framework) *)
 definition gtrm_risk_framework :: "CMEntity \<Rightarrow> bool" where
-  "gtrm_risk_framework e \<equiv> cm_risk_framework e = true"
+  "gtrm_risk_framework e \<equiv> cm_risk_framework e = True"
 
 (* gtrm_pentest_current (matches Coq: Definition gtrm_pentest_current) *)
 definition gtrm_pentest_current :: "CMEntity \<Rightarrow> nat \<Rightarrow> bool" where
-  "gtrm_pentest_current e current_time \<equiv> cm_pentest_done e = true /\
+  "gtrm_pentest_current e current_time \<equiv> cm_pentest_done e = True /\
   current_time <= cm_last_pentest e + cm_pentest_interval e"
 
 (* gtrm_ai_assessed (matches Coq: Definition gtrm_ai_assessed) *)
 definition gtrm_ai_assessed :: "CMEntity \<Rightarrow> bool" where
-  "gtrm_ai_assessed e \<equiv> cm_ai_risk_assessed e = true"
+  "gtrm_ai_assessed e \<equiv> cm_ai_risk_assessed e = True"
 
 (* gtrm_vendor_compliant (matches Coq: Definition gtrm_vendor_compliant) *)
 definition gtrm_vendor_compliant :: "CMEntity \<Rightarrow> bool" where
-  "gtrm_vendor_compliant e \<equiv> cm_third_party_assessed e = true /\ cm_cloud_risk_assessed e = true"
+  "gtrm_vendor_compliant e \<equiv> cm_third_party_assessed e = True /\ cm_cloud_risk_assessed e = True"
 
 (* gtrm_incident_ready (matches Coq: Definition gtrm_incident_ready) *)
 definition gtrm_incident_ready :: "CMEntity \<Rightarrow> bool" where
-  "gtrm_incident_ready e \<equiv> cm_incident_response_plan e = true"
+  "gtrm_incident_ready e \<equiv> cm_incident_response_plan e = True"
 
 (* gtrm_data_protected (matches Coq: Definition gtrm_data_protected) *)
 definition gtrm_data_protected :: "CMEntity \<Rightarrow> bool" where
-  "gtrm_data_protected e \<equiv> cm_data_protection e = true"
+  "gtrm_data_protected e \<equiv> cm_data_protection e = True"
 
 (* gtrm_fully_compliant (matches Coq: Definition gtrm_fully_compliant) *)
 definition gtrm_fully_compliant :: "CMEntity \<Rightarrow> nat \<Rightarrow> bool" where
@@ -102,6 +105,11 @@ definition gtrm_fully_compliant :: "CMEntity \<Rightarrow> nat \<Rightarrow> boo
   gtrm_incident_ready e /\
   gtrm_data_protected e"
 
+(* all_cm_entity_types (matches Coq: Definition all_cm_entity_types) *)
+definition all_cm_entity_types :: "list CMEntityType" where
+  "all_cm_entity_types \<equiv> [BrokerDealer; FundManager; Exchange; ClearingHouse;
+   Depository; CreditRatingAgency]"
+
 (* sc_incident_deadline (matches Coq: Definition sc_incident_deadline) *)
 definition sc_incident_deadline :: "nat" where
   "sc_incident_deadline \<equiv> 24"
@@ -112,19 +120,19 @@ definition sc_incident_timely :: "SCIncident \<Rightarrow> bool" where
 
 (* ai_risk_managed (matches Coq: Definition ai_risk_managed) *)
 definition ai_risk_managed :: "AIModelRisk \<Rightarrow> bool" where
-  "ai_risk_managed ar \<equiv> ai_bias_assessed ar = true /\
-  ai_explainability_documented ar = true /\
-  ai_data_quality_verified ar = true /\
-  ai_model_validated ar = true /\
-  ai_monitoring_active ar = true"
+  "ai_risk_managed ar \<equiv> ai_bias_assessed ar = True /\
+  ai_explainability_documented ar = True /\
+  ai_data_quality_verified ar = True /\
+  ai_model_validated ar = True /\
+  ai_monitoring_active ar = True"
 
-(* cm_cloud_risk_assessed (matches Coq: Definition cm_cloud_risk_assessed) *)
-definition cm_cloud_risk_assessed :: "CMCloudRisk \<Rightarrow> bool" where
-  "cm_cloud_risk_assessed cr \<equiv> cmc_data_residency_compliant cr = true /\
-  cmc_encryption_at_rest cr = true /\
-  cmc_encryption_in_transit cr = true /\
-  cmc_access_controls cr = true /\
-  cmc_exit_strategy cr = true"
+(* cmc_cloud_risk_assessed (matches Coq: Definition cmc_cloud_risk_assessed) *)
+definition cmc_cloud_risk_assessed :: "CMCloudRisk \<Rightarrow> bool" where
+  "cmc_cloud_risk_assessed cr \<equiv> cmc_data_residency_compliant cr = True /\
+  cmc_encryption_at_rest cr = True /\
+  cmc_encryption_in_transit cr = True /\
+  cmc_access_controls cr = True /\
+  cmc_exit_strategy cr = True"
 
 (* gtrm_req_1 (matches Coq) *)
 lemma gtrm_req_1: "\<forall> (e : CMEntity), cm_board_accountability e = True \<longrightarrow> gtrm_board_accountable e"
@@ -215,11 +223,11 @@ lemma ai_not_validated_not_managed: "\<forall> (ar : AIModelRisk), ai_model_vali
   by auto
 
 (* cm_cloud_fully_assessed (matches Coq) *)
-lemma cm_cloud_fully_assessed: "\<forall> (cr : CMCloudRisk), cmc_data_residency_compliant cr = True \<longrightarrow> cmc_encryption_at_rest cr = True \<longrightarrow> cmc_encryption_in_transit cr = True \<longrightarrow> cmc_access_controls cr = True \<longrightarrow> cmc_exit_strategy cr = True \<longrightarrow> cm_cloud_risk_assessed cr"
+lemma cm_cloud_fully_assessed: "\<forall> (cr : CMCloudRisk), cmc_data_residency_compliant cr = True \<longrightarrow> cmc_encryption_at_rest cr = True \<longrightarrow> cmc_encryption_in_transit cr = True \<longrightarrow> cmc_access_controls cr = True \<longrightarrow> cmc_exit_strategy cr = True \<longrightarrow> cmc_cloud_risk_assessed cr"
   by auto
 
 (* cm_cloud_missing_exit_strategy (matches Coq) *)
-lemma cm_cloud_missing_exit_strategy: "\<forall> (cr : CMCloudRisk), cmc_exit_strategy cr = False \<longrightarrow> ~ cm_cloud_risk_assessed cr"
+lemma cm_cloud_missing_exit_strategy: "\<forall> (cr : CMCloudRisk), cmc_exit_strategy cr = False \<longrightarrow> ~ cmc_cloud_risk_assessed cr"
   by auto
 
 end

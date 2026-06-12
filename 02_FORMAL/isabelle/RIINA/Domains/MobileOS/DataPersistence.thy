@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DataPersistence - Isabelle/HOL Port
@@ -71,7 +73,7 @@
  *)
 
 theory DataPersistence
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Schema (matches Coq: Record Schema) *)
@@ -140,7 +142,7 @@ record storage_quota =
 
 (* SerializedData (matches Coq: Record SerializedData) *)
 record serialized_data =
-  ser_format :: nat  (* 0=JSON, 1=Protobuf, 2=CBOR *)
+  ser_format :: nat
   ser_data :: 'a list
   ser_checksum :: nat
   ser_validated :: bool
@@ -182,7 +184,7 @@ definition all_fields_present :: "Record \<Rightarrow> bool" where
 
 (* migrate_record (matches Coq: Definition migrate_record) *)
 definition migrate_record :: "Record \<Rightarrow> Record" where
-  "migrate_record r \<equiv> filter (fun p => existsb (Nat"
+  "migrate_record r \<equiv> filter (fun p => existsb (((fst = p))) (schema_fields new_s)) r"
 
 (* migrates (matches Coq: Definition migrates) *)
 definition migrates :: "Database \<Rightarrow> bool" where
@@ -207,15 +209,15 @@ definition sync_correct :: "SyncState \<Rightarrow> bool" where
 
 (* data_encrypted_at_rest_prop (matches Coq: Definition data_encrypted_at_rest_prop) *)
 definition data_encrypted_at_rest_prop :: "EncryptedStore \<Rightarrow> bool" where
-  "data_encrypted_at_rest_prop s \<equiv> store_encrypted s = true"
+  "data_encrypted_at_rest_prop s \<equiv> store_encrypted s = True"
 
 (* backup_encrypted_prop (matches Coq: Definition backup_encrypted_prop) *)
 definition backup_encrypted_prop :: "Backup \<Rightarrow> bool" where
-  "backup_encrypted_prop b \<equiv> backup_encrypted b = true"
+  "backup_encrypted_prop b \<equiv> backup_encrypted b = True"
 
 (* migration_atomic_prop (matches Coq: Definition migration_atomic_prop) *)
 definition migration_atomic_prop :: "Migration \<Rightarrow> bool" where
-  "migration_atomic_prop m \<equiv> mig_atomic m = true ->
+  "migration_atomic_prop m \<equiv> mig_atomic m = True ->
   length (mig_records_before m) = length (mig_records_after m)"
 
 (* schema_version_tracked_prop (matches Coq: Definition schema_version_tracked_prop) *)
@@ -224,7 +226,7 @@ definition schema_version_tracked_prop :: "Migration \<Rightarrow> bool" where
 
 (* corruption_detected_prop (matches Coq: Definition corruption_detected_prop) *)
 definition corruption_detected_prop :: "EncryptedStore \<Rightarrow> nat \<Rightarrow> bool" where
-  "corruption_detected_prop s expected \<equiv> store_checksum s <> expected -> True"
+  "corruption_detected_prop s expected \<equiv> store_checksum s <> expected -> store_checksum s <> expected"
 
 (* data_integrity_verified_prop (matches Coq: Definition data_integrity_verified_prop) *)
 definition data_integrity_verified_prop :: "EncryptedStore \<Rightarrow> bool" where
@@ -232,13 +234,13 @@ definition data_integrity_verified_prop :: "EncryptedStore \<Rightarrow> bool" w
 
 (* transaction_acid (matches Coq: Definition transaction_acid) *)
 definition transaction_acid :: "Transaction \<Rightarrow> bool" where
-  "transaction_acid txn \<equiv> (txn_committed txn = true -> txn_rolled_back txn = false) /\
-  (txn_rolled_back txn = true -> txn_committed txn = false)"
+  "transaction_acid txn \<equiv> (txn_committed txn = True -> txn_rolled_back txn = False) /\
+  (txn_rolled_back txn = True -> txn_committed txn = False)"
 
 (* concurrent_access_safe_prop (matches Coq: Definition concurrent_access_safe_prop) *)
 definition concurrent_access_safe_prop :: "bool" where
   "concurrent_access_safe_prop \<equiv> txn_id txn1 <> txn_id txn2 ->
-  ~ (txn_committed txn1 = true /\ txn_rolled_back txn1 = true)"
+  ~ (txn_committed txn1 = True /\ txn_rolled_back txn1 = True)"
 
 (* data_deletion_complete_prop (matches Coq: Definition data_deletion_complete_prop) *)
 definition data_deletion_complete_prop :: "EncryptedStore \<Rightarrow> bool" where
@@ -246,22 +248,22 @@ definition data_deletion_complete_prop :: "EncryptedStore \<Rightarrow> bool" wh
 
 (* index_consistent_prop (matches Coq: Definition index_consistent_prop) *)
 definition index_consistent_prop :: "IndexEntry \<Rightarrow> bool" where
-  "index_consistent_prop idx \<equiv> idx_valid idx = true ->
+  "index_consistent_prop idx \<equiv> idx_valid idx = True ->
   idx_record_id idx < length records"
 
 (* cache_invalidation_correct (matches Coq: Definition cache_invalidation_correct) *)
 definition cache_invalidation_correct :: "CacheEntry \<Rightarrow> nat \<Rightarrow> bool" where
-  "cache_invalidation_correct c current_time \<equiv> cache_valid c = true ->
+  "cache_invalidation_correct c current_time \<equiv> cache_valid c = True ->
   cache_timestamp c <= current_time"
 
 (* serialization_safe_prop (matches Coq: Definition serialization_safe_prop) *)
 definition serialization_safe_prop :: "SerializedData \<Rightarrow> bool" where
-  "serialization_safe_prop sd \<equiv> ser_validated sd = true ->
+  "serialization_safe_prop sd \<equiv> ser_validated sd = True ->
   ser_checksum sd > 0"
 
 (* deserialization_validated_prop (matches Coq: Definition deserialization_validated_prop) *)
 definition deserialization_validated_prop :: "SerializedData \<Rightarrow> bool" where
-  "deserialization_validated_prop sd \<equiv> ser_validated sd = true"
+  "deserialization_validated_prop sd \<equiv> ser_validated sd = True"
 
 (* storage_quota_respected (matches Coq: Definition storage_quota_respected) *)
 definition storage_quota_respected :: "StorageQuota \<Rightarrow> bool" where
@@ -269,14 +271,14 @@ definition storage_quota_respected :: "StorageQuota \<Rightarrow> bool" where
 
 (* data_export_sanitized (matches Coq: Definition data_export_sanitized) *)
 definition data_export_sanitized :: "DataExport \<Rightarrow> bool" where
-  "data_export_sanitized de \<equiv> export_sanitized de = true /\ export_encrypted de = true"
+  "data_export_sanitized de \<equiv> export_sanitized de = True /\ export_encrypted de = True"
 
 (* migration_lossless (matches Coq) *)
 lemma migration_lossless: "\<forall> (data : Database) (schema1 schema2 : Schema), migrates data schema1 schema2 \<longrightarrow> (\<forall> fn, In fn (schema_fields schema1) \<longrightarrow> In fn (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
   by auto
 
 (* migration_preserves_existing_fields (matches Coq) *)
-lemma migration_preserves_existing_fields: "\<forall> (old_s new_s : Schema) (r : Record) (fn : FieldName) (fv : FieldValue), In (fn, fv) r \<longrightarrow> In fn (schema_fields new_s) \<longrightarrow> \<exists>b (Nat.eqb fn) (schema_fields new_s) = True \<longrightarrow> In (fn, fv) (migrate_record old_s new_s r)"
+lemma migration_preserves_existing_fields: "\<forall> (old_s new_s : Schema) (r : Record) (fn : FieldName) (fv : FieldValue), In (fn, fv) r \<longrightarrow> In fn (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> In (fn, fv) (migrate_record old_s new_s r)"
   by auto
 
 (* migration_increases_version (matches Coq) *)

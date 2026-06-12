@@ -5,10 +5,10 @@
 (* Proves TIME-001 through TIME-025 *)
 (* Generated for RIINA formal verification *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Logic.Decidable.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Logic.Decidable.
 Import ListNotations.
 
 (* ======================================================================= *)

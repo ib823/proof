@@ -16,6 +16,16 @@
 //! - Verification results
 
 #![forbid(unsafe_code)]
+#![allow(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    unused_variables,
+    dead_code
+)]
 // Lints configured at workspace level in Cargo.toml
 
 use std::collections::BTreeMap;

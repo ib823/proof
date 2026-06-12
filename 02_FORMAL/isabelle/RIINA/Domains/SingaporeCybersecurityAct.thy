@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeCybersecurityAct - Isabelle/HOL Port
@@ -20,6 +22,8 @@
  * | esci_obligations_met | esci_obligations_met   | OK     |
  * | cssp_licensed_sg   | cssp_licensed_sg       | OK     |
  * | sg_cybersecurity_act_compliant | sg_cybersecurity_act_compliant | OK     |
+ * | all_cii_sectors    | all_cii_sectors        | OK     |
+ * | all_entity_classifications | all_entity_classifications | OK     |
  * | stcc_obligations_met | stcc_obligations_met   | OK     |
  * | cii_owner_obligations | cii_owner_obligations  | OK     |
  * | incident_needs_notification | incident_needs_notification | OK     |
@@ -74,18 +78,18 @@ datatype cii_sector =
 
 (* EntityClassification (matches Coq: Inductive EntityClassification) *)
 datatype entity_classification =
-    CIIOwner  (* Critical Information Infrastructure *)
-  |     ESCI  (* Entity of Special Cybersecurity Interest *)
-  |     STCC  (* System of Temporary Cybersecurity Concern *)
+    CIIOwner
+  |     ESCI
+  |     STCC
   |     RegularEntity
 
 (* cii_risk_current (matches Coq: Definition cii_risk_current) *)
 definition cii_risk_current :: "CIIOwnerEntity \<Rightarrow> bool" where
-  "cii_risk_current e \<equiv> cii_risk_assessed e = true"
+  "cii_risk_current e \<equiv> cii_risk_assessed e = True"
 
 (* cii_audit_current (matches Coq: Definition cii_audit_current) *)
 definition cii_audit_current :: "CIIOwnerEntity \<Rightarrow> nat \<Rightarrow> bool" where
-  "cii_audit_current e t \<equiv> cii_audit_completed e = true /\ t <= cii_last_audit e + 365"
+  "cii_audit_current e t \<equiv> cii_audit_completed e = True /\ t <= cii_last_audit e + 365"
 
 (* sg_incident_reported_in_time (matches Coq: Definition sg_incident_reported_in_time) *)
 definition sg_incident_reported_in_time :: "SGCyberIncident \<Rightarrow> bool" where
@@ -98,23 +102,33 @@ definition cii_controls_adequate :: "CIIOwnerEntity \<Rightarrow> bool" where
 (* esci_obligations_met (matches Coq: Definition esci_obligations_met) *)
 definition esci_obligations_met :: "CIIOwnerEntity \<Rightarrow> bool" where
   "esci_obligations_met e \<equiv> cii_classification e = ESCI ->
-  cii_risk_assessed e = true /\ cii_incident_response_plan e = true"
+  cii_risk_assessed e = True /\ cii_incident_response_plan e = True"
 
 (* cssp_licensed_sg (matches Coq: Definition cssp_licensed_sg) *)
 definition cssp_licensed_sg :: "CIIOwnerEntity \<Rightarrow> bool" where
-  "cssp_licensed_sg e \<equiv> cii_cssp_licensed e = true"
+  "cssp_licensed_sg e \<equiv> cii_cssp_licensed e = True"
 
 (* sg_cybersecurity_act_compliant (matches Coq: Definition sg_cybersecurity_act_compliant) *)
 definition sg_cybersecurity_act_compliant :: "CIIOwnerEntity \<Rightarrow> nat \<Rightarrow> bool" where
   "sg_cybersecurity_act_compliant e t \<equiv> cii_risk_current e /\
   cii_audit_current e t /\
   cii_controls_adequate e /\
-  cii_incident_response_plan e = true"
+  cii_incident_response_plan e = True"
+
+(* all_cii_sectors (matches Coq: Definition all_cii_sectors) *)
+definition all_cii_sectors :: "list CIISector" where
+  "all_cii_sectors \<equiv> [SGEnergy; SGWater; SGBankingFinance; SGHealthcare;
+   SGTransportLand; SGTransportMaritime; SGTransportAviation;
+   SGInfocomm; SGMedia; SGSecurityEmergency; SGGovernment]"
+
+(* all_entity_classifications (matches Coq: Definition all_entity_classifications) *)
+definition all_entity_classifications :: "list EntityClassification" where
+  "all_entity_classifications \<equiv> [CIIOwner; ESCI; STCC; RegularEntity]"
 
 (* stcc_obligations_met (matches Coq: Definition stcc_obligations_met) *)
 definition stcc_obligations_met :: "CIIOwnerEntity \<Rightarrow> bool" where
   "stcc_obligations_met e \<equiv> cii_classification e = STCC ->
-  cii_risk_assessed e = true /\
+  cii_risk_assessed e = True /\
   cii_security_controls e >= cii_min_controls e"
 
 (* cii_owner_obligations (matches Coq: Definition cii_owner_obligations) *)
@@ -122,12 +136,12 @@ definition cii_owner_obligations :: "CIIOwnerEntity \<Rightarrow> nat \<Rightarr
   "cii_owner_obligations e t \<equiv> cii_risk_current e /\
   cii_audit_current e t /\
   cii_controls_adequate e /\
-  cii_incident_response_plan e = true /\
+  cii_incident_response_plan e = True /\
   cssp_licensed_sg e"
 
 (* incident_needs_notification (matches Coq: Definition incident_needs_notification) *)
 definition incident_needs_notification :: "SGCyberIncident \<Rightarrow> bool" where
-  "incident_needs_notification i \<equiv> sg_incident_significant i = true"
+  "incident_needs_notification i \<equiv> sg_incident_significant i = True"
 
 (* audit_schedule_consistent (matches Coq: Definition audit_schedule_consistent) *)
 definition audit_schedule_consistent :: "AuditSchedule \<Rightarrow> bool" where

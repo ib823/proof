@@ -8,3 +8,6 @@ description = "RIINA string interning for zero-copy identifier handling"
 
 # Zero external dependencies (Law 8: No Dependencies)
 [dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

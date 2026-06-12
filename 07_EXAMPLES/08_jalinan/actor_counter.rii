@@ -1,0 +1,14 @@
+// actor_counter.rii — JALINAN End-to-End Demo
+// Actor-based counter: define, spawn, send, receive
+
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar kaunter = lahir Pembilang(0);
+hantar(kaunter, 5);
+hantar(kaunter, 3);
+terima(kaunter)

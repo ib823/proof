@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SystemArchitecture - Isabelle/HOL Port
@@ -22,9 +24,11 @@
  * | Syscall            | syscall                | OK     |
  * | IPCChannel         | ipc_channel            | OK     |
  * | SchedulerState     | scheduler_state        | OK     |
+ * | KERNEL_MEM_BOUNDARY | KERNEL_MEM_BOUNDARY    | OK     |
  * | verified_boot      | verified_boot          | OK     |
  * | boot_time          | boot_time              | OK     |
  * | boots_successfully | boots_successfully     | OK     |
+ * | apply_update       | apply_update           | OK     |
  * | update_succeeds    | update_succeeds        | OK     |
  * | system_unchanged   | system_unchanged       | OK     |
  * | always             | always                 | OK     |
@@ -71,7 +75,7 @@
  *)
 
 theory SystemArchitecture
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DeviceState (matches Coq: Inductive DeviceState) *)
@@ -156,9 +160,13 @@ record scheduler_state =
   sched_time_slice :: nat
   sched_context_saved :: bool
 
+(* KERNEL_MEM_BOUNDARY (matches Coq: Definition KERNEL_MEM_BOUNDARY) *)
+definition KERNEL_MEM_BOUNDARY :: "nat" where
+  "KERNEL_MEM_BOUNDARY \<equiv> Z.to_nat 1073741824%Z"
+
 (* verified_boot (matches Coq: Definition verified_boot) *)
 definition verified_boot :: "Device \<Rightarrow> bool" where
-  "verified_boot d \<equiv> boot_verified d = true /\ secure_boot_chain d = true"
+  "verified_boot d \<equiv> boot_verified d = True /\ secure_boot_chain d = True"
 
 (* boot_time (matches Coq: Definition boot_time) *)
 definition boot_time :: "Device \<Rightarrow> nat" where
@@ -168,9 +176,16 @@ definition boot_time :: "Device \<Rightarrow> nat" where
 definition boots_successfully :: "Device \<Rightarrow> bool" where
   "boots_successfully d \<equiv> device_state d = Running"
 
+(* apply_update (matches Coq: Definition apply_update) *)
+definition apply_update :: "System \<Rightarrow> SystemUpdate \<Rightarrow> System * UpdateResult" where
+  "apply_update sys upd \<equiv> if (update_signature_valid upd \<and> update_integrity_verified upd) then
+    (mkSystem (update_version upd) Running None, UpdateSuccess)
+  else
+    (sys, UpdateRollback)"
+
 (* update_succeeds (matches Coq: Definition update_succeeds) *)
 definition update_succeeds :: "SystemUpdate \<Rightarrow> bool" where
-  "update_succeeds upd \<equiv> update_signature_valid upd = true /\ update_integrity_verified upd = true"
+  "update_succeeds upd \<equiv> update_signature_valid upd = True /\ update_integrity_verified upd = True"
 
 (* system_unchanged (matches Coq: Definition system_unchanged) *)
 definition system_unchanged :: "System \<Rightarrow> System \<Rightarrow> bool" where
@@ -216,7 +231,7 @@ definition privilege_geq :: "bool" where
 (* syscall_authorized (matches Coq: Definition syscall_authorized) *)
 definition syscall_authorized :: "Syscall \<Rightarrow> bool" where
   "syscall_authorized sc \<equiv> privilege_geq (syscall_caller_privilege sc) (syscall_required_privilege sc) /\
-  syscall_validated sc = true"
+  syscall_validated sc = True"
 
 (* pid_in_table (matches Coq: Definition pid_in_table) *)
 definition pid_in_table :: "nat \<Rightarrow> ProcessTable \<Rightarrow> bool" where
@@ -229,11 +244,11 @@ definition all_pids_unique :: "ProcessTable \<Rightarrow> bool" where
 
 (* all_alive (matches Coq: Definition all_alive) *)
 definition all_alive :: "ProcessTable \<Rightarrow> bool" where
-  "all_alive pt \<equiv> forall p, In p pt -> ext_alive p = true"
+  "all_alive pt \<equiv> forall p, In p pt -> ext_alive p = True"
 
 (* init_process_present (matches Coq: Definition init_process_present) *)
 definition init_process_present :: "ProcessTable \<Rightarrow> bool" where
-  "init_process_present pt \<equiv> exists p, In p pt /\ ext_pid p = 1 /\ ext_alive p = true"
+  "init_process_present pt \<equiv> exists p, In p pt /\ ext_pid p = 1 /\ ext_alive p = True"
 
 (* ext_mem_disjoint (matches Coq: Definition ext_mem_disjoint) *)
 definition ext_mem_disjoint :: "bool" where
@@ -242,7 +257,7 @@ definition ext_mem_disjoint :: "bool" where
 
 (* kernel_mem_boundary (matches Coq: Definition kernel_mem_boundary) *)
 definition kernel_mem_boundary :: "nat" where
-  "kernel_mem_boundary \<equiv> 1073741824"
+  "kernel_mem_boundary \<equiv> KERNEL_MEM_BOUNDARY"
 
 (* in_user_space (matches Coq: Definition in_user_space) *)
 definition in_user_space :: "ExtProcess \<Rightarrow> bool" where
@@ -258,7 +273,7 @@ definition resource_within_limit :: "ExtProcess \<Rightarrow> bool" where
 
 (* process_cleanly_terminated (matches Coq: Definition process_cleanly_terminated) *)
 definition process_cleanly_terminated :: "ExtProcess \<Rightarrow> bool" where
-  "process_cleanly_terminated p \<equiv> ext_alive p = false /\ ext_resource_used p = 0"
+  "process_cleanly_terminated p \<equiv> ext_alive p = False /\ ext_resource_used p = 0"
 
 (* boot_time_bounded (matches Coq) *)
 lemma boot_time_bounded: "\<forall> (device : Device), well_formed_device device \<longrightarrow> verified_boot device \<longrightarrow> boot_time device \<le> 5000"

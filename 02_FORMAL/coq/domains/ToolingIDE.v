@@ -4,10 +4,10 @@
 (* Spec: 01_RESEARCH/14_DOMAIN_N_TOOLING_IDE/RESEARCH_DOMAIN_N_COMPLETE.md *)
 (* Security Property: Tooling does not leak secrets or introduce vulnerabilities *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Strings.String.
 Import ListNotations.
 
 (* ======================================================================= *)
@@ -328,7 +328,7 @@ Definition module_changed (m : Module) (old_hash : nat) : bool :=
 Definition incremental_correct (modules : list Module) (old_hashes : list (string * nat)) : Prop :=
   forall m, In m modules ->
     forall h, In (m.(mod_name), h) old_hashes ->
-      module_changed m h = false -> True.  (* Unchanged modules don't need rebuild *)
+      module_changed m h = false -> m.(mod_hash) = h.  (* Unchanged modules have matching hashes *)
 
 (* Security hardening verification *)
 Definition hardening_applied (config : BuildConfig) (binary : Binary) : Prop :=
@@ -655,7 +655,10 @@ Proof.
   intros modules old_hashes.
   unfold incremental_correct.
   intros m Hm h Hh Hunchanged.
-  trivial.
+  unfold module_changed in Hunchanged.
+  destruct (Nat.eqb (mod_hash m) h) eqn:E.
+  - apply Nat.eqb_eq in E. exact E.
+  - simpl in Hunchanged. discriminate.
 Qed.
 
 (* ======================================================================= *)

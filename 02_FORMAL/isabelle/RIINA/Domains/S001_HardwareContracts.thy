@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA S001_HardwareContracts - Isabelle/HOL Port
@@ -18,6 +20,7 @@
  * | SecLabel           | sec_label              | OK     |
  * | ArchState          | arch_state             | OK     |
  * | MicroarchState     | microarch_state        | OK     |
+ * | ROWHAMMER_THRESHOLD_CONST | ROWHAMMER_THRESHOLD_CONST | OK     |
  * | leakage            | leakage                | OK     |
  * | isa_step           | isa_step               | OK     |
  * | low_equiv          | low_equiv              | OK     |
@@ -66,7 +69,7 @@
  *)
 
 theory S001_HardwareContracts
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* CacheState (matches Coq: Inductive CacheState) *)
@@ -118,15 +121,22 @@ record microarch_state =
   spec_state :: SpecState
   cycle_count :: nat
 
+(* ROWHAMMER_THRESHOLD_CONST (matches Coq: Definition ROWHAMMER_THRESHOLD_CONST) *)
+definition ROWHAMMER_THRESHOLD_CONST :: "nat" where
+  "ROWHAMMER_THRESHOLD_CONST \<equiv> Z.to_nat 100000%Z"
+
 (* leakage (matches Coq: Definition leakage) *)
 definition leakage :: "MicroarchState \<Rightarrow> LeakageTrace" where
   "leakage ms \<equiv> []"
 
-(* isa_step - complex match, manual review needed *)
+(* isa_step (matches Coq: Definition isa_step) *)
+fun isa_step :: "Instruction \<Rightarrow> ArchState \<Rightarrow> ArchState" where
+  "isa_step IFence = mkArchState"
+|   "isa_step INop = mkArchState"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
-  "low_equiv \<equiv> forall a, l a = true -> mem (arch ms1) a = mem (arch ms2) a"
+  "low_equiv \<equiv> forall a, l a = True -> mem (arch ms1) a = mem (arch ms2) a"
 
 (* constant_time (matches Coq: Definition constant_time) *)
 definition constant_time :: "bool" where
@@ -136,7 +146,8 @@ definition constant_time :: "bool" where
     prog ms2 = ms2' ->
     leakage ms1 ms1' = leakage ms2 ms2'"
 
-(* spec_accesses - complex match, manual review needed *)
+(* spec_accesses - complex match, needs manual translation *)
+definition spec_accesses :: "bool" where "spec_accesses = undefined"
 
 (* scub_barrier (matches Coq: Definition scub_barrier) *)
 definition scub_barrier :: "MicroarchState \<Rightarrow> MicroarchState" where
@@ -146,7 +157,7 @@ definition scub_barrier :: "MicroarchState \<Rightarrow> MicroarchState" where
 (* speculation_safe (matches Coq: Definition speculation_safe) *)
 definition speculation_safe :: "bool" where
   "speculation_safe \<equiv> forall ms a,
-    secrets a = true ->
+    secrets a = True ->
     ~ spec_accesses (prog ms) a"
 
 (* row_of_addr (matches Coq: Definition row_of_addr) *)
@@ -155,7 +166,7 @@ definition row_of_addr :: "Addr \<Rightarrow> MemoryRow" where
 
 (* ROWHAMMER_THRESHOLD (matches Coq: Definition ROWHAMMER_THRESHOLD) *)
 definition ROWHAMMER_THRESHOLD :: "nat" where
-  "ROWHAMMER_THRESHOLD \<equiv> 100000"
+  "ROWHAMMER_THRESHOLD \<equiv> ROWHAMMER_THRESHOLD_CONST"
 
 (* rowhammer_safe (matches Coq: Definition rowhammer_safe) *)
 definition rowhammer_safe :: "AccessCount \<Rightarrow> bool" where
@@ -177,9 +188,11 @@ definition well_typed :: "TypingContext \<Rightarrow> bool" where
     (forall a, ctx a = Public -> mem (arch ms1) a = mem (arch ms2) a) ->
     pc (arch (prog ms1)) = pc (arch (prog ms2))"
 
-(* misprediction - complex match, manual review needed *)
+(* misprediction - complex match, needs manual translation *)
+definition misprediction :: "bool" where "misprediction = undefined"
 
-(* rollback - complex match, manual review needed *)
+(* rollback - complex match, needs manual translation *)
+definition rollback :: "bool" where "rollback = undefined"
 
 (* S_001_01_isa_state_deterministic (matches Coq) *)
 lemma S_001_01_isa_state_deterministic: "\<forall> instr s, isa_step instr s = isa_step instr s"
@@ -278,7 +291,7 @@ lemma S_001_24_speculation_composition: "\<forall> prog1 prog2 secrets, speculat
   by auto
 
 (* S_001_25_rowhammer_threshold (matches Coq) *)
-lemma S_001_25_rowhammer_threshold: "ROWHAMMER_THRESHOLD = 100000"
+lemma S_001_25_rowhammer_threshold: "ROWHAMMER_THRESHOLD = ROWHAMMER_THRESHOLD_CONST"
   by simp
 
 (* S_001_26_rowhammer_pattern_safe (matches Coq) *)

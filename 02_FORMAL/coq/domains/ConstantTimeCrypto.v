@@ -13,8 +13,8 @@
     preventing timing side-channel attacks.
     ============================================================================ *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ============================================================================
     SECTION 1: TIMING MODEL

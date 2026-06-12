@@ -6,9 +6,9 @@
 (*  Spec Reference: RESEARCH_MOBILEOS01_FOUNDATION.md Section 2.2            *)
 (* ========================================================================= *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (* ========================================================================= *)
@@ -225,7 +225,7 @@ Qed.
 (*  SECTION 6: Extended IOMMU Security Properties                            *)
 (* ========================================================================= *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** DMA isolation is enforced: permitted access implies config exists *)
 Theorem dma_isolation_enforced :

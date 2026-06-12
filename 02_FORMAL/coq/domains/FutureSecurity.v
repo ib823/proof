@@ -16,12 +16,16 @@
    ZERO Admitted. ZERO admit. ZERO new Axiom.
    ═══════════════════════════════════════════════════════════════════════════════════════════════════ *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Lia.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Lia.
 Import ListNotations.
+
+Definition APT_KEY_ROTATION_MAX_AGE_S : nat := Z.to_nat 86400%Z.
+Definition CV_ATTESTATION_INTERVAL_MAX_MS : nat := Z.to_nat 60000%Z.
 
 (* ═══════════════════════════════════════════════════════════════════════════════════════════════════
    SECTION 1: POST-QUANTUM CRYPTOGRAPHY MODELS
@@ -302,7 +306,7 @@ Record APTResistance : Type := mkAPTResistance {
 
 (* Check if key rotation is aggressive enough for APT defense *)
 Definition key_rotation_apt_safe (krp : KeyRotationPolicy) : bool :=
-  Nat.leb (krp_max_age_seconds krp) 86400 &&  (* Max 24 hours *)
+  Nat.leb (krp_max_age_seconds krp) APT_KEY_ROTATION_MAX_AGE_S &&  (* Max 24 hours *)
   krp_forward_secrecy krp &&
   krp_compromise_recovery krp &&
   krp_automated krp.
@@ -311,7 +315,7 @@ Definition key_rotation_apt_safe (krp : KeyRotationPolicy) : bool :=
 Definition cv_comprehensive (cv : ContinuousVerification) : bool :=
   cv_runtime_checks cv &&
   cv_periodic_attestation cv &&
-  Nat.leb (cv_attestation_interval_ms cv) 60000 &&  (* At least every minute *)
+  Nat.leb (cv_attestation_interval_ms cv) CV_ATTESTATION_INTERVAL_MAX_MS &&  (* At least every minute *)
   cv_anomaly_detection cv &&
   cv_state_integrity cv.
 
@@ -510,7 +514,7 @@ Proof.
   - (* 128 <= 256 / 2 = 128 *)
     apply Nat.le_refl.
   - (* 256 / 2 <= bits / 2 *)
-    apply Nat.div_le_mono.
+    apply Nat.Private_NDivProp.div_le_mono.
     + discriminate.
     + exact Hbits.
 Qed.

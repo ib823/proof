@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TotalStackFoundation - Isabelle/HOL Port
@@ -25,15 +27,21 @@
  * | interface_verified | interface_verified     | OK     |
  * | property_preserved | property_preserved     | OK     |
  * | attack_blocked     | attack_blocked         | OK     |
+ * | full_stack         | full_stack             | OK     |
  * | layer_in_stack     | layer_in_stack         | OK     |
  * | layer_verified_in_stack | layer_verified_in_stack | OK     |
  * | property_in_layer  | property_in_layer      | OK     |
  * | all_interfaces_verified | all_interfaces_verified | OK     |
  * | has_all_layers     | has_all_layers         | OK     |
  * | make_layer_verif   | make_layer_verif       | OK     |
+ * | all_properties     | all_properties         | OK     |
+ * | complete_layer_verifs | complete_layer_verifs  | OK     |
+ * | complete_interfaces | complete_interfaces    | OK     |
  * | complete_stack_state | complete_stack_state   | OK     |
  * | interface_secure   | interface_secure       | OK     |
  * | property_preserved_across_layers | property_preserved_across_layers | OK     |
+ * | network_to_ux_layers | network_to_ux_layers   | OK     |
+ * | os_to_ux_layers    | os_to_ux_layers        | OK     |
  * | layer_compromised  | layer_compromised      | OK     |
  * | hardware_root_of_trust | hardware_root_of_trust | OK     |
  * | measured_boot_integrity | measured_boot_integrity | OK     |
@@ -95,12 +103,8 @@
  *)
 
 theory TotalStackFoundation
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* Layer (matches Coq: Inductive Layer) *)
 datatype layer =
@@ -147,7 +151,8 @@ record stack_state =
   ss_layers :: 'a list
   ss_interfaces_verified :: 'a list
 
-(* layer_eqb - complex match, manual review needed *)
+(* layer_eqb - complex match, needs manual translation *)
+definition layer_eqb :: "bool" where "layer_eqb = undefined"
 
 (* layer_index (matches Coq: Definition layer_index) *)
 fun layer_index :: "Layer \<Rightarrow> nat" where
@@ -162,37 +167,45 @@ fun layer_index :: "Layer \<Rightarrow> nat" where
 
 (* layer_adjacent (matches Coq: Definition layer_adjacent) *)
 definition layer_adjacent :: "bool" where
-  "layer_adjacent \<equiv> Nat"
+  "layer_adjacent \<equiv> ((S = (layer_index) l1)) (layer_index l2)"
 
-(* sp_eqb - complex match, manual review needed *)
+(* sp_eqb - complex match, needs manual translation *)
+definition sp_eqb :: "bool" where "sp_eqb = undefined"
 
-(* layer_defends - complex match, manual review needed *)
+(* layer_defends - complex match, needs manual translation *)
+definition layer_defends :: "bool" where "layer_defends = undefined"
 
 (* all_layers_verified (matches Coq: Definition all_layers_verified) *)
 definition all_layers_verified :: "StackState \<Rightarrow> bool" where
-  "all_layers_verified ss \<equiv> forallb (fun lv => lv"
+  "all_layers_verified ss \<equiv> forallb (fun lv => lv.(lv_verified)) ss.(ss_layers)"
 
-(* interface_verified - complex match, manual review needed *)
+(* interface_verified (matches Coq: Definition interface_verified) *)
+fun interface_verified :: "StackState \<Rightarrow> bool" where
+
 
 (* property_preserved (matches Coq: Definition property_preserved) *)
 definition property_preserved :: "LayerVerification \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
-  "property_preserved lv p \<equiv> existsb (fun sp => sp_eqb sp p) lv"
+  "property_preserved lv p \<equiv> existsb (fun sp => sp_eqb sp p) lv.(lv_properties)"
 
 (* attack_blocked (matches Coq: Definition attack_blocked) *)
 definition attack_blocked :: "StackState \<Rightarrow> AttackType \<Rightarrow> bool" where
-  "attack_blocked ss a \<equiv> existsb (fun lv => lv"
+  "attack_blocked ss a \<equiv> existsb (fun lv => lv.(lv_verified) \<and> layer_defends lv.(lv_layer) a) ss.(ss_layers)"
+
+(* full_stack (matches Coq: Definition full_stack) *)
+definition full_stack :: "list Layer" where
+  "full_stack \<equiv> [L0_Physics; L1_Silicon; L2_Firmware; L3_Network; L4_OS; L5_Runtime; L6_App; L7_UX]"
 
 (* layer_in_stack (matches Coq: Definition layer_in_stack) *)
 definition layer_in_stack :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
-  "layer_in_stack ss l \<equiv> existsb (fun lv => layer_eqb lv"
+  "layer_in_stack ss l \<equiv> existsb (fun lv => layer_eqb lv.(lv_layer) l) ss.(ss_layers)"
 
 (* layer_verified_in_stack (matches Coq: Definition layer_verified_in_stack) *)
 definition layer_verified_in_stack :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
-  "layer_verified_in_stack ss l \<equiv> existsb (fun lv => layer_eqb lv"
+  "layer_verified_in_stack ss l \<equiv> existsb (fun lv => layer_eqb lv.(lv_layer) l \<and> lv.(lv_verified)) ss.(ss_layers)"
 
 (* property_in_layer (matches Coq: Definition property_in_layer) *)
 definition property_in_layer :: "StackState \<Rightarrow> Layer \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
-  "property_in_layer ss l p \<equiv> existsb (fun lv => layer_eqb lv"
+  "property_in_layer ss l p \<equiv> existsb (fun lv => layer_eqb lv.(lv_layer) l \<and> property_preserved lv p) ss.(ss_layers)"
 
 (* all_interfaces_verified (matches Coq: Definition all_interfaces_verified) *)
 definition all_interfaces_verified :: "StackState \<Rightarrow> bool" where
@@ -217,7 +230,32 @@ definition has_all_layers :: "StackState \<Rightarrow> bool" where
 
 (* make_layer_verif (matches Coq: Definition make_layer_verif) *)
 definition make_layer_verif :: "Layer \<Rightarrow> LayerVerification" where
-  "make_layer_verif l \<equiv> mkLayerVerif l true props"
+  "make_layer_verif l \<equiv> mkLayerVerif l True props"
+
+(* all_properties (matches Coq: Definition all_properties) *)
+definition all_properties :: "list SecurityProperty" where
+  "all_properties \<equiv> [SPConfidentiality; SPIntegrity; SPAvailability; SPAuthentication; SPAuthorization; SPNonRepudiation]"
+
+(* complete_layer_verifs (matches Coq: Definition complete_layer_verifs) *)
+definition complete_layer_verifs :: "list LayerVerification" where
+  "complete_layer_verifs \<equiv> [make_layer_verif L0_Physics all_properties;
+   make_layer_verif L1_Silicon all_properties;
+   make_layer_verif L2_Firmware all_properties;
+   make_layer_verif L3_Network all_properties;
+   make_layer_verif L4_OS all_properties;
+   make_layer_verif L5_Runtime all_properties;
+   make_layer_verif L6_App all_properties;
+   make_layer_verif L7_UX all_properties]"
+
+(* complete_interfaces (matches Coq: Definition complete_interfaces) *)
+definition complete_interfaces :: "list (Layer * Layer)" where
+  "complete_interfaces \<equiv> [(L0_Physics, L1_Silicon);
+   (L1_Silicon, L2_Firmware);
+   (L2_Firmware, L3_Network);
+   (L3_Network, L4_OS);
+   (L4_OS, L5_Runtime);
+   (L5_Runtime, L6_App);
+   (L6_App, L7_UX)]"
 
 (* complete_stack_state (matches Coq: Definition complete_stack_state) *)
 definition complete_stack_state :: "StackState" where
@@ -225,57 +263,65 @@ definition complete_stack_state :: "StackState" where
 
 (* interface_secure (matches Coq: Definition interface_secure) *)
 definition interface_secure :: "StackState \<Rightarrow> bool" where
-  "interface_secure ss \<equiv> layer_adjacent l1 l2 = true ->
-  interface_verified ss l1 l2 = true ->
-  layer_verified_in_stack ss l1 = true /\ layer_verified_in_stack ss l2 = true ->
+  "interface_secure ss \<equiv> layer_adjacent l1 l2 = True ->
+  interface_verified ss l1 l2 = True ->
+  layer_verified_in_stack ss l1 = True /\ layer_verified_in_stack ss l2 = True ->
   True"
 
 (* property_preserved_across_layers (matches Coq: Definition property_preserved_across_layers) *)
 definition property_preserved_across_layers :: "StackState \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
-  "property_preserved_across_layers ss p \<equiv> forall l, In l layers -> property_in_layer ss l p = true"
+  "property_preserved_across_layers ss p \<equiv> forall l, In l layers -> property_in_layer ss l p = True"
+
+(* network_to_ux_layers (matches Coq: Definition network_to_ux_layers) *)
+definition network_to_ux_layers :: "list Layer" where
+  "network_to_ux_layers \<equiv> [L3_Network; L4_OS; L5_Runtime; L6_App; L7_UX]"
+
+(* os_to_ux_layers (matches Coq: Definition os_to_ux_layers) *)
+definition os_to_ux_layers :: "list Layer" where
+  "os_to_ux_layers \<equiv> [L4_OS; L5_Runtime; L6_App; L7_UX]"
 
 (* layer_compromised (matches Coq: Definition layer_compromised) *)
 definition layer_compromised :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
-  "layer_compromised ss l \<equiv> layer_verified_in_stack ss l = false"
+  "layer_compromised ss l \<equiv> layer_verified_in_stack ss l = False"
 
 (* hardware_root_of_trust (matches Coq: Definition hardware_root_of_trust) *)
 definition hardware_root_of_trust :: "StackState \<Rightarrow> bool" where
-  "hardware_root_of_trust ss \<equiv> layer_verified_in_stack ss L0_Physics = true /\
-  layer_verified_in_stack ss L1_Silicon = true /\
-  interface_verified ss L0_Physics L1_Silicon = true"
+  "hardware_root_of_trust ss \<equiv> layer_verified_in_stack ss L0_Physics = True /\
+  layer_verified_in_stack ss L1_Silicon = True /\
+  interface_verified ss L0_Physics L1_Silicon = True"
 
 (* measured_boot_integrity (matches Coq: Definition measured_boot_integrity) *)
 definition measured_boot_integrity :: "StackState \<Rightarrow> bool" where
-  "measured_boot_integrity ss \<equiv> layer_verified_in_stack ss L2_Firmware = true /\
-  attack_blocked ss ATBootCompromise = true"
+  "measured_boot_integrity ss \<equiv> layer_verified_in_stack ss L2_Firmware = True /\
+  attack_blocked ss ATBootCompromise = True"
 
 (* secure_channel (matches Coq: Definition secure_channel) *)
 definition secure_channel :: "StackState \<Rightarrow> bool" where
-  "secure_channel ss \<equiv> layer_verified_in_stack ss L3_Network = true /\
-  attack_blocked ss ATNetworkAttack = true"
+  "secure_channel ss \<equiv> layer_verified_in_stack ss L3_Network = True /\
+  attack_blocked ss ATNetworkAttack = True"
 
 (* capability_delegation_correct (matches Coq: Definition capability_delegation_correct) *)
 definition capability_delegation_correct :: "StackState \<Rightarrow> bool" where
-  "capability_delegation_correct ss \<equiv> layer_verified_in_stack ss L4_OS = true /\
-  layer_verified_in_stack ss L5_Runtime = true /\
-  layer_verified_in_stack ss L6_App = true /\
-  attack_blocked ss ATPrivilegeEscalation = true"
+  "capability_delegation_correct ss \<equiv> layer_verified_in_stack ss L4_OS = True /\
+  layer_verified_in_stack ss L5_Runtime = True /\
+  layer_verified_in_stack ss L6_App = True /\
+  attack_blocked ss ATPrivilegeEscalation = True"
 
 (* end_to_end_encryption (matches Coq: Definition end_to_end_encryption) *)
 definition end_to_end_encryption :: "StackState \<Rightarrow> bool" where
-  "end_to_end_encryption ss \<equiv> layer_verified_in_stack ss L3_Network = true /\
-  layer_verified_in_stack ss L6_App = true /\
-  attack_blocked ss ATDataExfiltration = true"
+  "end_to_end_encryption ss \<equiv> layer_verified_in_stack ss L3_Network = True /\
+  layer_verified_in_stack ss L6_App = True /\
+  attack_blocked ss ATDataExfiltration = True"
 
 (* all_critical_layers_verified (matches Coq: Definition all_critical_layers_verified) *)
 definition all_critical_layers_verified :: "StackState \<Rightarrow> bool" where
-  "all_critical_layers_verified ss \<equiv> layer_verified_in_stack ss L1_Silicon = true /\
-  layer_verified_in_stack ss L2_Firmware = true /\
-  layer_verified_in_stack ss L3_Network = true /\
-  layer_verified_in_stack ss L4_OS = true /\
-  layer_verified_in_stack ss L5_Runtime = true /\
-  layer_verified_in_stack ss L6_App = true /\
-  layer_verified_in_stack ss L7_UX = true"
+  "all_critical_layers_verified ss \<equiv> layer_verified_in_stack ss L1_Silicon = True /\
+  layer_verified_in_stack ss L2_Firmware = True /\
+  layer_verified_in_stack ss L3_Network = True /\
+  layer_verified_in_stack ss L4_OS = True /\
+  layer_verified_in_stack ss L5_Runtime = True /\
+  layer_verified_in_stack ss L6_App = True /\
+  layer_verified_in_stack ss L7_UX = True"
 
 (* layer_eqb_refl (matches Coq) *)
 lemma layer_eqb_refl: "\<forall> l, layer_eqb l l = True"

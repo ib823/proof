@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DigitalWallet - Isabelle/HOL Port
@@ -106,7 +108,7 @@
  *)
 
 theory DigitalWallet
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* WalletTier (matches Coq: Inductive WalletTier) *)
@@ -314,13 +316,15 @@ fun tier_daily_withdrawal_limit :: "WalletTier \<Rightarrow> Z" where
 |   "tier_daily_withdrawal_limit Premium = 10000"
 |   "tier_daily_withdrawal_limit Unlimited = 500000000"
 
-(* sum_credits - complex match, manual review needed *)
+(* sum_credits - complex match, needs manual translation *)
+definition sum_credits :: "bool" where "sum_credits = undefined"
 
-(* sum_debits - complex match, manual review needed *)
+(* sum_debits - complex match, needs manual translation *)
+definition sum_debits :: "bool" where "sum_debits = undefined"
 
 (* invalidated (matches Coq: Definition invalidated) *)
 definition invalidated :: "QRCode \<Rightarrow> bool" where
-  "invalidated qr \<equiv> qr_used qr = true"
+  "invalidated qr \<equiv> qr_used qr = True"
 
 (* virtual_accounts_total (matches Coq: Definition virtual_accounts_total) *)
 definition virtual_accounts_total :: "Z" where
@@ -328,7 +332,7 @@ definition virtual_accounts_total :: "Z" where
 
 (* session_expired (matches Coq: Definition session_expired) *)
 definition session_expired :: "Session \<Rightarrow> nat \<Rightarrow> bool" where
-  "session_expired s current_time \<equiv> Nat"
+  "session_expired s current_time \<equiv> ((last_activity_time < s) + inactivity_timeout s) current_time"
 
 (* session_valid (matches Coq: Definition session_valid) *)
 definition session_valid :: "Session \<Rightarrow> nat \<Rightarrow> bool" where
@@ -336,15 +340,15 @@ definition session_valid :: "Session \<Rightarrow> nat \<Rightarrow> bool" where
 
 (* otp_valid (matches Coq: Definition otp_valid) *)
 definition otp_valid :: "OTP \<Rightarrow> nat \<Rightarrow> bool" where
-  "otp_valid o current_time \<equiv> Nat"
+  "otp_valid o current_time \<equiv> (current_time \<le> (otp_created_time) o + otp_validity_minutes o * 60)"
 
 (* fraud_score_high (matches Coq: Definition fraud_score_high) *)
 definition fraud_score_high :: "FraudScore \<Rightarrow> bool" where
-  "fraud_score_high fs \<equiv> Nat"
+  "fraud_score_high fs \<equiv> ((fs_threshold \<le> fs)) (fs_score fs)"
 
 (* velocity_exceeded (matches Coq: Definition velocity_exceeded) *)
 definition velocity_exceeded :: "VelocityCheck \<Rightarrow> bool" where
-  "velocity_exceeded vc \<equiv> Nat"
+  "velocity_exceeded vc \<equiv> ((vc_threshold < vc)) (vc_txn_count vc)"
 
 (* p2p_settlement_time (matches Coq: Definition p2p_settlement_time) *)
 definition p2p_settlement_time :: "P2PTransfer \<Rightarrow> nat" where
@@ -360,27 +364,27 @@ definition valid_merchant_settlement :: "MerchantPayment \<Rightarrow> bool" whe
 
 (* bank_transfer_reconciled (matches Coq: Definition bank_transfer_reconciled) *)
 definition bank_transfer_reconciled :: "BankTransfer \<Rightarrow> bool" where
-  "bank_transfer_reconciled bt \<equiv> bt_reconciled bt = true -> bt_wallet_credit bt = bt_bank_debit bt"
+  "bank_transfer_reconciled bt \<equiv> bt_reconciled bt = True -> bt_wallet_credit bt = bt_bank_debit bt"
 
 (* agent_float_sufficient (matches Coq: Definition agent_float_sufficient) *)
 definition agent_float_sufficient :: "AgentFloat \<Rightarrow> bool" where
-  "agent_float_sufficient af \<equiv> Z"
+  "agent_float_sufficient af \<equiv> Z.((af_pending_deposits \<le> af)) (af_float_balance af)"
 
 (* withdrawal_within_limit (matches Coq: Definition withdrawal_within_limit) *)
 definition withdrawal_within_limit :: "WithdrawalRequest \<Rightarrow> bool" where
-  "withdrawal_within_limit wr \<equiv> Z"
+  "withdrawal_within_limit wr \<equiv> Z.((wr_daily_total \<le> wr) + wr_amount wr) (tier_daily_withdrawal_limit (wr_tier wr))"
 
 (* withdrawal_within_balance (matches Coq: Definition withdrawal_within_balance) *)
 definition withdrawal_within_balance :: "WithdrawalRequest \<Rightarrow> bool" where
-  "withdrawal_within_balance wr \<equiv> Z"
+  "withdrawal_within_balance wr \<equiv> Z.((wr_amount \<le> wr)) (wr_wallet_balance wr)"
 
 (* agent_has_cash (matches Coq: Definition agent_has_cash) *)
 definition agent_has_cash :: "AgentWithdrawal \<Rightarrow> bool" where
-  "agent_has_cash aw \<equiv> Z"
+  "agent_has_cash aw \<equiv> Z.((aw_amount \<le> aw)) (aw_agent_cash aw)"
 
 (* has_two_factors (matches Coq: Definition has_two_factors) *)
 definition has_two_factors :: "AuthContext \<Rightarrow> bool" where
-  "has_two_factors ac \<equiv> Nat"
+  "has_two_factors ac \<equiv> (2 \<le> (length) (ac_factors ac))"
 
 (* wallets_unique (matches Coq: Definition wallets_unique) *)
 definition wallets_unique :: "bool" where
@@ -397,7 +401,7 @@ definition dormancy_threshold :: "nat" where
 
 (* should_be_dormant (matches Coq: Definition should_be_dormant) *)
 definition should_be_dormant :: "Wallet \<Rightarrow> nat \<Rightarrow> bool" where
-  "should_be_dormant w current_day \<equiv> Nat"
+  "should_be_dormant w current_day \<equiv> (dormancy_threshold \<le> (current_day) - last_activity w)"
 
 (* can_withdraw (matches Coq: Definition can_withdraw) *)
 definition can_withdraw :: "Wallet \<Rightarrow> Z \<Rightarrow> bool" where
@@ -417,24 +421,24 @@ definition qr_payment_fast :: "QRPayment \<Rightarrow> bool" where
 
 (* refund_is_instant (matches Coq: Definition refund_is_instant) *)
 definition refund_is_instant :: "Refund \<Rightarrow> bool" where
-  "refund_is_instant r \<equiv> ref_instant r = true"
+  "refund_is_instant r \<equiv> ref_instant r = True"
 
 (* chargeback_processed (matches Coq: Definition chargeback_processed) *)
 definition chargeback_processed :: "CardChargeback \<Rightarrow> bool" where
-  "chargeback_processed cb \<equiv> cb_processed cb = true -> cb_wallet_debit cb = cb_original_credit cb"
+  "chargeback_processed cb \<equiv> cb_processed cb = True -> cb_wallet_debit cb = cb_original_credit cb"
 
 (* crypto_rate_is_locked (matches Coq: Definition crypto_rate_is_locked) *)
 definition crypto_rate_is_locked :: "CryptoTopUp \<Rightarrow> bool" where
-  "crypto_rate_is_locked ctu \<equiv> ctu_rate_locked ctu = true ->
+  "crypto_rate_is_locked ctu \<equiv> ctu_rate_locked ctu = True ->
   ctu_fiat_credit ctu = ctu_crypto_amount ctu * ctu_rate_at_confirmation ctu"
 
 (* stablecoin_instant (matches Coq: Definition stablecoin_instant) *)
 definition stablecoin_instant :: "StablecoinTopUp \<Rightarrow> bool" where
-  "stablecoin_instant stu \<equiv> stu_confirmed stu = true -> stu_credited stu = true"
+  "stablecoin_instant stu \<equiv> stu_confirmed stu = True -> stu_credited stu = True"
 
 (* bank_ownership_verified_before_approval (matches Coq: Definition bank_ownership_verified_before_approval) *)
 definition bank_ownership_verified_before_approval :: "BankWithdrawal \<Rightarrow> bool" where
-  "bank_ownership_verified_before_approval bw \<equiv> bw_approved bw = true -> bw_ownership_verified bw = true"
+  "bank_ownership_verified_before_approval bw \<equiv> bw_approved bw = True -> bw_ownership_verified bw = True"
 
 (* cardless_atm_otp_validity_minutes (matches Coq: Definition cardless_atm_otp_validity_minutes) *)
 definition cardless_atm_otp_validity_minutes :: "nat" where
@@ -443,23 +447,23 @@ definition cardless_atm_otp_validity_minutes :: "nat" where
 (* cardless_otp_valid (matches Coq: Definition cardless_otp_valid) *)
 definition cardless_otp_valid :: "CardlessATM \<Rightarrow> nat \<Rightarrow> bool" where
   "cardless_otp_valid catm current_time \<equiv> otp_validity_minutes (catm_otp catm) = cardless_atm_otp_validity_minutes /\
-  otp_valid (catm_otp catm) current_time = true"
+  otp_valid (catm_otp catm) current_time = True"
 
 (* agent_withdrawal_approved_with_cash (matches Coq: Definition agent_withdrawal_approved_with_cash) *)
 definition agent_withdrawal_approved_with_cash :: "AgentWithdrawal \<Rightarrow> bool" where
-  "agent_withdrawal_approved_with_cash aw \<equiv> aw_approved aw = true -> agent_has_cash aw = true"
+  "agent_withdrawal_approved_with_cash aw \<equiv> aw_approved aw = True -> agent_has_cash aw = True"
 
 (* sensitive_op_requires_2fa (matches Coq: Definition sensitive_op_requires_2fa) *)
 definition sensitive_op_requires_2fa :: "AuthContext \<Rightarrow> bool" where
-  "sensitive_op_requires_2fa ac \<equiv> ac_sensitive_op ac = true -> has_two_factors ac = true"
+  "sensitive_op_requires_2fa ac \<equiv> ac_sensitive_op ac = True -> has_two_factors ac = True"
 
 (* velocity_triggers_review (matches Coq: Definition velocity_triggers_review) *)
 definition velocity_triggers_review :: "VelocityCheck \<Rightarrow> bool" where
-  "velocity_triggers_review vc \<equiv> velocity_exceeded vc = true -> (vc_threshold vc < vc_txn_count vc)%nat"
+  "velocity_triggers_review vc \<equiv> velocity_exceeded vc = True -> (vc_threshold vc < vc_txn_count vc)%nat"
 
 (* fraud_score_blocks_transaction (matches Coq: Definition fraud_score_blocks_transaction) *)
 definition fraud_score_blocks_transaction :: "FraudScore \<Rightarrow> bool" where
-  "fraud_score_blocks_transaction fs \<equiv> fraud_score_high fs = true -> (fs_threshold fs <= fs_score fs)%nat"
+  "fraud_score_blocks_transaction fs \<equiv> fraud_score_high fs = True -> (fs_threshold fs <= fs_score fs)%nat"
 
 (* device_biometric_bound (matches Coq: Definition device_biometric_bound) *)
 definition device_biometric_bound :: "Device \<Rightarrow> WalletId \<Rightarrow> nat \<Rightarrow> bool" where

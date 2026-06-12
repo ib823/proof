@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OMEGA001_NetworkDefense - Isabelle/HOL Port
@@ -17,16 +19,19 @@
  * | SynCookie          | syn_cookie             | OK     |
  * | Connection         | connection             | OK     |
  * | tb_refill          | tb_refill              | OK     |
+ * | tb_consume         | tb_consume             | OK     |
  * | tb_available       | tb_available           | OK     |
  * | cap_valid          | cap_valid              | OK     |
  * | cap_permits        | cap_permits            | OK     |
  * | cap_is_subset      | cap_is_subset          | OK     |
+ * | cap_delegate       | cap_delegate           | OK     |
  * | hmac_compute       | hmac_compute           | OK     |
  * | syn_cookie_generate | syn_cookie_generate    | OK     |
  * | syn_cookie_verify  | syn_cookie_verify      | OK     |
  * | pow_hash           | pow_hash               | OK     |
  * | pow_valid          | pow_valid              | OK     |
  * | pow_verify         | pow_verify             | OK     |
+ * | conn_lookup        | conn_lookup            | OK     |
  * | conn_count_by_src  | conn_count_by_src      | OK     |
  * | conn_limit_per_src | conn_limit_per_src     | OK     |
  * | conn_allowed       | conn_allowed           | OK     |
@@ -63,7 +68,7 @@
  *)
 
 theory OMEGA001_NetworkDefense
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ConnState (matches Coq: Inductive ConnState) *)
@@ -77,8 +82,8 @@ datatype conn_state =
 record token_bucket =
   tb_tokens :: nat
   tb_capacity :: nat
-  tb_refill_rate :: nat  (* tokens per tick *)
-  tb_last_refill :: nat  (* tick count *)
+  tb_refill_rate :: nat
+  tb_last_refill :: nat
 
 (* NetCapability (matches Coq: Record NetCapability) *)
 record net_capability =
@@ -86,7 +91,7 @@ record net_capability =
   cap_permissions :: 'a list
   cap_expiry :: nat
   cap_delegatable :: bool
-  cap_signature :: nat  (* HMAC signature *)
+  cap_signature :: nat
 
 (* SynCookie (matches Coq: Record SynCookie) *)
 record syn_cookie =
@@ -108,7 +113,20 @@ record connection =
 (* tb_refill (matches Coq: Definition tb_refill) *)
 definition tb_refill :: "TokenBucket \<Rightarrow> nat \<Rightarrow> TokenBucket" where
   "tb_refill tb now \<equiv> let elapsed := now - tb_last_refill tb in
-  let new_tokens := Nat"
+  let new_tokens := Nat.min (tb_tokens tb + elapsed * tb_refill_rate tb) (tb_capacity tb) in
+  {| tb_tokens := new_tokens;
+     tb_capacity := tb_capacity tb;
+     tb_refill_rate := tb_refill_rate tb;
+     tb_last_refill := now |}"
+
+(* tb_consume (matches Coq: Definition tb_consume) *)
+definition tb_consume :: "TokenBucket \<Rightarrow> nat \<Rightarrow> option TokenBucket" where
+  "tb_consume tb cost \<equiv> if cost <=? tb_tokens tb then
+    Some {| tb_tokens := tb_tokens tb - cost;
+            tb_capacity := tb_capacity tb;
+            tb_refill_rate := tb_refill_rate tb;
+            tb_last_refill := tb_last_refill tb |}
+  else None"
 
 (* tb_available (matches Coq: Definition tb_available) *)
 definition tb_available :: "TokenBucket \<Rightarrow> nat" where
@@ -120,11 +138,22 @@ definition cap_valid :: "NetCapability \<Rightarrow> nat \<Rightarrow> bool" whe
 
 (* cap_permits (matches Coq: Definition cap_permits) *)
 definition cap_permits :: "NetCapability \<Rightarrow> nat \<Rightarrow> bool" where
-  "cap_permits cap port \<equiv> existsb (Nat"
+  "cap_permits cap port \<equiv> existsb ((port) = (cap_permissions) cap)"
 
 (* cap_is_subset (matches Coq: Definition cap_is_subset) *)
 definition cap_is_subset :: "bool" where
-  "cap_is_subset \<equiv> forallb (fun p => existsb (Nat"
+  "cap_is_subset \<equiv> forallb (fun p => existsb ((p) = (cap_permissions) parent)) (cap_permissions child)"
+
+(* cap_delegate (matches Coq: Definition cap_delegate) *)
+definition cap_delegate :: "NetCapability \<Rightarrow> option NetCapability" where
+  "cap_delegate parent \<equiv> if cap_delegatable parent then
+    let child := {| cap_id := sig;  
+                    cap_permissions := filter (fun p => existsb ((p) = (cap_permissions) parent)) perms;
+                    cap_expiry := Nat.min expiry (cap_expiry parent);
+                    cap_delegatable := False;
+                    cap_signature := sig |} in
+    Some child
+  else None"
 
 (* hmac_compute (matches Coq: Definition hmac_compute) *)
 definition hmac_compute :: "nat \<Rightarrow> nat \<Rightarrow> nat" where
@@ -137,7 +166,7 @@ definition syn_cookie_generate :: "nat \<Rightarrow> SynCookie \<Rightarrow> nat
 
 (* syn_cookie_verify (matches Coq: Definition syn_cookie_verify) *)
 definition syn_cookie_verify :: "nat \<Rightarrow> SynCookie \<Rightarrow> nat \<Rightarrow> bool" where
-  "syn_cookie_verify secret cookie mac \<equiv> Nat"
+  "syn_cookie_verify secret cookie mac \<equiv> ((syn_cookie_generate = secret) cookie) mac"
 
 (* pow_hash (matches Coq: Definition pow_hash) *)
 definition pow_hash :: "nat" where
@@ -151,9 +180,13 @@ definition pow_valid :: "bool" where
 definition pow_verify :: "bool" where
   "pow_verify \<equiv> pow_valid nonce challenge difficulty"
 
+(* conn_lookup (matches Coq: Definition conn_lookup) *)
+definition conn_lookup :: "ConnTable \<Rightarrow> option Connection" where
+  "conn_lookup table \<equiv> find (fun c => (((conn_src = c)) src) \<and> (((conn_dst = c)) dst)) table"
+
 (* conn_count_by_src (matches Coq: Definition conn_count_by_src) *)
 definition conn_count_by_src :: "ConnTable \<Rightarrow> nat \<Rightarrow> nat" where
-  "conn_count_by_src table src \<equiv> length (filter (fun c => Nat"
+  "conn_count_by_src table src \<equiv> length (filter (fun c => ((conn_src = c)) src) table)"
 
 (* conn_limit_per_src (matches Coq: Definition conn_limit_per_src) *)
 definition conn_limit_per_src :: "nat" where
@@ -222,11 +255,11 @@ lemma OMEGA_002_05_nondelegatable_blocks: "\<forall> parent perms expiry sig, ca
   by simp
 
 (* OMEGA_002_06_empty_cap_permits_nothing (matches Coq) *)
-lemma OMEGA_002_06_empty_cap_permits_nothing: "\<forall> port, cap_permits {| cap_id := 0; cap_permissions := []; cap_expiry := 0; cap_delegatable := false; cap_signature := 0 |} port = False"
+lemma OMEGA_002_06_empty_cap_permits_nothing: "\<forall> port, cap_permits {| cap_id := 0; cap_permissions := []; cap_expiry := 0; cap_delegatable := False; cap_signature := 0 |} port = False"
   by simp
 
 (* OMEGA_002_07_cap_permits_sound (matches Coq) *)
-lemma OMEGA_002_07_cap_permits_sound: "\<forall> cap port, cap_permits cap port = True \<longrightarrow> In port (cap_permissions cap) \<or> \<exists> p, In p (cap_permissions cap) \<and> Nat.eqb port p = True"
+lemma OMEGA_002_07_cap_permits_sound: "\<forall> cap port, cap_permits cap port = True \<longrightarrow> In port (cap_permissions cap) \<or> \<exists> p, In p (cap_permissions cap) \<and> (port = p) = True"
   by auto
 
 (* ===============================================================================

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PostQuantumSignatures - Isabelle/HOL Port
@@ -13,6 +15,7 @@
  * |--------------------|------------------------|--------|
  * | SecurityLevel      | security_level         | OK     |
  * | SignatureScheme    | signature_scheme       | OK     |
+ * | SchemeCategory     | scheme_category        | OK     |
  * | SigningKeyPair     | signing_key_pair       | OK     |
  * | SignatureResult    | signature_result       | OK     |
  * | SignatureInstance  | signature_instance     | OK     |
@@ -20,6 +23,7 @@
  * | SigQuantumResistant | sig_quantum_resistant  | OK     |
  * | HashBasedProperties | hash_based_properties  | OK     |
  * | SignatureSecurity  | signature_security     | OK     |
+ * | SIGNATURE_EXAMPLE_VALUE | SIGNATURE_EXAMPLE_VALUE | OK     |
  * | scheme_category    | scheme_category        | OK     |
  * | scheme_security_level | scheme_security_level  | OK     |
  * | level_leq          | level_leq              | OK     |
@@ -78,16 +82,17 @@ datatype security_level =
 
 (* SignatureScheme (matches Coq: Inductive SignatureScheme) *)
 datatype signature_scheme =
-    ML_DSA_44  (* Dilithium2 - Level 1 *)
-  |     ML_DSA_65  (* Dilithium3 - Level 3 *)
-  |     ML_DSA_87  (* Dilithium5 - Level 5 *)
-  |     SLH_DSA_128s  (* SPHINCS+-128s - Level 1 *)
-  |     SLH_DSA_192s  (* SPHINCS+-192s - Level 3 *)
-  |     Lattice_Based  (* ML-DSA / Dilithium *)
-  |     ML_DSA_44
+    ML_DSA_44
   |     ML_DSA_65
+  |     ML_DSA_87
   |     SLH_DSA_128s
   |     SLH_DSA_192s
+  |     SLH_DSA_256s
+
+(* SchemeCategory (matches Coq: Inductive SchemeCategory) *)
+datatype scheme_category =
+    Lattice_Based
+  |     Hash_Based
 
 (* SigningKeyPair (matches Coq: Record SigningKeyPair) *)
 record signing_key_pair =
@@ -106,7 +111,7 @@ record signature_instance =
   sig_keypair :: SigningKeyPair
   sig_message :: Message
   sig_signature :: SignatureResult
-  sig_verification :: bool  (* Result of Verify(pk, msg, sig) *)
+  sig_verification :: bool
 
 (* EUFCMASecure (matches Coq: Record EUFCMASecure) *)
 record eufcma_secure =
@@ -132,6 +137,10 @@ record signature_security =
   sig_sec_quantum :: SigQuantumResistant
   sig_sec_level :: SecurityLevel
 
+(* SIGNATURE_EXAMPLE_VALUE (matches Coq: Definition SIGNATURE_EXAMPLE_VALUE) *)
+definition SIGNATURE_EXAMPLE_VALUE :: "nat" where
+  "SIGNATURE_EXAMPLE_VALUE \<equiv> Z.to_nat 12345%Z"
+
 (* scheme_category (matches Coq: Definition scheme_category) *)
 fun scheme_category :: "SignatureScheme \<Rightarrow> SchemeCategory" where
   "scheme_category ML_DSA_87 = Lattice_Based"
@@ -143,7 +152,8 @@ fun scheme_security_level :: "SignatureScheme \<Rightarrow> SecurityLevel" where
 |   "scheme_security_level SLH_DSA_192s = Level3"
 |   "scheme_security_level SLH_DSA_256s = Level5"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* eufcma_compliant (matches Coq: Definition eufcma_compliant) *)
 definition eufcma_compliant :: "EUFCMASecure \<Rightarrow> bool" where
@@ -170,28 +180,28 @@ definition sig_correct :: "SignatureInstance \<Rightarrow> bool" where
 
 (* mk_valid_sig_keypair (matches Coq: Definition mk_valid_sig_keypair) *)
 definition mk_valid_sig_keypair :: "SigningKeyPair" where
-  "mk_valid_sig_keypair \<equiv> mkSigningKeyPair 1 2 true"
+  "mk_valid_sig_keypair \<equiv> mkSigningKeyPair 1 2 True"
 
 (* mk_valid_signature (matches Coq: Definition mk_valid_signature) *)
 definition mk_valid_signature :: "SignatureResult" where
-  "mk_valid_signature \<equiv> mkSignatureResult 12345 true"
+  "mk_valid_signature \<equiv> mkSignatureResult SIGNATURE_EXAMPLE_VALUE True"
 
 (* mk_compliant_eufcma (matches Coq: Definition mk_compliant_eufcma) *)
 definition mk_compliant_eufcma :: "EUFCMASecure" where
-  "mk_compliant_eufcma \<equiv> mkEUFCMA true true true"
+  "mk_compliant_eufcma \<equiv> mkEUFCMA True True True"
 
 (* mk_compliant_sig_qr (matches Coq: Definition mk_compliant_sig_qr) *)
 definition mk_compliant_sig_qr :: "SigQuantumResistant" where
-  "mk_compliant_sig_qr \<equiv> mkSigQR true true true"
+  "mk_compliant_sig_qr \<equiv> mkSigQR True True True"
 
 (* riina_sig_ml_dsa_87 (matches Coq: Definition riina_sig_ml_dsa_87) *)
 definition riina_sig_ml_dsa_87 :: "SignatureInstance" where
   "riina_sig_ml_dsa_87 \<equiv> mkSigInstance
   ML_DSA_87
   mk_valid_sig_keypair
-  42  (* message *)
+  42  
   mk_valid_signature
-  true"
+  True"
 
 (* riina_sig_slh_dsa_256s (matches Coq: Definition riina_sig_slh_dsa_256s) *)
 definition riina_sig_slh_dsa_256s :: "SignatureInstance" where
@@ -200,7 +210,7 @@ definition riina_sig_slh_dsa_256s :: "SignatureInstance" where
   mk_valid_sig_keypair
   42
   mk_valid_signature
-  true"
+  True"
 
 (* riina_sig_security (matches Coq: Definition riina_sig_security) *)
 definition riina_sig_security :: "SignatureSecurity" where

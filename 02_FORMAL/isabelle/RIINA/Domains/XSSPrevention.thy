@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA XSSPrevention - Isabelle/HOL Port
@@ -22,6 +24,7 @@
  * | ReflectedXSSScenario | reflected_xss_scenario | OK     |
  * | StoredXSSScenario  | stored_xss_scenario    | OK     |
  * | DOMBasedXSSScenario | dom_based_xss_scenario | OK     |
+ * | INPUT_MAX_LENGTH_DEFAULT | INPUT_MAX_LENGTH_DEFAULT | OK     |
  * | output_safe        | output_safe            | OK     |
  * | csp_enforced       | csp_enforced           | OK     |
  * | csp_maximum        | csp_maximum            | OK     |
@@ -43,10 +46,18 @@
  * | dom_xss_safe       | dom_xss_safe           | OK     |
  * | riina_dom_based    | riina_dom_based        | OK     |
  * | is_html_dangerous  | is_html_dangerous      | OK     |
+ * | html_encode_char   | html_encode_char       | OK     |
+ * | html_encode        | html_encode            | OK     |
  * | is_js_dangerous    | is_js_dangerous        | OK     |
+ * | js_escape_char     | js_escape_char         | OK     |
+ * | js_escape          | js_escape              | OK     |
  * | needs_url_encoding | needs_url_encoding     | OK     |
  * | hex_digit          | hex_digit              | OK     |
+ * | url_encode_char    | url_encode_char        | OK     |
+ * | url_encode         | url_encode             | OK     |
  * | is_css_dangerous   | is_css_dangerous       | OK     |
+ * | css_escape_char    | css_escape_char        | OK     |
+ * | css_escape         | css_escape             | OK     |
  * | andb_true_iff      | andb_true_iff          | OK     |
  * | andb_false_iff     | andb_false_iff         | OK     |
  * | orb_true_iff       | orb_true_iff           | OK     |
@@ -220,12 +231,8 @@
  *)
 
 theory XSSPrevention
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* XSSContext (matches Coq: Inductive XSSContext) *)
 datatype xss_context =
@@ -308,6 +315,10 @@ record dom_based_xss_scenario =
   dx_trusted_types :: bool
   dx_no_eval :: bool
 
+(* INPUT_MAX_LENGTH_DEFAULT (matches Coq: Definition INPUT_MAX_LENGTH_DEFAULT) *)
+definition INPUT_MAX_LENGTH_DEFAULT :: "nat" where
+  "INPUT_MAX_LENGTH_DEFAULT \<equiv> Z.to_nat 65536%Z"
+
 (* output_safe (matches Coq: Definition output_safe) *)
 definition output_safe :: "OutputEncoding \<Rightarrow> bool" where
   "output_safe o \<equiv> oe_html_escape o \<and> oe_js_escape o \<and> oe_url_encode o \<and> oe_css_escape o"
@@ -350,25 +361,26 @@ fun taint_safe :: "TaintLevel \<Rightarrow> bool" where
 
 (* riina_output (matches Coq: Definition riina_output) *)
 definition riina_output :: "OutputEncoding" where
-  "riina_output \<equiv> mkOutputEnc true true true true"
+  "riina_output \<equiv> mkOutputEnc True True True True"
 
 (* riina_csp (matches Coq: Definition riina_csp) *)
 definition riina_csp :: "ContentSecurityPolicy" where
-  "riina_csp \<equiv> mkCSP true true true true true true true"
+  "riina_csp \<equiv> mkCSP True True True True True True True"
 
 (* riina_dom (matches Coq: Definition riina_dom) *)
 definition riina_dom :: "DOMSanitizer" where
-  "riina_dom \<equiv> mkDOMSan true true true true true"
+  "riina_dom \<equiv> mkDOMSan True True True True True"
 
 (* riina_input (matches Coq: Definition riina_input) *)
 definition riina_input :: "InputValidator" where
-  "riina_input \<equiv> mkInputVal 65536 true true true"
+  "riina_input \<equiv> mkInputVal INPUT_MAX_LENGTH_DEFAULT True True True"
 
 (* riina_xss (matches Coq: Definition riina_xss) *)
 definition riina_xss :: "XSSConfig" where
-  "riina_xss \<equiv> mkXSS riina_output riina_csp riina_dom riina_input true"
+  "riina_xss \<equiv> mkXSS riina_output riina_csp riina_dom riina_input True"
 
-(* propagate_taint - complex match, manual review needed *)
+(* propagate_taint - complex match, needs manual translation *)
+definition propagate_taint :: "bool" where "propagate_taint = undefined"
 
 (* reflected_xss_safe (matches Coq: Definition reflected_xss_safe) *)
 definition reflected_xss_safe :: "ReflectedXSSScenario \<Rightarrow> bool" where
@@ -376,7 +388,7 @@ definition reflected_xss_safe :: "ReflectedXSSScenario \<Rightarrow> bool" where
 
 (* riina_reflected (matches Coq: Definition riina_reflected) *)
 definition riina_reflected :: "ReflectedXSSScenario" where
-  "riina_reflected \<equiv> mkReflected TaintUntrusted true true"
+  "riina_reflected \<equiv> mkReflected TaintUntrusted True True"
 
 (* stored_xss_safe (matches Coq: Definition stored_xss_safe) *)
 definition stored_xss_safe :: "StoredXSSScenario \<Rightarrow> bool" where
@@ -385,7 +397,7 @@ definition stored_xss_safe :: "StoredXSSScenario \<Rightarrow> bool" where
 
 (* riina_stored (matches Coq: Definition riina_stored) *)
 definition riina_stored :: "StoredXSSScenario" where
-  "riina_stored \<equiv> mkStored true true true true"
+  "riina_stored \<equiv> mkStored True True True True"
 
 (* dom_xss_safe (matches Coq: Definition dom_xss_safe) *)
 definition dom_xss_safe :: "DOMBasedXSSScenario \<Rightarrow> bool" where
@@ -393,31 +405,101 @@ definition dom_xss_safe :: "DOMBasedXSSScenario \<Rightarrow> bool" where
 
 (* riina_dom_based (matches Coq: Definition riina_dom_based) *)
 definition riina_dom_based :: "DOMBasedXSSScenario" where
-  "riina_dom_based \<equiv> mkDOMBased true true true true"
+  "riina_dom_based \<equiv> mkDOMBased True True True True"
 
 (* is_html_dangerous (matches Coq: Definition is_html_dangerous) *)
 definition is_html_dangerous :: "nat \<Rightarrow> bool" where
-  "is_html_dangerous c \<equiv> Nat"
+  "is_html_dangerous c \<equiv> (c = 60) \<or>
+  (c = 62) \<or>
+  (c = 38) \<or>
+  (c = 34) \<or>
+  (c = 39)"
+
+(* html_encode_char (matches Coq: Definition html_encode_char) *)
+definition html_encode_char :: "nat \<Rightarrow> list nat" where
+  "html_encode_char c \<equiv> if (c = 60) then [38; 108; 116; 59]
+  else if (c = 62) then [38; 103; 116; 59]
+  else if (c = 38) then [38; 97; 109; 112; 59]
+  else if (c = 34) then [38; 113; 117; 111; 116; 59]
+  else if (c = 39) then [38; 35; 51; 57; 59]
+  else [c]"
+
+(* html_encode (matches Coq: Definition html_encode) *)
+definition html_encode :: "list nat" where
+  "html_encode \<equiv> flat_map html_encode_char data"
 
 (* is_js_dangerous (matches Coq: Definition is_js_dangerous) *)
 definition is_js_dangerous :: "nat \<Rightarrow> bool" where
-  "is_js_dangerous c \<equiv> Nat"
+  "is_js_dangerous c \<equiv> (c = 34) \<or>
+  (c = 39) \<or>
+  (c = 92) \<or>
+  (c = 10) \<or>
+  (c = 13) \<or>
+  (c = 60) \<or>
+  (c = 62)"
+
+(* js_escape_char (matches Coq: Definition js_escape_char) *)
+definition js_escape_char :: "nat \<Rightarrow> list nat" where
+  "js_escape_char c \<equiv> if (c = 34) then [92; 34]
+  else if (c = 39) then [92; 39]
+  else if (c = 92) then [92; 92]
+  else if (c = 10) then [92; 110]
+  else if (c = 13) then [92; 114]
+  else if (c = 60) then [92; 117; 48; 48; 51; 67]
+  else if (c = 62) then [92; 117; 48; 48; 51; 69]
+  else [c]"
+
+(* js_escape (matches Coq: Definition js_escape) *)
+definition js_escape :: "list nat" where
+  "js_escape \<equiv> flat_map js_escape_char data"
 
 (* needs_url_encoding (matches Coq: Definition needs_url_encoding) *)
 definition needs_url_encoding :: "nat \<Rightarrow> bool" where
-  "needs_url_encoding c \<equiv> negb (
+  "needs_url_encoding c \<equiv> (\<not> ()
     (48 <=? c) \<and> (c <=? 57) \<or>
     (65 <=? c) \<and> (c <=? 90) \<or>
     (97 <=? c) \<and> (c <=? 122) \<or>
-    Nat"
+    (c = 45) \<or>
+    (c = 46) \<or>
+    (c = 95) \<or>
+    (c = 126)
+  )"
 
 (* hex_digit (matches Coq: Definition hex_digit) *)
 definition hex_digit :: "nat \<Rightarrow> nat" where
   "hex_digit n \<equiv> if n <? 10 then n + 48 else n + 55"
 
+(* url_encode_char (matches Coq: Definition url_encode_char) *)
+definition url_encode_char :: "nat \<Rightarrow> list nat" where
+  "url_encode_char c \<equiv> if needs_url_encoding c then
+    [37; hex_digit (c / 16); hex_digit (c mod 16)]
+  else [c]"
+
+(* url_encode (matches Coq: Definition url_encode) *)
+definition url_encode :: "list nat" where
+  "url_encode \<equiv> flat_map url_encode_char data"
+
 (* is_css_dangerous (matches Coq: Definition is_css_dangerous) *)
 definition is_css_dangerous :: "nat \<Rightarrow> bool" where
-  "is_css_dangerous c \<equiv> Nat"
+  "is_css_dangerous c \<equiv> (c = 60) \<or>
+  (c = 62) \<or>
+  (c = 92) \<or>
+  (c = 34) \<or>
+  (c = 39) \<or>
+  (c = 40) \<or>
+  (c = 41) \<or>
+  (c = 123) \<or>
+  (c = 125)"
+
+(* css_escape_char (matches Coq: Definition css_escape_char) *)
+definition css_escape_char :: "nat \<Rightarrow> list nat" where
+  "css_escape_char c \<equiv> if is_css_dangerous c then
+    [92] ++ [hex_digit (c / 16); hex_digit (c mod 16)] ++ [32]
+  else [c]"
+
+(* css_escape (matches Coq: Definition css_escape) *)
+definition css_escape :: "list nat" where
+  "css_escape \<equiv> flat_map css_escape_char data"
 
 (* andb_true_iff (matches Coq) *)
 lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
@@ -432,7 +514,7 @@ lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = 
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by auto
 
 (* forallb_true (matches Coq) *)
@@ -712,7 +794,7 @@ lemma XSS_068: "iv_normalize_unicode riina_input = True"
   by simp
 
 (* XSS_069 (matches Coq) *)
-lemma XSS_069: "iv_max_length riina_input = 65536"
+lemma XSS_069: "iv_max_length riina_input = INPUT_MAX_LENGTH_DEFAULT"
   by simp
 
 (* XSS_070 (matches Coq) *)

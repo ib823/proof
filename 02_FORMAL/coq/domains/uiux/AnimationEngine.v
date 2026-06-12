@@ -7,9 +7,9 @@
 (* This module proves 120fps guarantee, spring physics, and smooth interruption  *)
 (* ============================================================================ *)
 
-Require Import Coq.Reals.Reals.
-Require Import Coq.micromega.Lra.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Reals.Reals.
+From Stdlib Require Import micromega.Lra.
+From Stdlib Require Import Bool.Bool.
 
 Open Scope R_scope.
 
@@ -441,8 +441,8 @@ Proof.
 Qed.
 
 (* We prove a stronger variant: the first element in a sorted queue is minimal *)
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 Fixpoint queue_sorted (q : list nat) : Prop :=

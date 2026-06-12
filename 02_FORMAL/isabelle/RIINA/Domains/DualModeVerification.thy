@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DualModeVerification - Isabelle/HOL Port
@@ -13,6 +15,7 @@
  * |--------------------|------------------------|--------|
  * | expr               | expr                   | OK     |
  * | RefinementPred     | refinement_pred        | OK     |
+ * | eval               | eval                   | OK     |
  * | lightweight_check  | lightweight_check      | OK     |
  * | full_check         | full_check             | OK     |
  * | decidable_refinement | decidable_refinement   | OK     |
@@ -43,12 +46,8 @@
  *)
 
 theory DualModeVerification
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* expr (matches Coq: Inductive expr) *)
 datatype expr =
@@ -62,6 +61,10 @@ record refinement_pred =
   light_pred :: nat
   light_sound :: forall
 
+(* eval (matches Coq: Definition eval) *)
+fun eval :: "expr \<Rightarrow> nat" where
+
+
 (* lightweight_check (matches Coq: Definition lightweight_check) *)
 definition lightweight_check :: "RefinedType \<Rightarrow> nat \<Rightarrow> bool" where
   "lightweight_check rt v \<equiv> light_pred rt v"
@@ -72,7 +75,7 @@ definition full_check :: "RefinedType \<Rightarrow> nat \<Rightarrow> bool" wher
 
 (* decidable_refinement (matches Coq: Definition decidable_refinement) *)
 definition decidable_refinement :: "RefinedType \<Rightarrow> bool" where
-  "decidable_refinement rt \<equiv> forall n, full_pred rt n <-> light_pred rt n = true"
+  "decidable_refinement rt \<equiv> forall n, full_pred rt n <-> light_pred rt n = True"
 
 (* refine_subtype (matches Coq: Definition refine_subtype) *)
 definition refine_subtype :: "bool" where

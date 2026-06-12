@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MetadataPrivacy - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | Sensitivity        | sensitivity            | OK     |
+ * | redact_field       | redact_field           | OK     |
  * | k_anonymous        | k_anonymous            | OK     |
  * | unlinkable         | unlinkable             | OK     |
  * | in_bucket          | in_bucket              | OK     |
@@ -55,7 +58,7 @@
  *)
 
 theory MetadataPrivacy
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Sensitivity (matches Coq: Inductive Sensitivity) *)
@@ -65,6 +68,9 @@ datatype sensitivity =
   |     Confidential
   |     Secret
   |     TopSecret
+
+(* redact_field - complex match, needs manual translation *)
+definition redact_field :: "bool" where "redact_field = undefined"
 
 (* k_anonymous (matches Coq: Definition k_anonymous) *)
 definition k_anonymous :: "AnonymitySet \<Rightarrow> nat \<Rightarrow> bool" where
@@ -80,13 +86,14 @@ definition unlinkable :: "bool" where
 definition in_bucket :: "nat \<Rightarrow> TimingBucket \<Rightarrow> bool" where
   "in_bucket timestamp bucket \<equiv> let bucket_num := timestamp / bucket_interval bucket in
   let bucket_base := bucket_num * bucket_interval bucket in
-  andb (Nat"
+  ((bucket_base \<le> timestamp) \<and> (timestamp < (bucket_base) + bucket_interval bucket))"
 
 (* jittered_time (matches Coq: Definition jittered_time) *)
 definition jittered_time :: "bool" where
   "jittered_time \<equiv> jitter <= max_jitter"
 
-(* sensitivity_leq - complex match, manual review needed *)
+(* sensitivity_leq - complex match, needs manual translation *)
+definition sensitivity_leq :: "bool" where "sensitivity_leq = undefined"
 
 (* traffic_constant_rate (matches Coq: Definition traffic_constant_rate) *)
 definition traffic_constant_rate :: "nat \<Rightarrow> bool" where
@@ -126,7 +133,7 @@ definition sessions_isolated :: "bool" where
 
 (* metadata_layers (matches Coq: Definition metadata_layers) *)
 definition metadata_layers :: "bool" where
-  "metadata_layers \<equiv> andb padding (andb timing (andb cover redaction))"
+  "metadata_layers \<equiv> (padding \<and> (andb) timing ((cover \<and> redaction)))"
 
 (* meta_001_padding_hides_size (matches Coq) *)
 lemma meta_001_padding_hides_size: "\<forall> (pm : PaddedMessage), pm_total_size pm = pm_payload_size pm + pm_padding_size pm"

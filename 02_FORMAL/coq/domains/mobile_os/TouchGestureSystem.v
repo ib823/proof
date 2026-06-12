@@ -11,9 +11,10 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 2.2
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -57,7 +58,9 @@ Definition display_latency (t : TouchEvent) : Microseconds :=
   touch_display_latency t.
 
 (** Touch latency bound *)
-Definition latency_bound : Microseconds := 10000.  (* 10ms *)
+Definition LATENCY_BOUND_10MS : Microseconds := Z.to_nat 10000%Z.
+Definition TOUCH_LATENCY_MAX_16MS : Microseconds := Z.to_nat 16000%Z.
+Definition latency_bound : Microseconds := LATENCY_BOUND_10MS.  (* 10ms *)
 
 (** Well-formed touch system *)
 Definition touch_system_correct (t : TouchEvent) : Prop :=
@@ -93,7 +96,7 @@ Theorem touch_latency_bounded :
   forall (touch : TouchEvent),
     touch_system_correct touch ->
     physical_touch touch ->
-    display_latency touch <= 10000.
+    display_latency touch <= LATENCY_BOUND_10MS.
 Proof.
   intros touch Hsys Hphys.
   unfold touch_system_correct in Hsys.
@@ -164,7 +167,7 @@ Qed.
 
 (** ** Extended Touch and Gesture Verification *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Additional definitions for extended verification *)
 
@@ -182,7 +185,7 @@ Definition touch_area (t : TouchEvent) : nat :=
 
 Definition touch_area_minimum : nat := 1.
 Definition touch_pressure_max : nat := 1023.
-Definition touch_latency_max : Microseconds := 16000. (* 16ms *)
+Definition touch_latency_max : Microseconds := TOUCH_LATENCY_MAX_16MS. (* 16ms *)
 
 (** Hover event — pressure is zero but position is valid *)
 Definition is_hover_event (t : TouchEvent) : bool :=
@@ -316,10 +319,10 @@ Qed.
 Theorem touch_latency_bounded_16ms :
   forall (t : TouchEvent),
     touch_display_latency t <= touch_latency_max ->
-    touch_display_latency t <= 16000.
+    touch_display_latency t <= TOUCH_LATENCY_MAX_16MS.
 Proof.
   intros t H.
-  unfold touch_latency_max in H.
+  unfold touch_latency_max, TOUCH_LATENCY_MAX_16MS in H.
   exact H.
 Qed.
 

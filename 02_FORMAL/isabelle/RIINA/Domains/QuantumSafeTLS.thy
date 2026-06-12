@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA QuantumSafeTLS - Isabelle/HOL Port
@@ -142,46 +144,39 @@
  *)
 
 theory QuantumSafeTLS
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
 datatype security_level =
-    Level1  (* ~AES-128 equivalent *)
-  |     Level3  (* ~AES-192 equivalent *)
+    Level1
+  |     Level3
+  |     Level5
 
 (* KEMScheme (matches Coq: Inductive KEMScheme) *)
 datatype kem_scheme =
-    ML_KEM_512  (* Level 1, formerly Kyber512 *)
-  |     ML_KEM_768  (* Level 3, formerly Kyber768 *)
+    ML_KEM_512
+  |     ML_KEM_768
+  |     ML_KEM_1024
 
 (* ECDHCurve (matches Coq: Inductive ECDHCurve) *)
 datatype ecdh_curve =
-    X25519  (* Curve25519 - ~128-bit security *)
-  |     X448  (* Curve448 - ~224-bit security *)
-  |     P256  (* NIST P-256 *)
-  |     P384  (* NIST P-384 *)
-  |     X25519
+    X25519
   |     X448
+  |     P256
+  |     P384
+  |     P521
 
 (* SignatureScheme (matches Coq: Inductive SignatureScheme) *)
 datatype signature_scheme =
-    ML_DSA_44  (* Level 1, formerly Dilithium2 *)
-  |     ML_DSA_65  (* Level 3, formerly Dilithium3 *)
-  |     ML_DSA_87  (* Level 5, formerly Dilithium5 *)
-  |     SLH_DSA_128  (* Hash-based, Level 1 *)
-  |     SLH_DSA_192  (* Hash-based, Level 3 *)
-  |     SLH_DSA_256  (* Hash-based, Level 5 *)
-  |     ECDSA_P256  (* Classical fallback *)
-  |     ML_DSA_44
-  |     SLH_DSA_128
-  |     ECDSA_P256
+    ML_DSA_44
   |     ML_DSA_65
   |     ML_DSA_87
+  |     SLH_DSA_128
+  |     SLH_DSA_192
+  |     SLH_DSA_256
+  |     ECDSA_P256
+  |     Ed25519
 
 (* TLSVersion (matches Coq: Inductive TLSVersion) *)
 datatype tls_version =
@@ -197,17 +192,17 @@ datatype cipher_suite =
 (* KEMParameters (matches Coq: Record KEMParameters) *)
 record kem_parameters =
   kem_scheme :: KEMScheme
-  kem_pk_size :: nat  (* Public key size in bytes *)
-  kem_sk_size :: nat  (* Secret key size in bytes *)
-  kem_ct_size :: nat  (* Ciphertext size in bytes *)
-  kem_ss_size :: nat  (* Shared secret size in bytes *)
+  kem_pk_size :: nat
+  kem_sk_size :: nat
+  kem_ct_size :: nat
+  kem_ss_size :: nat
 
 (* KEMSecurityProperties (matches Coq: Record KEMSecurityProperties) *)
 record kem_security_properties =
-  kem_sec_indcca2 :: bool  (* IND-CCA2 secure *)
-  kem_sec_module_lwe :: bool  (* Based on Module-LWE *)
-  kem_sec_nist_approved :: bool  (* NIST standardized *)
-  kem_sec_constant_time :: bool  (* Constant-time implementation *)
+  kem_sec_indcca2 :: bool
+  kem_sec_module_lwe :: bool
+  kem_sec_nist_approved :: bool
+  kem_sec_constant_time :: bool
 
 (* ECDHParameters (matches Coq: Record ECDHParameters) *)
 record ecdh_parameters =
@@ -218,29 +213,29 @@ record ecdh_parameters =
 
 (* HybridKEX (matches Coq: Record HybridKEX) *)
 record hybrid_kex =
-  hkex_classical :: bool  (* Classical ECDH component *)
-  hkex_post_quantum :: bool  (* ML-KEM component *)
-  hkex_combined :: bool  (* Both combined securely (e.g., via HKDF) *)
+  hkex_classical :: bool
+  hkex_post_quantum :: bool
+  hkex_combined :: bool
 
 (* HybridKEXConfig (matches Coq: Record HybridKEXConfig) *)
 record hybrid_kex_config =
   hybrid_kem :: KEMScheme
   hybrid_ecdh :: ECDHCurve
-  hybrid_combiner :: bool  (* HKDF or similar *)
-  hybrid_label :: bool  (* Domain separation label *)
+  hybrid_combiner :: bool
+  hybrid_label :: bool
 
 (* PQAuthentication (matches Coq: Record PQAuthentication) *)
 record pq_authentication =
-  pqa_classical_sig :: bool  (* ECDSA/Ed25519 backup *)
-  pqa_pq_sig :: bool  (* ML-DSA/SLH-DSA primary *)
+  pqa_classical_sig :: bool
+  pqa_pq_sig :: bool
   pqa_certificate_chain :: bool
 
 (* SignatureSecurityProps (matches Coq: Record SignatureSecurityProps) *)
 record signature_security_props =
-  sig_euf_cma :: bool  (* Existential unforgeability *)
-  sig_strong_euf :: bool  (* Strong unforgeability *)
+  sig_euf_cma :: bool
+  sig_strong_euf :: bool
   sig_nist_approved :: bool
-  sig_deterministic :: bool  (* Deterministic signing *)
+  sig_deterministic :: bool
 
 (* TLSHandshake (matches Coq: Record TLSHandshake) *)
 record tls_handshake =
@@ -253,9 +248,9 @@ record tls_handshake =
 record tls_handshake_config =
   ths_version :: TLSVersion
   ths_ciphersuite :: CipherSuite
-  ths_early_data :: bool  (* 0-RTT support *)
-  ths_psk_mode :: bool  (* Pre-shared key mode *)
-  ths_client_auth :: bool  (* Mutual authentication *)
+  ths_early_data :: bool
+  ths_psk_mode :: bool
+  ths_client_auth :: bool
 
 (* TLS13Extensions (matches Coq: Record TLS13Extensions) *)
 record tls13_extensions =
@@ -266,7 +261,7 @@ record tls13_extensions =
 
 (* TLSRecord (matches Coq: Record TLSRecord) *)
 record tls_record =
-  rec_aead :: bool  (* Authenticated encryption *)
+  rec_aead :: bool
   rec_sequence_numbers :: bool
   rec_padding :: bool
 
@@ -279,17 +274,17 @@ record aead_properties =
 
 (* ForwardSecrecyConfig (matches Coq: Record ForwardSecrecyConfig) *)
 record forward_secrecy_config =
-  fs_ephemeral_keys :: bool  (* Ephemeral key exchange *)
-  fs_key_deletion :: bool  (* Session keys deleted after use *)
-  fs_no_static_dh :: bool  (* No static DH for key exchange *)
-  fs_pfs_per_session :: bool  (* PFS for each session *)
+  fs_ephemeral_keys :: bool
+  fs_key_deletion :: bool
+  fs_no_static_dh :: bool
+  fs_pfs_per_session :: bool
 
 (* AlgorithmAgility (matches Coq: Record AlgorithmAgility) *)
 record algorithm_agility =
-  agility_negotiation :: bool  (* Algorithm negotiation support *)
-  agility_fallback :: bool  (* Graceful fallback *)
-  agility_versioning :: bool  (* Version negotiation *)
-  agility_extension :: bool  (* Extensible via extensions *)
+  agility_negotiation :: bool
+  agility_fallback :: bool
+  agility_versioning :: bool
+  agility_extension :: bool
 
 (* QuantumSafeTLSConfig (matches Coq: Record QuantumSafeTLSConfig) *)
 record quantum_safe_tls_config =
@@ -297,7 +292,7 @@ record quantum_safe_tls_config =
   qstls_auth :: PQAuthentication
   qstls_handshake :: TLSHandshake
   qstls_record :: TLSRecord
-  qstls_version_13 :: bool  (* TLS 1.3 required *)
+  qstls_version_13 :: bool
 
 (* QuantumSafeTLSFull (matches Coq: Record QuantumSafeTLSFull) *)
 record quantum_safe_tls_full =
@@ -308,7 +303,8 @@ record quantum_safe_tls_full =
   qstls_agility :: AlgorithmAgility
   qstls_extensions :: TLS13Extensions
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* level_min (matches Coq: Definition level_min) *)
 definition level_min :: "SecurityLevel" where
@@ -328,9 +324,9 @@ fun kem_security_level :: "KEMScheme \<Rightarrow> SecurityLevel" where
 definition ml_kem_1024_params :: "KEMParameters" where
   "ml_kem_1024_params \<equiv> mkKEMParams
   ML_KEM_1024
-  1568  (* pk size *)
-  3168  (* sk size *)
-  1568  (* ct size *)
+  1568  
+  3168  
+  1568  
   32"
 
 (* kem_fully_secure (matches Coq: Definition kem_fully_secure) *)
@@ -425,48 +421,48 @@ definition qstls_full_secure :: "QuantumSafeTLSFull \<Rightarrow> bool" where
 
 (* riina_kex (matches Coq: Definition riina_kex) *)
 definition riina_kex :: "HybridKEX" where
-  "riina_kex \<equiv> mkHybridKEX true true true"
+  "riina_kex \<equiv> mkHybridKEX True True True"
 
 (* riina_auth (matches Coq: Definition riina_auth) *)
 definition riina_auth :: "PQAuthentication" where
-  "riina_auth \<equiv> mkPQAuth true true true"
+  "riina_auth \<equiv> mkPQAuth True True True"
 
 (* riina_hs (matches Coq: Definition riina_hs) *)
 definition riina_hs :: "TLSHandshake" where
-  "riina_hs \<equiv> mkTLSHandshake true true true true"
+  "riina_hs \<equiv> mkTLSHandshake True True True True"
 
 (* riina_rec (matches Coq: Definition riina_rec) *)
 definition riina_rec :: "TLSRecord" where
-  "riina_rec \<equiv> mkTLSRecord true true true"
+  "riina_rec \<equiv> mkTLSRecord True True True"
 
 (* riina_qstls (matches Coq: Definition riina_qstls) *)
 definition riina_qstls :: "QuantumSafeTLSConfig" where
-  "riina_qstls \<equiv> mkQSTLS riina_kex riina_auth riina_hs riina_rec true"
+  "riina_qstls \<equiv> mkQSTLS riina_kex riina_auth riina_hs riina_rec True"
 
 (* riina_hybrid_config (matches Coq: Definition riina_hybrid_config) *)
 definition riina_hybrid_config :: "HybridKEXConfig" where
   "riina_hybrid_config \<equiv> mkHybridKEXConfig
-  ML_KEM_1024 X25519 true true"
+  ML_KEM_1024 X25519 True True"
 
 (* riina_fs_config (matches Coq: Definition riina_fs_config) *)
 definition riina_fs_config :: "ForwardSecrecyConfig" where
   "riina_fs_config \<equiv> mkFSConfig
-  true true true true"
+  True True True True"
 
 (* riina_agility (matches Coq: Definition riina_agility) *)
 definition riina_agility :: "AlgorithmAgility" where
   "riina_agility \<equiv> mkAlgoAgility
-  true true true true"
+  True True True True"
 
 (* riina_extensions (matches Coq: Definition riina_extensions) *)
 definition riina_extensions :: "TLS13Extensions" where
   "riina_extensions \<equiv> mkTLS13Ext
-  true true true true"
+  True True True True"
 
 (* riina_hs_config (matches Coq: Definition riina_hs_config) *)
 definition riina_hs_config :: "TLSHandshakeConfig" where
   "riina_hs_config \<equiv> mkTLSHSConfig
-  TLS_1_3 TLS_AES_256_GCM_SHA384 false false true"
+  TLS_1_3 TLS_AES_256_GCM_SHA384 False False True"
 
 (* riina_qstls_full (matches Coq: Definition riina_qstls_full) *)
 definition riina_qstls_full :: "QuantumSafeTLSFull" where
@@ -481,17 +477,17 @@ definition riina_qstls_full :: "QuantumSafeTLSFull" where
 (* riina_kem_security (matches Coq: Definition riina_kem_security) *)
 definition riina_kem_security :: "KEMSecurityProperties" where
   "riina_kem_security \<equiv> mkKEMSec
-  true true true true"
+  True True True True"
 
 (* riina_sig_security (matches Coq: Definition riina_sig_security) *)
 definition riina_sig_security :: "SignatureSecurityProps" where
   "riina_sig_security \<equiv> mkSigSecProps
-  true true true true"
+  True True True True"
 
 (* riina_aead (matches Coq: Definition riina_aead) *)
 definition riina_aead :: "AEADProperties" where
   "riina_aead \<equiv> mkAEADProps
-  true true true true"
+  True True True True"
 
 (* ============================================================================
     SECTION 1: BASIC LEMMAS
@@ -505,11 +501,11 @@ lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = 
   by (cases rule: ‹_›.cases; simp)
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, negb b = False <-> b = True"
+lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
   by (cases rule: ‹_›.cases; simp)
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* ============================================================================

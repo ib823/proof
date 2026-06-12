@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedNetwork - Isabelle/HOL Port
@@ -35,6 +37,7 @@
  * | DNSRebindingCheck  | dns_rebinding_check    | OK     |
  * | DNSAmplificationState | dns_amplification_state | OK     |
  * | DoHConnection      | do_h_connection        | OK     |
+ * | IPV4_TOTAL_LENGTH_MAX | IPV4_TOTAL_LENGTH_MAX  | OK     |
  * | is_strong_cipher   | is_strong_cipher       | OK     |
  * | tls_connected      | tls_connected          | OK     |
  * | valid_cert_chain   | valid_cert_chain       | OK     |
@@ -199,7 +202,7 @@ record tcp_connection =
   tcp_seq :: nat
   tcp_ack :: nat
   tcp_window :: nat
-  tcp_seq_random_source :: nat  (* entropy source marker *)
+  tcp_seq_random_source :: nat
   tcp_integrity_mac :: option
 
 (* TCPPacket (matches Coq: Record TCPPacket) *)
@@ -281,6 +284,10 @@ record do_h_connection =
   doh_tls_conn :: TLSConnection
   doh_encrypted :: bool
 
+(* IPV4_TOTAL_LENGTH_MAX (matches Coq: Definition IPV4_TOTAL_LENGTH_MAX) *)
+definition IPV4_TOTAL_LENGTH_MAX :: "nat" where
+  "IPV4_TOTAL_LENGTH_MAX \<equiv> Z.to_nat 65535%Z"
+
 (* is_strong_cipher (matches Coq: Definition is_strong_cipher) *)
 fun is_strong_cipher :: "CipherSuite \<Rightarrow> bool" where
   "is_strong_cipher TLS_AES_128_GCM_SHA256 = true"
@@ -289,32 +296,35 @@ fun is_strong_cipher :: "CipherSuite \<Rightarrow> bool" where
 
 (* tls_connected (matches Coq: Definition tls_connected) *)
 definition tls_connected :: "TLSConnection \<Rightarrow> bool" where
-  "tls_connected conn \<equiv> tls_verified conn = true /\ 
+  "tls_connected conn \<equiv> tls_verified conn = True /\ 
   tls_version conn = TLS_1_3 /\
-  transcript_bound (tls_transcript conn) = true /\
-  tls_forward_secret conn = true /\
-  cert_chain_verified (tls_server_cert conn) = true"
+  transcript_bound (tls_transcript conn) = True /\
+  tls_forward_secret conn = True /\
+  cert_chain_verified (tls_server_cert conn) = True"
 
 (* valid_cert_chain (matches Coq: Definition valid_cert_chain) *)
 definition valid_cert_chain :: "Certificate \<Rightarrow> bool" where
-  "valid_cert_chain cert \<equiv> cert_chain_verified cert = true"
+  "valid_cert_chain cert \<equiv> cert_chain_verified cert = True"
 
 (* key_derivation_correct (matches Coq: Definition key_derivation_correct) *)
 definition key_derivation_correct :: "TLSConnection \<Rightarrow> bool" where
-  "key_derivation_correct conn \<equiv> List"
+  "key_derivation_correct conn \<equiv> List.length (tls_session_key conn) > 0 /\
+  List.length (ke_shared (tls_ke_result conn)) > 0"
 
 (* channel_binding_holds (matches Coq: Definition channel_binding_holds) *)
 definition channel_binding_holds :: "TLSConnection \<Rightarrow> bool" where
-  "channel_binding_holds conn \<equiv> tls_channel_bound conn = true /\
-  transcript_bound (tls_transcript conn) = true"
+  "channel_binding_holds conn \<equiv> tls_channel_bound conn = True /\
+  transcript_bound (tls_transcript conn) = True"
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* seq_unpredictable (matches Coq: Definition seq_unpredictable) *)
 definition seq_unpredictable :: "TCPConnection \<Rightarrow> bool" where
   "seq_unpredictable conn \<equiv> tcp_seq_random_source conn > 0"
 
-(* injection_detectable - complex match, manual review needed *)
+(* injection_detectable - complex match, needs manual translation *)
+definition injection_detectable :: "bool" where "injection_detectable = undefined"
 
 (* flow_control_correct (matches Coq: Definition flow_control_correct) *)
 definition flow_control_correct :: "TCPConnection \<Rightarrow> bool" where
@@ -322,12 +332,12 @@ definition flow_control_correct :: "TCPConnection \<Rightarrow> bool" where
 
 (* frag_reassembly_safe (matches Coq: Definition frag_reassembly_safe) *)
 definition frag_reassembly_safe :: "FragmentBuffer \<Rightarrow> bool" where
-  "frag_reassembly_safe buf \<equiv> frag_no_overlap_verified buf = true /\
-  frag_total_size buf <= 65535"
+  "frag_reassembly_safe buf \<equiv> frag_no_overlap_verified buf = True /\
+  frag_total_size buf <= IPV4_TOTAL_LENGTH_MAX"
 
 (* no_overlapping_frags (matches Coq: Definition no_overlapping_frags) *)
 definition no_overlapping_frags :: "FragmentBuffer \<Rightarrow> bool" where
-  "no_overlapping_frags buf \<equiv> frag_no_overlap_verified buf = true"
+  "no_overlapping_frags buf \<equiv> frag_no_overlap_verified buf = True"
 
 (* icmp_rate_bounded (matches Coq: Definition icmp_rate_bounded) *)
 definition icmp_rate_bounded :: "ICMPState \<Rightarrow> bool" where
@@ -335,25 +345,27 @@ definition icmp_rate_bounded :: "ICMPState \<Rightarrow> bool" where
 
 (* routing_correct (matches Coq: Definition routing_correct) *)
 definition routing_correct :: "RouteEntry \<Rightarrow> nat \<Rightarrow> bool" where
-  "routing_correct entry dest \<equiv> route_valid entry = true"
+  "routing_correct entry dest \<equiv> route_valid entry = True"
 
-(* dnssec_validated - complex match, manual review needed *)
+(* dnssec_validated - complex match, needs manual translation *)
+definition dnssec_validated :: "bool" where "dnssec_validated = undefined"
 
 (* authentic (matches Coq: Definition authentic) *)
 definition authentic :: "DNSRecord \<Rightarrow> DNSQuery \<Rightarrow> bool" where
   "authentic response query \<equiv> query_name query = dns_name response /\
-  dns_sig_verified response = true"
+  dns_sig_verified response = True"
 
 (* cache_safe (matches Coq: Definition cache_safe) *)
 definition cache_safe :: "DNSCacheEntry \<Rightarrow> bool" where
-  "cache_safe entry \<equiv> cache_validated entry = true /\
-  dns_sig_verified (cache_record entry) = true"
+  "cache_safe entry \<equiv> cache_validated entry = True /\
+  dns_sig_verified (cache_record entry) = True"
 
 (* rebinding_prevented (matches Coq: Definition rebinding_prevented) *)
 definition rebinding_prevented :: "DNSRebindingCheck \<Rightarrow> bool" where
-  "rebinding_prevented check \<equiv> rebind_is_private check = true -> rebind_blocked check = true"
+  "rebinding_prevented check \<equiv> rebind_is_private check = True -> rebind_blocked check = True"
 
-(* query_has_integrity - complex match, manual review needed *)
+(* query_has_integrity - complex match, needs manual translation *)
+definition query_has_integrity :: "bool" where "query_has_integrity = undefined"
 
 (* amplification_bounded (matches Coq: Definition amplification_bounded) *)
 definition amplification_bounded :: "DNSAmplificationState \<Rightarrow> bool" where
@@ -361,8 +373,8 @@ definition amplification_bounded :: "DNSAmplificationState \<Rightarrow> bool" w
 
 (* doh_confidential (matches Coq: Definition doh_confidential) *)
 definition doh_confidential :: "DoHConnection \<Rightarrow> bool" where
-  "doh_confidential conn \<equiv> doh_encrypted conn = true /\
-  tls_verified (doh_tls_conn conn) = true"
+  "doh_confidential conn \<equiv> doh_encrypted conn = True /\
+  tls_verified (doh_tls_conn conn) = True"
 
 (* NET_001_01_tls_handshake_auth (matches Coq) *)
 lemma NET_001_01_tls_handshake_auth: "\<forall> conn, tls_connected conn \<longrightarrow> valid_cert_chain (tls_server_cert conn)"
@@ -421,7 +433,7 @@ lemma NET_001_14_tcp_flow_control_correct: "\<forall> conn, tcp_window conn > 0 
   by auto
 
 (* NET_001_15_ip_frag_reassembly_safe (matches Coq) *)
-lemma NET_001_15_ip_frag_reassembly_safe: "\<forall> buf, frag_no_overlap_verified buf = True \<longrightarrow> frag_total_size buf \<le> 65535 \<longrightarrow> frag_reassembly_safe buf"
+lemma NET_001_15_ip_frag_reassembly_safe: "\<forall> buf, frag_no_overlap_verified buf = True \<longrightarrow> frag_total_size buf \<le> IPV4_TOTAL_LENGTH_MAX \<longrightarrow> frag_reassembly_safe buf"
   by auto
 
 (* NET_001_16_ip_no_overlapping_fragments (matches Coq) *)

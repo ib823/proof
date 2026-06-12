@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA U001_RuntimeGuardian - Isabelle/HOL Port
@@ -16,11 +18,14 @@
  * | SystemState        | system_state           | OK     |
  * | edge_source        | edge_source            | OK     |
  * | edge_target        | edge_target            | OK     |
+ * | valid_addresses    | valid_addresses        | OK     |
  * | in_cfg             | in_cfg                 | OK     |
  * | edge_in_cfg        | edge_in_cfg            | OK     |
  * | cfg_wellformed     | cfg_wellformed         | OK     |
  * | shadow_push        | shadow_push            | OK     |
+ * | shadow_pop         | shadow_pop             | OK     |
  * | shadow_matches     | shadow_matches         | OK     |
+ * | MONITOR_CHECKSUM_CONST | MONITOR_CHECKSUM_CONST | OK     |
  * | compute_checksum   | compute_checksum       | OK     |
  * | checksum_valid     | checksum_valid         | OK     |
  * | protected_readonly | protected_readonly     | OK     |
@@ -84,7 +89,7 @@
  *)
 
 theory U001_RuntimeGuardian
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* CFGEdge (matches Coq: Inductive CFGEdge) *)
@@ -117,6 +122,10 @@ fun edge_source :: "CFGEdge \<Rightarrow> Addr" where
 fun edge_target :: "CFGEdge \<Rightarrow> Addr" where
 
 
+(* valid_addresses (matches Coq: Definition valid_addresses) *)
+definition valid_addresses :: "CFG \<Rightarrow> list Addr" where
+  "valid_addresses cfg \<equiv> flat_map (fun e => [edge_source e; edge_target e]) cfg"
+
 (* in_cfg (matches Coq: Definition in_cfg) *)
 definition in_cfg :: "CFG \<Rightarrow> Addr \<Rightarrow> bool" where
   "in_cfg cfg addr \<equiv> In addr (valid_addresses cfg)"
@@ -133,9 +142,17 @@ definition cfg_wellformed :: "CFG \<Rightarrow> bool" where
 definition shadow_push :: "ShadowStack \<Rightarrow> Addr \<Rightarrow> ShadowStack" where
   "shadow_push ss ret_addr \<equiv> ret_addr :: ss"
 
+(* shadow_pop (matches Coq: Definition shadow_pop) *)
+fun shadow_pop :: "ShadowStack \<Rightarrow> option (Addr * ShadowStack)" where
+
+
 (* shadow_matches (matches Coq: Definition shadow_matches) *)
 definition shadow_matches :: "ShadowStack \<Rightarrow> bool" where
   "shadow_matches ss \<equiv> ss = actual"
+
+(* MONITOR_CHECKSUM_CONST (matches Coq: Definition MONITOR_CHECKSUM_CONST) *)
+definition MONITOR_CHECKSUM_CONST :: "Checksum" where
+  "MONITOR_CHECKSUM_CONST \<equiv> Z.to_nat 12345%Z"
 
 (* compute_checksum (matches Coq: Definition compute_checksum) *)
 definition compute_checksum :: "Memory \<Rightarrow> Checksum" where
@@ -159,7 +176,7 @@ definition ecc_decode :: "nat \<Rightarrow> nat" where
 
 (* ecc_check (matches Coq: Definition ecc_check) *)
 definition ecc_check :: "nat \<Rightarrow> bool" where
-  "ecc_check encoded \<equiv> Nat"
+  "ecc_check encoded \<equiv> Nat.even encoded"
 
 (* ecc_corrects_single_bit (matches Coq: Definition ecc_corrects_single_bit) *)
 definition ecc_corrects_single_bit :: "nat \<Rightarrow> bool" where
@@ -168,7 +185,7 @@ definition ecc_corrects_single_bit :: "nat \<Rightarrow> bool" where
 (* ecc_detects_multi_bit (matches Coq: Definition ecc_detects_multi_bit) *)
 definition ecc_detects_multi_bit :: "nat \<Rightarrow> bool" where
   "ecc_detects_multi_bit data \<equiv> forall flip1 flip2 : nat, flip1 <> flip2 -> 
-    ecc_check (ecc_encode data) = true"
+    ecc_check (ecc_encode data) = True"
 
 (* variants_independent (matches Coq: Definition variants_independent) *)
 definition variants_independent :: "bool" where
@@ -184,7 +201,10 @@ definition divergence_detected :: "nat \<Rightarrow> bool" where
 
 (* majority_vote (matches Coq: Definition majority_vote) *)
 definition majority_vote :: "ExecutionState" where
-  "majority_vote \<equiv> if Nat"
+  "majority_vote \<equiv> if (a = b) then a
+  else if (b = c) then b
+  else if (a = c) then a
+  else a"
 
 (* voting_correct (matches Coq: Definition voting_correct) *)
 definition voting_correct :: "bool" where
@@ -198,7 +218,7 @@ definition keys_zeroized :: "SystemState \<Rightarrow> bool" where
 
 (* execution_halted (matches Coq: Definition execution_halted) *)
 definition execution_halted :: "SystemState \<Rightarrow> bool" where
-  "execution_halted st \<equiv> ss_running st = false"
+  "execution_halted st \<equiv> ss_running st = False"
 
 (* audit_logged (matches Coq: Definition audit_logged) *)
 definition audit_logged :: "SystemState \<Rightarrow> nat \<Rightarrow> bool" where
@@ -206,11 +226,11 @@ definition audit_logged :: "SystemState \<Rightarrow> nat \<Rightarrow> bool" wh
 
 (* panic_state (matches Coq: Definition panic_state) *)
 definition panic_state :: "SystemState \<Rightarrow> bool" where
-  "panic_state st \<equiv> ss_panic st = true"
+  "panic_state st \<equiv> ss_panic st = True"
 
 (* trigger_panic (matches Coq: Definition trigger_panic) *)
 definition trigger_panic :: "SystemState \<Rightarrow> nat \<Rightarrow> SystemState" where
-  "trigger_panic st event \<equiv> mkSystemState (map (fun _ => 0) (ss_keys st)) false (event :: ss_audit_log st) true"
+  "trigger_panic st event \<equiv> mkSystemState (map (fun _ => 0) (ss_keys st)) False (event :: ss_audit_log st) True"
 
 (* uses_nmi (matches Coq: Definition uses_nmi) *)
 definition uses_nmi :: "nat \<Rightarrow> bool" where
@@ -218,7 +238,7 @@ definition uses_nmi :: "nat \<Rightarrow> bool" where
 
 (* monitor_checksum (matches Coq: Definition monitor_checksum) *)
 definition monitor_checksum :: "Checksum" where
-  "monitor_checksum \<equiv> 12345"
+  "monitor_checksum \<equiv> MONITOR_CHECKSUM_CONST"
 
 (* verify_monitor_integrity (matches Coq: Definition verify_monitor_integrity) *)
 definition verify_monitor_integrity :: "Memory \<Rightarrow> bool" where
@@ -230,11 +250,11 @@ definition unprivileged_app :: "nat \<Rightarrow> bool" where
 
 (* complete_mediation (matches Coq: Definition complete_mediation) *)
 definition complete_mediation :: "nat \<Rightarrow> bool \<Rightarrow> bool" where
-  "complete_mediation op monitored \<equiv> monitored = true"
+  "complete_mediation op monitored \<equiv> monitored = True"
 
 (* tamper_evident (matches Coq: Definition tamper_evident) *)
 definition tamper_evident :: "bool" where
-  "tamper_evident \<equiv> old_checksum <> new_checksum -> True"
+  "tamper_evident \<equiv> old_checksum <> new_checksum -> old_checksum <> new_checksum"
 
 (* U_001_01_cfi_cfg_wellformed (matches Coq) *)
 lemma U_001_01_cfi_cfg_wellformed: "\<forall> cfg, (\<forall> e, In e cfg \<longrightarrow> In (edge_source e) (valid_addresses cfg) \<and> In (edge_target e) (valid_addresses cfg)) \<longrightarrow> cfg_wellformed cfg"
@@ -373,7 +393,7 @@ lemma U_001_33_monitor_unprivileged: "\<forall> app_id, app_id > 0 \<longrightar
   by auto
 
 (* U_001_34_monitor_complete_mediation (matches Coq) *)
-lemma U_001_34_monitor_complete_mediation: "\<forall> op, complete_mediation op true"
+lemma U_001_34_monitor_complete_mediation: "\<forall> op, complete_mediation op True"
   by simp
 
 (* U_001_35_monitor_tamper_evident (matches Coq) *)

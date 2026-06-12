@@ -1,0 +1,11 @@
+[package]
+name = "runtime-proof-verify"
+version.workspace = true
+edition.workspace = true
+description = "Independent verifier for RIINA runtime proof bundles"
+
+[dependencies]
+riina-effect.workspace = true
+
+[lints]
+workspace = true

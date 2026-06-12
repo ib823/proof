@@ -51,7 +51,7 @@ fungsi cari_elemen() -> Nombor kesan Bersih {
     pulang indeks;
 }
 
-fungsi baca_sehingga_selesai() -> Nombor kesan Baca {
+fungsi baca_sehingga_selesai() -> Nombor kesan (Tulis, Baca) {
     /// Gelung selagi dengan pembacaan
     /// While loop with input (pseudo-code)
     biar ubah garisan = baca_garisan();
@@ -81,7 +81,7 @@ fungsi selagi_dengan_atau() -> Nombor kesan Bersih {
     pulang x + y;
 }
 
-fungsi selagi_dengan_tidak() -> Nombor kesan Bersih {
+fungsi selagi_dengan_tidak() -> Nombor kesan Tulis {
     /// Gelung dengan NOT dalam syarat
     /// While loop with NOT condition
     biar ubah selesai = salah;

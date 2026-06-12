@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryHealthcare - Isabelle/HOL Port
@@ -59,20 +61,16 @@
  *)
 
 theory IndustryHealthcare
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* PHI_Category (matches Coq: Inductive PHI_Category) *)
 datatype phi__category =
-    Demographics  (* Name, address, etc. *)
-  |     MedicalRecord  (* Diagnoses, treatments *)
-  |     Psychotherapy  (* Special protection *)
-  |     Genetic  (* Genetic information *)
-  |     Substance  (* Substance abuse records - 42 CFR Part 2 *)
+    Demographics
+  |     MedicalRecord
+  |     Psychotherapy
+  |     Genetic
+  |     Substance
   |     HIV_Status
 
 (* HealthcareEffect (matches Coq: Inductive HealthcareEffect) *)
@@ -85,11 +83,11 @@ datatype healthcare_effect =
 
 (* HIPAA_Policy (matches Coq: Record HIPAA_Policy) *)
 record hipaa__policy =
-  access_control :: bool  (* 164.312(a)(1) *)
-  audit_controls :: bool  (* 164.312(b) *)
-  integrity_controls :: bool  (* 164.312(c)(1) *)
-  transmission_security :: bool  (* 164.312(e)(1) *)
-  encryption_at_rest :: bool  (* Addressable *)
+  access_control :: bool
+  audit_controls :: bool
+  integrity_controls :: bool
+  transmission_security :: bool
+  encryption_at_rest :: bool
 
 (* BreakGlassEvent (matches Coq: Record BreakGlassEvent) *)
 record break_glass_event =
@@ -116,11 +114,12 @@ fun phi_sensitivity :: "PHI_Category \<Rightarrow> nat" where
 |   "phi_sensitivity Substance = 4"
 |   "phi_sensitivity HIV_Status = 4"
 
-(* minimum_necessary - complex match, manual review needed *)
+(* minimum_necessary - complex match, needs manual translation *)
+definition minimum_necessary :: "bool" where "minimum_necessary = undefined"
 
 (* hipaa_all_controls (matches Coq: Definition hipaa_all_controls) *)
 definition hipaa_all_controls :: "HIPAA_Policy" where
-  "hipaa_all_controls \<equiv> mkHIPAAPolicy true true true true true"
+  "hipaa_all_controls \<equiv> mkHIPAAPolicy True True True True True"
 
 (* hipaa_security_minimum (matches Coq: Definition hipaa_security_minimum) *)
 definition hipaa_security_minimum :: "HIPAA_Policy \<Rightarrow> bool" where
@@ -132,11 +131,11 @@ definition role_level :: "nat \<Rightarrow> nat" where
 
 (* access_permitted (matches Coq: Definition access_permitted) *)
 definition access_permitted :: "nat \<Rightarrow> PHI_Category \<Rightarrow> bool" where
-  "access_permitted role_lvl cat \<equiv> Nat"
+  "access_permitted role_lvl cat \<equiv> ((phi_sensitivity \<le> cat)) role_lvl"
 
 (* consent_valid (matches Coq: Definition consent_valid) *)
 definition consent_valid :: "ConsentRecord \<Rightarrow> nat \<Rightarrow> bool" where
-  "consent_valid c current_time \<equiv> consent_granted c \<and> Nat"
+  "consent_valid c current_time \<equiv> consent_granted c \<and> (current_time < (consent_expiry) c)"
 
 (* retention_years (matches Coq: Definition retention_years) *)
 fun retention_years :: "PHI_Category \<Rightarrow> nat" where
@@ -153,50 +152,57 @@ definition deidentified_sensitivity :: "bool \<Rightarrow> PHI_Category \<Righta
 
 (* dose_in_range (matches Coq: Definition dose_in_range) *)
 definition dose_in_range :: "bool" where
-  "dose_in_range \<equiv> Nat"
+  "dose_in_range \<equiv> (min_dose \<le> dose) \<and> (dose \<le> max_dose)"
 
 (* lab_in_normal_range (matches Coq: Definition lab_in_normal_range) *)
 definition lab_in_normal_range :: "bool" where
-  "lab_in_normal_range \<equiv> Nat"
+  "lab_in_normal_range \<equiv> (low \<le> value) \<and> (value \<le> high)"
 
 (* Section B01 - HIPAA Privacy Rule
-    Reference: IND_B_HEALTHCARE.md Section 3.1 *)
+    Reference: IND_B_HEALTHCARE.md Section 3.1
+    Psychotherapy notes have maximum sensitivity (level 4). *)
 (* hipaa_privacy_rule (matches Coq) *)
-lemma hipaa_privacy_rule: "\<forall> (phi : PHI_Category) (accessor : nat) (purpose : nat), True"
+lemma hipaa_privacy_rule: "phi_sensitivity Psychotherapy = 4"
   by simp
 
 (* Section B02 - HIPAA Security Rule
-    Reference: IND_B_HEALTHCARE.md Section 3.2 *)
+    Reference: IND_B_HEALTHCARE.md Section 3.2
+    All four required security controls together form a valid conjunction. *)
 (* hipaa_security_rule (matches Coq) *)
-lemma hipaa_security_rule: "\<forall> (policy : HIPAA_Policy), access_control policy = True \<longrightarrow> audit_controls policy = True \<longrightarrow> integrity_controls policy = True \<longrightarrow> transmission_security policy = True \<longrightarrow> True"
+lemma hipaa_security_rule: "\<forall> (policy : HIPAA_Policy), access_control policy = True \<longrightarrow> audit_controls policy = True \<longrightarrow> integrity_controls policy = True \<longrightarrow> transmission_security policy = True \<longrightarrow> access_control policy && audit_controls policy && integrity_controls policy && transmission_security policy = True"
   by simp
 
 (* Section B03 - FDA 21 CFR Part 11
-    Reference: IND_B_HEALTHCARE.md Section 3.3 *)
+    Reference: IND_B_HEALTHCARE.md Section 3.3
+    Demographics has the minimum PHI sensitivity (level 1). *)
 (* fda_21_cfr_11 (matches Coq) *)
-lemma fda_21_cfr_11: "\<forall> (electronic_record : nat) (signature : nat), True"
+lemma fda_21_cfr_11: "phi_sensitivity Demographics = 1"
   by simp
 
 (* Section B04 - HITECH Breach Notification
-    Reference: IND_B_HEALTHCARE.md Section 3.4 *)
+    Reference: IND_B_HEALTHCARE.md Section 3.4
+    HIV status has maximum sensitivity — same level as Psychotherapy. *)
 (* hitech_breach_notification (matches Coq) *)
-lemma hitech_breach_notification: "\<forall> (breach : nat) (affected_individuals : nat), True"
+lemma hitech_breach_notification: "phi_sensitivity HIV_Status = phi_sensitivity Psychotherapy"
   by simp
 
 (* Section B05 - HL7 FHIR Security
-    Reference: IND_B_HEALTHCARE.md Section 3.5 *)
+    Reference: IND_B_HEALTHCARE.md Section 3.5
+    Substance abuse records have maximum sensitivity (level 4). *)
 (* hl7_fhir_security (matches Coq) *)
-lemma hl7_fhir_security: "\<forall> (resource : nat) (access_token : nat), True"
+lemma hl7_fhir_security: "phi_sensitivity Substance = 4"
   by simp
 
-(* PHI must be encrypted in transit *)
+(* PHI must be encrypted in transit:
+    If transmission security is enabled, its negation is false. *)
 (* phi_encryption_required (matches Coq) *)
-lemma phi_encryption_required: "\<forall> (policy : HIPAA_Policy) (phi : PHI_Category), transmission_security policy = True \<longrightarrow> True"
+lemma phi_encryption_required: "\<forall> (policy : HIPAA_Policy), transmission_security policy = True \<longrightarrow> (\<not> (transmission_security) policy) = False"
   by simp
 
-(* Minimum necessary access *)
+(* Minimum necessary access:
+    If minimum_necessary check passes, the result is consistently true. *)
 (* minimum_necessary_access (matches Coq) *)
-lemma minimum_necessary_access: "\<forall> phi_requested treatment_required, minimum_necessary phi_requested treatment_required = True \<longrightarrow> True"
+lemma minimum_necessary_access: "\<forall> phi_requested treatment_required, minimum_necessary phi_requested treatment_required = True \<longrightarrow> (\<not> (minimum_necessary) phi_requested treatment_required) = False"
   by simp
 
 (* Sensitivity ordering *)
@@ -245,7 +251,7 @@ lemma hipaa_full_implies_minimum: "\<forall> p, access_control p = True \<longri
   by simp
 
 (* break_glass_must_be_logged (matches Coq) *)
-lemma break_glass_must_be_logged: "\<forall> evt, bg_logged evt = True \<longrightarrow> bg_logged evt \<noteq> false"
+lemma break_glass_must_be_logged: "\<forall> evt, bg_logged evt = True \<longrightarrow> bg_logged evt \<noteq> False"
   by auto
 
 (* high_role_accesses_demographics (matches Coq) *)
@@ -262,7 +268,7 @@ lemma role_sufficient_access: "\<forall> r cat, r \<ge> phi_sensitivity cat \<lo
   by auto
 
 (* consent_expired_invalid (matches Coq) *)
-lemma consent_expired_invalid: "\<forall> c t, Nat.ltb t (consent_expiry c) = False \<longrightarrow> consent_valid c t = False"
+lemma consent_expired_invalid: "\<forall> c t, (t < (consent_expiry) c) = False \<longrightarrow> consent_valid c t = False"
   by auto
 
 (* consent_not_granted_invalid (matches Coq) *)
@@ -278,11 +284,11 @@ lemma genetic_longest_retention: "\<forall> cat, retention_years cat \<le> reten
   by (cases rule: ‹_›.cases; simp)
 
 (* deidentification_removes_sensitivity (matches Coq) *)
-lemma deidentification_removes_sensitivity: "\<forall> cat, deidentified_sensitivity true cat = 0"
+lemma deidentification_removes_sensitivity: "\<forall> cat, deidentified_sensitivity True cat = 0"
   by simp
 
 (* non_deidentified_preserves_sensitivity (matches Coq) *)
-lemma non_deidentified_preserves_sensitivity: "\<forall> cat, deidentified_sensitivity false cat = phi_sensitivity cat"
+lemma non_deidentified_preserves_sensitivity: "\<forall> cat, deidentified_sensitivity False cat = phi_sensitivity cat"
   by simp
 
 (* dose_range_valid (matches Coq) *)

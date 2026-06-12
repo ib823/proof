@@ -1,13 +1,13 @@
 # RIINA A-to-Z Execution Board
 
-Date: 2026-02-10
+Date: 2026-06-01 (reconciled to L0)
 Status: AUTHORITATIVE
 Scope: strict execution tracker from current mechanized Coq core to full multi-lane defensible verification and independent audit readiness.
 
 ## Live Baseline (must match L0 sources)
 
-- Active Coq build: `7740 Qed`, `0 Admitted`, `0 active axioms`, `0 active assumptions`
-- Claim levels: `overall=mechanized`, `coq=mechanized`, `lean/isabelle/tlaplus/alloy=compiled`, `fstar/smt/verus/kani/tv=generated`
+- Active Coq build: `12386 Qed`, `0 Admitted`, `0 active axioms`, `0 active assumptions`, `30 documented Parameter` (TCB)
+- Claim levels (exactly as `website/public/metrics.json`): `overall=generated`, `coq=mechanized`, all other lanes (`lean/isabelle/fstar/tlaplus/alloy/smt/verus/kani/tv`) `=generated`. F*/TLA+/Alloy have trivial smoke artifacts that compile (recorded in per-lane `smokeBuildOk`/`compiledLemmas` fields) but the LANE stays `generated` — a smoke does not earn a `compiled` claim (enforced by `public-quality-gates.sh` claim-integrity check)
 - Independent external audit: `false`
 - Easier-gap checks (items 1/2/9/12): `PASS`
 - Medium-gap checks (items 1/2/3/4/9/12): `PASS`
@@ -38,7 +38,7 @@ Sources:
 
 | Dim | Dimension | Completion | Current Status | Key Pending Activities | Exit Criteria |
 |-----|-----------|------------|----------------|------------------------|---------------|
-| 1 | Type system soundness | 82% | Coq mechanized, Lean/Isabelle core compilation passing | publish parity check reports; enforce parity drift gate beyond core files; extend cross-lane obligations beyond type-safety core | Coq+Lean+Isabelle core theorems compiled and parity report published |
+| 1 | Type system soundness | 82% | Coq mechanized; Lean/Isabelle ports are GENERATED, not compiling (Lean: 7/326 files elaborate, core type-safety files fail; Isabelle smoke theory unverified) | make the Lean/Isabelle core actually elaborate; publish parity check reports; enforce parity drift gate beyond core files | Coq+Lean+Isabelle core theorems compiled and parity report published |
 | 2 | Non-interference | 65% | Active Coq path strong, cross-lane generated | complete NI obligations for effects/linearity/session interactions; compile cross-lane NI core; add compile-path preservation evidence | NI core compiled in at least 2 independent lanes and preservation checks published |
 | 3 | Effect soundness | 60% | Coq theorems present, implementation binding partial | close remaining composition obligations; bind proofs to compiler effect checker invariants; add regression obligations for unauthorized effects | proof-to-implementation effect invariants enforced in verification gate |
 | 4 | Linear type soundness | 55% | Coq domain proofs present, not implementation-closed | close linearity obligations against implementation semantics; bind to runtime/resource model; add rejection regressions | no linearity gap between spec and compiler/runtime checks |

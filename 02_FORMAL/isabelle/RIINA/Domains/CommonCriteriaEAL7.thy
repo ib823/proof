@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CommonCriteriaEAL7 - Isabelle/HOL Port
@@ -50,6 +52,7 @@
  * | has_ifc            | has_ifc                | OK     |
  * | has_domain_sep     | has_domain_sep         | OK     |
  * | has_authentication | has_authentication     | OK     |
+ * | riina_security_classes | riina_security_classes | OK     |
  * | riina_spm          | riina_spm              | OK     |
  * | riina_toe          | riina_toe              | OK     |
  * | has_complete_coverage | has_complete_coverage  | OK     |
@@ -108,65 +111,62 @@
  *)
 
 theory CommonCriteriaEAL7
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* SecurityClass (matches Coq: Inductive SecurityClass) *)
 datatype security_class =
-    FAU_ARP  (* Security Audit - Automatic Response *)
-  |     FAU_GEN  (* Security Audit - Data Generation *)
-  |     FAU_SAA  (* Security Audit - Analysis *)
-  |     FAU_SAR  (* Security Audit - Review *)
-  |     FAU_SEL  (* Security Audit - Event Selection *)
-  |     FAU_STG  (* Security Audit - Event Storage *)
-  |     FCO_NRO  (* Communication - Non-repudiation of Origin *)
-  |     FCO_NRR  (* Communication - Non-repudiation of Receipt *)
-  |     FCS_CKM  (* Cryptographic Support - Key Management *)
-  |     FCS_COP  (* Cryptographic Support - Operation *)
-  |     FDP_ACC  (* User Data Protection - Access Control *)
-  |     FDP_ACF  (* User Data Protection - Access Control Functions *)
-  |     FDP_IFC  (* User Data Protection - Information Flow Control *)
-  |     FDP_IFF  (* User Data Protection - Information Flow Functions *)
-  |     FDP_ITT  (* User Data Protection - Internal Transfer *)
-  |     FDP_RIP  (* User Data Protection - Residual Info Protection *)
-  |     FIA_AFL  (* Identification & Authentication - Failures *)
-  |     FIA_ATD  (* Identification & Authentication - Attribute Definition *)
-  |     FIA_SOS  (* Identification & Authentication - Secrets *)
-  |     FIA_UAU  (* Identification & Authentication - User Auth *)
-  |     FIA_UID  (* Identification & Authentication - User Identification *)
-  |     FMT_MOF  (* Security Management - Management of Functions *)
-  |     FMT_MSA  (* Security Management - Security Attributes *)
-  |     FMT_MTD  (* Security Management - TSF Data *)
-  |     FMT_SMF  (* Security Management - Specification of Functions *)
-  |     FMT_SMR  (* Security Management - Security Roles *)
-  |     FPR_ANO  (* Privacy - Anonymity *)
-  |     FPR_PSE  (* Privacy - Pseudonymity *)
-  |     FPR_UNL  (* Privacy - Unlinkability *)
-  |     FPR_UNO  (* Privacy - Unobservability *)
-  |     FPT_FLS  (* Protection of TSF - Fail Secure *)
-  |     FPT_ITC  (* Protection of TSF - Confidentiality *)
-  |     FPT_ITI  (* Protection of TSF - Integrity *)
-  |     FPT_ITT  (* Protection of TSF - Internal Transfer *)
-  |     FPT_RCV  (* Protection of TSF - Recovery *)
-  |     FPT_RPL  (* Protection of TSF - Replay Detection *)
-  |     FPT_SEP  (* Protection of TSF - Domain Separation *)
-  |     FPT_STM  (* Protection of TSF - Time Stamps *)
-  |     FPT_TDC  (* Protection of TSF - TSF Data Consistency *)
-  |     FPT_TEE  (* Protection of TSF - Testing *)
-  |     FRU_FLT  (* Resource Utilization - Fault Tolerance *)
-  |     FRU_PRS  (* Resource Utilization - Priority of Service *)
-  |     FRU_RSA  (* Resource Utilization - Resource Allocation *)
-  |     FTA_LSA  (* TOE Access - Limitation on Scope *)
-  |     FTA_MCS  (* TOE Access - Multiple Concurrent Sessions *)
-  |     FTA_SSL  (* TOE Access - Session Locking *)
-  |     FTA_TAB  (* TOE Access - TOE Access Banners *)
-  |     FTA_TAH  (* TOE Access - TOE Access History *)
-  |     FTA_TSE  (* TOE Access - TOE Session Establishment *)
-  |     FTP_ITC  (* Trusted Path/Channels - Inter-TSF *)
+    FAU_ARP
+  |     FAU_GEN
+  |     FAU_SAA
+  |     FAU_SAR
+  |     FAU_SEL
+  |     FAU_STG
+  |     FCO_NRO
+  |     FCO_NRR
+  |     FCS_CKM
+  |     FCS_COP
+  |     FDP_ACC
+  |     FDP_ACF
+  |     FDP_IFC
+  |     FDP_IFF
+  |     FDP_ITT
+  |     FDP_RIP
+  |     FIA_AFL
+  |     FIA_ATD
+  |     FIA_SOS
+  |     FIA_UAU
+  |     FIA_UID
+  |     FMT_MOF
+  |     FMT_MSA
+  |     FMT_MTD
+  |     FMT_SMF
+  |     FMT_SMR
+  |     FPR_ANO
+  |     FPR_PSE
+  |     FPR_UNL
+  |     FPR_UNO
+  |     FPT_FLS
+  |     FPT_ITC
+  |     FPT_ITI
+  |     FPT_ITT
+  |     FPT_RCV
+  |     FPT_RPL
+  |     FPT_SEP
+  |     FPT_STM
+  |     FPT_TDC
+  |     FPT_TEE
+  |     FRU_FLT
+  |     FRU_PRS
+  |     FRU_RSA
+  |     FTA_LSA
+  |     FTA_MCS
+  |     FTA_SSL
+  |     FTA_TAB
+  |     FTA_TAH
+  |     FTA_TSE
+  |     FTP_ITC
+  |     FTP_TRP
 
 (* SecurityLabel (matches Coq: Inductive SecurityLabel) *)
 datatype security_label =
@@ -194,7 +194,7 @@ datatype riina_value =
   |     RV_Int
   |     RV_Labeled
   |     RV_Loc
-  |     RV_Closure  (* simplified *)
+  |     RV_Closure
   |     RV_Pair
   |     RV_Inl
   |     RV_Inr
@@ -218,61 +218,61 @@ record toe_configuration =
 
 (* DevelopmentAssurance (matches Coq: Record DevelopmentAssurance) *)
 record development_assurance =
-  adv_arc_complete :: bool  (* Security architecture complete *)
-  adv_arc_modular :: bool  (* Architecture is modular *)
-  adv_arc_non_bypassable :: bool  (* TSF non-bypassable *)
-  adv_arc_tamper_proof :: bool  (* TSF tamper-proof *)
-  adv_arc_domain_sep :: bool  (* Domain separation enforced *)
-  adv_fsp_complete :: bool  (* Functional spec complete *)
-  adv_fsp_accurate :: bool  (* Functional spec accurate *)
-  adv_imp_complete :: bool  (* Implementation complete *)
-  adv_imp_verified :: bool  (* Implementation formally verified *)
-  adv_int_modular :: bool  (* TSF internals modular *)
-  adv_int_layered :: bool  (* TSF properly layered *)
-  adv_int_minimal :: bool  (* TSF minimal complexity *)
-  adv_tds_semiformal :: bool  (* Design semiformal *)
-  adv_tds_formal :: bool  (* Design formal *)
+  adv_arc_complete :: bool
+  adv_arc_modular :: bool
+  adv_arc_non_bypassable :: bool
+  adv_arc_tamper_proof :: bool
+  adv_arc_domain_sep :: bool
+  adv_fsp_complete :: bool
+  adv_fsp_accurate :: bool
+  adv_imp_complete :: bool
+  adv_imp_verified :: bool
+  adv_int_modular :: bool
+  adv_int_layered :: bool
+  adv_int_minimal :: bool
+  adv_tds_semiformal :: bool
+  adv_tds_formal :: bool
 
 (* GuidanceAssurance (matches Coq: Record GuidanceAssurance) *)
 record guidance_assurance =
-  agd_ope_complete :: bool  (* Operational guidance complete *)
-  agd_pre_complete :: bool  (* Preparative guidance complete *)
+  agd_ope_complete :: bool
+  agd_pre_complete :: bool
 
 (* LifecycleAssurance (matches Coq: Record LifecycleAssurance) *)
 record lifecycle_assurance =
-  alc_cmc_automated :: bool  (* CM automated *)
-  alc_cmc_coverage :: bool  (* CM covers all items *)
-  alc_cms_tracking :: bool  (* CMS provides tracking *)
-  alc_del_secure :: bool  (* Delivery procedures secure *)
-  alc_dvs_sufficient :: bool  (* Development security sufficient *)
-  alc_flaw_systematic :: bool  (* Flaw remediation systematic *)
-  alc_lcd_defined :: bool  (* Life-cycle model defined *)
-  alc_tat_compliance :: bool  (* Tools & techniques adequate *)
+  alc_cmc_automated :: bool
+  alc_cmc_coverage :: bool
+  alc_cms_tracking :: bool
+  alc_del_secure :: bool
+  alc_dvs_sufficient :: bool
+  alc_flaw_systematic :: bool
+  alc_lcd_defined :: bool
+  alc_tat_compliance :: bool
 
 (* SecurityTargetAssurance (matches Coq: Record SecurityTargetAssurance) *)
 record security_target_assurance =
-  ase_ccl_conformant :: bool  (* Conformance claims valid *)
-  ase_ecd_complete :: bool  (* Extended component definitions complete *)
-  ase_int_complete :: bool  (* ST introduction complete *)
-  ase_obj_complete :: bool  (* Security objectives complete *)
-  ase_req_complete :: bool  (* Security requirements complete *)
-  ase_spd_complete :: bool  (* Security problem definition complete *)
-  ase_tss_complete :: bool  (* TOE summary specification complete *)
+  ase_ccl_conformant :: bool
+  ase_ecd_complete :: bool
+  ase_int_complete :: bool
+  ase_obj_complete :: bool
+  ase_req_complete :: bool
+  ase_spd_complete :: bool
+  ase_tss_complete :: bool
 
 (* TestAssurance (matches Coq: Record TestAssurance) *)
 record test_assurance =
-  ate_cov_complete :: bool  (* Test coverage complete *)
-  ate_dpt_sufficient :: bool  (* Depth of testing sufficient *)
-  ate_fun_complete :: bool  (* Functional tests complete *)
-  ate_ind_performed :: bool  (* Independent testing performed *)
+  ate_cov_complete :: bool
+  ate_dpt_sufficient :: bool
+  ate_fun_complete :: bool
+  ate_ind_performed :: bool
 
 (* VulnerabilityAssurance (matches Coq: Record VulnerabilityAssurance) *)
 record vulnerability_assurance =
-  ava_van_basic :: bool  (* Basic vulnerability analysis *)
-  ava_van_focused :: bool  (* Focused vulnerability analysis *)
-  ava_van_methodical :: bool  (* Methodical vulnerability analysis *)
-  ava_van_advanced :: bool  (* Advanced vulnerability analysis - EAL7 *)
-  ava_van_high_attack :: bool  (* Resistant to high attack potential *)
+  ava_van_basic :: bool
+  ava_van_focused :: bool
+  ava_van_methodical :: bool
+  ava_van_advanced :: bool
+  ava_van_high_attack :: bool
 
 (* EAL7Package (matches Coq: Record EAL7Package) *)
 record eal7_package =
@@ -289,7 +289,8 @@ record security_context =
   ctx_current_label :: SecurityLabel
   ctx_integrity_label :: SecurityLabel
 
-(* label_leq - complex match, manual review needed *)
+(* label_leq - complex match, needs manual translation *)
+definition label_leq :: "bool" where "label_leq = undefined"
 
 (* valid_security_context (matches Coq: Definition valid_security_context) *)
 definition valid_security_context :: "SecurityContext \<Rightarrow> bool" where
@@ -305,7 +306,7 @@ definition adv_compliant :: "DevelopmentAssurance \<Rightarrow> bool" where
   adv_fsp_complete adv \<and>
   adv_fsp_accurate adv \<and>
   adv_imp_complete adv \<and>
-  adv_imp_verified adv \<and>  (* EAL7 specific: formal verification *)
+  adv_imp_verified adv \<and>  
   adv_int_modular adv \<and>
   adv_int_layered adv \<and>
   adv_int_minimal adv \<and>
@@ -380,27 +381,27 @@ definition blp_star_property :: "bool" where
 (* mk_compliant_adv (matches Coq: Definition mk_compliant_adv) *)
 definition mk_compliant_adv :: "DevelopmentAssurance" where
   "mk_compliant_adv \<equiv> mkADV
-  true true true true true true true true true true true true true true"
+  True True True True True True True True True True True True True True"
 
 (* mk_compliant_ava (matches Coq: Definition mk_compliant_ava) *)
 definition mk_compliant_ava :: "VulnerabilityAssurance" where
-  "mk_compliant_ava \<equiv> mkAVA true true true true true"
+  "mk_compliant_ava \<equiv> mkAVA True True True True True"
 
 (* mk_compliant_agd (matches Coq: Definition mk_compliant_agd) *)
 definition mk_compliant_agd :: "GuidanceAssurance" where
-  "mk_compliant_agd \<equiv> mkAGD true true"
+  "mk_compliant_agd \<equiv> mkAGD True True"
 
 (* mk_compliant_alc (matches Coq: Definition mk_compliant_alc) *)
 definition mk_compliant_alc :: "LifecycleAssurance" where
-  "mk_compliant_alc \<equiv> mkALC true true true true true true true true"
+  "mk_compliant_alc \<equiv> mkALC True True True True True True True True"
 
 (* mk_compliant_ase (matches Coq: Definition mk_compliant_ase) *)
 definition mk_compliant_ase :: "SecurityTargetAssurance" where
-  "mk_compliant_ase \<equiv> mkASE true true true true true true true"
+  "mk_compliant_ase \<equiv> mkASE True True True True True True True"
 
 (* mk_compliant_ate (matches Coq: Definition mk_compliant_ate) *)
 definition mk_compliant_ate :: "TestAssurance" where
-  "mk_compliant_ate \<equiv> mkATE true true true true"
+  "mk_compliant_ate \<equiv> mkATE True True True True"
 
 (* mk_compliant_eal7 (matches Coq: Definition mk_compliant_eal7) *)
 definition mk_compliant_eal7 :: "EAL7Package" where
@@ -428,17 +429,23 @@ fun has_domain_sep :: "bool" where
 fun has_authentication :: "bool" where
   "has_authentication _ = false"
 
+(* riina_security_classes (matches Coq: Definition riina_security_classes) *)
+definition riina_security_classes :: "list SecurityClass" where
+  "riina_security_classes \<equiv> [FAU_GEN; FAU_SAR; FCS_CKM; FCS_COP; FDP_ACC; FDP_ACF; FDP_IFC; FDP_IFF;
+   FDP_RIP; FIA_AFL; FIA_ATD; FIA_UAU; FIA_UID; FMT_MSA; FMT_SMF; FMT_SMR;
+   FPT_FLS; FPT_SEP; FPT_TDC; FRU_FLT; FTA_SSL; FTP_ITC]"
+
 (* riina_spm (matches Coq: Definition riina_spm) *)
 definition riina_spm :: "SecurityPolicyModel" where
   "riina_spm \<equiv> mkSPM
   nat nat nat SecurityLabel
-  (fun _ _ _ => true)  (* Simplified - actual impl uses type system *)
-  (fun _ _ => true)"
+  (fun _ _ _ => True)  
+  (fun _ _ => True)"
 
 (* riina_toe (matches Coq: Definition riina_toe) *)
 definition riina_toe :: "TOEConfiguration" where
   "riina_toe \<equiv> mkTOE
-  true true riina_security_classes riina_spm true"
+  True True riina_security_classes riina_spm True"
 
 (* has_complete_coverage (matches Coq: Definition has_complete_coverage) *)
 definition has_complete_coverage :: "bool" where

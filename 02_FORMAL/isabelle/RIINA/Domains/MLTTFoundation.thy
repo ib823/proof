@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MLTTFoundation - Isabelle/HOL Port
@@ -15,6 +17,9 @@
  * | Term               | term                   | OK     |
  * | empty_ctx          | empty_ctx              | OK     |
  * | ctx_extend         | ctx_extend             | OK     |
+ * | ctx_lookup         | ctx_lookup             | OK     |
+ * | shift              | shift                  | OK     |
+ * | subst              | subst                  | OK     |
  * | cumulativity_level | cumulativity_level     | OK     |
  * | TYPE_001_01        | TYPE_001_01            | OK     |
  * | TYPE_001_02        | TYPE_001_02            | OK     |
@@ -43,28 +48,28 @@
  *)
 
 theory MLTTFoundation
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Ty (matches Coq: Inductive Ty) *)
 datatype ty =
     TUnit
-  |     TPi  (* Π-type: Π(x:A).B *)
-  |     TSigma  (* Σ-type: Σ(x:A).B *)
-  |     TId  (* Identity type *)
-  |     TUniverse  (* Universe at level l *)
+  |     TPi
+  |     TSigma
+  |     TId
+  |     TUniverse
 
 (* Term (matches Coq: Inductive Term) *)
 datatype term =
     TmVar
-  |     TmUnit  (* Unit value *)
-  |     TmLam  (* λ-abstraction with type annotation *)
-  |     TmApp  (* Application *)
-  |     TmPair  (* Pair introduction *)
-  |     TmFst  (* First projection *)
-  |     TmSnd  (* Second projection *)
-  |     TmRefl  (* Reflexivity proof: refl(a) *)
-  |     TmJ  (* J-eliminator with type annotations *)
+  |     TmUnit
+  |     TmLam
+  |     TmApp
+  |     TmPair
+  |     TmFst
+  |     TmSnd
+  |     TmRefl
+  |     TmJ
 
 (* empty_ctx (matches Coq: Definition empty_ctx) *)
 definition empty_ctx :: "Ctx" where
@@ -73,6 +78,18 @@ definition empty_ctx :: "Ctx" where
 (* ctx_extend (matches Coq: Definition ctx_extend) *)
 definition ctx_extend :: "Ctx \<Rightarrow> Ty \<Rightarrow> Ctx" where
   "ctx_extend G A \<equiv> A :: G"
+
+(* ctx_lookup (matches Coq: Definition ctx_lookup) *)
+fun ctx_lookup :: "Ctx \<Rightarrow> nat \<Rightarrow> option Ty" where
+
+
+(* shift (matches Coq: Definition shift) *)
+fun shift :: "Term \<Rightarrow> Term" where
+  "shift TmUnit = TmUnit"
+
+(* subst (matches Coq: Definition subst) *)
+fun subst :: "nat \<Rightarrow> Term" where
+  "subst TmUnit = TmUnit"
 
 (* cumulativity_level (matches Coq) *)
 lemma cumulativity_level: "\<forall> A l, has_level A l \<longrightarrow> has_level A (S l)"

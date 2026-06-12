@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AuthenticationSecurity - Isabelle/HOL Port
@@ -32,6 +34,7 @@
  * | mfa_complete       | mfa_complete           | OK     |
  * | token_valid        | token_valid            | OK     |
  * | token_bound        | token_bound            | OK     |
+ * | zeroize            | zeroize                | OK     |
  * | nonce_fresh        | nonce_fresh            | OK     |
  * | auth_001_credential_stuffing_mitigated | auth_001_credential_stuffing_mitigated | OK     |
  * | auth_002_password_spraying_mitigated | auth_002_password_spraying_mitigated | OK     |
@@ -56,7 +59,7 @@
  *)
 
 theory AuthenticationSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* RateLimiter (matches Coq: Record RateLimiter) *)
@@ -77,7 +80,7 @@ record password_hash =
   ph_hash :: 'a list
   ph_salt :: 'a list
   ph_iterations :: nat
-  ph_algorithm :: nat  (* 0=argon2, 1=bcrypt, etc *)
+  ph_algorithm :: nat
 
 (* SessionToken (matches Coq: Record SessionToken) *)
 record session_token =
@@ -111,7 +114,7 @@ record auth_ticket =
 
 (* ServiceKey (matches Coq: Record ServiceKey) *)
 record service_key =
-  sk_algorithm :: nat  (* Must be >= 2 for AES *)
+  sk_algorithm :: nat
   sk_key :: 'a list
 
 (* HSMProtectedKey (matches Coq: Record HSMProtectedKey) *)
@@ -139,7 +142,7 @@ record o_auth_state =
 (* JWTConfig (matches Coq: Record JWTConfig) *)
 record jwt_config =
   jwt_alg_none_disabled :: bool
-  jwt_alg_symmetric_disabled :: bool  (* When using asymmetric *)
+  jwt_alg_symmetric_disabled :: bool
   jwt_exp_required :: bool
 
 (* SAMLConfig (matches Coq: Record SAMLConfig) *)
@@ -166,21 +169,27 @@ record web_authn_auth =
 
 (* is_rate_limited (matches Coq: Definition is_rate_limited) *)
 definition is_rate_limited :: "RateLimiter \<Rightarrow> bool" where
-  "is_rate_limited rl \<equiv> Nat"
+  "is_rate_limited rl \<equiv> ((rl_max_attempts \<le> rl)) (rl_attempts rl)"
 
 (* mfa_complete (matches Coq: Definition mfa_complete) *)
 definition mfa_complete :: "MFAState \<Rightarrow> bool" where
-  "mfa_complete s \<equiv> s"
+  "mfa_complete s \<equiv> s.(mfa_password_verified) \<and>
+  ((\<not> s.(mfa_required)) \<or> s.(mfa_second_factor_verified))"
 
 (* token_valid (matches Coq: Definition token_valid) *)
 definition token_valid :: "SessionToken \<Rightarrow> nat \<Rightarrow> bool" where
-  "token_valid t now \<equiv> Nat"
+  "token_valid t now \<equiv> (now < (st_expires) t)"
 
-(* token_bound - complex match, manual review needed *)
+(* token_bound - complex match, needs manual translation *)
+definition token_bound :: "bool" where "token_bound = undefined"
+
+(* zeroize (matches Coq: Definition zeroize) *)
+definition zeroize :: "list nat" where
+  "zeroize \<equiv> map (fun _ => 0) data"
 
 (* nonce_fresh (matches Coq: Definition nonce_fresh) *)
 definition nonce_fresh :: "NonceStore \<Rightarrow> nat \<Rightarrow> bool" where
-  "nonce_fresh ns n \<equiv> negb (existsb (Nat"
+  "nonce_fresh ns n \<equiv> (\<not> (existsb) ((n) = (ns_seen) ns))"
 
 (* auth_001_credential_stuffing_mitigated (matches Coq) *)
 lemma auth_001_credential_stuffing_mitigated: "\<forall> (rl : RateLimiter), rl_attempts rl \<ge> rl_max_attempts rl \<longrightarrow> is_rate_limited rl = True"

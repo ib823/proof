@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedMicrokernel - Isabelle/HOL Port
@@ -23,6 +25,7 @@
  * | IPCMessage         | ipc_message            | OK     |
  * | IPCState           | ipc_state              | OK     |
  * | Notification       | notification           | OK     |
+ * | cap_lookup         | cap_lookup             | OK     |
  * | holds              | holds                  | OK     |
  * | rights_subset      | rights_subset          | OK     |
  * | is_revoked         | is_revoked             | OK     |
@@ -31,6 +34,7 @@
  * | can_invoke         | can_invoke             | OK     |
  * | mapped             | mapped                 | OK     |
  * | shared_readonly    | shared_readonly        | OK     |
+ * | translate          | translate              | OK     |
  * | is_kernel_memory   | is_kernel_memory       | OK     |
  * | page_table_integrity | page_table_integrity   | OK     |
  * | has_frame_cap      | has_frame_cap          | OK     |
@@ -103,9 +107,9 @@ datatype action =
 
 (* Capability (matches Coq: Record Capability) *)
 record capability =
-  cap_object :: nat  (* Object reference *)
+  cap_object :: nat
   cap_rights :: 'a list
-  cap_badge :: nat  (* Unforgeable badge *)
+  cap_badge :: nat
 
 (* KernelState (matches Coq: Record KernelState) *)
 record kernel_state =
@@ -113,7 +117,7 @@ record kernel_state =
   cap_tables :: ProcId
   kernel_objects :: 'a list
   revoked_badges :: RevocationDomain
-  next_badge :: nat  (* monotonically increasing badge allocator *)
+  next_badge :: nat
 
 (* PagePerms (matches Coq: Record PagePerms) *)
 record page_perms =
@@ -126,7 +130,7 @@ record pte =
   pte_paddr :: PAddr
   pte_perms :: PagePerms
   pte_valid :: bool
-  pte_userspace :: bool  (* true if accessible by userspace *)
+  pte_userspace :: bool
 
 (* MemoryState (matches Coq: Record MemoryState) *)
 record memory_state =
@@ -155,7 +159,11 @@ record ipc_state =
 
 (* Notification (matches Coq: Record Notification) *)
 record notification =
-  notif_word :: nat  (* single machine word *)
+  notif_word :: nat
+
+(* cap_lookup (matches Coq: Definition cap_lookup) *)
+definition cap_lookup :: "KernelState \<Rightarrow> ProcId \<Rightarrow> nat \<Rightarrow> option Capability" where
+  "cap_lookup s p slot \<equiv> nth_error (cap_tables s p) slot"
 
 (* holds (matches Coq: Definition holds) *)
 definition holds :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Capability \<Rightarrow> bool" where
@@ -183,7 +191,7 @@ definition can_invoke :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Action 
 
 (* mapped (matches Coq: Definition mapped) *)
 definition mapped :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> VAddr \<Rightarrow> bool" where
-  "mapped ms p vaddr \<equiv> exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = true"
+  "mapped ms p vaddr \<equiv> exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = True"
 
 (* shared_readonly (matches Coq: Definition shared_readonly) *)
 definition shared_readonly :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> bool" where
@@ -191,19 +199,22 @@ definition shared_readonly :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> boo
     address_spaces ms p1 vaddr = Some pte1 /\
     address_spaces ms p2 vaddr = Some pte2 /\
     pte_paddr pte1 = pte_paddr pte2 /\
-    perm_write (pte_perms pte1) = false /\
-    perm_write (pte_perms pte2) = false"
+    perm_write (pte_perms pte1) = False /\
+    perm_write (pte_perms pte2) = False"
+
+(* translate - complex match, needs manual translation *)
+definition translate :: "bool" where "translate = undefined"
 
 (* is_kernel_memory (matches Coq: Definition is_kernel_memory) *)
 definition is_kernel_memory :: "MemoryState \<Rightarrow> PAddr \<Rightarrow> bool" where
-  "is_kernel_memory ms paddr \<equiv> kernel_memory ms paddr = true"
+  "is_kernel_memory ms paddr \<equiv> kernel_memory ms paddr = True"
 
 (* page_table_integrity (matches Coq: Definition page_table_integrity) *)
 definition page_table_integrity :: "MemoryState \<Rightarrow> bool" where
   "page_table_integrity ms \<equiv> forall p vaddr pte,
     address_spaces ms p vaddr = Some pte ->
-    pte_userspace pte = true ->
-    kernel_memory ms (pte_paddr pte) = false"
+    pte_userspace pte = True ->
+    kernel_memory ms (pte_paddr pte) = False"
 
 (* has_frame_cap (matches Coq: Definition has_frame_cap) *)
 definition has_frame_cap :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> PAddr \<Rightarrow> bool" where
@@ -216,7 +227,7 @@ definition valid_memory_state :: "MemoryState \<Rightarrow> bool" where
   "valid_memory_state ms \<equiv> page_table_integrity ms /\
   (forall p vaddr pte,
     address_spaces ms p vaddr = Some pte ->
-    pte_valid pte = true ->
+    pte_valid pte = True ->
     has_frame_cap ms p (pte_paddr pte))"
 
 (* ipc_waiting (matches Coq: Definition ipc_waiting) *)
@@ -248,7 +259,7 @@ definition msg_caps_valid :: "IPCState \<Rightarrow> ProcId \<Rightarrow> IPCMes
 (* transfer_preserves_validity (matches Coq: Definition transfer_preserves_validity) *)
 definition transfer_preserves_validity :: "Capability \<Rightarrow> bool" where
   "transfer_preserves_validity c \<equiv> next_badge s <= next_badge s' /\
-  (* Transferred capability is not newly revoked *)
+  
   (~ is_revoked s c -> ~ is_revoked s' c)"
 
 (* isolation_invariant (matches Coq: Definition isolation_invariant) *)
@@ -257,11 +268,11 @@ definition isolation_invariant :: "MemoryState \<Rightarrow> bool" where
     p1 <> p2 ->
     address_spaces ms p1 vaddr = Some pte1 ->
     address_spaces ms p2 vaddr = Some pte2 ->
-    pte_valid pte1 = true ->
-    pte_valid pte2 = true ->
-    (* Either different physical addresses, or both readonly *)
+    pte_valid pte1 = True ->
+    pte_valid pte2 = True ->
+    
     pte_paddr pte1 <> pte_paddr pte2 \/
-    (perm_write (pte_perms pte1) = false /\ perm_write (pte_perms pte2) = false)"
+    (perm_write (pte_perms pte1) = False /\ perm_write (pte_perms pte2) = False)"
 
 (* properly_isolated (matches Coq: Definition properly_isolated) *)
 definition properly_isolated :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> bool" where
@@ -270,12 +281,12 @@ definition properly_isolated :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> b
     address_spaces ms p1 vaddr = Some pte1 /\
     address_spaces ms p2 vaddr = Some pte2 /\
     (pte_paddr pte1 <> pte_paddr pte2 \/
-     (perm_write (pte_perms pte1) = false /\ perm_write (pte_perms pte2) = false)))"
+     (perm_write (pte_perms pte1) = False /\ perm_write (pte_perms pte2) = False)))"
 
 (* unmapped (matches Coq: Definition unmapped) *)
 definition unmapped :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> VAddr \<Rightarrow> bool" where
   "unmapped ms p vaddr \<equiv> address_spaces ms p vaddr = None \/
-  exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = false"
+  exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = False"
 
 (* allocation_safe (matches Coq: Definition allocation_safe) *)
 definition allocation_safe :: "PAddr \<Rightarrow> bool" where
@@ -285,7 +296,7 @@ definition allocation_safe :: "PAddr \<Rightarrow> bool" where
 
 (* msg_type_safe (matches Coq: Definition msg_type_safe) *)
 definition msg_type_safe :: "IPCMessage \<Rightarrow> bool" where
-  "msg_type_safe msg \<equiv> length (msg_data msg) <= 128 /\  (* bounded message size *)
+  "msg_type_safe msg \<equiv> length (msg_data msg) <= 128 /\  
   length (msg_caps msg) <= 4"
 
 (* no_amplification (matches Coq: Definition no_amplification) *)
@@ -303,8 +314,7 @@ definition ipc_maintains_isolation :: "IPCState \<Rightarrow> bool" where
 
 (* notif_no_sensitive_data (matches Coq: Definition notif_no_sensitive_data) *)
 definition notif_no_sensitive_data :: "Notification \<Rightarrow> bool" where
-  "notif_no_sensitive_data n \<equiv> (* Notification word is bounded - cannot encode arbitrary data *)
-  notif_word n < 2^32"
+  "notif_no_sensitive_data n \<equiv> notif_word n < 2^32"
 
 (* OS_001_01_cap_unforgeable (matches Coq) *)
 lemma OS_001_01_cap_unforgeable: "\<forall> s p c, holds s p c \<longrightarrow> \<exists> slot, cap_lookup s p slot = Some c"

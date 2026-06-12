@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FFIAttackResearch - Isabelle/HOL Port
@@ -16,12 +18,15 @@
  * | MemRegion          | mem_region             | OK     |
  * | Sandbox            | sandbox                | OK     |
  * | MarshalBuffer      | marshal_buffer         | OK     |
+ * | ffi_type_size      | ffi_type_size          | OK     |
+ * | ffi_type_align     | ffi_type_align         | OK     |
  * | ffi_call_safe      | ffi_call_safe          | OK     |
  * | regions_disjoint   | regions_disjoint       | OK     |
  * | addr_in_region     | addr_in_region         | OK     |
  * | call_allowed       | call_allowed           | OK     |
  * | buf_remaining      | buf_remaining          | OK     |
  * | can_marshal        | can_marshal            | OK     |
+ * | marshal_into       | marshal_into           | OK     |
  * | ffi_safe_implies_sandboxed | ffi_safe_implies_sandboxed | OK     |
  * | ffi_safe_implies_validated | ffi_safe_implies_validated | OK     |
  * | ffi_safe_construct | ffi_safe_construct     | OK     |
@@ -45,12 +50,8 @@
  *)
 
 theory FFIAttackResearch
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* FFIType (matches Coq: Inductive FFIType) *)
 datatype ffi_type =
@@ -65,7 +66,7 @@ datatype ffi_type =
 
 (* FFICallDescriptor (matches Coq: Record FFICallDescriptor) *)
 record ffi_call_descriptor =
-  ffi_name :: nat  (* function id *)
+  ffi_name :: nat
   ffi_params :: 'a list
   ffi_return :: FFIType
   ffi_sandboxed :: bool
@@ -75,7 +76,7 @@ record ffi_call_descriptor =
 record mem_region =
   region_base :: nat
   region_size :: nat
-  region_owner :: nat  (* sandbox id *)
+  region_owner :: nat
 
 (* Sandbox (matches Coq: Record Sandbox) *)
 record sandbox =
@@ -88,6 +89,22 @@ record sandbox =
 record marshal_buffer =
   buf_capacity :: nat
   buf_used :: nat
+
+(* ffi_type_size (matches Coq: Definition ffi_type_size) *)
+fun ffi_type_size :: "FFIType \<Rightarrow> nat" where
+  "ffi_type_size FFI_Int8 = 1"
+|   "ffi_type_size FFI_Int16 = 2"
+|   "ffi_type_size FFI_Int32 = 4"
+|   "ffi_type_size FFI_Int64 = 8"
+|   "ffi_type_size FFI_Void = 0"
+
+(* ffi_type_align (matches Coq: Definition ffi_type_align) *)
+fun ffi_type_align :: "FFIType \<Rightarrow> nat" where
+  "ffi_type_align FFI_Int8 = 1"
+|   "ffi_type_align FFI_Int16 = 2"
+|   "ffi_type_align FFI_Int32 = 4"
+|   "ffi_type_align FFI_Int64 = 8"
+|   "ffi_type_align FFI_Void = 1"
 
 (* ffi_call_safe (matches Coq: Definition ffi_call_safe) *)
 definition ffi_call_safe :: "FFICallDescriptor \<Rightarrow> bool" where
@@ -104,7 +121,7 @@ definition addr_in_region :: "MemRegion \<Rightarrow> bool" where
 
 (* call_allowed (matches Coq: Definition call_allowed) *)
 definition call_allowed :: "Sandbox \<Rightarrow> nat \<Rightarrow> bool" where
-  "call_allowed sb call_id \<equiv> existsb (Nat"
+  "call_allowed sb call_id \<equiv> existsb ((call_id) = (allowed_calls) sb)"
 
 (* buf_remaining (matches Coq: Definition buf_remaining) *)
 definition buf_remaining :: "MarshalBuffer \<Rightarrow> nat" where
@@ -113,6 +130,13 @@ definition buf_remaining :: "MarshalBuffer \<Rightarrow> nat" where
 (* can_marshal (matches Coq: Definition can_marshal) *)
 definition can_marshal :: "MarshalBuffer \<Rightarrow> FFIType \<Rightarrow> bool" where
   "can_marshal b t \<equiv> buf_used b + ffi_type_size t <=? buf_capacity b"
+
+(* marshal_into (matches Coq: Definition marshal_into) *)
+definition marshal_into :: "MarshalBuffer \<Rightarrow> FFIType \<Rightarrow> option MarshalBuffer" where
+  "marshal_into b t \<equiv> if can_marshal b t then
+    Some (mkMarshalBuffer (buf_capacity b) (buf_used b + ffi_type_size t))
+  else
+    None"
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: FFI CALL VALIDATION

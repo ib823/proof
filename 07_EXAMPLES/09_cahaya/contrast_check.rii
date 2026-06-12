@@ -1,0 +1,11 @@
+// contrast_check.rii — WCAG Contrast Verification
+// CAHAYA enforces accessibility at the type level.
+// kontras(fg, bg) returns true if WCAG AA ratio >= 4.5:1
+
+biar putih = warna(255, 255, 255);
+biar hitam = warna(0, 0, 0);
+
+// Maximum contrast: white on black (ratio 21:1)
+biar lulus = kontras(putih, hitam);
+
+lulus

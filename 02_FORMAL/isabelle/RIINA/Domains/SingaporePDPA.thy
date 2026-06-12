@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporePDPA - Isabelle/HOL Port
@@ -36,8 +38,12 @@
  * | business_improvement_applicable | business_improvement_applicable | OK     |
  * | accountability_documented | accountability_documented | OK     |
  * | sg_data_anonymized_excluded | sg_data_anonymized_excluded | OK     |
+ * | all_sg_consent_statuses | all_sg_consent_statuses | OK     |
+ * | all_sg_data_categories | all_sg_data_categories | OK     |
+ * | all_transfer_adequacies | all_transfer_adequacies | OK     |
  * | sg_notified_purposes | sg_notified_purposes   | OK     |
  * | accuracy_maintained | accuracy_maintained    | OK     |
+ * | sg_dnc_all_types   | sg_dnc_all_types       | OK     |
  * | sg_dnc_compliant_marketing | sg_dnc_compliant_marketing | OK     |
  * | sg_portability_deadline | sg_portability_deadline | OK     |
  * | portability_fulfilled | portability_fulfilled  | OK     |
@@ -47,6 +53,8 @@
  * | sg_individual_notification_required | sg_individual_notification_required | OK     |
  * | sg_dpo_fully_qualified | sg_dpo_fully_qualified | OK     |
  * | sg_pdpa_enterprise_compliant | sg_pdpa_enterprise_compliant | OK     |
+ * | all_processing_bases | all_processing_bases   | OK     |
+ * | all_pdpc_directions | all_pdpc_directions    | OK     |
  * | sg_processing_halted_on_withdrawal | sg_processing_halted_on_withdrawal | OK     |
  * | obligation_1_consent | obligation_1_consent   | OK     |
  * | obligation_1_business_exempt | obligation_1_business_exempt | OK     |
@@ -125,8 +133,8 @@ begin
 datatype sg_consent_status =
     SGNoConsent
   |     SGExplicitConsent
-  |     SGDeemedConsent  (* Deemed consent provision *)
-  |     SGDeemedConsentNotification  (* Deemed consent by notification *)
+  |     SGDeemedConsent
+  |     SGDeemedConsentNotification
   |     SGWithdrawnConsent
 
 (* SGDataCategory (matches Coq: Inductive SGDataCategory) *)
@@ -163,9 +171,11 @@ datatype pdpc_direction =
   |     PDPCDirectionToStopCollection
   |     PDPCDirectionToDestroy
 
-(* sg_has_consent - complex match, manual review needed *)
+(* sg_has_consent - complex match, needs manual translation *)
+definition sg_has_consent :: "bool" where "sg_has_consent = undefined"
 
-(* sg_consent_for_category - complex match, manual review needed *)
+(* sg_consent_for_category - complex match, needs manual translation *)
+definition sg_consent_for_category :: "bool" where "sg_consent_for_category = undefined"
 
 (* sg_purpose_limited (matches Coq: Definition sg_purpose_limited) *)
 definition sg_purpose_limited :: "SGDataRecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -173,7 +183,7 @@ definition sg_purpose_limited :: "SGDataRecord \<Rightarrow> nat \<Rightarrow> b
 
 (* sg_protection_adequate (matches Coq: Definition sg_protection_adequate) *)
 definition sg_protection_adequate :: "SGDataRecord \<Rightarrow> bool" where
-  "sg_protection_adequate r \<equiv> sg_encrypted r = true \/ sg_anonymized r = true"
+  "sg_protection_adequate r \<equiv> sg_encrypted r = True \/ sg_anonymized r = True"
 
 (* sg_within_retention (matches Coq: Definition sg_within_retention) *)
 definition sg_within_retention :: "SGDataRecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -190,7 +200,7 @@ fun sg_transfer_lawful :: "TransferAdequacy \<Rightarrow> bool" where
 
 (* sg_breach_notifiable (matches Coq: Definition sg_breach_notifiable) *)
 definition sg_breach_notifiable :: "SGBreachEvent \<Rightarrow> bool" where
-  "sg_breach_notifiable b \<equiv> sg_breach_records_count b >= 500 \/ sg_breach_significant_harm b = true"
+  "sg_breach_notifiable b \<equiv> sg_breach_records_count b >= 500 \/ sg_breach_significant_harm b = True"
 
 (* sg_pdpc_notified_in_time (matches Coq: Definition sg_pdpc_notified_in_time) *)
 definition sg_pdpc_notified_in_time :: "SGBreachEvent \<Rightarrow> nat \<Rightarrow> bool" where
@@ -210,8 +220,8 @@ definition sg_purpose_violation :: "SGDataRecord \<Rightarrow> nat \<Rightarrow>
 
 (* notification_obligation_met (matches Coq: Definition notification_obligation_met) *)
 definition notification_obligation_met :: "SGNotificationRecord \<Rightarrow> bool" where
-  "notification_obligation_met n \<equiv> sgn_notified_before_collection n = true /\
-  sgn_language_understood n = true /\
+  "notification_obligation_met n \<equiv> sgn_notified_before_collection n = True /\
+  sgn_language_understood n = True /\
   length (sgn_purposes_notified n) > 0"
 
 (* sg_access_correction_deadline (matches Coq: Definition sg_access_correction_deadline) *)
@@ -221,12 +231,12 @@ definition sg_access_correction_deadline :: "nat" where
 (* access_correction_fulfilled (matches Coq: Definition access_correction_fulfilled) *)
 definition access_correction_fulfilled :: "SGAccessCorrectionRequest \<Rightarrow> bool" where
   "access_correction_fulfilled req \<equiv> sgacr_responded_at req <= sgacr_requested_at req + sg_access_correction_deadline /\
-  (sgacr_access_provided req = true \/ sgacr_correction_made req = true)"
+  (sgacr_access_provided req = True \/ sgacr_correction_made req = True)"
 
 (* sg_dpo_appointed (matches Coq: Definition sg_dpo_appointed) *)
 definition sg_dpo_appointed :: "SGDataProtectionOfficer \<Rightarrow> bool" where
-  "sg_dpo_appointed dpo \<equiv> sg_dpo_active dpo = true /\
-  sg_dpo_contact_public dpo = true"
+  "sg_dpo_appointed dpo \<equiv> sg_dpo_active dpo = True /\
+  sg_dpo_contact_public dpo = True"
 
 (* dnc_checked (matches Coq: Definition dnc_checked) *)
 fun dnc_checked :: "DNCStatus \<Rightarrow> bool \<Rightarrow> bool" where
@@ -237,19 +247,32 @@ fun dnc_checked :: "DNCStatus \<Rightarrow> bool \<Rightarrow> bool" where
 (* business_improvement_applicable (matches Coq: Definition business_improvement_applicable) *)
 definition business_improvement_applicable :: "SGProcessingBasis \<Rightarrow> bool \<Rightarrow> bool \<Rightarrow> bool" where
   "business_improvement_applicable basis proportionate safeguards \<equiv> basis = SGBusinessImprovement ->
-  proportionate = true /\ safeguards = true"
+  proportionate = True /\ safeguards = True"
 
 (* accountability_documented (matches Coq: Definition accountability_documented) *)
 definition accountability_documented :: "SGAccountabilityRecord \<Rightarrow> bool" where
-  "accountability_documented ar \<equiv> sga_policies_documented ar = true /\
-  sga_training_conducted ar = true /\
-  sga_dpo_designated ar = true /\
-  sga_complaint_process ar = true /\
-  sga_breach_response_plan ar = true"
+  "accountability_documented ar \<equiv> sga_policies_documented ar = True /\
+  sga_training_conducted ar = True /\
+  sga_dpo_designated ar = True /\
+  sga_complaint_process ar = True /\
+  sga_breach_response_plan ar = True"
 
 (* sg_data_anonymized_excluded (matches Coq: Definition sg_data_anonymized_excluded) *)
 definition sg_data_anonymized_excluded :: "SGDataRecord \<Rightarrow> bool" where
-  "sg_data_anonymized_excluded r \<equiv> sg_anonymized r = true -> ~ sg_consent_for_category r -> False"
+  "sg_data_anonymized_excluded r \<equiv> sg_anonymized r = True -> ~ sg_consent_for_category r -> False"
+
+(* all_sg_consent_statuses (matches Coq: Definition all_sg_consent_statuses) *)
+definition all_sg_consent_statuses :: "list SGConsentStatus" where
+  "all_sg_consent_statuses \<equiv> [SGNoConsent; SGExplicitConsent; SGDeemedConsent;
+   SGDeemedConsentNotification; SGWithdrawnConsent]"
+
+(* all_sg_data_categories (matches Coq: Definition all_sg_data_categories) *)
+definition all_sg_data_categories :: "list SGDataCategory" where
+  "all_sg_data_categories \<equiv> [SGPublicData; SGPersonalData; SGBusinessContact]"
+
+(* all_transfer_adequacies (matches Coq: Definition all_transfer_adequacies) *)
+definition all_transfer_adequacies :: "list TransferAdequacy" where
+  "all_transfer_adequacies \<equiv> [AdequateJurisdiction; ContractualSafeguards; ConsentForTransfer; NoSafeguards]"
 
 (* sg_notified_purposes (matches Coq: Definition sg_notified_purposes) *)
 definition sg_notified_purposes :: "SGNotificationRecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -258,7 +281,11 @@ definition sg_notified_purposes :: "SGNotificationRecord \<Rightarrow> nat \<Rig
 (* accuracy_maintained (matches Coq: Definition accuracy_maintained) *)
 definition accuracy_maintained :: "SGAccuracyRecord \<Rightarrow> nat \<Rightarrow> bool" where
   "accuracy_maintained acc current_time \<equiv> current_time <= sgacc_last_verified acc + sgacc_verification_interval acc /\
-  sgacc_source_reliable acc = true"
+  sgacc_source_reliable acc = True"
+
+(* sg_dnc_all_types (matches Coq: Definition sg_dnc_all_types) *)
+definition sg_dnc_all_types :: "list nat" where
+  "sg_dnc_all_types \<equiv> [0; 1; 2]"
 
 (* sg_dnc_compliant_marketing (matches Coq: Definition sg_dnc_compliant_marketing) *)
 definition sg_dnc_compliant_marketing :: "SGDNCRecord \<Rightarrow> bool \<Rightarrow> bool" where
@@ -271,14 +298,15 @@ definition sg_portability_deadline :: "nat" where
 (* portability_fulfilled (matches Coq: Definition portability_fulfilled) *)
 definition portability_fulfilled :: "SGPortabilityRequest \<Rightarrow> bool" where
   "portability_fulfilled req \<equiv> sg_port_completed_at req <= sg_port_requested_at req + sg_portability_deadline /\
-  sg_port_format_standard req = true /\
-  sg_port_data_machine_readable req = true"
+  sg_port_format_standard req = True /\
+  sg_port_data_machine_readable req = True"
 
 (* pdpc_penalty_within_cap (matches Coq: Definition pdpc_penalty_within_cap) *)
 definition pdpc_penalty_within_cap :: "PDPCEnforcementAction \<Rightarrow> bool" where
   "pdpc_penalty_within_cap action \<equiv> pdpc_penalty_amount action <= pdpc_max_penalty action"
 
-(* pdpc_penalty_proportionate - complex match, manual review needed *)
+(* pdpc_penalty_proportionate - complex match, needs manual translation *)
+definition pdpc_penalty_proportionate :: "bool" where "pdpc_penalty_proportionate = undefined"
 
 (* sg_cross_border_lawful (matches Coq: Definition sg_cross_border_lawful) *)
 definition sg_cross_border_lawful :: "SGDataRecord \<Rightarrow> TransferAdequacy \<Rightarrow> bool" where
@@ -288,13 +316,13 @@ definition sg_cross_border_lawful :: "SGDataRecord \<Rightarrow> TransferAdequac
 
 (* sg_individual_notification_required (matches Coq: Definition sg_individual_notification_required) *)
 definition sg_individual_notification_required :: "SGBreachEvent \<Rightarrow> bool" where
-  "sg_individual_notification_required b \<equiv> sg_breach_significant_harm b = true"
+  "sg_individual_notification_required b \<equiv> sg_breach_significant_harm b = True"
 
 (* sg_dpo_fully_qualified (matches Coq: Definition sg_dpo_fully_qualified) *)
 definition sg_dpo_fully_qualified :: "SGDataProtectionOfficer \<Rightarrow> bool" where
-  "sg_dpo_fully_qualified dpo \<equiv> sg_dpo_active dpo = true /\
-  sg_dpo_contact_public dpo = true /\
-  sg_dpo_trained dpo = true"
+  "sg_dpo_fully_qualified dpo \<equiv> sg_dpo_active dpo = True /\
+  sg_dpo_contact_public dpo = True /\
+  sg_dpo_trained dpo = True"
 
 (* sg_pdpa_enterprise_compliant (matches Coq: Definition sg_pdpa_enterprise_compliant) *)
 definition sg_pdpa_enterprise_compliant :: "SGDataRecord \<Rightarrow> TransferAdequacy \<Rightarrow> nat \<Rightarrow> SGAccountabilityRecord \<Rightarrow> SGDataProtectionOfficer \<Rightarrow> bool" where
@@ -302,9 +330,18 @@ definition sg_pdpa_enterprise_compliant :: "SGDataRecord \<Rightarrow> TransferA
   accountability_documented acct /\
   sg_dpo_appointed dpo"
 
+(* all_processing_bases (matches Coq: Definition all_processing_bases) *)
+definition all_processing_bases :: "list SGProcessingBasis" where
+  "all_processing_bases \<equiv> [SGConsentBasis; SGBusinessImprovement; SGResearchBasis; SGLegitimateInterest]"
+
+(* all_pdpc_directions (matches Coq: Definition all_pdpc_directions) *)
+definition all_pdpc_directions :: "list PDPCDirection" where
+  "all_pdpc_directions \<equiv> [PDPCWarning; PDPCDirectionToComply; PDPCFinancialPenalty;
+   PDPCDirectionToStopCollection; PDPCDirectionToDestroy]"
+
 (* sg_processing_halted_on_withdrawal (matches Coq: Definition sg_processing_halted_on_withdrawal) *)
 definition sg_processing_halted_on_withdrawal :: "SGDataRecord \<Rightarrow> bool \<Rightarrow> bool" where
-  "sg_processing_halted_on_withdrawal r processing_active \<equiv> sg_consent r = SGWithdrawnConsent -> processing_active = false"
+  "sg_processing_halted_on_withdrawal r processing_active \<equiv> sg_consent r = SGWithdrawnConsent -> processing_active = False"
 
 (* obligation_1_consent (matches Coq) *)
 lemma obligation_1_consent: "\<forall> (r : SGDataRecord), sg_category r = SGPersonalData \<longrightarrow> sg_has_consent r \<longrightarrow> sg_consent_for_category r"
@@ -383,7 +420,7 @@ lemma data_protection_officer_appointed: "\<forall> (dpo : SGDataProtectionOffic
   by auto
 
 (* do_not_call_registry_checked (matches Coq) *)
-lemma do_not_call_registry_checked: "\<forall> (status : DNCStatus), status = DNCRegistered \<longrightarrow> dnc_checked status false"
+lemma do_not_call_registry_checked: "\<forall> (status : DNCStatus), status = DNCRegistered \<longrightarrow> dnc_checked status False"
   by simp
 
 (* dnc_not_registered_allows (matches Coq) *)
@@ -455,7 +492,7 @@ lemma accuracy_stale_requires_reverification: "\<forall> (acc : SGAccuracyRecord
   by simp
 
 (* dnc_registered_blocks_all_marketing_types (matches Coq) *)
-lemma dnc_registered_blocks_all_marketing_types: "\<forall> (dnc : SGDNCRecord), sg_dnc_status dnc = DNCRegistered \<longrightarrow> sg_dnc_compliant_marketing dnc false"
+lemma dnc_registered_blocks_all_marketing_types: "\<forall> (dnc : SGDNCRecord), sg_dnc_status dnc = DNCRegistered \<longrightarrow> sg_dnc_compliant_marketing dnc False"
   by simp
 
 (* dnc_exempt_allows_marketing (matches Coq) *)
@@ -567,11 +604,11 @@ lemma pdpc_direction_coverage: "\<forall> (d : PDPCDirection), In d all_pdpc_dir
   by auto
 
 (* withdrawal_halts_processing (matches Coq) *)
-lemma withdrawal_halts_processing: "\<forall> (r : SGDataRecord), sg_consent r = SGWithdrawnConsent \<longrightarrow> sg_processing_halted_on_withdrawal r false"
+lemma withdrawal_halts_processing: "\<forall> (r : SGDataRecord), sg_consent r = SGWithdrawnConsent \<longrightarrow> sg_processing_halted_on_withdrawal r False"
   by simp
 
 (* active_processing_implies_consent (matches Coq) *)
-lemma active_processing_implies_consent: "\<forall> (r : SGDataRecord), sg_processing_halted_on_withdrawal r true \<longrightarrow> sg_consent r \<noteq> SGWithdrawnConsent"
+lemma active_processing_implies_consent: "\<forall> (r : SGDataRecord), sg_processing_halted_on_withdrawal r True \<longrightarrow> sg_consent r \<noteq> SGWithdrawnConsent"
   by auto
 
 end

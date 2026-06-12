@@ -1,0 +1,190 @@
+/// state_machine.rii
+/// Type-safe state machine with effects and enforced transitions
+/// Demonstrates: enum states, valid transitions enforced by types,
+/// effect-gated operations at specific states
+///
+/// Pattern: Each state is a distinct type variant. Transition functions
+/// accept only valid source states and return the target state.
+/// The compiler rejects invalid transitions at compile time.
+/// IO operations are only available in specific states.
+
+modul mesin_keadaan;
+
+/// ─── Payment processing state machine ──────────────────────────────
+/// States: Menunggu -> Diluluskan -> Diproses -> Selesai
+///                  -> Ditolak -> (terminal)
+///         Any non-terminal -> Dibatalkan -> (terminal)
+
+jenis KeadaanPembayaran =
+    | Menunggu(InfoPembayaran)
+    | Diluluskan(InfoPembayaran, Teks)       /// + approval code
+    | Diproses(InfoPembayaran, Teks, Nombor) /// + transaction ID
+    | Selesai(InfoPembayaran, Teks, Nombor)
+    | Ditolak(InfoPembayaran, Teks)          /// + reason
+    | Dibatalkan(InfoPembayaran, Teks);      /// + reason
+
+jenis InfoPembayaran = {
+    id: Teks,
+    jumlah: Nombor,
+    mata_wang: Teks,
+    pembayar: Teks,
+    cap_masa: Nombor,
+};
+
+jenis RalatPeralihan =
+    | PeralihanTidakSah(Teks, Teks)
+    | GagalLuaran(Teks);
+
+/// ─── Valid transitions only ─────────────────────────────────────────
+
+/// Menunggu -> Diluluskan (requires Rangkaian for external auth check)
+fungsi luluskan(
+    keadaan: KeadaanPembayaran
+) -> Hasil<KeadaanPembayaran, RalatPeralihan> kesan Rangkaian {
+    padan keadaan {
+        Menunggu(info) => {
+            /// Call external authorization service
+            biar kod_kelulusan = sahkan_luaran(info.jumlah, info.mata_wang);
+            padan kod_kelulusan {
+                Ok(kod) => Ok(Diluluskan(info, kod)),
+                Ralat(mesej) => Ralat(GagalLuaran(mesej)),
+            }
+        },
+        _ => Ralat(PeralihanTidakSah(nama_keadaan(keadaan), "Diluluskan")),
+    };
+}
+
+/// Diluluskan -> Diproses (requires Tulis for transaction log)
+fungsi proses(
+    keadaan: KeadaanPembayaran
+) -> Hasil<KeadaanPembayaran, RalatPeralihan> kesan Tulis {
+    padan keadaan {
+        Diluluskan(info, kod) => {
+            biar id_transaksi = jana_id_transaksi();
+            cetak_baris("[PROSES] Transaksi " + ke_teks(id_transaksi) + " untuk " + info.id);
+            Ok(Diproses(info, kod, id_transaksi))
+        },
+        _ => Ralat(PeralihanTidakSah(nama_keadaan(keadaan), "Diproses")),
+    };
+}
+
+/// Diproses -> Selesai (requires Rangkaian for settlement)
+fungsi selesaikan(
+    keadaan: KeadaanPembayaran
+) -> Hasil<KeadaanPembayaran, RalatPeralihan> kesan Rangkaian {
+    padan keadaan {
+        Diproses(info, kod, id_txn) => {
+            /// Call settlement service
+            biar hasil_selesai = selesaikan_luaran(id_txn);
+            padan hasil_selesai {
+                Ok(_) => Ok(Selesai(info, kod, id_txn)),
+                Ralat(mesej) => Ralat(GagalLuaran(mesej)),
+            }
+        },
+        _ => Ralat(PeralihanTidakSah(nama_keadaan(keadaan), "Selesai")),
+    };
+}
+
+/// Menunggu -> Ditolak (pure — no external effects needed)
+fungsi tolak(
+    keadaan: KeadaanPembayaran,
+    sebab: Teks
+) -> Hasil<KeadaanPembayaran, RalatPeralihan> kesan Bersih {
+    padan keadaan {
+        Menunggu(info) => Ok(Ditolak(info, sebab)),
+        _ => Ralat(PeralihanTidakSah(nama_keadaan(keadaan), "Ditolak")),
+    };
+}
+
+/// Any non-terminal -> Dibatalkan
+fungsi batalkan(
+    keadaan: KeadaanPembayaran,
+    sebab: Teks
+) -> Hasil<KeadaanPembayaran, RalatPeralihan> kesan Bersih {
+    padan keadaan {
+        Selesai(_, _, _) => Ralat(PeralihanTidakSah("Selesai", "Dibatalkan")),
+        Ditolak(_, _) => Ralat(PeralihanTidakSah("Ditolak", "Dibatalkan")),
+        Dibatalkan(_, _) => Ralat(PeralihanTidakSah("Dibatalkan", "Dibatalkan")),
+        Menunggu(info) => Ok(Dibatalkan(info, sebab)),
+        Diluluskan(info, _) => Ok(Dibatalkan(info, sebab)),
+        Diproses(info, _, _) => Ok(Dibatalkan(info, sebab)),
+    };
+}
+
+/// ─── Query functions (pure) ─────────────────────────────────────────
+
+fungsi terminal?(keadaan: KeadaanPembayaran) -> Benar kesan Bersih {
+    padan keadaan {
+        Selesai(_, _, _) => betul,
+        Ditolak(_, _) => betul,
+        Dibatalkan(_, _) => betul,
+        _ => salah,
+    };
+}
+
+fungsi nama_keadaan(keadaan: KeadaanPembayaran) -> Teks kesan Bersih {
+    padan keadaan {
+        Menunggu(_) => "Menunggu",
+        Diluluskan(_, _) => "Diluluskan",
+        Diproses(_, _, _) => "Diproses",
+        Selesai(_, _, _) => "Selesai",
+        Ditolak(_, _) => "Ditolak",
+        Dibatalkan(_, _) => "Dibatalkan",
+    };
+}
+
+fungsi jumlah_pembayaran(keadaan: KeadaanPembayaran) -> Nombor kesan Bersih {
+    padan keadaan {
+        Menunggu(info) => info.jumlah,
+        Diluluskan(info, _) => info.jumlah,
+        Diproses(info, _, _) => info.jumlah,
+        Selesai(info, _, _) => info.jumlah,
+        Ditolak(info, _) => info.jumlah,
+        Dibatalkan(info, _) => info.jumlah,
+    };
+}
+
+/// ─── External service stubs ─────────────────────────────────────────
+
+fungsi sahkan_luaran(jumlah: Nombor, mata_wang: Teks) -> Hasil<Teks, Teks> kesan Rangkaian {
+    kalau jumlah > 0 {
+        Ok("AUTH-" + ke_teks(jumlah))
+    } lain {
+        Ralat("Jumlah tidak sah")
+    }
+}
+
+fungsi selesaikan_luaran(id_txn: Nombor) -> Hasil<Teks, Teks> kesan Rangkaian {
+    Ok("SETTLED")
+}
+
+fungsi jana_id_transaksi() -> Nombor kesan Bersih { pulang 12345; }
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+
+/// ─── Tests ──────────────────────────────────────────────────────────
+
+ujian "peralihan_sah_menunggu_ke_ditolak" {
+    biar info = { id: "PAY-001", jumlah: 100, mata_wang: "MYR", pembayar: "Ahmad", cap_masa: 0 };
+    biar keadaan = Menunggu(info);
+    biar hasil = tolak(keadaan, "Baki tidak mencukupi");
+    tegaskan(hasil.ok?());
+
+    padan hasil.buka() {
+        Ditolak(_, sebab) => tegaskan_sama(sebab, "Baki tidak mencukupi"),
+        _ => tegaskan(salah),
+    };
+}
+
+ujian "peralihan_tidak_sah_selesai_ke_dibatalkan" {
+    biar info = { id: "PAY-002", jumlah: 200, mata_wang: "MYR", pembayar: "Siti", cap_masa: 0 };
+    biar keadaan = Selesai(info, "AUTH-200", 99999);
+    biar hasil = batalkan(keadaan, "Mahu batal");
+    tegaskan(hasil.ralat?());
+}
+
+ujian "keadaan_terminal_betul" {
+    biar info = { id: "PAY-003", jumlah: 50, mata_wang: "MYR", pembayar: "Ali", cap_masa: 0 };
+    tegaskan(terminal?(Selesai(info, "A", 1)));
+    tegaskan(terminal?(Ditolak(info, "sebab")));
+    tegaskan(!terminal?(Menunggu(info)));
+}

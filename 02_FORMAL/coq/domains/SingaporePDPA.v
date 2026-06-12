@@ -20,10 +20,10 @@
 (*  10. Data Portability Obligation (2021 amendment)                         *)
 (* ========================================================================= *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
 Import ListNotations.
 
 (* ================================================================ *)
@@ -261,7 +261,7 @@ Qed.
 (* Extended Singapore PDPA Compliance Theorems                       *)
 (* ================================================================ *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (* --- Purpose Limitation Enforcement --- *)
 (* PDPA §18: Use only for declared purpose *)
@@ -573,7 +573,7 @@ Qed.
 (* PDPC Enforcement, Consent Validity, Retention, Cross-Border      *)
 (* ================================================================ *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (* --- Obligation 3: Notification Before Collection --- *)
 (* PDPA §20: Must notify of purposes before or at collection *)

@@ -114,7 +114,7 @@ theorem 3 : Closed Terms Weaken A closed term (typed in empty context) can be ty
   simp_all [Bool.and_eq_true]
 
 /-- substitution_preserves_typing (matches Coq) -/
-theorem substitution_preserves_typing : ∀ Γ St Δ z v e T1 T2 ε2, value v → has_type nil St Δ v T1 EffectPure → has_type ((z, T1) :: Γ) St Δ e T2 ε2 → has_type Γ St Δ ([z := v] e) T2 ε2 := by
+theorem substitution_preserves_typing : ∀ Γ St Δ z v e T1 T2 ε2, value v → has_type nil St Δ v T1 EffectPure → has_type ((z, T1) :: Γ) St Δ e T2 ε2 → has_type Γ St Δ (subst[z := v] e) T2 ε2 := by
   cases ‹_› <;> simp
 
 -- Helper: values have pure effect when typed in empty context

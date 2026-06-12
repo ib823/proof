@@ -1,0 +1,19 @@
+{
+  "generated_utc": "2026-02-10T06:32:15Z",
+  "scope": "02_FORMAL/coq active files (excluding _archive_deprecated)",
+  "active": {
+    "qed": 6302,
+    "axiom_tokens": 0,
+    "admitted_tokens": 0,
+    "admit_tactic_tokens": 0,
+    "parameter_val_rel_n_step_up": 0
+  },
+  "archived_in_option2": [
+    "properties/_archive_deprecated/NonInterference_v2.v",
+    "properties/_archive_deprecated/NonInterference_v2_LogicalRelation.v",
+    "properties/_archive_deprecated/NonInterference_v2_Monotone.v",
+    "properties/_archive_deprecated/SecurityProperties.v",
+    "properties/_archive_deprecated/Composition.v",
+    "properties/_archive_deprecated/ValRelStepLimit_PROOF.v"
+  ]
+}

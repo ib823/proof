@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CSRFProtection - Isabelle/HOL Port
@@ -87,9 +89,11 @@ definition csrf_protected :: "CSRFConfig \<Rightarrow> bool" where
 
 (* riina_csrf (matches Coq: Definition riina_csrf) *)
 definition riina_csrf :: "CSRFConfig" where
-  "riina_csrf \<equiv> mkCSRF true true true true true"
+  "riina_csrf \<equiv> mkCSRF True True True True True"
 
-(* csrf_request_safe - complex match, manual review needed *)
+(* csrf_request_safe (matches Coq: Definition csrf_request_safe) *)
+definition csrf_request_safe :: "CSRFRequest \<Rightarrow> bool" where
+  "csrf_request_safe r \<equiv> req_has_token r \<and> req_token_matches r \<and> req_same_origin r"
 
 (* csrf_request_fully_validated (matches Coq: Definition csrf_request_fully_validated) *)
 definition csrf_request_fully_validated :: "CSRFRequest \<Rightarrow> bool" where
@@ -97,7 +101,7 @@ definition csrf_request_fully_validated :: "CSRFRequest \<Rightarrow> bool" wher
 
 (* riina_csrf_request (matches Coq: Definition riina_csrf_request) *)
 definition riina_csrf_request :: "CSRFRequest" where
-  "riina_csrf_request \<equiv> mkCSRFRequest true true true true true"
+  "riina_csrf_request \<equiv> mkCSRFRequest True True True True True"
 
 (* andb_true_iff (matches Coq) *)
 lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
@@ -245,12 +249,12 @@ lemma CSRF_032_complete_request_validation: "\<forall> r, csrf_request_fully_val
 
 (* CSRF_033: Config with all false is not protected *)
 (* CSRF_033_all_false_not_protected (matches Coq) *)
-lemma CSRF_033_all_false_not_protected: "csrf_protected (mkCSRF false false false false false) = False"
+lemma CSRF_033_all_false_not_protected: "csrf_protected (mkCSRF False False False False False) = False"
   by simp
 
 (* CSRF_034: Missing token validation breaks protection *)
 (* CSRF_034_missing_token_breaks (matches Coq) *)
-lemma CSRF_034_missing_token_breaks: "csrf_protected (mkCSRF false true true true true) = False"
+lemma CSRF_034_missing_token_breaks: "csrf_protected (mkCSRF False True True True True) = False"
   by simp
 
 (* CSRF_035: Protection reconstruction from components *)

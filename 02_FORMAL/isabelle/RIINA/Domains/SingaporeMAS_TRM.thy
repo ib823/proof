@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeMAS_TRM - Isabelle/HOL Port
@@ -25,6 +27,7 @@
  * | trm_security_testing | trm_security_testing   | OK     |
  * | trm_resilience     | trm_resilience         | OK     |
  * | mas_fully_compliant | mas_fully_compliant    | OK     |
+ * | all_mas_license_types | all_mas_license_types  | OK     |
  * | count_mas_controls | count_mas_controls     | OK     |
  * | mas_cyber_hygiene  | mas_cyber_hygiene      | OK     |
  * | critical_patch_14_days | critical_patch_14_days | OK     |
@@ -65,9 +68,9 @@ datatype mas_license_type =
 
 (* PatchCriticality (matches Coq: Inductive PatchCriticality) *)
 datatype patch_criticality =
-    PatchCritical  (* ≤14 days *)
-  |     PatchHigh  (* ≤30 days *)
-  |     PatchMedium  (* ≤60 days *)
+    PatchCritical
+  |     PatchHigh
+  |     PatchMedium
   |     PatchLow
 
 (* patch_deadline (matches Coq: Definition patch_deadline) *)
@@ -79,23 +82,23 @@ fun patch_deadline :: "PatchCriticality \<Rightarrow> nat" where
 
 (* cyber_hygiene_mfa (matches Coq: Definition cyber_hygiene_mfa) *)
 definition cyber_hygiene_mfa :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "cyber_hygiene_mfa e \<equiv> mas_mfa_enabled e = true"
+  "cyber_hygiene_mfa e \<equiv> mas_mfa_enabled e = True"
 
 (* cyber_hygiene_patching (matches Coq: Definition cyber_hygiene_patching) *)
 definition cyber_hygiene_patching :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "cyber_hygiene_patching e \<equiv> mas_patching_current e = true"
+  "cyber_hygiene_patching e \<equiv> mas_patching_current e = True"
 
 (* cyber_hygiene_network (matches Coq: Definition cyber_hygiene_network) *)
 definition cyber_hygiene_network :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "cyber_hygiene_network e \<equiv> mas_network_secured e = true"
+  "cyber_hygiene_network e \<equiv> mas_network_secured e = True"
 
 (* cyber_hygiene_antimalware (matches Coq: Definition cyber_hygiene_antimalware) *)
 definition cyber_hygiene_antimalware :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "cyber_hygiene_antimalware e \<equiv> mas_antimalware e = true"
+  "cyber_hygiene_antimalware e \<equiv> mas_antimalware e = True"
 
 (* cyber_hygiene_pam (matches Coq: Definition cyber_hygiene_pam) *)
 definition cyber_hygiene_pam :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "cyber_hygiene_pam e \<equiv> mas_privileged_access_managed e = true"
+  "cyber_hygiene_pam e \<equiv> mas_privileged_access_managed e = True"
 
 (* cyber_hygiene_compliant (matches Coq: Definition cyber_hygiene_compliant) *)
 definition cyber_hygiene_compliant :: "MASRegulatedEntity \<Rightarrow> bool" where
@@ -111,17 +114,17 @@ definition patch_applied_in_time :: "PatchCriticality \<Rightarrow> bool" where
 
 (* trm_governance (matches Coq: Definition trm_governance) *)
 definition trm_governance :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "trm_governance e \<equiv> mas_board_oversight e = true /\
-  mas_risk_assessment_done e = true"
+  "trm_governance e \<equiv> mas_board_oversight e = True /\
+  mas_risk_assessment_done e = True"
 
 (* trm_security_testing (matches Coq: Definition trm_security_testing) *)
 definition trm_security_testing :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "trm_security_testing e \<equiv> mas_pen_test_done e = true"
+  "trm_security_testing e \<equiv> mas_pen_test_done e = True"
 
 (* trm_resilience (matches Coq: Definition trm_resilience) *)
 definition trm_resilience :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "trm_resilience e \<equiv> mas_incident_response_plan e = true /\
-  mas_bcp_tested e = true"
+  "trm_resilience e \<equiv> mas_incident_response_plan e = True /\
+  mas_bcp_tested e = True"
 
 (* mas_fully_compliant (matches Coq: Definition mas_fully_compliant) *)
 definition mas_fully_compliant :: "MASRegulatedEntity \<Rightarrow> bool" where
@@ -129,6 +132,11 @@ definition mas_fully_compliant :: "MASRegulatedEntity \<Rightarrow> bool" where
   trm_governance e /\
   trm_security_testing e /\
   trm_resilience e"
+
+(* all_mas_license_types (matches Coq: Definition all_mas_license_types) *)
+definition all_mas_license_types :: "list MASLicenseType" where
+  "all_mas_license_types \<equiv> [FullBank; WholesaleBank; MerchantBank; InsuranceCo;
+   CapitalMarketsServices; PaymentInstitution; MajorPaymentInstitution]"
 
 (* count_mas_controls (matches Coq: Definition count_mas_controls) *)
 definition count_mas_controls :: "MASRegulatedEntity \<Rightarrow> nat" where

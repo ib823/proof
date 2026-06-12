@@ -1,3 +1,4 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
@@ -36,6 +37,8 @@
  * | QuantumSafeNetwork | quantum_safe_network   | OK     |
  * | FormalVerificationConfig | formal_verification_config | OK     |
  * | MathematicalProof  | mathematical_proof     | OK     |
+ * | APT_KEY_ROTATION_MAX_AGE_S | APT_KEY_ROTATION_MAX_AGE_S | OK     |
+ * | CV_ATTESTATION_INTERVAL_MAX_MS | CV_ATTESTATION_INTERVAL_MAX_MS | OK     |
  * | kem_security_level | kem_security_level     | OK     |
  * | sig_security_level | sig_security_level     | OK     |
  * | symmetric_quantum_safe | symmetric_quantum_safe | OK     |
@@ -286,6 +289,14 @@ record mathematical_proof =
   mp_machine_checked :: bool
   mp_assumptions :: 'a list
 
+(* APT_KEY_ROTATION_MAX_AGE_S (matches Coq: Definition APT_KEY_ROTATION_MAX_AGE_S) *)
+definition APT_KEY_ROTATION_MAX_AGE_S :: "nat" where
+  "APT_KEY_ROTATION_MAX_AGE_S \<equiv> Z.to_nat 86400%Z"
+
+(* CV_ATTESTATION_INTERVAL_MAX_MS (matches Coq: Definition CV_ATTESTATION_INTERVAL_MAX_MS) *)
+definition CV_ATTESTATION_INTERVAL_MAX_MS :: "nat" where
+  "CV_ATTESTATION_INTERVAL_MAX_MS \<equiv> Z.to_nat 60000%Z"
+
 (* kem_security_level (matches Coq: Definition kem_security_level) *)
 fun kem_security_level :: "PQ_KEM \<Rightarrow> nat" where
   "kem_security_level ML_KEM_512 = 1"
@@ -373,7 +384,7 @@ definition composed_security_sound :: "ComposedSecurity \<Rightarrow> bool" wher
 
 (* key_rotation_apt_safe (matches Coq: Definition key_rotation_apt_safe) *)
 definition key_rotation_apt_safe :: "KeyRotationPolicy \<Rightarrow> bool" where
-  "key_rotation_apt_safe krp \<equiv> ((krp_max_age_seconds \<le> krp)) 86400 \<and>  
+  "key_rotation_apt_safe krp \<equiv> ((krp_max_age_seconds \<le> krp)) APT_KEY_ROTATION_MAX_AGE_S \<and>  
   krp_forward_secrecy krp \<and>
   krp_compromise_recovery krp \<and>
   krp_automated krp"
@@ -382,7 +393,7 @@ definition key_rotation_apt_safe :: "KeyRotationPolicy \<Rightarrow> bool" where
 definition cv_comprehensive :: "ContinuousVerification \<Rightarrow> bool" where
   "cv_comprehensive cv \<equiv> cv_runtime_checks cv \<and>
   cv_periodic_attestation cv \<and>
-  ((cv_attestation_interval_ms \<le> cv)) 60000 \<and>  
+  ((cv_attestation_interval_ms \<le> cv)) CV_ATTESTATION_INTERVAL_MAX_MS \<and>  
   cv_anomaly_detection cv \<and>
   cv_state_integrity cv"
 

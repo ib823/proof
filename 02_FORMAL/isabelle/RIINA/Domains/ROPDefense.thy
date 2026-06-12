@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ROPDefense - Isabelle/HOL Port
@@ -22,6 +24,8 @@
  * | CodePointer        | code_pointer           | OK     |
  * | CPIConfig          | cpi_config             | OK     |
  * | shadow_push        | shadow_push            | OK     |
+ * | shadow_pop         | shadow_pop             | OK     |
+ * | shadow_peek        | shadow_peek            | OK     |
  * | return_matches_shadow | return_matches_shadow  | OK     |
  * | valid_return       | valid_return           | OK     |
  * | is_valid_target    | is_valid_target        | OK     |
@@ -130,26 +134,22 @@
  *)
 
 theory ROPDefense
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* GadgetType (matches Coq: Inductive GadgetType) *)
 datatype gadget_type =
-    GadgetROP  (* Return-based gadget *)
-  |     GadgetJOP  (* Jump-based gadget *)
-  |     GadgetCOP  (* Call-based gadget *)
+    GadgetROP
+  |     GadgetJOP
+  |     GadgetCOP
   |     GadgetSROP
 
 (* CodePtrType (matches Coq: Inductive CodePtrType) *)
 datatype code_ptr_type =
-    CPFunction  (* Function pointer *)
-  |     CPVTable  (* Virtual table pointer *)
-  |     CPReturnAddr  (* Return address *)
-  |     CPExceptionHandler  (* Exception handler *)
+    CPFunction
+  |     CPVTable
+  |     CPReturnAddr
+  |     CPExceptionHandler
   |     CPSignalHandler
 
 (* CFIConfig (matches Coq: Record CFIConfig) *)
@@ -210,9 +210,19 @@ record cpi_config =
 
 (* shadow_push (matches Coq: Definition shadow_push) *)
 definition shadow_push :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> FuncId \<Rightarrow> nat \<Rightarrow> ShadowStack" where
-  "shadow_push ss ret caller fp \<equiv> mkShadowEntry ret caller fp true :: ss"
+  "shadow_push ss ret caller fp \<equiv> mkShadowEntry ret caller fp True :: ss"
 
-(* return_matches_shadow - complex match, manual review needed *)
+(* shadow_pop (matches Coq: Definition shadow_pop) *)
+fun shadow_pop :: "ShadowStack \<Rightarrow> option (ShadowEntry * ShadowStack)" where
+  "shadow_pop nil = None"
+
+(* shadow_peek (matches Coq: Definition shadow_peek) *)
+fun shadow_peek :: "ShadowStack \<Rightarrow> option ShadowEntry" where
+  "shadow_peek nil = None"
+
+(* return_matches_shadow (matches Coq: Definition return_matches_shadow) *)
+fun return_matches_shadow :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" where
+  "return_matches_shadow nil = false"
 
 (* valid_return (matches Coq: Definition valid_return) *)
 fun valid_return :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" where
@@ -220,7 +230,7 @@ fun valid_return :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" whe
 
 (* is_valid_target (matches Coq: Definition is_valid_target) *)
 definition is_valid_target :: "ValidTargets \<Rightarrow> InstrAddr \<Rightarrow> bool" where
-  "is_valid_target targets addr \<equiv> existsb (Nat"
+  "is_valid_target targets addr \<equiv> existsb ((addr) = targets)"
 
 (* indirect_branch_valid (matches Coq: Definition indirect_branch_valid) *)
 definition indirect_branch_valid :: "ValidTargets \<Rightarrow> InstrAddr \<Rightarrow> bool" where
@@ -228,9 +238,10 @@ definition indirect_branch_valid :: "ValidTargets \<Rightarrow> InstrAddr \<Righ
 
 (* btb_entry_valid (matches Coq: Definition btb_entry_valid) *)
 definition btb_entry_valid :: "ValidTargets \<Rightarrow> BTBEntry \<Rightarrow> bool" where
-  "btb_entry_valid targets e \<equiv> btb_validated e = true /\ In (btb_target e) targets"
+  "btb_entry_valid targets e \<equiv> btb_validated e = True /\ In (btb_target e) targets"
 
-(* gadget_blocked - complex match, manual review needed *)
+(* gadget_blocked - complex match, needs manual translation *)
+definition gadget_blocked :: "bool" where "gadget_blocked = undefined"
 
 (* chain_blocked (matches Coq: Definition chain_blocked) *)
 definition chain_blocked :: "CFIConfig \<Rightarrow> GadgetChain \<Rightarrow> bool" where
@@ -238,8 +249,8 @@ definition chain_blocked :: "CFIConfig \<Rightarrow> GadgetChain \<Rightarrow> b
 
 (* cp_protected (matches Coq: Definition cp_protected) *)
 definition cp_protected :: "CPIConfig \<Rightarrow> CodePointer \<Rightarrow> bool" where
-  "cp_protected cpi cp \<equiv> (negb (cpi_ptr_authentication cpi) \<or> cp_authenticated cp) \<and>
-  (negb (cpi_bounds_checking cpi) \<or> cp_bounds_checked cp)"
+  "cp_protected cpi cp \<equiv> ((\<not> (cpi_ptr_authentication) cpi) \<or> cp_authenticated cp) \<and>
+  ((\<not> (cpi_bounds_checking) cpi) \<or> cp_bounds_checked cp)"
 
 (* cfi_complete (matches Coq: Definition cfi_complete) *)
 definition cfi_complete :: "CFIConfig \<Rightarrow> bool" where
@@ -261,19 +272,19 @@ definition cpi_complete :: "CPIConfig \<Rightarrow> bool" where
 
 (* riina_cfi (matches Coq: Definition riina_cfi) *)
 definition riina_cfi :: "CFIConfig" where
-  "riina_cfi \<equiv> mkCFI true true true true true"
+  "riina_cfi \<equiv> mkCFI True True True True True"
 
 (* riina_cr (matches Coq: Definition riina_cr) *)
 definition riina_cr :: "CodeReuse" where
-  "riina_cr \<equiv> mkCodeReuse true true true"
+  "riina_cr \<equiv> mkCodeReuse True True True"
 
 (* riina_rop (matches Coq: Definition riina_rop) *)
 definition riina_rop :: "ROPDefenseConfig" where
-  "riina_rop \<equiv> mkROPDefense riina_cfi riina_cr true true"
+  "riina_rop \<equiv> mkROPDefense riina_cfi riina_cr True True"
 
 (* riina_cpi (matches Coq: Definition riina_cpi) *)
 definition riina_cpi :: "CPIConfig" where
-  "riina_cpi \<equiv> mkCPI true true true true"
+  "riina_cpi \<equiv> mkCPI True True True True"
 
 (* ============================================================================
     SECTION 1: BASIC LEMMAS
@@ -287,7 +298,7 @@ lemma andb_true_intro: "\<forall> a b : bool, a = True \<longrightarrow> b = Tru
   by simp
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* orb_true_iff (matches Coq) *)
@@ -421,7 +432,7 @@ lemma ROP_030_empty_stack_no_return: "\<forall> ret_addr, ~ valid_return nil ret
   by auto
 
 (* ROP_031_push_pop_inverse (matches Coq) *)
-lemma ROP_031_push_pop_inverse: "\<forall> ss ret caller fp, shadow_pop (shadow_push ss ret caller fp) = Some (mkShadowEntry ret caller fp true, ss)"
+lemma ROP_031_push_pop_inverse: "\<forall> ss ret caller fp, shadow_pop (shadow_push ss ret caller fp) = Some (mkShadowEntry ret caller fp True, ss)"
   by simp
 
 (* ROP_032_pushed_entry_valid (matches Coq) *)
@@ -538,15 +549,15 @@ lemma ROP_057_fully_protected_ptr: "\<forall> cp, cp_authenticated cp = True \<l
   by simp
 
 (* ROP_058_no_auth_requirement_passes (matches Coq) *)
-lemma ROP_058_no_auth_requirement_passes: "\<forall> cp, cpi_ptr_authentication (mkCPI false true true true) = False \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected (mkCPI false true true true) cp = True"
+lemma ROP_058_no_auth_requirement_passes: "\<forall> cp, cpi_ptr_authentication (mkCPI False True True True) = False \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected (mkCPI False True True True) cp = True"
   by simp
 
 (* ROP_059_function_ptr_type (matches Coq) *)
-lemma ROP_059_function_ptr_type: "\<forall> addr, cp_type (mkCodePtr CPFunction addr true true) = CPFunction"
+lemma ROP_059_function_ptr_type: "\<forall> addr, cp_type (mkCodePtr CPFunction addr True True) = CPFunction"
   by simp
 
 (* ROP_060_return_addr_protected (matches Coq) *)
-lemma ROP_060_return_addr_protected: "\<forall> addr, cp_authenticated (mkCodePtr CPReturnAddr addr true true) = True \<longrightarrow> cp_bounds_checked (mkCodePtr CPReturnAddr addr true true) = True \<longrightarrow> cp_protected riina_cpi (mkCodePtr CPReturnAddr addr true true) = True"
+lemma ROP_060_return_addr_protected: "\<forall> addr, cp_authenticated (mkCodePtr CPReturnAddr addr True True) = True \<longrightarrow> cp_bounds_checked (mkCodePtr CPReturnAddr addr True True) = True \<longrightarrow> cp_protected riina_cpi (mkCodePtr CPReturnAddr addr True True) = True"
   by auto
 
 (* ============================================================================

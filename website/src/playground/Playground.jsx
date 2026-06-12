@@ -167,7 +167,7 @@ mesej`
 const KEYWORDS = new Set([
   'fungsi', 'biar', 'ubah', 'tetap', 'bentuk', 'pilihan', 'jenis', 'sifat',
   'laksana', 'modul', 'guna', 'awam', 'kalau', 'lain', 'untuk', 'selagi',
-  'ulang', 'pulang', 'padan', 'keluar', 'terus', 'kesan', 'masa_tetap',
+  'ulang', 'pulang', 'padan', 'putus', 'lanjut', 'kesan', 'masa_tetap',
   'sekali', 'benar', 'palsu', 'tiada',
   'pelakon', 'lahir', 'hantar', 'terima', 'kendalikan', 'keadaan',
   'paparan', 'tulisan', 'butang', 'warna', 'kontras', 'baris', 'lajur',

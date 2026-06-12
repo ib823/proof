@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaBNMRMiT - Isabelle/HOL Port
@@ -22,6 +24,8 @@
  * | third_party_compliant | third_party_compliant  | OK     |
  * | bcp_compliant      | bcp_compliant          | OK     |
  * | rmit_fully_compliant | rmit_fully_compliant   | OK     |
+ * | all_fi_types       | all_fi_types           | OK     |
+ * | all_cloud_deployments | all_cloud_deployments  | OK     |
  * | bnm_incident_deadline | bnm_incident_deadline  | OK     |
  * | bnm_incident_reported_timely | bnm_incident_reported_timely | OK     |
  * | outsourcing_compliant | outsourcing_compliant  | OK     |
@@ -78,11 +82,11 @@ datatype cloud_deployment =
 
 (* governance_compliant (matches Coq: Definition governance_compliant) *)
 definition governance_compliant :: "FinancialInstitution \<Rightarrow> bool" where
-  "governance_compliant fi \<equiv> fi_board_oversight fi = true"
+  "governance_compliant fi \<equiv> fi_board_oversight fi = True"
 
 (* risk_framework_established (matches Coq: Definition risk_framework_established) *)
 definition risk_framework_established :: "FinancialInstitution \<Rightarrow> bool" where
-  "risk_framework_established fi \<equiv> fi_risk_framework fi = true"
+  "risk_framework_established fi \<equiv> fi_risk_framework fi = True"
 
 (* cyber_controls_adequate (matches Coq: Definition cyber_controls_adequate) *)
 definition cyber_controls_adequate :: "FinancialInstitution \<Rightarrow> bool" where
@@ -90,21 +94,22 @@ definition cyber_controls_adequate :: "FinancialInstitution \<Rightarrow> bool" 
 
 (* ops_resilience_verified (matches Coq: Definition ops_resilience_verified) *)
 definition ops_resilience_verified :: "FinancialInstitution \<Rightarrow> bool" where
-  "ops_resilience_verified fi \<equiv> fi_ops_resilience_tested fi = true"
+  "ops_resilience_verified fi \<equiv> fi_ops_resilience_tested fi = True"
 
 (* audit_compliant (matches Coq: Definition audit_compliant) *)
 definition audit_compliant :: "FinancialInstitution \<Rightarrow> bool" where
-  "audit_compliant fi \<equiv> fi_audit_completed fi = true"
+  "audit_compliant fi \<equiv> fi_audit_completed fi = True"
 
-(* cloud_compliant - complex match, manual review needed *)
+(* cloud_compliant - complex match, needs manual translation *)
+definition cloud_compliant :: "bool" where "cloud_compliant = undefined"
 
 (* third_party_compliant (matches Coq: Definition third_party_compliant) *)
 definition third_party_compliant :: "FinancialInstitution \<Rightarrow> bool" where
-  "third_party_compliant fi \<equiv> fi_third_party_assessed fi = true"
+  "third_party_compliant fi \<equiv> fi_third_party_assessed fi = True"
 
 (* bcp_compliant (matches Coq: Definition bcp_compliant) *)
 definition bcp_compliant :: "FinancialInstitution \<Rightarrow> bool" where
-  "bcp_compliant fi \<equiv> fi_bcp_tested fi = true"
+  "bcp_compliant fi \<equiv> fi_bcp_tested fi = True"
 
 (* rmit_fully_compliant (matches Coq: Definition rmit_fully_compliant) *)
 definition rmit_fully_compliant :: "FinancialInstitution \<Rightarrow> bool" where
@@ -117,6 +122,15 @@ definition rmit_fully_compliant :: "FinancialInstitution \<Rightarrow> bool" whe
   third_party_compliant fi /\
   bcp_compliant fi"
 
+(* all_fi_types (matches Coq: Definition all_fi_types) *)
+definition all_fi_types :: "list FIType" where
+  "all_fi_types \<equiv> [Bank; Insurer; TakafulOperator; PaymentSystemOperator;
+   DesignatedPaymentInstrument; ApprovedElectronicMoney]"
+
+(* all_cloud_deployments (matches Coq: Definition all_cloud_deployments) *)
+definition all_cloud_deployments :: "list CloudDeployment" where
+  "all_cloud_deployments \<equiv> [OnPremise; PrivateCloud; PublicCloud; HybridCloud]"
+
 (* bnm_incident_deadline (matches Coq: Definition bnm_incident_deadline) *)
 definition bnm_incident_deadline :: "nat" where
   "bnm_incident_deadline \<equiv> 6"
@@ -127,9 +141,9 @@ definition bnm_incident_reported_timely :: "BNMIncident \<Rightarrow> bool" wher
 
 (* outsourcing_compliant (matches Coq: Definition outsourcing_compliant) *)
 definition outsourcing_compliant :: "OutsourcingArrangement \<Rightarrow> bool" where
-  "outsourcing_compliant oa \<equiv> oa_risk_assessed oa = true /\
-  (oa_material oa = true -> oa_bnm_notified oa = true) /\
-  oa_exit_strategy oa = true"
+  "outsourcing_compliant oa \<equiv> oa_risk_assessed oa = True /\
+  (oa_material oa = True -> oa_bnm_notified oa = True) /\
+  oa_exit_strategy oa = True"
 
 (* tech_refresh_current (matches Coq: Definition tech_refresh_current) *)
 definition tech_refresh_current :: "TechRefreshStatus \<Rightarrow> nat \<Rightarrow> bool" where

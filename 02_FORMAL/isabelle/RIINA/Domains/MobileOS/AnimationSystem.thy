@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AnimationSystem - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AnimationType      | animation_type         | OK     |
+ * | TimingFunction     | timing_function        | OK     |
  * | SpringParams       | spring_params          | OK     |
  * | SpringAnimation    | spring_animation       | OK     |
  * | AnimationControl   | animation_control      | OK     |
@@ -22,11 +25,16 @@
  * | Time               | Time                   | OK     |
  * | Position           | Position               | OK     |
  * | Velocity           | Velocity               | OK     |
+ * | position_at        | position_at            | OK     |
+ * | velocity_at        | velocity_at            | OK     |
+ * | physics_simulation | physics_simulation     | OK     |
  * | positions_smooth   | positions_smooth       | OK     |
  * | second_derivative_continuous | second_derivative_continuous | OK     |
  * | well_formed_spring | well_formed_spring     | OK     |
  * | reaches_target     | reaches_target         | OK     |
+ * | FRAME_BUDGET_60HZ_US | FRAME_BUDGET_60HZ_US   | OK     |
  * | frame_budget_60hz  | frame_budget_60hz      | OK     |
+ * | FRAME_BUDGET_120HZ_US | FRAME_BUDGET_120HZ_US  | OK     |
  * | frame_budget_120hz | frame_budget_120hz     | OK     |
  * | meets_frame_budget | meets_frame_budget     | OK     |
  * | well_formed_anim_control | well_formed_anim_control | OK     |
@@ -64,12 +72,15 @@ begin
 
 (* AnimationType (matches Coq: Inductive AnimationType) *)
 datatype animation_type =
-    ImplicitAnim  (* system-driven *)
-  |     ExplicitAnim  (* developer-driven *)
-  |     SpringAnim  (* physics-based *)
-  |     KeyframeAnim  (* multi-keyframe *)
+    ImplicitAnim
+  |     ExplicitAnim
+  |     SpringAnim
+  |     KeyframeAnim
   |     TransitionAnim
-  |     Linear
+
+(* TimingFunction (matches Coq: Inductive TimingFunction) *)
+datatype timing_function =
+    Linear
   |     EaseIn
   |     EaseOut
   |     EaseInOut
@@ -93,12 +104,12 @@ record spring_animation =
 (* AnimationControl (matches Coq: Record AnimationControl) *)
 record animation_control =
   anim_type :: AnimationType
-  anim_speed :: nat  (* 100 = normal, 200 = 2x, 50 = 0.5x *)
+  anim_speed :: nat
   anim_reversed :: bool
   anim_autoreverses :: bool
-  anim_repeat_count :: nat  (* 0 = infinite *)
+  anim_repeat_count :: nat
   anim_current_repeat :: nat
-  anim_fill_mode :: nat  (* 0=removed, 1=forwards, 2=backwards, 3=both *)
+  anim_fill_mode :: nat
   anim_delegate_notified :: bool
   anim_removed_cleanly :: bool
 
@@ -106,11 +117,11 @@ record animation_control =
 record animation_group =
   ag_animations :: 'a list
   ag_synchronized :: bool
-  ag_duration :: nat  (* milliseconds *)
+  ag_duration :: nat
 
 (* LayerAnimation (matches Coq: Record LayerAnimation) *)
 record layer_animation =
-  la_property :: nat  (* which property is animated *)
+  la_property :: nat
   la_gpu_accelerated :: bool
   la_from_value :: nat
   la_to_value :: nat
@@ -118,7 +129,7 @@ record layer_animation =
 
 (* Keyframe (matches Coq: Record Keyframe) *)
 record keyframe =
-  kf_time :: nat  (* 0-100 percentage of duration *)
+  kf_time :: nat
   kf_value :: nat
   kf_timing :: TimingFunction
 
@@ -139,6 +150,25 @@ definition Position :: "'a" where
 definition Velocity :: "'a" where
   "Velocity \<equiv> nat"
 
+(* position_at (matches Coq: Definition position_at) *)
+definition position_at :: "SpringAnimation \<Rightarrow> Time \<Rightarrow> option Position" where
+  "position_at sa t \<equiv> nth_error (spring_positions sa) t"
+
+(* velocity_at (matches Coq: Definition velocity_at) *)
+definition velocity_at :: "SpringAnimation \<Rightarrow> Time \<Rightarrow> option Velocity" where
+  "velocity_at sa t \<equiv> nth_error (spring_velocities sa) t"
+
+(* physics_simulation (matches Coq: Definition physics_simulation) *)
+definition physics_simulation :: "SpringAnimation \<Rightarrow> Time \<Rightarrow> option Position" where
+  "physics_simulation sa t \<equiv> let params := spring_params sa in
+  let initial := spring_initial_pos params in
+  let target := spring_target_pos params in
+  let duration := spring_duration sa in
+  if t <=? duration then
+    Some (initial + ((target - initial) * t / (duration + 1)))
+  else
+    Some target"
+
 (* positions_smooth (matches Coq: Definition positions_smooth) *)
 definition positions_smooth :: "bool" where
   "positions_smooth \<equiv> forall i p1 p2,
@@ -158,15 +188,24 @@ definition well_formed_spring :: "SpringAnimation \<Rightarrow> bool" where
   length (spring_velocities sa) = spring_duration sa + 1 /\
   positions_smooth (spring_positions sa)"
 
-(* reaches_target - complex match, manual review needed *)
+(* reaches_target - complex match, needs manual translation *)
+definition reaches_target :: "bool" where "reaches_target = undefined"
+
+(* FRAME_BUDGET_60HZ_US (matches Coq: Definition FRAME_BUDGET_60HZ_US) *)
+definition FRAME_BUDGET_60HZ_US :: "nat" where
+  "FRAME_BUDGET_60HZ_US \<equiv> Z.to_nat 16667%Z"
 
 (* frame_budget_60hz (matches Coq: Definition frame_budget_60hz) *)
 definition frame_budget_60hz :: "nat" where
-  "frame_budget_60hz \<equiv> 16667"
+  "frame_budget_60hz \<equiv> FRAME_BUDGET_60HZ_US"
+
+(* FRAME_BUDGET_120HZ_US (matches Coq: Definition FRAME_BUDGET_120HZ_US) *)
+definition FRAME_BUDGET_120HZ_US :: "nat" where
+  "FRAME_BUDGET_120HZ_US \<equiv> Z.to_nat 8333%Z"
 
 (* frame_budget_120hz (matches Coq: Definition frame_budget_120hz) *)
 definition frame_budget_120hz :: "nat" where
-  "frame_budget_120hz \<equiv> 8333"
+  "frame_budget_120hz \<equiv> FRAME_BUDGET_120HZ_US"
 
 (* meets_frame_budget (matches Coq: Definition meets_frame_budget) *)
 definition meets_frame_budget :: "Frame \<Rightarrow> bool" where
@@ -176,26 +215,27 @@ definition meets_frame_budget :: "Frame \<Rightarrow> bool" where
 definition well_formed_anim_control :: "AnimationControl \<Rightarrow> bool" where
   "well_formed_anim_control ac \<equiv> anim_speed ac > 0 /\
   anim_speed ac <= 1000 /\
-  (anim_autoreverses ac = true -> anim_repeat_count ac > 0) /\
+  (anim_autoreverses ac = True -> anim_repeat_count ac > 0) /\
   anim_current_repeat ac <= anim_repeat_count ac /\
   anim_fill_mode ac <= 3"
 
 (* well_formed_anim_group (matches Coq: Definition well_formed_anim_group) *)
 definition well_formed_anim_group :: "AnimationGroup \<Rightarrow> bool" where
-  "well_formed_anim_group ag \<equiv> ag_synchronized ag = true /\
+  "well_formed_anim_group ag \<equiv> ag_synchronized ag = True /\
   ag_duration ag > 0 /\
   length (ag_animations ag) > 0"
 
 (* well_formed_layer_anim (matches Coq: Definition well_formed_layer_anim) *)
 definition well_formed_layer_anim :: "LayerAnimation \<Rightarrow> bool" where
-  "well_formed_layer_anim la \<equiv> la_gpu_accelerated la = true"
+  "well_formed_layer_anim la \<equiv> la_gpu_accelerated la = True"
 
 (* keyframe_in_range (matches Coq: Definition keyframe_in_range) *)
 definition keyframe_in_range :: "Keyframe \<Rightarrow> bool" where
   "keyframe_in_range kf \<equiv> (from <= to -> from <= kf_value kf /\ kf_value kf <= to) /\
   (to <= from -> to <= kf_value kf /\ kf_value kf <= from)"
 
-(* spring_converges - complex match, manual review needed *)
+(* spring_converges - complex match, needs manual translation *)
+definition spring_converges :: "bool" where "spring_converges = undefined"
 
 (* nth_error_In_bounds (matches Coq) *)
 lemma nth_error_In_bounds: "\<forall> A (l : list A) n, n < length l \<longrightarrow> \<exists> x, nth_error l n = Some x"

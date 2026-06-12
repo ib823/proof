@@ -19,7 +19,11 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("senarai_lipat", "list_fold", "senarai_lipat"),
     ("senarai_balik", "list_reverse", "senarai_balik"),
     ("senarai_susun", "list_sort", "senarai_susun"),
-    ("senarai_mengandungi", "list_contains", "senarai_mengandungi"),
+    (
+        "senarai_mengandungi",
+        "list_contains",
+        "senarai_mengandungi",
+    ),
     ("senarai_sambung", "list_concat", "senarai_sambung"),
     ("senarai_kepala", "list_head", "senarai_kepala"),
     ("senarai_ekor", "list_tail", "senarai_ekor"),
@@ -53,7 +57,11 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     let items = extract_list(list, "senarai_dapat")?;
                     let i = extract_int(idx, "senarai_dapat")? as usize;
                     items.get(i).cloned().map(Some).ok_or_else(|| {
-                        Error::InvalidOperation(format!("index {} out of bounds, list length {}", i, items.len()))
+                        Error::InvalidOperation(format!(
+                            "index {} out of bounds, list length {}",
+                            i,
+                            items.len()
+                        ))
                     })
                 }
                 _ => Err(type_err("(list, int)", arg, "senarai_dapat")),
@@ -72,11 +80,9 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         "senarai_susun" => {
             let items = extract_list(arg, "senarai_susun")?;
             let mut sorted = items.clone();
-            sorted.sort_by(|a, b| {
-                match (a, b) {
-                    (Value::Int(x), Value::Int(y)) => x.cmp(y),
-                    _ => std::cmp::Ordering::Equal,
-                }
+            sorted.sort_by(|a, b| match (a, b) {
+                (Value::Int(x), Value::Int(y)) => x.cmp(y),
+                _ => std::cmp::Ordering::Equal,
             });
             Ok(Some(Value::List(sorted)))
         }
@@ -104,9 +110,11 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         }
         "senarai_kepala" => {
             let items = extract_list(arg, "senarai_kepala")?;
-            items.first().cloned().map(Some).ok_or_else(|| {
-                Error::InvalidOperation("head of empty list".to_string())
-            })
+            items
+                .first()
+                .cloned()
+                .map(Some)
+                .ok_or_else(|| Error::InvalidOperation("head of empty list".to_string()))
         }
         "senarai_ekor" => {
             let items = extract_list(arg, "senarai_ekor")?;
@@ -219,7 +227,10 @@ mod tests {
 
     #[test]
     fn test_senarai_baru() {
-        assert_eq!(apply("senarai_baru", &Value::Unit).unwrap(), Some(Value::List(vec![])));
+        assert_eq!(
+            apply("senarai_baru", &Value::Unit).unwrap(),
+            Some(Value::List(vec![]))
+        );
     }
 
     #[test]
@@ -247,7 +258,10 @@ mod tests {
     #[test]
     fn test_senarai_panjang() {
         let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
-        assert_eq!(apply("senarai_panjang", &list).unwrap(), Some(Value::Int(3)));
+        assert_eq!(
+            apply("senarai_panjang", &list).unwrap(),
+            Some(Value::Int(3))
+        );
     }
 
     #[test]
@@ -255,7 +269,11 @@ mod tests {
         let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
         assert_eq!(
             apply("senarai_balik", &list).unwrap(),
-            Some(Value::List(vec![Value::Int(3), Value::Int(2), Value::Int(1)]))
+            Some(Value::List(vec![
+                Value::Int(3),
+                Value::Int(2),
+                Value::Int(1)
+            ]))
         );
     }
 
@@ -264,7 +282,11 @@ mod tests {
         let list = Value::List(vec![Value::Int(3), Value::Int(1), Value::Int(2)]);
         assert_eq!(
             apply("senarai_susun", &list).unwrap(),
-            Some(Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]))
+            Some(Value::List(vec![
+                Value::Int(1),
+                Value::Int(2),
+                Value::Int(3)
+            ]))
         );
     }
 
@@ -272,9 +294,15 @@ mod tests {
     fn test_senarai_mengandungi() {
         let list = Value::List(vec![Value::Int(1), Value::Int(2)]);
         let arg = Value::Pair(Box::new(list.clone()), Box::new(Value::Int(2)));
-        assert_eq!(apply("senarai_mengandungi", &arg).unwrap(), Some(Value::Bool(true)));
+        assert_eq!(
+            apply("senarai_mengandungi", &arg).unwrap(),
+            Some(Value::Bool(true))
+        );
         let arg2 = Value::Pair(Box::new(list), Box::new(Value::Int(5)));
-        assert_eq!(apply("senarai_mengandungi", &arg2).unwrap(), Some(Value::Bool(false)));
+        assert_eq!(
+            apply("senarai_mengandungi", &arg2).unwrap(),
+            Some(Value::Bool(false))
+        );
     }
 
     #[test]
@@ -301,14 +329,23 @@ mod tests {
     #[test]
     fn test_senarai_zip() {
         let a = Value::List(vec![Value::Int(1), Value::Int(2)]);
-        let b = Value::List(vec![Value::String("a".to_string()), Value::String("b".to_string())]);
+        let b = Value::List(vec![
+            Value::String("a".to_string()),
+            Value::String("b".to_string()),
+        ]);
         let arg = Value::Pair(Box::new(a), Box::new(b));
         let result = apply("senarai_zip", &arg).unwrap().unwrap();
         assert_eq!(
             result,
             Value::List(vec![
-                Value::Pair(Box::new(Value::Int(1)), Box::new(Value::String("a".to_string()))),
-                Value::Pair(Box::new(Value::Int(2)), Box::new(Value::String("b".to_string()))),
+                Value::Pair(
+                    Box::new(Value::Int(1)),
+                    Box::new(Value::String("a".to_string()))
+                ),
+                Value::Pair(
+                    Box::new(Value::Int(2)),
+                    Box::new(Value::String("b".to_string()))
+                ),
             ])
         );
     }
@@ -320,25 +357,46 @@ mod tests {
         let list = Value::List(vec![inner1, inner2]);
         assert_eq!(
             apply("senarai_rata", &list).unwrap(),
-            Some(Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]))
+            Some(Value::List(vec![
+                Value::Int(1),
+                Value::Int(2),
+                Value::Int(3)
+            ]))
         );
     }
 
     #[test]
     fn test_senarai_unik() {
-        let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(1), Value::Int(3)]);
+        let list = Value::List(vec![
+            Value::Int(1),
+            Value::Int(2),
+            Value::Int(1),
+            Value::Int(3),
+        ]);
         assert_eq!(
             apply("senarai_unik", &list).unwrap(),
-            Some(Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]))
+            Some(Value::List(vec![
+                Value::Int(1),
+                Value::Int(2),
+                Value::Int(3)
+            ]))
         );
     }
 
     #[test]
     fn test_senarai_potong() {
-        let list = Value::List(vec![Value::Int(10), Value::Int(20), Value::Int(30), Value::Int(40)]);
+        let list = Value::List(vec![
+            Value::Int(10),
+            Value::Int(20),
+            Value::Int(30),
+            Value::Int(40),
+        ]);
         let arg = Value::Pair(
             Box::new(list),
-            Box::new(Value::Pair(Box::new(Value::Int(1)), Box::new(Value::Int(3)))),
+            Box::new(Value::Pair(
+                Box::new(Value::Int(1)),
+                Box::new(Value::Int(3)),
+            )),
         );
         assert_eq!(
             apply("senarai_potong", &arg).unwrap(),
@@ -348,14 +406,127 @@ mod tests {
 
     #[test]
     fn test_senarai_nombor() {
-        let list = Value::List(vec![Value::String("a".to_string()), Value::String("b".to_string())]);
+        let list = Value::List(vec![
+            Value::String("a".to_string()),
+            Value::String("b".to_string()),
+        ]);
         let result = apply("senarai_nombor", &list).unwrap().unwrap();
         assert_eq!(
             result,
             Value::List(vec![
-                Value::Pair(Box::new(Value::Int(0)), Box::new(Value::String("a".to_string()))),
-                Value::Pair(Box::new(Value::Int(1)), Box::new(Value::String("b".to_string()))),
+                Value::Pair(
+                    Box::new(Value::Int(0)),
+                    Box::new(Value::String("a".to_string()))
+                ),
+                Value::Pair(
+                    Box::new(Value::Int(1)),
+                    Box::new(Value::String("b".to_string()))
+                ),
             ])
         );
+    }
+
+    // ── Property tests: the list builtins satisfy the invariants proven in
+    // `02_FORMAL/coq/foundations/VerifiedList.v` (sort = ascending permutation,
+    // reverse involutive, unique = de-dup preserving the set, concat length).
+    // Dependency-free: a seeded LCG sweeps many random integer lists, with values
+    // in a narrow range so duplicates are common.
+
+    fn int_list(xs: &[u64]) -> Value {
+        Value::List(xs.iter().map(|&n| Value::Int(n)).collect())
+    }
+
+    fn ints_of(v: &Value) -> Vec<u64> {
+        match v {
+            Value::List(items) => items
+                .iter()
+                .map(|x| match x {
+                    Value::Int(n) => *n,
+                    other => panic!("expected Int element, got {other:?}"),
+                })
+                .collect(),
+            other => panic!("expected List, got {other:?}"),
+        }
+    }
+
+    fn lcg(state: &mut u64) -> u64 {
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
+        *state >> 33
+    }
+
+    fn random_lists() -> Vec<Vec<u64>> {
+        let mut state: u64 = 0x9E37_79B9_7F4A_7C15;
+        let mut lists = Vec::new();
+        for _ in 0..200 {
+            let len = (lcg(&mut state) % 12) as usize; // 0..=11 elements
+            let l: Vec<u64> = (0..len).map(|_| lcg(&mut state) % 10).collect();
+            lists.push(l);
+        }
+        lists
+    }
+
+    #[test]
+    fn prop_sort_is_ascending_permutation_and_idempotent() {
+        // VerifiedList.v: isort_permutation + isort_sorted + isort_idempotent.
+        for l in random_lists() {
+            let out = apply("senarai_susun", &int_list(&l)).unwrap().unwrap();
+            let got = ints_of(&out);
+            let mut expect = l.clone();
+            expect.sort_unstable();
+            assert_eq!(got, expect, "sort must be the ascending permutation of {l:?}");
+            let out2 = apply("senarai_susun", &out).unwrap().unwrap();
+            assert_eq!(ints_of(&out2), got, "sort must be idempotent");
+        }
+    }
+
+    #[test]
+    fn prop_reverse_is_involutive_and_length_preserving() {
+        // VerifiedList.v: reverse_involutive + reverse_length.
+        for l in random_lists() {
+            let r = apply("senarai_balik", &int_list(&l)).unwrap().unwrap();
+            let mut expect = l.clone();
+            expect.reverse();
+            assert_eq!(ints_of(&r), expect, "reverse of {l:?}");
+            let rr = apply("senarai_balik", &r).unwrap().unwrap();
+            assert_eq!(ints_of(&rr), l, "reverse must be involutive");
+        }
+    }
+
+    #[test]
+    fn prop_unique_dedups_preserves_set_and_is_idempotent() {
+        // VerifiedList.v: unique_no_duplicates + unique_preserves_membership.
+        use std::collections::BTreeSet;
+        for l in random_lists() {
+            let u = apply("senarai_unik", &int_list(&l)).unwrap().unwrap();
+            let got = ints_of(&u);
+            let set: BTreeSet<u64> = got.iter().copied().collect();
+            assert_eq!(set.len(), got.len(), "unique output {got:?} has duplicates");
+            let in_set: BTreeSet<u64> = l.iter().copied().collect();
+            assert_eq!(set, in_set, "unique must preserve the element set of {l:?}");
+            // exact prototype semantics: keep the first occurrence, in order
+            let mut seen = BTreeSet::new();
+            let first_occ: Vec<u64> = l.iter().copied().filter(|n| seen.insert(*n)).collect();
+            assert_eq!(got, first_occ, "unique must keep first occurrences in order");
+            let uu = apply("senarai_unik", &u).unwrap().unwrap();
+            assert_eq!(ints_of(&uu), got, "unique must be idempotent");
+        }
+    }
+
+    #[test]
+    fn prop_concat_length_is_sum_of_lengths() {
+        // VerifiedList.v: concat_length.
+        let lists = random_lists();
+        for w in lists.windows(2) {
+            let (a, b) = (&w[0], &w[1]);
+            let arg = Value::Pair(Box::new(int_list(a)), Box::new(int_list(b)));
+            let c = apply("senarai_sambung", &arg).unwrap().unwrap();
+            let got = ints_of(&c);
+            assert_eq!(got.len(), a.len() + b.len(), "concat length = |a| + |b|");
+            let mut expect = a.clone();
+            expect.extend_from_slice(b);
+            assert_eq!(got, expect, "concat must be a ++ b");
+        }
     }
 }

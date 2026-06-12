@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA LocationServices - Isabelle/HOL Port
@@ -69,7 +71,7 @@ record location =
   loc_coordinate :: Coordinate
   loc_accuracy :: Meters
   loc_timestamp :: nat
-  loc_source :: nat  (* 0=GPS, 1=WiFi, 2=Cell *)
+  loc_source :: nat
 
 (* Position (matches Coq: Record Position) *)
 record position =
@@ -86,10 +88,10 @@ record geofence =
 (* LocationConfig (matches Coq: Record LocationConfig) *)
 record location_config =
   loc_permission :: LocationPermission
-  loc_precision_full :: bool  (* true = full, false = approximate *)
+  loc_precision_full :: bool
   loc_background_enabled :: bool
-  loc_cache_ttl :: nat  (* seconds *)
-  loc_update_interval :: nat  (* milliseconds *)
+  loc_cache_ttl :: nat
+  loc_update_interval :: nat
   loc_significant_change_meters :: nat
   loc_mock_detection :: bool
 
@@ -102,11 +104,11 @@ record location_history =
 (* ExtendedLocation (matches Coq: Record ExtendedLocation) *)
 record extended_location =
   ext_location :: Location
-  ext_altitude :: nat  (* meters above sea level *)
-  ext_altitude_accuracy :: nat  (* meters *)
-  ext_heading :: nat  (* degrees 0-359 *)
-  ext_heading_accuracy :: nat  (* degrees *)
-  ext_speed :: nat  (* meters per second *)
+  ext_altitude :: nat
+  ext_altitude_accuracy :: nat
+  ext_heading :: nat
+  ext_heading_accuracy :: nat
+  ext_speed :: nat
 
 (* Meters (matches Coq: Definition Meters) *)
 definition Meters :: "'a" where
@@ -136,11 +138,11 @@ definition inside :: "Geofence \<Rightarrow> Position \<Rightarrow> bool" where
 
 (* triggered (matches Coq: Definition triggered) *)
 definition triggered :: "Geofence \<Rightarrow> bool" where
-  "triggered fence \<equiv> fence_triggered fence = true"
+  "triggered fence \<equiv> fence_triggered fence = True"
 
 (* accurate_location_service (matches Coq: Definition accurate_location_service) *)
 definition accurate_location_service :: "Location \<Rightarrow> bool" where
-  "accurate_location_service l \<equiv> loc_source l = 0 ->  (* GPS source *)
+  "accurate_location_service l \<equiv> loc_source l = 0 ->  
   error l <= 5"
 
 (* accurate_geofence_system (matches Coq: Definition accurate_geofence_system) *)
@@ -157,8 +159,8 @@ definition cache_expired :: "LocationConfig \<Rightarrow> bool" where
 
 (* well_formed_location_config (matches Coq: Definition well_formed_location_config) *)
 definition well_formed_location_config :: "LocationConfig \<Rightarrow> bool" where
-  "well_formed_location_config config \<equiv> (loc_permission config = PermWhenInUse -> loc_background_enabled config = false) /\
-  (loc_permission config = PermNone -> loc_background_enabled config = false) /\
+  "well_formed_location_config config \<equiv> (loc_permission config = PermWhenInUse -> loc_background_enabled config = False) /\
+  (loc_permission config = PermNone -> loc_background_enabled config = False) /\
   loc_cache_ttl config > 0 /\
   loc_update_interval config > 0 /\
   loc_significant_change_meters config > 0"

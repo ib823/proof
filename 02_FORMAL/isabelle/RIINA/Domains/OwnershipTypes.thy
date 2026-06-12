@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OwnershipTypes - Isabelle/HOL Port
@@ -19,15 +21,25 @@
  * | RefCell            | ref_cell               | OK     |
  * | BoxAlloc           | box_alloc              | OK     |
  * | lifetime_outlives  | lifetime_outlives      | OK     |
+ * | find_var           | find_var               | OK     |
  * | is_usable          | is_usable              | OK     |
  * | can_mut_borrow     | can_mut_borrow         | OK     |
  * | can_shared_borrow  | can_shared_borrow      | OK     |
  * | count_borrows      | count_borrows          | OK     |
  * | count_mut_borrows  | count_mut_borrows      | OK     |
+ * | move_var           | move_var               | OK     |
+ * | drop_var           | drop_var               | OK     |
  * | borrow_lifetime_valid | borrow_lifetime_valid  | OK     |
+ * | count_owners       | count_owners           | OK     |
  * | is_moved           | is_moved               | OK     |
  * | is_dropped         | is_dropped             | OK     |
+ * | update_var_state   | update_var_state       | OK     |
+ * | create_shared_borrow | create_shared_borrow   | OK     |
+ * | create_mut_borrow  | create_mut_borrow      | OK     |
+ * | refcell_try_borrow | refcell_try_borrow     | OK     |
+ * | refcell_try_borrow_mut | refcell_try_borrow_mut | OK     |
  * | box_new            | box_new                | OK     |
+ * | box_drop           | box_drop               | OK     |
  * | well_formed_ctx    | well_formed_ctx        | OK     |
  * | no_active_borrows  | no_active_borrows      | OK     |
  * | memory_safe        | memory_safe            | OK     |
@@ -54,40 +66,36 @@
  *)
 
 theory OwnershipTypes
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* OwnState (matches Coq: Inductive OwnState) *)
 datatype own_state =
-    Owned  (* Exclusively owned *)
-  |     Moved  (* Ownership transferred *)
-  |     Borrowed  (* Immutably borrowed *)
-  |     MutBorrowed  (* Mutably borrowed *)
-  |     Dropped  (* Deallocated *)
+    Owned
+  |     Moved
+  |     Borrowed
+  |     MutBorrowed
+  |     Dropped
 
 (* RefCellState (matches Coq: Inductive RefCellState) *)
 datatype ref_cell_state =
     RCUnborrowed
-  |     RCSharedBorrow  (* count of shared borrows *)
+  |     RCSharedBorrow
   |     RCMutBorrow
 
 (* OwnedVar (matches Coq: Record OwnedVar) *)
 record owned_var =
   ov_id :: nat
   ov_state :: OwnState
-  ov_lifetime :: Lifetime  (* Scope lifetime *)
-  ov_is_copy :: bool  (* Copy type? *)
+  ov_lifetime :: Lifetime
+  ov_is_copy :: bool
 
 (* Borrow (matches Coq: Record Borrow) *)
 record borrow =
-  br_source :: nat  (* Source variable ID *)
-  br_target :: nat  (* Borrow variable ID *)
-  br_mutable :: bool  (* Mutable borrow? *)
-  br_lifetime :: Lifetime  (* Borrow lifetime *)
+  br_source :: nat
+  br_target :: nat
+  br_mutable :: bool
+  br_lifetime :: Lifetime
 
 (* OwnCtx (matches Coq: Record OwnCtx) *)
 record own_ctx =
@@ -109,35 +117,89 @@ record box_alloc =
 
 (* lifetime_outlives (matches Coq: Definition lifetime_outlives) *)
 definition lifetime_outlives :: "bool" where
-  "lifetime_outlives \<equiv> Nat"
+  "lifetime_outlives \<equiv> (l2 \<le> l1)"
 
-(* is_usable - complex match, manual review needed *)
+(* find_var (matches Coq: Definition find_var) *)
+fun find_var :: "nat \<Rightarrow> option OwnedVar" where
 
-(* can_mut_borrow - complex match, manual review needed *)
 
-(* can_shared_borrow - complex match, manual review needed *)
+(* is_usable - complex match, needs manual translation *)
+definition is_usable :: "bool" where "is_usable = undefined"
+
+(* can_mut_borrow - complex match, needs manual translation *)
+definition can_mut_borrow :: "bool" where "can_mut_borrow = undefined"
+
+(* can_shared_borrow - complex match, needs manual translation *)
+definition can_shared_borrow :: "bool" where "can_shared_borrow = undefined"
 
 (* count_borrows (matches Coq: Definition count_borrows) *)
 definition count_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
-  "count_borrows ctx id \<equiv> length (filter (fun b => Nat"
+  "count_borrows ctx id \<equiv> length (filter (fun b => ((br_source = b)) id) (oc_borrows ctx))"
 
 (* count_mut_borrows (matches Coq: Definition count_mut_borrows) *)
 definition count_mut_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
-  "count_mut_borrows ctx id \<equiv> length (filter (fun b => andb (Nat"
+  "count_mut_borrows ctx id \<equiv> length (filter (fun b => (((\<and> = (br_source)) b) id) (br_mutable b))
+                 (oc_borrows ctx))"
 
-(* borrow_lifetime_valid - complex match, manual review needed *)
+(* move_var - complex match, needs manual translation *)
+definition move_var :: "bool" where "move_var = undefined"
 
-(* is_moved - complex match, manual review needed *)
+(* drop_var - complex match, needs manual translation *)
+definition drop_var :: "bool" where "drop_var = undefined"
 
-(* is_dropped - complex match, manual review needed *)
+(* borrow_lifetime_valid - complex match, needs manual translation *)
+definition borrow_lifetime_valid :: "bool" where "borrow_lifetime_valid = undefined"
+
+(* count_owners (matches Coq: Definition count_owners) *)
+fun count_owners :: "nat \<Rightarrow> nat" where
+  "count_owners _ = false"
+
+(* is_moved - complex match, needs manual translation *)
+definition is_moved :: "bool" where "is_moved = undefined"
+
+(* is_dropped - complex match, needs manual translation *)
+definition is_dropped :: "bool" where "is_dropped = undefined"
+
+(* update_var_state (matches Coq: Definition update_var_state) *)
+fun update_var_state :: "nat \<Rightarrow> OwnState \<Rightarrow> list OwnedVar" where
+
+
+(* create_shared_borrow (matches Coq: Definition create_shared_borrow) *)
+definition create_shared_borrow :: "OwnCtx \<Rightarrow> Lifetime \<Rightarrow> option OwnCtx" where
+  "create_shared_borrow ctx lt \<equiv> if can_shared_borrow ctx src_id then
+    let new_borrow := mkBorrow src_id tgt_id False lt in
+    Some (mkOC (oc_vars ctx) (new_borrow :: oc_borrows ctx) (oc_current_lifetime ctx))
+  else
+    None"
+
+(* create_mut_borrow (matches Coq: Definition create_mut_borrow) *)
+definition create_mut_borrow :: "OwnCtx \<Rightarrow> Lifetime \<Rightarrow> option OwnCtx" where
+  "create_mut_borrow ctx lt \<equiv> if can_mut_borrow ctx src_id then
+    let new_borrow := mkBorrow src_id tgt_id True lt in
+    Some (mkOC (oc_vars ctx) (new_borrow :: oc_borrows ctx) (oc_current_lifetime ctx))
+  else
+    None"
+
+(* refcell_try_borrow - complex match, needs manual translation *)
+definition refcell_try_borrow :: "bool" where "refcell_try_borrow = undefined"
+
+(* refcell_try_borrow_mut - complex match, needs manual translation *)
+definition refcell_try_borrow_mut :: "bool" where "refcell_try_borrow_mut = undefined"
 
 (* box_new (matches Coq: Definition box_new) *)
 definition box_new :: "nat \<Rightarrow> BoxAlloc" where
-  "box_new id \<equiv> mkBox id true false"
+  "box_new id \<equiv> mkBox id True False"
+
+(* box_drop (matches Coq: Definition box_drop) *)
+definition box_drop :: "BoxAlloc \<Rightarrow> option BoxAlloc" where
+  "box_drop b \<equiv> if (box_allocated b \<and> (\<not> (box_dropped) b)) then
+    Some (mkBox (box_id b) True True)
+  else
+    None"
 
 (* well_formed_ctx (matches Coq: Definition well_formed_ctx) *)
 definition well_formed_ctx :: "OwnCtx \<Rightarrow> bool" where
-  "well_formed_ctx ctx \<equiv> forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true"
+  "well_formed_ctx ctx \<equiv> forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = True"
 
 (* no_active_borrows (matches Coq: Definition no_active_borrows) *)
 definition no_active_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> bool" where
@@ -145,17 +207,16 @@ definition no_active_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> bool" wh
 
 (* memory_safe (matches Coq: Definition memory_safe) *)
 definition memory_safe :: "OwnCtx \<Rightarrow> bool" where
-  "memory_safe ctx \<equiv> (* All borrows are valid *)
-  (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true) /\
-  (* No use after move: moved vars are not borrowed *)
+  "memory_safe ctx \<equiv> (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = True) /\
+  
   (forall v, In v (oc_vars ctx) -> ov_state v = Moved -> 
              count_borrows ctx (ov_id v) = 0) /\
-  (* No use after drop: dropped vars are not borrowed *)
+  
   (forall v, In v (oc_vars ctx) -> ov_state v = Dropped -> 
              count_borrows ctx (ov_id v) = 0) /\
-  (* Mutable borrows are exclusive *)
+  
   (forall id, count_mut_borrows ctx id <= 1) /\
-  (* No simultaneous mut and shared borrows *)
+  
   (forall id, count_mut_borrows ctx id = 1 -> 
               count_borrows ctx id = count_mut_borrows ctx id)"
 
@@ -164,7 +225,7 @@ lemma existsb_false_forall: "\<forall> {A} (f : A \<longrightarrow> bool) (l : l
   by auto
 
 (* find_var_map_moved (matches Coq) *)
-lemma find_var_map_moved: "\<forall> vars from_id v, find_var vars from_id = Some v \<longrightarrow> find_var (map (fun var => if Nat.eqb (ov_id var) from_id then mkOV from_id Moved (ov_lifetime var) (ov_is_copy var) else var) vars) from_id = Some (mkOV from_id Moved (ov_lifetime v) (ov_is_copy v))"
+lemma find_var_map_moved: "\<forall> vars from_id v, find_var vars from_id = Some v \<longrightarrow> find_var (map (fun var => if ((ov_id = var)) from_id then mkOV from_id Moved (ov_lifetime var) (ov_is_copy var) else var) vars) from_id = Some (mkOV from_id Moved (ov_lifetime v) (ov_is_copy v))"
   by (cases rule: ‹_›.cases; simp)
 
 (* MEM_001_01 (matches Coq) *)
@@ -204,11 +265,11 @@ lemma MEM_001_08: "\<forall> (ctx : OwnCtx) (id : nat) (v : OwnedVar) (b : Borro
   by (cases rule: ‹_›.cases; simp)
 
 (* MEM_001_09 (matches Coq) *)
-lemma MEM_001_09: "\<forall> (orig_lt reborrow_lt : Lifetime), lifetime_outlives orig_lt reborrow_lt = True \<longrightarrow> Nat.leb reborrow_lt orig_lt = True"
+lemma MEM_001_09: "\<forall> (orig_lt reborrow_lt : Lifetime), lifetime_outlives orig_lt reborrow_lt = True \<longrightarrow> (reborrow_lt \<le> orig_lt) = True"
   by auto
 
 (* find_var_map_dropped (matches Coq) *)
-lemma find_var_map_dropped: "\<forall> vars id v, find_var vars id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> find_var (map (fun var => if Nat.eqb (ov_id var) id then mkOV id Dropped (ov_lifetime var) (ov_is_copy var) else var) vars) id = Some (mkOV id Dropped (ov_lifetime v) (ov_is_copy v))"
+lemma find_var_map_dropped: "\<forall> vars id v, find_var vars id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> find_var (map (fun var => if ((ov_id = var)) id then mkOV id Dropped (ov_lifetime var) (ov_is_copy var) else var) vars) id = Some (mkOV id Dropped (ov_lifetime v) (ov_is_copy v))"
   by (cases rule: ‹_›.cases; simp)
 
 (* MEM_001_10 (matches Coq) *)

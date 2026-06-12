@@ -374,7 +374,11 @@ def time_009_accept_signed_timestamp (sts : SignedTimestamp)
   else None
 
 /-- time_010_check_timeout (matches Coq: Definition time_010_check_timeout) -/
-axiom time_010_check_timeout (handler : TimeoutHandler) (now : Time) : TimeoutState -- fallback: unresolved match translation
+def time_010_check_timeout (handler : TimeoutHandler) (now : Time) : TimeoutState :=
+  match timeout_state handler with
+  | TimeoutState.TimeoutPending deadline =>
+      if deadline <=? now then TimeoutState.TimeoutExpired else TimeoutState.TimeoutPending deadline
+  | other => other
 
 /-- time_010_update_handler (matches Coq: Definition time_010_update_handler) -/
 def time_010_update_handler (handler : TimeoutHandler) (now : Time) : TimeoutHandler := mkTimeoutHandler (timeout_deadline handler) 

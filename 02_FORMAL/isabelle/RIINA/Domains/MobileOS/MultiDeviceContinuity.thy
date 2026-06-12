@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MultiDeviceContinuity - Isabelle/HOL Port
@@ -214,16 +216,16 @@ definition state :: "Application \<Rightarrow> Device \<Rightarrow> AppState" wh
 
 (* handoff (matches Coq: Definition handoff) *)
 definition handoff :: "Application \<Rightarrow> bool" where
-  "handoff app \<equiv> app_supports_handoff app = true /\
-  dev_authenticated d1 = true /\
-  dev_authenticated d2 = true /\
-  dev_paired d1 = true /\
-  dev_paired d2 = true"
+  "handoff app \<equiv> app_supports_handoff app = True /\
+  dev_authenticated d1 = True /\
+  dev_authenticated d2 = True /\
+  dev_paired d1 = True /\
+  dev_paired d2 = True"
 
 (* complete_handoff (matches Coq: Definition complete_handoff) *)
 definition complete_handoff :: "Handoff \<Rightarrow> bool" where
-  "complete_handoff h \<equiv> handoff_complete h = true /\
-  handoff_encrypted h = true"
+  "complete_handoff h \<equiv> handoff_complete h = True /\
+  handoff_encrypted h = True"
 
 (* handoff_preserves_state (matches Coq: Definition handoff_preserves_state) *)
 definition handoff_preserves_state :: "Handoff \<Rightarrow> bool" where
@@ -232,11 +234,11 @@ definition handoff_preserves_state :: "Handoff \<Rightarrow> bool" where
 
 (* handoff_data_encrypted (matches Coq: Definition handoff_data_encrypted) *)
 definition handoff_data_encrypted :: "HandoffData \<Rightarrow> bool" where
-  "handoff_data_encrypted hd \<equiv> hd_encrypted hd = true /\ hd_integrity_checked hd = true"
+  "handoff_data_encrypted hd \<equiv> hd_encrypted hd = True /\ hd_integrity_checked hd = True"
 
 (* clipboard_sync_is_encrypted (matches Coq: Definition clipboard_sync_is_encrypted) *)
 definition clipboard_sync_is_encrypted :: "ClipboardSync \<Rightarrow> bool" where
-  "clipboard_sync_is_encrypted cs \<equiv> cb_encrypted cs = true"
+  "clipboard_sync_is_encrypted cs \<equiv> cb_encrypted cs = True"
 
 (* clipboard_has_expiry (matches Coq: Definition clipboard_has_expiry) *)
 definition clipboard_has_expiry :: "ClipboardSync \<Rightarrow> bool" where
@@ -244,39 +246,39 @@ definition clipboard_has_expiry :: "ClipboardSync \<Rightarrow> bool" where
 
 (* device_trust_verified (matches Coq: Definition device_trust_verified) *)
 definition device_trust_verified :: "DeviceTrust \<Rightarrow> bool" where
-  "device_trust_verified dt \<equiv> dt_verified dt = true /\ dt_trust_score dt >= dt_trust_threshold dt"
+  "device_trust_verified dt \<equiv> dt_verified dt = True /\ dt_trust_score dt >= dt_trust_threshold dt"
 
 (* proximity_required (matches Coq: Definition proximity_required) *)
 definition proximity_required :: "ProximityCheck \<Rightarrow> bool" where
-  "proximity_required pc \<equiv> pc_within_range pc = true /\ pc_distance_m pc <= pc_max_distance_m pc"
+  "proximity_required pc \<equiv> pc_within_range pc = True /\ pc_distance_m pc <= pc_max_distance_m pc"
 
 (* continuity_permission_explicit (matches Coq: Definition continuity_permission_explicit) *)
 definition continuity_permission_explicit :: "ContinuityPermission \<Rightarrow> bool" where
-  "continuity_permission_explicit cp \<equiv> cp_explicit_grant cp = true /\ cp_revocable cp = true"
+  "continuity_permission_explicit cp \<equiv> cp_explicit_grant cp = True /\ cp_revocable cp = True"
 
 (* universal_link_validated (matches Coq: Definition universal_link_validated) *)
 definition universal_link_validated :: "UniversalLink \<Rightarrow> bool" where
-  "universal_link_validated ul \<equiv> ul_validated ul = true /\ ul_domain_verified ul = true"
+  "universal_link_validated ul \<equiv> ul_validated ul = True /\ ul_domain_verified ul = True"
 
 (* device_pairing_authenticated (matches Coq: Definition device_pairing_authenticated) *)
 definition device_pairing_authenticated :: "DevicePairing \<Rightarrow> bool" where
-  "device_pairing_authenticated dp \<equiv> dp_authenticated dp = true /\ dp_encryption_key_exchanged dp = true"
+  "device_pairing_authenticated dp \<equiv> dp_authenticated dp = True /\ dp_encryption_key_exchanged dp = True"
 
 (* sync_conflict_resolved (matches Coq: Definition sync_conflict_resolved) *)
 definition sync_conflict_resolved :: "SyncConflict \<Rightarrow> bool" where
-  "sync_conflict_resolved sc \<equiv> sc_resolved sc = true"
+  "sync_conflict_resolved sc \<equiv> sc_resolved sc = True"
 
 (* continuity_fallback_available (matches Coq: Definition continuity_fallback_available) *)
 definition continuity_fallback_available :: "ContinuityFallback \<Rightarrow> bool" where
-  "continuity_fallback_available cf \<equiv> cf_fallback_available cf = true /\ cf_primary_method cf <> cf_fallback_method cf"
+  "continuity_fallback_available cf \<equiv> cf_fallback_available cf = True /\ cf_primary_method cf <> cf_fallback_method cf"
 
 (* shared_keychain_access_controlled (matches Coq: Definition shared_keychain_access_controlled) *)
 definition shared_keychain_access_controlled :: "SharedKeychain \<Rightarrow> bool" where
-  "shared_keychain_access_controlled sk \<equiv> sk_access_controlled sk = true /\ sk_access_group sk <> []"
+  "shared_keychain_access_controlled sk \<equiv> sk_access_controlled sk = True /\ sk_access_group sk <> []"
 
 (* nearby_interaction_consented (matches Coq: Definition nearby_interaction_consented) *)
 definition nearby_interaction_consented :: "NearbyInteraction \<Rightarrow> bool" where
-  "nearby_interaction_consented ni \<equiv> ni_consent_given ni = true"
+  "nearby_interaction_consented ni \<equiv> ni_consent_given ni = True"
 
 (* device_discovery_limited (matches Coq: Definition device_discovery_limited) *)
 definition device_discovery_limited :: "DeviceDiscovery \<Rightarrow> bool" where
@@ -284,11 +286,11 @@ definition device_discovery_limited :: "DeviceDiscovery \<Rightarrow> bool" wher
 
 (* relay_traffic_encrypted (matches Coq: Definition relay_traffic_encrypted) *)
 definition relay_traffic_encrypted :: "RelayTraffic \<Rightarrow> bool" where
-  "relay_traffic_encrypted rt \<equiv> rt_encrypted rt = true"
+  "relay_traffic_encrypted rt \<equiv> rt_encrypted rt = True"
 
 (* session_within_timeout (matches Coq: Definition session_within_timeout) *)
 definition session_within_timeout :: "ContinuitySession \<Rightarrow> bool" where
-  "session_within_timeout cs \<equiv> cs_active cs = true -> cs_elapsed_seconds cs <= cs_timeout_seconds cs"
+  "session_within_timeout cs \<equiv> cs_active cs = True -> cs_elapsed_seconds cs <= cs_timeout_seconds cs"
 
 (* cross_device_handoff_complete (matches Coq) *)
 lemma cross_device_handoff_complete: "\<forall> (app : Application) (device1 device2 : Device), handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"

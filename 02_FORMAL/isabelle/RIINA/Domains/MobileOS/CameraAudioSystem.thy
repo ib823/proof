@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CameraAudioSystem - Isabelle/HOL Port
@@ -25,6 +27,8 @@
  * | Microseconds       | Microseconds           | OK     |
  * | PixelData          | PixelData              | OK     |
  * | SensorData         | SensorData             | OK     |
+ * | AUDIO_SAMPLE_RATE_MIN | AUDIO_SAMPLE_RATE_MIN  | OK     |
+ * | AUDIO_SAMPLE_RATE_MAX | AUDIO_SAMPLE_RATE_MAX  | OK     |
  * | sensor_data        | sensor_data            | OK     |
  * | pixel_data         | pixel_data             | OK     |
  * | captures           | captures               | OK     |
@@ -106,22 +110,22 @@ record camera_permission =
 (* AccessIndicator (matches Coq: Record AccessIndicator) *)
 record access_indicator =
   indicator_visible :: bool
-  indicator_persistent :: bool  (* stays on while access continues *)
-  indicator_type :: nat  (* 0 = camera, 1 = microphone, 2 = both *)
+  indicator_persistent :: bool
+  indicator_type :: nat
 
 (* AudioConfig (matches Coq: Record AudioConfig) *)
 record audio_config =
-  sample_rate :: nat  (* Hz - 8000, 22050, 44100, 48000 *)
-  bit_depth :: nat  (* 8, 16, 24, 32 *)
-  channels :: nat  (* 1 = mono, 2 = stereo *)
-  audio_level :: nat  (* 0-100 normalized *)
+  sample_rate :: nat
+  bit_depth :: nat
+  channels :: nat
+  audio_level :: nat
 
 (* VideoConfig (matches Coq: Record VideoConfig) *)
 record video_config =
   video_width :: nat
   video_height :: nat
-  video_frame_rate :: nat  (* fps *)
-  stabilization_offset :: nat  (* pixels max offset *)
+  video_frame_rate :: nat
+  stabilization_offset :: nat
 
 (* RecordingSession (matches Coq: Record RecordingSession) *)
 record recording_session =
@@ -149,6 +153,14 @@ definition PixelData :: "'a" where
 (* SensorData (matches Coq: Definition SensorData) *)
 definition SensorData :: "'a" where
   "SensorData \<equiv> list nat"
+
+(* AUDIO_SAMPLE_RATE_MIN (matches Coq: Definition AUDIO_SAMPLE_RATE_MIN) *)
+definition AUDIO_SAMPLE_RATE_MIN :: "nat" where
+  "AUDIO_SAMPLE_RATE_MIN \<equiv> Z.to_nat 8000%Z"
+
+(* AUDIO_SAMPLE_RATE_MAX (matches Coq: Definition AUDIO_SAMPLE_RATE_MAX) *)
+definition AUDIO_SAMPLE_RATE_MAX :: "nat" where
+  "AUDIO_SAMPLE_RATE_MAX \<equiv> Z.to_nat 192000%Z"
 
 (* sensor_data (matches Coq: Definition sensor_data) *)
 definition sensor_data :: "Scene \<Rightarrow> SensorData" where
@@ -190,15 +202,15 @@ definition lossless_capture_system :: "bool" where
 
 (* well_formed_recording (matches Coq: Definition well_formed_recording) *)
 definition well_formed_recording :: "RecordingSession \<Rightarrow> bool" where
-  "well_formed_recording rs \<equiv> (rec_state rs = Recording -> indicator_visible (rec_indicator rs) = true) /\
-  (rec_state rs = Recording -> indicator_persistent (rec_indicator rs) = true) /\
-  (rec_background rs = true -> rec_state rs = NotRecording) /\
-  (camera_granted (rec_permission rs) = false -> rec_state rs = NotRecording)"
+  "well_formed_recording rs \<equiv> (rec_state rs = Recording -> indicator_visible (rec_indicator rs) = True) /\
+  (rec_state rs = Recording -> indicator_persistent (rec_indicator rs) = True) /\
+  (rec_background rs = True -> rec_state rs = NotRecording) /\
+  (camera_granted (rec_permission rs) = False -> rec_state rs = NotRecording)"
 
 (* well_formed_audio (matches Coq: Definition well_formed_audio) *)
 definition well_formed_audio :: "AudioConfig \<Rightarrow> bool" where
-  "well_formed_audio ac \<equiv> sample_rate ac >= 8000 /\
-  sample_rate ac <= 192000 /\
+  "well_formed_audio ac \<equiv> sample_rate ac >= AUDIO_SAMPLE_RATE_MIN /\
+  sample_rate ac <= AUDIO_SAMPLE_RATE_MAX /\
   audio_level ac <= 100 /\
   channels ac >= 1"
 
@@ -255,7 +267,7 @@ lemma camera_preview_matches_capture: "\<forall> (s : Scene) (p : RawPhoto), cap
   by auto
 
 (* audio_sample_rate_valid (matches Coq) *)
-lemma audio_sample_rate_valid: "\<forall> (ac : AudioConfig), well_formed_audio ac \<longrightarrow> sample_rate ac \<ge> 8000 \<and> sample_rate ac \<le> 192000"
+lemma audio_sample_rate_valid: "\<forall> (ac : AudioConfig), well_formed_audio ac \<longrightarrow> sample_rate ac \<ge> AUDIO_SAMPLE_RATE_MIN \<and> sample_rate ac \<le> AUDIO_SAMPLE_RATE_MAX"
   by auto
 
 (* video_frame_rate_bounded (matches Coq) *)
@@ -283,7 +295,7 @@ lemma camera_interrupt_handled: "\<forall> (rs : RecordingSession), well_formed_
   by auto
 
 (* audio_route_change_handled (matches Coq) *)
-lemma audio_route_change_handled: "\<forall> (ac1 ac2 : AudioConfig), well_formed_audio ac1 \<longrightarrow> well_formed_audio ac2 \<longrightarrow> sample_rate ac1 \<ge> 8000 \<and> sample_rate ac2 \<ge> 8000"
+lemma audio_route_change_handled: "\<forall> (ac1 ac2 : AudioConfig), well_formed_audio ac1 \<longrightarrow> well_formed_audio ac2 \<longrightarrow> sample_rate ac1 \<ge> AUDIO_SAMPLE_RATE_MIN \<and> sample_rate ac2 \<ge> AUDIO_SAMPLE_RATE_MIN"
   by auto
 
 (* video_stabilization_bounded (matches Coq) *)

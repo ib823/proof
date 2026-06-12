@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaPDPA - Isabelle/HOL Port
@@ -48,6 +50,8 @@
  * | marketing_consent_separate | marketing_consent_separate | OK     |
  * | complaint_mechanism_available | complaint_mechanism_available | OK     |
  * | pdpa_report_timely | pdpa_report_timely     | OK     |
+ * | all_consent_statuses | all_consent_statuses   | OK     |
+ * | all_transfer_bases | all_transfer_bases     | OK     |
  * | principle_1_consent | principle_1_consent    | OK     |
  * | principle_1_personal_data | principle_1_personal_data | OK     |
  * | principle_1_public_exempt | principle_1_public_exempt | OK     |
@@ -105,12 +109,12 @@ datatype consent_status =
 (* PDPAClassification (matches Coq: Inductive PDPAClassification) *)
 datatype pdpa_classification =
     PublicData
-  |     PersonalData  (* "peribadi" *)
-  |     SensitivePersonalData  (* "data peribadi sensitif" *)
+  |     PersonalData
+  |     SensitivePersonalData
 
 (* Purpose (matches Coq: Inductive Purpose) *)
 datatype purpose =
-    CollectionPurpose  (* Purpose ID declared at collection *)
+    CollectionPurpose
   |     DirectMarketing
   |     LegalObligation
   |     VitalInterest
@@ -143,13 +147,16 @@ datatype transfer_basis =
 definition has_valid_consent :: "PDPARecord \<Rightarrow> bool" where
   "has_valid_consent r \<equiv> pdpa_consent r = ExplicitConsent \/ pdpa_consent r = ImpliedConsent"
 
-(* consent_required_for_processing - complex match, manual review needed *)
+(* consent_required_for_processing - complex match, needs manual translation *)
+definition consent_required_for_processing :: "bool" where "consent_required_for_processing = undefined"
 
 (* purpose_matches (matches Coq: Definition purpose_matches) *)
 definition purpose_matches :: "Purpose \<Rightarrow> Purpose \<Rightarrow> bool" where
   "purpose_matches declared actual \<equiv> declared = actual"
 
-(* processing_within_purpose - complex match, manual review needed *)
+(* processing_within_purpose (matches Coq: Definition processing_within_purpose) *)
+definition processing_within_purpose :: "PDPARecord \<Rightarrow> Purpose \<Rightarrow> bool" where
+  "processing_within_purpose r actual_purpose \<equiv> purpose_matches (pdpa_purpose r) actual_purpose"
 
 (* disclosure_authorized (matches Coq: Definition disclosure_authorized) *)
 definition disclosure_authorized :: "PDPARecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -157,7 +164,8 @@ definition disclosure_authorized :: "PDPARecord \<Rightarrow> nat \<Rightarrow> 
   pdpa_classification r <> SensitivePersonalData \/
   (pdpa_consent r = ExplicitConsent /\ pdpa_classification r = SensitivePersonalData)"
 
-(* security_adequate - complex match, manual review needed *)
+(* security_adequate - complex match, needs manual translation *)
+definition security_adequate :: "bool" where "security_adequate = undefined"
 
 (* within_retention_period (matches Coq: Definition within_retention_period) *)
 definition within_retention_period :: "PDPARecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -187,7 +195,7 @@ definition subjects_notified_in_time :: "BreachEvent \<Rightarrow> nat \<Rightar
 
 (* dpo_compliant (matches Coq: Definition dpo_compliant) *)
 definition dpo_compliant :: "DPOAppointment \<Rightarrow> bool" where
-  "dpo_compliant dpo \<equiv> dpo_active dpo = true"
+  "dpo_compliant dpo \<equiv> dpo_active dpo = True"
 
 (* pdpa_fully_compliant (matches Coq: Definition pdpa_fully_compliant) *)
 definition pdpa_fully_compliant :: "PDPARecord \<Rightarrow> DPOAppointment \<Rightarrow> nat \<Rightarrow> bool" where
@@ -200,12 +208,12 @@ definition pdpa_fully_compliant :: "PDPARecord \<Rightarrow> DPOAppointment \<Ri
 (* consent_properly_recorded (matches Coq: Definition consent_properly_recorded) *)
 definition consent_properly_recorded :: "ConsentRecord \<Rightarrow> nat \<Rightarrow> bool" where
   "consent_properly_recorded cr collection_time \<equiv> cr_recorded_at cr <= collection_time /\
-  cr_valid cr = true /\
+  cr_valid cr = True /\
   (cr_consent_type cr = ExplicitConsent \/ cr_consent_type cr = ImpliedConsent)"
 
 (* cross_border_lawful (matches Coq: Definition cross_border_lawful) *)
 definition cross_border_lawful :: "CrossBorderTransfer \<Rightarrow> bool" where
-  "cross_border_lawful t \<equiv> cbt_adequate_protection t = true \/
+  "cross_border_lawful t \<equiv> cbt_adequate_protection t = True \/
   cbt_basis t = SubjectConsent_Transfer \/
   cbt_basis t = LegalProceedings \/
   cbt_basis t = MinisterialExemption"
@@ -223,11 +231,11 @@ definition access_request_deadline :: "nat" where
 (* access_fulfilled (matches Coq: Definition access_fulfilled) *)
 definition access_fulfilled :: "AccessRequest \<Rightarrow> bool" where
   "access_fulfilled req \<equiv> ar_responded_at req <= ar_requested_at req + access_request_deadline /\
-  ar_data_provided req = true"
+  ar_data_provided req = True"
 
 (* retention_enforceable (matches Coq: Definition retention_enforceable) *)
 definition retention_enforceable :: "PDPARecord \<Rightarrow> nat \<Rightarrow> bool \<Rightarrow> bool" where
-  "retention_enforceable r current_time deletion_performed \<equiv> (must_delete r current_time -> deletion_performed = true) /\
+  "retention_enforceable r current_time deletion_performed \<equiv> (must_delete r current_time -> deletion_performed = True) /\
   (within_retention_period r current_time -> True)"
 
 (* accuracy_current (matches Coq: Definition accuracy_current) *)
@@ -250,13 +258,13 @@ definition security_level_adequate :: "PDPAClassification \<Rightarrow> nat \<Ri
 
 (* processor_bound (matches Coq: Definition processor_bound) *)
 definition processor_bound :: "ProcessorContract \<Rightarrow> bool" where
-  "processor_bound pc \<equiv> pc_security_obligations pc = true /\
-  pc_data_return_required pc = true /\
+  "processor_bound pc \<equiv> pc_security_obligations pc = True /\
+  pc_data_return_required pc = True /\
   length (pc_purposes_allowed pc) > 0"
 
 (* dpia_valid (matches Coq: Definition dpia_valid) *)
 definition dpia_valid :: "DPIA \<Rightarrow> bool" where
-  "dpia_valid d \<equiv> dpia_approved d = true /\
+  "dpia_valid d \<equiv> dpia_approved d = True /\
   dpia_mitigations_applied d >= dpia_risk_identified d"
 
 (* children_age_threshold (matches Coq: Definition children_age_threshold) *)
@@ -266,9 +274,9 @@ definition children_age_threshold :: "nat" where
 (* children_consent_adequate (matches Coq: Definition children_consent_adequate) *)
 definition children_consent_adequate :: "ChildDataRecord \<Rightarrow> bool" where
   "children_consent_adequate cdr \<equiv> (child_subject_age cdr < children_age_threshold ->
-   child_parental_consent cdr = true) /\
+   child_parental_consent cdr = True) /\
   (child_subject_age cdr >= children_age_threshold ->
-   child_own_consent cdr = true)"
+   child_own_consent cdr = True)"
 
 (* marketing_consent_separate (matches Coq: Definition marketing_consent_separate) *)
 definition marketing_consent_separate :: "PDPARecord \<Rightarrow> bool" where
@@ -277,14 +285,23 @@ definition marketing_consent_separate :: "PDPARecord \<Rightarrow> bool" where
 
 (* complaint_mechanism_available (matches Coq: Definition complaint_mechanism_available) *)
 definition complaint_mechanism_available :: "ComplaintMechanism \<Rightarrow> bool" where
-  "complaint_mechanism_available cm \<equiv> complaint_channel_active cm = true /\
+  "complaint_mechanism_available cm \<equiv> complaint_channel_active cm = True /\
   complaint_response_days cm <= complaint_max_response_days cm /\
-  complaint_escalation_available cm = true"
+  complaint_escalation_available cm = True"
 
 (* pdpa_report_timely (matches Coq: Definition pdpa_report_timely) *)
 definition pdpa_report_timely :: "ComplianceReport \<Rightarrow> bool" where
   "pdpa_report_timely rpt \<equiv> report_submitted_at rpt <= report_deadline rpt /\
-  report_dpo_active rpt = true"
+  report_dpo_active rpt = True"
+
+(* all_consent_statuses (matches Coq: Definition all_consent_statuses) *)
+definition all_consent_statuses :: "list ConsentStatus" where
+  "all_consent_statuses \<equiv> [NoConsent; ExplicitConsent; ImpliedConsent; WithdrawnConsent]"
+
+(* all_transfer_bases (matches Coq: Definition all_transfer_bases) *)
+definition all_transfer_bases :: "list TransferBasis" where
+  "all_transfer_bases \<equiv> [SubjectConsent_Transfer; ContractPerformance; LegalProceedings;
+   VitalInterests_Transfer; PublicRegister; MinisterialExemption]"
 
 (* principle_1_consent (matches Coq) *)
 lemma principle_1_consent: "\<forall> (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = SensitivePersonalData \<longrightarrow> pdpa_consent r = ExplicitConsent \<longrightarrow> consent_required_for_processing r a"

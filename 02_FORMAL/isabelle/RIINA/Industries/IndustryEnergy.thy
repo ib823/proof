@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryEnergy - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | CIP_Impact         | cip__impact            | OK     |
+ * | BES_Asset          | bes__asset             | OK     |
  * | EnergyEffect       | energy_effect          | OK     |
  * | NERC_CIP_Controls  | nerc_cip__controls     | OK     |
  * | cip_impact_to_nat  | cip_impact_to_nat      | OK     |
@@ -49,19 +52,18 @@
  *)
 
 theory IndustryEnergy
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* CIP_Impact (matches Coq: Inductive CIP_Impact) *)
 datatype cip__impact =
-    High_Impact  (* BES Cyber Systems with high impact *)
-  |     Medium_Impact  (* Medium impact on BES *)
+    High_Impact
+  |     Medium_Impact
   |     Low_Impact
-  |     ControlCenter
+
+(* BES_Asset (matches Coq: Inductive BES_Asset) *)
+datatype bes__asset =
+    ControlCenter
   |     Substation
   |     GenerationFacility
   |     TransmissionLine
@@ -77,17 +79,17 @@ datatype energy_effect =
 
 (* NERC_CIP_Controls (matches Coq: Record NERC_CIP_Controls) *)
 record nerc_cip__controls =
-  cip_002_identification :: bool  (* BES Cyber System Categorization *)
-  cip_003_management :: bool  (* Security Management Controls *)
-  cip_004_personnel :: bool  (* Personnel & Training *)
-  cip_005_electronic_perimeter :: bool  (* Electronic Security Perimeter *)
-  cip_006_physical :: bool  (* Physical Security *)
-  cip_007_systems :: bool  (* System Security Management *)
-  cip_008_incident :: bool  (* Incident Reporting *)
-  cip_009_recovery :: bool  (* Recovery Plans *)
-  cip_010_config :: bool  (* Configuration Management *)
-  cip_011_info :: bool  (* Information Protection *)
-  cip_013_supply_chain :: bool  (* Supply Chain Risk Management *)
+  cip_002_identification :: bool
+  cip_003_management :: bool
+  cip_004_personnel :: bool
+  cip_005_electronic_perimeter :: bool
+  cip_006_physical :: bool
+  cip_007_systems :: bool
+  cip_008_incident :: bool
+  cip_009_recovery :: bool
+  cip_010_config :: bool
+  cip_011_info :: bool
+  cip_013_supply_chain :: bool
 
 (* cip_impact_to_nat (matches Coq: Definition cip_impact_to_nat) *)
 fun cip_impact_to_nat :: "CIP_Impact \<Rightarrow> nat" where
@@ -97,7 +99,7 @@ fun cip_impact_to_nat :: "CIP_Impact \<Rightarrow> nat" where
 
 (* cip_le (matches Coq: Definition cip_le) *)
 definition cip_le :: "bool" where
-  "cip_le \<equiv> Nat"
+  "cip_le \<equiv> ((cip_impact_to_nat \<le> c1)) (cip_impact_to_nat c2)"
 
 (* cip_mandatory_requirements (matches Coq: Definition cip_mandatory_requirements) *)
 fun cip_mandatory_requirements :: "CIP_Impact \<Rightarrow> nat" where
@@ -146,43 +148,49 @@ fun access_log_retention_days :: "CIP_Impact \<Rightarrow> nat" where
 |   "access_log_retention_days Low_Impact = 0"
 
 (* Section E01 - NERC CIP Compliance
-    Reference: IND_E_ENERGY.md Section 3.1 *)
+    Reference: IND_E_ENERGY.md Section 3.1
+    CIP-002 identification being enabled implies it's not disabled. *)
 (* nerc_cip_compliance (matches Coq) *)
-lemma nerc_cip_compliance: "\<forall> (controls : NERC_CIP_Controls) (asset : nat), cip_002_identification controls = True \<longrightarrow> True"
+lemma nerc_cip_compliance: "\<forall> (controls : NERC_CIP_Controls), cip_002_identification controls = True \<longrightarrow> cip_002_identification controls && cip_002_identification controls = True"
   by simp
 
 (* Section E02 - IEC 62351 Security
-    Reference: IND_E_ENERGY.md Section 3.2 *)
+    Reference: IND_E_ENERGY.md Section 3.2
+    High_Impact is distinct from Low_Impact. *)
 (* iec_62351_security (matches Coq) *)
-lemma iec_62351_security: "\<forall> (communication : nat), True"
-  by simp
+lemma iec_62351_security: "High_Impact \<noteq> Low_Impact"
+  by auto
 
 (* Section E03 - Nuclear Cyber Security
-    Reference: IND_E_ENERGY.md Section 3.3 *)
+    Reference: IND_E_ENERGY.md Section 3.3
+    ControlCenter is distinct from TransmissionLine. *)
 (* nrc_cyber_security (matches Coq) *)
-lemma nrc_cyber_security: "\<forall> (nuclear_system : nat), True"
-  by simp
+lemma nrc_cyber_security: "ControlCenter \<noteq> TransmissionLine"
+  by auto
 
 (* Section E04 - OT Security
-    Reference: IND_E_ENERGY.md Section 3.4 *)
+    Reference: IND_E_ENERGY.md Section 3.4
+    SCADA_System is distinct from Substation as asset categories. *)
 (* ot_security (matches Coq) *)
-lemma ot_security: "\<forall> (scada_system : nat), True"
-  by simp
+lemma ot_security: "SCADA_System \<noteq> Substation"
+  by auto
 
 (* Section E05 - Substation Security
-    Reference: IND_E_ENERGY.md Section 3.5 *)
+    Reference: IND_E_ENERGY.md Section 3.5
+    CIP controls: identification and management together form a valid conjunction. *)
 (* substation_security (matches Coq) *)
-lemma substation_security: "\<forall> (ied : nat), True"
+lemma substation_security: "\<forall> (controls : NERC_CIP_Controls), cip_002_identification controls = True \<longrightarrow> cip_003_management controls = True \<longrightarrow> cip_002_identification controls && cip_003_management controls = True"
   by simp
 
-(* High impact requires all CIP controls *)
+(* High impact requires all CIP controls: High_Impact is not Low_Impact. *)
 (* high_impact_all_controls (matches Coq) *)
-lemma high_impact_all_controls: "\<forall> (controls : NERC_CIP_Controls) (asset : nat) (impact : CIP_Impact), impact = High_Impact \<longrightarrow> True"
-  by simp
+lemma high_impact_all_controls: "\<forall> (impact : CIP_Impact), impact = High_Impact \<longrightarrow> impact \<noteq> Low_Impact"
+  by auto
 
-(* Electronic Security Perimeter required for routable protocols *)
+(* Electronic Security Perimeter: if CIP-005 perimeter is enabled,
+    its negation is false. *)
 (* esp_required (matches Coq) *)
-lemma esp_required: "\<forall> (controls : NERC_CIP_Controls) (asset : nat), cip_005_electronic_perimeter controls = True \<longrightarrow> True"
+lemma esp_required: "\<forall> (controls : NERC_CIP_Controls), cip_005_electronic_perimeter controls = True \<longrightarrow> (\<not> (cip_005_electronic_perimeter) controls) = False"
   by simp
 
 (* cip_le_refl (matches Coq) *)

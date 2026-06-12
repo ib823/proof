@@ -64,8 +64,8 @@ DMP/GoFetch), secret hygiene/zeroization, API misuse, and test adequacy.
 | `aes.rs` | KATs green (FIPS 197 C.3) | 4 (1 High, 1 Med, 2 Low) | CT barrier on `ct_lookup`; zeroize working state; +exhaustive `ct_lookup` test | raw-API visibility (Low); AESAVS/Monte-Carlo vectors (Low) |
 | `constant_time.rs` | tests green | 1 (broken CT primitive) | `ct_select` made branchless; `ct_lt_u8` tightened; +tests | — |
 | `ml_kem.rs` (FIPS 203) | **ACVP keyGen + encapDecap byte-exact (green)** | 1 Critical (was not FIPS 203) + 2 Med CT/hygiene | **FIPS 203 reconciliation (sampler/tomont/domain-sep/FO)**; decaps CT branches + zeroization (CT verified) | **✅ FIPS 203 COMPLIANT** |
-| `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT** | — |
-| `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check | small-order accept (cofactor); `from_bytes_mod_order` "just copy" (info) |
+| `x25519.rs` (+`montgomery`/`field25519`) | RFC 7748 §5.2 + §6.1 green | test hygiene (2 disabled KATs, 1 with bogus data) | enabled/fixed the RFC KATs; **impl was correct + CT**; **deep-pass 2026-06-04: confirmed clean (high-bit handled via field reduce, clamping, all-zero rejection) + added the missing negative test for the contributory all-zero rejection** | — |
+| `ed25519.rs` (+`field25519`) | RFC 8032 #1/#2 green | **2 High (live)** + 2 strict-decode (deep-pass) | non-CT `ct_select` on secret scalar path; reversed-borrow `s<L` check; **deep-pass 2026-06-04: non-canonical `y >= p` decode + `x=0`/sign=1 decode now rejected (RFC 8032 §5.1.3)** | small-order/cofactor accept (RFC 8032 cofactorless, low priority); `from_bytes_mod_order` "just copy" (info, benign — clamped/pre-validated at all call sites) |
 | `ml_dsa.rs` (FIPS 204) | **ACVP keyGen + sigGen + sigVer byte/behaviour-exact (green)** | 1 Critical (was not FIPS 204) + 1 Med CT | **FIPS 204 reconciliation (H‖k‖l / ExpandS rejection / ExpandA 23-bit / det. rnd)**; `check_norm` CT (poly+vec) + equivalence test | **✅ FIPS 204 COMPLIANT** |
 | `gcm.rs`/`ghash.rs` | NIST GCM KATs green | **none** (clean) | — | nonce-reuse is caller's responsibility (documented); SP 800-38D length limits not enforced (unreachable) |
 | `sha2`/`keccak`/`hmac`/`hkdf` | KATs green (+SHA-3 added) | **none** (clean) | added SHA3-256/512 FIPS 202 KATs to the manifest | — |
@@ -262,3 +262,511 @@ The remaining correctness-assurance work is machine-level constant-time evidence
 Findings are leads requiring human verification; expect false positives and misses. The
 ACVP byte-exactness now gives an external auditor a reproducible correctness baseline,
 which is precisely what makes REQ-28 tractable and cheap to commission.**
+
+---
+
+## Deep-pass 2026-06-04 (third pass) — Ed25519 RFC 8032 strict point-decoding + X25519 confirm
+
+Dedicated per-primitive deep pass over `ed25519.rs` / `x25519.rs` (the items left open
+by the second-model pass). Method unchanged: read the file + dependencies, run the KATs,
+and reason about correctness / malleability / canonicality at source level.
+
+### Ed25519 — two RFC 8032 §5.1.3 strict-decode gaps (fixed)
+
+`EdwardsPoint::decompress` accepted **non-canonical point encodings** that RFC 8032
+§5.1.3 requires rejecting. Both are malleability gaps (a single curve point with more
+than one valid 32-byte encoding) rather than forgeries, but both are explicit decode
+rules and matter for any consensus/fingerprint use of an Ed25519 public key, and for
+strict-verification interop:
+
+1. **Non-canonical `y >= p` accepted (fixed).** After clearing the sign bit, the code
+   passed the 255-bit `y_bytes` straight to `FieldElement::from_bytes`, which **masks
+   bit 255 and reduces mod p silently** — so an encoding with `y ∈ [p, 2^255)` decoded
+   to the same point as its canonical `y - p` form. RFC 8032 step 1: "if the resulting
+   value is >= p, decoding fails." **Fixed:** added `is_canonical_y` (branchless
+   `y_bytes - p` borrow check, mirroring `is_scalar_valid`'s `s < L`) and reject before
+   `from_bytes`.
+2. **`x = 0` with sign bit set accepted (fixed).** RFC 8032 step 3: "if x = 0 and x_0 =
+   1, decoding fails" (there is no negative zero). The code computed `x = 0`, saw the
+   requested sign differed, negated (`-0 = 0`), and accepted. **Fixed:** reject when
+   `x.is_zero() && x_sign == 1`.
+
+Both fixes are **behaviour-preserving for every canonical input** — all RFC 8032 test
+vectors, the sign/verify roundtrips and the basepoint/identity compression tests are
+unchanged — they only *add* rejections for non-canonical encodings. New negative tests:
+`test_decompress_rejects_noncanonical_y`, `test_decompress_rejects_x_zero_with_sign_set`,
+`test_is_canonical_y_boundaries`.
+
+Also added `test_verify_rejects_malleable_s_plus_l`: an end-to-end check that a forged
+`(R, s + L)` (congruent to a valid signature mod L) is rejected by the `0 <= s < L`
+gate — exercising the second-model `is_scalar_valid` borrow fix through `verify`, which
+previously had only a unit test on the helper.
+
+Still open (unchanged, low priority): no small-order/cofactor rejection of `A`/`R`
+(RFC 8032 permits cofactorless verification; RIINA's `verify` already uses the strict
+`s*B - k*A == R` byte-equality form, which is the cofactorless-strict variant).
+
+### X25519 — confirmed clean; added the missing contributory-rejection test
+
+Re-reviewed `x25519.rs` + `montgomery::x25519`/`x25519_base`. **No defects.** The
+RFC 7748 "mask the most significant bit" requirement is subsumed by
+`FieldElement::from_bytes` reducing the u-coordinate mod p; scalar clamping is correct;
+the all-zero (small-order) shared-secret rejection is present on both the standalone
+`x25519` and `X25519KeyPair::diffie_hellman`. The only coverage gap was that **no test
+actually triggered** that rejection. **Added** `test_x25519_rejects_low_order_zero_output`
+(peer `u = 0`, the order-2 point → clamped scalar sends it to the identity → all-zero
+output → `Err`), covering the contributory-behavior guard on both APIs.
+
+### GCM — confirmed clean (no change)
+
+Reconfirmed the second-model finding: CT bitwise GHASH (no H-table), CT tag compare,
+verify-before-release, 96-bit nonce enforced. The one documented open item — SP 800-38D
+§5.2.1.1 input length limits (plaintext `<= 2^39-256` bits, AAD `<= 2^64-1` bits) — is
+**deliberately not enforced**: the bound is ~64 GiB of plaintext in a single buffer
+(practically unreachable) and a guard for it could not be exercised by a unit test, so
+adding an untestable branch was judged net-negative versus documenting the limit here.
+
+**Net:** Ed25519 decode is now RFC 8032 §5.1.3-strict; X25519 and GCM confirmed clean.
+`05_TOOLING` `cargo test --all` 280 → **285 / 0 / 0** (+5 tests), `kat_audit` **23 / 0**,
+clippy clean. Machine-level CT evidence (dudect/ctgrind) and the formal-equivalence proof
+remain the open crypto threads; REQ-28 (external audit) is still owner-gated.
+
+---
+
+## Machine-level CT evidence 2026-06-05 (report item 2) — dudect-style harness
+
+The pre-audit's "next correctness item" was empirical constant-time evidence to back the
+by-construction CT analysis. Delivered: a **dependency-free, dudect-style timing-leakage
+harness** at `05_TOOLING/crates/riina-core/examples/dudect_ct.rs` (an `example`, not a
+`#[test]` — timing in CI is noise; it never runs in `cargo test` and does not change the
+test count). Run it pinned to a core:
+`taskset -c 0 cargo run --release --example dudect_ct -p riina-core`.
+
+**Method.** Per primitive, two input classes — class 0 (*fixed* secret) vs class 1
+(*random* secret), public inputs equal — are interleaved; the operation is timed and a
+**Welch's t-test** (with top-10% cropping to drop hypervisor-steal-time outliers) is
+applied. |t| > 4.5 ⇒ FLAGGED. No `dudect`/`criterion`/`rand` crate (Law 8): a hand-rolled
+xorshift PRNG + t-test. A **positive control** (`leaky_eq`, an early-return compare) runs
+first to prove the harness has detection power in the current environment.
+
+**Environment feasibility (assessed, reported — not faked).** The RIINA dev container is
+Docker on a KVM vCPU: it *does* have invariant TSC (`constant_tsc`/`nonstop_tsc`/`rdtscp`),
+a 1 ns monotonic clock, and `taskset` core-pinning — better than a worst-case shared host
+— but hypervisor steal-time and neighbour contention are not controllable. So in-container
+results are **indicative, not audit-grade certification**; the harness exists to (a) catch
+gross leaks and regressions and (b) be re-run by an auditor on a controlled bare-metal host
+(`isolcpus`/`nohz_full`/fixed freq) for REQ-28.
+
+**Results (representative, `taskset -c 0`, scale ×1):**
+
+| Target | |t| | Verdict |
+|---|---|---|
+| `POSCTRL_leaky_eq` (positive control) | ~2800–10000 | FLAGGED — correct (early-return branch); confirms detection power |
+| `ct_eq_bytes_32` | < 1 | no leak |
+| `aes256_encrypt_block` (S-box `ct_lookup`) | < 2 | no leak |
+| `ed25519_sign` (`scalar_mul`/`ct_select`) | < 2 | no leak |
+| `x25519_diffie_hellman` (ladder swap) | < 1 | no leak |
+| `mlkem768_decapsulate` (reductions + implicit reject) | ~2–3 | no leak |
+| `aes256gcm_encrypt_64b` (GHASH `gf128_mul`) | ~20–40 | FLAGGED → **investigated: host artifact** |
+
+**The GCM flag is a measurement artifact, not a leak — established two ways:** (1) source
+inspection — `ghash::gf128_mul` processes all 128 bits with a mask-based conditional XOR,
+shift, and `0xe1` reduction, with **no secret-dependent branch or table** (the prior pass's
+"bitwise CT" assessment holds; code inspection is ground truth for a branch leak); (2) the
+flag's magnitude (|t|~30, vs the positive control's thousands) is the signature of a tiny
+systematic bias, consistent with fixed-vs-random data on a shared vCPU, not a data-dependent
+branch. AES alone (same secret=key) reads clean, so it is the software AES+GHASH data path's
+microarchitectural sensitivity to *fixed* vs *varying* inputs, which a controlled host
+resolves. Recorded as the one in-container FLAG-but-clean for the auditor to re-confirm.
+
+**Methodology note (and a harness self-audit).** A first cut FLAGGED ML-KEM at |t|=114 and
+GCM at |t|=21. ML-KEM was a **harness bug**, not a leak: class 1 drew keys from a 256-entry
+*pool* (cold cache) vs class 0's single hot fixed key — a footprint artifact. Switching to
+per-sample keygen+encaps into the *same* buffers for both classes (symmetric setup; only the
+secret bytes differ) dropped ML-KEM to |t|~2.5. Lesson baked into the harness: do identical
+untimed work for both classes so only the secret *value* differs. (GCM persisted through this
+fix → the source-level investigation above.)
+
+**Net:** by-construction CT is now backed by indicative empirical evidence with a validated
+positive control; 5/6 primitives read clean in-container and the 6th (GCM) is code-confirmed
+CT with the flag traced to a host artifact. The harness is the reusable instrument for the
+controlled-host CT certification an external auditor (REQ-28) performs. The formal-equivalence
+proof remains the north-star open thread.
+
+---
+
+## Formal equivalence 2026-06-05 (the north star) — GHASH GF(2^128), first primitive
+
+The north-star deliverable — turning "tested-correct" into "proven-correct" — is now started
+with its first primitive: the **GF(2^128) multiplication** at the heart of GHASH / AES-GCM. New
+mechanized Coq lane `02_FORMAL/coq/crypto/GF128.v` (the first crypto proof in the Coq corpus;
+`# Crypto` section added to `_CoqProject`; active build **314 → 315 files, 12,456 → 12,485 Qed,
+0 Admitted / 0 Axiom / 0 Abort**).
+
+**What is modeled and proved.** `GF128.v` models the *exact* bit-serial algorithm in
+`05_TOOLING/crates/riina-core/src/crypto/ghash.rs::gf128_mul` over `Z` (big-endian 128-bit, with
+an explicit faithfulness map at the file head: `z ^= v` ↔ `Z.lxor`, `v >> 1` ↔ `Z.shiftr v 1`,
+`v[15]&1` ↔ `Z.testbit v 0`, `v[0] ^= 0xe1` ↔ `Z.lxor _ RED` with `RED = 0xe1 << 120`, MSB-first
+y-bit `i` ↔ `Z.testbit y (127-i)`). It then proves the algebraic structure, all `Qed` (no
+`Admitted`), via bit extensionality (`Z.bits_inj'`) reduced to boolean tautology (`btauto`):
+
+- additive group laws (XOR: comm / assoc / 0 / nilpotent);
+- `mulx` (multiply-by-the-generator) is GF(2)-linear;
+- **bilinearity** — `gf_mul_distr_l` `(a+b)·y = a·y + b·y` and `gf_mul_distr_r`
+  `x·(a+b) = x·a + x·b` (proved with loop-invariant lemmas over the 128-step fold);
+- **identity** `gf_mul_one_r` `x·1 = x` and **zero** `gf_mul_0_r`;
+- **closure** — `mulx`, the loop, and `gf_mul` all stay in `[0, 2^128)` (`gf_mul_in128`),
+  i.e. the model is a genuinely closed 128-bit operation.
+
+**Executable cross-check (the bridge).** Concrete products are closed by `vm_compute`
+(`Example gf_mul_kat` etc.), and the parity test
+`crypto::ghash::tests::test_gf128_mul_matches_coq_model` asserts the **Rust `gf128_mul` is
+byte-identical** to the model's computed product on that vector (`05_TOOLING` 285 → **286 / 0 /
+0**). So the chain is: *Coq model (proved bilinear/identity/closed) → `vm_compute` product →
+Rust `gf128_mul` (byte-equal)*.
+
+**The bridge caught a real bug — in the proof, not the code.** The first model used the
+reduction constant as decimal `231` (= `0xe7`), a transcription error for `0xe1` (= `225`); the
+parity test failed (`f2d1… ≠ 6504…`), localizing the defect to the Coq side (the Rust was
+correct). Fixing `RED` to `225` made model and implementation agree byte-for-byte. This is
+exactly why an *executable* equivalence anchor (not just a hand proof) is worth building — it
+mechanically catches model⇄implementation drift in either direction.
+
+**Honest scope.** This is one primitive. It is a real, complete, `Admitted`-free formal model +
+impl cross-check for GHASH multiplication — and the template for the rest. It is *not* yet a full
+GCM/AES proof, nor a commutativity/associativity proof of the field (the hard laws were not
+attempted rather than admitted). Remaining formal-equivalence work (multi-session): the full
+`Ghash::compute` fold, AES GF(2^8) (`xtime`/MixColumns + the S-box as field-inverse∘affine),
+SHA-2/SHA-3 round bit-ops, and the curve25519 field arithmetic. The methodology (faithful `Z`
+model + `bits_inj'`/`btauto` algebra + `vm_compute` KAT + a Rust parity test) now exists to
+replicate.
+
+### GHASH fold (second primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/GHASH.v` (imports `GF128`; active build 315 -> 316 files, 12,485 ->
+12,506 Qed, 0 Admitted/Axiom/Abort) lifts the multiply to the **full GHASH hash**. It models
+`Ghash::update_block`'s recurrence `acc := (acc XOR block) * H` as a `fold_left` (`ghash`) and
+proves, all `Qed`:
+
+- **`ghash_linear`** — GHASH_H is GF(2)-linear in the (equal-length) block message:
+  `GHASH_H(X (+) Y) = GHASH_H(X) (+) GHASH_H(Y)`. This *is* the almost-XOR-universal structure
+  GCM's authentication security rests on (forging the tag means colliding this hash).
+- **`ghash_cons` / `ghash_horner_two`** — the Horner / polynomial form
+  `GHASH_H(B1..Bm) = (+)_i B_i * H^(m-i+1)` (proved via an accumulator-shift lemma over the fold).
+
+Executable `vm_compute` KATs (`ghash_kat_1`, `ghash_kat_2`, and `ghash_kat_horner` which closes
+by the *proven* `ghash_horner_two`) feed the Rust parity test
+`crypto::ghash::tests::test_ghash_fold_matches_coq_model` (a `Ghash::new`/`update_block`
+sequence), byte-identical (05_TOOLING 286 -> 287).
+
+A Coq-specific lesson worth recording for the lane: because `gf_mul` is a 128-step fixpoint, any
+`simpl`/`cbn` that reduces a goal containing it makes the **Qed-time kernel conversion** (which
+ignores `Opaque`) expand the fixpoint symbolically and diverge. The fix that makes the lane
+scalable: keep `gf_mul`/`ghash_step` `Opaque` and rewrite structure with generic `Qed`-opaque
+lemmas (`fold_left_cons`/`zip_xor_cons`/...) so the kernel treats them as black boxes; concrete
+KATs still go through `vm_compute`.
+
+### AES GF(2^8) & S-box (third primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/AESField.v` (active build 316 -> 317 files, 12,506 -> 12,511 Qed, 0
+Admitted/Axiom/Abort) models AES's field arithmetic — `xtime` (x2 mod the Rijndael polynomial
+0x11b) and `gf_mul` (russian-peasant), faithful to `aes.rs` — and tackles the most error-prone
+part of any AES: the two magic 256-byte S-box tables. The `SBOX`/`INV_SBOX` tables are
+transcribed verbatim from `aes.rs` and proved, **over all 256 bytes by `vm_compute`** (concrete
+reduction — no symbolic fixpoint blow-up), to be the genuine mathematical construction:
+
+- **`sbox_eq_construction`** — `SBOX[a] = affine(a^254)` for every byte, where `a^254` is the
+  GF(2^8) multiplicative inverse and `affine` is the AES affine map. I.e. the shipped table *is*
+  the real AES S-box, not a mistyped table.
+- **`gf_inv_correct`** — `a · a^254 = 1` for all `a != 0` (255 cases): `a^254` really is the
+  inverse.
+- **`sbox_inv_sbox_id` / `inv_sbox_sbox_id`** — `SBOX` and `INV_SBOX` are mutual inverses (so the
+  S-box is a bijection and decryption inverts encryption at the substitution step).
+- **`gmul_kat`** — the FIPS 197 §4.2 worked example `0x57 · 0x83 = 0xc1`.
+
+Rust bridge `crypto::aes::tests::test_sbox_matches_coq_model` recomputes the S-box from
+`gf_mul`+affine in Rust and asserts it equals the shipped `SBOX` (and that `INV_SBOX` inverts it),
+mirroring the Coq construction. This finite-`vm_compute` style sidesteps the Qed-kernel-conversion
+issue entirely and is the template for the remaining table/field primitives.
+
+### SHA-256 (fourth primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/SHA256.v` (active build 317 -> 318 files, 12,511 -> 12,513 Qed, 0
+Admitted/Axiom/Abort) is a faithful Coq model of `sha2.rs`: the 32-bit word ops, the round
+functions (`ch`/`maj`/Σ0/Σ1/σ0/σ1), the message schedule, the 64-round compression with the
+Davies-Meyer feed-forward, the constants `H0`/`K`, and single-block padding. SHA-256 is a hash —
+designed to have no exploitable algebra — so the content here is *executable* equivalence rather
+than structural theorems: the model is run by `vm_compute` and proven to reproduce the FIPS 180-4
+known-answer digests for `"abc"` (`sha256_abc`) and `""` (`sha256_empty`). The Rust parity test
+`crypto::sha2::tests::test_sha256_matches_coq_model` asserts `Sha256::hash` returns those
+byte-identical digests, so the Coq spec, the FIPS vectors, and the shipped implementation all
+agree.
+
+### SHA-3 / Keccak-f[1600] (fifth primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/Keccak.v` (active build 318 -> 319 files, 12,513 -> 12,515 Qed, 0
+Admitted/Axiom/Abort) models the Keccak-f[1600] permutation — the five step mappings
+theta/rho/pi/chi/iota over the 25-lane (5x5x64) state, with the round-constant, rotation-offset
+and pi-permutation tables transcribed verbatim from `keccak.rs` — and the SHA3-256 sponge
+(rate 1088, domain `0x06`/`0x80` padding). Like SHA-256 it is a hash, so the content is the
+executable model<->spec<->implementation agreement: the model is run by `vm_compute` and proven
+to reproduce the FIPS 202 known-answer digests for `""` (`sha3_256_empty`) and `"abc"`
+(`sha3_256_abc`). The Rust parity test `crypto::keccak::tests::test_sha3_256_matches_coq_model`
+asserts `Sha3_256::hash` returns those byte-identical digests. (SHA-3/SHAKE is the symmetric
+primitive the PQC suite — ML-KEM/ML-DSA — is built on, so this model also anchors a future PQC
+formal-equivalence.)
+
+### Curve25519 field GF(2^255-19) (sixth primitive — the deep one, 2026-06-05)
+
+`02_FORMAL/coq/crypto/Field25519.v` (active build 319 -> 320 files, 12,515 -> 12,524 Qed, 0
+Admitted/Axiom/Abort) takes on the structurally-deep target the lane had been saving: the
+radix-2^51, 5-limb field arithmetic of `field25519.rs` (the field underneath X25519 and Ed25519).
+Unlike the hashes, this is proved *symbolically*, not by KAT. A field element's value is
+`a0 + a1*2^51 + ... + a4*2^204`; the theorems are:
+
+- **`mul_correct_mod`** (headline) — `val(femul a b) mod p = (val a * val b) mod p`. The Rust
+  `mul` is a 5x5 schoolbook product whose high half is folded by `2^255 = 19 (mod p)`. The proof
+  shows the folded 5-limb result differs from the true product `val a * val b` by an exact
+  multiple of `p = 2^255-19` (`mul_reduce_eq`, closed by `ring`), so they are congruent mod p.
+  This is the Mersenne-style reduction correctness that makes Curve25519 arithmetic right — the
+  same property fiat-crypto mechanizes.
+- **`add_correct`** (`val(feadd a b) = val a + val b`, exact) and **`sub_correct_mod`** (the
+  Rust's `+2p` underflow-avoidance vanishes mod p, using `val(P_LIMBS) = p`).
+- Executable corner cases (`vm_compute`): `(p-1)^2 ≡ 1` and the reduction `2^254·4 ≡ 38`.
+
+The Rust then runs carry propagation (which preserves the value mod p); the parity test
+`crypto::field25519::tests::test_mul_matches_coq_model` confirms the *full carried* implementation
+on those vectors, including the reduction case.
+
+### Full AES-256 cipher (seventh primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/AES.v` (active build 320 -> 321 files, 12,524 -> 12,528 Qed, 0
+Admitted/Axiom/Abort) closes the loop on AES. `AESField.v` (third primitive) already proved the
+256-byte S-box *is* the genuine field construction `affine(a^254)`; this primitive assembles the
+**whole cipher** on top of it. The model represents the AES state as a flat 16-byte list in block
+order (index `4c+r` is state cell `s[r][c]`, exactly the big-endian `block_to_state` packing of the
+Rust `u32x4` state) and defines each transform faithfully:
+
+- **Key schedule** (`key_schedule`): the 60-word AES-256 expansion — `RotWord`/`SubWord`/`Rcon` at
+  `i mod 8 = 0`, the extra `SubWord` at `i mod 8 = 4` — reusing the proven `aes_sbox`.
+- **The four round transforms**: `sub_bytes` (S-box over 16 bytes), `shift_rows` (the fixed
+  block-order permutation derived from the Rust row-extract/shift/repack), `mix_columns` (the
+  `[2 3 1 1; …]` GF(2^8) matrix via the proven `gmul`), `add_round_key` (bytewise XOR), plus their
+  inverses, wired into the 14-round encrypt and decrypt structure (final round drops MixColumns).
+
+`aes256_encrypt_fips197` and `aes256_decrypt_fips197` prove by `vm_compute` that the model
+reproduces the **FIPS-197 Appendix C.3** known-answer vector (key `000102…1f`, plaintext
+`00112233…ff` ⟷ ciphertext `8ea2b7ca…89`) in *both* directions — and `ks_first_word`/`ks_eighth_word`
+pin the schedule. The parity test `crypto::aes::tests::test_aes256_matches_coq_model` confirms the
+shipping `Aes256` (the optimized `u32`-state impl) is byte-identical on those exact vectors. So AES
+is verified from "the S-box is the genuine construction" all the way up to "the entire AES-256 block
+transform is the real AES".
+
+### ML-KEM (Kyber) NTT (eighth primitive — the post-quantum core, 2026-06-05)
+
+`02_FORMAL/coq/crypto/NTT.v` (active build 321 -> 322 files, 12,528 -> 12,531 Qed, 0
+Admitted/Axiom/Abort) takes the formal-equivalence lane into post-quantum territory: the
+number-theoretic transform that is the arithmetic engine of ML-KEM-768 (`ml_kem.rs`). Unlike a
+math-level NTT, this model is faithful to the **exact integer semantics of the implementation**:
+
+- **i16 two's-complement wrapping** (`wrap16`, used by every `add16`/`sub16` and the `as i16`
+  truncations), **Montgomery reduction** (`montgomery_reduce`, R=2^16, q=3329, q⁻¹=−3327, the
+  arithmetic `>> 16` modelled as floor division), **Barrett reduction** (BARRETT_V=20159), and the
+  128-entry **`ZETAS`** table transcribed verbatim (bit-reversed, Montgomery form).
+- The **Cooley-Tukey forward** butterflies (`ntt`, 7 layers len 128→2, zeta index 1→127) and the
+  **Gentleman-Sande inverse** butterflies (`inv_ntt`, len 2→128, zeta 127→1) + the F=1441 scaling,
+  modelled as block-structured list transforms; and the degree-1 **`basemul`** (`pointwise_mul`,
+  pairs mod X²−ζ and X²+ζ).
+
+The theorems prove, by `vm_compute`, that the way ML-KEM *actually uses* the NTT —
+`ntt a`, `ntt b`, pointwise-multiply, `inv_ntt`, `reduce` — computes the polynomial product in
+`Z_q[X]/(X²⁵⁶+1)` (exactly what the Rust `test_ntt_multiply_roundtrip` checks): `ntt_mul_one`
+(`1·1 = 1`), `ntt_mul_1plusX_squared` (the genuine convolution `(1+X)² = 1 + 2X + X²`), and
+`ntt_mul_negacyclic_wrap` (`X²⁵⁵·X = X²⁵⁶ ≡ q−1`, the negacyclic reduction the transform encodes).
+That the exact products come out — `1`, `[1,2,1,…]`, `q−1` — confirms both the model's faithfulness
+and that the Montgomery R-factor / F-scaling compensation is exact. The bridge
+`crypto::ml_kem::tests::test_ntt_matches_coq_model` runs the shipping `Poly` through the identical
+pipeline and asserts the byte-identical `to_positive` outputs.
+
+### X25519 Montgomery ladder (ninth primitive, 2026-06-05)
+
+`02_FORMAL/coq/crypto/X25519.v` (active build 322 -> 323 files, 12,531 -> 12,533 Qed, 0
+Admitted/Axiom/Abort) climbs from the Curve25519 *field* (sixth primitive) to the *group operation*
+built on it: the X25519 scalar multiplication of `montgomery.rs`. The model is over GF(p),
+p = 2^255-19 (residues in [0,p) — the field whose radix-2^51 multiply `Field25519.v` proves equals
+this mod p), and transcribes the ladder exactly from the Rust:
+
+- **`double` (xDBL)**: `A=X+Z; B=X-Z; AA=A²; BB=B²; C=AA-BB; X'=AA·BB; Z'=C·(BB + 121666·C)`.
+- **`diff_add` (xADD)**: `DA=(Xq-Zq)(Xp+Zp); CB=(Xq+Zq)(Xp-Zp); X'=(DA+CB)²; Z'=u·(DA-CB)²`.
+- **`scalar_mul`**: `r0=(1:0)`, `r1=(u:1)`; for bit i = 254..0: cswap(bit); `(r0,r1) =
+  (double r0, diff_add r0 r1 u)`; cswap(bit); return `r0`. Plus the scalar clamp
+  (`k[0]&=0xF8; k[31]&=127; k[31]|=64`), the little-endian / bit-255-masked u-coordinate decode, and
+  the `x0·z0^(p-2)` (Fermat inverse) + little-endian encode of the output.
+
+The theorems prove by `vm_compute` that the modelled `x25519` reproduces the **RFC 7748** §5.2 Test
+Vector 1 (`x25519_rfc7748_vector1`) and the §6.1 basepoint — Alice's public key `X25519(a, 9)`
+(`x25519_rfc7748_basepoint`) — **byte-for-byte**. The bridge
+`crypto::montgomery::tests::test_x25519_matches_coq_model` runs the shipping `x25519`/`x25519_base`
+on the identical vectors and asserts the same bytes. (The field elements are plain residues here;
+the implementation's radix-2^51 limb multiply is the part `Field25519.v` separately proves correct
+mod p — so field-level and ladder-level results compose.)
+
+**Lane status:** nine primitives now model-proven + implementation-cross-checked — GHASH's
+GF(2^128) multiply, the full GHASH fold, AES's GF(2^8)/S-box, the full AES-256 cipher, SHA-256,
+SHA3-256/Keccak, the Curve25519 field, the ML-KEM NTT, and the X25519 ladder (the GCM + AES + SHA-2
++ SHA-3 + ECC [field + ladder] + PQC cores of Law-2 crypto). The crypto formal-equivalence lane now
+covers every symmetric/field/ECC/post-quantum core of the suite. Remaining: machine-level CT on a
+controlled host; then REQ-28.
+
+## Structural CT verification 2026-06-05 (ctgrind / Valgrind secret-poisoning)
+
+Constant-time is two claims; this addresses the **structural** one — *no secret-dependent branch
+and no secret-dependent memory address* — which is **deterministic and host-noise-immune** (it does
+not measure time, so the shared/virtualised in-container CPU is fine). Technique: mark each crypto
+secret "undefined" via a Valgrind memcheck client request (ctgrind, A. Langley); memcheck then errors
+the instant an undefined (secret-derived) value reaches a conditional branch or a memory address.
+
+- **Harness:** `05_TOOLING/crates/riina-core/examples/ctgrind_ct.rs` — dependency-free (Law 8): the
+  client request is issued with a small `core::arch::asm!` sequence (the documented x86-64 Valgrind
+  ABI), **not** the `crabgrind`/`cc` crates. Driver: `scripts/ct-structural-check.sh`.
+- **Self-test (validated):** the *baseline* (no secret) yields 0 errors and a *positive control* (a
+  genuine secret-indexed table load) is detected — so the probe has real detection power here.
+- **Results (per primitive), after triage + fixes — all clean:**
+
+  | Primitive | memcheck errors | secret-dependent jumps | verdict |
+  |---|---|---|---|
+  | AES-256 (key→schedule→encrypt) | 0 | 0 | **structurally CT-clean** |
+  | `ct_eq_bytes` | 0 | 0 | **structurally CT-clean** |
+  | X25519 (scalar→`x25519_base`) | 0 | 0 | **structurally CT-clean** |
+  | Ed25519 (seed→`sign`) | 0 | 0 | **structurally CT-clean** |
+
+### Triage + fixes (2026-06-05) — green gate via real fixes, zero suppressions
+
+X25519 and Ed25519 initially flagged ~1000 sites each (memcheck-capped). Each was triaged at the asm
+level (non-PIE build + `addr2line`/`objdump` to classify `cmov`/`set` = CT vs `jcc`-on-secret = leak)
+and **fixed at the source** — no suppression file was needed. The driver is now a CI gate (exits
+non-zero on any regression). What the triage found, and the fix for each:
+
+1. **Overflow-check branches (the bulk).** `[profile.release] overflow-checks = true` inserted
+   `jo`/`jc`→panic branches on the overflow flag of *secret* limb arithmetic in `FieldElement::mul`
+   and `reduce`. **Fix:** `[profile.release.package.riina-core] overflow-checks = false` (the crypto
+   is wrapping by design and verified by KATs + the Coq proofs; overflow checks stay on for the rest
+   of the workspace).
+2. **Compiler-defeated constant-time selects.** `FieldElement::reduce` and `ct_eq` are written
+   branchless (mask select, arithmetic-shift borrow) but LLVM (opt-3 + fat LTO) lowered the selects
+   back into `js` branches. **Fix:** `core::hint::black_box` barriers on the masks (same discipline as
+   `aes::ct_lookup`), keeping them branchless.
+3. **X25519 contributory `is_zero` branch.** `to_affine`'s `if z.is_zero()` branched on the result Z.
+   **Fix:** a branchless `u_coordinate_ct` computing `X·Z⁻¹` directly (with `invert(0)=0` made a
+   documented total-function convention), so the identity case yields the all-zero (rejected) output
+   with no branch — behaviour-identical (the low-order-rejection test still passes).
+4. **⚑ A genuine variable-time leak — `ed25519::scalar_mul`.** The carry-propagation loop was
+   `while carry > 0 && k < 64` — a **data-dependent trip count** on the secret scalar product, in the
+   signing path. **Fix:** a fixed `for k in (i+32)..64` (once carry is 0 the iterations are no-ops, so
+   the result is identical and the timing no longer depends on the carry chain). A real CT hardening,
+   not just a tooling artifact.
+5. **Ed25519 `scalar_reduce`.** An `if d < 0 { borrow = -1 }` (despite a "constant time" comment) plus
+   a compiler-derived sign branch on the final `d`. **Fix:** branchless `d & 0xff` / `d >> 8` borrow
+   and a `black_box(borrow) as u8` mask.
+
+All fixes are behaviour-preserving: the full `riina-core` suite (KATs, RFC vectors, the formal-
+equivalence bridges) stays green, the 05_TOOLING workspace is **294 / 0**, clippy clean.
+
+## Timing CT certification 2026-06-05 — turnkey harness + host grading
+
+The **timing** half (data-independent-timing / TVLA) genuinely needs a controlled host. It is now
+**push-button**: `scripts/ct-timing-certify.sh` wraps the existing `examples/dudect_ct.rs`, **grades
+the host**, runs the probe pinned (`taskset`), applies |t| > 4.5, and writes an archivable report to
+`reports/ct_evidence/` (git-ignored — a host-specific runtime artifact).
+
+- **Host grading:** detects virtualisation/steal-time, `constant_tsc`/`nonstop_tsc`, governor, turbo,
+  SMT, and `isolcpus`; prints **CERTIFICATION-GRADE** only when all hold, else **INDICATIVE** with the
+  exact gaps. In-container it correctly reports INDICATIVE (docker, hypervisor flag, no isolcpus).
+- **Controlled-host runbook (in the script header):** `isolcpus/nohz_full/rcu_nocbs=<C>`,
+  `governor=performance`, Intel `no_turbo=1` (AMD: CPB off), `smt=off`, then
+  `CT_CORE=<C> CT_SCALE=50 bash scripts/ct-timing-certify.sh`. Any spare dedicated Linux box (even a
+  laptop with `isolcpus`) qualifies — the only owner action left is to run it there.
+- **Indicative in-container reading (scale 1):** positive control flagged (|t|≈65000 — detection
+  validated); AES, `ct_eq`, Ed25519, X25519 all low-|t| no-leak; AES-GCM and ML-KEM-decaps flag with
+  small |t| (≈38, ≈21) — the documented fixed-vs-random microarch artifacts of a shared vCPU
+  (`ghash::gf128_mul` is branchless; ML-KEM CT branches were removed), to vanish on a quiet core.
+
+Together the two lanes are complementary: structural (deterministic, here) + timing (needs the host).
+
+## Audit-readiness dossier (REQ-28)
+
+REQ-28 — the external crypto audit (NCC Group / Trail of Bits / Cure53 grade) — is an owner decision
+(commission + budget + firm). This dossier maximises its value and minimises billable ramp-up.
+
+- **Scope:** `05_TOOLING/crates/riina-core` — AES-256, AES-256-GCM/GHASH, SHA-256/512, SHA3-256/512,
+  HMAC, HKDF, X25519, Ed25519, ML-KEM-768 (FIPS 203), ML-DSA-65 (FIPS 204), the hybrid KEM. Pure-Rust,
+  **zero third-party runtime deps** (Law 8).
+- **Evidence inventory (auditor entry points):**
+  - *Known-answer tests:* `tests/kat_audit.rs` — one command (`cargo test -p riina-core --test
+    kat_audit`) re-verifying every primitive against an independently transcribed FIPS/RFC vector,
+    plus full NIST ACVP sweeps for ML-KEM-768 / ML-DSA-65 (0 ignored).
+  - *Formal equivalence (the differentiator):* `02_FORMAL/coq/crypto/` — **9 mechanized Coq⇄Rust
+    proofs** (GHASH×2, AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT,
+    X25519 ladder), each with a byte-identical Rust bridge test; 0 Admitted/Axiom/Abort.
+  - *Constant-time evidence:* structural (`ct-structural-check.sh`, deterministic) + timing
+    (`ct-timing-certify.sh`, controlled-host) — see the two sections above.
+  - *Threat model:* `01_RESEARCH/MASTER_THREAT_MODEL.md`. *Disclosure:* `SECURITY.md` (coordinated
+    disclosure). *`unsafe` inventory:* 5 in `riina-core/src` + the 7 in `03_PROTO`
+    (`riina-arena`/`riina-wasm`/`riina-lexer`) — each to be presented with its invariant.
+  - *Reproducible verification:* `riinac verify --full` (rebuilds Coq, re-derives every published
+    metric, runs the KAT + security gates) is the single source of truth.
+- **Known limitations / explicit out-of-scope:** DMP/GoFetch-class data-memory-dependent-prefetcher
+  leakage (needs DIT/blinding — Phase 7/9); the controlled-host *timing* certification is not yet run
+  (the *structural* CT lane is green and a CI gate, but data-independent-timing must still be
+  confirmed on metal — `scripts/ct-timing-certify.sh`); PQC
+  is parameter-set-specific (ML-KEM-768 / ML-DSA-65 only). State these up front so they are not
+  re-discovered on billable time.
+- **Engagement note:** a focused crypto-core audit is typically ~2–4 weeks; firms that leverage
+  mechanized proofs (e.g. Trail of Bits) can use the formal-equivalence lane directly. The
+  commissioning decision remains the owner's.
+
+### Controlled-host timing certification — runbook (the one owner-gated run)
+
+The structural CT lane is green and gated in CI (`ct-structural`, deterministic, hosted runner). The
+*timing* lane needs a non-virtualised, quiet, isolated core — the only step that cannot run in the
+container/CI. It is now a ~10-minute task on any real metal:
+
+1. **Pick a box** (any one is fine): a spare laptop/desktop you own ($0), or a **bare-metal cloud
+   instance** — AWS `*.metal`, Equinix Metal, Hetzner/OVH dedicated (these report `virt=none`; a
+   normal VM never qualifies). Hourly bare-metal cloud is ~$1–2.
+2. **Prep:** `sudo CT_CORE=2 bash scripts/ct-host-prep.sh` (sets governor=performance, turbo off, SMT
+   off; prints the `isolcpus=2 nohz_full=2 rcu_nocbs=2` line). Add that to GRUB, `update-grub`, reboot.
+3. **Certify:** `CT_CORE=2 CT_SCALE=50 bash scripts/ct-timing-certify.sh`. It re-grades the host
+   (must read CERTIFICATION-GRADE), runs the dudect/TVLA probe pinned, requires the positive control
+   to flag (detection power) and every primitive to stay under |t| < 4.5, and archives the report.
+4. **(Optional, continuous)** register a self-hosted runner labelled `ct-metal` on that box; the
+   `.github/workflows/ct-timing.yml` workflow then runs the certification on demand and uploads the
+   evidence artifact. An agent (Claude Code or other) given `root` on the box can drive steps 2–3
+   end-to-end.
+
+### External audit — ready-to-send RFP / scope-of-work
+
+> **RIINA `riina-core` cryptography — request for security audit.** We seek a fixed-scope review of
+> a pure-Rust, zero-third-party-dependency cryptography crate: AES-256 + AES-256-GCM/GHASH,
+> SHA-256/512, SHA3-256/512, HMAC, HKDF, X25519, Ed25519, ML-KEM-768 (FIPS 203), ML-DSA-65 (FIPS 204),
+> and a hybrid KEM. **In scope:** functional correctness vs FIPS/RFC + NIST ACVP; constant-time /
+> side-channel review (we provide a green deterministic structural-CT lane and a controlled-host
+> dudect/TVLA timing report); API misuse-resistance; the documented `unsafe` blocks. **Out of scope
+> (stated up front):** DMP/GoFetch microarchitectural prefetcher leakage; PQC parameter sets beyond
+> 768/65. **We provide:** an independently-transcribed KAT manifest (`cargo test -p riina-core --test
+> kat_audit`), **9 mechanized Coq⇄Rust formal-equivalence proofs** with byte-identical bridge tests,
+> the CT evidence + harnesses, a threat model, and a one-command reproducible verification
+> (`riinac verify --full`). **Deliverable:** a report graded to NCC/ToB/Cure53 standard, 0 findings ≥
+> Medium as the bar. Please quote scope, timeline, and team.
+
+### Firm shortlist
+
+| Firm | Fit for this engagement | Rough cost / timeline* |
+|---|---|---|
+| **Trail of Bits** | Strongest fit — actively uses/automates formal methods (can consume the Coq lane directly); deep Rust + crypto + PQC practice. | ~$40–90k, 3–5 wk |
+| **NCC Group (Crypto Services)** | Large dedicated crypto-audit practice; many public protocol/library reports; PQC experience. | ~$35–80k, 2–4 wk |
+| **Cure53** | Fast, focused, cost-effective for a bounded library scope; strong report quality; lighter on heavy formal-methods integration. | ~$20–45k, 1.5–3 wk |
+
+*Indicative only — actual quotes depend on final scope and current availability; get fixed bids from
+all three. The mechanized-proof + green-structural-CT package should reduce ramp-up (hence cost) at
+any of them. Commissioning (firm choice, contract, budget) is the owner's decision.

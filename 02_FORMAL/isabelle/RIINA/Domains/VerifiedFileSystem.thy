@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedFileSystem - Isabelle/HOL Port
@@ -15,6 +17,7 @@
  * | TxnState           | txn_state              | OK     |
  * | FSState            | fs_state               | OK     |
  * | FileOp             | file_op                | OK     |
+ * | OpResult           | op_result              | OK     |
  * | FSIntegrity        | fs_integrity           | OK     |
  * | FSSecurity         | fs_security            | OK     |
  * | VerifiedFS         | verified_fs            | OK     |
@@ -168,19 +171,15 @@
  *)
 
 theory VerifiedFileSystem
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* JournalOp (matches Coq: Inductive JournalOp) *)
 datatype journal_op =
-    JOpWrite  (* block, data *)
-  |     JOpCreate  (* inode *)
-  |     JOpDelete  (* inode *)
-  |     JOpRename  (* src_inode, dst_parent *)
+    JOpWrite
+  |     JOpCreate
+  |     JOpDelete
+  |     JOpRename
   |     JOpCommit
   |     JOpCheckpoint
 
@@ -201,12 +200,15 @@ datatype fs_state =
 
 (* FileOp (matches Coq: Inductive FileOp) *)
 datatype file_op =
-    OpCreate  (* parent inode, new inode *)
-  |     OpDelete  (* parent inode, del inode *)
-  |     OpRename  (* src_parent, src, dst_parent, dst *)
-  |     OpWrite  (* inode, offset, size *)
+    OpCreate
+  |     OpDelete
+  |     OpRename
+  |     OpWrite
   |     OpRead
-  |     OpSuccess
+
+(* OpResult (matches Coq: Inductive OpResult) *)
+datatype op_result =
+    OpSuccess
   |     OpFailure
   |     OpPartial
 
@@ -273,7 +275,7 @@ record journal =
 
 (* DirEntry (matches Coq: Record DirEntry) *)
 record dir_entry =
-  de_name :: nat  (* hash of name for simplicity *)
+  de_name :: nat
   de_inode :: nat
   de_is_dir :: bool
 
@@ -306,11 +308,12 @@ record atomic_op =
 
 (* is_owner (matches Coq: Definition is_owner) *)
 definition is_owner :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" where
-  "is_owner ctx ino \<equiv> Nat"
+  "is_owner ctx ino \<equiv> ((ctx_uid = ctx)) (owner_uid (inode_owner ino))"
 
 (* in_group (matches Coq: Definition in_group) *)
 definition in_group :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" where
-  "in_group ctx ino \<equiv> Nat"
+  "in_group ctx ino \<equiv> ((ctx_gid = ctx)) (owner_gid (inode_owner ino)) \<or>
+  existsb (fun g => (g = (owner_gid) (inode_owner ino))) (ctx_groups ctx)"
 
 (* get_permission (matches Coq: Definition get_permission) *)
 definition get_permission :: "AccessContext \<Rightarrow> Inode \<Rightarrow> Permission" where
@@ -330,24 +333,27 @@ definition can_write :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" w
 definition can_execute :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" where
   "can_execute ctx ino \<equiv> ctx_is_root ctx \<or> perm_execute (get_permission ctx ino)"
 
-(* txn_complete - complex match, manual review needed *)
+(* txn_complete - complex match, needs manual translation *)
+definition txn_complete :: "bool" where "txn_complete = undefined"
 
 (* journal_consistent (matches Coq: Definition journal_consistent) *)
 definition journal_consistent :: "Journal \<Rightarrow> bool" where
   "journal_consistent j \<equiv> forallb txn_complete (journal_transactions j) \<and>
-  Nat"
+  ((journal_tail \<le> j)) (journal_head j)"
 
 (* dir_no_self_cycle (matches Coq: Definition dir_no_self_cycle) *)
 definition dir_no_self_cycle :: "Directory \<Rightarrow> bool" where
-  "dir_no_self_cycle d \<equiv> negb (Nat"
+  "dir_no_self_cycle d \<equiv> (\<not> (Nat.eqb) (dir_inode d) (dir_parent d))"
 
 (* dir_has_parent_link (matches Coq: Definition dir_has_parent_link) *)
 definition dir_has_parent_link :: "Directory \<Rightarrow> bool" where
-  "dir_has_parent_link d \<equiv> existsb (fun e => Nat"
+  "dir_has_parent_link d \<equiv> existsb (fun e => ((de_name = e)) 0 \<and> ((de_inode = e)) (dir_parent d))
+          (dir_entries d)"
 
 (* dir_has_dot_entry (matches Coq: Definition dir_has_dot_entry) *)
 definition dir_has_dot_entry :: "Directory \<Rightarrow> bool" where
-  "dir_has_dot_entry d \<equiv> existsb (fun e => Nat"
+  "dir_has_dot_entry d \<equiv> existsb (fun e => ((de_name = e)) 1 \<and> ((de_inode = e)) (dir_inode d))
+          (dir_entries d)"
 
 (* dir_integrity (matches Coq: Definition dir_integrity) *)
 definition dir_integrity :: "Directory \<Rightarrow> bool" where
@@ -355,11 +361,11 @@ definition dir_integrity :: "Directory \<Rightarrow> bool" where
 
 (* quota_bytes_ok (matches Coq: Definition quota_bytes_ok) *)
 definition quota_bytes_ok :: "Quota \<Rightarrow> bool" where
-  "quota_bytes_ok q \<equiv> Nat"
+  "quota_bytes_ok q \<equiv> ((quota_used_bytes \<le> q)) (quota_limit_bytes q)"
 
 (* quota_inodes_ok (matches Coq: Definition quota_inodes_ok) *)
 definition quota_inodes_ok :: "Quota \<Rightarrow> bool" where
-  "quota_inodes_ok q \<equiv> Nat"
+  "quota_inodes_ok q \<equiv> ((quota_used_inodes \<le> q)) (quota_limit_inodes q)"
 
 (* quota_enforced (matches Coq: Definition quota_enforced) *)
 definition quota_enforced :: "Quota \<Rightarrow> bool" where
@@ -367,21 +373,24 @@ definition quota_enforced :: "Quota \<Rightarrow> bool" where
 
 (* can_allocate_bytes (matches Coq: Definition can_allocate_bytes) *)
 definition can_allocate_bytes :: "Quota \<Rightarrow> nat \<Rightarrow> bool" where
-  "can_allocate_bytes q n \<equiv> Nat"
+  "can_allocate_bytes q n \<equiv> ((quota_used_bytes \<le> q) + n) (quota_limit_bytes q)"
 
 (* can_allocate_inode (matches Coq: Definition can_allocate_inode) *)
 definition can_allocate_inode :: "Quota \<Rightarrow> bool" where
-  "can_allocate_inode q \<equiv> Nat"
+  "can_allocate_inode q \<equiv> ((quota_used_inodes < q)) (quota_limit_inodes q)"
 
-(* recovery_complete - complex match, manual review needed *)
+(* recovery_complete - complex match, needs manual translation *)
+definition recovery_complete :: "bool" where "recovery_complete = undefined"
 
 (* crash_safe (matches Coq: Definition crash_safe) *)
 definition crash_safe :: "CrashState \<Rightarrow> bool" where
   "crash_safe cs \<equiv> journal_consistent (cs_journal cs)"
 
-(* op_is_atomic - complex match, manual review needed *)
+(* op_is_atomic - complex match, needs manual translation *)
+definition op_is_atomic :: "bool" where "op_is_atomic = undefined"
 
-(* op_is_journaled - complex match, manual review needed *)
+(* op_is_journaled - complex match, needs manual translation *)
+definition op_is_journaled :: "bool" where "op_is_journaled = undefined"
 
 (* fs_integrity_sound (matches Coq: Definition fs_integrity_sound) *)
 definition fs_integrity_sound :: "FSIntegrity \<Rightarrow> bool" where
@@ -400,15 +409,15 @@ definition fs_fully_verified :: "VerifiedFS \<Rightarrow> bool" where
 
 (* riina_fs_integrity (matches Coq: Definition riina_fs_integrity) *)
 definition riina_fs_integrity :: "FSIntegrity" where
-  "riina_fs_integrity \<equiv> mkFSIntegrity true true true true"
+  "riina_fs_integrity \<equiv> mkFSIntegrity True True True True"
 
 (* riina_fs_security (matches Coq: Definition riina_fs_security) *)
 definition riina_fs_security :: "FSSecurity" where
-  "riina_fs_security \<equiv> mkFSSecurity true true true true"
+  "riina_fs_security \<equiv> mkFSSecurity True True True True"
 
 (* riina_vfs (matches Coq: Definition riina_vfs) *)
 definition riina_vfs :: "VerifiedFS" where
-  "riina_vfs \<equiv> mkVerifiedFS riina_fs_integrity riina_fs_security true true"
+  "riina_vfs \<equiv> mkVerifiedFS riina_fs_integrity riina_fs_security True True"
 
 (* ============================================================================
     SECTION 1: BASIC BOOLEAN INFRASTRUCTURE
@@ -422,11 +431,11 @@ lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = 
   by auto
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, negb b = False <-> b = True"
+lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by auto
 
 (* ============================================================================
@@ -629,11 +638,11 @@ lemma VFS_049_aborted_not_complete: "\<forall> txn, txn_state txn = TxnAborted \
   by simp
 
 (* VFS_050_empty_journal_consistent (matches Coq) *)
-lemma VFS_050_empty_journal_consistent: "\<forall> head tail, Nat.leb tail head = True \<longrightarrow> journal_consistent (mkJournal [] head tail) = True"
+lemma VFS_050_empty_journal_consistent: "\<forall> head tail, (tail \<le> head) = True \<longrightarrow> journal_consistent (mkJournal [] head tail) = True"
   by simp
 
 (* VFS_051_single_committed_consistent (matches Coq) *)
-lemma VFS_051_single_committed_consistent: "\<forall> txn_id ops head tail, Nat.leb tail head = True \<longrightarrow> let txn := mkTransaction txn_id ops TxnCommitted in let j := mkJournal [txn] head tail in journal_consistent j = True"
+lemma VFS_051_single_committed_consistent: "\<forall> txn_id ops head tail, (tail \<le> head) = True \<longrightarrow> let txn := mkTransaction txn_id ops TxnCommitted in let j := mkJournal [txn] head tail in journal_consistent j = True"
   by simp
 
 (* VFS_052_txn_complete_decidable (matches Coq) *)
@@ -641,7 +650,7 @@ lemma VFS_052_txn_complete_decidable: "\<forall> txn, txn_complete txn = True \<
   by simp
 
 (* VFS_053_journal_head_ge_tail (matches Coq) *)
-lemma VFS_053_journal_head_ge_tail: "\<forall> j, journal_consistent j = True \<longrightarrow> Nat.leb (journal_tail j) (journal_head j) = True"
+lemma VFS_053_journal_head_ge_tail: "\<forall> j, journal_consistent j = True \<longrightarrow> ((journal_tail \<le> j)) (journal_head j) = True"
   by auto
 
 (* VFS_054_all_txns_complete (matches Coq) *)
@@ -733,11 +742,11 @@ lemma VFS_075_cannot_alloc_inode_at_limit: "\<forall> uid lb li ub, can_allocate
   by auto
 
 (* VFS_076_online_no_recovery (matches Coq) *)
-lemma VFS_076_online_no_recovery: "\<forall> j cp, recovery_complete (mkCrashState j FSOnline cp false) = True"
+lemma VFS_076_online_no_recovery: "\<forall> j cp, recovery_complete (mkCrashState j FSOnline cp False) = True"
   by simp
 
 (* VFS_077_clean_no_recovery (matches Coq) *)
-lemma VFS_077_clean_no_recovery: "\<forall> j cp, recovery_complete (mkCrashState j FSClean cp false) = True"
+lemma VFS_077_clean_no_recovery: "\<forall> j cp, recovery_complete (mkCrashState j FSClean cp False) = True"
   by simp
 
 (* VFS_078_mounting_not_complete (matches Coq) *)
@@ -753,7 +762,7 @@ lemma VFS_080_error_not_complete: "\<forall> j cp rec, recovery_complete (mkCras
   by simp
 
 (* VFS_081_recovery_needed_blocks (matches Coq) *)
-lemma VFS_081_recovery_needed_blocks: "\<forall> j cp, recovery_complete (mkCrashState j FSOnline cp true) = False"
+lemma VFS_081_recovery_needed_blocks: "\<forall> j cp, recovery_complete (mkCrashState j FSOnline cp True) = False"
   by simp
 
 (* VFS_082_crash_safe_journal (matches Coq) *)
@@ -841,7 +850,7 @@ lemma VFS_102_verification_chain: "\<forall> f, fs_fully_verified f = True \<lon
   by auto
 
 (* VFS_103_journal_consistency_preservation (matches Coq) *)
-lemma VFS_103_journal_consistency_preservation: "\<forall> txns h t, Nat.leb t h = True \<longrightarrow> \<forall>b txn_complete txns = True \<longrightarrow> journal_consistent (mkJournal txns h t) = True"
+lemma VFS_103_journal_consistency_preservation: "\<forall> txns h t, (t \<le> h) = True \<longrightarrow> \<forall>b txn_complete txns = True \<longrightarrow> journal_consistent (mkJournal txns h t) = True"
   by simp
 
 (* VFS_104_access_dir_combined (matches Coq) *)

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BiometricSystem - Isabelle/HOL Port
@@ -21,6 +23,8 @@
  * | is_spoof           | is_spoof               | OK     |
  * | accepted           | accepted               | OK     |
  * | rejected           | rejected               | OK     |
+ * | MATCH_THRESHOLD_FAR_1_IN_1M | MATCH_THRESHOLD_FAR_1_IN_1M | OK     |
+ * | BIOMETRIC_TIMEOUT_MAX_MS | BIOMETRIC_TIMEOUT_MAX_MS | OK     |
  * | match_threshold    | match_threshold        | OK     |
  * | liveness_threshold | liveness_threshold     | OK     |
  * | secure_biometric_system | secure_biometric_system | OK     |
@@ -64,7 +68,7 @@
  *)
 
 theory BiometricSystem
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BiometricType (matches Coq: Inductive BiometricType) *)
@@ -79,8 +83,8 @@ record biometric_attempt =
   attempt_type :: BiometricType
   attempt_authentic :: bool
   attempt_is_spoof :: bool
-  attempt_match_score :: nat  (* 0-1000000 for precision *)
-  attempt_liveness_score :: nat  (* 0-100 *)
+  attempt_match_score :: nat
+  attempt_liveness_score :: nat
   attempt_accepted :: bool
   attempt_rejected :: bool
 
@@ -116,39 +120,52 @@ record biometric_config =
   bio_cfg_lockout_ms :: nat
   bio_cfg_anti_spoofing :: bool
   bio_cfg_liveness_required :: bool
-  bio_cfg_far_threshold :: nat  (* false acceptance rate threshold *)
-  bio_cfg_frr_threshold :: nat  (* false rejection rate threshold *)
+  bio_cfg_far_threshold :: nat
+  bio_cfg_frr_threshold :: nat
 
 (* authentic (matches Coq: Definition authentic) *)
 definition authentic :: "BiometricAttempt \<Rightarrow> bool" where
-  "authentic a \<equiv> attempt_authentic a = true"
+  "authentic a \<equiv> attempt_authentic a = True"
 
 (* is_spoof (matches Coq: Definition is_spoof) *)
 definition is_spoof :: "BiometricAttempt \<Rightarrow> bool" where
-  "is_spoof a \<equiv> attempt_is_spoof a = true"
+  "is_spoof a \<equiv> attempt_is_spoof a = True"
 
 (* accepted (matches Coq: Definition accepted) *)
 definition accepted :: "BiometricAttempt \<Rightarrow> bool" where
-  "accepted a \<equiv> attempt_accepted a = true"
+  "accepted a \<equiv> attempt_accepted a = True"
 
 (* rejected (matches Coq: Definition rejected) *)
 definition rejected :: "BiometricAttempt \<Rightarrow> bool" where
-  "rejected a \<equiv> attempt_rejected a = true"
+  "rejected a \<equiv> attempt_rejected a = True"
+
+(* MATCH_THRESHOLD_FAR_1_IN_1M (matches Coq: Definition MATCH_THRESHOLD_FAR_1_IN_1M) *)
+definition MATCH_THRESHOLD_FAR_1_IN_1M :: "nat" where
+  "MATCH_THRESHOLD_FAR_1_IN_1M \<equiv> Z.to_nat 999999%Z"
+
+(* BIOMETRIC_TIMEOUT_MAX_MS (matches Coq: Definition BIOMETRIC_TIMEOUT_MAX_MS) *)
+definition BIOMETRIC_TIMEOUT_MAX_MS :: "nat" where
+  "BIOMETRIC_TIMEOUT_MAX_MS \<equiv> Z.to_nat 30000%Z"
 
 (* match_threshold (matches Coq: Definition match_threshold) *)
 definition match_threshold :: "nat" where
-  "match_threshold \<equiv> 999999"
+  "match_threshold \<equiv> MATCH_THRESHOLD_FAR_1_IN_1M"
 
 (* liveness_threshold (matches Coq: Definition liveness_threshold) *)
 definition liveness_threshold :: "nat" where
   "liveness_threshold \<equiv> 90"
 
-(* secure_biometric_system - complex match, manual review needed *)
+(* secure_biometric_system (matches Coq: Definition secure_biometric_system) *)
+definition secure_biometric_system :: "BiometricAttempt \<Rightarrow> bool" where
+  "secure_biometric_system a \<equiv> (~ authentic a -> ~ accepted a) /\
+  (is_spoof a -> rejected a) /\
+  (accepted a -> attempt_match_score a >= match_threshold) /\
+  (accepted a -> attempt_liveness_score a >= liveness_threshold)"
 
 (* false_acceptance_probability (matches Coq: Definition false_acceptance_probability) *)
 definition false_acceptance_probability :: "BiometricAttempt \<Rightarrow> nat" where
-  "false_acceptance_probability a \<equiv> if attempt_accepted a \<and> negb (attempt_authentic a) then
-    1  (* Represents 1/1,000,000 when it happens *)
+  "false_acceptance_probability a \<equiv> if attempt_accepted a \<and> (\<not> (attempt_authentic) a) then
+    1  
   else
     0"
 
@@ -158,7 +175,7 @@ definition well_formed_attempt :: "BiometricAttempt \<Rightarrow> bool" where
 
 (* biometric_data_never_exported (matches Coq: Definition biometric_data_never_exported) *)
 definition biometric_data_never_exported :: "BiometricTemplate \<Rightarrow> bool" where
-  "biometric_data_never_exported t \<equiv> tmpl_exportable t = false"
+  "biometric_data_never_exported t \<equiv> tmpl_exportable t = False"
 
 (* far_bounded (matches Coq: Definition far_bounded) *)
 definition far_bounded :: "BiometricConfig \<Rightarrow> BiometricAttempt \<Rightarrow> bool" where
@@ -172,35 +189,35 @@ definition frr_bounded :: "BiometricConfig \<Rightarrow> bool" where
 
 (* template_encrypted (matches Coq: Definition template_encrypted) *)
 definition template_encrypted :: "BiometricTemplate \<Rightarrow> bool" where
-  "template_encrypted t \<equiv> tmpl_encrypted t = true"
+  "template_encrypted t \<equiv> tmpl_encrypted t = True"
 
 (* liveness_active (matches Coq: Definition liveness_active) *)
 definition liveness_active :: "BiometricConfig \<Rightarrow> bool" where
-  "liveness_active cfg \<equiv> bio_cfg_liveness_required cfg = true"
+  "liveness_active cfg \<equiv> bio_cfg_liveness_required cfg = True"
 
 (* fallback_available (matches Coq: Definition fallback_available) *)
 definition fallback_available :: "BiometricSession \<Rightarrow> bool" where
-  "fallback_available s \<equiv> bio_session_fallback_available s = true"
+  "fallback_available s \<equiv> bio_session_fallback_available s = True"
 
 (* enrollment_requires_auth_prop (matches Coq: Definition enrollment_requires_auth_prop) *)
 definition enrollment_requires_auth_prop :: "BiometricEnrollment \<Rightarrow> bool" where
-  "enrollment_requires_auth_prop e \<equiv> enroll_auth_verified e = true"
+  "enrollment_requires_auth_prop e \<equiv> enroll_auth_verified e = True"
 
 (* timeout_enforced (matches Coq: Definition timeout_enforced) *)
 definition timeout_enforced :: "BiometricSession \<Rightarrow> bool" where
-  "timeout_enforced s \<equiv> bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= 30000"
+  "timeout_enforced s \<equiv> bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= BIOMETRIC_TIMEOUT_MAX_MS"
 
 (* anti_spoofing_active_prop (matches Coq: Definition anti_spoofing_active_prop) *)
 definition anti_spoofing_active_prop :: "BiometricConfig \<Rightarrow> bool" where
-  "anti_spoofing_active_prop cfg \<equiv> bio_cfg_anti_spoofing cfg = true"
+  "anti_spoofing_active_prop cfg \<equiv> bio_cfg_anti_spoofing cfg = True"
 
 (* on_device_only (matches Coq: Definition on_device_only) *)
 definition on_device_only :: "BiometricTemplate \<Rightarrow> bool" where
-  "on_device_only t \<equiv> tmpl_on_device t = true /\ tmpl_exportable t = false"
+  "on_device_only t \<equiv> tmpl_on_device t = True /\ tmpl_exportable t = False"
 
 (* multi_factor_supported_prop (matches Coq: Definition multi_factor_supported_prop) *)
 definition multi_factor_supported_prop :: "BiometricSession \<Rightarrow> bool" where
-  "multi_factor_supported_prop s \<equiv> bio_session_multi_factor s = true"
+  "multi_factor_supported_prop s \<equiv> bio_session_multi_factor s = True"
 
 (* biometric_revocable (matches Coq: Definition biometric_revocable) *)
 definition biometric_revocable :: "BiometricTemplate \<Rightarrow> bool" where
@@ -208,7 +225,7 @@ definition biometric_revocable :: "BiometricTemplate \<Rightarrow> bool" where
 
 (* presentation_attack_detected_prop (matches Coq: Definition presentation_attack_detected_prop) *)
 definition presentation_attack_detected_prop :: "BiometricAttempt \<Rightarrow> BiometricConfig \<Rightarrow> bool" where
-  "presentation_attack_detected_prop attempt cfg \<equiv> bio_cfg_anti_spoofing cfg = true ->
+  "presentation_attack_detected_prop attempt cfg \<equiv> bio_cfg_anti_spoofing cfg = True ->
   is_spoof attempt ->
   rejected attempt"
 
@@ -216,11 +233,11 @@ definition presentation_attack_detected_prop :: "BiometricAttempt \<Rightarrow> 
 definition template_update_secure :: "bool" where
   "template_update_secure \<equiv> tmpl_type old_t = tmpl_type new_t /\
   tmpl_version new_t > tmpl_version old_t /\
-  tmpl_encrypted new_t = true"
+  tmpl_encrypted new_t = True"
 
 (* biometric_not_sole_factor_prop (matches Coq: Definition biometric_not_sole_factor_prop) *)
 definition biometric_not_sole_factor_prop :: "BiometricSession \<Rightarrow> bool" where
-  "biometric_not_sole_factor_prop s \<equiv> bio_session_multi_factor s = true \/ bio_session_fallback_available s = true"
+  "biometric_not_sole_factor_prop s \<equiv> bio_session_multi_factor s = True \/ bio_session_fallback_available s = True"
 
 (* biometric_false_acceptance_bounded (matches Coq) *)
 lemma biometric_false_acceptance_bounded: "\<forall> (attempt : BiometricAttempt), secure_biometric_system attempt \<longrightarrow> ~ authentic attempt \<longrightarrow> ~ accepted attempt"
@@ -271,7 +288,7 @@ lemma enrollment_requires_auth: "\<forall> (e : BiometricEnrollment), enrollment
   by auto
 
 (* biometric_timeout_enforced (matches Coq) *)
-lemma biometric_timeout_enforced: "\<forall> (s : BiometricSession), timeout_enforced s \<longrightarrow> bio_session_timeout_ms s > 0 \<and> bio_session_timeout_ms s \<le> 30000"
+lemma biometric_timeout_enforced: "\<forall> (s : BiometricSession), timeout_enforced s \<longrightarrow> bio_session_timeout_ms s > 0 \<and> bio_session_timeout_ms s \<le> BIOMETRIC_TIMEOUT_MAX_MS"
   by auto
 
 (* anti_spoofing_active (matches Coq) *)

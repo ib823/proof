@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SpeculativeExecution - Isabelle/HOL Port
@@ -17,7 +19,11 @@
  * | instr              | instr                  | OK     |
  * | eff_le             | eff_le                 | OK     |
  * | eff_join           | eff_join               | OK     |
+ * | infer_effect       | infer_effect           | OK     |
+ * | is_constant_time   | is_constant_time       | OK     |
  * | is_spec_safe       | is_spec_safe           | OK     |
+ * | eval_instr         | eval_instr             | OK     |
+ * | no_speculative_annotation | no_speculative_annotation | OK     |
  * | eff_join_pure_l    | eff_join_pure_l        | OK     |
  * | eff_join_pure_r    | eff_join_pure_r        | OK     |
  * | eff_le_refl        | eff_le_refl            | OK     |
@@ -41,17 +47,14 @@
  *)
 
 theory SpeculativeExecution
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* effect (matches Coq: Inductive effect) *)
 datatype effect =
-    Eff_pure  (* no observable side-effects, safe under speculation *)
-  |     Eff_timed  (* timing-observable but no speculation leaks *)
+    Eff_pure
+  |     Eff_timed
+  |     Eff_speculative
 
 (* visibility (matches Coq: Inductive visibility) *)
 datatype visibility =
@@ -65,17 +68,36 @@ datatype value =
 
 (* instr (matches Coq: Inductive instr) *)
 datatype instr =
-    IConst  (* constant load *)
-  |     IBinop  (* binary operation *)
-  |     IBranch  (* branch on condition with visibility tag; Secret branches may leak *)
-  |     ISeq  (* sequential composition *)
+    IConst
+  |     IBinop
+  |     IBranch
+  |     ISeq
   |     IAnnot
 
-(* eff_le - complex match, manual review needed *)
+(* eff_le - complex match, needs manual translation *)
+definition eff_le :: "bool" where "eff_le = undefined"
 
-(* eff_join - complex match, manual review needed *)
+(* eff_join - complex match, needs manual translation *)
+definition eff_join :: "bool" where "eff_join = undefined"
 
-(* is_spec_safe - complex match, manual review needed *)
+(* infer_effect (matches Coq: Definition infer_effect) *)
+fun infer_effect :: "instr \<Rightarrow> effect" where
+
+
+(* is_constant_time (matches Coq: Definition is_constant_time) *)
+fun is_constant_time :: "instr \<Rightarrow> bool" where
+
+
+(* is_spec_safe - complex match, needs manual translation *)
+definition is_spec_safe :: "bool" where "is_spec_safe = undefined"
+
+(* eval_instr (matches Coq: Definition eval_instr) *)
+fun eval_instr :: "instr \<Rightarrow> option value" where
+
+
+(* no_speculative_annotation (matches Coq: Definition no_speculative_annotation) *)
+fun no_speculative_annotation :: "instr \<Rightarrow> bool" where
+
 
 (* eff_join_pure_l (matches Coq) *)
 lemma eff_join_pure_l: "\<forall> e, eff_join Eff_pure e = e"

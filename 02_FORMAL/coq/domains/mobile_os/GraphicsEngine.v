@@ -10,18 +10,20 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 2.1
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
 
 (** Time in microseconds *)
 Definition Microseconds : Type := nat.
+Definition FRAME_BUDGET_120HZ_US : Microseconds := Z.to_nat 8333%Z.
 
 (** Frame budget for 120Hz = 1/120 second = 8333 microseconds *)
-Definition frame_budget_120hz : Microseconds := 8333.
+Definition frame_budget_120hz : Microseconds := FRAME_BUDGET_120HZ_US.
 
 Record Frame : Type := mkFrame {
   frame_id : nat;
@@ -165,7 +167,7 @@ Qed.
 
 (** ** Extended Graphics Engine Verification *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Additional definitions for extended verification *)
 
@@ -409,7 +411,7 @@ Qed.
 Theorem gpu_timeout_handled :
   forall (rt : RenderThread),
     well_formed_render_thread rt ->
-    rt_frame_time_us rt <= 8333.
+    rt_frame_time_us rt <= FRAME_BUDGET_120HZ_US.
 Proof.
   intros rt Hwf.
   destruct Hwf as [_ [_ Htime]]. exact Htime.

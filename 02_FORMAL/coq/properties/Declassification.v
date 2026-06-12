@@ -20,13 +20,13 @@
     - Myers et al. (2006) "Decentralized robustness"
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
-Require Import Arith.PeanoNat.
-Require Import Stdlib.Program.Equality.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Program.Equality.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
@@ -264,8 +264,233 @@ Qed.
     enforced by the typing rules (T_Declassify, T_Classify).
 *)
 
+(** ** Declassification Safety Properties *)
+
+(** Classify creates a secret value from any base value *)
+Lemma classify_creates_secret : forall Γ Σ Δ e T eff,
+  has_type Γ Σ Δ e T eff ->
+  has_type Γ Σ Δ (EClassify e) (TSecret T) eff.
+Proof.
+  intros. apply T_Classify. assumption.
+Qed.
+
+(** Double classification: classify is idempotent at the type level *)
+Lemma double_classify_typed : forall Γ Σ Δ e T eff,
+  has_type Γ Σ Δ e T eff ->
+  has_type Γ Σ Δ (EClassify (EClassify e)) (TSecret (TSecret T)) eff.
+Proof.
+  intros. apply T_Classify. apply T_Classify. assumption.
+Qed.
+
+(** Classify preserves value-hood *)
+Lemma classify_value : forall v,
+  value v -> value (EClassify v).
+Proof.
+  intros v Hv. constructor. exact Hv.
+Qed.
+
+(** Classify preserves closedness *)
+Lemma classify_closed : forall v Σ Δ T ε,
+  value v ->
+  has_type nil Σ Δ v T ε ->
+  has_type nil Σ Δ (EClassify v) (TSecret T) ε.
+Proof.
+  intros. apply T_Classify. assumption.
+Qed.
+
+(** ** Declassification and Security Levels *)
+
+(** Declassification only permitted at Public security level *)
+Lemma declassify_requires_public_context : forall Γ Σ e T eff1 eff2 p,
+  has_type Γ Σ Public e (TSecret T) eff1 ->
+  has_type Γ Σ Public p (TProof (TSecret T)) eff2 ->
+  declass_ok e p ->
+  has_type Γ Σ Public (EDeclassify e p) T (effect_join eff1 eff2).
+Proof.
+  intros. apply T_Declassify; assumption.
+Qed.
+
+(** Secret values have pure effect when typed as values *)
+Lemma secret_value_pure : forall Σ v T,
+  value v ->
+  has_type nil Σ Public v T EffectPure ->
+  has_type nil Σ Public (EClassify v) (TSecret T) EffectPure.
+Proof.
+  intros. apply T_Classify. assumption.
+Qed.
+
+(** ** Declassification Determinism *)
+
+(** Declassification of the same value produces the same result *)
+Lemma declassify_deterministic : forall v p st ctx v1 st1 v2 st2,
+  value v ->
+  declass_ok (EClassify v) p ->
+  multi_step (EDeclassify (EClassify v) p, st, ctx) (v1, st1, ctx) ->
+  multi_step (EDeclassify (EClassify v) p, st, ctx) (v2, st2, ctx) ->
+  value v1 -> value v2 ->
+  v1 = v2 /\ st1 = st2.
+Proof.
+  intros v p st ctx v1 st1 v2 st2 Hv Hok Hms1 Hms2 Hv1 Hv2.
+  apply eval_deterministic with (e := EDeclassify (EClassify v) p) (st := st) (ctx := ctx);
+    assumption.
+Qed.
+
+(** Declassification produces the unwrapped value *)
+Lemma declassify_result : forall v p st ctx v' st',
+  value v ->
+  declass_ok (EClassify v) p ->
+  multi_step (EDeclassify (EClassify v) p, st, ctx) (v', st', ctx) ->
+  value v' ->
+  v' = v /\ st' = st.
+Proof.
+  intros v p st ctx v' st' Hv Hok Hms Hv'.
+  pose proof (declassify_eval v p st ctx Hv Hok) as Heval.
+  destruct (eval_deterministic _ _ _ _ _ _ _ Heval Hms Hv Hv') as [Heq1 Heq2].
+  split; [symmetry; exact Heq1 | symmetry; exact Heq2].
+Qed.
+
+(** Same classified secret declassifies to the same observable value,
+    even across different starting stores.
+    This is a store-parametric non-interference shape for declassification. *)
+Lemma declassify_same_secret_cross_store : forall v p st1 st2 ctx v1 st1' v2 st2',
+  value v ->
+  declass_ok (EClassify v) p ->
+  multi_step (EDeclassify (EClassify v) p, st1, ctx) (v1, st1', ctx) ->
+  multi_step (EDeclassify (EClassify v) p, st2, ctx) (v2, st2', ctx) ->
+  value v1 ->
+  value v2 ->
+  v1 = v2.
+Proof.
+  intros v p st1 st2 ctx v1 st1' v2 st2' Hv Hok Hms1 Hms2 Hv1 Hv2.
+  pose proof (declassify_result v p st1 ctx v1 st1' Hv Hok Hms1 Hv1) as [Hv1eq _].
+  pose proof (declassify_result v p st2 ctx v2 st2' Hv Hok Hms2 Hv2) as [Hv2eq _].
+  subst. reflexivity.
+Qed.
+
+(** Same-secret declassification preserves related stores and yields the same value. *)
+Lemma declassify_same_secret_preserves_store_relation :
+  forall v p st1 st2 ctx v1 st1' v2 st2' Σ,
+  value v ->
+  declass_ok (EClassify v) p ->
+  store_rel_simple Σ st1 st2 ->
+  multi_step (EDeclassify (EClassify v) p, st1, ctx) (v1, st1', ctx) ->
+  multi_step (EDeclassify (EClassify v) p, st2, ctx) (v2, st2', ctx) ->
+  value v1 ->
+  value v2 ->
+  v1 = v2 /\ store_rel_simple Σ st1' st2'.
+Proof.
+  intros v p st1 st2 ctx v1 st1' v2 st2' Σ Hv Hok Hst Hms1 Hms2 Hv1 Hv2.
+  pose proof (declassify_result v p st1 ctx v1 st1' Hv Hok Hms1 Hv1) as [Hv1eq Hst1eq].
+  pose proof (declassify_result v p st2 ctx v2 st2' Hv Hok Hms2 Hv2) as [Hv2eq Hst2eq].
+  subst. split.
+  - reflexivity.
+  - exact Hst.
+Qed.
+
+(** Declassifying the same classified integer remains related at [TInt]
+    across related stores for any step index. *)
+Lemma exp_rel_le_declassify_same_secret_int :
+  forall n Σ i p st1 st2 ctx,
+  declass_ok (EClassify (EInt i)) p ->
+  store_rel_simple Σ st1 st2 ->
+  exp_rel_le n Σ TInt
+    (EDeclassify (EClassify (EInt i)) p)
+    (EDeclassify (EClassify (EInt i)) p)
+    st1 st2 ctx.
+Proof.
+  intros n Σ i p st1 st2 ctx Hok Hst.
+  unfold exp_rel_le.
+  intros k v1 v2 st1' st2' ctx' Hk Hms1 Hms2 Hv1 Hv2.
+  pose proof (declassify_eval (EInt i) p st1 ctx (VInt i) Hok) as Heval1.
+  pose proof (declassify_eval (EInt i) p st2 ctx (VInt i) Hok) as Heval2.
+  pose proof (eval_deterministic_cfg
+    (EDeclassify (EClassify (EInt i)) p, st1, ctx)
+    (v1, st1', ctx')
+    (EInt i, st1, ctx)
+    Hms1 Heval1 Hv1 (VInt i)) as Hcfg1.
+  pose proof (eval_deterministic_cfg
+    (EDeclassify (EClassify (EInt i)) p, st2, ctx)
+    (v2, st2', ctx')
+    (EInt i, st2, ctx)
+    Hms2 Heval2 Hv2 (VInt i)) as Hcfg2.
+  inversion Hcfg1; inversion Hcfg2; subst.
+  subst.
+  exists Σ. repeat split.
+  - apply store_ty_extends_refl.
+  - apply val_rel_le_build_int.
+  - exact Hst.
+Qed.
+
 (** Summary: All admits eliminated *)
 Theorem declassification_zero_admits : True.
 Proof. exact I. Qed.
+
+(** ** Declassification Multi-Step Properties *)
+
+(** If we declassify then classify, the secret returns to its original type *)
+Lemma classify_declassify_typed : forall Γ Σ e T eff1 eff2 p,
+  has_type Γ Σ Public e (TSecret T) eff1 ->
+  has_type Γ Σ Public p (TProof (TSecret T)) eff2 ->
+  declass_ok e p ->
+  has_type Γ Σ Public (EClassify (EDeclassify e p)) (TSecret T) (effect_join eff1 eff2).
+Proof.
+  intros. apply T_Classify. apply T_Declassify; assumption.
+Qed.
+
+(** Declassification step produces the unwrapped value *)
+Lemma declassify_step_result : forall v p st ctx,
+  value v ->
+  declass_ok (EClassify v) p ->
+  (EDeclassify (EClassify v) p, st, ctx) --> (v, st, ctx).
+Proof.
+  intros v p st ctx Hv Hok.
+  apply ST_DeclassifyValue; auto.
+Qed.
+
+(** Secret relation implies any two classified values are related *)
+Lemma val_rel_le_classify : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSecret T) (EClassify v1) (EClassify v2).
+Proof.
+  intros. apply val_rel_le_secret_always; auto.
+  - apply VClassify; auto.
+  - apply VClassify; auto.
+Qed.
+
+(** ** Additional Declassification Properties *)
+
+(** Declassification of classified value produces the value *)
+Lemma declassify_value_produces : forall v p st ctx,
+  value v ->
+  declass_ok (EClassify v) p ->
+  exists v' st' ctx',
+    (EDeclassify (EClassify v) p, st, ctx) --> (v', st', ctx') /\
+    v' = v /\ st' = st /\ ctx' = ctx.
+Proof.
+  intros v p st ctx Hv Hok.
+  exists v, st, ctx. repeat split.
+  apply ST_DeclassifyValue; auto.
+Qed.
+
+(** Classify constructor is injective *)
+Lemma classify_injective : forall v1 v2,
+  EClassify v1 = EClassify v2 -> v1 = v2.
+Proof.
+  intros v1 v2 Heq. injection Heq. auto.
+Qed.
+
+(** Classify is not a base value *)
+Lemma classify_not_unit : forall v,
+  EClassify v <> EUnit.
+Proof. intros v H. discriminate. Qed.
+
+Lemma classify_not_bool : forall v b,
+  EClassify v <> EBool b.
+Proof. intros v b H. discriminate. Qed.
+
+Lemma classify_not_int : forall v n,
+  EClassify v <> EInt n.
+Proof. intros v n H. discriminate. Qed.
 
 (** End of Declassification.v *)

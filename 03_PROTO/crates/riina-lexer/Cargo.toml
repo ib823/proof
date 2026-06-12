@@ -11,3 +11,6 @@ description = "RIINA lexer/tokenizer - Bahasa Melayu syntax"
 
 [dev-dependencies]
 # Testing dependencies only
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

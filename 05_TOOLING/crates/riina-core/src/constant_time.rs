@@ -68,9 +68,16 @@ pub fn ct_eq_slices(a: &[u8], b: &[u8]) -> bool {
     diff == 0
 }
 
-/// Constant-time select: returns `a` if `choice` is true, `b` otherwise
+/// Constant-time select: returns `a` if `choice` is true, `b` otherwise.
 ///
-/// The execution time is independent of `choice`.
+/// Both operands are always read and combined with bitwise operations, so no
+/// branch depends on the secret *values* `a`/`b`:
+///   `(a & mask) | (b & !mask)` with `mask` = all-ones (choice) / all-zeros.
+///
+/// Note: the mask is materialised by selecting between two public constants on
+/// `choice`. For a fully branch-free mask, pass an integer `subtle::Choice`-style
+/// mask instead of a `bool` — a future API refinement. The critical property
+/// fixed here is that the operands are no longer selected by a branch.
 #[inline(never)]
 pub fn ct_select<T>(choice: bool, a: T, b: T) -> T
 where
@@ -80,35 +87,24 @@ where
         + std::ops::BitOr<Output = T>
         + std::ops::Not<Output = T>,
 {
-    // Convert bool to all-ones or all-zeros mask
-    let _mask = if choice {
-        !T::default() // All ones
-    } else {
-        T::default() // All zeros
-    };
-
-    // Select using bitwise operations
-    // (a & mask) | (b & !mask)
-    // When mask is all-ones: a | 0 = a
-    // When mask is all-zeros: 0 | b = b
+    // All-ones mask when `choice`, all-zeros otherwise (selects two constants,
+    // not the secret operands).
+    let mask = if choice { !T::default() } else { T::default() };
     compiler_fence(Ordering::SeqCst);
-
-    // For now, just return based on choice
-    // TODO: Implement proper bitwise selection
-    if choice {
-        a
-    } else {
-        b
-    }
+    // Branchless operand selection: a when mask is all-ones, b when all-zeros.
+    (a & mask) | (b & !mask)
 }
 
-/// Constant-time less-than comparison for u8
+/// Constant-time less-than comparison for u8 (returns `true` iff `a < b`).
+///
+/// Uses the borrow out of `a - b` computed in 16 bits, avoiding a comparison
+/// the compiler might lower to a data-dependent branch.
 #[inline(never)]
 pub fn ct_lt_u8(a: u8, b: u8) -> bool {
-    // Use the sign bit of (a - b) when viewed as signed
-    let diff = (a as i16) - (b as i16);
+    // (a - b) in u16 sets the high byte (borrow) exactly when a < b.
+    let borrow = (u16::from(a).wrapping_sub(u16::from(b)) >> 8) & 1;
     compiler_fence(Ordering::SeqCst);
-    diff < 0
+    borrow == 1
 }
 
 // Implement ConstantTimeEq for byte arrays
@@ -195,5 +191,31 @@ mod tests {
         assert!(!ct_lt_u8(10, 5));
         assert!(!ct_lt_u8(5, 5));
         assert!(ct_lt_u8(0, 255));
+    }
+
+    #[test]
+    fn test_ct_lt_exhaustive() {
+        // Branchless borrow-based comparison must match the ordinary `<`.
+        for a in 0..=255u8 {
+            for b in 0..=255u8 {
+                assert_eq!(ct_lt_u8(a, b), a < b, "ct_lt_u8({a},{b})");
+            }
+        }
+    }
+
+    #[test]
+    fn test_ct_select_correct_for_both_choices() {
+        // Previously a TODO stub that branched on `choice`; verify the branchless
+        // bitwise selection returns the right operand for every u8 pair.
+        assert_eq!(ct_select(true, 0xAAu8, 0x55u8), 0xAA);
+        assert_eq!(ct_select(false, 0xAAu8, 0x55u8), 0x55);
+        assert_eq!(ct_select(true, 0xDEAD_BEEFu32, 0u32), 0xDEAD_BEEF);
+        assert_eq!(ct_select(false, 0xFFFF_FFFFu32, 0x1234_5678u32), 0x1234_5678);
+        for a in 0..=255u8 {
+            for b in 0..=255u8 {
+                assert_eq!(ct_select(true, a, b), a, "choice=true {a},{b}");
+                assert_eq!(ct_select(false, a, b), b, "choice=false {a},{b}");
+            }
+        }
     }
 }

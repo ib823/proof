@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IrisSeparationLogic - Isabelle/HOL Port
@@ -13,12 +15,17 @@
  * |--------------------|------------------------|--------|
  * | hprop              | hprop                  | OK     |
  * | fprop              | fprop                  | OK     |
+ * | dom                | dom                    | OK     |
+ * | mem                | mem                    | OK     |
  * | disjoint           | disjoint               | OK     |
  * | heap_union         | heap_union             | OK     |
+ * | heap_lookup        | heap_lookup            | OK     |
+ * | satisfies          | satisfies              | OK     |
  * | fempty             | fempty                 | OK     |
  * | fsingleton         | fsingleton             | OK     |
  * | fdisjoint          | fdisjoint              | OK     |
  * | funion             | funion                 | OK     |
+ * | fsat               | fsat                   | OK     |
  * | 1                  | 1                      | OK     |
  * | 2                  | 2                      | OK     |
  * | disjoint_sym       | disjoint_sym           | OK     |
@@ -61,6 +68,14 @@ datatype fprop =
   |     FStar
   |     FPure
 
+(* dom (matches Coq: Definition dom) *)
+definition dom :: "heap \<Rightarrow> list loc" where
+  "dom h \<equiv> map fst h"
+
+(* mem (matches Coq: Definition mem) *)
+fun mem :: "nat \<Rightarrow> bool" where
+
+
 (* disjoint (matches Coq: Definition disjoint) *)
 definition disjoint :: "bool" where
   "disjoint \<equiv> forall l, In l (dom h1) -> ~ In l (dom h2)"
@@ -68,6 +83,14 @@ definition disjoint :: "bool" where
 (* heap_union (matches Coq: Definition heap_union) *)
 definition heap_union :: "heap" where
   "heap_union \<equiv> h1 ++ h2"
+
+(* heap_lookup (matches Coq: Definition heap_lookup) *)
+fun heap_lookup :: "heap \<Rightarrow> loc \<Rightarrow> option val" where
+
+
+(* satisfies (matches Coq: Definition satisfies) *)
+fun satisfies :: "heap \<Rightarrow> hprop \<Rightarrow> bool" where
+  "satisfies HEmpty = h"
 
 (* fempty (matches Coq: Definition fempty) *)
 definition fempty :: "fheap" where
@@ -81,7 +104,12 @@ definition fsingleton :: "loc \<Rightarrow> val \<Rightarrow> fheap" where
 definition fdisjoint :: "bool" where
   "fdisjoint \<equiv> forall l, h1 l = None \/ h2 l = None"
 
-(* funion - complex match, manual review needed *)
+(* funion - complex match, needs manual translation *)
+definition funion :: "bool" where "funion = undefined"
+
+(* fsat (matches Coq: Definition fsat) *)
+fun fsat :: "fheap \<Rightarrow> fprop \<Rightarrow> bool" where
+  "fsat FEmpty = forall"
 
 (* 1 (matches Coq) *)
 lemma 1: "Empty heap satisfies emp Theorem emp_empty : satisfies [] HEmpty"

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ModuleSystems - Isabelle/HOL Port
@@ -37,6 +39,7 @@
  * | item_name          | item_name              | OK     |
  * | item_visibility    | item_visibility        | OK     |
  * | is_exported        | is_exported            | OK     |
+ * | get_visibility     | get_visibility         | OK     |
  * | item_exists        | item_exists            | OK     |
  * | version_compatible | version_compatible     | OK     |
  * | version_leb        | version_leb            | OK     |
@@ -44,9 +47,12 @@
  * | compose_modules    | compose_modules        | OK     |
  * | valid_import       | valid_import           | OK     |
  * | init_order_valid   | init_order_valid       | OK     |
+ * | path_eqb           | path_eqb               | OK     |
  * | same_crate         | same_crate             | OK     |
  * | crate_accessible   | crate_accessible       | OK     |
  * | valid_reexport     | valid_reexport         | OK     |
+ * | get_public_items   | get_public_items       | OK     |
+ * | glob_import        | glob_import            | OK     |
  * | capability_allows_import | capability_allows_import | OK     |
  * | impl_matches_sig   | impl_matches_sig       | OK     |
  * | sealed_impl_allowed | sealed_impl_allowed    | OK     |
@@ -59,6 +65,7 @@
  * | type_preserved     | type_preserved         | OK     |
  * | effects_preserved  | effects_preserved      | OK     |
  * | deps_acyclic       | deps_acyclic           | OK     |
+ * | resolve_deps_fuel  | resolve_deps_fuel      | OK     |
  * | version_satisfies  | version_satisfies      | OK     |
  * | all_deps_satisfied | all_deps_satisfied     | OK     |
  * | security_version_ok | security_version_ok    | OK     |
@@ -97,19 +104,15 @@
  *)
 
 theory ModuleSystems
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* Visibility (matches Coq: Inductive Visibility) *)
 datatype visibility =
-    VPrivate  (* Only this module *)
-  |     VCrate  (* Within crate *)
-  |     VPublic  (* Anywhere *)
-  |     VSecurityLevel  (* Security-gated *)
+    VPrivate
+  |     VCrate
+  |     VPublic
+  |     VSecurityLevel
 
 (* ModuleItem (matches Coq: Inductive ModuleItem) *)
 datatype module_item =
@@ -160,7 +163,7 @@ record import_context =
 record abstract_type =
   abs_name :: string
   abs_repr :: option
-  abs_exposed :: bool  (* Whether representation is exposed *)
+  abs_exposed :: bool
 
 (* SealedTrait (matches Coq: Record SealedTrait) *)
 record sealed_trait =
@@ -217,7 +220,7 @@ record effect_sig =
 (* StaticInit (matches Coq: Record StaticInit) *)
 record static_init =
   si_module :: ModulePath
-  si_value :: nat  (* Simplified: just a value *)
+  si_value :: nat
 
 (* SecureInit (matches Coq: Record SecureInit) *)
 record secure_init =
@@ -225,9 +228,15 @@ record secure_init =
   sec_init_cap_required :: 'a list
   sec_init_cap_provided :: 'a list
 
-(* visibility_eqb - complex match, manual review needed *)
+(* visibility_eqb - complex match, needs manual translation *)
+definition visibility_eqb :: "bool" where "visibility_eqb = undefined"
 
-(* vis_accessible - complex match, manual review needed *)
+(* vis_accessible (matches Coq: Definition vis_accessible) *)
+fun vis_accessible :: "bool" where
+  "vis_accessible VPublic = true"
+|   "vis_accessible VPrivate = false"
+|   "vis_accessible VCrate = true"
+|   "vis_accessible _ = false"
 
 (* item_name (matches Coq: Definition item_name) *)
 fun item_name :: "ModuleItem \<Rightarrow> string" where
@@ -239,32 +248,44 @@ fun item_visibility :: "ModuleItem \<Rightarrow> Visibility" where
 
 (* is_exported (matches Coq: Definition is_exported) *)
 definition is_exported :: "Module \<Rightarrow> string \<Rightarrow> bool" where
-  "is_exported m name \<equiv> existsb (String"
+  "is_exported m name \<equiv> existsb (String.(name) = m.(mod_exports))"
+
+(* get_visibility (matches Coq: Definition get_visibility) *)
+fun get_visibility :: "string \<Rightarrow> option Visibility" where
+
 
 (* item_exists (matches Coq: Definition item_exists) *)
 definition item_exists :: "string \<Rightarrow> bool" where
-  "item_exists name \<equiv> existsb (fun item => String"
+  "item_exists name \<equiv> existsb (fun item => String.((item_name = item)) name) items"
 
 (* version_compatible (matches Coq: Definition version_compatible) *)
 definition version_compatible :: "bool" where
-  "version_compatible \<equiv> Nat"
+  "version_compatible \<equiv> (required.(major) = actual.(major)) \<and>
+  (required.(minor) \<le> actual.(minor))"
 
 (* version_leb (matches Coq: Definition version_leb) *)
 definition version_leb :: "bool" where
-  "version_leb \<equiv> Nat"
+  "version_leb \<equiv> (v1.(major) < v2.(major)) \<or>
+  ((v1.(major) = v2.(major)) \<and>
+   ((v1.(minor) < v2.(minor)) \<or>
+    ((v1.(minor) = v2.(minor)) \<and> (v1.(patch) \<le> v2.(patch)))))"
 
 (* module_wellformed (matches Coq: Definition module_wellformed) *)
 definition module_wellformed :: "Module \<Rightarrow> bool" where
-  "module_wellformed m \<equiv> forall name, In name m"
+  "module_wellformed m \<equiv> forall name, In name m.(mod_exports) -> item_exists m.(mod_items) name = True"
 
 (* compose_modules (matches Coq: Definition compose_modules) *)
 definition compose_modules :: "Module" where
   "compose_modules \<equiv> mkModule 
-    (m1"
+    (m1.(mod_path) ++ m2.(mod_path))
+    (m1.(mod_items) ++ m2.(mod_items))
+    (m1.(mod_exports) ++ m2.(mod_exports))"
 
 (* valid_import (matches Coq: Definition valid_import) *)
 definition valid_import :: "ImportContext \<Rightarrow> bool" where
-  "valid_import ctx \<equiv> forall name, In name ctx"
+  "valid_import ctx \<equiv> forall name, In name ctx.(import_names) -> 
+    item_exists ctx.(import_source).(mod_items) name = True /\
+    is_exported ctx.(import_source) name = True"
 
 (* init_order_valid (matches Coq: Definition init_order_valid) *)
 definition init_order_valid :: "bool" where
@@ -274,9 +295,13 @@ definition init_order_valid :: "bool" where
     In m1 (deps m2) ->
     i < j"
 
+(* path_eqb - complex match, needs manual translation *)
+definition path_eqb :: "bool" where "path_eqb = undefined"
+
 (* same_crate (matches Coq: Definition same_crate) *)
 definition same_crate :: "Crate \<Rightarrow> bool" where
-  "same_crate c \<equiv> existsb (fun m => path_eqb m"
+  "same_crate c \<equiv> existsb (fun m => path_eqb m.(mod_path) m1.(mod_path)) c.(crate_modules) \<and>
+  existsb (fun m => path_eqb m.(mod_path) m2.(mod_path)) c.(crate_modules)"
 
 (* crate_accessible (matches Coq: Definition crate_accessible) *)
 fun crate_accessible :: "bool \<Rightarrow> Visibility \<Rightarrow> bool" where
@@ -286,64 +311,87 @@ fun crate_accessible :: "bool \<Rightarrow> Visibility \<Rightarrow> bool" where
 
 (* valid_reexport (matches Coq: Definition valid_reexport) *)
 definition valid_reexport :: "ReExport \<Rightarrow> bool" where
-  "valid_reexport r \<equiv> forall name, In name r"
+  "valid_reexport r \<equiv> forall name, In name r.(reexp_names) ->
+    is_exported r.(reexp_source) name = True ->
+    is_exported r.(reexp_target) name = True"
+
+(* get_public_items (matches Coq: Definition get_public_items) *)
+definition get_public_items :: "list string" where
+  "get_public_items \<equiv> map item_name (filter (fun i => visibility_eqb (item_visibility i) VPublic) items)"
+
+(* glob_import (matches Coq: Definition glob_import) *)
+definition glob_import :: "Module \<Rightarrow> list string" where
+  "glob_import m \<equiv> filter (fun name => is_exported m name) (get_public_items m.(mod_items))"
 
 (* capability_allows_import (matches Coq: Definition capability_allows_import) *)
 definition capability_allows_import :: "CapabilityScope \<Rightarrow> string \<Rightarrow> nat \<Rightarrow> bool" where
-  "capability_allows_import scope name required_level \<equiv> existsb (String"
+  "capability_allows_import scope name required_level \<equiv> existsb (String.(name) = scope.(scope_allowed)) \<and> (required_level \<le> scope.(scope_cap).(cap_level))"
 
 (* impl_matches_sig (matches Coq: Definition impl_matches_sig) *)
 definition impl_matches_sig :: "Module \<Rightarrow> Signature \<Rightarrow> bool" where
-  "impl_matches_sig m s \<equiv> (forall t, In t s"
+  "impl_matches_sig m s \<equiv> (forall t, In t s.(sig_types) -> 
+    exists item, In item m.(mod_items) /\ item_name item = t) /\
+  (forall f, In f s.(sig_functions) ->
+    exists item, In item m.(mod_items) /\ item_name item = f)"
 
 (* sealed_impl_allowed (matches Coq: Definition sealed_impl_allowed) *)
 definition sealed_impl_allowed :: "SealedTrait \<Rightarrow> string \<Rightarrow> bool" where
-  "sealed_impl_allowed st impl_name \<equiv> existsb (String"
+  "sealed_impl_allowed st impl_name \<equiv> existsb (String.(impl_name) = st.(sealed_impls))"
 
 (* assoc_type_consistent (matches Coq: Definition assoc_type_consistent) *)
 definition assoc_type_consistent :: "bool" where
   "assoc_type_consistent \<equiv> forall m1 m2,
     In m1 mappings -> In m2 mappings ->
-    m1"
+    m1.(assoc_trait) = m2.(assoc_trait) ->
+    m1.(assoc_impl) = m2.(assoc_impl) ->
+    m1.(assoc_type_name) = m2.(assoc_type_name) ->
+    m1.(assoc_resolved) = m2.(assoc_resolved)"
 
 (* extract_interface (matches Coq: Definition extract_interface) *)
-definition extract_interface :: "Module \<Rightarrow> InterfaceFile" where
-  "extract_interface m \<equiv> mkInterface
-    m"
+fun extract_interface :: "Module \<Rightarrow> InterfaceFile" where
+  "extract_interface _ = false"
 
 (* interface_sound (matches Coq: Definition interface_sound) *)
 definition interface_sound :: "Module \<Rightarrow> InterfaceFile \<Rightarrow> bool" where
   "interface_sound m iface \<equiv> forall name,
-    In name (get_public_items m"
+    In name (get_public_items m.(mod_items)) ->
+    is_exported m name = True ->
+    In name iface.(iface_public_types) \/ In name iface.(iface_public_fns)"
 
 (* cu_unchanged (matches Coq: Definition cu_unchanged) *)
 definition cu_unchanged :: "bool" where
-  "cu_unchanged \<equiv> Nat"
+  "cu_unchanged \<equiv> (cu1.(cu_hash) = cu2.(cu_hash))"
 
 (* incremental_correct (matches Coq: Definition incremental_correct) *)
 definition incremental_correct :: "bool \<Rightarrow> bool" where
-  "incremental_correct recompiled \<equiv> cu_unchanged old_cu new_cu = true -> recompiled = false"
+  "incremental_correct recompiled \<equiv> cu_unchanged old_cu new_cu = True -> recompiled = False"
 
 (* cu_has_type (matches Coq: Definition cu_has_type) *)
 definition cu_has_type :: "CompilationUnit \<Rightarrow> string \<Rightarrow> bool" where
-  "cu_has_type cu type_name \<equiv> item_exists cu"
+  "cu_has_type cu type_name \<equiv> item_exists cu.(cu_module).(mod_items) type_name"
 
 (* type_preserved (matches Coq: Definition type_preserved) *)
 definition type_preserved :: "bool" where
   "type_preserved \<equiv> forall type_name,
-    cu_has_type cu1 type_name = true ->
-    is_exported cu1"
+    cu_has_type cu1 type_name = True ->
+    is_exported cu1.(cu_module) type_name = True ->
+    cu_has_type cu2 type_name = True"
 
 (* effects_preserved (matches Coq: Definition effects_preserved) *)
 definition effects_preserved :: "Module \<Rightarrow> InterfaceFile \<Rightarrow> bool" where
-  "effects_preserved m iface \<equiv> forall e, In e effects -> In e"
+  "effects_preserved m iface \<equiv> forall e, In e effects -> In e.(effect_name) iface.(iface_effects)"
 
 (* deps_acyclic (matches Coq: Definition deps_acyclic) *)
 definition deps_acyclic :: "bool" where
   "deps_acyclic \<equiv> forall p, In p pkgs -> 
     ~ exists (cycle : list string), 
       cycle <> [] /\
-      hd_error cycle = Some p"
+      hd_error cycle = Some p.(pkg_name) /\
+      last cycle EmptyString = p.(pkg_name)"
+
+(* resolve_deps_fuel (matches Coq: Definition resolve_deps_fuel) *)
+fun resolve_deps_fuel :: "nat \<Rightarrow> string \<Rightarrow> option Package" where
+  "resolve_deps_fuel 0 = None"
 
 (* version_satisfies (matches Coq: Definition version_satisfies) *)
 definition version_satisfies :: "bool" where
@@ -351,19 +399,26 @@ definition version_satisfies :: "bool" where
 
 (* all_deps_satisfied (matches Coq: Definition all_deps_satisfied) *)
 definition all_deps_satisfied :: "Package \<Rightarrow> bool" where
-  "all_deps_satisfied pkg \<equiv> forall d, In d pkg"
+  "all_deps_satisfied pkg \<equiv> forall d, In d pkg.(pkg_deps) ->
+    exists p, In p available /\ 
+      String.(p.(pkg_name) = d.(dep_name)) = True /\
+      version_satisfies d.(dep_version) p.(pkg_version) = True"
 
-(* security_version_ok - complex match, manual review needed *)
+(* security_version_ok - complex match, needs manual translation *)
+definition security_version_ok :: "bool" where "security_version_ok = undefined"
 
 (* security_versions_enforced (matches Coq: Definition security_versions_enforced) *)
 definition security_versions_enforced :: "Package \<Rightarrow> bool" where
   "security_versions_enforced pkg \<equiv> forall d p, 
-    In d pkg"
+    In d pkg.(pkg_deps) ->
+    In p available ->
+    String.(p.(pkg_name) = d.(dep_name)) = True ->
+    security_version_ok d p.(pkg_version) = True"
 
 (* depends_on (matches Coq: Definition depends_on) *)
 definition depends_on :: "bool" where
   "depends_on \<equiv> existsb (fun p => 
-    if list_eq_dec string_dec p m1 then true else false) (deps m2)"
+    if list_eq_dec string_dec p m1 then True else False) (deps m2)"
 
 (* init_respects_deps (matches Coq: Definition init_respects_deps) *)
 definition init_respects_deps :: "bool" where
@@ -377,17 +432,19 @@ definition init_respects_deps :: "bool" where
 definition init_deterministic :: "bool" where
   "init_deterministic \<equiv> forall si1 si2,
     In si1 inits -> In si2 inits ->
-    si1"
+    si1.(si_module) = si2.(si_module) ->
+    si1.(si_value) = si2.(si_value)"
 
 (* caps_satisfied (matches Coq: Definition caps_satisfied) *)
 definition caps_satisfied :: "bool" where
   "caps_satisfied \<equiv> forallb (fun req =>
     existsb (fun prov => 
-      String"
+      String.(req.(cap_name) = prov.(cap_name)) \<and>
+      (req.(cap_level) \<le> prov.(cap_level))) provided) required"
 
 (* secure_init_valid (matches Coq: Definition secure_init_valid) *)
 definition secure_init_valid :: "SecureInit \<Rightarrow> bool" where
-  "secure_init_valid si \<equiv> caps_satisfied si"
+  "secure_init_valid si \<equiv> caps_satisfied si.(sec_init_cap_required) available_caps = True"
 
 (* J_001_01 (matches Coq) *)
 lemma J_001_01: "\<forall> (m : Module), module_wellformed m \<longrightarrow> \<forall> name, In name m.(mod_exports) \<longrightarrow> item_\<exists> m.(mod_items) name = True"
@@ -398,7 +455,7 @@ lemma J_001_02: "\<forall> (m1 m2 m3 : Module), compose_modules (compose_modules
   by simp
 
 (* J_001_03 (matches Coq) *)
-lemma J_001_03: "\<forall> (root : list (string * Module)) (name : string) (m : Module), find (fun p => String.eqb (fst p) name) root = Some (name, m) \<longrightarrow> resolve_path root [name] = Some m"
+lemma J_001_03: "\<forall> (root : list (string * Module)) (name : string) (m : Module), find (fun p => String.((fst = p)) name) root = Some (name, m) \<longrightarrow> resolve_path root [name] = Some m"
   by simp
 
 (* J_001_04 (matches Coq) *)
@@ -414,7 +471,7 @@ lemma J_001_06: "\<forall> (in_same_crate : bool), crate_accessible in_same_crat
   by simp
 
 (* J_001_07 (matches Coq) *)
-lemma J_001_07: "\<forall> (caller_level callee_level : nat), vis_accessible (VSecurityLevel caller_level) (VSecurityLevel callee_level) = Nat.leb callee_level caller_level"
+lemma J_001_07: "\<forall> (caller_level callee_level : nat), vis_accessible (VSecurityLevel caller_level) (VSecurityLevel callee_level) = (callee_level \<le> caller_level)"
   by simp
 
 (* J_001_08 (matches Coq) *)
@@ -470,15 +527,15 @@ lemma find_exists: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : lis
   by (cases rule: ‹_›.cases; simp)
 
 (* J_001_20 (matches Coq) *)
-lemma J_001_20: "\<forall> (pkgs : list Package) (name : string) (fuel : nat), fuel > 0 \<longrightarrow> (\<exists> p, In p pkgs \<and> String.eqb p.(pkg_name) name = True) \<longrightarrow> \<exists> result, resolve_deps_fuel fuel pkgs name = Some result"
+lemma J_001_20: "\<forall> (pkgs : list Package) (name : string) (fuel : nat), fuel > 0 \<longrightarrow> (\<exists> p, In p pkgs \<and> String.(p.(pkg_name) = name) = True) \<longrightarrow> \<exists> result, resolve_deps_fuel fuel pkgs name = Some result"
   by auto
 
 (* J_001_21 (matches Coq) *)
-lemma J_001_21: "\<forall> (pkg : Package) (available : list Package) (d : Dependency), all_deps_satisfied pkg available \<longrightarrow> In d pkg.(pkg_deps) \<longrightarrow> \<exists> p, In p available \<and> String.eqb p.(pkg_name) d.(dep_name) = True \<and> version_satisfies d.(dep_version) p.(pkg_version) = True"
+lemma J_001_21: "\<forall> (pkg : Package) (available : list Package) (d : Dependency), all_deps_satisfied pkg available \<longrightarrow> In d pkg.(pkg_deps) \<longrightarrow> \<exists> p, In p available \<and> String.(p.(pkg_name) = d.(dep_name)) = True \<and> version_satisfies d.(dep_version) p.(pkg_version) = True"
   by auto
 
 (* J_001_22 (matches Coq) *)
-lemma J_001_22: "\<forall> (pkg : Package) (available : list Package) (d : Dependency) (p : Package), security_versions_enforced pkg available \<longrightarrow> In d pkg.(pkg_deps) \<longrightarrow> In p available \<longrightarrow> String.eqb p.(pkg_name) d.(dep_name) = True \<longrightarrow> security_version_ok d p.(pkg_version) = True"
+lemma J_001_22: "\<forall> (pkg : Package) (available : list Package) (d : Dependency) (p : Package), security_versions_enforced pkg available \<longrightarrow> In d pkg.(pkg_deps) \<longrightarrow> In p available \<longrightarrow> String.(p.(pkg_name) = d.(dep_name)) = True \<longrightarrow> security_version_ok d p.(pkg_version) = True"
   by auto
 
 (* J_001_23 (matches Coq) *)

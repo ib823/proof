@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MemorySafety - Isabelle/HOL Port
@@ -12,7 +14,9 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AllocState         | alloc_state            | OK     |
+ * | PointerValidity    | pointer_validity       | OK     |
  * | SecurityDomain     | security_domain        | OK     |
+ * | AccessPermission   | access_permission      | OK     |
  * | MemoryRegion       | memory_region          | OK     |
  * | Pointer            | pointer                | OK     |
  * | SecureMemoryRegion | secure_memory_region   | OK     |
@@ -208,30 +212,36 @@
  *)
 
 theory MemorySafety
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* AllocState (matches Coq: Inductive AllocState) *)
 datatype alloc_state =
-    Unallocated  (* Never allocated *)
-  |     Allocated  (* Currently allocated and valid *)
-  |     Valid  (* Points to valid allocated memory *)
-  |     Null  (* Null pointer *)
-  |     Dangling  (* Points to freed memory *)
+    Unallocated
+  |     Allocated
+  |     Freed
+
+(* PointerValidity (matches Coq: Inductive PointerValidity) *)
+datatype pointer_validity =
+    Valid
+  |     Null
+  |     Dangling
+  |     OutOfBounds
 
 (* SecurityDomain (matches Coq: Inductive SecurityDomain) *)
 datatype security_domain =
-    DomainKernel  (* Kernel/privileged memory *)
-  |     DomainUser  (* User-space memory *)
-  |     DomainGuest  (* Guest/sandboxed memory *)
-  |     PermNone  (* No access *)
-  |     PermRead  (* Read only *)
-  |     PermWrite  (* Write only *)
-  |     PermReadWrite  (* Read and write *)
+    DomainKernel
+  |     DomainUser
+  |     DomainGuest
+  |     DomainUntrusted
+
+(* AccessPermission (matches Coq: Inductive AccessPermission) *)
+datatype access_permission =
+    PermNone
+  |     PermRead
+  |     PermWrite
+  |     PermReadWrite
+  |     PermExecute
 
 (* MemoryRegion (matches Coq: Record MemoryRegion) *)
 record memory_region =
@@ -346,15 +356,18 @@ definition memory_safe :: "MemorySafetyConfig \<Rightarrow> bool" where
   stack_protected (ms_stack m) \<and> heap_protected (ms_heap m) \<and>
   isolation_protected (ms_isolation m)"
 
-(* ptr_is_valid - complex match, manual review needed *)
+(* ptr_is_valid - complex match, needs manual translation *)
+definition ptr_is_valid :: "bool" where "ptr_is_valid = undefined"
 
-(* ptr_is_null - complex match, manual review needed *)
+(* ptr_is_null - complex match, needs manual translation *)
+definition ptr_is_null :: "bool" where "ptr_is_null = undefined"
 
-(* ptr_is_dangling - complex match, manual review needed *)
+(* ptr_is_dangling - complex match, needs manual translation *)
+definition ptr_is_dangling :: "bool" where "ptr_is_dangling = undefined"
 
 (* ptr_in_bounds (matches Coq: Definition ptr_in_bounds) *)
 definition ptr_in_bounds :: "Pointer \<Rightarrow> bool" where
-  "ptr_in_bounds p \<equiv> Nat"
+  "ptr_in_bounds p \<equiv> ((ptr_offset < p)) (ptr_bounds p)"
 
 (* ptr_safe_for_access (matches Coq: Definition ptr_safe_for_access) *)
 definition ptr_safe_for_access :: "Pointer \<Rightarrow> bool" where
@@ -362,11 +375,13 @@ definition ptr_safe_for_access :: "Pointer \<Rightarrow> bool" where
 
 (* ptr_safe_for_access_range (matches Coq: Definition ptr_safe_for_access_range) *)
 definition ptr_safe_for_access_range :: "Pointer \<Rightarrow> nat \<Rightarrow> bool" where
-  "ptr_safe_for_access_range p len \<equiv> ptr_is_valid p \<and> Nat"
+  "ptr_safe_for_access_range p len \<equiv> ptr_is_valid p \<and> ((ptr_offset \<le> p) + len) (ptr_bounds p)"
 
-(* region_is_allocated - complex match, manual review needed *)
+(* region_is_allocated - complex match, needs manual translation *)
+definition region_is_allocated :: "bool" where "region_is_allocated = undefined"
 
-(* region_is_freed - complex match, manual review needed *)
+(* region_is_freed - complex match, needs manual translation *)
+definition region_is_freed :: "bool" where "region_is_freed = undefined"
 
 (* region_can_access (matches Coq: Definition region_can_access) *)
 definition region_can_access :: "MemoryRegion \<Rightarrow> bool" where
@@ -385,7 +400,7 @@ fun domain_level :: "SecurityDomain \<Rightarrow> nat" where
 
 (* domain_can_access (matches Coq: Definition domain_can_access) *)
 definition domain_can_access :: "bool" where
-  "domain_can_access \<equiv> Nat"
+  "domain_can_access \<equiv> ((domain_level \<le> to_domain)) (domain_level from_domain)"
 
 (* permission_allows_read (matches Coq: Definition permission_allows_read) *)
 fun permission_allows_read :: "AccessPermission \<Rightarrow> bool" where
@@ -411,31 +426,31 @@ definition secure_region_can_write :: "SecureMemoryRegion \<Rightarrow> Security
 
 (* riina_uaf (matches Coq: Definition riina_uaf) *)
 definition riina_uaf :: "UseAfterFreeGuard" where
-  "riina_uaf \<equiv> mkUAFGuard true true true"
+  "riina_uaf \<equiv> mkUAFGuard True True True"
 
 (* riina_df (matches Coq: Definition riina_df) *)
 definition riina_df :: "DoubleFreeGuard" where
-  "riina_df \<equiv> mkDFGuard true true true"
+  "riina_df \<equiv> mkDFGuard True True True"
 
 (* riina_nd (matches Coq: Definition riina_nd) *)
 definition riina_nd :: "NullDerefGuard" where
-  "riina_nd \<equiv> mkNDGuard true true true"
+  "riina_nd \<equiv> mkNDGuard True True True"
 
 (* riina_bounds (matches Coq: Definition riina_bounds) *)
 definition riina_bounds :: "BoundsGuard" where
-  "riina_bounds \<equiv> mkBoundsGuard true true true"
+  "riina_bounds \<equiv> mkBoundsGuard True True True"
 
 (* riina_stack (matches Coq: Definition riina_stack) *)
 definition riina_stack :: "StackGuard" where
-  "riina_stack \<equiv> mkStackGuard true true true true"
+  "riina_stack \<equiv> mkStackGuard True True True True"
 
 (* riina_heap (matches Coq: Definition riina_heap) *)
 definition riina_heap :: "HeapGuard" where
-  "riina_heap \<equiv> mkHeapGuard true true true true"
+  "riina_heap \<equiv> mkHeapGuard True True True True"
 
 (* riina_isolation (matches Coq: Definition riina_isolation) *)
 definition riina_isolation :: "IsolationGuard" where
-  "riina_isolation \<equiv> mkIsolationGuard true true true true"
+  "riina_isolation \<equiv> mkIsolationGuard True True True True"
 
 (* riina_mem_safety (matches Coq: Definition riina_mem_safety) *)
 definition riina_mem_safety :: "MemorySafetyConfig" where
@@ -460,27 +475,27 @@ definition oob_pointer :: "Pointer" where
 
 (* allocated_region (matches Coq: Definition allocated_region) *)
 definition allocated_region :: "MemoryRegion" where
-  "allocated_region \<equiv> mkMemRegion Allocated 1024 true true"
+  "allocated_region \<equiv> mkMemRegion Allocated 1024 True True"
 
 (* freed_region (matches Coq: Definition freed_region) *)
 definition freed_region :: "MemoryRegion" where
-  "freed_region \<equiv> mkMemRegion Freed 1024 false false"
+  "freed_region \<equiv> mkMemRegion Freed 1024 False False"
 
 (* unallocated_region (matches Coq: Definition unallocated_region) *)
 definition unallocated_region :: "MemoryRegion" where
-  "unallocated_region \<equiv> mkMemRegion Unallocated 0 false false"
+  "unallocated_region \<equiv> mkMemRegion Unallocated 0 False False"
 
 (* kernel_region (matches Coq: Definition kernel_region) *)
 definition kernel_region :: "SecureMemoryRegion" where
-  "kernel_region \<equiv> mkSecureMemRegion allocated_region DomainKernel PermReadWrite false"
+  "kernel_region \<equiv> mkSecureMemRegion allocated_region DomainKernel PermReadWrite False"
 
 (* user_region (matches Coq: Definition user_region) *)
 definition user_region :: "SecureMemoryRegion" where
-  "user_region \<equiv> mkSecureMemRegion allocated_region DomainUser PermReadWrite false"
+  "user_region \<equiv> mkSecureMemRegion allocated_region DomainUser PermReadWrite False"
 
 (* guest_region (matches Coq: Definition guest_region) *)
 definition guest_region :: "SecureMemoryRegion" where
-  "guest_region \<equiv> mkSecureMemRegion allocated_region DomainGuest PermRead false"
+  "guest_region \<equiv> mkSecureMemRegion allocated_region DomainGuest PermRead False"
 
 (* andb_true_iff (matches Coq) *)
 lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
@@ -491,11 +506,11 @@ lemma andb_false_iff: "\<forall> a b : bool, a && b = False <-> a = False \<or> 
   by (cases rule: ‹_›.cases; simp)
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, negb b = False <-> b = True"
+lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
   by (cases rule: ‹_›.cases; simp)
 
 (* ============================================================================

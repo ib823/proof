@@ -32,7 +32,7 @@
  * | val_rel              | val_rel                | OK     |
  * | exp_rel              | exp_rel                | OK     |
  * | env_rel              | env_rel                | OK     |
- * | logical_relation     | logical_relation       | Axiom  |
+ * | logical_relation     | logical_relation       | Assumed |
  * | non_interference_stmt| non_interference_stmt  | Proved |
  *)
 
@@ -113,11 +113,11 @@ fun first_order_type :: "ty \<Rightarrow> bool" where
 section \<open>First-Order Value Relation\<close>
 
 text \<open>
-  For first-order types, we can define value relatedness without step-indexing.
+  For first-order types, we can define is_value relatedness without step-indexing.
   This is the structural equality relation for observable types.
 \<close>
 
-(* First-order value relation - no step indexing needed
+(* First-order is_value relation - no step indexing needed
    (matches Coq: Fixpoint val_rel_at_type_fo) *)
 fun val_rel_at_type_fo :: "ty \<Rightarrow> expr \<Rightarrow> expr \<Rightarrow> bool" where
   "val_rel_at_type_fo TUnit v1 v2 = (v1 = EUnit \<and> v2 = EUnit)"
@@ -155,16 +155,16 @@ text \<open>
   At step 0, we have base information; at step n+1, we can "step" the relation.
 \<close>
 
-(* Step-indexed value relation
+(* Step-indexed is_value relation
    (matches Coq: val_rel_n) *)
 fun val_rel_n :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> expr \<Rightarrow> expr \<Rightarrow> bool" where
   "val_rel_n 0 \<Sigma> T v1 v2 =
-     (value v1 \<and> value v2 \<and>
+     (is_value v1 \<and> is_value v2 \<and>
       closed_expr v1 \<and> closed_expr v2 \<and>
       (first_order_type T \<longrightarrow> val_rel_at_type_fo T v1 v2))"
 | "val_rel_n (Suc n) \<Sigma> T v1 v2 =
      (val_rel_n n \<Sigma> T v1 v2 \<and>
-      value v1 \<and> value v2 \<and>
+      is_value v1 \<and> is_value v2 \<and>
       closed_expr v1 \<and> closed_expr v2)"
 
 (* Step-indexed expression relation
@@ -173,7 +173,7 @@ definition exp_rel_n :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarro
   "exp_rel_n n \<Sigma> T e1 e2 \<equiv>
      \<forall>st1 st2 ctx1 ctx2 v1 st1' ctx1'.
        multi_step (e1, st1, ctx1) (v1, st1', ctx1') \<longrightarrow>
-       value v1 \<longrightarrow>
+       is_value v1 \<longrightarrow>
        (\<exists>v2 st2' ctx2'.
          multi_step (e2, st2, ctx2) (v2, st2', ctx2') \<and>
          val_rel_n n \<Sigma> T v1 v2)"
@@ -239,7 +239,7 @@ section \<open>Key Lemmas\<close>
    (matches Coq: Lemma val_rel_value_left/right) *)
 lemma val_rel_value:
   assumes "val_rel \<Sigma> T v1 v2"
-  shows "value v1 \<and> value v2"
+  shows "is_value v1 \<and> is_value v2"
 proof -
   from assms have "val_rel_n 1 \<Sigma> T v1 v2"
     unfolding val_rel_def by simp
@@ -325,14 +325,14 @@ fun apply_subst :: "subst \<Rightarrow> expr \<Rightarrow> expr" where
 
 (* Helper: values only multi-step to themselves *)
 lemma value_multi_step_refl:
-  assumes "value v" and "(v, st, ctx) \<longrightarrow>* (v', st', ctx')"
+  assumes "is_value v" and "(v, st, ctx) \<leadsto>* (v', st', ctx')"
   shows "v' = v \<and> st' = st \<and> ctx' = ctx"
   using assms(2,1)
 proof (induction "(v, st, ctx)" "(v', st', ctx')" rule: multi_step.induct)
   case (MS_Refl cfg) thus ?case by auto
 next
   case (MS_Step cfg1 cfg2 cfg3)
-  (* step from a value contradicts value_not_step *)
+  (* step from a is_value contradicts value_not_step *)
   from MS_Step.hyps(1) MS_Step.prems
   have False using value_not_step by auto
   thus ?case ..
@@ -345,19 +345,23 @@ lemma val_rel_implies_exp_rel:
   unfolding exp_rel_def exp_rel_n_def
 proof (intro allI impI)
   fix n st1 st2 ctx1 ctx2 r1 st1' ctx1'
-  assume hmulti: "(v1, st1, ctx1) \<longrightarrow>* (r1, st1', ctx1')" and hval_r: "value r1"
-  (* v1 is a value, so it only multi-steps to itself *)
-  have hv1: "value v1" using val_rel_value[OF assms] by simp
+  assume hmulti: "(v1, st1, ctx1) \<leadsto>* (r1, st1', ctx1')" and hval_r: "is_value r1"
+  (* v1 is a is_value, so it only multi-steps to itself *)
+  have hv1: "is_value v1" using val_rel_value[OF assms] by simp
   from value_multi_step_refl[OF hv1 hmulti]
   have "r1 = v1" and "st1' = st1" and "ctx1' = ctx1" by auto
-  (* v2 is also a value, multi-steps to itself via MS_Refl *)
-  have hv2: "value v2" using val_rel_value[OF assms] by simp
-  show "\<exists>r2 st2' ctx2'. (v2, st2, ctx2) \<longrightarrow>* (r2, st2', ctx2') \<and> val_rel_n n \<Sigma> T r1 r2"
+  (* v2 is also a is_value, multi-steps to itself via MS_Refl *)
+  have hv2: "is_value v2" using val_rel_value[OF assms] by simp
+  show "\<exists>r2 st2' ctx2'. (v2, st2, ctx2) \<leadsto>* (r2, st2', ctx2') \<and> val_rel_n n \<Sigma> T r1 r2"
   proof (intro exI conjI)
-    show "(v2, st2, ctx2) \<longrightarrow>* (v2, st2, ctx2)" by (rule MS_Refl)
+    show "(v2, st2, ctx2) \<leadsto>* (v2, st2, ctx2)" by (rule MS_Refl)
     show "val_rel_n n \<Sigma> T r1 v2" using assms \<open>r1 = v1\<close> unfolding val_rel_def by simp
   qed
 qed
+
+(* Single-variable substitution *)
+definition single_subst :: "ident \<Rightarrow> expr \<Rightarrow> subst" where
+  "single_subst x v \<equiv> \<lambda>y. if y = x then Some v else None"
 
 (* Bridge lemma: apply_subst with single_subst equals subst
    (matches Coq: single-variable substitution correspondence) *)
@@ -457,14 +461,10 @@ text \<open>
   - Triple-prover agreement on theorem STATEMENT verified
 \<close>
 
-(* Fundamental theorem (logical relation)
+(* Fundamental theorem dependency (logical relation)
    (matches Coq: Theorem logical_relation)
-   AXIOM: Justified by Coq proof (~4,600 lines) + 1 policy axiom *)
-axiomatization where
-  logical_relation:
-    "has_type \<Gamma> \<Sigma> LPublic e T \<epsilon> \<Longrightarrow>
-     env_rel \<Sigma> \<Gamma> \<rho>1 \<rho>2 \<Longrightarrow>
-     exp_rel \<Sigma> T (apply_subst \<rho>1 e) (apply_subst \<rho>2 e)"
+   This theory does not postulate it globally as an axiom; instead it is an
+   explicit assumption at theorem use sites. *)
 
 
 section \<open>Non-Interference Statement\<close>
@@ -473,15 +473,16 @@ text \<open>
   The main non-interference theorem.
 \<close>
 
-(* Single-variable substitution *)
-definition single_subst :: "ident \<Rightarrow> expr \<Rightarrow> subst" where
-  "single_subst x v \<equiv> \<lambda>y. if y = x then Some v else None"
-
 (* Non-interference: substituting related values yields related expressions
    (matches Coq: Theorem non_interference_stmt)
    PROVED from logical_relation axiom + bridge lemma *)
 theorem non_interference_stmt:
-  assumes hval: "val_rel [] T_in v1 v2"
+  assumes hlogical:
+      "\<And>\<Gamma> \<Sigma> e T \<epsilon> \<rho>1 \<rho>2.
+         has_type \<Gamma> \<Sigma> LPublic e T \<epsilon> \<Longrightarrow>
+         env_rel \<Sigma> \<Gamma> \<rho>1 \<rho>2 \<Longrightarrow>
+         exp_rel \<Sigma> T (apply_subst \<rho>1 e) (apply_subst \<rho>2 e)"
+    and hval: "val_rel [] T_in v1 v2"
     and hty: "has_type [(x, T_in)] [] LPublic e T_out EffPure"
   shows "exp_rel [] T_out (subst x v1 e) (subst x v2 e)"
 proof -
@@ -504,7 +505,7 @@ proof -
   qed
 
   (* Apply the fundamental theorem *)
-  from logical_relation[OF hty henv]
+  from hlogical[OF hty henv]
   have "exp_rel [] T_out (apply_subst \<rho>1 e) (apply_subst \<rho>2 e)" .
 
   (* Bridge: apply_subst (single_subst x v) e = subst x v e *)
@@ -625,16 +626,16 @@ text \<open>
   | value_multi_step_refl    | value_multi_step_refl       | Proved  |
   | val_rel_implies_exp_rel  | val_rel_implies_exp_rel     | Proved  |
   | apply_subst_single_subst | apply_subst_single_subst    | Proved  |
-  | logical_relation         | logical_relation            | Axiom*  |
+  | logical_relation         | logical_relation            | Assumed |
   | non_interference_stmt    | non_interference_stmt       | Proved  |
 
-  * logical_relation is axiomatized, justified by the complete Coq proof
-    in NonInterference_v2_LogicalRelation.v (~4,600 lines, modulo the
+  * logical_relation is carried as an explicit theorem assumption,
+    justified by the complete Coq proof in
+    NonInterference_v2_LogicalRelation.v (~4,600 lines, modulo the
     policy axiom logical_relation_declassify for declassification).
-    The Coq proof is the authoritative source; this axiom bridges the
-    gap in the secondary prover.
+    The Coq proof remains the authoritative source.
 
-  Total: 14 definitions + 18 lemmas (17 proved, 1 axiom) — 0 unfinished
+  Total: 14 definitions + 18 lemmas (17 proved, 1 assumption) — 0 unfinished
 \<close>
 
 end

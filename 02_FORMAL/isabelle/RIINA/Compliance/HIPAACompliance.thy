@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HIPAACompliance - Isabelle/HOL Port
@@ -24,6 +26,7 @@
  * | Session            | session                | OK     |
  * | SystemState        | system_state           | OK     |
  * | Transmission       | transmission           | OK     |
+ * | BREACH_DETECTION_LIMIT_S | BREACH_DETECTION_LIMIT_S | OK     |
  * | can_access         | can_access             | OK     |
  * | is_hipaa_encrypted | is_hipaa_encrypted     | OK     |
  * | is_hipaa_transport | is_hipaa_transport     | OK     |
@@ -34,10 +37,13 @@
  * | breach_detection_limit | breach_detection_limit | OK     |
  * | breach_detected_timely | breach_detected_timely | OK     |
  * | audit_exists_for   | audit_exists_for       | OK     |
+ * | access_with_audit  | access_with_audit      | OK     |
+ * | minimum_necessary_access | minimum_necessary_access | OK     |
  * | can_disclose       | can_disclose           | OK     |
  * | authorized_modification | authorized_modification | OK     |
  * | terminate_session  | terminate_session      | OK     |
  * | check_and_terminate | check_and_terminate    | OK     |
+ * | emergency_access   | emergency_access       | OK     |
  * | transmission_secure | transmission_secure    | OK     |
  * | COMPLY_001_01      | COMPLY_001_01          | OK     |
  * | COMPLY_001_02      | COMPLY_001_02          | OK     |
@@ -57,7 +63,7 @@
  *)
 
 theory HIPAACompliance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Role (matches Coq: Inductive Role) *)
@@ -82,13 +88,13 @@ datatype phi_category =
 datatype encryption_state =
     Plaintext
   |     EncryptedAES128
-  |     EncryptedAES256  (* Required for HIPAA *)
+  |     EncryptedAES256
 
 (* TransportSecurity (matches Coq: Inductive TransportSecurity) *)
 datatype transport_security =
     NoTLS
   |     TLS12
-  |     TLS13  (* Required *)
+  |     TLS13
 
 (* AuthFactor (matches Coq: Inductive AuthFactor) *)
 datatype auth_factor =
@@ -106,7 +112,7 @@ record auth_state =
 record phi_record =
   phi_category :: PHICategory
   phi_patient_id :: nat
-  phi_data :: nat  (* Abstract data *)
+  phi_data :: nat
   phi_encryption :: EncryptionState
   phi_consent_documented :: bool
 
@@ -114,15 +120,15 @@ record phi_record =
 record audit_entry =
   audit_timestamp :: nat
   audit_user_id :: nat
-  audit_action :: nat  (* 0=read, 1=write, 2=delete, 3=emergency *)
+  audit_action :: nat
   audit_phi_id :: nat
   audit_success :: bool
 
 (* DisposalRecord (matches Coq: Record DisposalRecord) *)
 record disposal_record =
   disposal_phi_id :: nat
-  disposal_method :: nat  (* 0=overwrite, 1=crypto_erase, 2=physical *)
-  disposal_passes :: nat  (* Number of overwrite passes *)
+  disposal_method :: nat
+  disposal_passes :: nat
   disposal_verified :: bool
 
 (* BreachEvent (matches Coq: Record BreachEvent) *)
@@ -155,7 +161,12 @@ record transmission =
   trans_integrity_hash :: nat
   trans_verified :: bool
 
-(* can_access - complex match, manual review needed *)
+(* BREACH_DETECTION_LIMIT_S (matches Coq: Definition BREACH_DETECTION_LIMIT_S) *)
+definition BREACH_DETECTION_LIMIT_S :: "nat" where
+  "BREACH_DETECTION_LIMIT_S \<equiv> Z.to_nat 86400%Z"
+
+(* can_access - complex match, needs manual translation *)
+definition can_access :: "bool" where "can_access = undefined"
 
 (* is_hipaa_encrypted (matches Coq: Definition is_hipaa_encrypted) *)
 fun is_hipaa_encrypted :: "EncryptionState \<Rightarrow> bool" where
@@ -173,25 +184,35 @@ definition session_timeout :: "nat" where
 
 (* session_expired (matches Coq: Definition session_expired) *)
 definition session_expired :: "bool" where
-  "session_expired \<equiv> Nat"
+  "session_expired \<equiv> (session_timeout < (current_time) - last_activity)"
 
 (* is_mfa (matches Coq: Definition is_mfa) *)
 definition is_mfa :: "AuthState \<Rightarrow> bool" where
-  "is_mfa auth \<equiv> Nat"
+  "is_mfa auth \<equiv> (2 \<le> (length) (auth_factors auth))"
 
-(* is_secure_disposal - complex match, manual review needed *)
+(* is_secure_disposal - complex match, needs manual translation *)
+definition is_secure_disposal :: "bool" where "is_secure_disposal = undefined"
 
 (* breach_detection_limit (matches Coq: Definition breach_detection_limit) *)
 definition breach_detection_limit :: "nat" where
-  "breach_detection_limit \<equiv> 86400"
+  "breach_detection_limit \<equiv> BREACH_DETECTION_LIMIT_S"
 
 (* breach_detected_timely (matches Coq: Definition breach_detected_timely) *)
 definition breach_detected_timely :: "BreachEvent \<Rightarrow> bool" where
-  "breach_detected_timely b \<equiv> Nat"
+  "breach_detected_timely b \<equiv> ((breach_detected_time \<le> b) - breach_occurred_time b) breach_detection_limit"
 
 (* audit_exists_for (matches Coq: Definition audit_exists_for) *)
 definition audit_exists_for :: "bool" where
-  "audit_exists_for \<equiv> existsb (fun e => andb (Nat"
+  "audit_exists_for \<equiv> existsb (fun e => (((\<and> = (audit_user_id)) e) user_id) 
+                         (((audit_phi_id = e)) phi_id)) log"
+
+(* access_with_audit (matches Coq: Definition access_with_audit) *)
+definition access_with_audit :: "nat \<Rightarrow> bool \<Rightarrow> list AuditEntry" where
+  "access_with_audit action success \<equiv> mkAudit timestamp user_id action phi_id success :: log"
+
+(* minimum_necessary_access (matches Coq: Definition minimum_necessary_access) *)
+definition minimum_necessary_access :: "Role \<Rightarrow> list PHICategory" where
+  "minimum_necessary_access role \<equiv> filter (can_access role) requested"
 
 (* can_disclose (matches Coq: Definition can_disclose) *)
 definition can_disclose :: "PHIRecord \<Rightarrow> bool" where
@@ -205,7 +226,7 @@ fun authorized_modification :: "Role \<Rightarrow> PHICategory \<Rightarrow> boo
 
 (* terminate_session (matches Coq: Definition terminate_session) *)
 definition terminate_session :: "Session \<Rightarrow> Session" where
-  "terminate_session s \<equiv> mkSession (session_user_id s) (session_start_time s) (session_last_activity s) false"
+  "terminate_session s \<equiv> mkSession (session_user_id s) (session_start_time s) (session_last_activity s) False"
 
 (* check_and_terminate (matches Coq: Definition check_and_terminate) *)
 definition check_and_terminate :: "nat \<Rightarrow> Session \<Rightarrow> Session" where
@@ -213,10 +234,14 @@ definition check_and_terminate :: "nat \<Rightarrow> Session \<Rightarrow> Sessi
   then terminate_session s
   else s"
 
+(* emergency_access (matches Coq: Definition emergency_access) *)
+definition emergency_access :: "list AuditEntry" where
+  "emergency_access \<equiv> mkAudit timestamp user_id 3 phi_id True :: log"
+
 (* transmission_secure (matches Coq: Definition transmission_secure) *)
 definition transmission_secure :: "Transmission \<Rightarrow> bool" where
-  "transmission_secure t \<equiv> andb (is_hipaa_transport (trans_security t))
-       (andb (is_hipaa_encrypted (phi_encryption (trans_phi t)))
+  "transmission_secure t \<equiv> ((is_hipaa_transport \<and> (trans_security) t))
+       (((is_hipaa_encrypted \<and> (phi_encryption) (trans_phi t)))
              (trans_verified t))"
 
 (* COMPLY_001_01 (matches Coq) *)

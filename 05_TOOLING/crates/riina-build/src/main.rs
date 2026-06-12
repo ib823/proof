@@ -63,7 +63,7 @@ struct Cli {
     #[arg(short, long, global = true, default_value = "debug")]
     profile: Profile,
 
-    /// Project root (default: current directory or RIINA_ROOT)
+    /// Project root (default: current directory or `RIINA_ROOT`)
     #[arg(long, global = true)]
     root: Option<PathBuf>,
 }
@@ -144,19 +144,19 @@ enum Profile {
 }
 
 impl Profile {
-    fn as_str(self) -> &'static str {
+    const fn as_str(self) -> &'static str {
         match self {
-            Profile::Debug => "debug",
-            Profile::Release => "release",
-            Profile::Bench => "bench",
+            Self::Debug => "debug",
+            Self::Release => "release",
+            Self::Bench => "bench",
         }
     }
 
     fn cargo_args(self) -> Vec<&'static str> {
         match self {
-            Profile::Debug => vec![],
-            Profile::Release => vec!["--release"],
-            Profile::Bench => vec!["--profile", "bench"],
+            Self::Debug => vec![],
+            Self::Release => vec!["--release"],
+            Self::Bench => vec!["--profile", "bench"],
         }
     }
 }
@@ -211,7 +211,11 @@ impl BuildContext {
     }
 
     fn log(&self, msg: &str) {
-        println!("[riina-build] {msg}");
+        if self.verbose {
+            println!("[riina-build][verbose] {msg}");
+        } else {
+            println!("[riina-build] {msg}");
+        }
     }
 
     fn log_verbose(&self, msg: &str) {
@@ -246,20 +250,20 @@ enum BuildError {
 impl std::fmt::Display for BuildError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            BuildError::NotRiinaProject(path) => {
+            Self::NotRiinaProject(path) => {
                 write!(f, "Not a RIINA project: {}", path.display())
             }
-            BuildError::CommandFailed { command, exit_code } => {
+            Self::CommandFailed { command, exit_code } => {
                 write!(f, "Command '{command}' failed with exit code {exit_code}")
             }
-            BuildError::CommandNotFound(cmd) => {
+            Self::CommandNotFound(cmd) => {
                 write!(f, "Command not found: {cmd}")
             }
-            BuildError::IoError(e) => write!(f, "I/O error: {e}"),
-            BuildError::VerificationFailed(msg) => {
+            Self::IoError(e) => write!(f, "I/O error: {e}"),
+            Self::VerificationFailed(msg) => {
                 write!(f, "Verification failed: {msg}")
             }
-            BuildError::InvalidConfiguration(msg) => {
+            Self::InvalidConfiguration(msg) => {
                 write!(f, "Invalid configuration: {msg}")
             }
         }
@@ -268,7 +272,7 @@ impl std::fmt::Display for BuildError {
 
 impl From<io::Error> for BuildError {
     fn from(e: io::Error) -> Self {
-        BuildError::IoError(e)
+        Self::IoError(e)
     }
 }
 
@@ -359,11 +363,10 @@ fn build_ada(ctx: &BuildContext, project: Option<&str>, proof_level: u8) -> Resu
     }
 
     // Find GPR file
-    let gpr_file = if let Some(proj) = project {
-        ada_dir.join(format!("{proj}.gpr"))
-    } else {
-        ada_dir.join("riina.gpr")
-    };
+    let gpr_file = project.map_or_else(
+        || ada_dir.join("riina.gpr"),
+        |proj| ada_dir.join(format!("{proj}.gpr")),
+    );
 
     if !gpr_file.exists() {
         ctx.log(&format!(
@@ -399,48 +402,22 @@ fn build_ada(ctx: &BuildContext, project: Option<&str>, proof_level: u8) -> Resu
 fn build_bootstrap(ctx: &BuildContext, stage: u8, verify: bool) -> Result<(), BuildError> {
     ctx.log(&format!("Bootstrapping RIINA (stage {stage})..."));
 
+    // Self-hosting bootstrap (compiling RIINA-in-RIINA) is a Phase 10 deliverable
+    // and does NOT exist yet. The Rust reference compiler lives in the separate
+    // `03_PROTO` workspace (`03_PROTO/crates/riinac`); the former 05_TOOLING
+    // `riinac` stub that this routine used to build was retired (it only printed
+    // "Not yet implemented"). Until self-hosting lands, every stage is an honest
+    // no-op so that `riina-build all --level N` still succeeds without pretending
+    // a self-hosted compiler was produced.
     match stage {
-        0 => {
-            // Stage 0: Build bootstrap compiler (Rust implementation)
-            ctx.log("Stage 0: Building Rust bootstrap compiler...");
-            run_command(ctx, "cargo", &["build", "--release", "--package", "riinac"])?;
-        }
-        1 => {
-            // Stage 1: Self-hosted compiler (compiled by stage 0)
-            ctx.log("Stage 1: Building self-hosted compiler...");
-
-            let stage0 = ctx.root.join("target/release/riinac");
-            if !stage0.exists() {
-                return Err(BuildError::InvalidConfiguration(
-                    "Stage 0 compiler not found. Run `riina-build bootstrap --stage 0` first."
-                        .to_string(),
-                ));
-            }
-
-            // TODO: Actually compile with stage 0 when RIINA is ready
-            ctx.log("Stage 1: (using Rust compiler until self-hosting ready)");
-            run_command(ctx, "cargo", &["build", "--release", "--package", "riinac"])?;
-        }
-        2 => {
-            // Stage 2: Verification build (must match stage 1)
-            ctx.log("Stage 2: Building verification compiler...");
-
-            let stage1 = ctx.root.join("target/release/riinac");
-            if !stage1.exists() {
-                return Err(BuildError::InvalidConfiguration(
-                    "Stage 1 compiler not found. Run `riina-build bootstrap --stage 1` first."
-                        .to_string(),
-                ));
-            }
-
-            // TODO: Actually compile with stage 1 when self-hosting ready
-            ctx.log("Stage 2: (using Rust compiler until self-hosting ready)");
-            run_command(ctx, "cargo", &["build", "--release", "--package", "riinac"])?;
-
-            if verify {
-                ctx.log("Verifying stage 1 == stage 2...");
-                // TODO: Compare binaries when self-hosting ready
-                ctx.log("✓ Stages match (placeholder)");
+        0..=2 => {
+            ctx.log(&format!(
+                "Stage {stage}: self-hosting bootstrap is deferred to Phase 10 — \
+                 build the Rust reference compiler with \
+                 `cargo build --release -p riinac` in 03_PROTO instead."
+            ));
+            if stage == 2 && verify {
+                ctx.log("Stage comparison skipped (self-hosting not yet implemented).");
             }
         }
         _ => {
@@ -465,6 +442,12 @@ fn build_hdl(ctx: &BuildContext, target: Option<&str>) -> Result<(), BuildError>
     if !hdl_dir.exists() {
         ctx.log("No HDL directory found, skipping");
         return Ok(());
+    }
+
+    if matches!(target, Some(t) if t.trim().is_empty()) {
+        return Err(BuildError::InvalidConfiguration(
+            "HDL target must not be empty".to_string(),
+        ));
     }
 
     // TODO: Integrate with actual HDL toolchain
@@ -526,7 +509,7 @@ fn generate_manifest(ctx: &BuildContext, output: &Path) -> Result<(), BuildError
   }},
   "components": {{
     "rust": {{
-      "toolchain": "1.84.0",
+      "toolchain": "1.94.1",
       "status": "pending"
     }},
     "ada": {{
@@ -555,10 +538,13 @@ fn generate_manifest(ctx: &BuildContext, output: &Path) -> Result<(), BuildError
 fn clean(ctx: &BuildContext, all: bool) -> Result<(), BuildError> {
     ctx.log("Cleaning build artifacts...");
 
+    // The 05_TOOLING `riinac` stub was retired; a targeted clean now cleans the
+    // build driver itself (`riina-build`). A full clean (`--all`) cleans the
+    // whole tooling workspace.
     let args = if all {
         vec!["clean"]
     } else {
-        vec!["clean", "--package", "riinac"]
+        vec!["clean", "--package", "riina-build"]
     };
 
     run_command(ctx, "cargo", &args)?;

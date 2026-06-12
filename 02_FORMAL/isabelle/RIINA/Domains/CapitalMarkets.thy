@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CapitalMarkets - Isabelle/HOL Port
@@ -27,7 +29,9 @@
  * | orders_can_match   | orders_can_match       | OK     |
  * | match_price        | match_price            | OK     |
  * | match_qty          | match_qty              | OK     |
+ * | execute_match      | execute_match          | OK     |
  * | ticks_monotonic    | ticks_monotonic        | OK     |
+ * | ticks_ordered      | ticks_ordered          | OK     |
  * | buy_priority_reflexive | buy_priority_reflexive | OK     |
  * | sell_priority_reflexive | sell_priority_reflexive | OK     |
  * | higher_price_buy_wins | higher_price_buy_wins  | OK     |
@@ -57,12 +61,8 @@
  *)
 
 theory CapitalMarkets
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* Side (matches Coq: Inductive Side) *)
 datatype side =
@@ -73,9 +73,9 @@ datatype side =
 record order =
   order_id :: nat
   order_side :: Side
-  order_price :: nat  (* price in basis points *)
-  order_qty :: nat  (* quantity *)
-  order_time :: nat  (* arrival timestamp for priority *)
+  order_price :: nat
+  order_qty :: nat
+  order_time :: nat
 
 (* Trade (matches Coq: Record Trade) *)
 record trade =
@@ -104,20 +104,21 @@ record market_data_tick =
   tick_symbol :: nat
   tick_price :: nat
   tick_volume :: nat
-  tick_seq :: nat  (* sequence number for ordering *)
+  tick_seq :: nat
 
-(* side_eqb - complex match, manual review needed *)
+(* side_eqb - complex match, needs manual translation *)
+definition side_eqb :: "bool" where "side_eqb = undefined"
 
 (* buy_has_priority (matches Coq: Definition buy_has_priority) *)
 definition buy_has_priority :: "bool" where
-  "buy_has_priority \<equiv> if order_price o1 <? order_price o2 then false
-  else if order_price o2 <? order_price o1 then true
+  "buy_has_priority \<equiv> if order_price o1 <? order_price o2 then False
+  else if order_price o2 <? order_price o1 then True
   else order_time o1 <=? order_time o2"
 
 (* sell_has_priority (matches Coq: Definition sell_has_priority) *)
 definition sell_has_priority :: "bool" where
-  "sell_has_priority \<equiv> if order_price o1 <? order_price o2 then true
-  else if order_price o2 <? order_price o1 then false
+  "sell_has_priority \<equiv> if order_price o1 <? order_price o2 then True
+  else if order_price o2 <? order_price o1 then False
   else order_time o1 <=? order_time o2"
 
 (* trade_consideration (matches Coq: Definition trade_consideration) *)
@@ -130,13 +131,14 @@ definition trade_balanced :: "Trade \<Rightarrow> bool" where
 
 (* settlement_balanced (matches Coq: Definition settlement_balanced) *)
 definition settlement_balanced :: "Settlement \<Rightarrow> bool" where
-  "settlement_balanced s \<equiv> Nat"
+  "settlement_balanced s \<equiv> ((buyer_paid = s)) (seller_received s) \<and>
+  ((assets_delivered = s)) (assets_delivered s)"
 
 (* settlement_complete (matches Coq: Definition settlement_complete) *)
 definition settlement_complete :: "Settlement \<Rightarrow> bool" where
   "settlement_complete s \<equiv> buyer_paid s = seller_received s /\
   assets_delivered s > 0 /\
-  settle_final s = true"
+  settle_final s = True"
 
 (* orders_can_match (matches Coq: Definition orders_can_match) *)
 definition orders_can_match :: "bool" where
@@ -144,16 +146,27 @@ definition orders_can_match :: "bool" where
 
 (* match_price (matches Coq: Definition match_price) *)
 definition match_price :: "nat" where
-  "match_price \<equiv> (* price is the earlier order's price; simplified: use sell price *)
-  order_price sell"
+  "match_price \<equiv> order_price sell"
 
 (* match_qty (matches Coq: Definition match_qty) *)
 definition match_qty :: "nat" where
-  "match_qty \<equiv> Nat"
+  "match_qty \<equiv> Nat.min (order_qty buy) (order_qty sell)"
+
+(* execute_match (matches Coq: Definition execute_match) *)
+definition execute_match :: "nat \<Rightarrow> option Trade" where
+  "execute_match tid \<equiv> if orders_can_match buy sell then
+    Some (mkTrade tid (order_id buy) (order_id sell)
+                  (match_price buy sell) (match_qty buy sell) False)
+  else
+    None"
 
 (* ticks_monotonic (matches Coq: Definition ticks_monotonic) *)
 definition ticks_monotonic :: "bool" where
   "ticks_monotonic \<equiv> tick_seq t1 < tick_seq t2"
+
+(* ticks_ordered (matches Coq: Definition ticks_ordered) *)
+fun ticks_ordered :: "bool" where
+
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ORDER PRIORITY (PRICE-TIME)

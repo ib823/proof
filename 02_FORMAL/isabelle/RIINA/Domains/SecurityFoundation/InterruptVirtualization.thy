@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA InterruptVirtualization - Isabelle/HOL Port
@@ -22,6 +24,7 @@
  * | ipi_authorized     | ipi_authorized         | OK     |
  * | authorized_injection | authorized_injection   | OK     |
  * | can_inject         | can_inject             | OK     |
+ * | find_irq_prio      | find_irq_prio          | OK     |
  * | irq_deliverable    | irq_deliverable        | OK     |
  * | interrupt_injection_authorized | interrupt_injection_authorized | OK     |
  * | interrupt_isolation | interrupt_isolation    | OK     |
@@ -47,7 +50,7 @@
  *)
 
 theory InterruptVirtualization
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* VMId (matches Coq: Inductive VMId) *)
@@ -84,7 +87,7 @@ record interrupt_priority =
 (* InterruptController (matches Coq: Record InterruptController) *)
 record interrupt_controller =
   ctrl_irqs :: 'a list
-  ctrl_mask_threshold :: nat  (* IRQs below this priority are masked *)
+  ctrl_mask_threshold :: nat
 
 (* vm_owns_irq (matches Coq: Definition vm_owns_irq) *)
 definition vm_owns_irq :: "InterruptState \<Rightarrow> VirtualMachine \<Rightarrow> nat \<Rightarrow> bool" where
@@ -100,14 +103,18 @@ fun authorized_injection :: "InterruptState \<Rightarrow> InterruptSource \<Righ
 
 (* can_inject (matches Coq: Definition can_inject) *)
 definition can_inject :: "InterruptState \<Rightarrow> VirtualMachine \<Rightarrow> Interrupt \<Rightarrow> VirtualMachine \<Rightarrow> bool" where
-  "can_inject st vm1 irq vm2 \<equiv> vm_id vm1 = vm_id vm2 \/  (* VM can inject to itself *)
+  "can_inject st vm1 irq vm2 \<equiv> vm_id vm1 = vm_id vm2 \/  
   ipi_authorized st (vm_id vm1) (vm_id vm2)"
+
+(* find_irq_prio (matches Coq: Definition find_irq_prio) *)
+fun find_irq_prio :: "nat \<Rightarrow> option InterruptPriority" where
+
 
 (* irq_deliverable (matches Coq: Definition irq_deliverable) *)
 definition irq_deliverable :: "InterruptController \<Rightarrow> nat \<Rightarrow> bool" where
   "irq_deliverable ctrl irq \<equiv> exists ip, find_irq_prio irq (ctrl_irqs ctrl) = Some ip /\
-    irq_enabled ip = true /\
-    irq_pending ip = true /\
+    irq_enabled ip = True /\
+    irq_pending ip = True /\
     irq_priority ip >= ctrl_mask_threshold ctrl"
 
 (* Theorem: Any interrupt injection must be authorized by the hypervisor. *)

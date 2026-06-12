@@ -1,3 +1,4 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
@@ -110,11 +111,11 @@ lemma extend_rho_sc_comm: "\<forall> ρ x y vx vy, x \<noteq> y \<longrightarrow
 
 (* ----------------------------------------------------------------- *)
 (* subst_not_free_sc (matches Coq) *)
-lemma subst_not_free_sc: "\<forall> x v e, ~ free_in x e \<longrightarrow> [x := v] e = e"
+lemma subst_not_free_sc: "\<forall> x v e, ~ free_in x e \<longrightarrow> subst[x := v] e = e"
   by (cases rule: ‹_›.cases; simp)
 
 (* subst_closed_sc (matches Coq) *)
-lemma subst_closed_sc: "\<forall> x v e, closed_expr_sc e \<longrightarrow> [x := v] e = e"
+lemma subst_closed_sc: "\<forall> x v e, closed_expr_sc e \<longrightarrow> subst[x := v] e = e"
   by auto
 
 (* Base type closed lemmas *)
@@ -140,151 +141,151 @@ lemma closed_loc_sub: "\<forall> l, closed_expr_sc (ELoc l)"
 
 (* Substituting into the same variable yields the replacement. *)
 (* subst_var_same (matches Coq) *)
-lemma subst_var_same: "\<forall> x v, [x := v] (EVar x) = v"
+lemma subst_var_same: "\<forall> x v, subst[x := v] (EVar x) = v"
   by simp
 
 (* Substituting into a different variable is the identity. *)
 (* subst_var_diff (matches Coq) *)
-lemma subst_var_diff: "\<forall> x y v, x \<noteq> y \<longrightarrow> [x := v] (EVar y) = EVar y"
+lemma subst_var_diff: "\<forall> x y v, x \<noteq> y \<longrightarrow> subst[x := v] (EVar y) = EVar y"
   by (cases rule: ‹_›.cases; simp)
 
 (* Substitution into base values is always the identity. *)
 (* subst_unit (matches Coq) *)
-lemma subst_unit: "\<forall> x v, [x := v] EUnit = EUnit"
+lemma subst_unit: "\<forall> x v, subst[x := v] EUnit = EUnit"
   by simp
 
 (* subst_bool (matches Coq) *)
-lemma subst_bool: "\<forall> x v b, [x := v] (EBool b) = EBool b"
+lemma subst_bool: "\<forall> x v b, subst[x := v] (EBool b) = EBool b"
   by simp
 
 (* subst_int (matches Coq) *)
-lemma subst_int: "\<forall> x v n, [x := v] (EInt n) = EInt n"
+lemma subst_int: "\<forall> x v n, subst[x := v] (EInt n) = EInt n"
   by simp
 
 (* subst_string (matches Coq) *)
-lemma subst_string: "\<forall> x v s, [x := v] (EString s) = EString s"
+lemma subst_string: "\<forall> x v s, subst[x := v] (EString s) = EString s"
   by simp
 
 (* subst_loc (matches Coq) *)
-lemma subst_loc: "\<forall> x v l, [x := v] (ELoc l) = ELoc l"
+lemma subst_loc: "\<forall> x v l, subst[x := v] (ELoc l) = ELoc l"
   by simp
 
 (* Substituting x := EVar x is the identity on all expressions. *)
 (* subst_id (matches Coq) *)
-lemma subst_id: "\<forall> x e, [x := EVar x] e = e"
+lemma subst_id: "\<forall> x e, subst[x := EVar x] e = e"
   by (cases rule: ‹_›.cases; simp)
 
 (* Substitution preserves the value predicate. *)
 (* subst_value (matches Coq) *)
-lemma subst_value: "\<forall> x v e, value e \<longrightarrow> value v \<longrightarrow> value ([x := v] e)"
+lemma subst_value: "\<forall> x v e, value e \<longrightarrow> value v \<longrightarrow> value (subst[x := v] e)"
   by auto
 
 (* Substitution distributes over application. *)
 (* subst_app (matches Coq) *)
-lemma subst_app: "\<forall> x v e1 e2, [x := v] (EApp e1 e2) = EApp ([x := v] e1) ([x := v] e2)"
+lemma subst_app: "\<forall> x v e1 e2, subst[x := v] (EApp e1 e2) = EApp (subst[x := v] e1) (subst[x := v] e2)"
   by simp
 
 (* Substitution distributes over pair. *)
 (* subst_pair (matches Coq) *)
-lemma subst_pair: "\<forall> x v e1 e2, [x := v] (EPair e1 e2) = EPair ([x := v] e1) ([x := v] e2)"
+lemma subst_pair: "\<forall> x v e1 e2, subst[x := v] (EPair e1 e2) = EPair (subst[x := v] e1) (subst[x := v] e2)"
   by simp
 
 (* Substitution distributes over fst/snd. *)
 (* subst_fst (matches Coq) *)
-lemma subst_fst: "\<forall> x v e, [x := v] (EFst e) = EFst ([x := v] e)"
+lemma subst_fst: "\<forall> x v e, subst[x := v] (EFst e) = EFst (subst[x := v] e)"
   by simp
 
 (* subst_snd (matches Coq) *)
-lemma subst_snd: "\<forall> x v e, [x := v] (ESnd e) = ESnd ([x := v] e)"
+lemma subst_snd: "\<forall> x v e, subst[x := v] (ESnd e) = ESnd (subst[x := v] e)"
   by simp
 
 (* Substitution distributes over injection. *)
 (* subst_inl (matches Coq) *)
-lemma subst_inl: "\<forall> x v e T, [x := v] (EInl e T) = EInl ([x := v] e) T"
+lemma subst_inl: "\<forall> x v e T, subst[x := v] (EInl e T) = EInl (subst[x := v] e) T"
   by simp
 
 (* subst_inr (matches Coq) *)
-lemma subst_inr: "\<forall> x v e T, [x := v] (EInr e T) = EInr ([x := v] e) T"
+lemma subst_inr: "\<forall> x v e T, subst[x := v] (EInr e T) = EInr (subst[x := v] e) T"
   by simp
 
 (* Substitution distributes over if. *)
 (* subst_if (matches Coq) *)
-lemma subst_if: "\<forall> x v e1 e2 e3, [x := v] (EIf e1 e2 e3) = EIf ([x := v] e1) ([x := v] e2) ([x := v] e3)"
+lemma subst_if: "\<forall> x v e1 e2 e3, subst[x := v] (EIf e1 e2 e3) = EIf (subst[x := v] e1) (subst[x := v] e2) (subst[x := v] e3)"
   by simp
 
 (* Substitution distributes over ref/deref/assign. *)
 (* subst_ref (matches Coq) *)
-lemma subst_ref: "\<forall> x v e sl, [x := v] (ERef e sl) = ERef ([x := v] e) sl"
+lemma subst_ref: "\<forall> x v e sl, subst[x := v] (ERef e sl) = ERef (subst[x := v] e) sl"
   by simp
 
 (* subst_deref (matches Coq) *)
-lemma subst_deref: "\<forall> x v e, [x := v] (EDeref e) = EDeref ([x := v] e)"
+lemma subst_deref: "\<forall> x v e, subst[x := v] (EDeref e) = EDeref (subst[x := v] e)"
   by simp
 
 (* subst_assign (matches Coq) *)
-lemma subst_assign: "\<forall> x v e1 e2, [x := v] (EAssign e1 e2) = EAssign ([x := v] e1) ([x := v] e2)"
+lemma subst_assign: "\<forall> x v e1 e2, subst[x := v] (EAssign e1 e2) = EAssign (subst[x := v] e1) (subst[x := v] e2)"
   by simp
 
 (* Substitution distributes over classify/prove. *)
 (* subst_classify (matches Coq) *)
-lemma subst_classify: "\<forall> x v e, [x := v] (EClassify e) = EClassify ([x := v] e)"
+lemma subst_classify: "\<forall> x v e, subst[x := v] (EClassify e) = EClassify (subst[x := v] e)"
   by simp
 
 (* subst_prove (matches Coq) *)
-lemma subst_prove: "\<forall> x v e, [x := v] (EProve e) = EProve ([x := v] e)"
+lemma subst_prove: "\<forall> x v e, subst[x := v] (EProve e) = EProve (subst[x := v] e)"
   by simp
 
 (* Substitution distributes over declassify. *)
 (* subst_declassify (matches Coq) *)
-lemma subst_declassify: "\<forall> x v e1 e2, [x := v] (EDeclassify e1 e2) = EDeclassify ([x := v] e1) ([x := v] e2)"
+lemma subst_declassify: "\<forall> x v e1 e2, subst[x := v] (EDeclassify e1 e2) = EDeclassify (subst[x := v] e1) (subst[x := v] e2)"
   by simp
 
 (* Substitution distributes over effect operations. *)
 (* subst_perform (matches Coq) *)
-lemma subst_perform: "\<forall> x v eff e, [x := v] (EPerform eff e) = EPerform eff ([x := v] e)"
+lemma subst_perform: "\<forall> x v eff e, subst[x := v] (EPerform eff e) = EPerform eff (subst[x := v] e)"
   by simp
 
 (* subst_require (matches Coq) *)
-lemma subst_require: "\<forall> x v eff e, [x := v] (ERequire eff e) = ERequire eff ([x := v] e)"
+lemma subst_require: "\<forall> x v eff e, subst[x := v] (ERequire eff e) = ERequire eff (subst[x := v] e)"
   by simp
 
 (* subst_grant (matches Coq) *)
-lemma subst_grant: "\<forall> x v eff e, [x := v] (EGrant eff e) = EGrant eff ([x := v] e)"
+lemma subst_grant: "\<forall> x v eff e, subst[x := v] (EGrant eff e) = EGrant eff (subst[x := v] e)"
   by simp
 
 (* Substituting into a lambda with the same binder is the identity. *)
 (* subst_lam_same (matches Coq) *)
-lemma subst_lam_same: "\<forall> x T body v, [x := v] (ELam x T body) = ELam x T body"
+lemma subst_lam_same: "\<forall> x T body v, subst[x := v] (ELam x T body) = ELam x T body"
   by simp
 
 (* Substituting into a lambda with a different binder descends into the body. *)
 (* subst_lam_diff (matches Coq) *)
-lemma subst_lam_diff: "\<forall> x y T body v, x \<noteq> y \<longrightarrow> [x := v] (ELam y T body) = ELam y T ([x := v] body)"
+lemma subst_lam_diff: "\<forall> x y T body v, x \<noteq> y \<longrightarrow> subst[x := v] (ELam y T body) = ELam y T (subst[x := v] body)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Substituting into a let with the same binder only affects the binding. *)
 (* subst_let_same (matches Coq) *)
-lemma subst_let_same: "\<forall> x e1 e2 v, [x := v] (ELet x e1 e2) = ELet x ([x := v] e1) e2"
+lemma subst_let_same: "\<forall> x e1 e2 v, subst[x := v] (ELet x e1 e2) = ELet x (subst[x := v] e1) e2"
   by simp
 
 (* Substituting into a let with a different binder descends into both. *)
 (* subst_let_diff (matches Coq) *)
-lemma subst_let_diff: "\<forall> x y e1 e2 v, x \<noteq> y \<longrightarrow> [x := v] (ELet y e1 e2) = ELet y ([x := v] e1) ([x := v] e2)"
+lemma subst_let_diff: "\<forall> x y e1 e2 v, x \<noteq> y \<longrightarrow> subst[x := v] (ELet y e1 e2) = ELet y (subst[x := v] e1) (subst[x := v] e2)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Substituting into a handle with the same binder only affects the body. *)
 (* subst_handle_same (matches Coq) *)
-lemma subst_handle_same: "\<forall> x e h v, [x := v] (EHandle e x h) = EHandle ([x := v] e) x h"
+lemma subst_handle_same: "\<forall> x e h v, subst[x := v] (EHandle e x h) = EHandle (subst[x := v] e) x h"
   by simp
 
 (* Substituting into a handle with a different binder descends into both. *)
 (* subst_handle_diff (matches Coq) *)
-lemma subst_handle_diff: "\<forall> x y e h v, x \<noteq> y \<longrightarrow> [x := v] (EHandle e y h) = EHandle ([x := v] e) y ([x := v] h)"
+lemma subst_handle_diff: "\<forall> x y e h v, x \<noteq> y \<longrightarrow> subst[x := v] (EHandle e y h) = EHandle (subst[x := v] e) y (subst[x := v] h)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Substituting into a case with the same binder for left branch. *)
 (* subst_case_same_left (matches Coq) *)
-lemma subst_case_same_left: "\<forall> x e y e2 e3 v, [x := v] (ECase e x e2 y e3) = ECase ([x := v] e) x e2 y (if String.(x = y) then e3 else [x := v] e3)"
+lemma subst_case_same_left: "\<forall> x e y e2 e3 v, subst[x := v] (ECase e x e2 y e3) = ECase (subst[x := v] e) x e2 y (if String.(x = y) then e3 else subst[x := v] e3)"
   by simp
 
 (* Identity rho is closed iff all variables are closed (trivially false for open vars) *)
@@ -304,7 +305,7 @@ lemma extend_id_rho_sc_other: "\<forall> x y v, x \<noteq> y \<longrightarrow> e
 
 (* Substituting into a value-variable pair *)
 (* subst_var_eqb (matches Coq) *)
-lemma subst_var_eqb: "\<forall> x y v, [x := v] (EVar y) = if String.(x = y) then v else EVar y"
+lemma subst_var_eqb: "\<forall> x y v, subst[x := v] (EVar y) = if String.(x = y) then v else EVar y"
   by simp
 
 (* ----------------------------------------------------------------- *)

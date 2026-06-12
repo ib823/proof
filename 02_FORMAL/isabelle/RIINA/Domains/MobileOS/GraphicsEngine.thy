@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA GraphicsEngine - Isabelle/HOL Port
@@ -24,6 +26,7 @@
  * | RenderThread       | render_thread          | OK     |
  * | ZBuffer            | z_buffer               | OK     |
  * | Microseconds       | Microseconds           | OK     |
+ * | FRAME_BUDGET_120HZ_US | FRAME_BUDGET_120HZ_US  | OK     |
  * | frame_budget_120hz | frame_budget_120hz     | OK     |
  * | meets_frame_budget | meets_frame_budget     | OK     |
  * | well_optimized_frame | well_optimized_frame   | OK     |
@@ -31,6 +34,7 @@
  * | frames_expected    | frames_expected        | OK     |
  * | well_formed_animation | well_formed_animation  | OK     |
  * | has_frame_drop     | has_frame_drop         | OK     |
+ * | render_pipeline    | render_pipeline        | OK     |
  * | well_formed_gpu_mem | well_formed_gpu_mem    | OK     |
  * | well_formed_shader | well_formed_shader     | OK     |
  * | well_formed_framebuffer | well_formed_framebuffer | OK     |
@@ -105,7 +109,7 @@ record shader =
   shader_id :: nat
   shader_compiled :: bool
   shader_validated :: bool
-  shader_type :: nat  (* 0=vertex, 1=fragment, 2=compute *)
+  shader_type :: nat
 
 (* Texture (matches Coq: Record Texture) *)
 record texture =
@@ -113,7 +117,7 @@ record texture =
   tex_width :: nat
   tex_height :: nat
   tex_memory_bytes :: nat
-  tex_format :: nat  (* 0=RGBA8, 1=RGB8, 2=RGBA16F *)
+  tex_format :: nat
 
 (* GPUMemory (matches Coq: Record GPUMemory) *)
 record gpu_memory =
@@ -127,14 +131,14 @@ record draw_batch =
   batch_id :: nat
   batch_draw_calls :: nat
   batch_merged_calls :: nat
-  batch_overdraw_ratio :: nat  (* percentage, 100 = 1x *)
+  batch_overdraw_ratio :: nat
 
 (* FrameBuffer (matches Coq: Record FrameBuffer) *)
 record frame_buffer =
   fb_width :: nat
   fb_height :: nat
-  fb_front :: nat  (* front buffer id *)
-  fb_back :: nat  (* back buffer id *)
+  fb_front :: nat
+  fb_back :: nat
   fb_double_buffered :: bool
 
 (* RenderThread (matches Coq: Record RenderThread) *)
@@ -146,7 +150,7 @@ record render_thread =
 
 (* ZBuffer (matches Coq: Record ZBuffer) *)
 record z_buffer =
-  zbuf_bits :: nat  (* 16, 24, or 32 *)
+  zbuf_bits :: nat
   zbuf_near :: nat
   zbuf_far :: nat
 
@@ -154,9 +158,13 @@ record z_buffer =
 definition Microseconds :: "'a" where
   "Microseconds \<equiv> nat"
 
+(* FRAME_BUDGET_120HZ_US (matches Coq: Definition FRAME_BUDGET_120HZ_US) *)
+definition FRAME_BUDGET_120HZ_US :: "Microseconds" where
+  "FRAME_BUDGET_120HZ_US \<equiv> Z.to_nat 8333%Z"
+
 (* frame_budget_120hz (matches Coq: Definition frame_budget_120hz) *)
 definition frame_budget_120hz :: "Microseconds" where
-  "frame_budget_120hz \<equiv> 8333"
+  "frame_budget_120hz \<equiv> FRAME_BUDGET_120HZ_US"
 
 (* meets_frame_budget (matches Coq: Definition meets_frame_budget) *)
 definition meets_frame_budget :: "Frame \<Rightarrow> bool" where
@@ -177,12 +185,16 @@ definition frames_expected :: "Animation \<Rightarrow> nat" where
 (* well_formed_animation (matches Coq: Definition well_formed_animation) *)
 definition well_formed_animation :: "Animation \<Rightarrow> bool" where
   "well_formed_animation a \<equiv> forall f, In f (anim_frames a) -> 
-    frame_rendered f = true /\
+    frame_rendered f = True /\
     meets_frame_budget f"
 
 (* has_frame_drop (matches Coq: Definition has_frame_drop) *)
 definition has_frame_drop :: "Animation \<Rightarrow> bool" where
-  "has_frame_drop a \<equiv> exists f, In f (anim_frames a) /\ frame_rendered f = false"
+  "has_frame_drop a \<equiv> exists f, In f (anim_frames a) /\ frame_rendered f = False"
+
+(* render_pipeline (matches Coq: Definition render_pipeline) *)
+definition render_pipeline :: "list RenderStage" where
+  "render_pipeline \<equiv> [Geometry; Rasterization; Shading; Compositing; Display]"
 
 (* well_formed_gpu_mem (matches Coq: Definition well_formed_gpu_mem) *)
 definition well_formed_gpu_mem :: "GPUMemory \<Rightarrow> bool" where
@@ -192,13 +204,13 @@ definition well_formed_gpu_mem :: "GPUMemory \<Rightarrow> bool" where
 
 (* well_formed_shader (matches Coq: Definition well_formed_shader) *)
 definition well_formed_shader :: "Shader \<Rightarrow> bool" where
-  "well_formed_shader s \<equiv> shader_compiled s = true /\ shader_validated s = true"
+  "well_formed_shader s \<equiv> shader_compiled s = True /\ shader_validated s = True"
 
 (* well_formed_framebuffer (matches Coq: Definition well_formed_framebuffer) *)
 definition well_formed_framebuffer :: "FrameBuffer \<Rightarrow> bool" where
   "well_formed_framebuffer fb \<equiv> fb_width fb > 0 /\
   fb_height fb > 0 /\
-  fb_double_buffered fb = true /\
+  fb_double_buffered fb = True /\
   fb_front fb <> fb_back fb"
 
 (* well_formed_batch (matches Coq: Definition well_formed_batch) *)
@@ -209,7 +221,7 @@ definition well_formed_batch :: "DrawBatch \<Rightarrow> bool" where
 (* well_formed_render_thread (matches Coq: Definition well_formed_render_thread) *)
 definition well_formed_render_thread :: "RenderThread \<Rightarrow> bool" where
   "well_formed_render_thread rt \<equiv> rt_priority rt > 0 /\
-  rt_vsync_aligned rt = true /\
+  rt_vsync_aligned rt = True /\
   rt_frame_time_us rt <= frame_budget_120hz"
 
 (* frame_rate_120hz_guaranteed (matches Coq) *)
@@ -289,7 +301,7 @@ lemma hdr_tone_mapped: "\<forall> (cs : ColorSpace), cs = HDR10 \<longrightarrow
   by auto
 
 (* gpu_timeout_handled (matches Coq) *)
-lemma gpu_timeout_handled: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_frame_time_us rt \<le> 8333"
+lemma gpu_timeout_handled: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_frame_time_us rt \<le> FRAME_BUDGET_120HZ_US"
   by auto
 
 (* render_thread_priority (matches Coq) *)

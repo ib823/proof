@@ -12,11 +12,11 @@
             domains/SQLInjectionPrevention.v (parameterized queries)
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Strings.String.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════ *)
@@ -1038,6 +1038,19 @@ Theorem path_traversal_impossible : forall Γ e T src,
   has_type Γ e (TTainted T src) ->
   ~ has_type Γ (EUseSink SanPathSanitize e) T.
 Proof. attack_impossible. Qed.
+
+(** Path Traversal Prevention — filesystem source (named bridge corollary).
+
+    The RIINA prototype's file builtins type their path argument as a plain
+    `String`, so a `Tainted<_, FileSystem>` value (e.g. the contents of an
+    untrusted file returned by `file_read`) cannot be used as a path — exactly
+    this corollary at the [TaintFileSystem] source. The parity is exercised on
+    the running typechecker by
+    `riina-typechecker` `taint_path_traversal_prevention_parity_all_file_ops`. *)
+Corollary file_path_traversal_impossible : forall Γ e T,
+  has_type Γ e (TTainted T TaintFileSystem) ->
+  ~ has_type Γ (EUseSink SanPathSanitize e) T.
+Proof. intros Γ e T. apply path_traversal_impossible. Qed.
 
 (** CSRF Prevention *)
 Theorem csrf_impossible : forall Γ e T src,

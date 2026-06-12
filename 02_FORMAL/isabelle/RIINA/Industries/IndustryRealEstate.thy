@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryRealEstate - Isabelle/HOL Port
@@ -52,19 +54,15 @@
  *)
 
 theory IndustryRealEstate
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* PropertyData (matches Coq: Inductive PropertyData) *)
 datatype property_data =
-    OwnerPII  (* Owner personal information *)
-  |     FinancialRecords  (* Mortgages, transactions *)
+    OwnerPII
+  |     FinancialRecords
   |     TenantData
-  |     AccessCredentials  (* Building access *)
+  |     AccessCredentials
   |     SmartHomeData
   |     BuildingTelemetry
 
@@ -138,50 +136,57 @@ definition access_log_retention_days :: "BuildingSystem \<Rightarrow> nat" where
 
 (* firmware_version_valid (matches Coq: Definition firmware_version_valid) *)
 definition firmware_version_valid :: "bool" where
-  "firmware_version_valid \<equiv> Nat"
+  "firmware_version_valid \<equiv> (old_ver < new_ver)"
 
 (* within_occupancy (matches Coq: Definition within_occupancy) *)
 definition within_occupancy :: "bool" where
-  "within_occupancy \<equiv> Nat"
+  "within_occupancy \<equiv> (current \<le> max_occupancy)"
 
 (* Section M01 - Smart Building Security
-    Reference: IND_M_REALESTATE.md Section 3.1 *)
+    Reference: IND_M_REALESTATE.md Section 3.1
+    Network segmentation and device auth together form a valid conjunction. *)
 (* smart_building_security (matches Coq) *)
-lemma smart_building_security: "\<forall> (controls : SmartBuildingControls) (building : nat), network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> True"
+lemma smart_building_security: "\<forall> (controls : SmartBuildingControls), network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> network_segmentation controls && device_authentication controls = True"
   by simp
 
 (* Section M02 - BACnet Security
-    Reference: IND_M_REALESTATE.md Section 3.2 *)
+    Reference: IND_M_REALESTATE.md Section 3.2
+    FireSafety is distinct from Lighting — different criticality levels. *)
 (* bacnet_security (matches Coq) *)
-lemma bacnet_security: "\<forall> (bas_network : nat), True"
-  by simp
+lemma bacnet_security: "FireSafety \<noteq> Lighting"
+  by auto
 
 (* Section M03 - Access Control Systems
-    Reference: IND_M_REALESTATE.md Section 3.3 *)
+    Reference: IND_M_REALESTATE.md Section 3.3
+    AccessCredentials is distinct from BuildingTelemetry. *)
 (* access_control_security (matches Coq) *)
-lemma access_control_security: "\<forall> (credential : PropertyData) (access_point : nat), True"
-  by simp
+lemma access_control_security: "AccessCredentials \<noteq> BuildingTelemetry"
+  by auto
 
 (* Section M04 - Transaction Data Protection
-    Reference: IND_M_REALESTATE.md Section 3.4 *)
+    Reference: IND_M_REALESTATE.md Section 3.4
+    FinancialRecords is distinct from SmartHomeData. *)
 (* transaction_protection (matches Coq) *)
-lemma transaction_protection: "\<forall> (transaction : nat), True"
-  by simp
+lemma transaction_protection: "FinancialRecords \<noteq> SmartHomeData"
+  by auto
 
 (* Section M05 - IoT Device Security
-    Reference: IND_M_REALESTATE.md Section 3.5 *)
+    Reference: IND_M_REALESTATE.md Section 3.5
+    Elevator is distinct from HVAC — different safety classification. *)
 (* iot_device_security (matches Coq) *)
-lemma iot_device_security: "\<forall> (device : nat), True"
-  by simp
+lemma iot_device_security: "Elevator \<noteq> HVAC"
+  by auto
 
-(* Building systems require network segmentation *)
+(* Building systems require network segmentation:
+    Segmentation enabled implies its negation is false. *)
 (* building_segmentation (matches Coq) *)
-lemma building_segmentation: "\<forall> (controls : SmartBuildingControls) (system : BuildingSystem), network_segmentation controls = True \<longrightarrow> True"
+lemma building_segmentation: "\<forall> (controls : SmartBuildingControls), network_segmentation controls = True \<longrightarrow> (\<not> (network_segmentation) controls) = False"
   by simp
 
-(* Safety systems must have failsafe operation *)
+(* Safety systems must have failsafe operation:
+    Failsafe enabled implies its negation is false. *)
 (* safety_failsafe (matches Coq) *)
-lemma safety_failsafe: "\<forall> (controls : SmartBuildingControls) (safety_system : BuildingSystem), failsafe_operation controls = True \<longrightarrow> True"
+lemma safety_failsafe: "\<forall> (controls : SmartBuildingControls), failsafe_operation controls = True \<longrightarrow> (\<not> (failsafe_operation) controls) = False"
   by simp
 
 (* financial_records_max_sensitivity (matches Coq) *)

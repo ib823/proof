@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SelfHealing - Isabelle/HOL Port
@@ -65,13 +67,13 @@
  *)
 
 theory SelfHealing
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* HealthState (matches Coq: Inductive HealthState) *)
 datatype health_state =
     Healthy
-  |     Degraded  (* degradation level *)
+  |     Degraded
   |     Faulty
   |     Recovering
 
@@ -93,43 +95,43 @@ datatype recovery_action =
 
 (* detection_complete (matches Coq: Definition detection_complete) *)
 definition detection_complete :: "bool" where
-  "detection_complete \<equiv> Nat"
+  "detection_complete \<equiv> (detected = total)"
 
 (* severity_bounded (matches Coq: Definition severity_bounded) *)
 definition severity_bounded :: "Fault \<Rightarrow> nat \<Rightarrow> bool" where
-  "severity_bounded fault max_sev \<equiv> Nat"
+  "severity_bounded fault max_sev \<equiv> ((fault_severity \<le> fault)) max_sev"
 
 (* timeout_ok (matches Coq: Definition timeout_ok) *)
 definition timeout_ok :: "RecoveryPlan \<Rightarrow> nat \<Rightarrow> bool" where
-  "timeout_ok plan max_timeout \<equiv> Nat"
+  "timeout_ok plan max_timeout \<equiv> ((plan_timeout \<le> plan)) max_timeout"
 
 (* plan_has_actions (matches Coq: Definition plan_has_actions) *)
 definition plan_has_actions :: "RecoveryPlan \<Rightarrow> bool" where
-  "plan_has_actions plan \<equiv> Nat"
+  "plan_has_actions plan \<equiv> (0 < (length) (plan_actions plan))"
 
 (* checkpoint_fresh (matches Coq: Definition checkpoint_fresh) *)
 definition checkpoint_fresh :: "Checkpoint \<Rightarrow> bool" where
-  "checkpoint_fresh cp \<equiv> Nat"
+  "checkpoint_fresh cp \<equiv> ((current \<le> -) cp_timestamp cp) max_age"
 
 (* hash_valid (matches Coq: Definition hash_valid) *)
 definition hash_valid :: "bool" where
-  "hash_valid \<equiv> Nat"
+  "hash_valid \<equiv> (computed = stored)"
 
 (* degradation_valid (matches Coq: Definition degradation_valid) *)
 definition degradation_valid :: "bool" where
-  "degradation_valid \<equiv> Nat"
+  "degradation_valid \<equiv> (level \<le> max_level)"
 
 (* capability_bounded (matches Coq: Definition capability_bounded) *)
 definition capability_bounded :: "CapabilityLevel \<Rightarrow> bool" where
-  "capability_bounded cap \<equiv> Nat"
+  "capability_bounded cap \<equiv> ((cap_level \<le> cap)) 100"
 
 (* component_isolated (matches Coq: Definition component_isolated) *)
 definition component_isolated :: "nat \<Rightarrow> bool" where
-  "component_isolated component \<equiv> existsb (fun i => Nat"
+  "component_isolated component \<equiv> existsb (fun i => (i = component)) isolated"
 
 (* failover_available (matches Coq: Definition failover_available) *)
 definition failover_available :: "bool" where
-  "failover_available \<equiv> Nat"
+  "failover_available \<equiv> (0 < (length) targets)"
 
 (* recovery_complete (matches Coq: Definition recovery_complete) *)
 fun recovery_complete :: "bool" where
@@ -138,51 +140,51 @@ fun recovery_complete :: "bool" where
 
 (* recurrence_prevented (matches Coq: Definition recurrence_prevented) *)
 definition recurrence_prevented :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "recurrence_prevented fault_id window \<equiv> negb (existsb (fun f => Nat"
+  "recurrence_prevented fault_id window \<equiv> (\<not> (existsb) (fun f => (f = fault_id)) recent_faults)"
 
 (* degradation_ordered (matches Coq: Definition degradation_ordered) *)
 definition degradation_ordered :: "bool" where
-  "degradation_ordered \<equiv> Nat"
+  "degradation_ordered \<equiv> (to_level \<le> from_level)"
 
 (* min_capability_ok (matches Coq: Definition min_capability_ok) *)
 definition min_capability_ok :: "bool" where
-  "min_capability_ok \<equiv> Nat"
+  "min_capability_ok \<equiv> (min_cap \<le> current)"
 
 (* attack_detected (matches Coq: Definition attack_detected) *)
 definition attack_detected :: "bool" where
-  "attack_detected \<equiv> Nat"
+  "attack_detected \<equiv> (threshold \<le> indicators)"
 
 (* attack_contained (matches Coq: Definition attack_contained) *)
 definition attack_contained :: "bool" where
-  "attack_contained \<equiv> Nat"
+  "attack_contained \<equiv> (spread_count \<le> max_spread)"
 
 (* evidence_preserved (matches Coq: Definition evidence_preserved) *)
 definition evidence_preserved :: "bool" where
-  "evidence_preserved \<equiv> Nat"
+  "evidence_preserved \<equiv> (required \<le> collected)"
 
 (* rto_met (matches Coq: Definition rto_met) *)
 definition rto_met :: "bool" where
-  "rto_met \<equiv> Nat"
+  "rto_met \<equiv> (actual_time \<le> rto)"
 
 (* rpo_met (matches Coq: Definition rpo_met) *)
 definition rpo_met :: "bool" where
-  "rpo_met \<equiv> Nat"
+  "rpo_met \<equiv> (data_loss_time \<le> rpo)"
 
 (* redundancy_ok (matches Coq: Definition redundancy_ok) *)
 definition redundancy_ok :: "bool" where
-  "redundancy_ok \<equiv> Nat"
+  "redundancy_ok \<equiv> (min_redundancy \<le> active)"
 
 (* audit_complete (matches Coq: Definition audit_complete) *)
 definition audit_complete :: "bool" where
-  "audit_complete \<equiv> Nat"
+  "audit_complete \<equiv> (events = logged)"
 
 (* learning_applied (matches Coq: Definition learning_applied) *)
 definition learning_applied :: "bool" where
-  "learning_applied \<equiv> andb (Nat"
+  "learning_applied \<equiv> ((old_threshold \<le> new_threshold) \<and> (improvement \<le> (new_threshold) - old_threshold))"
 
 (* healing_layers (matches Coq: Definition healing_layers) *)
 definition healing_layers :: "bool" where
-  "healing_layers \<equiv> andb detect (andb recover (andb checkpoint degrade))"
+  "healing_layers \<equiv> (detect \<and> (andb) recover ((checkpoint \<and> degrade)))"
 
 (* heal_001_detection_complete (matches Coq) *)
 lemma heal_001_detection_complete: "\<forall> (detected total : nat), detection_complete detected total = True \<longrightarrow> detected = total"

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA QuantitativeDeclassification - Isabelle/HOL Port
@@ -56,9 +58,11 @@ datatype expr =
   |     EPlus
   |     EDeclass
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
-(* level_join - complex match, manual review needed *)
+(* level_join - complex match, needs manual translation *)
+definition level_join :: "bool" where "level_join = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where

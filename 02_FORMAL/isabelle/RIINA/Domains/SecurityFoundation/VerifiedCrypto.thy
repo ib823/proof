@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedCrypto - Isabelle/HOL Port
@@ -64,7 +66,7 @@ datatype crypto_op =
 record crypto_key =
   key_id :: nat
   key_bits :: nat
-  key_wrapped :: bool  (* true if key is encrypted/wrapped *)
+  key_wrapped :: bool
 
 (* Memory (matches Coq: Record Memory) *)
 record memory =
@@ -85,15 +87,15 @@ record crypto_context =
 
 (* key_in_plaintext (matches Coq: Definition key_in_plaintext) *)
 definition key_in_plaintext :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" where
-  "key_in_plaintext key mem \<equiv> key_wrapped key = false /\ mem_protected mem = false"
+  "key_in_plaintext key mem \<equiv> key_wrapped key = False /\ mem_protected mem = False"
 
 (* key_protected (matches Coq: Definition key_protected) *)
 definition key_protected :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" where
-  "key_protected key mem \<equiv> key_wrapped key = true \/ mem_protected mem = true"
+  "key_protected key mem \<equiv> key_wrapped key = True \/ mem_protected mem = True"
 
 (* secure_key_storage (matches Coq: Definition secure_key_storage) *)
 definition secure_key_storage :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" where
-  "secure_key_storage key mem \<equiv> key_wrapped key = true /\ mem_protected mem = true"
+  "secure_key_storage key mem \<equiv> key_wrapped key = True /\ mem_protected mem = True"
 
 (* execution_time (matches Coq: Definition execution_time) *)
 fun execution_time :: "CryptoContext \<Rightarrow> CryptoOp \<Rightarrow> Data \<Rightarrow> nat" where

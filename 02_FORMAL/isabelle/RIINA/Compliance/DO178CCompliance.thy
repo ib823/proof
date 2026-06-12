@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DO178CCompliance - Isabelle/HOL Port
@@ -88,37 +90,33 @@
  *)
 
 theory DO178CCompliance
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* DAL (matches Coq: Inductive DAL) *)
 datatype dal =
-    DAL_A  (* Catastrophic - most stringent *)
-  |     DAL_B  (* Hazardous *)
-  |     DAL_C  (* Major *)
-  |     DAL_D  (* Minor *)
-  |     DAL_E  (* No effect *)
+    DAL_A
+  |     DAL_B
+  |     DAL_C
+  |     DAL_D
+  |     DAL_E
 
 (* CoverageType (matches Coq: Inductive CoverageType) *)
 datatype coverage_type =
     Statement
   |     Decision
-  |     MCDC  (* Modified Condition/Decision Coverage *)
+  |     MCDC
 
 (* CodeElement (matches Coq: Inductive CodeElement) *)
 datatype code_element =
-    CEStatement  (* Statement with ID *)
-  |     CEDecision  (* Decision point *)
-  |     CECondition  (* Individual condition *)
+    CEStatement
+  |     CEDecision
+  |     CECondition
 
 (* Requirement (matches Coq: Record Requirement) *)
 record requirement =
   req_id :: nat
-  req_derived :: bool  (* Derived requirement? *)
+  req_derived :: bool
   req_safety_related :: bool
 
 (* TraceLink (matches Coq: Record TraceLink) *)
@@ -252,11 +250,13 @@ record do178_c_compliance =
   comp_resources :: ResourceUsage
   comp_config :: ConfigurationManagement
 
-(* coverage_required - complex match, manual review needed *)
+(* coverage_required - complex match, needs manual translation *)
+definition coverage_required :: "bool" where "coverage_required = undefined"
 
 (* trace_complete (matches Coq: Definition trace_complete) *)
 definition trace_complete :: "TraceLink \<Rightarrow> bool" where
-  "trace_complete t \<equiv> andb (negb (Nat"
+  "trace_complete t \<equiv> (((\<not> \<and>) (Nat.eqb) (length (trace_code t)) 0))
+       ((\<not> (Nat.eqb) (length (trace_tests t)) 0))"
 
 (* all_traces_complete (matches Coq: Definition all_traces_complete) *)
 definition all_traces_complete :: "bool" where
@@ -264,24 +264,26 @@ definition all_traces_complete :: "bool" where
 
 (* statement_coverage_100 (matches Coq: Definition statement_coverage_100) *)
 definition statement_coverage_100 :: "CoverageData \<Rightarrow> bool" where
-  "statement_coverage_100 c \<equiv> andb (Nat"
+  "statement_coverage_100 c \<equiv> (((\<and> < 0)) (cov_total_statements c))
+       (((cov_covered_statements = c)) (cov_total_statements c))"
 
 (* decision_coverage_100 (matches Coq: Definition decision_coverage_100) *)
 definition decision_coverage_100 :: "CoverageData \<Rightarrow> bool" where
-  "decision_coverage_100 c \<equiv> andb (Nat"
+  "decision_coverage_100 c \<equiv> (((\<and> < 0)) (cov_total_decisions c))
+       (((cov_covered_decisions = c)) (cov_total_decisions c))"
 
 (* mcdc_coverage_100 (matches Coq: Definition mcdc_coverage_100) *)
 definition mcdc_coverage_100 :: "CoverageData \<Rightarrow> bool" where
-  "mcdc_coverage_100 c \<equiv> andb (Nat"
+  "mcdc_coverage_100 c \<equiv> (((\<and> < 0)) (cov_total_conditions c))
+       (((cov_mcdc_conditions = c)) (cov_total_conditions c))"
 
 (* dal_a_coverage_met (matches Coq: Definition dal_a_coverage_met) *)
 definition dal_a_coverage_met :: "CoverageData \<Rightarrow> bool" where
-  "dal_a_coverage_met c \<equiv> andb (statement_coverage_100 c)
-       (andb (decision_coverage_100 c) (mcdc_coverage_100 c))"
+  "dal_a_coverage_met c \<equiv> (statement_coverage_100 c \<and> ((decision_coverage_100 \<and> c)) (mcdc_coverage_100 c))"
 
 (* is_subset (matches Coq: Definition is_subset) *)
 definition is_subset :: "bool" where
-  "is_subset \<equiv> forallb (fun x => existsb (Nat"
+  "is_subset \<equiv> forallb (fun x => existsb ((x) = l2)) l1"
 
 (* no_dead_code (matches Coq: Definition no_dead_code) *)
 definition no_dead_code :: "CodeAnalysis \<Rightarrow> bool" where
@@ -293,32 +295,34 @@ definition all_deactivated_documented :: "CodeAnalysis \<Rightarrow> bool" where
 
 (* stack_safe (matches Coq: Definition stack_safe) *)
 definition stack_safe :: "StackAnalysis \<Rightarrow> bool" where
-  "stack_safe s \<equiv> Nat"
+  "stack_safe s \<equiv> ((stack_max_usage \<le> s)) (stack_allocated s)"
 
 (* all_functions_stack_safe (matches Coq: Definition all_functions_stack_safe) *)
 definition all_functions_stack_safe :: "StackAnalysis \<Rightarrow> bool" where
-  "all_functions_stack_safe s \<equiv> forallb (fun fu => Nat"
+  "all_functions_stack_safe s \<equiv> forallb (fun fu => ((snd \<le> fu)) (stack_allocated s)) (stack_per_function s)"
 
 (* timing_safe (matches Coq: Definition timing_safe) *)
 definition timing_safe :: "TimingAnalysis \<Rightarrow> bool" where
-  "timing_safe t \<equiv> Nat"
+  "timing_safe t \<equiv> ((timing_wcet \<le> t) + timing_jitter t) (timing_deadline t)"
 
 (* timing_deterministic (matches Coq: Definition timing_deterministic) *)
 definition timing_deterministic :: "TimingAnalysis \<Rightarrow> bool" where
-  "timing_deterministic t \<equiv> andb (timing_bounded_loops t) (timing_safe t)"
+  "timing_deterministic t \<equiv> (timing_bounded_loops t \<and> timing_safe t)"
 
 (* partitions_isolated (matches Coq: Definition partitions_isolated) *)
 definition partitions_isolated :: "bool" where
-  "partitions_isolated \<equiv> orb (Nat"
+  "partitions_isolated \<equiv> (((part_memory_start \<le> p1) + part_memory_size p1 \<or> part_memory_start p2))
+      (((part_memory_start \<le> p2) + part_memory_size p2) (part_memory_start p1))"
 
 (* all_partitions_isolated (matches Coq: Definition all_partitions_isolated) *)
 definition all_partitions_isolated :: "bool" where
   "all_partitions_isolated \<equiv> forallb (fun p1 => forallb (fun p2 => 
-    orb (Nat"
+    (((part_id = p1) \<or> part_id p2)) (partitions_isolated p1 p2)
+  ) parts) parts"
 
 (* input_fully_validated (matches Coq: Definition input_fully_validated) *)
 definition input_fully_validated :: "InputValidation \<Rightarrow> bool" where
-  "input_fully_validated iv \<equiv> andb (iv_range_checked iv) (andb (iv_type_checked iv) (iv_null_checked iv))"
+  "input_fully_validated iv \<equiv> (iv_range_checked iv \<and> ((iv_type_checked \<and> iv)) (iv_null_checked iv))"
 
 (* all_inputs_validated (matches Coq: Definition all_inputs_validated) *)
 definition all_inputs_validated :: "bool" where
@@ -340,7 +344,7 @@ definition all_control_coupling_documented :: "ControlCoupling \<Rightarrow> boo
 
 (* safety_property_proven (matches Coq: Definition safety_property_proven) *)
 definition safety_property_proven :: "SafetyProperty \<Rightarrow> bool" where
-  "safety_property_proven sp \<equiv> andb (sp_formally_specified sp) (sp_formally_verified sp)"
+  "safety_property_proven sp \<equiv> (sp_formally_specified sp \<and> sp_formally_verified sp)"
 
 (* all_safety_properties_proven (matches Coq: Definition all_safety_properties_proven) *)
 definition all_safety_properties_proven :: "bool" where
@@ -352,17 +356,16 @@ definition no_unintended_functions :: "FunctionAnalysis \<Rightarrow> bool" wher
 
 (* robustness_verified (matches Coq: Definition robustness_verified) *)
 definition robustness_verified :: "RobustnessTest \<Rightarrow> bool" where
-  "robustness_verified rt \<equiv> andb (is_subset (rt_invalid_input_types rt) (rt_tested_invalid_inputs rt))
+  "robustness_verified rt \<equiv> (is_subset (rt_invalid_input_types rt \<and> rt_tested_invalid_inputs rt))
        (rt_all_gracefully_handled rt)"
 
 (* execution_deterministic (matches Coq: Definition execution_deterministic) *)
 definition execution_deterministic :: "DeterminismAnalysis \<Rightarrow> bool" where
-  "execution_deterministic da \<equiv> andb (da_no_uninitialized_vars da)
-       (andb (da_no_race_conditions da) (da_no_undefined_behavior da))"
+  "execution_deterministic da \<equiv> (da_no_uninitialized_vars da \<and> ((da_no_race_conditions \<and> da)) (da_no_undefined_behavior da))"
 
 (* task_meets_deadline (matches Coq: Definition task_meets_deadline) *)
 definition task_meets_deadline :: "RealTimeTask \<Rightarrow> bool" where
-  "task_meets_deadline t \<equiv> Nat"
+  "task_meets_deadline t \<equiv> ((rtt_wcet \<le> t)) (rtt_deadline t)"
 
 (* all_tasks_meet_deadlines (matches Coq: Definition all_tasks_meet_deadlines) *)
 definition all_tasks_meet_deadlines :: "bool" where
@@ -370,15 +373,17 @@ definition all_tasks_meet_deadlines :: "bool" where
 
 (* resource_usage_bounded (matches Coq: Definition resource_usage_bounded) *)
 definition resource_usage_bounded :: "ResourceUsage \<Rightarrow> bool" where
-  "resource_usage_bounded ru \<equiv> andb (Nat"
+  "resource_usage_bounded ru \<equiv> (((ru_cpu_usage \<le> ru) \<and> ru_cpu_limit ru))
+       ((((ru_memory_usage \<le> ru) \<and> ru_memory_limit ru))
+             (((ru_io_usage \<le> ru)) (ru_io_limit ru)))"
 
 (* configuration_compliant (matches Coq: Definition configuration_compliant) *)
 definition configuration_compliant :: "ConfigurationManagement \<Rightarrow> bool" where
-  "configuration_compliant cm \<equiv> andb (cm_version_controlled cm)
-       (andb (cm_baseline_identified cm)
-             (andb (cm_changes_tracked cm) (cm_audit_trail cm)))"
+  "configuration_compliant cm \<equiv> (cm_version_controlled cm \<and> ((cm_baseline_identified \<and> cm))
+             ((cm_changes_tracked cm \<and> cm_audit_trail cm)))"
 
-(* full_dal_a_compliance - complex match, manual review needed *)
+(* full_dal_a_compliance - complex match, needs manual translation *)
+definition full_dal_a_compliance :: "bool" where "full_dal_a_compliance = undefined"
 
 (* COMPLY_003_01 (matches Coq) *)
 lemma COMPLY_003_01: "\<forall> (c : DO178CCompliance), all_traces_complete (comp_traces c) = True \<longrightarrow> \<forall> t, In t (comp_traces c) \<longrightarrow> trace_code t \<noteq> [] \<and> trace_tests t \<noteq> []"

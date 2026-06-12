@@ -10,9 +10,10 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 4.5
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -48,7 +49,9 @@ Definition rejected (a : BiometricAttempt) : Prop :=
   attempt_rejected a = true.
 
 (** Thresholds *)
-Definition match_threshold : nat := 999999.  (* 1 in 1,000,000 *)
+Definition MATCH_THRESHOLD_FAR_1_IN_1M : nat := Z.to_nat 999999%Z.
+Definition BIOMETRIC_TIMEOUT_MAX_MS : nat := Z.to_nat 30000%Z.
+Definition match_threshold : nat := MATCH_THRESHOLD_FAR_1_IN_1M.  (* 1 in 1,000,000 *)
 Definition liveness_threshold : nat := 90.
 
 (** Secure biometric system *)
@@ -147,7 +150,7 @@ Qed.
 
 (** ** Extended Biometric Safety Proofs *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** *** Extended biometric definitions *)
 
@@ -212,7 +215,7 @@ Definition enrollment_requires_auth_prop (e : BiometricEnrollment) : Prop :=
   enroll_auth_verified e = true.
 
 Definition timeout_enforced (s : BiometricSession) : Prop :=
-  bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= 30000.
+  bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= BIOMETRIC_TIMEOUT_MAX_MS.
 
 Definition anti_spoofing_active_prop (cfg : BiometricConfig) : Prop :=
   bio_cfg_anti_spoofing cfg = true.
@@ -323,7 +326,7 @@ Qed.
 Theorem biometric_timeout_enforced :
   forall (s : BiometricSession),
     timeout_enforced s ->
-    bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= 30000.
+    bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= BIOMETRIC_TIMEOUT_MAX_MS.
 Proof.
   intros s Htimeout.
   unfold timeout_enforced in Htimeout.

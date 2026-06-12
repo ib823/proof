@@ -10,9 +10,10 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 3.3
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -20,6 +21,7 @@ Import ListNotations.
 Definition Time : Type := nat.
 Definition PublicKey : Type := nat.
 Definition Signature : Type := nat.
+Definition NETWORK_TIMEOUT_MAX_MS : nat := Z.to_nat 30000%Z.
 
 (** Certificate representation *)
 Record Certificate : Type := mkCert {
@@ -173,7 +175,7 @@ Qed.
 
 (** ** Extended Network Security Proofs *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** *** Extended networking definitions *)
 
@@ -244,7 +246,7 @@ Definition no_plaintext_password (conn : HTTPConnection) : Prop :=
   http_tls_version conn >= 12.  (* At least TLS 1.2 *)
 
 Definition connection_timeout_enforced_prop (sock : Socket) : Prop :=
-  socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= 30000.
+  socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= NETWORK_TIMEOUT_MAX_MS.
 
 Definition socket_cleanup_prop (sock : Socket) : Prop :=
   socket_closed sock = true ->
@@ -322,7 +324,7 @@ Qed.
 Theorem connection_timeout_enforced :
   forall (sock : Socket),
     connection_timeout_enforced_prop sock ->
-    socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= 30000.
+    socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= NETWORK_TIMEOUT_MAX_MS.
 Proof.
   intros sock Htimeout.
   unfold connection_timeout_enforced_prop in Htimeout.
@@ -344,7 +346,7 @@ Qed.
 Theorem bandwidth_throttled :
   forall (sock : Socket),
     connection_timeout_enforced_prop sock ->
-    socket_timeout_ms sock <= 30000.
+    socket_timeout_ms sock <= NETWORK_TIMEOUT_MAX_MS.
 Proof.
   intros sock [_ Hmax].
   exact Hmax.

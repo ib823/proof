@@ -5,12 +5,23 @@
 (* Layer: Operational Security & Insider Threat Mitigation *)
 (* Mode: Comprehensive Verification | Zero Trust *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
+
+(* Local helper lemma for nth on map of seq *)
+Lemma nth_map_seq : forall (A : Type) (f : nat -> A) (start len i : nat) (d : A),
+  i < len ->
+  nth i (map f (seq start len)) d = f (start + i).
+Proof.
+  intros A f start len i d Hi.
+  rewrite nth_indep with (d' := f 0).
+  - rewrite map_nth. f_equal. apply seq_nth. exact Hi.
+  - rewrite length_map, length_seq. exact Hi.
+Qed.
 
 (** ===============================================================================
     SECTION 1: SHAMIR SECRET SHARING
@@ -236,14 +247,14 @@ Proof.
   intros coeffs p Hp. destruct coeffs as [|a rest].
   - simpl. reflexivity.
   - simpl. unfold field_add, field_mul. simpl.
-    rewrite Nat.mod_0_l; [| lia]. rewrite Nat.add_0_r.
+    rewrite Nat.Private_NDivProp.mod_0_l; [| lia]. rewrite Nat.add_0_r.
     reflexivity.
 Qed.
 
 Theorem PSI_001_02_generate_shares_length : forall coeffs n p,
   length (generate_shares coeffs n p) = n.
 Proof.
-  intros. unfold generate_shares. rewrite map_length. apply seq_length.
+  intros. unfold generate_shares. rewrite length_map. apply length_seq.
 Qed.
 
 Theorem PSI_001_03_threshold_monotone : forall shares k1 k2,

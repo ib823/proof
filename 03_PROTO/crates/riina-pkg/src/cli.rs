@@ -2,13 +2,13 @@
 
 //! CLI subcommand dispatch for `riinac pkg <command>`.
 
-use crate::error::{PkgError, Result};
 use crate::effects::EffectPermissions;
+use crate::error::{PkgError, Result};
 use crate::integrity::sha256_hex;
 use crate::layout::{self, Layout};
-use crate::lockfile::{Lockfile, LockedPackage};
+use crate::lockfile::{LockedPackage, Lockfile};
 use crate::manifest::Manifest;
-use crate::registry::{FsRegistry, Registry};
+use crate::registry::{FsRegistry, HttpRegistry, Registry};
 use crate::resolve;
 use crate::workspace::Workspace;
 use std::path::PathBuf;
@@ -19,30 +19,59 @@ pub fn run(args: &[String]) -> Result<()> {
         return Err(PkgError::Other(usage_string()));
     }
 
-    match args[0].as_str() {
-        "init" => cmd_init(args.get(1).map(|s| s.as_str())),
+    // Parse global --registry <url> flag
+    let mut registry_url: Option<String> = None;
+    let mut filtered: Vec<&String> = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if args[i] == "--registry" {
+            i += 1;
+            if i < args.len() {
+                registry_url = Some(args[i].clone());
+            } else {
+                return Err(PkgError::Other("--registry requires a URL argument".into()));
+            }
+        } else {
+            filtered.push(&args[i]);
+        }
+        i += 1;
+    }
+
+    if filtered.is_empty() {
+        return Err(PkgError::Other(usage_string()));
+    }
+
+    match filtered[0].as_str() {
+        "init" => cmd_init(filtered.get(1).map(|s| s.as_str())),
         "add" => {
-            let name = args.get(1).ok_or_else(|| PkgError::Other("usage: riinac pkg add <dep> [version]".into()))?;
-            let version = args.get(2).map(|s| s.as_str()).unwrap_or("*");
+            let name = filtered
+                .get(1)
+                .ok_or_else(|| PkgError::Other("usage: riinac pkg add <dep> [version]".into()))?;
+            let version = filtered.get(2).map(|s| s.as_str()).unwrap_or("*");
             cmd_add(name, version)
         }
         "remove" => {
-            let name = args.get(1).ok_or_else(|| PkgError::Other("usage: riinac pkg remove <dep>".into()))?;
+            let name = filtered
+                .get(1)
+                .ok_or_else(|| PkgError::Other("usage: riinac pkg remove <dep>".into()))?;
             cmd_remove(name)
         }
-        "update" => cmd_update(args.get(1).map(|s| s.as_str())),
-        "lock" => cmd_lock(),
-        "build" => cmd_build(),
-        "publish" => cmd_publish(),
+        "update" => cmd_update(filtered.get(1).map(|s| s.as_str()), registry_url.as_deref()),
+        "lock" => cmd_lock(registry_url.as_deref()),
+        "build" => cmd_build(registry_url.as_deref()),
+        "publish" => cmd_publish(registry_url.as_deref()),
         "list" => cmd_list(),
-        "tree" => cmd_tree(),
+        "tree" => cmd_tree(registry_url.as_deref()),
         "clean" => cmd_clean(),
-        other => Err(PkgError::Other(format!("unknown pkg command: {other}\n{}", usage_string()))),
+        other => Err(PkgError::Other(format!(
+            "unknown pkg command: {other}\n{}",
+            usage_string()
+        ))),
     }
 }
 
 fn usage_string() -> String {
-    "Usage: riinac pkg <command>\n\n\
+    "Usage: riinac pkg [--registry <url>] <command>\n\n\
      Commands:\n\
      \x20 init [name]       Create riina.toml + scaffold\n\
      \x20 add <dep> [ver]   Add dependency\n\
@@ -53,17 +82,39 @@ fn usage_string() -> String {
      \x20 publish           Publish to registry\n\
      \x20 list              List dependencies\n\
      \x20 tree              Print dependency tree\n\
-     \x20 clean             Clean cache and build artifacts".to_string()
+     \x20 clean             Clean cache and build artifacts\n\n\
+     Options:\n\
+     \x20 --registry <url>  Use HTTP registry at URL instead of local filesystem"
+        .to_string()
+}
+
+/// Create a registry from CLI flag, manifest config, or fall back to FsRegistry.
+fn make_registry(cli_url: Option<&str>, manifest: Option<&Manifest>) -> Box<dyn Registry> {
+    // CLI flag takes precedence
+    if let Some(url) = cli_url {
+        let cache = crate::tarball::cache_dir_for_url(url);
+        return Box::new(HttpRegistry::new(url, cache));
+    }
+    // Then check manifest [registry] section
+    if let Some(m) = manifest {
+        if let Some(ref reg_cfg) = m.registry {
+            let cache = crate::tarball::cache_dir_for_url(&reg_cfg.url);
+            return Box::new(HttpRegistry::new(&reg_cfg.url, cache));
+        }
+    }
+    // Default: filesystem registry
+    Box::new(FsRegistry::new(registry_root()))
 }
 
 fn find_project_root() -> Result<PathBuf> {
-    let cwd = std::env::current_dir()
-        .map_err(|e| PkgError::io(".", e))?;
+    let cwd = std::env::current_dir().map_err(|e| PkgError::io(".", e))?;
     let manifest = cwd.join("riina.toml");
     if manifest.is_file() {
         Ok(cwd)
     } else {
-        Err(PkgError::Other("no riina.toml found in current directory".into()))
+        Err(PkgError::Other(
+            "no riina.toml found in current directory".into(),
+        ))
     }
 }
 
@@ -93,20 +144,22 @@ fn cmd_init(name: Option<&str>) -> Result<()> {
 fn cmd_add(name: &str, version: &str) -> Result<()> {
     let root = find_project_root()?;
     let manifest_path = root.join("riina.toml");
-    let mut source = std::fs::read_to_string(&manifest_path)
-        .map_err(|e| PkgError::io(&manifest_path, e))?;
+    let mut source =
+        std::fs::read_to_string(&manifest_path).map_err(|e| PkgError::io(&manifest_path, e))?;
 
     // Find [kebergantungan] section and add entry
     if let Some(pos) = source.find("[kebergantungan]") {
-        let insert_pos = source[pos..].find('\n').map(|p| pos + p + 1).unwrap_or(source.len());
+        let insert_pos = source[pos..]
+            .find('\n')
+            .map(|p| pos + p + 1)
+            .unwrap_or(source.len());
         let line = format!("{} = \"{}\"\n", name, version);
         source.insert_str(insert_pos, &line);
     } else {
         source.push_str(&format!("\n[kebergantungan]\n{} = \"{}\"\n", name, version));
     }
 
-    std::fs::write(&manifest_path, &source)
-        .map_err(|e| PkgError::io(&manifest_path, e))?;
+    std::fs::write(&manifest_path, &source).map_err(|e| PkgError::io(&manifest_path, e))?;
     eprintln!("Added {} = \"{}\"", name, version);
     Ok(())
 }
@@ -114,26 +167,25 @@ fn cmd_add(name: &str, version: &str) -> Result<()> {
 fn cmd_remove(name: &str) -> Result<()> {
     let root = find_project_root()?;
     let manifest_path = root.join("riina.toml");
-    let source = std::fs::read_to_string(&manifest_path)
-        .map_err(|e| PkgError::io(&manifest_path, e))?;
+    let source =
+        std::fs::read_to_string(&manifest_path).map_err(|e| PkgError::io(&manifest_path, e))?;
 
     let mut lines: Vec<&str> = source.lines().collect();
     let pattern = format!("{} = ", name);
     lines.retain(|line| !line.trim().starts_with(&pattern));
 
     let new_source = lines.join("\n") + "\n";
-    std::fs::write(&manifest_path, &new_source)
-        .map_err(|e| PkgError::io(&manifest_path, e))?;
+    std::fs::write(&manifest_path, &new_source).map_err(|e| PkgError::io(&manifest_path, e))?;
     eprintln!("Removed {}", name);
     Ok(())
 }
 
-fn cmd_update(_dep: Option<&str>) -> Result<()> {
+fn cmd_update(_dep: Option<&str>, registry_url: Option<&str>) -> Result<()> {
     // Re-resolve: just run lock again (lockfile is regenerated)
-    cmd_lock()
+    cmd_lock(registry_url)
 }
 
-fn cmd_lock() -> Result<()> {
+fn cmd_lock(registry_url: Option<&str>) -> Result<()> {
     let root = find_project_root()?;
     let manifest = Manifest::from_file(&root.join("riina.toml"))?;
 
@@ -151,8 +203,8 @@ fn cmd_lock() -> Result<()> {
         return Ok(());
     }
 
-    let reg = FsRegistry::new(registry_root());
-    let graph = resolve::resolve(&deps, &reg)?;
+    let reg = make_registry(registry_url, Some(&manifest));
+    let graph = resolve::resolve(&deps, reg.as_ref())?;
 
     // Effect escalation check
     let root_perms = EffectPermissions::from_allowed(&manifest.allowed_effects);
@@ -169,13 +221,14 @@ fn cmd_lock() -> Result<()> {
         let pkg = &graph.packages[name];
         let pkg_path = reg.package_path(name, &pkg.version);
         let checksum = if pkg_path.join("riina.toml").is_file() {
-            let data = std::fs::read(pkg_path.join("riina.toml"))
-                .unwrap_or_default();
+            let data = std::fs::read(pkg_path.join("riina.toml")).unwrap_or_default();
             sha256_hex(&data)
         } else {
             String::new()
         };
-        let dep_strs: Vec<String> = pkg.deps.iter()
+        let dep_strs: Vec<String> = pkg
+            .deps
+            .iter()
             .map(|d| {
                 let dv = &graph.packages[d].version;
                 format!("{d} {dv}")
@@ -190,11 +243,14 @@ fn cmd_lock() -> Result<()> {
     }
 
     lockfile.write_to(&root.join("riina.lock"))?;
-    eprintln!("Resolved {} packages. Wrote riina.lock", lockfile.packages.len());
+    eprintln!(
+        "Resolved {} packages. Wrote riina.lock",
+        lockfile.packages.len()
+    );
     Ok(())
 }
 
-fn cmd_build() -> Result<()> {
+fn cmd_build(registry_url: Option<&str>) -> Result<()> {
     let root = find_project_root()?;
     let manifest = Manifest::from_file(&root.join("riina.toml"))?;
     let deps = manifest.dep_reqs()?;
@@ -203,19 +259,23 @@ fn cmd_build() -> Result<()> {
         // Just build root
         let config = crate::build::BuildConfig::new(&root);
         let mut graph_packages = std::collections::BTreeMap::new();
-        graph_packages.insert(manifest.package.name.clone(), crate::resolve::ResolvedPackage {
-            name: manifest.package.name.clone(),
-            version: manifest.package.version.clone(),
-            deps: vec![],
-        });
-        let graph = crate::resolve::ResolvedGraph { packages: graph_packages };
+        graph_packages.insert(
+            manifest.package.name.clone(),
+            crate::resolve::ResolvedPackage {
+                name: manifest.package.name.clone(),
+                version: manifest.package.version.clone(),
+                deps: vec![],
+            },
+        );
+        let graph = crate::resolve::ResolvedGraph {
+            packages: graph_packages,
+        };
         let steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
         crate::build::execute_build(&steps)?;
     } else {
-        let reg = FsRegistry::new(registry_root());
-        let graph = resolve::resolve(&deps, &reg)?;
-        let config = crate::build::BuildConfig::new(&root)
-            .with_registry(registry_root());
+        let reg = make_registry(registry_url, Some(&manifest));
+        let graph = resolve::resolve(&deps, reg.as_ref())?;
+        let config = crate::build::BuildConfig::new(&root).with_registry(registry_root());
         let steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
         crate::build::execute_build(&steps)?;
     }
@@ -224,12 +284,28 @@ fn cmd_build() -> Result<()> {
     Ok(())
 }
 
-fn cmd_publish() -> Result<()> {
+fn cmd_publish(registry_url: Option<&str>) -> Result<()> {
     let root = find_project_root()?;
     let manifest = Manifest::from_file(&root.join("riina.toml"))?;
-    let reg = FsRegistry::new(registry_root());
-    reg.publish(&manifest.package.name, &manifest.package.version, &root)?;
-    eprintln!("Published {} v{}", manifest.package.name, manifest.package.version);
+
+    // Determine if we should use HTTP or filesystem registry
+    let effective_url = registry_url
+        .map(|s| s.to_string())
+        .or_else(|| manifest.registry.as_ref().map(|r| r.url.clone()));
+
+    if let Some(url) = effective_url {
+        let cache = crate::tarball::cache_dir_for_url(&url);
+        let reg = HttpRegistry::new(&url, cache);
+        reg.publish(&manifest.package.name, &manifest.package.version, &root)?;
+    } else {
+        let reg = FsRegistry::new(registry_root());
+        reg.publish(&manifest.package.name, &manifest.package.version, &root)?;
+    }
+
+    eprintln!(
+        "Published {} v{}",
+        manifest.package.name, manifest.package.version
+    );
     Ok(())
 }
 
@@ -262,7 +338,7 @@ fn cmd_list() -> Result<()> {
     Ok(())
 }
 
-fn cmd_tree() -> Result<()> {
+fn cmd_tree(registry_url: Option<&str>) -> Result<()> {
     let root = find_project_root()?;
     let manifest = Manifest::from_file(&root.join("riina.toml"))?;
     let deps = manifest.dep_reqs()?;
@@ -273,8 +349,8 @@ fn cmd_tree() -> Result<()> {
         return Ok(());
     }
 
-    let reg = FsRegistry::new(registry_root());
-    let graph = resolve::resolve(&deps, &reg)?;
+    let reg = make_registry(registry_url, Some(&manifest));
+    let graph = resolve::resolve(&deps, reg.as_ref())?;
     let root_deps: Vec<String> = manifest.dependencies.keys().cloned().collect();
 
     let stdout = std::io::stderr();

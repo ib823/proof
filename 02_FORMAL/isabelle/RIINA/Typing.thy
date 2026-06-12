@@ -121,23 +121,23 @@ text \<open>
 inductive has_type :: "type_env \<Rightarrow> store_ty \<Rightarrow> security_level \<Rightarrow>
                        expr \<Rightarrow> ty \<Rightarrow> effect \<Rightarrow> bool" where
   (* Values *)
-  T_Unit: "has_type \<Gamma> \<Sigma> \<Delta> EUnit TUnit EffectPure"
+  T_Unit: "has_type \<Gamma> \<Sigma> \<Delta> EUnit TUnit EffPure"
 
-| T_Bool: "has_type \<Gamma> \<Sigma> \<Delta> (EBool b) TBool EffectPure"
+| T_Bool: "has_type \<Gamma> \<Sigma> \<Delta> (EBool b) TBool EffPure"
 
-| T_Int: "has_type \<Gamma> \<Sigma> \<Delta> (EInt n) TInt EffectPure"
+| T_Int: "has_type \<Gamma> \<Sigma> \<Delta> (EInt n) TInt EffPure"
 
-| T_String: "has_type \<Gamma> \<Sigma> \<Delta> (EString s) TString EffectPure"
+| T_String: "has_type \<Gamma> \<Sigma> \<Delta> (EString s) TString EffPure"
 
 | T_Loc: "store_ty_lookup l \<Sigma> = Some (T, sl) \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (ELoc l) (TRef T sl) EffectPure"
+          has_type \<Gamma> \<Sigma> \<Delta> (ELoc l) (TRef T sl) EffPure"
 
 | T_Var: "env_lookup x \<Gamma> = Some T \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (EVar x) T EffectPure"
+          has_type \<Gamma> \<Sigma> \<Delta> (EVar x) T EffPure"
 
   (* Functions *)
 | T_Lam: "has_type ((x, T1) # \<Gamma>) \<Sigma> \<Delta> e T2 \<epsilon> \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (ELam x T1 e) (TFn T1 T2 \<epsilon>) EffectPure"
+          has_type \<Gamma> \<Sigma> \<Delta> (ELam x T1 e) (TFn T1 T2 \<epsilon>) EffPure"
 
 | T_App: "has_type \<Gamma> \<Sigma> \<Delta> e1 (TFn T1 T2 \<epsilon>) \<epsilon>1 \<Longrightarrow>
           has_type \<Gamma> \<Sigma> \<Delta> e2 T1 \<epsilon>2 \<Longrightarrow>
@@ -186,14 +186,14 @@ inductive has_type :: "type_env \<Rightarrow> store_ty \<Rightarrow> security_le
 
   (* References *)
 | T_Ref: "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon> \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (ERef e l) (TRef T l) (effect_join \<epsilon> EffectWrite)"
+          has_type \<Gamma> \<Sigma> \<Delta> (ERef e l) (TRef T l) (effect_join \<epsilon> EffWrite)"
 
 | T_Deref: "has_type \<Gamma> \<Sigma> \<Delta> e (TRef T l) \<epsilon> \<Longrightarrow>
-            has_type \<Gamma> \<Sigma> \<Delta> (EDeref e) T (effect_join \<epsilon> EffectRead)"
+            has_type \<Gamma> \<Sigma> \<Delta> (EDeref e) T (effect_join \<epsilon> EffRead)"
 
 | T_Assign: "has_type \<Gamma> \<Sigma> \<Delta> e1 (TRef T l) \<epsilon>1 \<Longrightarrow>
              has_type \<Gamma> \<Sigma> \<Delta> e2 T \<epsilon>2 \<Longrightarrow>
-             has_type \<Gamma> \<Sigma> \<Delta> (EAssign e1 e2) TUnit (effect_join \<epsilon>1 (effect_join \<epsilon>2 EffectWrite))"
+             has_type \<Gamma> \<Sigma> \<Delta> (EAssign e1 e2) TUnit (effect_join \<epsilon>1 (effect_join \<epsilon>2 EffWrite))"
 
   (* Security *)
 | T_Classify: "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon> \<Longrightarrow>
@@ -223,9 +223,9 @@ text \<open>Well-typed store: every typed location has a well-typed VALUE in the
 definition store_wf :: "store_ty \<Rightarrow> store \<Rightarrow> bool" where
   "store_wf \<Sigma> st \<equiv>
      (\<forall>l T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<longrightarrow>
-        (\<exists>v. store_lookup l st = Some v \<and> value v \<and> has_type [] \<Sigma> Public v T EffectPure)) \<and>
+        (\<exists>v. store_lookup l st = Some v \<and> is_value v \<and> has_type [] \<Sigma> LPublic v T EffPure)) \<and>
      (\<forall>l v. store_lookup l st = Some v \<longrightarrow>
-        (\<exists>T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<and> value v \<and> has_type [] \<Sigma> Public v T EffectPure))"
+        (\<exists>T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<and> is_value v \<and> has_type [] \<Sigma> LPublic v T EffPure))"
 
 
 section \<open>Type Uniqueness\<close>
@@ -242,263 +242,169 @@ theorem type_uniqueness:
   shows "T1 = T2 \<and> \<epsilon>1 = \<epsilon>2"
   using assms
 proof (induction arbitrary: T2 \<epsilon>2 rule: has_type.induct)
-  case (T_Unit \<Gamma> \<Sigma> \<Delta>)
-  then show ?case by (auto elim: has_type.cases)
+  case T_Unit then show ?case by (auto elim: has_type.cases)
 next
-  case (T_Bool \<Gamma> \<Sigma> \<Delta> b)
-  then show ?case by (auto elim: has_type.cases)
+  case T_Bool then show ?case by (auto elim: has_type.cases)
 next
-  case (T_Int \<Gamma> \<Sigma> \<Delta> n)
-  then show ?case by (auto elim: has_type.cases)
+  case T_Int then show ?case by (auto elim: has_type.cases)
 next
-  case (T_String \<Gamma> \<Sigma> \<Delta> s)
-  then show ?case by (auto elim: has_type.cases)
+  case T_String then show ?case by (auto elim: has_type.cases)
 next
-  case (T_Loc l \<Sigma> T sl \<Gamma> \<Delta>)
-  from T_Loc.prems show ?case
-    by (auto elim: has_type.cases simp: T_Loc.hyps)
+  case T_Loc then show ?case by (auto elim: has_type.cases simp: T_Loc.hyps)
 next
-  case (T_Var x \<Gamma> T \<Sigma> \<Delta>)
-  from T_Var.prems show ?case
-    by (auto elim: has_type.cases simp: T_Var.hyps)
+  case T_Var then show ?case by (auto elim: has_type.cases simp: T_Var.hyps)
 next
-  case (T_Lam x T1 \<Gamma> \<Sigma> \<Delta> e T2 \<epsilon>)
-  from T_Lam.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Lam x' T1' T2' e' \<epsilon>')
-    then have "T2 = T2' \<and> \<epsilon> = \<epsilon>'" using T_Lam.IH by auto
-    then show ?thesis using T_Lam by auto
-  qed
+  case T_Lam then show ?case by (auto elim: has_type.cases dest: T_Lam.IH)
 next
-  case (T_App \<Gamma> \<Sigma> \<Delta> e1 T1 T2 \<epsilon> \<epsilon>1 e2 \<epsilon>2)
+  case T_App
+  note ih1 = T_App.IH(1) and ih2 = T_App.IH(2)
   from T_App.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_App T1' T2' \<epsilon>' \<epsilon>1' \<epsilon>2')
-    then have eq1: "TFn T1 T2 \<epsilon> = TFn T1' T2' \<epsilon>' \<and> \<epsilon>1 = \<epsilon>1'" using T_App.IH(1) by blast
-    then have "T1 = T1'" "T2 = T2'" "\<epsilon> = \<epsilon>'" by auto
-    moreover have "\<epsilon>2 = \<epsilon>2'" using T_App.IH(2) T_App \<open>T1 = T1'\<close> by auto
-    ultimately show ?thesis using T_App by auto
+    case T_App
+    with ih1 ih2 show ?thesis by blast
   qed
 next
-  case (T_Pair \<Gamma> \<Sigma> \<Delta> e1 T1 \<epsilon>1 e2 T2 \<epsilon>2)
+  case T_Pair
+  note ih1 = T_Pair.IH(1) and ih2 = T_Pair.IH(2)
   from T_Pair.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Pair T1' \<epsilon>1' T2' \<epsilon>2')
-    then have "T1 = T1' \<and> \<epsilon>1 = \<epsilon>1'" using T_Pair.IH(1) by blast
-    moreover have "T2 = T2' \<and> \<epsilon>2 = \<epsilon>2'" using T_Pair.IH(2) T_Pair by blast
-    ultimately show ?thesis using T_Pair by auto
+    case T_Pair
+    with ih1 ih2 show ?thesis by blast
   qed
 next
-  case (T_Fst \<Gamma> \<Sigma> \<Delta> e T1 T2 \<epsilon>)
-  from T_Fst.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Fst T1' T2' \<epsilon>')
-    then have "TProd T1 T2 = TProd T1' T2' \<and> \<epsilon> = \<epsilon>'" using T_Fst.IH by blast
-    then show ?thesis by auto
-  qed
+  case T_Fst then show ?case by (auto elim: has_type.cases dest: T_Fst.IH)
 next
-  case (T_Snd \<Gamma> \<Sigma> \<Delta> e T1 T2 \<epsilon>)
-  from T_Snd.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Snd T1' T2' \<epsilon>')
-    then have "TProd T1 T2 = TProd T1' T2' \<and> \<epsilon> = \<epsilon>'" using T_Snd.IH by blast
-    then show ?thesis by auto
-  qed
+  case T_Snd then show ?case by (auto elim: has_type.cases dest: T_Snd.IH)
 next
-  case (T_Inl \<Gamma> \<Sigma> \<Delta> e T1 \<epsilon> T2)
-  from T_Inl.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Inl T1' \<epsilon>' T2')
-    then have "T1 = T1' \<and> \<epsilon> = \<epsilon>'" using T_Inl.IH by blast
-    then show ?thesis using T_Inl by auto
-  qed
+  case T_Inl then show ?case by (auto elim: has_type.cases dest: T_Inl.IH)
 next
-  case (T_Inr \<Gamma> \<Sigma> \<Delta> e T2 \<epsilon> T1)
-  from T_Inr.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Inr T2' \<epsilon>' T1')
-    then have "T2 = T2' \<and> \<epsilon> = \<epsilon>'" using T_Inr.IH by blast
-    then show ?thesis using T_Inr by auto
-  qed
+  case T_Inr then show ?case by (auto elim: has_type.cases dest: T_Inr.IH)
 next
-  case (T_Case \<Gamma> \<Sigma> \<Delta> e T1 T2 \<epsilon> x1 e1 T \<epsilon>1 x2 e2 \<epsilon>2)
+  case T_Case
+  note ih1 = T_Case.IH(1) and ih2 = T_Case.IH(2) and ih3 = T_Case.IH(3)
   from T_Case.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Case T1' T2' \<epsilon>' T' \<epsilon>1' \<epsilon>2')
-    then have eq0: "TSum T1 T2 = TSum T1' T2' \<and> \<epsilon> = \<epsilon>'" using T_Case.IH(1) by blast
-    then have "T1 = T1'" "T2 = T2'" by auto
-    then have "T = T' \<and> \<epsilon>1 = \<epsilon>1'" using T_Case.IH(2) T_Case by auto
-    moreover have "\<epsilon>2 = \<epsilon>2'" using T_Case.IH(3) T_Case \<open>T2 = T2'\<close> by auto
-    ultimately show ?thesis using T_Case eq0 by auto
+    case T_Case
+    with ih1 ih2 ih3 show ?thesis by blast
   qed
 next
-  case (T_If \<Gamma> \<Sigma> \<Delta> e1 \<epsilon>1 e2 T \<epsilon>2 e3 \<epsilon>3)
+  case T_If
+  note ih1 = T_If.IH(1) and ih2 = T_If.IH(2) and ih3 = T_If.IH(3)
   from T_If.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_If \<epsilon>1' T' \<epsilon>2' \<epsilon>3')
-    then have "\<epsilon>1 = \<epsilon>1'" using T_If.IH(1) by auto
-    moreover have "T = T' \<and> \<epsilon>2 = \<epsilon>2'" using T_If.IH(2) T_If by blast
-    moreover have "\<epsilon>3 = \<epsilon>3'" using T_If.IH(3) T_If by auto
-    ultimately show ?thesis using T_If by auto
+    case T_If
+    with ih1 ih2 ih3 show ?thesis by blast
   qed
 next
-  case (T_Let \<Gamma> \<Sigma> \<Delta> e1 T1 \<epsilon>1 x e2 T2 \<epsilon>2)
+  case T_Let
+  note ih1 = T_Let.IH(1) and ih2 = T_Let.IH(2)
   from T_Let.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Let T1' \<epsilon>1' T2' \<epsilon>2')
-    then have "T1 = T1' \<and> \<epsilon>1 = \<epsilon>1'" using T_Let.IH(1) by blast
-    then have "T2 = T2' \<and> \<epsilon>2 = \<epsilon>2'" using T_Let.IH(2) T_Let by auto
-    then show ?thesis using T_Let \<open>\<epsilon>1 = \<epsilon>1'\<close> by auto
+    case T_Let
+    with ih1 ih2 show ?thesis by blast
   qed
 next
-  case (T_Perform \<Gamma> \<Sigma> \<Delta> e T \<epsilon> eff)
-  from T_Perform.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Perform T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Perform.IH by blast
-    then show ?thesis using T_Perform by auto
-  qed
+  case T_Perform then show ?case by (auto elim: has_type.cases dest: T_Perform.IH)
 next
-  case (T_Handle \<Gamma> \<Sigma> \<Delta> e T1 \<epsilon>1 x h T2 \<epsilon>2)
+  case T_Handle
+  note ih1 = T_Handle.IH(1) and ih2 = T_Handle.IH(2)
   from T_Handle.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Handle T1' \<epsilon>1' T2' \<epsilon>2')
-    then have "T1 = T1' \<and> \<epsilon>1 = \<epsilon>1'" using T_Handle.IH(1) by blast
-    then have "T2 = T2' \<and> \<epsilon>2 = \<epsilon>2'" using T_Handle.IH(2) T_Handle by auto
-    then show ?thesis using T_Handle \<open>\<epsilon>1 = \<epsilon>1'\<close> by auto
+    case T_Handle
+    with ih1 ih2 show ?thesis by blast
   qed
 next
-  case (T_Ref \<Gamma> \<Sigma> \<Delta> e T \<epsilon> l)
-  from T_Ref.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Ref T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Ref.IH by blast
-    then show ?thesis using T_Ref by auto
-  qed
+  case T_Ref then show ?case by (auto elim: has_type.cases dest: T_Ref.IH)
 next
-  case (T_Deref \<Gamma> \<Sigma> \<Delta> e T l \<epsilon>)
-  from T_Deref.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Deref T' l' \<epsilon>')
-    then have "TRef T l = TRef T' l' \<and> \<epsilon> = \<epsilon>'" using T_Deref.IH by blast
-    then show ?thesis by auto
-  qed
+  case T_Deref then show ?case by (auto elim: has_type.cases dest: T_Deref.IH)
 next
-  case (T_Assign \<Gamma> \<Sigma> \<Delta> e1 T l \<epsilon>1 e2 \<epsilon>2)
+  case T_Assign
+  note ih1 = T_Assign.IH(1) and ih2 = T_Assign.IH(2)
   from T_Assign.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Assign T' l' \<epsilon>1' \<epsilon>2')
-    then have eq1: "TRef T l = TRef T' l' \<and> \<epsilon>1 = \<epsilon>1'" using T_Assign.IH(1) by blast
-    then have "T = T'" by auto
-    then have "\<epsilon>2 = \<epsilon>2'" using T_Assign.IH(2) T_Assign by auto
-    then show ?thesis using T_Assign eq1 by auto
+    case T_Assign
+    with ih1 ih2 show ?thesis by blast
   qed
 next
-  case (T_Classify \<Gamma> \<Sigma> \<Delta> e T \<epsilon>)
-  from T_Classify.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Classify T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Classify.IH by blast
-    then show ?thesis using T_Classify by auto
-  qed
+  case T_Classify then show ?case by (auto elim: has_type.cases dest: T_Classify.IH)
 next
-  case (T_Declassify \<Gamma> \<Sigma> \<Delta> e1 T \<epsilon>1 e2 \<epsilon>2 ok)
+  case T_Declassify
+  note ih1 = T_Declassify.IH(1) and ih2 = T_Declassify.IH(2)
   from T_Declassify.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Declassify T' \<epsilon>1' \<epsilon>2' ok')
-    then have eq1: "TSecret T = TSecret T' \<and> \<epsilon>1 = \<epsilon>1'" using T_Declassify.IH(1) by blast
-    then have "T = T'" by auto
-    then have "\<epsilon>2 = \<epsilon>2'" using T_Declassify.IH(2) T_Declassify by auto
-    then show ?thesis using T_Declassify eq1 by auto
+    case T_Declassify
+    with ih1 ih2 show ?thesis by blast
   qed
 next
-  case (T_Prove \<Gamma> \<Sigma> \<Delta> e T \<epsilon>)
-  from T_Prove.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Prove T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Prove.IH by blast
-    then show ?thesis using T_Prove by auto
-  qed
+  case T_Prove then show ?case by (auto elim: has_type.cases dest: T_Prove.IH)
 next
-  case (T_Require \<Gamma> \<Sigma> \<Delta> e T \<epsilon> eff)
-  from T_Require.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Require T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Require.IH by blast
-    then show ?thesis using T_Require by auto
-  qed
+  case T_Require then show ?case by (auto elim: has_type.cases dest: T_Require.IH)
 next
-  case (T_Grant \<Gamma> \<Sigma> \<Delta> e T \<epsilon> eff)
-  from T_Grant.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Grant T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Grant.IH by blast
-    then show ?thesis using T_Grant by auto
-  qed
+  case T_Grant then show ?case by (auto elim: has_type.cases dest: T_Grant.IH)
 qed
 
 
 section \<open>Canonical Forms\<close>
 
 text \<open>
-  Canonical forms lemmas: if a value has a certain type, it must have
+  Canonical forms lemmas: if a is_value has a certain type, it must have
   a specific syntactic form. Essential for proving progress.
   (matches Coq: canonical_forms_* lemmas)
 \<close>
 
-text \<open>Unit type: only EUnit is a value of type TUnit (matches Coq: canonical_forms_unit)\<close>
+text \<open>Unit type: only EUnit is a is_value of type TUnit (matches Coq: canonical_forms_unit)\<close>
 
 lemma canonical_forms_unit:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TUnit \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TUnit \<epsilon>"
   shows "v = EUnit"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Bool type: only EBool b is a value of type TBool (matches Coq: canonical_forms_bool)\<close>
+text \<open>Bool type: only EBool b is a is_value of type TBool (matches Coq: canonical_forms_bool)\<close>
 
 lemma canonical_forms_bool:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TBool \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TBool \<epsilon>"
   shows "\<exists>b. v = EBool b"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Int type: only EInt n is a value of type TInt (matches Coq: canonical_forms_int)\<close>
+text \<open>Int type: only EInt n is a is_value of type TInt (matches Coq: canonical_forms_int)\<close>
 
 lemma canonical_forms_int:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TInt \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TInt \<epsilon>"
   shows "\<exists>n. v = EInt n"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>String type: only EString s is a value of type TString (matches Coq: canonical_forms_string)\<close>
+text \<open>String type: only EString s is a is_value of type TString (matches Coq: canonical_forms_string)\<close>
 
 lemma canonical_forms_string:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TString \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TString \<epsilon>"
   shows "\<exists>s. v = EString s"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Function type: only ELam is a value of function type (matches Coq: canonical_forms_fn)\<close>
+text \<open>Function type: only ELam is a is_value of function type (matches Coq: canonical_forms_fn)\<close>
 
 lemma canonical_forms_fn:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TFn T1 T2 \<epsilon>_fn) \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TFn T1 T2 \<epsilon>_fn) \<epsilon>"
   shows "\<exists>x body. v = ELam x T1 body"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Product type: only EPair is a value of product type (matches Coq: canonical_forms_prod)\<close>
+text \<open>Product type: only EPair is a is_value of product type (matches Coq: canonical_forms_prod)\<close>
 
 lemma canonical_forms_prod:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProd T1 T2) \<epsilon>"
-  shows "\<exists>v1 v2. v = EPair v1 v2 \<and> value v1 \<and> value v2"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProd T1 T2) \<epsilon>"
+  shows "\<exists>v1 v2. v = EPair v1 v2 \<and> is_value v1 \<and> is_value v2"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VPair v1 v2)
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
 
-text \<open>Sum type: only EInl or EInr is a value of sum type (matches Coq: canonical_forms_sum)\<close>
+text \<open>Sum type: only EInl or EInr is a is_value of sum type (matches Coq: canonical_forms_sum)\<close>
 
 lemma canonical_forms_sum:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSum T1 T2) \<epsilon>"
-  shows "(\<exists>v'. v = EInl v' T2 \<and> value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> value v')"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSum T1 T2) \<epsilon>"
+  shows "(\<exists>v'. v = EInl v' T2 \<and> is_value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> is_value v')"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VInl v0 T)
   then show ?thesis using assms by (auto elim: has_type.cases)
 next
@@ -506,31 +412,31 @@ next
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
 
-text \<open>Reference type: only ELoc is a value of reference type (matches Coq: canonical_forms_ref)\<close>
+text \<open>Reference type: only ELoc is a is_value of reference type (matches Coq: canonical_forms_ref)\<close>
 
 lemma canonical_forms_ref:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TRef T sl) \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TRef T sl) \<epsilon>"
   shows "\<exists>l. v = ELoc l"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Secret type: only EClassify is a value of secret type (matches Coq: canonical_forms_secret)\<close>
+text \<open>Secret type: only EClassify is a is_value of secret type (matches Coq: canonical_forms_secret)\<close>
 
 lemma canonical_forms_secret:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSecret T) \<epsilon>"
-  shows "\<exists>v'. v = EClassify v' \<and> value v'"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSecret T) \<epsilon>"
+  shows "\<exists>v'. v = EClassify v' \<and> is_value v'"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VClassify v0)
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
 
-text \<open>Proof type: only EProve is a value of proof type (matches Coq: canonical_forms_proof)\<close>
+text \<open>Proof type: only EProve is a is_value of proof type (matches Coq: canonical_forms_proof)\<close>
 
 lemma canonical_forms_proof:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProof T) \<epsilon>"
-  shows "\<exists>v'. v = EProve v' \<and> value v'"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProof T) \<epsilon>"
+  shows "\<exists>v'. v = EProve v' \<and> is_value v'"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VProve v0)
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
@@ -540,11 +446,11 @@ section \<open>Well-Formedness Lemmas\<close>
 
 text \<open>Well-formed types (matches Coq: wf_ty)\<close>
 
-lemma WF_TSecret: "wf_ty T \<Longrightarrow> wf_ty (TSecret T)"
-  by (rule wf_ty.WF_TSecret)
+lemma WF_TSecret_intro: "wf_ty T \<Longrightarrow> wf_ty (TSecret T)"
+  by (rule wf_ty_wf_session.WF_TSecret)
 
-lemma WF_TProof: "wf_ty T \<Longrightarrow> wf_ty (TProof T)"
-  by (rule wf_ty.WF_TProof)
+lemma WF_TProof_intro: "wf_ty T \<Longrightarrow> wf_ty (TProof T)"
+  by (rule wf_ty_wf_session.WF_TProof)
 
 
 section \<open>Verification Summary\<close>

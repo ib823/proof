@@ -12,7 +12,7 @@
     Proves RIINA's defense against Meltdown-class attacks (CVE-2017-5754).
     ============================================================================ *)
 
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Bool.Bool.
 
 (** ============================================================================
     SECTION 1: MELTDOWN ATTACK DEFINITIONS

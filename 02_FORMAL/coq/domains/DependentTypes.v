@@ -4,13 +4,15 @@
 (* Spec: 01_RESEARCH/01_DOMAIN_A_TYPE_THEORY/dependent_types/ *)
 (* Security Property: Type-level value dependencies *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Vectors.Vector.
-Require Import Coq.Logic.Eqdep_dec.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Logic.Decidable.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+Set Warnings "-stdlib-vector".
+From Stdlib Require Import Vectors.Vector.
+Set Warnings "stdlib-vector".
+From Stdlib Require Import Logic.Eqdep_dec.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Logic.Decidable.
 Import ListNotations.
 
 (* Universe levels *)

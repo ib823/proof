@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeMTCS - Isabelle/HOL Port
@@ -21,6 +23,8 @@
  * | im8_controls_adequate | im8_controls_adequate  | OK     |
  * | im8_assessed       | im8_assessed           | OK     |
  * | im8_fully_compliant | im8_fully_compliant    | OK     |
+ * | all_mtcs_levels    | all_mtcs_levels        | OK     |
+ * | all_im8_classifications | all_im8_classifications | OK     |
  * | mtcs_min_controls  | mtcs_min_controls      | OK     |
  * | gcc_required       | gcc_required           | OK     |
  * | im8_to_mtcs_level  | im8_to_mtcs_level      | OK     |
@@ -65,13 +69,13 @@ begin
 
 (* MTCSLevel (matches Coq: Inductive MTCSLevel) *)
 datatype mtcs_level =
-    MTCS_Level1  (* Non-sensitive *)
-  |     MTCS_Level2  (* Sensitive business *)
+    MTCS_Level1
+  |     MTCS_Level2
   |     MTCS_Level3
 
 (* IM8Classification (matches Coq: Inductive IM8Classification) *)
 datatype im8_classification =
-    IM8_Official  (* Default *)
+    IM8_Official
   |     IM8_Restricted
   |     IM8_Confidential
   |     IM8_Secret
@@ -83,21 +87,21 @@ fun mtcs_level_nat :: "MTCSLevel \<Rightarrow> nat" where
 
 (* mtcs_l1_compliant (matches Coq: Definition mtcs_l1_compliant) *)
 definition mtcs_l1_compliant :: "CloudService \<Rightarrow> bool" where
-  "mtcs_l1_compliant s \<equiv> cs_data_encrypted_in_transit s = true /\
-  cs_access_controlled s = true"
+  "mtcs_l1_compliant s \<equiv> cs_data_encrypted_in_transit s = True /\
+  cs_access_controlled s = True"
 
 (* mtcs_l2_compliant (matches Coq: Definition mtcs_l2_compliant) *)
 definition mtcs_l2_compliant :: "CloudService \<Rightarrow> bool" where
   "mtcs_l2_compliant s \<equiv> mtcs_l1_compliant s /\
-  cs_data_encrypted_at_rest s = true /\
-  cs_audit_logged s = true /\
-  cs_pen_tested s = true"
+  cs_data_encrypted_at_rest s = True /\
+  cs_audit_logged s = True /\
+  cs_pen_tested s = True"
 
 (* mtcs_l3_compliant (matches Coq: Definition mtcs_l3_compliant) *)
 definition mtcs_l3_compliant :: "CloudService \<Rightarrow> bool" where
   "mtcs_l3_compliant s \<equiv> mtcs_l2_compliant s /\
-  cs_data_sovereign s = true /\
-  cs_iso27001_certified s = true"
+  cs_data_sovereign s = True /\
+  cs_iso27001_certified s = True"
 
 (* im8_level (matches Coq: Definition im8_level) *)
 fun im8_level :: "IM8Classification \<Rightarrow> nat" where
@@ -106,16 +110,25 @@ fun im8_level :: "IM8Classification \<Rightarrow> nat" where
 |   "im8_level IM8_Confidential = 2"
 |   "im8_level IM8_Secret = 3"
 
-(* im8_controls_adequate - complex match, manual review needed *)
+(* im8_controls_adequate - complex match, needs manual translation *)
+definition im8_controls_adequate :: "bool" where "im8_controls_adequate = undefined"
 
 (* im8_assessed (matches Coq: Definition im8_assessed) *)
 definition im8_assessed :: "GovTechSystem \<Rightarrow> bool" where
-  "im8_assessed s \<equiv> gt_security_assessed s = true /\ gt_vendor_cleared s = true"
+  "im8_assessed s \<equiv> gt_security_assessed s = True /\ gt_vendor_cleared s = True"
 
 (* im8_fully_compliant (matches Coq: Definition im8_fully_compliant) *)
 definition im8_fully_compliant :: "GovTechSystem \<Rightarrow> bool" where
   "im8_fully_compliant s \<equiv> im8_controls_adequate s /\
   im8_assessed s"
+
+(* all_mtcs_levels (matches Coq: Definition all_mtcs_levels) *)
+definition all_mtcs_levels :: "list MTCSLevel" where
+  "all_mtcs_levels \<equiv> [MTCS_Level1; MTCS_Level2; MTCS_Level3]"
+
+(* all_im8_classifications (matches Coq: Definition all_im8_classifications) *)
+definition all_im8_classifications :: "list IM8Classification" where
+  "all_im8_classifications \<equiv> [IM8_Official; IM8_Restricted; IM8_Confidential; IM8_Secret]"
 
 (* mtcs_min_controls (matches Coq: Definition mtcs_min_controls) *)
 fun mtcs_min_controls :: "MTCSLevel \<Rightarrow> nat" where
@@ -126,7 +139,7 @@ fun mtcs_min_controls :: "MTCSLevel \<Rightarrow> nat" where
 (* gcc_required (matches Coq: Definition gcc_required) *)
 definition gcc_required :: "GovTechSystem \<Rightarrow> bool" where
   "gcc_required s \<equiv> im8_level (gt_classification s) >= 1 ->
-  gt_on_gcc s = true"
+  gt_on_gcc s = True"
 
 (* im8_to_mtcs_level (matches Coq: Definition im8_to_mtcs_level) *)
 fun im8_to_mtcs_level :: "IM8Classification \<Rightarrow> MTCSLevel" where

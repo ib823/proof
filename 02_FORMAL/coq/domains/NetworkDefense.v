@@ -5,12 +5,12 @@
 (* Layer: Network Layer *)
 (* Mode: Comprehensive Verification | Zero Trust *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.NArith.NArith.
-Require Import Coq.micromega.Lia.
-Require Import Coq.Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import NArith.NArith.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Arith.PeanoNat.
 Import ListNotations.
 
 (** ===============================================================================
@@ -648,7 +648,7 @@ Proof.
   unfold adaptive_rate.
   destruct (Nat.leb current_load (max_capacity / 2)) eqn:Hle.
   - apply Nat.leb_le in Hle. lia.
-  - apply Nat.div_le_upper_bound.
+  - apply Nat.Private_NDivProp.div_le_upper_bound.
     + lia.
     + lia.
 Qed.
@@ -769,7 +769,7 @@ Proof.
   unfold amplification_factor.
   destruct request_size as [| n].
   - lia.
-  - apply Nat.div_le_upper_bound.
+  - apply Nat.Private_NDivProp.div_le_upper_bound.
     + lia.
     + lia.
 Qed.

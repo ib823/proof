@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AntiJamming - Isabelle/HOL Port
@@ -65,14 +67,14 @@
  *)
 
 theory AntiJamming
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* JammerType (matches Coq: Inductive JammerType) *)
 datatype jammer_type =
-    ConstantJammer  (* Always transmitting *)
-  |     ReactiveJammer  (* Jams on activity detection *)
-  |     SweepJammer  (* Sweeps frequencies *)
+    ConstantJammer
+  |     ReactiveJammer
+  |     SweepJammer
   |     SmartJammer
 
 (* JamDetection (matches Coq: Inductive JamDetection) *)
@@ -91,27 +93,29 @@ datatype adapt_action =
 
 (* sequence_length_ok (matches Coq: Definition sequence_length_ok) *)
 definition sequence_length_ok :: "HoppingPattern \<Rightarrow> nat \<Rightarrow> bool" where
-  "sequence_length_ok pattern min_length \<equiv> Nat"
+  "sequence_length_ok pattern min_length \<equiv> (min_length \<le> (length) (hop_sequence pattern))"
 
 (* dwell_time_bounded (matches Coq: Definition dwell_time_bounded) *)
 definition dwell_time_bounded :: "HoppingPattern \<Rightarrow> nat \<Rightarrow> bool" where
-  "dwell_time_bounded pattern max_dwell \<equiv> Nat"
+  "dwell_time_bounded pattern max_dwell \<equiv> ((hop_dwell_time \<le> pattern)) max_dwell"
 
 (* processing_gain_sufficient (matches Coq: Definition processing_gain_sufficient) *)
 definition processing_gain_sufficient :: "SpreadSpectrum \<Rightarrow> nat \<Rightarrow> bool" where
-  "processing_gain_sufficient ss min_gain \<equiv> Nat"
+  "processing_gain_sufficient ss min_gain \<equiv> (min_gain \<le> (spread_factor) ss)"
 
 (* jammer_overcome (matches Coq: Definition jammer_overcome) *)
 definition jammer_overcome :: "bool" where
-  "jammer_overcome \<equiv> Nat"
+  "jammer_overcome \<equiv> (jammer_power < (signal_power) + spread_gain)"
 
 (* channels_diverse (matches Coq: Definition channels_diverse) *)
 definition channels_diverse :: "HoppingPattern \<Rightarrow> nat \<Rightarrow> bool" where
-  "channels_diverse pattern min_channels \<equiv> length (nodup Nat"
+  "channels_diverse pattern min_channels \<equiv> length (nodup Nat.eq_dec (hop_sequence pattern)) >= min_channels"
 
 (* detect_jamming (matches Coq: Definition detect_jamming) *)
 definition detect_jamming :: "JamDetection" where
-  "detect_jamming \<equiv> if Nat"
+  "detect_jamming \<equiv> if (snr < (threshold) / 2) then ConfirmedJamming
+  else if (snr < threshold) then SuspectedJamming
+  else NoJamming"
 
 (* adaptation_applied (matches Coq: Definition adaptation_applied) *)
 definition adaptation_applied :: "AdaptAction \<Rightarrow> bool" where
@@ -119,55 +123,55 @@ definition adaptation_applied :: "AdaptAction \<Rightarrow> bool" where
 
 (* power_increase_bounded (matches Coq: Definition power_increase_bounded) *)
 definition power_increase_bounded :: "bool" where
-  "power_increase_bounded \<equiv> Nat"
+  "power_increase_bounded \<equiv> (current \<le> max_power)"
 
 (* avoids_jammed (matches Coq: Definition avoids_jammed) *)
 definition avoids_jammed :: "nat \<Rightarrow> bool" where
-  "avoids_jammed channel \<equiv> negb (existsb (fun j => Nat"
+  "avoids_jammed channel \<equiv> (\<not> (existsb) (fun j => (j = channel)) jammed_channels)"
 
 (* rate_above_minimum (matches Coq: Definition rate_above_minimum) *)
 definition rate_above_minimum :: "bool" where
-  "rate_above_minimum \<equiv> Nat"
+  "rate_above_minimum \<equiv> (min_rate \<le> current)"
 
 (* fec_gain_sufficient (matches Coq: Definition fec_gain_sufficient) *)
 definition fec_gain_sufficient :: "bool" where
-  "fec_gain_sufficient \<equiv> Nat"
+  "fec_gain_sufficient \<equiv> (min_gain \<le> redundancy)"
 
 (* switch_latency_ok (matches Coq: Definition switch_latency_ok) *)
 definition switch_latency_ok :: "bool" where
-  "switch_latency_ok \<equiv> Nat"
+  "switch_latency_ok \<equiv> (latency \<le> max_latency)"
 
 (* hops_synchronized (matches Coq: Definition hops_synchronized) *)
 definition hops_synchronized :: "bool" where
-  "hops_synchronized \<equiv> Nat"
+  "hops_synchronized \<equiv> (sender_channel = receiver_channel)"
 
 (* key_valid (matches Coq: Definition key_valid) *)
 definition key_valid :: "bool" where
-  "key_valid \<equiv> Nat"
+  "key_valid \<equiv> (provided_key = expected_key)"
 
 (* sweep_jammer_pattern (matches Coq: Definition sweep_jammer_pattern) *)
 definition sweep_jammer_pattern :: "nat \<Rightarrow> bool" where
-  "sweep_jammer_pattern threshold \<equiv> Nat"
+  "sweep_jammer_pattern threshold \<equiv> (threshold \<le> (length) affected)"
 
 (* silence_period_ok (matches Coq: Definition silence_period_ok) *)
 definition silence_period_ok :: "bool" where
-  "silence_period_ok \<equiv> Nat"
+  "silence_period_ok \<equiv> (min_silence \<le> silence)"
 
 (* adaptation_fast_enough (matches Coq: Definition adaptation_fast_enough) *)
 definition adaptation_fast_enough :: "bool" where
-  "adaptation_fast_enough \<equiv> Nat"
+  "adaptation_fast_enough \<equiv> (adapt_time \<le> max_time)"
 
 (* quality_acceptable (matches Coq: Definition quality_acceptable) *)
 definition quality_acceptable :: "bool" where
-  "quality_acceptable \<equiv> Nat"
+  "quality_acceptable \<equiv> (min_snr \<le> snr)"
 
 (* degradation_graceful (matches Coq: Definition degradation_graceful) *)
 definition degradation_graceful :: "bool" where
-  "degradation_graceful \<equiv> Nat"
+  "degradation_graceful \<equiv> (min_level \<le> service_level)"
 
 (* fallback_bands_available (matches Coq: Definition fallback_bands_available) *)
 definition fallback_bands_available :: "nat \<Rightarrow> bool" where
-  "fallback_bands_available min_bands \<equiv> Nat"
+  "fallback_bands_available min_bands \<equiv> (min_bands \<le> (length) bands)"
 
 (* interference_localized (matches Coq: Definition interference_localized) *)
 definition interference_localized :: "bool" where
@@ -175,11 +179,11 @@ definition interference_localized :: "bool" where
 
 (* paths_redundant (matches Coq: Definition paths_redundant) *)
 definition paths_redundant :: "bool" where
-  "paths_redundant \<equiv> Nat"
+  "paths_redundant \<equiv> (min_paths \<le> paths)"
 
 (* antijam_layers (matches Coq: Definition antijam_layers) *)
 definition antijam_layers :: "bool" where
-  "antijam_layers \<equiv> andb hopping (andb spread (andb detect adapt))"
+  "antijam_layers \<equiv> (hopping \<and> (andb) spread ((detect \<and> adapt)))"
 
 (* jam_001_sequence_length (matches Coq) *)
 lemma jam_001_sequence_length: "\<forall> (pattern : HoppingPattern) (min_length : nat), sequence_length_ok pattern min_length = True \<longrightarrow> min_length \<le> length (hop_sequence pattern)"

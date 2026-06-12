@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA StrongNorm - Isabelle/HOL Port
@@ -110,27 +112,27 @@ lemma if_bool_SN: "\<forall> b e2 e3 st ctx, SN st ctx e2 \<longrightarrow> SN s
 
 (* Let with value is SN when substituted body is SN *)
 (* let_value_SN (matches Coq) *)
-lemma let_value_SN: "\<forall> x v e2 st ctx, value v \<longrightarrow> SN st ctx ([x := v] e2) \<longrightarrow> SN st ctx (ELet x v e2)"
+lemma let_value_SN: "\<forall> x v e2 st ctx, value v \<longrightarrow> SN st ctx (subst[x := v] e2) \<longrightarrow> SN st ctx (ELet x v e2)"
   by auto
 
 (* App with lambda and value is SN when substituted body is SN *)
 (* app_lam_value_SN (matches Coq) *)
-lemma app_lam_value_SN: "\<forall> x T body v st ctx, value v \<longrightarrow> SN st ctx ([x := v] body) \<longrightarrow> SN st ctx (EApp (ELam x T body) v)"
+lemma app_lam_value_SN: "\<forall> x T body v st ctx, value v \<longrightarrow> SN st ctx (subst[x := v] body) \<longrightarrow> SN st ctx (EApp (ELam x T body) v)"
   by auto
 
 (* Handle with value is SN when substituted body is SN *)
 (* handle_value_SN (matches Coq) *)
-lemma handle_value_SN: "\<forall> x v h st ctx, value v \<longrightarrow> SN st ctx ([x := v] h) \<longrightarrow> SN st ctx (EHandle v x h)"
+lemma handle_value_SN: "\<forall> x v h st ctx, value v \<longrightarrow> SN st ctx (subst[x := v] h) \<longrightarrow> SN st ctx (EHandle v x h)"
   by auto
 
 (* Case on inl value is SN when left branch substitution is SN *)
 (* case_inl_value_SN (matches Coq) *)
-lemma case_inl_value_SN: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> SN st ctx ([x1 := v] e1) \<longrightarrow> SN st ctx (ECase (EInl v T) x1 e1 x2 e2)"
+lemma case_inl_value_SN: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> SN st ctx (subst[x1 := v] e1) \<longrightarrow> SN st ctx (ECase (EInl v T) x1 e1 x2 e2)"
   by auto
 
 (* Case on inr value is SN when right branch substitution is SN *)
 (* case_inr_value_SN (matches Coq) *)
-lemma case_inr_value_SN: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> SN st ctx ([x2 := v] e2) \<longrightarrow> SN st ctx (ECase (EInr v T) x1 e1 x2 e2)"
+lemma case_inr_value_SN: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> SN st ctx (subst[x2 := v] e2) \<longrightarrow> SN st ctx (ECase (EInr v T) x1 e1 x2 e2)"
   by auto
 
 (* Classify of value is SN (it's a value itself) *)

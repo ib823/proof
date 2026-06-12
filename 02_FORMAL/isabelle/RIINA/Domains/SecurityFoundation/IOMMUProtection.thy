@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IOMMUProtection - Isabelle/HOL Port
@@ -18,9 +20,11 @@
  * | VirtualMachine     | virtual_machine        | OK     |
  * | IOMMUConfig        | iommu_config           | OK     |
  * | IOMMU              | iommu                  | OK     |
+ * | find_device_config | find_device_config     | OK     |
  * | address_in_range   | address_in_range       | OK     |
  * | iommu_permits_dma  | iommu_permits_dma      | OK     |
  * | guest_isolated_from_iommu | guest_isolated_from_iommu | OK     |
+ * | iommu_config       | iommu_config           | OK     |
  * | kernel_region_base | kernel_region_base     | OK     |
  * | kernel_region_size | kernel_region_size     | OK     |
  * | dma_isolation      | dma_isolation          | OK     |
@@ -48,7 +52,7 @@
  *)
 
 theory IOMMUProtection
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DeviceId (matches Coq: Inductive DeviceId) *)
@@ -88,10 +92,13 @@ record iommu =
   iommu_configs :: 'a list
   iommu_enabled :: bool
 
+(* find_device_config (matches Coq: Definition find_device_config) *)
+fun find_device_config :: "DeviceId \<Rightarrow> option IOMMUConfig" where
+
+
 (* address_in_range (matches Coq: Definition address_in_range) *)
 definition address_in_range :: "nat \<Rightarrow> IOMMUConfig \<Rightarrow> bool" where
-  "address_in_range addr cfg \<equiv> andb (config_allowed_base cfg <=? addr)
-       (addr <? config_allowed_base cfg + config_allowed_size cfg)"
+  "address_in_range addr cfg \<equiv> (config_allowed_base cfg <=? addr \<and> addr <? config_allowed_base cfg + config_allowed_size cfg)"
 
 (* iommu_permits_dma (matches Coq: Definition iommu_permits_dma) *)
 fun iommu_permits_dma :: "IOMMU \<Rightarrow> Device \<Rightarrow> Address \<Rightarrow> bool" where
@@ -101,7 +108,11 @@ fun iommu_permits_dma :: "IOMMU \<Rightarrow> Device \<Rightarrow> Address \<Rig
 definition guest_isolated_from_iommu :: "VirtualMachine \<Rightarrow> IOMMU \<Rightarrow> bool" where
   "guest_isolated_from_iommu vm iommu \<equiv> forall cfg,
     In cfg (iommu_configs iommu) ->
-    config_locked cfg = true"
+    config_locked cfg = True"
+
+(* iommu_config (matches Coq: Definition iommu_config) *)
+definition iommu_config :: "IOMMU \<Rightarrow> list IOMMUConfig" where
+  "iommu_config iommu \<equiv> iommu_configs iommu"
 
 (* kernel_region_base (matches Coq: Definition kernel_region_base) *)
 definition kernel_region_base :: "nat" where
@@ -188,7 +199,7 @@ lemma device_identity_verified: "\<forall> (dev : Device) (addr : Address) (iomm
 
 (* Empty config list denies all DMA *)
 (* empty_config_denies_all (matches Coq) *)
-lemma empty_config_denies_all: "\<forall> (dev : Device) (addr : Address), let iommu := mkIOMMU 0 [] true in ~ can_dma_access dev addr iommu"
+lemma empty_config_denies_all: "\<forall> (dev : Device) (addr : Address), let iommu := mkIOMMU 0 [] True in ~ can_dma_access dev addr iommu"
   by auto
 
 (* IOMMU disabled means all DMA denied *)

@@ -12,3 +12,6 @@ riina-types.workspace = true
 
 [dev-dependencies]
 # No external deps, standard test harness
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

@@ -570,7 +570,7 @@
 ║  ACCESSIBILITY AND INTERNATIONALIZATION                                                             ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                      ║
-║  WCAG 2.1 AA COMPLIANCE (Minimum):                                                                  ║
+║  WCAG 2.2 AA COMPLIANCE (Minimum):                                                                  ║
 ║  ═════════════════════════════════                                                                  ║
 ║                                                                                                      ║
 ║  • Color contrast: 4.5:1 for normal text, 3:1 for large text                                        ║
@@ -636,7 +636,7 @@ The UI/UX design system defined in this document applies to **all platform backe
 | **M7.2 WASM** | Web applications via `--target=wasm32` | Full web design system: DOM components, CSS variables, WCAG AAA compliance, responsive layouts |
 | **M7.4 Android** | Android apps via `--target=android-arm64` | Material Design integration, Android accessibility services, JNI bridge for native UI |
 | **M7.4 iOS** | iOS apps via `--target=ios-arm64` | UIKit/SwiftUI bridge, iOS accessibility, Swift binding for native UI components |
-| **M7.5 Playground** | In-browser compiler at `play.riina.dev` | Code editor, syntax highlighting, real-time diagnostics, effect visualization |
+| **M7.5 Playground** | In-browser compiler (Playground page) | Split-pane editor, 5 examples, debounced compile, Web Worker WASM execution |
 
 The 200 UI verification theorems from Track UX-01 ensure that:
 - Accessibility properties (WCAG AAA) are preserved across all platforms

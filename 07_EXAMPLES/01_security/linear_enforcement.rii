@@ -1,0 +1,55 @@
+/// LINEAR_ENFORCEMENT.RII - Compiler-Enforced Linearity
+/// Penguatkuasaan kelinearan oleh pengkompil
+/// Demonstrates: biar sekali/paling/mesti syntax for compiler-checked linearity
+///
+/// Coq reference: 02_FORMAL/coq/domains/LinearTypes.v
+/// Typechecker: LinearityViolation (LIN0001)
+///
+/// This file uses the `biar sekali`, `biar paling`, and `biar mesti` syntax
+/// which the riinac compiler enforces at type-checking time.
+
+/// ── sekali (linear): must use exactly once ─────────────────────────
+/// Compiler rejects if the variable is unused or used more than once.
+
+fungsi contoh_sekali() -> Nombor kesan Bersih {
+    biar sekali x = 42;
+    /// x must be used exactly once in the body
+    pulang x;
+}
+
+/// ── paling (affine): may use at most once ──────────────────────────
+/// Compiler allows dropping (not using), but rejects double use.
+
+fungsi contoh_paling() -> Nombor kesan Bersih {
+    biar paling y = 10;
+    /// y can be dropped — this is OK for affine
+    pulang 0;
+}
+
+/// ── mesti (relevant): must use at least once ───────────────────────
+/// Compiler rejects if the variable is never used. Multiple uses OK.
+
+fungsi contoh_mesti() -> Nombor kesan Bersih {
+    biar mesti z = 7;
+    /// z must be used at least once — compiler enforces this
+    pulang z;
+}
+
+/// ── Default (unrestricted): no constraints ─────────────────────────
+/// Plain `biar` has no linearity restriction.
+
+fungsi contoh_biasa() -> Nombor kesan Bersih {
+    biar w = 5;
+    /// w can be used any number of times or not at all
+    pulang 0;
+}
+
+/// ── English aliases work too ───────────────────────────────────────
+/// `linear`, `affine`, `relevant` are English synonyms.
+
+fungsi contoh_english() -> Nombor kesan Bersih {
+    biar linear a = 1;
+    biar affine b = 2;
+    biar relevant c = 3;
+    pulang a + c;
+}

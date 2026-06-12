@@ -1,0 +1,191 @@
+/// crud_api.rii
+/// Full CRUD (Create, Read, Update, Delete) API with type-safe operations
+/// Demonstrates: Hasil return types, effect annotations, security-typed user data
+///
+/// Pattern: Type-safe CRUD operations with explicit error handling
+/// and security levels on sensitive fields.
+
+modul api_crud;
+
+guna std::senarai;
+
+/// User record with security-annotated fields
+jenis Pengguna = {
+    id: Nombor,
+    nama: Teks,
+    emel: Teks,
+    kata_laluan: Rahsia<Teks>,     /// Secret — never exposed in responses
+    peranan: Teks,
+};
+
+/// Public-safe user view (no secrets)
+jenis PenggunaPaparan = {
+    id: Nombor,
+    nama: Teks,
+    emel: Teks,
+    peranan: Teks,
+};
+
+/// Error type for CRUD operations
+jenis RalatCrud =
+    | TidakDijumpai(Nombor)
+    | SudahWujud(Teks)
+    | TidakSah(Teks)
+    | TidakDibenarkan;
+
+/// In-memory store (mutable state)
+biar ubah pangkalan: Senarai<Pengguna> = [];
+biar ubah id_seterusnya: Nombor = 1;
+
+/// Strip secret fields for safe API response
+fungsi ke_paparan(p: Pengguna) -> PenggunaPaparan kesan Bersih {
+    pulang {
+        id: p.id,
+        nama: p.nama,
+        emel: p.emel,
+        peranan: p.peranan,
+    };
+}
+
+/// CREATE — Add a new user
+/// Kesan: Tulis (mutates in-memory store)
+fungsi cipta_pengguna(
+    nama: Teks,
+    emel: Teks,
+    kata_laluan_mentah: Teks,
+    peranan: Teks
+) -> Hasil<PenggunaPaparan, RalatCrud> kesan Tulis {
+    /// Check for duplicate email
+    untuk p dalam pangkalan {
+        kalau p.emel == emel {
+            pulang Ralat(SudahWujud(emel));
+        }
+    }
+
+    /// Validate input
+    kalau nama == "" {
+        pulang Ralat(TidakSah("Nama tidak boleh kosong"));
+    }
+
+    biar pengguna_baru = {
+        id: id_seterusnya,
+        nama: nama,
+        emel: emel,
+        kata_laluan: Rahsia(kata_laluan_mentah),
+        peranan: peranan,
+    };
+
+    id_seterusnya = id_seterusnya + 1;
+    pangkalan = pangkalan + [pengguna_baru];
+
+    pulang Ok(ke_paparan(pengguna_baru));
+}
+
+/// READ — Fetch user by ID
+/// Kesan: Baca (reads from store, no mutation)
+fungsi baca_pengguna(id: Nombor) -> Hasil<PenggunaPaparan, RalatCrud> kesan Baca {
+    untuk p dalam pangkalan {
+        kalau p.id == id {
+            pulang Ok(ke_paparan(p));
+        }
+    }
+    pulang Ralat(TidakDijumpai(id));
+}
+
+/// READ ALL — List all users
+fungsi senarai_pengguna() -> Senarai<PenggunaPaparan> kesan Baca {
+    biar hasil = [];
+    untuk p dalam pangkalan {
+        hasil = hasil + [ke_paparan(p)];
+    }
+    pulang hasil;
+}
+
+/// UPDATE — Modify existing user
+/// Kesan: Tulis (mutates store)
+fungsi kemas_kini_pengguna(
+    id: Nombor,
+    nama_baru: Mungkin<Teks>,
+    emel_baru: Mungkin<Teks>
+) -> Hasil<PenggunaPaparan, RalatCrud> kesan Tulis {
+    biar ubah dijumpai = salah;
+    biar ubah pangkalan_baru = [];
+
+    untuk p dalam pangkalan {
+        kalau p.id == id {
+            dijumpai = betul;
+            biar dikemas = {
+                id: p.id,
+                nama: padan nama_baru {
+                    Ada(n) => n,
+                    Tiada => p.nama,
+                },
+                emel: padan emel_baru {
+                    Ada(e) => e,
+                    Tiada => p.emel,
+                },
+                kata_laluan: p.kata_laluan,
+                peranan: p.peranan,
+            };
+            pangkalan_baru = pangkalan_baru + [dikemas];
+        } lain {
+            pangkalan_baru = pangkalan_baru + [p];
+        }
+    }
+
+    kalau !dijumpai {
+        pulang Ralat(TidakDijumpai(id));
+    }
+
+    pangkalan = pangkalan_baru;
+    pulang baca_pengguna(id);
+}
+
+/// DELETE — Remove user by ID
+/// Kesan: Tulis (mutates store)
+fungsi padam_pengguna(id: Nombor) -> Hasil<Teks, RalatCrud> kesan Tulis {
+    biar ubah dijumpai = salah;
+    biar ubah pangkalan_baru = [];
+
+    untuk p dalam pangkalan {
+        kalau p.id == id {
+            dijumpai = betul;
+        } lain {
+            pangkalan_baru = pangkalan_baru + [p];
+        }
+    }
+
+    kalau !dijumpai {
+        pulang Ralat(TidakDijumpai(id));
+    }
+
+    pangkalan = pangkalan_baru;
+    pulang Ok("Pengguna dipadamkan");
+}
+
+/// Inline tests
+ujian "cipta_dan_baca_pengguna" {
+    biar hasil = cipta_pengguna("Ahmad", "ahmad@contoh.my", "rahsia123", "pengguna");
+    tegaskan(hasil.ok?());
+
+    biar paparan = hasil.buka();
+    tegaskan_sama(paparan.nama, "Ahmad");
+    tegaskan_sama(paparan.emel, "ahmad@contoh.my");
+    tegaskan_sama(paparan.id, 1);
+}
+
+ujian "tolak_emel_pendua" {
+    cipta_pengguna("Ali", "ali@contoh.my", "kata123", "pengguna");
+    biar pendua = cipta_pengguna("Ali2", "ali@contoh.my", "kata456", "pengguna");
+    tegaskan(pendua.ralat?());
+}
+
+ujian "padam_pengguna_wujud" {
+    biar c = cipta_pengguna("Siti", "siti@contoh.my", "siti789", "pentadbir");
+    biar id = c.buka().id;
+    biar hasil_padam = padam_pengguna(id);
+    tegaskan(hasil_padam.ok?());
+
+    biar hasil_baca = baca_pengguna(id);
+    tegaskan(hasil_baca.ralat?());
+}

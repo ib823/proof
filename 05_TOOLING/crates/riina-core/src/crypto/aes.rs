@@ -4,17 +4,23 @@
 //!
 //! This module implements AES-256 (Rijndael with 256-bit key and 128-bit block).
 //!
-//! # Constant-Time Guarantees (Law 3)
+//! # Constant-Time Discipline (Law 3) — best-effort, contract-relative
 //!
-//! This implementation uses constant-time table lookups to prevent timing attacks.
-//! All table accesses read the entire table and select the result using bitwise
-//! operations, ensuring no timing variation based on the index.
+//! Table lookups read the ENTIRE table and select the result with bitwise masks,
+//! plus an optimization barrier (`core::hint::black_box`) to discourage the
+//! compiler from recognising the masked scan and lowering it back to a
+//! secret-indexed load. This is a SOURCE-LEVEL discipline, NOT a machine-level
+//! proof: constant-timeness must still be confirmed on emitted assembly and via
+//! dudect/ctgrind per target+toolchain. The guarantee is stated relative to
+//! RIINA's hardware-software leakage contract and EXCLUDES DMP/GoFetch-class
+//! data-memory-dependent-prefetcher leakage.
 //!
 //! # Security Notes
 //!
-//! - Key schedule is computed on construction and zeroized on drop
-//! - All intermediate state is zeroized after use
-//! - No secret-dependent branches or memory accesses
+//! - The key schedule is zeroized on drop; the working `state` is zeroized after
+//!   each block operation. NOTE: transient per-transform byte copies inside
+//!   ShiftRows/MixColumns are short-lived but not individually scrubbed.
+//! - No secret-dependent branches in source (see the CT caveat above re: codegen).
 
 use crate::zeroize::Zeroize;
 
@@ -84,6 +90,11 @@ const RCON: [u8; 11] = [
 /// the correct one, ensuring no timing variation based on the index.
 #[inline]
 fn ct_lookup(table: &[u8; 256], index: u8) -> u8 {
+    // Optimization barrier: treat the index as opaque so the optimizer cannot
+    // prove which entry matches and rewrite this masked scan into `table[index]`
+    // (a secret-indexed load → cache-timing leak). Best-effort source discipline,
+    // not a machine-level proof — verify on emitted asm / via dudect per target.
+    let index = core::hint::black_box(index);
     let mut result: u8 = 0;
     for (i, &value) in table.iter().enumerate() {
         // Create a mask that is 0xFF when i == index, 0x00 otherwise
@@ -92,7 +103,7 @@ fn ct_lookup(table: &[u8; 256], index: u8) -> u8 {
         let eq = ct_eq_byte(i_byte, index);
         result |= value & eq;
     }
-    result
+    core::hint::black_box(result)
 }
 
 /// Constant-time byte equality
@@ -160,6 +171,10 @@ impl Aes256 {
         add_round_key(&mut state, &self.round_keys[NR * NB..(NR + 1) * NB]);
 
         state_to_block(&state, block);
+        // Scrub the working state (round intermediates / last-round bytes) from
+        // the stack; `block` already holds the output. Uses the volatile zeroize
+        // so the clear is not optimized away (Law 4 / secret hygiene).
+        state.zeroize();
     }
 
     /// Decrypt a single 16-byte block in place
@@ -183,6 +198,9 @@ impl Aes256 {
         add_round_key(&mut state, &self.round_keys[0..NB]);
 
         state_to_block(&state, block);
+        // Scrub the working state — on decrypt this final state IS the plaintext,
+        // so clearing it after writing `block` removes a secret stack copy.
+        state.zeroize();
     }
 }
 
@@ -468,6 +486,94 @@ fn inv_mix_columns(state: &mut [u32; 4]) {
 mod tests {
     use super::*;
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the AES S-box.
+    ///
+    /// `02_FORMAL/coq/crypto/AESField.v` models GF(2^8) and proves (over all 256
+    /// bytes, by `vm_compute`) that the `SBOX` table equals the mathematical
+    /// construction `affine(a^254)` — `a^254` being the multiplicative inverse —
+    /// and that `SBOX`/`INV_SBOX` are mutual inverses. This test mirrors that
+    /// construction in Rust: it recomputes the S-box from `gf_mul` + the affine
+    /// map and asserts it is byte-identical to the shipped `SBOX`, and that
+    /// `INV_SBOX` inverts it. So the magic 256-byte tables are not just KAT-tested
+    /// but proven (Coq) and cross-checked (here) to be the genuine AES S-box.
+    #[test]
+    fn test_sbox_matches_coq_model() {
+        // a^254 = a^{-1} in GF(2^8) (inv(0) := 0), via the same gf_mul.
+        fn gf_inv(a: u8) -> u8 {
+            if a == 0 {
+                return 0;
+            }
+            let mut r = 1u8;
+            for _ in 0..254 {
+                r = gf_mul(r, a);
+            }
+            r
+        }
+        // AES affine map: x ^ rotl(x,1) ^ rotl(x,2) ^ rotl(x,3) ^ rotl(x,4) ^ 0x63.
+        fn affine(x: u8) -> u8 {
+            x ^ x.rotate_left(1)
+                ^ x.rotate_left(2)
+                ^ x.rotate_left(3)
+                ^ x.rotate_left(4)
+                ^ 0x63
+        }
+        for a in 0u16..=255 {
+            let a = a as u8;
+            assert_eq!(
+                affine(gf_inv(a)),
+                SBOX[a as usize],
+                "SBOX[{a:#04x}] must equal affine(a^-1) (the Coq AESField.v construction)"
+            );
+            assert_eq!(
+                INV_SBOX[SBOX[a as usize] as usize], a,
+                "INV_SBOX must invert SBOX at {a:#04x}"
+            );
+        }
+        // The GF(2^8) worked example from FIPS 197 §4.2.
+        assert_eq!(gf_mul(0x57, 0x83), 0xc1);
+    }
+
+    /// Coq ⇄ Rust formal-equivalence bridge for the *whole* AES-256 cipher.
+    ///
+    /// `02_FORMAL/coq/crypto/AES.v` models the full key schedule + 14 rounds
+    /// (SubBytes/ShiftRows/MixColumns/AddRoundKey) and the inverse cipher at the
+    /// byte level — reusing the proven `aes_sbox`/`gmul` from `AESField.v` — and
+    /// proves by `vm_compute` that it reproduces the FIPS-197 Appendix C.3 vector:
+    /// `aes256_encrypt_fips197` and `aes256_decrypt_fips197`. This asserts the
+    /// shipping `Aes256` (u32-state impl) produces the byte-identical ciphertext
+    /// and recovers the plaintext on those exact vectors — so the full block
+    /// transform, not just the S-box, is cross-checked against the Coq model.
+    #[test]
+    fn test_aes256_matches_coq_model() {
+        // The exact vectors AES.v proves (FIPS-197 C.3).
+        let key: [u8; 32] = [
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
+            0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
+            0x1c, 0x1d, 0x1e, 0x1f,
+        ];
+        let plaintext: [u8; 16] = [
+            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd,
+            0xee, 0xff,
+        ];
+        let coq_ciphertext: [u8; 16] = [
+            0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf, 0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49,
+            0x60, 0x89,
+        ];
+
+        let cipher = Aes256::new(&key);
+        let mut block = plaintext;
+        cipher.encrypt_block(&mut block);
+        assert_eq!(block, coq_ciphertext, "encrypt must match Coq aes256_encrypt_fips197");
+        cipher.decrypt_block(&mut block);
+        assert_eq!(block, plaintext, "decrypt must match Coq aes256_decrypt_fips197");
+
+        // The first/last schedule words AES.v's ks_first_word/ks_eighth_word pin.
+        let mut round_keys = [0u32; EXPANDED_KEY_WORDS];
+        key_expansion(&key, &mut round_keys);
+        assert_eq!(round_keys[0], 0x0001_0203, "w[0] must match Coq ks_first_word");
+        assert_eq!(round_keys[7], 0x1c1d_1e1f, "w[7] must match Coq ks_eighth_word");
+    }
+
     /// FIPS 197 Appendix C.3 - AES-256 test vector
     #[test]
     fn test_aes256_fips197() {
@@ -553,6 +659,21 @@ mod tests {
         // Test inverse
         assert_eq!(ct_lookup(&INV_SBOX, 0x63), 0x00);
         assert_eq!(ct_lookup(&INV_SBOX, 0x7c), 0x01);
+    }
+
+    /// Exhaustive: the constant-time scan must equal `table[index]` for EVERY
+    /// byte (a drop-in for the indexed load it replaces), and SBOX/INV_SBOX must
+    /// be true inverses across the whole range. Also a regression guard for the
+    /// `black_box` constant-time barrier in `ct_lookup`.
+    #[test]
+    fn test_ct_lookup_exhaustive_matches_indexed_load_and_inverts() {
+        for i in 0..=255u8 {
+            let idx = i as usize;
+            assert_eq!(ct_lookup(&SBOX, i), SBOX[idx], "SBOX mismatch at {i}");
+            assert_eq!(ct_lookup(&INV_SBOX, i), INV_SBOX[idx], "INV_SBOX mismatch at {i}");
+            // S-box composed with its inverse is the identity.
+            assert_eq!(ct_lookup(&INV_SBOX, ct_lookup(&SBOX, i)), i, "not an involution at {i}");
+        }
     }
 
     /// Test GF(2^8) multiplication

@@ -24,13 +24,13 @@ begin
 
 section \<open>Stuck Configuration\<close>
 
-text \<open>A configuration is stuck if it's not a value and can't step
+text \<open>A configuration is stuck if it's not a is_value and can't step
       (matches Coq: Definition stuck)\<close>
 
 definition stuck :: "config \<Rightarrow> bool" where
   "stuck cfg \<equiv>
      let (e, st, ctx) = cfg in
-     \<not> value e \<and> \<not> (\<exists>cfg'. cfg \<longrightarrow> cfg')"
+     \<not> is_value e \<and> \<not> (\<exists>cfg'. cfg \<leadsto> cfg')"
 
 
 section \<open>Type Safety Theorem\<close>
@@ -44,7 +44,7 @@ theorem type_safety:
   shows "\<not> stuck (e, st, ctx)"
 proof -
   from progress[unfolded progress_stmt_def, rule_format, OF assms]
-  have "value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))" .
+  have "is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<leadsto> (e', st', ctx'))" .
   then show ?thesis
     unfolding stuck_def by auto
 qed
@@ -61,7 +61,7 @@ text \<open>Multi-step safety: well-typed terms stay well-typed after any steps
 theorem multi_step_safety:
   assumes "has_type [] \<Sigma> LPublic e T \<epsilon>"
       and "store_wf \<Sigma> st"
-      and "(e, st, ctx) \<longrightarrow>* (e', st', ctx')"
+      and "(e, st, ctx) \<leadsto>* (e', st', ctx')"
   shows "\<exists>\<Sigma>'. store_wf \<Sigma>' st' \<and> \<not> stuck (e', st', ctx')"
   using assms
 proof (induction "(e, st, ctx)" "(e', st', ctx')" arbitrary: e st ctx e' st' ctx' \<Sigma> T \<epsilon>
@@ -76,7 +76,7 @@ next
   (* MS_Step.prems: has_type, store_wf *)
   obtain e2 st2 ctx2 where cfg2_eq: "cfg2 = (e2, st2, ctx2)"
     by (metis surjective_pairing)
-  have hstep: "(e, st, ctx) \<longrightarrow> (e2, st2, ctx2)"
+  have hstep: "(e, st, ctx) \<leadsto> (e2, st2, ctx2)"
     using MS_Step.hyps(1) cfg2_eq by simp
   (* Apply preservation to get typing and store_wf for intermediate state *)
   from preservation[OF MS_Step.prems(1) MS_Step.prems(2) hstep]

@@ -40,9 +40,7 @@ use crate::toolchain::{IosToolchain, ToolchainError};
 #[allow(unused_imports)]
 use crate::toolchain::IosArch;
 
-use crate::swift_bridge::{
-    generate_swift_bridge, generate_swift_c_bridge, generate_spm_package,
-};
+use crate::swift_bridge::{generate_spm_package, generate_swift_bridge, generate_swift_c_bridge};
 
 // Note: Program is not used in current API but kept for future IR-driven codegen
 #[allow(unused_imports)]
@@ -163,10 +161,7 @@ impl IosBuilder {
 
     /// Create builder with custom toolchain.
     #[cfg(target_os = "macos")]
-    pub fn with_toolchain(
-        toolchain: IosToolchain,
-        output_dir: impl AsRef<Path>,
-    ) -> Self {
+    pub fn with_toolchain(toolchain: IosToolchain, output_dir: impl AsRef<Path>) -> Self {
         Self {
             toolchain,
             output_dir: output_dir.as_ref().to_path_buf(),
@@ -192,12 +187,12 @@ impl IosBuilder {
 
         // Write source files
         fs::write(
-            src_dir.join(&format!("{}.swift", config.framework_name)),
+            src_dir.join(format!("{}.swift", config.framework_name)),
             &swift_bridge,
         )?;
         fs::write(src_dir.join("riina_bridge.c"), &c_bridge)?;
         fs::write(
-            src_dir.join(&format!("{}-Bridging-Header.h", config.framework_name)),
+            src_dir.join(format!("{}-Bridging-Header.h", config.framework_name)),
             &bridging_header,
         )?;
         fs::write(self.output_dir.join("Package.swift"), &package_swift)?;
@@ -300,12 +295,12 @@ pub fn build_scaffolding(
 
     // Write source files
     fs::write(
-        src_dir.join(&format!("{}.swift", config.framework_name)),
+        src_dir.join(format!("{}.swift", config.framework_name)),
         &swift_bridge,
     )?;
     fs::write(src_dir.join("riina_bridge.c"), &c_bridge)?;
     fs::write(
-        src_dir.join(&format!("{}-Bridging-Header.h", config.framework_name)),
+        src_dir.join(format!("{}-Bridging-Header.h", config.framework_name)),
         &bridging_header,
     )?;
     fs::write(output_dir.join("Package.swift"), &package_swift)?;
@@ -390,11 +385,23 @@ pub fn create_xcframework(
     let output = Command::new("xcodebuild")
         .arg("-create-xcframework")
         .arg("-framework")
-        .arg(device_path.as_ref().join(format!("{}.framework", framework_name)))
+        .arg(
+            device_path
+                .as_ref()
+                .join(format!("{}.framework", framework_name)),
+        )
         .arg("-framework")
-        .arg(simulator_path.as_ref().join(format!("{}.framework", framework_name)))
+        .arg(
+            simulator_path
+                .as_ref()
+                .join(format!("{}.framework", framework_name)),
+        )
         .arg("-output")
-        .arg(output_path.as_ref().join(format!("{}.xcframework", framework_name)))
+        .arg(
+            output_path
+                .as_ref()
+                .join(format!("{}.xcframework", framework_name)),
+        )
         .output()
         .map_err(|e| IosBuildError::Io(e))?;
 

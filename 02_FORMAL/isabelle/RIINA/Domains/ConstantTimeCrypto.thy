@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ConstantTimeCrypto - Isabelle/HOL Port
@@ -62,18 +64,19 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* TimingOperation (matches Coq: Inductive TimingOperation) *)
 datatype timing_operation =
-    Op_Branch  (* Conditional branches *)
-  |     Op_MemAccess  (* Memory access patterns *)
-  |     Op_Division  (* Variable-time division *)
-  |     Op_Multiply  (* Variable-time multiplication *)
-  |     Op_TableLookup  (* Cache-dependent lookups *)
+    Op_Branch
+  |     Op_MemAccess
+  |     Op_Division
+  |     Op_Multiply
+  |     Op_TableLookup
 
 (* CTOperation (matches Coq: Inductive CTOperation) *)
 datatype ct_operation =
-    CT_Select  (* Branchless selection *)
-  |     CT_MaskedLoad  (* Constant-address loads *)
-  |     CT_CTDiv  (* Constant-time division *)
-  |     CT_CTMul  (* Constant-time multiply *)
+    CT_Select
+  |     CT_MaskedLoad
+  |     CT_CTDiv
+  |     CT_CTMul
+  |     CT_ScatterGather
 
 (* CryptoOperation (matches Coq: Inductive CryptoOperation) *)
 datatype crypto_operation =
@@ -127,17 +130,17 @@ definition crypto_safe :: "CryptoImplementation \<Rightarrow> bool" where
 (* riina_ct_config (matches Coq: Definition riina_ct_config) *)
 definition riina_ct_config :: "ConstantTimeConfig" where
   "riina_ct_config \<equiv> mkCTConfig
-  true true true true true true true"
+  True True True True True True True"
 
 (* riina_aes (matches Coq: Definition riina_aes) *)
 definition riina_aes :: "CryptoImplementation" where
   "riina_aes \<equiv> mkCryptoImpl
-  Crypto_AES_Encrypt true true true"
+  Crypto_AES_Encrypt True True True"
 
 (* riina_sha256 (matches Coq: Definition riina_sha256) *)
 definition riina_sha256 :: "CryptoImplementation" where
   "riina_sha256 \<equiv> mkCryptoImpl
-  Crypto_SHA256 true true false"
+  Crypto_SHA256 True True False"
 
 (* andb_true_iff (matches Coq) *)
 lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"

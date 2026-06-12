@@ -1,3 +1,4 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
@@ -170,7 +171,7 @@ definition is_canonical :: "bool" where
 
 (* authorized (matches Coq: Definition authorized) *)
 definition authorized :: "bool" where
-  "authorized \<equiv> True"
+  "authorized \<equiv> user = resource"
 
 (* web_001_reflected_xss_impossible (matches Coq) *)
 lemma web_001_reflected_xss_impossible: "\<forall> (content : HTMLContent), xss_safe content \<longrightarrow> True"

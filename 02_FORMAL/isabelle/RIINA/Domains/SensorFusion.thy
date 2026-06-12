@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SensorFusion - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AnomalyResult      | anomaly_result         | OK     |
+ * | honest_sensors     | honest_sensors         | OK     |
  * | byzantine_tolerant | byzantine_tolerant     | OK     |
  * | sensor_authenticated | sensor_authenticated   | OK     |
  * | reading_fresh      | reading_fresh          | OK     |
@@ -63,7 +66,7 @@
  *)
 
 theory SensorFusion
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AnomalyResult (matches Coq: Inductive AnomalyResult) *)
@@ -72,42 +75,48 @@ datatype anomaly_result =
   |     Suspicious
   |     Anomalous
 
+(* honest_sensors (matches Coq: Definition honest_sensors) *)
+definition honest_sensors :: "list nat" where
+  "honest_sensors \<equiv> filter (fun s => (\<not> (existsb) (fun b => (s = b)) byzantine)) all_sensors"
+
 (* byzantine_tolerant (matches Coq: Definition byzantine_tolerant) *)
 definition byzantine_tolerant :: "bool" where
-  "byzantine_tolerant \<equiv> Nat"
+  "byzantine_tolerant \<equiv> ((3 \<le> *) f + 1) n"
 
 (* sensor_authenticated (matches Coq: Definition sensor_authenticated) *)
 definition sensor_authenticated :: "Reading \<Rightarrow> bool" where
-  "sensor_authenticated reading \<equiv> existsb (fun sig => Nat"
+  "sensor_authenticated reading \<equiv> existsb (fun sig => ((reading_signature = reading)) sig) valid_sigs"
 
 (* reading_fresh (matches Coq: Definition reading_fresh) *)
 definition reading_fresh :: "Reading \<Rightarrow> bool" where
-  "reading_fresh reading \<equiv> Nat"
+  "reading_fresh reading \<equiv> ((current_time \<le> -) reading_timestamp reading) max_age"
 
 (* trust_sufficient (matches Coq: Definition trust_sufficient) *)
 definition trust_sufficient :: "Sensor \<Rightarrow> nat \<Rightarrow> bool" where
-  "trust_sufficient sensor min_trust \<equiv> Nat"
+  "trust_sufficient sensor min_trust \<equiv> (min_trust \<le> (sensor_trust) sensor)"
 
 (* cross_valid (matches Coq: Definition cross_valid) *)
 definition cross_valid :: "CrossValidation \<Rightarrow> bool" where
-  "cross_valid cv \<equiv> Nat"
+  "cross_valid cv \<equiv> ((cv_difference \<le> cv)) (cv_threshold cv)"
 
 (* abs_diff (matches Coq: Definition abs_diff) *)
 definition abs_diff :: "nat" where
-  "abs_diff \<equiv> if Nat"
+  "abs_diff \<equiv> if (a \<le> b) then b - a else a - b"
 
 (* detect_anomaly (matches Coq: Definition detect_anomaly) *)
 definition detect_anomaly :: "AnomalyResult" where
   "detect_anomaly \<equiv> let diff := abs_diff value expected in
-  if Nat"
+  if ((threshold < *) 2) diff then Anomalous
+  else if (threshold < diff) then Suspicious
+  else Normal"
 
 (* fusion_sources_ok (matches Coq: Definition fusion_sources_ok) *)
 definition fusion_sources_ok :: "FusedResult \<Rightarrow> nat \<Rightarrow> bool" where
-  "fusion_sources_ok result min_sources \<equiv> Nat"
+  "fusion_sources_ok result min_sources \<equiv> (min_sources \<le> (length) (fused_sources result))"
 
 (* confidence_bounded (matches Coq: Definition confidence_bounded) *)
 definition confidence_bounded :: "FusedResult \<Rightarrow> nat \<Rightarrow> bool" where
-  "confidence_bounded result max_conf \<equiv> Nat"
+  "confidence_bounded result max_conf \<equiv> ((fused_confidence \<le> result)) max_conf"
 
 (* temporally_consistent (matches Coq: Definition temporally_consistent) *)
 definition temporally_consistent :: "bool" where
@@ -115,57 +124,56 @@ definition temporally_consistent :: "bool" where
     reading_timestamp r1 <= reading_timestamp r2 \/
     reading_timestamp r2 <= reading_timestamp r1"
 
-(* sensor_types_diverse (matches Coq: Definition sensor_types_diverse) *)
-definition sensor_types_diverse :: "nat" where
-  "sensor_types_diverse \<equiv> length (nodup Nat"
+(* sensor_types_diverse - complex match, needs manual translation *)
+definition sensor_types_diverse :: "bool" where "sensor_types_diverse = undefined"
 
 (* weight_valid (matches Coq: Definition weight_valid) *)
 definition weight_valid :: "bool" where
-  "weight_valid \<equiv> Nat"
+  "weight_valid \<equiv> (weight \<le> max_weight)"
 
 (* is_outlier (matches Coq: Definition is_outlier) *)
 definition is_outlier :: "bool" where
-  "is_outlier \<equiv> Nat"
+  "is_outlier \<equiv> (threshold < (abs_diff) value median)"
 
 (* quorum_reached (matches Coq: Definition quorum_reached) *)
 definition quorum_reached :: "bool" where
-  "quorum_reached \<equiv> Nat"
+  "quorum_reached \<equiv> ((total \<le> *) required_pct / 100) agreeing"
 
 (* reading_not_replayed (matches Coq: Definition reading_not_replayed) *)
 definition reading_not_replayed :: "Reading \<Rightarrow> bool" where
-  "reading_not_replayed reading \<equiv> negb (existsb (fun t => Nat"
+  "reading_not_replayed reading \<equiv> (\<not> (existsb) (fun t => (t = (reading_timestamp) reading)) seen_timestamps)"
 
 (* calibration_current (matches Coq: Definition calibration_current) *)
 definition calibration_current :: "bool" where
-  "calibration_current \<equiv> Nat"
+  "calibration_current \<equiv> ((current \<le> -) last_cal) max_age"
 
 (* in_valid_range (matches Coq: Definition in_valid_range) *)
 definition in_valid_range :: "bool" where
-  "in_valid_range \<equiv> andb (Nat"
+  "in_valid_range \<equiv> ((min_val \<le> value) \<and> (value \<le> max_val))"
 
 (* rate_of_change_ok (matches Coq: Definition rate_of_change_ok) *)
 definition rate_of_change_ok :: "bool" where
-  "rate_of_change_ok \<equiv> Nat"
+  "rate_of_change_ok \<equiv> ((abs_diff \<le> prev) current) max_delta"
 
 (* redundancy_sufficient (matches Coq: Definition redundancy_sufficient) *)
 definition redundancy_sufficient :: "bool" where
-  "redundancy_sufficient \<equiv> Nat"
+  "redundancy_sufficient \<equiv> (min_redundancy \<le> active_sensors)"
 
 (* sensor_healthy (matches Coq: Definition sensor_healthy) *)
 definition sensor_healthy :: "bool" where
-  "sensor_healthy \<equiv> Nat"
+  "sensor_healthy \<equiv> (error_rate \<le> max_error)"
 
 (* channel_secure (matches Coq: Definition channel_secure) *)
 definition channel_secure :: "bool" where
-  "channel_secure \<equiv> andb encryption auth"
+  "channel_secure \<equiv> (encryption \<and> auth)"
 
 (* all_readings_logged (matches Coq: Definition all_readings_logged) *)
 definition all_readings_logged :: "bool" where
-  "all_readings_logged \<equiv> forallb (fun r => existsb (fun l => Nat"
+  "all_readings_logged \<equiv> forallb (fun r => existsb (fun l => (r = l)) logged) readings"
 
 (* sensor_layers (matches Coq: Definition sensor_layers) *)
 definition sensor_layers :: "bool" where
-  "sensor_layers \<equiv> andb auth (andb fresh (andb bft anomaly))"
+  "sensor_layers \<equiv> (auth \<and> (andb) fresh ((bft \<and> anomaly)))"
 
 (* sensor_001_byzantine_threshold (matches Coq) *)
 lemma sensor_001_byzantine_threshold: "\<forall> (n f : nat), byzantine_tolerant n f = True \<longrightarrow> 3 * f + 1 \<le> n"

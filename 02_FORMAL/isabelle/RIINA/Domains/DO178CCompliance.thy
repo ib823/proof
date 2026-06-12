@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DO178CCompliance - Isabelle/HOL Port
@@ -89,15 +91,17 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* DAL (matches Coq: Inductive DAL) *)
 datatype dal =
-    DAL_A  (* Catastrophic - failure may cause crash *)
-  |     DAL_B  (* Hazardous - large reduction in safety margins *)
-  |     DAL_C  (* Major - significant reduction in safety margins *)
-  |     DAL_D  (* Minor - slight reduction in safety margins *)
+    DAL_A
+  |     DAL_B
+  |     DAL_C
+  |     DAL_D
+  |     DAL_E
 
 (* FormalMethodCategory (matches Coq: Inductive FormalMethodCategory) *)
 datatype formal_method_category =
-    FM_TheoremProving  (* Interactive theorem provers like Coq *)
-  |     FM_ModelChecking  (* Exhaustive state space exploration *)
+    FM_TheoremProving
+  |     FM_ModelChecking
+  |     FM_AbstractInterp
 
 (* PlanningObjectives (matches Coq: Record PlanningObjectives) *)
 record planning_objectives =
@@ -134,7 +138,7 @@ record verification_process =
   verif_hw_sw_integration_tested :: bool
   verif_coverage_analysis_done :: bool
   verif_structural_coverage :: bool
-  verif_mc_dc_coverage :: bool  (* Level A specific *)
+  verif_mc_dc_coverage :: bool
 
 (* ConfigurationManagement (matches Coq: Record ConfigurationManagement) *)
 record configuration_management =
@@ -153,7 +157,7 @@ record quality_assurance =
   qa_compliance_assured :: bool
   qa_audits_performed :: bool
   qa_records_maintained :: bool
-  qa_independence :: bool  (* Level A requires independent QA *)
+  qa_independence :: bool
 
 (* FormalMethods (matches Coq: Record FormalMethods) *)
 record formal_methods =
@@ -175,7 +179,8 @@ record do178_c_compliance =
   do178c_qa :: QualityAssurance
   do178c_fm :: option
 
-(* dal_leq - complex match, manual review needed *)
+(* dal_leq - complex match, needs manual translation *)
+definition dal_leq :: "bool" where "dal_leq = undefined"
 
 (* riina_fm_category (matches Coq: Definition riina_fm_category) *)
 definition riina_fm_category :: "FormalMethodCategory" where
@@ -183,31 +188,31 @@ definition riina_fm_category :: "FormalMethodCategory" where
 
 (* mk_compliant_planning (matches Coq: Definition mk_compliant_planning) *)
 definition mk_compliant_planning :: "PlanningObjectives" where
-  "mk_compliant_planning \<equiv> mkPlanning true true true true"
+  "mk_compliant_planning \<equiv> mkPlanning True True True True"
 
 (* mk_compliant_development (matches Coq: Definition mk_compliant_development) *)
 definition mk_compliant_development :: "DevelopmentProcess" where
   "mk_compliant_development \<equiv> mkDev
-  true true true true true true true true true true true true true true true true"
+  True True True True True True True True True True True True True True True True"
 
 (* mk_compliant_verification (matches Coq: Definition mk_compliant_verification) *)
 definition mk_compliant_verification :: "VerificationProcess" where
   "mk_compliant_verification \<equiv> mkVerif
-  true true true true true true true true"
+  True True True True True True True True"
 
 (* mk_compliant_cm (matches Coq: Definition mk_compliant_cm) *)
 definition mk_compliant_cm :: "ConfigurationManagement" where
   "mk_compliant_cm \<equiv> mkCM
-  true true true true true true true true true"
+  True True True True True True True True True"
 
 (* mk_compliant_qa (matches Coq: Definition mk_compliant_qa) *)
 definition mk_compliant_qa :: "QualityAssurance" where
-  "mk_compliant_qa \<equiv> mkQA true true true true"
+  "mk_compliant_qa \<equiv> mkQA True True True True"
 
 (* mk_compliant_fm (matches Coq: Definition mk_compliant_fm) *)
 definition mk_compliant_fm :: "FormalMethods" where
   "mk_compliant_fm \<equiv> mkFM
-  FM_TheoremProving true true true true true true"
+  FM_TheoremProving True True True True True True"
 
 (* planning_compliant (matches Coq: Definition planning_compliant) *)
 definition planning_compliant :: "PlanningObjectives \<Rightarrow> bool" where
@@ -274,7 +279,8 @@ definition fm_compliant :: "FormalMethods \<Rightarrow> bool" where
   fm_soundness_justified f \<and>
   fm_completeness_assessed f"
 
-(* do178c_level_a_compliant - complex match, manual review needed *)
+(* do178c_level_a_compliant - complex match, needs manual translation *)
+definition do178c_level_a_compliant :: "bool" where "do178c_level_a_compliant = undefined"
 
 (* riina_do178c (matches Coq: Definition riina_do178c) *)
 definition riina_do178c :: "DO178CCompliance" where

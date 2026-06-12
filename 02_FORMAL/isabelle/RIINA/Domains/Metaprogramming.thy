@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Metaprogramming - Isabelle/HOL Port
@@ -38,18 +40,27 @@
  * | StaticAssert       | static_assert          | OK     |
  * | SecurityCheck      | security_check         | OK     |
  * | fragment_type_eqb  | fragment_type_eqb      | OK     |
+ * | token_stream_size  | token_stream_size      | OK     |
  * | tokens_well_formed | tokens_well_formed     | OK     |
+ * | free_vars          | free_vars              | OK     |
+ * | ast_size           | ast_size               | OK     |
+ * | ast_well_formed    | ast_well_formed        | OK     |
  * | pattern_covers_input | pattern_covers_input   | OK     |
  * | macro_well_formed  | macro_well_formed      | OK     |
+ * | expand_macro_fuel  | expand_macro_fuel      | OK     |
  * | is_name_captured   | is_name_captured       | OK     |
  * | impl_satisfies_bound | impl_satisfies_bound   | OK     |
  * | dsl_syntax_valid   | dsl_syntax_valid       | OK     |
  * | audit_complete     | audit_complete         | OK     |
  * | is_security_sensitive | is_security_sensitive  | OK     |
+ * | const_expr_size    | const_expr_size        | OK     |
+ * | eval_const_fuel    | eval_const_fuel        | OK     |
  * | secure_sandbox     | secure_sandbox         | OK     |
  * | sandbox_isolated   | sandbox_isolated       | OK     |
+ * | all_fields_zeroed  | all_fields_zeroed      | OK     |
  * | resolve_crate_path | resolve_crate_path     | OK     |
  * | attr_preserves_structure | attr_preserves_structure | OK     |
+ * | expand_repetition  | expand_repetition      | OK     |
  * | eval_static_assert | eval_static_assert     | OK     |
  * | tokens_well_formed_app | tokens_well_formed_app | OK     |
  * | K_001_01           | K_001_01               | OK     |
@@ -81,17 +92,17 @@
  *)
 
 theory Metaprogramming
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* FragmentType (matches Coq: Inductive FragmentType) *)
 datatype fragment_type =
-    FTExpr  (* Expression *)
-  |     FTStmt  (* Statement *)
-  |     FTIdent  (* Identifier *)
-  |     FTType  (* Type *)
-  |     FTPattern  (* Pattern *)
-  |     FTBlock  (* Block *)
+    FTExpr
+  |     FTStmt
+  |     FTIdent
+  |     FTType
+  |     FTPattern
+  |     FTBlock
 
 (* Token (matches Coq: Inductive Token) *)
 datatype token =
@@ -102,16 +113,16 @@ datatype token =
 
 (* AST (matches Coq: Inductive AST) *)
 datatype ast =
-    ASTVar  (* Variable with de Bruijn index *)
-  |     ASTLam  (* Lambda *)
-  |     ASTApp  (* Application *)
-  |     ASTLet  (* Let binding *)
-  |     ASTBlock  (* Block of statements *)
+    ASTVar
+  |     ASTLam
+  |     ASTApp
+  |     ASTLet
+  |     ASTBlock
 
 (* ExpansionStep (matches Coq: Inductive ExpansionStep) *)
 datatype expansion_step =
     ESInput
-  |     ESMatched  (* Which pattern matched *)
+  |     ESMatched
   |     ESOutput
 
 (* ConstResult (matches Coq: Inductive ConstResult) *)
@@ -124,7 +135,7 @@ datatype const_result =
 (* PatternMatch (matches Coq: Inductive PatternMatch) *)
 datatype pattern_match =
     PMExact
-  |     PMCapture  (* Capture with binding index *)
+  |     PMCapture
   |     PMRepeat
 
 (* DeriveResult (matches Coq: Inductive DeriveResult) *)
@@ -168,7 +179,7 @@ record macro_def =
   macro_name :: string
   macro_patterns :: 'a list
   macro_templates :: 'a list
-  macro_templates_wf :: bool  (* Templates are well-formed *)
+  macro_templates_wf :: bool
 
 (* ExpansionContext (matches Coq: Record ExpansionContext) *)
 record expansion_context =
@@ -248,55 +259,98 @@ record static_assert =
 record security_check =
   sc_name :: string
   sc_condition :: ConstExpr
-  sc_severity :: nat  (* 0 = info, 1 = warn, 2 = error *)
+  sc_severity :: nat
 
-(* fragment_type_eqb - complex match, manual review needed *)
+(* fragment_type_eqb - complex match, needs manual translation *)
+definition fragment_type_eqb :: "bool" where "fragment_type_eqb = undefined"
+
+(* token_stream_size (matches Coq: Definition token_stream_size) *)
+fun token_stream_size :: "TokenStream \<Rightarrow> nat" where
+
 
 (* tokens_well_formed (matches Coq: Definition tokens_well_formed) *)
 definition tokens_well_formed :: "TokenStream \<Rightarrow> bool" where
-  "tokens_well_formed ts \<equiv> true"
+  "tokens_well_formed ts \<equiv> True"
 
-(* pattern_covers_input - complex match, manual review needed *)
+(* free_vars (matches Coq: Definition free_vars) *)
+fun free_vars :: "AST \<Rightarrow> nat \<Rightarrow> list nat" where
+
+
+(* ast_size (matches Coq: Definition ast_size) *)
+fun ast_size :: "AST \<Rightarrow> nat" where
+
+
+(* ast_well_formed (matches Coq: Definition ast_well_formed) *)
+fun ast_well_formed :: "AST \<Rightarrow> nat \<Rightarrow> bool" where
+
+
+(* pattern_covers_input - complex match, needs manual translation *)
+definition pattern_covers_input :: "bool" where "pattern_covers_input = undefined"
 
 (* macro_well_formed (matches Coq: Definition macro_well_formed) *)
 definition macro_well_formed :: "MacroDef \<Rightarrow> bool" where
   "macro_well_formed m \<equiv> macro_templates_wf m \<and> 
   forallb tokens_well_formed (macro_templates m)"
 
+(* expand_macro_fuel (matches Coq: Definition expand_macro_fuel) *)
+fun expand_macro_fuel :: "ExpansionFuel \<Rightarrow> MacroDef \<Rightarrow> TokenStream \<Rightarrow> option TokenStream" where
+  "expand_macro_fuel 0 = None"
+
 (* is_name_captured (matches Coq: Definition is_name_captured) *)
 definition is_name_captured :: "HygienicContext \<Rightarrow> string \<Rightarrow> ScopeId \<Rightarrow> bool" where
-  "is_name_captured ctx name use_scope \<equiv> negb (Nat"
+  "is_name_captured ctx name use_scope \<equiv> (\<not> (Nat.eqb) (hyg_current_scope ctx) use_scope)"
 
 (* impl_satisfies_bound (matches Coq: Definition impl_satisfies_bound) *)
 definition impl_satisfies_bound :: "ImplBlock \<Rightarrow> TraitBound \<Rightarrow> bool" where
-  "impl_satisfies_bound impl bound \<equiv> String"
+  "impl_satisfies_bound impl bound \<equiv> String.((impl_trait = impl)) (tb_trait_name bound)"
 
-(* dsl_syntax_valid - complex match, manual review needed *)
+(* dsl_syntax_valid - complex match, needs manual translation *)
+definition dsl_syntax_valid :: "bool" where "dsl_syntax_valid = undefined"
 
 (* audit_complete (matches Coq: Definition audit_complete) *)
 definition audit_complete :: "ExpansionTrace \<Rightarrow> AuditTrail \<Rightarrow> bool" where
-  "audit_complete trace trail \<equiv> Nat"
+  "audit_complete trace trail \<equiv> ((List.length \<le> trace)) (List.length trail + 1)"
 
 (* is_security_sensitive (matches Coq: Definition is_security_sensitive) *)
 definition is_security_sensitive :: "string \<Rightarrow> bool" where
-  "is_security_sensitive macro_name \<equiv> orb (String"
+  "is_security_sensitive macro_name \<equiv> (String.(macro_name = "unsafe_") \<or> ((String.(\<or> = macro_name)) "syscall_")
+           (String.(macro_name = "ffi_")))"
+
+(* const_expr_size (matches Coq: Definition const_expr_size) *)
+fun const_expr_size :: "ConstExpr \<Rightarrow> nat" where
+
+
+(* eval_const_fuel (matches Coq: Definition eval_const_fuel) *)
+fun eval_const_fuel :: "nat \<Rightarrow> ConstExpr \<Rightarrow> option nat" where
+  "eval_const_fuel 0 = None"
 
 (* secure_sandbox (matches Coq: Definition secure_sandbox) *)
 definition secure_sandbox :: "SandboxState" where
-  "secure_sandbox \<equiv> mkSandbox false false false false"
+  "secure_sandbox \<equiv> mkSandbox False False False False"
 
 (* sandbox_isolated (matches Coq: Definition sandbox_isolated) *)
 definition sandbox_isolated :: "SandboxState \<Rightarrow> bool" where
-  "sandbox_isolated s \<equiv> negb (sb_can_read_fs s) \<and> negb (sb_can_write_fs s) \<and>
-  negb (sb_can_network s) \<and> negb (sb_can_exec s)"
+  "sandbox_isolated s \<equiv> (\<not> (sb_can_read_fs) s) \<and> (\<not> (sb_can_write_fs) s) \<and>
+  (\<not> (sb_can_network) s) \<and> (\<not> (sb_can_exec) s)"
+
+(* all_fields_zeroed (matches Coq: Definition all_fields_zeroed) *)
+fun all_fields_zeroed :: "bool" where
+  "all_fields_zeroed ZSZeroed = all_fields_zeroed"
+|   "all_fields_zeroed _ = false"
 
 (* resolve_crate_path (matches Coq: Definition resolve_crate_path) *)
 definition resolve_crate_path :: "ExpansionContext \<Rightarrow> CratePath" where
   "resolve_crate_path ctx \<equiv> [ctx_crate ctx]"
 
-(* attr_preserves_structure - complex match, manual review needed *)
+(* attr_preserves_structure - complex match, needs manual translation *)
+definition attr_preserves_structure :: "bool" where "attr_preserves_structure = undefined"
 
-(* eval_static_assert - complex match, manual review needed *)
+(* expand_repetition (matches Coq: Definition expand_repetition) *)
+definition expand_repetition :: "nat \<Rightarrow> TokenStream \<Rightarrow> list TokenStream" where
+  "expand_repetition count template \<equiv> repeat template count"
+
+(* eval_static_assert - complex match, needs manual translation *)
+definition eval_static_assert :: "bool" where "eval_static_assert = undefined"
 
 (* tokens_well_formed_app (matches Coq) *)
 lemma tokens_well_formed_app: "\<forall> ts1 ts2, tokens_well_formed ts1 = True \<longrightarrow> tokens_well_formed ts2 = True \<longrightarrow> tokens_well_formed (ts1 ++ ts2) = True"
@@ -331,7 +385,7 @@ lemma K_001_07: "\<forall> (ts : TokenStream), tokens_well_formed ts = True \<lo
   by simp
 
 (* K_001_08 (matches Coq) *)
-lemma K_001_08: "\<forall> (impl : ImplBlock) (bound : TraitBound), impl_satisfies_bound impl bound = True \<longrightarrow> String.eqb (impl_trait impl) (tb_trait_name bound) = True"
+lemma K_001_08: "\<forall> (impl : ImplBlock) (bound : TraitBound), impl_satisfies_bound impl bound = True \<longrightarrow> String.((impl_trait = impl)) (tb_trait_name bound) = True"
   by auto
 
 (* K_001_09 (matches Coq) *)
@@ -371,7 +425,7 @@ lemma K_001_16: "\<forall> (cg : ConstGeneric), cg_type cg = FTExpr \<or> cg_typ
   by simp
 
 (* K_001_17 (matches Coq) *)
-lemma K_001_17: "\<forall> (sa : StaticAssert) (fuel : nat) (n : nat), eval_const_fuel fuel (sa_condition sa) = Some n \<longrightarrow> eval_static_assert fuel sa = negb (Nat.eqb n 0)"
+lemma K_001_17: "\<forall> (sa : StaticAssert) (fuel : nat) (n : nat), eval_const_fuel fuel (sa_condition sa) = Some n \<longrightarrow> eval_static_assert fuel sa = (\<not> (Nat.eqb) n 0)"
   by simp
 
 (* K_001_18 (matches Coq) *)

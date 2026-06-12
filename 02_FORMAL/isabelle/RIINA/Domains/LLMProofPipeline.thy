@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA LLMProofPipeline - Isabelle/HOL Port
@@ -13,7 +15,10 @@
  * |--------------------|------------------------|--------|
  * | formula            | formula                | OK     |
  * | proof_term         | proof_term             | OK     |
+ * | formula_eqb        | formula_eqb            | OK     |
+ * | sem                | sem                    | OK     |
  * | valid              | valid                  | OK     |
+ * | check              | check                  | OK     |
  * | satisfies_ctx      | satisfies_ctx          | OK     |
  * | identity_proof     | identity_proof         | OK     |
  * | compose_proof      | compose_proof          | OK     |
@@ -43,12 +48,8 @@
  *)
 
 theory LLMProofPipeline
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* formula (matches Coq: Inductive formula) *)
 datatype formula =
@@ -59,16 +60,27 @@ datatype formula =
 
 (* proof_term (matches Coq: Inductive proof_term) *)
 datatype proof_term =
-    PAxiom  (* use hypothesis by index *)
-  |     PImplIntro  (* lambda: assume A, prove B *)
-  |     PImplElim  (* modus ponens *)
+    PAxiom
+  |     PImplIntro
+  |     PImplElim
   |     PConjIntro
   |     PConjElimL
   |     PConjElimR
 
+(* formula_eqb - complex match, needs manual translation *)
+definition formula_eqb :: "bool" where "formula_eqb = undefined"
+
+(* sem (matches Coq: Definition sem) *)
+fun sem :: "valuation \<Rightarrow> formula \<Rightarrow> bool" where
+
+
 (* valid (matches Coq: Definition valid) *)
 definition valid :: "formula \<Rightarrow> bool" where
   "valid f \<equiv> forall v, sem v f"
+
+(* check (matches Coq: Definition check) *)
+fun check :: "context \<Rightarrow> proof_term \<Rightarrow> option formula" where
+  "check None = None"
 
 (* satisfies_ctx (matches Coq: Definition satisfies_ctx) *)
 definition satisfies_ctx :: "valuation \<Rightarrow> context \<Rightarrow> bool" where
@@ -80,9 +92,7 @@ definition identity_proof :: "formula \<Rightarrow> proof_term" where
 
 (* compose_proof (matches Coq: Definition compose_proof) *)
 definition compose_proof :: "proof_term" where
-  "compose_proof \<equiv> (* In context [A->B, B->C], prove A->C *)
-  (* We build a closed proof: assume A->B and B->C in context, then intro A *)
-  PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0)))"
+  "compose_proof \<equiv> PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0)))"
 
 (* conj_intro_proof (matches Coq: Definition conj_intro_proof) *)
 definition conj_intro_proof :: "proof_term" where

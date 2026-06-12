@@ -12,16 +12,14 @@ resolver = "2"
 members = [
     "crates/riina-core",
     "crates/riina-effect",
-    "crates/riina-lang-lexer",
-    "crates/riina-lang-parser",
-    "crates/riina-lang-types",
-    "crates/riina-lang-codegen",
-    "crates/riinac",
+    # NOTE: the former `crates/riinac` stub (a "Not yet implemented" placeholder)
+    # was retired 2026-06-01 — the real RIINA compiler lives in 03_PROTO/crates/riinac.
     "crates/riina-build",
     "crates/riina-verify",
     "tools/hash-chain",
     "tools/build-manifest",
     "tools/artifact-sign",
+    "tools/runtime-proof-verify",
 ]
 
 # Exclude test crates from main build
@@ -32,7 +30,7 @@ exclude = [
 [workspace.package]
 version = "0.2.0"
 edition = "2021"
-rust-version = "1.84.0"
+rust-version = "1.94.1"
 license = "Proprietary"
 repository = "https://github.com/ib823/riina"
 authors = ["RIINA Team <security@riina.my>"]
@@ -43,10 +41,6 @@ authors = ["RIINA Team <security@riina.my>"]
 # =============================================================================
 riina-core = { path = "crates/riina-core" }
 riina-effect = { path = "crates/riina-effect" }
-riina-lang-lexer = { path = "crates/riina-lang-lexer" }
-riina-lang-parser = { path = "crates/riina-lang-parser" }
-riina-lang-types = { path = "crates/riina-lang-types" }
-riina-lang-codegen = { path = "crates/riina-lang-codegen" }
 
 # =============================================================================
 # BUILD-TIME ONLY DEPENDENCIES
@@ -152,6 +146,15 @@ lto = "fat"
 panic = "abort"
 codegen-units = 1
 strip = "symbols"
+
+# Constant-time discipline for the crypto crate: overflow checks insert
+# `jo`/`jc`→panic BRANCHES on the overflow flag of secret-derived arithmetic
+# (a secret-dependent branch — flagged by `scripts/ct-structural-check.sh`).
+# riina-core's modular/limb arithmetic is wrapping by design and verified by KATs
+# + the Coq formal-equivalence proofs, so checks here are counter-productive
+# (CT + perf). Overflow checks remain ON for the rest of the workspace.
+[profile.release.package.riina-core]
+overflow-checks = false
 
 [profile.test]
 opt-level = 1

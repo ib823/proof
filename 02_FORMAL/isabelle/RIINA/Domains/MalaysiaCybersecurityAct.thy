@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaCybersecurityAct - Isabelle/HOL Port
@@ -21,6 +23,8 @@
  * | controls_sufficient | controls_sufficient    | OK     |
  * | cssp_valid         | cssp_valid             | OK     |
  * | act854_compliant   | act854_compliant       | OK     |
+ * | all_ncii_sectors   | all_ncii_sectors       | OK     |
+ * | all_risk_levels    | all_risk_levels        | OK     |
  * | ceo_liability_applies | ceo_liability_applies  | OK     |
  * | sector_critical    | sector_critical        | OK     |
  * | obligation_1_risk_assessment | obligation_1_risk_assessment | OK     |
@@ -86,7 +90,7 @@ fun risk_level_nat :: "RiskLevel \<Rightarrow> nat" where
 
 (* risk_assessment_current (matches Coq: Definition risk_assessment_current) *)
 definition risk_assessment_current :: "NCIIEntity \<Rightarrow> bool" where
-  "risk_assessment_current e \<equiv> ncii_risk_assessed e = true"
+  "risk_assessment_current e \<equiv> ncii_risk_assessed e = True"
 
 (* audit_current (matches Coq: Definition audit_current) *)
 definition audit_current :: "NCIIEntity \<Rightarrow> nat \<Rightarrow> bool" where
@@ -107,7 +111,7 @@ definition controls_sufficient :: "NCIIEntity \<Rightarrow> bool" where
 
 (* cssp_valid (matches Coq: Definition cssp_valid) *)
 definition cssp_valid :: "CSSPLicense \<Rightarrow> nat \<Rightarrow> bool" where
-  "cssp_valid l current_time \<equiv> cssp_licensed l = true /\ current_time <= cssp_license_expiry l"
+  "cssp_valid l current_time \<equiv> cssp_licensed l = True /\ current_time <= cssp_license_expiry l"
 
 (* act854_compliant (matches Coq: Definition act854_compliant) *)
 definition act854_compliant :: "NCIIEntity \<Rightarrow> CSSPLicense \<Rightarrow> nat \<Rightarrow> bool" where
@@ -116,11 +120,21 @@ definition act854_compliant :: "NCIIEntity \<Rightarrow> CSSPLicense \<Rightarro
   controls_sufficient e /\
   cssp_valid l t"
 
+(* all_ncii_sectors (matches Coq: Definition all_ncii_sectors) *)
+definition all_ncii_sectors :: "list NCIISector" where
+  "all_ncii_sectors \<equiv> [Government; BankingFinance; Transport; Defense; Healthcare;
+   Telecom; Energy; Water; AgricultureFood; ScienceTechInnovation;
+   InformationComm]"
+
+(* all_risk_levels (matches Coq: Definition all_risk_levels) *)
+definition all_risk_levels :: "list RiskLevel" where
+  "all_risk_levels \<equiv> [Low; Medium; High; Critical]"
+
 (* ceo_liability_applies (matches Coq: Definition ceo_liability_applies) *)
 definition ceo_liability_applies :: "CEOLiability \<Rightarrow> bool" where
-  "ceo_liability_applies cl \<equiv> ceo_compliant cl = false ->
-  ceo_due_diligence cl = false ->
-  ceo_personally_liable cl = true"
+  "ceo_liability_applies cl \<equiv> ceo_compliant cl = False ->
+  ceo_due_diligence cl = False ->
+  ceo_personally_liable cl = True"
 
 (* sector_critical (matches Coq: Definition sector_critical) *)
 definition sector_critical :: "NCIISector \<Rightarrow> bool" where

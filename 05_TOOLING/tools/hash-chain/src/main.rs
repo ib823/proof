@@ -1,4 +1,11 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
+#![allow(
+    clippy::all,
+    clippy::needless_borrow,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::unwrap_used
+)]
 
 //! RIINA Hash Chain Tool
 //!

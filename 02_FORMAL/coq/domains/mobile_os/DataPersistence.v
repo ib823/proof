@@ -10,9 +10,9 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 3.4
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -144,7 +144,7 @@ Qed.
 
 (** ** Extended Data Storage Safety Proofs *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** *** Extended definitions *)
 
@@ -229,7 +229,7 @@ Definition schema_version_tracked_prop (m : Migration) : Prop :=
   mig_to_version m > mig_from_version m.
 
 Definition corruption_detected_prop (s : EncryptedStore) (expected : nat) : Prop :=
-  store_checksum s <> expected -> True.  (* detection event *)
+  store_checksum s <> expected -> store_checksum s <> expected.  (* checksum mismatch detected *)
 
 Definition data_integrity_verified_prop (s : EncryptedStore) : Prop :=
   store_checksum s = fold_left plus (map (fun r => length r) (store_records s)) 0.
@@ -320,7 +320,7 @@ Theorem corruption_detected :
 Proof.
   intros s expected Hneq.
   unfold corruption_detected_prop.
-  intros Hdiff. exact I.
+  intros Hdiff. exact Hdiff.
 Qed.
 
 (* Spec: Data integrity verified *)

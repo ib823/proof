@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AlgebraicEffects - Isabelle/HOL Port
@@ -27,8 +29,13 @@
  * | getBaseTy          | getBaseTy              | OK     |
  * | getEffectRow       | getEffectRow           | OK     |
  * | opSignature        | opSignature            | OK     |
+ * | handler_effects    | handler_effects        | OK     |
  * | sig_wellformed     | sig_wellformed         | OK     |
  * | row_minus          | row_minus              | OK     |
+ * | plug               | plug                   | OK     |
+ * | is_return          | is_return              | OK     |
+ * | count_continuation_uses | count_continuation_uses | OK     |
+ * | compose_handlers   | compose_handlers       | OK     |
  * | effect_polymorphic_fn | effect_polymorphic_fn  | OK     |
  * | all_effects_handled | all_effects_handled    | OK     |
  * | respects_effects   | respects_effects       | OK     |
@@ -57,7 +64,7 @@
  *)
 
 theory AlgebraicEffects
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BaseTy (matches Coq: Inductive BaseTy) *)
@@ -68,17 +75,17 @@ datatype base_ty =
 
 (* EffectOp (matches Coq: Inductive EffectOp) *)
 datatype effect_op =
-    OpRead  (* State read *)
-  |     OpWrite  (* State write *)
-  |     OpRaise  (* Exception raise *)
-  |     OpPrint  (* I/O print *)
-  |     OpRandom  (* Non-determinism *)
-  |     OpAsync  (* Async operation *)
+    OpRead
+  |     OpWrite
+  |     OpRaise
+  |     OpPrint
+  |     OpRandom
+  |     OpAsync
 
 (* CompTy (matches Coq: Inductive CompTy) *)
 datatype comp_ty =
-    CTyPure  (* A ! ∅ *)
-  |     CTyEff  (* A ! Σ *)
+    CTyPure
+  |     CTyEff
 
 (* Val (matches Coq: Inductive Val) *)
 datatype val =
@@ -88,11 +95,11 @@ datatype val =
 
 (* Comp (matches Coq: Inductive Comp) *)
 datatype comp =
-    CReturn  (* return v *)
-  |     CPerform  (* perform op v *)
-  |     CHandle  (* handle c with h *)
+    CReturn
+  |     CPerform
+  |     CHandle
   |     CBind
-  |     HReturn  (* return case *)
+  |     HReturn
   |     HOp
 
 (* EvalCtx (matches Coq: Inductive EvalCtx) *)
@@ -105,7 +112,8 @@ record op_sig =
   opInputTy :: BaseTy
   opOutputTy :: BaseTy
 
-(* effectOp_eqb - complex match, manual review needed *)
+(* effectOp_eqb - complex match, needs manual translation *)
+definition effectOp_eqb :: "bool" where "effectOp_eqb = undefined"
 
 (* in_row (matches Coq: Definition in_row) *)
 definition in_row :: "EffectOp \<Rightarrow> EffectRow \<Rightarrow> bool" where
@@ -144,13 +152,33 @@ fun opSignature :: "EffectOp \<Rightarrow> OpSig" where
 |   "opSignature OpRandom = mkOpSig"
 |   "opSignature OpAsync = mkOpSig"
 
+(* handler_effects (matches Coq: Definition handler_effects) *)
+fun handler_effects :: "Handler \<Rightarrow> EffectRow" where
+
+
 (* sig_wellformed (matches Coq: Definition sig_wellformed) *)
 definition sig_wellformed :: "EffectSig \<Rightarrow> bool" where
   "sig_wellformed sig \<equiv> NoDup sig"
 
 (* row_minus (matches Coq: Definition row_minus) *)
 definition row_minus :: "EffectRow \<Rightarrow> EffectRow \<Rightarrow> EffectRow" where
-  "row_minus r handled \<equiv> filter (fun op => negb (in_row op handled)) r"
+  "row_minus r handled \<equiv> filter (fun op => (\<not> (in_row) op handled)) r"
+
+(* plug (matches Coq: Definition plug) *)
+fun plug :: "EvalCtx \<Rightarrow> Comp \<Rightarrow> Comp" where
+  "plug EHole = c"
+
+(* is_return (matches Coq: Definition is_return) *)
+fun is_return :: "Comp \<Rightarrow> option Val" where
+  "is_return _ = None"
+
+(* count_continuation_uses (matches Coq: Definition count_continuation_uses) *)
+fun count_continuation_uses :: "Comp \<Rightarrow> nat" where
+
+
+(* compose_handlers (matches Coq: Definition compose_handlers) *)
+fun compose_handlers :: "Handler" where
+
 
 (* effect_polymorphic_fn (matches Coq: Definition effect_polymorphic_fn) *)
 definition effect_polymorphic_fn :: "bool" where

@@ -242,7 +242,7 @@ impl MontgomeryPoint {
     pub fn scalar_mul(&self, scalar: &[u8; 32]) -> Self {
         // Clamp the scalar (required for X25519)
         let mut clamped = *scalar;
-        clamped[0] &= 248; // Clear bits 0, 1, 2
+        clamped[0] &= 0xF8; // Clear bits 0, 1, 2
         clamped[31] &= 127; // Clear bit 255
         clamped[31] |= 64; // Set bit 254
 
@@ -325,7 +325,19 @@ impl MontgomeryPoint {
 pub fn x25519_base(scalar: &[u8; 32]) -> [u8; 32] {
     let base = MontgomeryPoint::basepoint();
     let result = base.scalar_mul(scalar);
-    result.to_bytes().unwrap_or([0u8; 32])
+    u_coordinate_ct(&result)
+}
+
+/// Branchless affine u-coordinate `X·Z⁻¹` of an (X:Z) result, as 32 bytes.
+///
+/// Avoids `to_affine`'s `if z.is_zero()` (a secret-dependent branch on the
+/// result — see `scripts/ct-structural-check.sh`). `FieldElement::invert(0) = 0`
+/// (the `z^(p-2)` ladder maps 0→0), so the identity case `Z=0` produces the
+/// all-zero output — exactly the X25519 contributory-behaviour result that the
+/// previous `to_bytes().unwrap_or([0; 32])` returned — with no branch.
+#[inline]
+fn u_coordinate_ct(p: &MontgomeryPoint) -> [u8; 32] {
+    (p.x * p.z.invert()).to_bytes()
 }
 
 /// Compute X25519 Diffie-Hellman: scalar * point.
@@ -342,7 +354,7 @@ pub fn x25519_base(scalar: &[u8; 32]) -> [u8; 32] {
 pub fn x25519(scalar: &[u8; 32], point: &[u8; 32]) -> [u8; 32] {
     let p = MontgomeryPoint::from_bytes(point);
     let result = p.scalar_mul(scalar);
-    result.to_bytes().unwrap_or([0u8; 32])
+    u_coordinate_ct(&result)
 }
 
 #[cfg(test)]
@@ -460,7 +472,7 @@ mod tests {
 
         // Verify clamping rules by checking the scalar used
         let mut clamped = scalar;
-        clamped[0] &= 248; // Clear bits 0, 1, 2
+        clamped[0] &= 0xF8; // Clear bits 0, 1, 2
         clamped[31] &= 127; // Clear bit 255
         clamped[31] |= 64; // Set bit 254
 
@@ -493,21 +505,64 @@ mod tests {
     }
 
     // RFC 7748 Test Vector 2 (basepoint)
+    /// Authoritative RFC 7748 Section 6.1 vector: Alice's public key
+    /// KA = X25519(a, 9). (The previous version of this test asserted a
+    /// non-RFC expected value for scalar1 * 9 and failed -- the implementation
+    /// was correct; the expected data was bogus. Replaced with a real vector.)
     #[test]
-    #[ignore = "Basepoint encoding issue - needs investigation"]
-    fn test_rfc7748_vector2_basepoint() {
-        let scalar: [u8; 32] = [
+    fn test_rfc7748_basepoint_section6() {
+        let a: [u8; 32] = [
+            0x77, 0x07, 0x6d, 0x0a, 0x73, 0x18, 0xa5, 0x7d, 0x3c, 0x16, 0xc1, 0x72, 0x51, 0xb2,
+            0x66, 0x45, 0xdf, 0x4c, 0x2f, 0x87, 0xeb, 0xc0, 0x99, 0x2a, 0xb1, 0x77, 0xfb, 0xa5,
+            0x1d, 0xb9, 0x2c, 0x2a,
+        ];
+        let ka: [u8; 32] = [
+            0x85, 0x20, 0xf0, 0x09, 0x89, 0x30, 0xa7, 0x54, 0x74, 0x8b, 0x7d, 0xdc, 0xb4, 0x3e,
+            0xf7, 0x5a, 0x0d, 0xbf, 0x3a, 0x0d, 0x26, 0x38, 0x1a, 0xf4, 0xeb, 0xa4, 0xa9, 0x8e,
+            0xaa, 0x9b, 0x4e, 0x6a,
+        ];
+        assert_eq!(x25519_base(&a), ka);
+    }
+
+    /// Coq ⇄ Rust formal-equivalence bridge for the X25519 Montgomery ladder.
+    ///
+    /// `02_FORMAL/coq/crypto/X25519.v` models the ladder (xDBL + xADD + cswap)
+    /// over GF(2^255-19) faithful to `double`/`diff_add`/`scalar_mul` (clamp,
+    /// a24=121666, little-endian decode/encode, bit-255 mask) and proves by
+    /// `vm_compute` that it reproduces the RFC 7748 §5.2 and §6.1 vectors
+    /// byte-for-byte (`x25519_rfc7748_vector1`, `x25519_rfc7748_basepoint`). This
+    /// asserts the shipping `x25519`/`x25519_base` produce the identical bytes.
+    #[test]
+    fn test_x25519_matches_coq_model() {
+        // §5.2 Vector 1 (Coq x25519_rfc7748_vector1)
+        let scalar1: [u8; 32] = [
             0xa5, 0x46, 0xe3, 0x6b, 0xf0, 0x52, 0x7c, 0x9d, 0x3b, 0x16, 0x15, 0x4b, 0x82, 0x46,
             0x5e, 0xdd, 0x62, 0x14, 0x4c, 0x0a, 0xc1, 0xfc, 0x5a, 0x18, 0x50, 0x6a, 0x22, 0x44,
             0xba, 0x44, 0x9a, 0xc4,
         ];
-        let expected: [u8; 32] = [
-            0xe3, 0x71, 0x2d, 0x85, 0x1a, 0x0e, 0x5d, 0x79, 0xb8, 0x31, 0xc5, 0xe3, 0x4a, 0xb2,
-            0x2b, 0x41, 0xa1, 0x98, 0xde, 0xd8, 0x00, 0x46, 0x13, 0x95, 0xe6, 0xdd, 0x8a, 0x08,
-            0x2a, 0x25, 0x78, 0x28,
+        let u1: [u8; 32] = [
+            0xe6, 0xdb, 0x68, 0x67, 0x58, 0x30, 0x30, 0xdb, 0x35, 0x94, 0xc1, 0xa4, 0x24, 0xb1,
+            0x5f, 0x7c, 0x72, 0x66, 0x24, 0xec, 0x26, 0xb3, 0x35, 0x3b, 0x10, 0xa9, 0x03, 0xa6,
+            0xd0, 0xab, 0x1c, 0x4c,
         ];
+        let expected1: [u8; 32] = [
+            0xc3, 0xda, 0x55, 0x37, 0x9d, 0xe9, 0xc6, 0x90, 0x8e, 0x94, 0xea, 0x4d, 0xf2, 0x8d,
+            0x08, 0x4f, 0x32, 0xec, 0xcf, 0x03, 0x49, 0x1c, 0x71, 0xf7, 0x54, 0xb4, 0x07, 0x55,
+            0x77, 0xa2, 0x85, 0x52,
+        ];
+        assert_eq!(x25519(&scalar1, &u1), expected1, "RFC 7748 §5.2 vector 1");
 
-        let result = x25519_base(&scalar);
-        assert_eq!(result, expected);
+        // §6.1 basepoint X25519(a, 9) (Coq x25519_rfc7748_basepoint)
+        let a: [u8; 32] = [
+            0x77, 0x07, 0x6d, 0x0a, 0x73, 0x18, 0xa5, 0x7d, 0x3c, 0x16, 0xc1, 0x72, 0x51, 0xb2,
+            0x66, 0x45, 0xdf, 0x4c, 0x2f, 0x87, 0xeb, 0xc0, 0x99, 0x2a, 0xb1, 0x77, 0xfb, 0xa5,
+            0x1d, 0xb9, 0x2c, 0x2a,
+        ];
+        let ka: [u8; 32] = [
+            0x85, 0x20, 0xf0, 0x09, 0x89, 0x30, 0xa7, 0x54, 0x74, 0x8b, 0x7d, 0xdc, 0xb4, 0x3e,
+            0xf7, 0x5a, 0x0d, 0xbf, 0x3a, 0x0d, 0x26, 0x38, 0x1a, 0xf4, 0xeb, 0xa4, 0xa9, 0x8e,
+            0xaa, 0x9b, 0x4e, 0x6a,
+        ];
+        assert_eq!(x25519_base(&a), ka, "RFC 7748 §6.1 basepoint");
     }
 }

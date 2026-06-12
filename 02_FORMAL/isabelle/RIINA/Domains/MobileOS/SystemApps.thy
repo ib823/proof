@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SystemApps - Isabelle/HOL Port
@@ -20,6 +22,7 @@
  * | AppPermission      | app_permission         | OK     |
  * | AppLifecycle       | app_lifecycle          | OK     |
  * | AppUpdate          | app_update             | OK     |
+ * | RESPONSE_TIME_MAX_US | RESPONSE_TIME_MAX_US   | OK     |
  * | system_app_correct | system_app_correct     | OK     |
  * | data_secure        | data_secure            | OK     |
  * | valid_transition   | valid_transition       | OK     |
@@ -65,15 +68,15 @@
  *)
 
 theory SystemApps
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AppCategory (matches Coq: Inductive AppCategory) *)
 datatype app_category =
-    Communication  (* Messages, Phone, Mail *)
-  |     Productivity  (* Calendar, Notes, Files *)
-  |     Media  (* Photos, Music, Camera *)
-  |     Utility  (* Settings, Calculator, Clock *)
+    Communication
+  |     Productivity
+  |     Media
+  |     Utility
   |     Security
 
 (* SystemApp (matches Coq: Record SystemApp) *)
@@ -97,7 +100,7 @@ record state_transition =
   trans_app_id :: nat
   from_state :: AppState
   to_state :: AppState
-  transition_type :: nat  (* 0=user_action, 1=system_event, 2=sync *)
+  transition_type :: nat
 
 (* SyncOperation (matches Coq: Record SyncOperation) *)
 record sync_operation =
@@ -110,7 +113,7 @@ record sync_operation =
 (* AppResponse (matches Coq: Record AppResponse) *)
 record app_response =
   response_app_id :: nat
-  response_time_us :: nat  (* microseconds *)
+  response_time_us :: nat
   response_correct :: bool
 
 (* AppPermission (matches Coq: Record AppPermission) *)
@@ -144,39 +147,43 @@ record app_update =
   upd_applied :: bool
   upd_rollback_available :: bool
 
+(* RESPONSE_TIME_MAX_US (matches Coq: Definition RESPONSE_TIME_MAX_US) *)
+definition RESPONSE_TIME_MAX_US :: "nat" where
+  "RESPONSE_TIME_MAX_US \<equiv> Z.to_nat 100000%Z"
+
 (* system_app_correct (matches Coq: Definition system_app_correct) *)
 definition system_app_correct :: "SystemApp \<Rightarrow> bool" where
-  "system_app_correct app \<equiv> is_verified app = true /\
-  has_sandbox app = true /\
-  permissions_minimal app = true"
+  "system_app_correct app \<equiv> is_verified app = True /\
+  has_sandbox app = True /\
+  permissions_minimal app = True"
 
 (* data_secure (matches Coq: Definition data_secure) *)
 definition data_secure :: "SystemApp \<Rightarrow> bool" where
-  "data_secure app \<equiv> data_encrypted app = true /\
-  has_sandbox app = true"
+  "data_secure app \<equiv> data_encrypted app = True /\
+  has_sandbox app = True"
 
 (* valid_transition (matches Coq: Definition valid_transition) *)
 definition valid_transition :: "StateTransition \<Rightarrow> bool" where
-  "valid_transition trans \<equiv> state_valid (from_state trans) = true /\
-  state_valid (to_state trans) = true"
+  "valid_transition trans \<equiv> state_valid (from_state trans) = True /\
+  state_valid (to_state trans) = True"
 
 (* state_preserved (matches Coq: Definition state_preserved) *)
 definition state_preserved :: "StateTransition \<Rightarrow> bool" where
   "state_preserved trans \<equiv> state_data (from_state trans) = state_data (to_state trans) \/
-  state_valid (to_state trans) = true"
+  state_valid (to_state trans) = True"
 
 (* sync_lossless (matches Coq: Definition sync_lossless) *)
 definition sync_lossless :: "SyncOperation \<Rightarrow> bool" where
-  "sync_lossless sync \<equiv> sync_successful sync = true ->
-  state_valid (merged_state sync) = true"
+  "sync_lossless sync \<equiv> sync_successful sync = True ->
+  state_valid (merged_state sync) = True"
 
 (* response_timely (matches Coq: Definition response_timely) *)
 definition response_timely :: "AppResponse \<Rightarrow> bool" where
-  "response_timely resp \<equiv> response_time_us resp <= 100000"
+  "response_timely resp \<equiv> response_time_us resp <= RESPONSE_TIME_MAX_US"
 
 (* app_responds_correctly (matches Coq: Definition app_responds_correctly) *)
 definition app_responds_correctly :: "AppResponse \<Rightarrow> bool" where
-  "app_responds_correctly resp \<equiv> response_correct resp = true"
+  "app_responds_correctly resp \<equiv> response_correct resp = True"
 
 (* wellformed_system_app (matches Coq: Definition wellformed_system_app) *)
 definition wellformed_system_app :: "SystemApp \<Rightarrow> bool" where
@@ -192,40 +199,40 @@ definition transition_preserves_validity :: "StateTransition \<Rightarrow> bool"
 
 (* app_sandbox_holds (matches Coq: Definition app_sandbox_holds) *)
 definition app_sandbox_holds :: "SystemApp \<Rightarrow> AppPermission \<Rightarrow> bool" where
-  "app_sandbox_holds app perm \<equiv> has_sandbox app = true /\
+  "app_sandbox_holds app perm \<equiv> has_sandbox app = True /\
   perm_app_id perm = sys_app_id app /\
-  perm_granted_explicitly perm = true"
+  perm_granted_explicitly perm = True"
 
 (* no_cross_app_access (matches Coq: Definition no_cross_app_access) *)
 definition no_cross_app_access :: "bool" where
   "no_cross_app_access \<equiv> sys_app_id app1 <> sys_app_id app2 ->
-  has_sandbox app1 = true /\ has_sandbox app2 = true"
+  has_sandbox app1 = True /\ has_sandbox app2 = True"
 
 (* app_permission_runtime_check (matches Coq: Definition app_permission_runtime_check) *)
 definition app_permission_runtime_check :: "AppPermission \<Rightarrow> bool" where
-  "app_permission_runtime_check perm \<equiv> perm_granted_explicitly perm = true"
+  "app_permission_runtime_check perm \<equiv> perm_granted_explicitly perm = True"
 
 (* background_app_is_limited (matches Coq: Definition background_app_is_limited) *)
 definition background_app_is_limited :: "AppLifecycle \<Rightarrow> bool" where
-  "background_app_is_limited lc \<equiv> lc_background lc = true -> lc_background_limited lc = true"
+  "background_app_is_limited lc \<equiv> lc_background lc = True -> lc_background_limited lc = True"
 
 (* foreground_has_priority (matches Coq: Definition foreground_has_priority) *)
 definition foreground_has_priority :: "AppLifecycle \<Rightarrow> bool" where
-  "foreground_has_priority lc \<equiv> lc_foreground lc = true -> lc_background lc = false"
+  "foreground_has_priority lc \<equiv> lc_foreground lc = True -> lc_background lc = False"
 
 (* install_is_verified (matches Coq: Definition install_is_verified) *)
 definition install_is_verified :: "AppLifecycle \<Rightarrow> bool" where
-  "install_is_verified lc \<equiv> lc_installed lc = true -> lc_install_verified lc = true"
+  "install_is_verified lc \<equiv> lc_installed lc = True -> lc_install_verified lc = True"
 
 (* update_is_atomic (matches Coq: Definition update_is_atomic) *)
 definition update_is_atomic :: "AppUpdate \<Rightarrow> bool" where
-  "update_is_atomic upd \<equiv> upd_applied upd = true ->
-  upd_signature_valid upd = true /\
+  "update_is_atomic upd \<equiv> upd_applied upd = True ->
+  upd_signature_valid upd = True /\
   upd_new_version upd > upd_old_version upd"
 
 (* uninstall_is_complete (matches Coq: Definition uninstall_is_complete) *)
 definition uninstall_is_complete :: "AppLifecycle \<Rightarrow> bool" where
-  "uninstall_is_complete lc \<equiv> lc_installed lc = false -> lc_data_on_disk lc = false"
+  "uninstall_is_complete lc \<equiv> lc_installed lc = False -> lc_data_on_disk lc = False"
 
 (* system_apps_verified_correct (matches Coq) *)
 lemma system_apps_verified_correct: "\<forall> (app : SystemApp), wellformed_system_app app \<longrightarrow> system_app_correct app"

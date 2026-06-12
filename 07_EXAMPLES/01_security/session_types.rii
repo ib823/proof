@@ -1,0 +1,126 @@
+/// SESSION_TYPES.RII - Session Type Protocols
+/// Jenis sesi untuk protokol komunikasi yang selamat
+/// Demonstrates: Chan<S>, SecureChan<S,Level>, Send, Recv, Select, Branch, End
+///
+/// Coq reference: 02_FORMAL/coq/domains/SessionTypes.v
+/// Typechecker: Chan<S> and SecureChan<S,Level> type constructors
+/// Parser: parse_session_type() with 7 constructors
+
+/// ── Basic channel protocol: request-response ───────────────────────
+/// A client sends a request (Teks), receives a response (Nombor), then ends.
+
+jenis ProtocolPermintaan = Hantar<Teks, Terima<Nombor, Tamat> >;
+
+fungsi pelanggan(ch: Saluran<ProtocolPermintaan>) -> Nombor kesan Rangkaian {
+    /// Hantar permintaan, terima jawapan
+    /// Send request, receive response
+    biar ch = ch.hantar("GET /api/data");  /// channel advances state
+    biar (jawapan, ch) = ch.terima();      /// receive response
+    ch.tamat();                            /// protocol complete
+    pulang jawapan;
+}
+
+/// ── Dual protocol: the server side ─────────────────────────────────
+/// The dual of Send<T,S> is Recv<T,dual(S)>. The server receives then sends.
+
+jenis ProtocolPelayan = Terima<Teks, Hantar<Nombor, Tamat> >;
+
+fungsi pelayan(ch: Saluran<ProtocolPelayan>) -> Unit kesan Rangkaian {
+    /// Terima permintaan, hantar jawapan
+    /// Receive request, send response
+    biar (permintaan, ch) = ch.terima();
+    biar hasil = proses(permintaan);
+    biar ch = ch.hantar(hasil);
+    ch.tamat();
+}
+
+/// ── Select and Branch: choice protocols ────────────────────────────
+/// Select offers a choice from the sender's perspective.
+/// Branch accepts a choice from the receiver's perspective.
+
+jenis ProtocolBank = Pilih<
+    Hantar<Nombor, Terima<Nombor, Tamat> >,  /// Pilihan 1: Semak baki
+    Hantar<Nombor, Hantar<Nombor, Terima<Benar, Tamat> > >  /// Pilihan 2: Pindah wang
+>;
+
+fungsi semak_baki(ch: Saluran<ProtocolBank>) -> Nombor kesan Rangkaian {
+    /// Pilih operasi semak baki
+    /// Select the check-balance operation
+    biar ch = ch.pilih_kiri();           /// choose option 1
+    biar ch = ch.hantar(akaun_id);       /// send account ID
+    biar (baki, ch) = ch.terima();       /// receive balance
+    ch.tamat();
+    pulang baki;
+}
+
+fungsi pindah_wang(ch: Saluran<ProtocolBank>, dari: Nombor, ke: Nombor, jumlah: Nombor) -> Benar kesan Rangkaian {
+    /// Pilih operasi pindah wang
+    /// Select the transfer operation
+    biar ch = ch.pilih_kanan();          /// choose option 2
+    biar ch = ch.hantar(dari);           /// send source account
+    biar ch = ch.hantar(jumlah);         /// send amount
+    biar (berjaya, ch) = ch.terima();    /// receive success/failure
+    ch.tamat();
+    pulang berjaya;
+}
+
+/// ── Secure channels: encryption-level-tagged ───────────────────────
+/// SecureChan<S, Level> adds a security level to the channel.
+/// Only matching security levels can communicate.
+
+jenis ProtocolSulit = Hantar<Teks, Terima<Teks, Tamat> >;
+
+fungsi hantar_sulit(ch: SaluranSelamat<ProtocolSulit, Rahsia>) -> Teks kesan Kripto {
+    /// Saluran rahsia — hanya data Rahsia boleh dihantar
+    /// Secret channel — only Secret-level data allowed
+    biar ch = ch.hantar(sulit("maklumat sensitif"));
+    biar (jawapan, ch) = ch.terima();
+    ch.tamat();
+    pulang jawapan;
+}
+
+/// ── Recursive protocols: unbounded interaction ─────────────────────
+/// Rec/Ulang allows protocols that loop.
+
+jenis ProtocolStream = Ulang<Pilih<
+    Hantar<Nombor, PembolehubahSesi>,   /// Hantar data, ulang
+    Tamat                                /// Selesai
+> >;
+
+fungsi hantar_senarai(ch: Saluran<ProtocolStream>, data: Senarai<Nombor>) -> Unit kesan Rangkaian {
+    /// Hantar setiap elemen, kemudian tamat
+    /// Send each element, then terminate
+    biar ubah saluran = ch;
+    untuk item dalam data {
+        saluran = saluran.pilih_kiri();    /// choose "send more"
+        saluran = saluran.hantar(item);    /// send the item
+        /// Protocol loops back via SVar
+    }
+    saluran = saluran.pilih_kanan();       /// choose "done"
+    saluran.tamat();
+}
+
+/// ── Linear enforcement on channels ─────────────────────────────────
+/// Channels are inherently linear — each state must be used exactly once.
+/// This prevents:
+/// - Sending on a channel twice (protocol violation)
+/// - Forgetting to complete a protocol (resource leak)
+/// - Using a channel after it has been closed
+
+/// ── What the compiler rejects ──────────────────────────────────────
+///
+/// ERROR: Channel used after send (linear violation)
+///   biar ch2 = ch.hantar("hello");
+///   ch.hantar("world");  // ERROR: 'ch' already consumed by hantar
+///
+/// ERROR: Protocol not completed
+///   biar (data, ch) = ch.terima();
+///   pulang data;  // ERROR: channel 'ch' not terminated (Tamat not called)
+///
+/// ERROR: Wrong operation for protocol state
+///   /// ch: Saluran<Hantar<Teks, Tamat>>
+///   biar (x, ch) = ch.terima();  // ERROR: expected Hantar, got Terima
+///
+/// ERROR: Security level mismatch
+///   /// ch: SaluranSelamat<S, Awam>
+///   ch.hantar(sulit(data));  // ERROR: Secret data on Public channel

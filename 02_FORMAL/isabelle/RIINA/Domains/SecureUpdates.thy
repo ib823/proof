@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SecureUpdates - Isabelle/HOL Port
@@ -64,7 +66,7 @@
  *)
 
 theory SecureUpdates
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* UpdateResult (matches Coq: Inductive UpdateResult) *)
@@ -76,28 +78,33 @@ datatype update_result =
 
 (* version_gt (matches Coq: Definition version_gt) *)
 definition version_gt :: "bool" where
-  "version_gt \<equiv> orb (Nat"
+  "version_gt \<equiv> (((ver_major < v2) \<or> ver_major v1))
+      ((((ver_major = v1) \<and> ver_major v2))
+            ((((ver_minor < v2) \<or> ver_minor v1))
+                 ((((ver_minor = v1) \<and> ver_minor v2))
+                       (((ver_patch < v2)) (ver_patch v1)))))"
 
 (* version_gte (matches Coq: Definition version_gte) *)
 definition version_gte :: "bool" where
-  "version_gte \<equiv> orb (version_gt v1 v2)
-      (andb (Nat"
+  "version_gte \<equiv> (version_gt v1 v2 \<or> (((ver_major = v1) \<and> ver_major v2))
+            ((((ver_minor = v1) \<and> ver_minor v2))
+                  (((ver_patch = v1)) (ver_patch v2))))"
 
 (* signatures_sufficient (matches Coq: Definition signatures_sufficient) *)
 definition signatures_sufficient :: "UpdatePackage \<Rightarrow> nat \<Rightarrow> bool" where
-  "signatures_sufficient update threshold \<equiv> Nat"
+  "signatures_sufficient update threshold \<equiv> (threshold \<le> (length) (update_signatures update))"
 
 (* key_trusted (matches Coq: Definition key_trusted) *)
 definition key_trusted :: "UpdateSignature \<Rightarrow> bool" where
-  "key_trusted sig \<equiv> existsb (fun k => Nat"
+  "key_trusted sig \<equiv> existsb (fun k => (k = (sig_key_id) sig)) trusted"
 
 (* rollback_counter_ok (matches Coq: Definition rollback_counter_ok) *)
 definition rollback_counter_ok :: "UpdatePackage \<Rightarrow> SystemState \<Rightarrow> bool" where
-  "rollback_counter_ok update sys \<equiv> Nat"
+  "rollback_counter_ok update sys \<equiv> ((sys_rollback_counter < sys)) (update_rollback_counter update)"
 
 (* hash_valid (matches Coq: Definition hash_valid) *)
 definition hash_valid :: "bool" where
-  "hash_valid \<equiv> Nat"
+  "hash_valid \<equiv> (computed = stored)"
 
 (* atomic_complete (matches Coq: Definition atomic_complete) *)
 definition atomic_complete :: "bool" where
@@ -109,15 +116,17 @@ fun backup_exists :: "bool" where
 
 (* backup_version_matches (matches Coq: Definition backup_version_matches) *)
 definition backup_version_matches :: "Backup \<Rightarrow> SystemState \<Rightarrow> bool" where
-  "backup_version_matches backup sys \<equiv> andb (Nat"
+  "backup_version_matches backup sys \<equiv> (((\<and> = (ver_major)) (backup_version backup)) (ver_major (sys_version sys)))
+       ((((\<and> = (ver_minor)) (backup_version backup)) (ver_minor (sys_version sys)))
+             (((ver_patch = (backup_version) backup)) (ver_patch (sys_version sys))))"
 
 (* threshold_met (matches Coq: Definition threshold_met) *)
 definition threshold_met :: "bool" where
-  "threshold_met \<equiv> Nat"
+  "threshold_met \<equiv> (threshold \<le> valid_sigs)"
 
 (* sig_fresh (matches Coq: Definition sig_fresh) *)
 definition sig_fresh :: "UpdateSignature \<Rightarrow> bool" where
-  "sig_fresh sig \<equiv> Nat"
+  "sig_fresh sig \<equiv> ((current \<le> -) sig_timestamp sig) max_age"
 
 (* keys_different (matches Coq: Definition keys_different) *)
 definition keys_different :: "bool" where
@@ -125,31 +134,31 @@ definition keys_different :: "bool" where
 
 (* size_bounded (matches Coq: Definition size_bounded) *)
 definition size_bounded :: "bool" where
-  "size_bounded \<equiv> Nat"
+  "size_bounded \<equiv> (size \<le> max_size)"
 
 (* compatible (matches Coq: Definition compatible) *)
 definition compatible :: "bool" where
-  "compatible \<equiv> Nat"
+  "compatible \<equiv> (update_req \<le> sys_has)"
 
 (* changelog_present (matches Coq: Definition changelog_present) *)
 definition changelog_present :: "nat \<Rightarrow> bool" where
-  "changelog_present changelog_size \<equiv> Nat"
+  "changelog_present changelog_size \<equiv> (0 < changelog_size)"
 
 (* not_expired (matches Coq: Definition not_expired) *)
 definition not_expired :: "bool" where
-  "not_expired \<equiv> Nat"
+  "not_expired \<equiv> (current < expiry)"
 
 (* download_valid (matches Coq: Definition download_valid) *)
 definition download_valid :: "bool" where
-  "download_valid \<equiv> Nat"
+  "download_valid \<equiv> (received_hash = expected_hash)"
 
 (* channel_secure (matches Coq: Definition channel_secure) *)
 definition channel_secure :: "bool" where
-  "channel_secure \<equiv> Nat"
+  "channel_secure \<equiv> (min_version \<le> tls_version)"
 
 (* rollout_percentage_ok (matches Coq: Definition rollout_percentage_ok) *)
 definition rollout_percentage_ok :: "bool" where
-  "rollout_percentage_ok \<equiv> Nat"
+  "rollout_percentage_ok \<equiv> (percentage \<le> max_pct)"
 
 (* reboot_handled (matches Coq: Definition reboot_handled) *)
 definition reboot_handled :: "bool" where
@@ -161,7 +170,7 @@ definition post_verify_ok :: "bool \<Rightarrow> bool" where
 
 (* audit_logged (matches Coq: Definition audit_logged) *)
 definition audit_logged :: "bool" where
-  "audit_logged \<equiv> Nat"
+  "audit_logged \<equiv> (event_count \<le> log_count)"
 
 (* notification_sent (matches Coq: Definition notification_sent) *)
 definition notification_sent :: "bool" where
@@ -169,7 +178,7 @@ definition notification_sent :: "bool" where
 
 (* update_layers (matches Coq: Definition update_layers) *)
 definition update_layers :: "bool" where
-  "update_layers \<equiv> andb sig (andb version (andb rollback (andb atomic backup)))"
+  "update_layers \<equiv> (sig \<and> (andb) version ((rollback \<and> (andb) atomic backup)))"
 
 (* update_001_version_newer (matches Coq) *)
 lemma update_001_version_newer: "\<forall> (update : UpdatePackage) (sys : SystemState), version_gt (update_version update) (sys_version sys) = True \<longrightarrow> version_gt (update_version update) (sys_version sys) = True"

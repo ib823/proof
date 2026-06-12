@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AppDistribution - Isabelle/HOL Port
@@ -47,6 +49,7 @@
  * | provisioning_profile_valid | provisioning_profile_valid | OK     |
  * | app_review_required | app_review_required    | OK     |
  * | binary_size_reported | binary_size_reported   | OK     |
+ * | list_monotonic     | list_monotonic         | OK     |
  * | app_version_monotonic | app_version_monotonic  | OK     |
  * | minimum_os_version_enforced | minimum_os_version_enforced | OK     |
  * | deprecated_api_flagged | deprecated_api_flagged | OK     |
@@ -86,7 +89,7 @@
  *)
 
 theory AppDistribution
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* InstallState (matches Coq: Inductive InstallState) *)
@@ -238,21 +241,27 @@ record notarization_status =
   ns_notarized :: bool
   ns_ticket_stapled :: bool
 
-(* passes_security_checks - complex match, manual review needed *)
+(* passes_security_checks (matches Coq: Definition passes_security_checks) *)
+definition passes_security_checks :: "SecurityScan \<Rightarrow> bool" where
+  "passes_security_checks scan \<equiv> static_analysis_passed scan = True /\
+  dynamic_analysis_passed scan = True /\
+  signature_valid scan = True /\
+  known_malware_match scan = False /\
+  behavior_anomaly scan = False"
 
 (* no_malware (matches Coq: Definition no_malware) *)
 definition no_malware :: "StoreApplication \<Rightarrow> bool" where
   "no_malware app \<equiv> passes_security_checks (scan_result app) /\
-  review_approved app = true"
+  review_approved app = True"
 
 (* in_store (matches Coq: Definition in_store) *)
 definition in_store :: "StoreApplication \<Rightarrow> bool" where
-  "in_store app \<equiv> in_riina_store app = true"
+  "in_store app \<equiv> in_riina_store app = True"
 
 (* store_well_formed (matches Coq: Definition store_well_formed) *)
 definition store_well_formed :: "bool" where
   "store_well_formed \<equiv> forall app, In app apps ->
-    in_riina_store app = true ->
+    in_riina_store app = True ->
     no_malware app"
 
 (* update_atomic (matches Coq: Definition update_atomic) *)
@@ -264,14 +273,20 @@ definition update_atomic :: "AppUpdate \<Rightarrow> bool" where
 
 (* rollback_possible (matches Coq: Definition rollback_possible) *)
 definition rollback_possible :: "Installation \<Rightarrow> bool" where
-  "rollback_possible inst \<equiv> rollback_available inst = true /\
+  "rollback_possible inst \<equiv> rollback_available inst = True /\
   install_state inst = Installed"
 
 (* version_increases (matches Coq: Definition version_increases) *)
 definition version_increases :: "AppUpdate \<Rightarrow> bool" where
   "version_increases upd \<equiv> new_version upd > old_version upd"
 
-(* scan_passed - complex match, manual review needed *)
+(* scan_passed (matches Coq: Definition scan_passed) *)
+definition scan_passed :: "SecurityScan \<Rightarrow> bool" where
+  "scan_passed scan \<equiv> static_analysis_passed scan \<and>
+  dynamic_analysis_passed scan \<and>
+  signature_valid scan \<and>
+  (\<not> (known_malware_match) scan) \<and>
+  (\<not> (behavior_anomaly) scan)"
 
 (* app_is_safe (matches Coq: Definition app_is_safe) *)
 definition app_is_safe :: "StoreApplication \<Rightarrow> bool" where
@@ -279,49 +294,53 @@ definition app_is_safe :: "StoreApplication \<Rightarrow> bool" where
 
 (* app_signature_verified (matches Coq: Definition app_signature_verified) *)
 definition app_signature_verified :: "AppSignature \<Rightarrow> bool" where
-  "app_signature_verified s \<equiv> sig_verified s = true /\ sig_timestamp s > 0"
+  "app_signature_verified s \<equiv> sig_verified s = True /\ sig_timestamp s > 0"
 
 (* code_integrity_checked (matches Coq: Definition code_integrity_checked) *)
 definition code_integrity_checked :: "CodeIntegrity \<Rightarrow> bool" where
-  "code_integrity_checked ci \<equiv> ci_integrity_valid ci = true /\ ci_hash_original ci = ci_hash_current ci"
+  "code_integrity_checked ci \<equiv> ci_integrity_valid ci = True /\ ci_hash_original ci = ci_hash_current ci"
 
 (* entitlements_validated (matches Coq: Definition entitlements_validated) *)
 definition entitlements_validated :: "EntitlementSet \<Rightarrow> bool" where
-  "entitlements_validated es \<equiv> ent_validated es = true /\
+  "entitlements_validated es \<equiv> ent_validated es = True /\
   length (ent_granted es) <= length (ent_requested es)"
 
 (* provisioning_profile_valid (matches Coq: Definition provisioning_profile_valid) *)
 definition provisioning_profile_valid :: "ProvisioningProfile \<Rightarrow> bool" where
-  "provisioning_profile_valid pp \<equiv> pp_valid pp = true /\ pp_current_date pp <= pp_expiry_date pp"
+  "provisioning_profile_valid pp \<equiv> pp_valid pp = True /\ pp_current_date pp <= pp_expiry_date pp"
 
 (* app_review_required (matches Coq: Definition app_review_required) *)
 definition app_review_required :: "AppReview \<Rightarrow> bool" where
-  "app_review_required ar \<equiv> ar_passed ar = true -> ar_reviewed ar = true"
+  "app_review_required ar \<equiv> ar_passed ar = True -> ar_reviewed ar = True"
 
 (* binary_size_reported (matches Coq: Definition binary_size_reported) *)
 definition binary_size_reported :: "BinaryReport \<Rightarrow> bool" where
-  "binary_size_reported br \<equiv> br_size_reported br = true /\ br_size_bytes br = br_reported_size br"
+  "binary_size_reported br \<equiv> br_size_reported br = True /\ br_size_bytes br = br_reported_size br"
+
+(* list_monotonic (matches Coq: Definition list_monotonic) *)
+fun list_monotonic :: "bool" where
+
 
 (* app_version_monotonic (matches Coq: Definition app_version_monotonic) *)
 definition app_version_monotonic :: "AppVersionHistory \<Rightarrow> bool" where
-  "app_version_monotonic vh \<equiv> vh_monotonic vh = true /\ list_monotonic (vh_versions vh)"
+  "app_version_monotonic vh \<equiv> vh_monotonic vh = True /\ list_monotonic (vh_versions vh)"
 
 (* minimum_os_version_enforced (matches Coq: Definition minimum_os_version_enforced) *)
 definition minimum_os_version_enforced :: "OSRequirement \<Rightarrow> bool" where
-  "minimum_os_version_enforced req \<equiv> os_req_enforced req = true ->
+  "minimum_os_version_enforced req \<equiv> os_req_enforced req = True ->
   os_current_version req >= os_req_min_version req"
 
 (* deprecated_api_flagged (matches Coq: Definition deprecated_api_flagged) *)
 definition deprecated_api_flagged :: "APIUsage \<Rightarrow> bool" where
-  "deprecated_api_flagged au \<equiv> api_deprecated au = true -> api_flagged au = true"
+  "deprecated_api_flagged au \<equiv> api_deprecated au = True -> api_flagged au = True"
 
 (* privacy_manifest_required (matches Coq: Definition privacy_manifest_required) *)
 definition privacy_manifest_required :: "PrivacyManifest \<Rightarrow> bool" where
-  "privacy_manifest_required pm \<equiv> pm_manifest_present pm = true /\ pm_data_types pm <> []"
+  "privacy_manifest_required pm \<equiv> pm_manifest_present pm = True /\ pm_data_types pm <> []"
 
 (* data_collection_declared (matches Coq: Definition data_collection_declared) *)
 definition data_collection_declared :: "DataDeclaration \<Rightarrow> bool" where
-  "data_collection_declared dd \<equiv> dd_declared dd = true /\
+  "data_collection_declared dd \<equiv> dd_declared dd = True /\
   length (dd_collected_types dd) <= length (dd_declared_types dd)"
 
 (* app_clip_size_bounded (matches Coq: Definition app_clip_size_bounded) *)
@@ -330,15 +349,15 @@ definition app_clip_size_bounded :: "AppClip \<Rightarrow> bool" where
 
 (* testflight_expiry_enforced (matches Coq: Definition testflight_expiry_enforced) *)
 definition testflight_expiry_enforced :: "TestFlightBuild \<Rightarrow> bool" where
-  "testflight_expiry_enforced tf \<equiv> tf_enforced tf = true /\ tf_expiry_days tf <= tf_max_days tf"
+  "testflight_expiry_enforced tf \<equiv> tf_enforced tf = True /\ tf_expiry_days tf <= tf_max_days tf"
 
 (* enterprise_certificate_validated (matches Coq: Definition enterprise_certificate_validated) *)
 definition enterprise_certificate_validated :: "EnterpriseCert \<Rightarrow> bool" where
-  "enterprise_certificate_validated ec \<equiv> ec_valid ec = true /\ ec_revoked ec = false"
+  "enterprise_certificate_validated ec \<equiv> ec_valid ec = True /\ ec_revoked ec = False"
 
 (* notarization_required (matches Coq: Definition notarization_required) *)
 definition notarization_required :: "NotarizationStatus \<Rightarrow> bool" where
-  "notarization_required ns \<equiv> ns_notarized ns = true /\ ns_ticket_stapled ns = true"
+  "notarization_required ns \<equiv> ns_notarized ns = True /\ ns_ticket_stapled ns = True"
 
 (* store_malware_free (matches Coq) *)
 lemma store_malware_free: "\<forall> (app : StoreApplication), in_store app \<longrightarrow> store_well_formed [app] \<longrightarrow> no_malware app"

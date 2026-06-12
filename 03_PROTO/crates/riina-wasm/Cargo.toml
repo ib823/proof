@@ -18,6 +18,7 @@ riina-types.workspace = true
 # No external dependencies (Law 8)
 
 [lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
 unsafe_code = "allow"  # Required for WASM FFI exports
 
 [lints.clippy]

@@ -1,0 +1,193 @@
+/// data_pipeline.rii
+/// Functional data transformation pipeline using pipes (|>)
+/// Demonstrates: map, filter, fold on Senarai, pure functions (kesan Bersih),
+/// composable transformations, zero side effects
+///
+/// Pattern: Build complex data transformations from small, pure,
+/// testable functions connected by the pipe operator. Each step
+/// is independently verifiable and the entire pipeline is Bersih.
+
+modul saluran_data;
+
+/// Domain types
+jenis Produk = {
+    nama: Teks,
+    harga: Nombor,
+    kategori: Teks,
+    stok: Nombor,
+    aktif: Benar,
+};
+
+jenis LaporanProduk = {
+    kategori: Teks,
+    bilangan: Nombor,
+    jumlah_harga: Nombor,
+    purata_harga: Nombor,
+};
+
+/// ─── Pure transformation functions ──────────────────────────────────
+
+/// Filter: active products only
+fungsi aktif_sahaja(senarai: Senarai<Produk>) -> Senarai<Produk> kesan Bersih {
+    pulang senarai.tapis(fungsi(p: Produk) -> Benar { p.aktif });
+}
+
+/// Filter: in-stock products
+fungsi ada_stok(senarai: Senarai<Produk>) -> Senarai<Produk> kesan Bersih {
+    pulang senarai.tapis(fungsi(p: Produk) -> Benar { p.stok > 0 });
+}
+
+/// Filter: by price range
+fungsi dalam_julat_harga(
+    senarai: Senarai<Produk>,
+    min: Nombor,
+    maks: Nombor
+) -> Senarai<Produk> kesan Bersih {
+    pulang senarai.tapis(fungsi(p: Produk) -> Benar {
+        p.harga >= min && p.harga <= maks
+    });
+}
+
+/// Filter: by category
+fungsi dalam_kategori(
+    senarai: Senarai<Produk>,
+    kategori: Teks
+) -> Senarai<Produk> kesan Bersih {
+    pulang senarai.tapis(fungsi(p: Produk) -> Benar {
+        p.kategori == kategori
+    });
+}
+
+/// Map: apply discount
+fungsi gunakan_diskaun(
+    senarai: Senarai<Produk>,
+    peratus: Nombor
+) -> Senarai<Produk> kesan Bersih {
+    pulang senarai.peta(fungsi(p: Produk) -> Produk {
+        {
+            nama: p.nama,
+            harga: p.harga - (p.harga * peratus / 100),
+            kategori: p.kategori,
+            stok: p.stok,
+            aktif: p.aktif,
+        }
+    });
+}
+
+/// Map: extract names
+fungsi ambil_nama(senarai: Senarai<Produk>) -> Senarai<Teks> kesan Bersih {
+    pulang senarai.peta(fungsi(p: Produk) -> Teks { p.nama });
+}
+
+/// Map: extract prices
+fungsi ambil_harga(senarai: Senarai<Produk>) -> Senarai<Nombor> kesan Bersih {
+    pulang senarai.peta(fungsi(p: Produk) -> Nombor { p.harga });
+}
+
+/// Fold: sum of prices
+fungsi jumlah(senarai: Senarai<Nombor>) -> Nombor kesan Bersih {
+    pulang senarai.lipat(0, fungsi(a: Nombor, b: Nombor) -> Nombor { a + b });
+}
+
+/// Fold: count
+fungsi bilang(senarai: Senarai<Produk>) -> Nombor kesan Bersih {
+    pulang senarai.lipat(0, fungsi(kiraan: Nombor, _p: Produk) -> Nombor {
+        kiraan + 1
+    });
+}
+
+/// Fold: maximum price
+fungsi harga_tertinggi(senarai: Senarai<Nombor>) -> Nombor kesan Bersih {
+    pulang senarai.lipat(0, fungsi(maks: Nombor, h: Nombor) -> Nombor {
+        kalau h > maks { h } lain { maks }
+    });
+}
+
+/// ─── Composed pipelines ─────────────────────────────────────────────
+
+/// Pipeline 1: Get names of affordable, available products
+fungsi produk_mampu_milik(
+    produk: Senarai<Produk>,
+    bajet: Nombor
+) -> Senarai<Teks> kesan Bersih {
+    pulang produk
+        |> aktif_sahaja
+        |> ada_stok
+        |> fungsi(s: Senarai<Produk>) -> Senarai<Produk> {
+            dalam_julat_harga(s, 0, bajet)
+        }
+        |> ambil_nama;
+}
+
+/// Pipeline 2: Calculate total value of electronics inventory
+fungsi nilai_inventori_elektronik(
+    produk: Senarai<Produk>
+) -> Nombor kesan Bersih {
+    pulang produk
+        |> aktif_sahaja
+        |> ada_stok
+        |> fungsi(s: Senarai<Produk>) -> Senarai<Produk> {
+            dalam_kategori(s, "Elektronik")
+        }
+        |> fungsi(s: Senarai<Produk>) -> Senarai<Nombor> {
+            s.peta(fungsi(p: Produk) -> Nombor { p.harga * p.stok })
+        }
+        |> jumlah;
+}
+
+/// Pipeline 3: Find the best deal after discount
+fungsi tawaran_terbaik(
+    produk: Senarai<Produk>,
+    diskaun_peratus: Nombor
+) -> Nombor kesan Bersih {
+    pulang produk
+        |> aktif_sahaja
+        |> ada_stok
+        |> fungsi(s: Senarai<Produk>) -> Senarai<Produk> {
+            gunakan_diskaun(s, diskaun_peratus)
+        }
+        |> ambil_harga
+        |> harga_tertinggi;
+}
+
+/// ─── Sample data ────────────────────────────────────────────────────
+
+fungsi data_contoh() -> Senarai<Produk> kesan Bersih {
+    pulang [
+        { nama: "Komputer Riba", harga: 3500, kategori: "Elektronik", stok: 10, aktif: betul },
+        { nama: "Tetikus", harga: 50, kategori: "Elektronik", stok: 200, aktif: betul },
+        { nama: "Meja", harga: 800, kategori: "Perabot", stok: 5, aktif: betul },
+        { nama: "Kerusi", harga: 600, kategori: "Perabot", stok: 0, aktif: betul },
+        { nama: "Fon Kepala", harga: 250, kategori: "Elektronik", stok: 50, aktif: salah },
+        { nama: "Papan Kekunci", harga: 150, kategori: "Elektronik", stok: 75, aktif: betul },
+    ];
+}
+
+ujian "tapis_aktif_sahaja" {
+    biar produk = data_contoh();
+    biar aktif = aktif_sahaja(produk);
+    /// Fon Kepala (aktif: salah) should be excluded
+    tegaskan_sama(bilang(aktif), 5);
+}
+
+ujian "tapis_ada_stok" {
+    biar produk = data_contoh();
+    biar tersedia = ada_stok(produk);
+    /// Kerusi (stok: 0) should be excluded
+    tegaskan_sama(bilang(tersedia), 5);
+}
+
+ujian "saluran_mampu_milik" {
+    biar produk = data_contoh();
+    biar senarai = produk_mampu_milik(produk, 200);
+    /// Should include Tetikus (50) and Papan Kekunci (150)
+    tegaskan_sama(panjang_senarai(senarai), 2);
+}
+
+ujian "jumlah_harga" {
+    biar nombor = [10, 20, 30];
+    tegaskan_sama(jumlah(nombor), 60);
+}
+
+/// Helpers
+fungsi panjang_senarai(s: Senarai<Teks>) -> Nombor kesan Bersih { pulang 0; }

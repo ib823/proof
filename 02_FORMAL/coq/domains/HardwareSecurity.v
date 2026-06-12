@@ -5,9 +5,9 @@
 (* Proves HW-001 through HW-034 are mitigated *)
 (* ZERO Admitted. ZERO admit. ZERO new Axiom *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════ *)

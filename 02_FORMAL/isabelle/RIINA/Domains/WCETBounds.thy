@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WCETBounds - Isabelle/HOL Port
@@ -21,10 +23,13 @@
  * | DMAConfig          | dma_config             | OK     |
  * | hw_wellformed      | hw_wellformed          | OK     |
  * | default_hw         | default_hw             | OK     |
+ * | wcet               | wcet                   | OK     |
  * | utilization        | utilization            | OK     |
  * | cache_latency      | cache_latency          | OK     |
  * | branch_cost        | branch_cost            | OK     |
  * | worst_context      | worst_context          | OK     |
+ * | actual_time        | actual_time            | OK     |
+ * | recursive_calls    | recursive_calls        | OK     |
  * | pipeline_flush_cost | pipeline_flush_cost    | OK     |
  * | critical_section   | critical_section       | OK     |
  * | dma_wcet           | dma_wcet               | OK     |
@@ -82,14 +87,14 @@ begin
 
 (* Stmt (matches Coq: Inductive Stmt) *)
 datatype stmt =
-    SUnit  (* No-op *)
-  |     SAssign  (* x := v *)
-  |     SLoad  (* x := *ptr *)
-  |     SStore  (* *ptr := v *)
-  |     SSeq  (* s1; s2 *)
-  |     SIf  (* if c then s1 else s2 *)
-  |     SFor  (* for i < n do s *)
-  |     SCall  (* call f *)
+    SUnit
+  |     SAssign
+  |     SLoad
+  |     SStore
+  |     SSeq
+  |     SIf
+  |     SFor
+  |     SCall
 
 (* CacheState (matches Coq: Inductive CacheState) *)
 datatype cache_state =
@@ -103,17 +108,17 @@ datatype branch_state =
 
 (* AbstractCacheState (matches Coq: Inductive AbstractCacheState) *)
 datatype abstract_cache_state =
-    ACSMustHit  (* Definitely in cache *)
-  |     ACSMayMiss  (* Might not be in cache *)
+    ACSMustHit
+  |     ACSMayMiss
   |     ACSMustMiss
 
 (* HWParams (matches Coq: Record HWParams) *)
 record hw_params =
-  hw_cache_hit :: Time  (* L1 cache hit latency *)
-  hw_cache_miss :: Time  (* Cache miss latency *)
-  hw_call_overhead :: Time  (* Function call overhead *)
-  hw_branch_penalty :: Time  (* Branch misprediction cost *)
-  hw_pipeline_depth :: nat  (* Pipeline stages *)
+  hw_cache_hit :: Time
+  hw_cache_miss :: Time
+  hw_call_overhead :: Time
+  hw_branch_penalty :: Time
+  hw_pipeline_depth :: nat
 
 (* Task (matches Coq: Record Task) *)
 record task =
@@ -129,8 +134,8 @@ record exec_context =
 
 (* DMAConfig (matches Coq: Record DMAConfig) *)
 record dma_config =
-  dma_bandwidth :: nat  (* bytes per cycle, must be > 0 *)
-  dma_setup :: Time  (* DMA setup overhead *)
+  dma_bandwidth :: nat
+  dma_setup :: Time
 
 (* hw_wellformed (matches Coq: Definition hw_wellformed) *)
 definition hw_wellformed :: "HWParams \<Rightarrow> bool" where
@@ -139,6 +144,10 @@ definition hw_wellformed :: "HWParams \<Rightarrow> bool" where
 (* default_hw (matches Coq: Definition default_hw) *)
 definition default_hw :: "HWParams" where
   "default_hw \<equiv> mkHW 1 100 5 10 5"
+
+(* wcet (matches Coq: Definition wcet) *)
+fun wcet :: "HWParams \<Rightarrow> Stmt \<Rightarrow> Time" where
+  "wcet SUnit = 1"
 
 (* utilization (matches Coq: Definition utilization) *)
 definition utilization :: "Task \<Rightarrow> nat" where
@@ -157,6 +166,14 @@ fun branch_cost :: "HWParams \<Rightarrow> BranchState \<Rightarrow> Time" where
 (* worst_context (matches Coq: Definition worst_context) *)
 definition worst_context :: "nat \<Rightarrow> ExecContext" where
   "worst_context max_iter \<equiv> mkExec CacheMiss BranchMispredict (fun _ => max_iter)"
+
+(* actual_time (matches Coq: Definition actual_time) *)
+fun actual_time :: "HWParams \<Rightarrow> ExecContext \<Rightarrow> Stmt \<Rightarrow> Time" where
+  "actual_time SUnit = 1"
+
+(* recursive_calls (matches Coq: Definition recursive_calls) *)
+fun recursive_calls :: "nat \<Rightarrow> nat \<Rightarrow> Stmt" where
+  "recursive_calls O = SUnit"
 
 (* pipeline_flush_cost (matches Coq: Definition pipeline_flush_cost) *)
 definition pipeline_flush_cost :: "HWParams \<Rightarrow> Time" where

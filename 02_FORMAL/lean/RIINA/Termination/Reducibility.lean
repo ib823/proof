@@ -133,12 +133,12 @@ theorem SN_value_irreducible : ∀ v st ctx, value v → SN st ctx v → ∀ e' 
 
 -- Case on inl steps to the left branch
 /-- case_inl_typed_steps (matches Coq) -/
-theorem case_inl_typed_steps : ∀ v T2 x1 e1 x2 e2 st ctx, value v → ∃ e' st' ctx', (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') ∧ e' = [x1 := v] e1 ∧ st' = st ∧ ctx' = ctx := by
+theorem case_inl_typed_steps : ∀ v T2 x1 e1 x2 e2 st ctx, value v → ∃ e' st' ctx', (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') ∧ e' = subst[x1 := v] e1 ∧ st' = st ∧ ctx' = ctx := by
   simp_all [Bool.and_eq_true]
 
 -- Case on inr steps to the right branch
 /-- case_inr_typed_steps (matches Coq) -/
-theorem case_inr_typed_steps : ∀ v T1 x1 e1 x2 e2 st ctx, value v → ∃ e' st' ctx', (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') ∧ e' = [x2 := v] e2 ∧ st' = st ∧ ctx' = ctx := by
+theorem case_inr_typed_steps : ∀ v T1 x1 e1 x2 e2 st ctx, value v → ∃ e' st' ctx', (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') ∧ e' = subst[x2 := v] e2 ∧ st' = st ∧ ctx' = ctx := by
   simp_all [Bool.and_eq_true]
 
 -- Pair of values is a value
@@ -268,7 +268,7 @@ theorem snd_pair_step_value : ∀ v1 v2 st ctx, value v1 → value v2 → ∃ v,
 
 -- App with lambda and value steps
 /-- app_lam_steps (matches Coq) -/
-theorem app_lam_steps : ∀ x T body v st ctx, value v → (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx) := by
+theorem app_lam_steps : ∀ x T body v st ctx, value v → (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

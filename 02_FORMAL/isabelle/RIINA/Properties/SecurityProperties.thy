@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SecurityProperties - Isabelle/HOL Port
@@ -15,11 +17,11 @@
  *)
 
 theory SecurityProperties
-  imports Main
+  imports Main Syntax Typing
 begin
 
 (* security_non_interference (matches Coq) *)
-lemma security_non_interference: "\<forall> x T_in T_out v1 v2 e, val_rel nil T_in v1 v2 \<longrightarrow> has_type ((x, T_in) :: nil) nil Public e T_out EffectPure \<longrightarrow> exp_rel nil T_out ([x := v1] e) ([x := v2] e)"
+lemma security_non_interference: "\<forall>x T_in T_out v1 v2 e. val_rel nil T_in v1 v2 \<longrightarrow> has_type ((x, T_in) :: nil) nil Public e T_out EffectPure \<longrightarrow> exp_rel nil T_out (subst x v1 e) (subst x v2 e)"
   by auto
 
 end

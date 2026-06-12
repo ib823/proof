@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ESGCompliance - Isabelle/HOL Port
@@ -103,7 +105,7 @@
  *)
 
 theory ESGCompliance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* EmissionScope (matches Coq: Inductive EmissionScope) *)
@@ -125,19 +127,19 @@ datatype water_source =
 record emission_source =
   source_id :: nat
   source_type :: EmissionScope
-  quantity :: Z  (* In tonnes CO2e, scaled by 10^6 *)
+  quantity :: Z
   emission_factor :: Z
   is_tracked :: bool
   is_measured :: bool
   is_reported :: bool
   owned_or_controlled_flag :: bool
-  emission_hash :: nat  (* Unique identifier for double-counting check *)
+  emission_hash :: nat
 
 (* WaterWithdrawal (matches Coq: Record WaterWithdrawal) *)
 record water_withdrawal =
   withdrawal_id :: nat
   water_source :: WaterSource
-  volume :: Z  (* In cubic meters *)
+  volume :: Z
   quality :: nat
   source_documented :: bool
 
@@ -187,7 +189,7 @@ record employee =
   no_debt_bondage :: bool
   documents_retained :: bool
   employed_flag :: bool
-  gender :: nat  (* For pay gap analysis *)
+  gender :: nat
 
 (* SafetyIncident (matches Coq: Record SafetyIncident) *)
 record safety_incident =
@@ -224,7 +226,7 @@ record hrdd_process =
 record supplier =
   supplier_id :: nat
   risk_assessed :: bool
-  assessment_date :: nat  (* Year *)
+  assessment_date :: nat
   current_year :: nat
   high_risk :: bool
 
@@ -339,7 +341,7 @@ record esg_compliant_system =
   sys_coi :: ConflictOfInterest
   sys_rpt :: 'a list
   sys_disclosure :: Disclosure
-  sys_sbt :: ScienceBasedTarget  (* Compliance predicates - the system enforces these *)
+  sys_sbt :: ScienceBasedTarget
   emissions_complete :: forall
   scope2_tracked :: forall
   emissions_unique :: forall
@@ -401,7 +403,7 @@ definition recycled_content_rate :: "CircularEconomyMetric \<Rightarrow> Z" wher
 
 (* pollution_compliant (matches Coq: Definition pollution_compliant) *)
 definition pollution_compliant :: "PollutionRecord \<Rightarrow> bool" where
-  "pollution_compliant p \<equiv> emission_level p <= regulatory_limit p /\ permit_valid p = true"
+  "pollution_compliant p \<equiv> emission_level p <= regulatory_limit p /\ permit_valid p = True"
 
 (* paid_living_wage (matches Coq: Definition paid_living_wage) *)
 definition paid_living_wage :: "Employee \<Rightarrow> bool" where
@@ -409,9 +411,9 @@ definition paid_living_wage :: "Employee \<Rightarrow> bool" where
 
 (* no_forced_labor (matches Coq: Definition no_forced_labor) *)
 definition no_forced_labor :: "Employee \<Rightarrow> bool" where
-  "no_forced_labor e \<equiv> voluntary_employment e = true /\
-  no_debt_bondage e = true /\
-  documents_retained e = false"
+  "no_forced_labor e \<equiv> voluntary_employment e = True /\
+  no_debt_bondage e = True /\
+  documents_retained e = False"
 
 (* no_child_labor (matches Coq: Definition no_child_labor) *)
 definition no_child_labor :: "Employee \<Rightarrow> bool" where
@@ -419,11 +421,11 @@ definition no_child_labor :: "Employee \<Rightarrow> bool" where
 
 (* incident_properly_handled (matches Coq: Definition incident_properly_handled) *)
 definition incident_properly_handled :: "SafetyIncident \<Rightarrow> bool" where
-  "incident_properly_handled i \<equiv> recorded i = true /\ investigated i = true /\ corrective_action i = true"
+  "incident_properly_handled i \<equiv> recorded i = True /\ investigated i = True /\ corrective_action i = True"
 
 (* non_discriminatory (matches Coq: Definition non_discriminatory) *)
 definition non_discriminatory :: "EmploymentDecision \<Rightarrow> bool" where
-  "non_discriminatory d \<equiv> merit_based d = true /\ no_protected_class_bias d = true"
+  "non_discriminatory d \<equiv> merit_based d = True /\ no_protected_class_bias d = True"
 
 (* pay_gap_percentage (matches Coq: Definition pay_gap_percentage) *)
 definition pay_gap_percentage :: "PayGapRecord \<Rightarrow> Z" where
@@ -431,10 +433,10 @@ definition pay_gap_percentage :: "PayGapRecord \<Rightarrow> Z" where
 
 (* hrdd_implemented (matches Coq: Definition hrdd_implemented) *)
 definition hrdd_implemented :: "HRDDProcess \<Rightarrow> bool" where
-  "hrdd_implemented h \<equiv> policy_adopted h = true /\
-  risk_assessment_done h = true /\
-  mitigation_implemented h = true /\
-  monitoring_active h = true"
+  "hrdd_implemented h \<equiv> policy_adopted h = True /\
+  risk_assessment_done h = True /\
+  mitigation_implemented h = True /\
+  monitoring_active h = True"
 
 (* supplier_recently_assessed (matches Coq: Definition supplier_recently_assessed) *)
 definition supplier_recently_assessed :: "Supplier \<Rightarrow> nat \<Rightarrow> bool" where
@@ -442,17 +444,17 @@ definition supplier_recently_assessed :: "Supplier \<Rightarrow> nat \<Rightarro
 
 (* fpic_satisfied (matches Coq: Definition fpic_satisfied) *)
 definition fpic_satisfied :: "IndigenousCommunity \<Rightarrow> bool" where
-  "fpic_satisfied c \<equiv> fpic_obtained c = true /\ consent_documented c = true"
+  "fpic_satisfied c \<equiv> fpic_obtained c = True /\ consent_documented c = True"
 
 (* grievance_adequate (matches Coq: Definition grievance_adequate) *)
 definition grievance_adequate :: "GrievanceMechanism \<Rightarrow> bool" where
-  "grievance_adequate g \<equiv> anonymous_reporting g = true /\ accessible g = true"
+  "grievance_adequate g \<equiv> anonymous_reporting g = True /\ accessible g = True"
 
 (* stakeholder_engaged (matches Coq: Definition stakeholder_engaged) *)
 definition stakeholder_engaged :: "StakeholderEngagement \<Rightarrow> bool" where
-  "stakeholder_engaged s \<equiv> communities_identified s = true /\
-  consultation_done s = true /\
-  feedback_incorporated s = true"
+  "stakeholder_engaged s \<equiv> communities_identified s = True /\
+  consultation_done s = True /\
+  feedback_incorporated s = True"
 
 (* independent_count (matches Coq: Definition independent_count) *)
 definition independent_count :: "Board \<Rightarrow> nat" where
@@ -464,28 +466,28 @@ definition independent_majority :: "Board \<Rightarrow> bool" where
 
 (* esg_linked (matches Coq: Definition esg_linked) *)
 definition esg_linked :: "ExecutiveComp \<Rightarrow> bool" where
-  "esg_linked ec \<equiv> esg_linked_portion ec > 0 /\ esg_metrics_defined ec = true"
+  "esg_linked ec \<equiv> esg_linked_portion ec > 0 /\ esg_metrics_defined ec = True"
 
 (* anti_corruption_adequate (matches Coq: Definition anti_corruption_adequate) *)
 definition anti_corruption_adequate :: "AntiCorruptionPolicy \<Rightarrow> bool" where
-  "anti_corruption_adequate a \<equiv> fcpa_compliant a = true /\ uk_bribery_compliant a = true /\
-  training_provided a = true /\ controls_implemented a = true"
+  "anti_corruption_adequate a \<equiv> fcpa_compliant a = True /\ uk_bribery_compliant a = True /\
+  training_provided a = True /\ controls_implemented a = True"
 
 (* whistleblower_protected (matches Coq: Definition whistleblower_protected) *)
 definition whistleblower_protected :: "WhistleblowerPolicy \<Rightarrow> bool" where
-  "whistleblower_protected w \<equiv> no_retaliation_policy w = true /\ protection_enforced w = true"
+  "whistleblower_protected w \<equiv> no_retaliation_policy w = True /\ protection_enforced w = True"
 
 (* coi_managed (matches Coq: Definition coi_managed) *)
 definition coi_managed :: "ConflictOfInterest \<Rightarrow> bool" where
-  "coi_managed c \<equiv> policy_exists c = true /\ disclosure_required c = true /\ recusal_enforced c = true"
+  "coi_managed c \<equiv> policy_exists c = True /\ disclosure_required c = True /\ recusal_enforced c = True"
 
 (* rpt_compliant (matches Coq: Definition rpt_compliant) *)
 definition rpt_compliant :: "RelatedPartyTransaction \<Rightarrow> bool" where
-  "rpt_compliant r \<equiv> disclosed r = true /\ board_approved r = true"
+  "rpt_compliant r \<equiv> disclosed r = True /\ board_approved r = True"
 
 (* science_based (matches Coq: Definition science_based) *)
 definition science_based :: "ScienceBasedTarget \<Rightarrow> bool" where
-  "science_based t \<equiv> paris_aligned t = true /\ reduction_percent t >= 42"
+  "science_based t \<equiv> paris_aligned t = True /\ reduction_percent t >= 42"
 
 (* ESG_001_01_scope1_completeness (matches Coq) *)
 lemma ESG_001_01_scope1_completeness: "\<forall> (sys : ESGCompliantSystem) s, In s (sys_emissions sys) \<longrightarrow> source_type s = Scope1 \<longrightarrow> owned_or_controlled_flag s = True \<longrightarrow> is_tracked s = True \<and> is_measured s = True \<and> is_reported s = True"

@@ -109,7 +109,7 @@ def SN_expr (e : expr) : Prop :=
 /-- direct_lambda_SN (matches Coq: Definition direct_lambda_SN) -/
 def direct_lambda_SN (e1 : expr) : Prop :=
   forall x T body, e1 = ELam x T body →
-    forall v st ctx, value v → SN ([x := v] body, st, ctx)
+    forall v st ctx, value v → SN (subst[x := v] body, st, ctx)
 
 /-- family_lambda_SN (matches Coq: Definition family_lambda_SN) -/
 def family_lambda_SN (e1 : expr) : Prop :=
@@ -141,20 +141,20 @@ theorem SN_all_reducts : ∀ e st ctx, SN (e, st, ctx) → ∀ e' st' ctx', (e, 
 
 -- Helper: When e1 is a value, SN_app follows from SN(e2)
 /-- SN_app_value_left_aux (matches Coq) -/
-theorem SN_app_value_left_aux : ∀ v cfg, value v → SN cfg → (∀ x body v' st' ctx', value v' → SN ([x := v'] body, st', ctx')) → SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg) := by
+theorem SN_app_value_left_aux : ∀ v cfg, value v → SN cfg → (∀ x body v' st' ctx', value v' → SN (subst[x := v'] body, st', ctx')) → SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg) := by
   simp_all [Bool.and_eq_true]
 
 /-- SN_app_value_left (matches Coq) -/
-theorem SN_app_value_left : ∀ v e2 st ctx, value v → SN (e2, st, ctx) → (∀ x body v' st' ctx', value v' → SN ([x := v'] body, st', ctx')) → SN (EApp v e2, st, ctx) := by
+theorem SN_app_value_left : ∀ v e2 st ctx, value v → SN (e2, st, ctx) → (∀ x body v' st' ctx', value v' → SN (subst[x := v'] body, st', ctx')) → SN (EApp v e2, st, ctx) := by
   intro h; exact h
 
 -- Main lemma with store-polymorphic e2 premise
 /-- SN_app_aux (matches Coq) -/
-theorem SN_app_aux : ∀ cfg e2, SN cfg → (∀ st ctx, SN (e2, st, ctx)) → (∀ x body v st' ctx', value v → SN ([x := v] body, st', ctx')) → SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg) := by
+theorem SN_app_aux : ∀ cfg e2, SN cfg → (∀ st ctx, SN (e2, st, ctx)) → (∀ x body v st' ctx', value v → SN (subst[x := v] body, st', ctx')) → SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg) := by
   simp_all [Bool.and_eq_true]
 
 /-- SN_app (matches Coq) -/
-theorem SN_app : ∀ e1 e2 st ctx, (∀ st' ctx', SN (e1, st', ctx')) → (∀ st' ctx', SN (e2, st', ctx')) → (∀ x body v st' ctx', value v → SN ([x := v] body, st', ctx')) → SN (EApp e1 e2, st, ctx) := by
+theorem SN_app : ∀ e1 e2 st ctx, (∀ st' ctx', SN (e1, st', ctx')) → (∀ st' ctx', SN (e2, st', ctx')) → (∀ x body v st' ctx', value v → SN (subst[x := v] body, st', ctx')) → SN (EApp e1 e2, st, ctx) := by
   intro h; exact h
 
 -- Helper: SN_app for values
@@ -244,11 +244,11 @@ theorem SN_inr : ∀ e T st ctx, SN (e, st, ctx) → SN (EInr e T, st, ctx) := b
     SECTION 7: SN CLOSURE FOR CASE
     ========================================================================
 /-- SN_case_aux (matches Coq) -/
-theorem SN_case_aux : ∀ cfg x1 e1 x2 e2, SN cfg → (∀ v st' ctx', value v → SN ([x1 := v] e1, st', ctx')) → (∀ v st' ctx', value v → SN ([x2 := v] e2, st', ctx')) → SN (ECase (fst (fst cfg)) x1 e1 x2 e2, snd (fst cfg), snd cfg) := by
+theorem SN_case_aux : ∀ cfg x1 e1 x2 e2, SN cfg → (∀ v st' ctx', value v → SN (subst[x1 := v] e1, st', ctx')) → (∀ v st' ctx', value v → SN (subst[x2 := v] e2, st', ctx')) → SN (ECase (fst (fst cfg)) x1 e1 x2 e2, snd (fst cfg), snd cfg) := by
   simp_all [Bool.and_eq_true]
 
 /-- SN_case (matches Coq) -/
-theorem SN_case : ∀ e x1 e1 x2 e2 st ctx, SN (e, st, ctx) → (∀ v st' ctx', value v → SN ([x1 := v] e1, st', ctx')) → (∀ v st' ctx', value v → SN ([x2 := v] e2, st', ctx')) → SN (ECase e x1 e1 x2 e2, st, ctx) := by
+theorem SN_case : ∀ e x1 e1 x2 e2 st ctx, SN (e, st, ctx) → (∀ v st' ctx', value v → SN (subst[x1 := v] e1, st', ctx')) → (∀ v st' ctx', value v → SN (subst[x2 := v] e2, st', ctx')) → SN (ECase e x1 e1 x2 e2, st, ctx) := by
   intro h; exact h
 
 -- ========================================================================
@@ -266,11 +266,11 @@ theorem SN_if : ∀ e1 e2 e3 st ctx, SN (e1, st, ctx) → (∀ st' ctx', SN (e2,
     SECTION 9: SN CLOSURE FOR LET
     ========================================================================
 /-- SN_let_aux (matches Coq) -/
-theorem SN_let_aux : ∀ cfg x e2, SN cfg → (∀ v st' ctx', value v → SN ([x := v] e2, st', ctx')) → SN (ELet x (fst (fst cfg)) e2, snd (fst cfg), snd cfg) := by
+theorem SN_let_aux : ∀ cfg x e2, SN cfg → (∀ v st' ctx', value v → SN (subst[x := v] e2, st', ctx')) → SN (ELet x (fst (fst cfg)) e2, snd (fst cfg), snd cfg) := by
   simp_all [Bool.and_eq_true]
 
 /-- SN_let (matches Coq) -/
-theorem SN_let : ∀ x e1 e2 st ctx, SN (e1, st, ctx) → (∀ v st' ctx', value v → SN ([x := v] e2, st', ctx')) → SN (ELet x e1 e2, st, ctx) := by
+theorem SN_let : ∀ x e1 e2 st ctx, SN (e1, st, ctx) → (∀ v st' ctx', value v → SN (subst[x := v] e2, st', ctx')) → SN (ELet x e1 e2, st, ctx) := by
   intro h; exact h
 
 -- ========================================================================
@@ -334,11 +334,11 @@ theorem SN_assign : ∀ e1 e2 st ctx, (∀ st' ctx', SN (e1, st', ctx')) → (�
     SECTION 11: SN CLOSURE FOR HANDLE
     ========================================================================
 /-- SN_handle_aux (matches Coq) -/
-theorem SN_handle_aux : ∀ cfg x h, SN cfg → (∀ v st' ctx', value v → SN ([x := v] h, st', ctx')) → SN (EHandle (fst (fst cfg)) x h, snd (fst cfg), snd cfg) := by
+theorem SN_handle_aux : ∀ cfg x h, SN cfg → (∀ v st' ctx', value v → SN (subst[x := v] h, st', ctx')) → SN (EHandle (fst (fst cfg)) x h, snd (fst cfg), snd cfg) := by
   simp_all [Bool.and_eq_true]
 
 /-- SN_handle (matches Coq) -/
-theorem SN_handle : ∀ e x h st ctx, SN (e, st, ctx) → (∀ v st' ctx', value v → SN ([x := v] h, st', ctx')) → SN (EHandle e x h, st, ctx) := by
+theorem SN_handle : ∀ e x h st ctx, SN (e, st, ctx) → (∀ v st' ctx', value v → SN (subst[x := v] h, st', ctx')) → SN (EHandle e x h, st, ctx) := by
   intro h; exact h
 
 end RIINA

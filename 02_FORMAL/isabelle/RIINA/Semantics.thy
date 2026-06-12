@@ -136,137 +136,137 @@ type_synonym config = "expr \<times> store \<times> effect_ctx"
 section \<open>Small-Step Semantics\<close>
 
 text \<open>
-  The step relation: (e, st, ctx) \<longrightarrow> (e', st', ctx')
+  The step relation: (e, st, ctx) \<leadsto> (e', st', ctx')
   (matches Coq: Inductive step, 43 rules)
 \<close>
 
-inductive step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<longrightarrow>" 50) where
+inductive step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<leadsto>" 50) where
   (* Beta reduction *)
-  ST_AppAbs: "value v \<Longrightarrow>
-              (EApp (ELam x T body) v, st, ctx) \<longrightarrow> (subst x v body, st, ctx)"
+  ST_AppAbs: "is_value v \<Longrightarrow>
+              (EApp (ELam x T body) v, st, ctx) \<leadsto> (subst x v body, st, ctx)"
 
   (* Application congruence *)
-| ST_App1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-            (EApp e1 e2, st, ctx) \<longrightarrow> (EApp e1' e2, st', ctx')"
+| ST_App1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+            (EApp e1 e2, st, ctx) \<leadsto> (EApp e1' e2, st', ctx')"
 
-| ST_App2: "value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-            (EApp v1 e2, st, ctx) \<longrightarrow> (EApp v1 e2', st', ctx')"
+| ST_App2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+            (EApp v1 e2, st, ctx) \<leadsto> (EApp v1 e2', st', ctx')"
 
   (* Pair reduction *)
-| ST_Pair1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-             (EPair e1 e2, st, ctx) \<longrightarrow> (EPair e1' e2, st', ctx')"
+| ST_Pair1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+             (EPair e1 e2, st, ctx) \<leadsto> (EPair e1' e2, st', ctx')"
 
-| ST_Pair2: "value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-             (EPair v1 e2, st, ctx) \<longrightarrow> (EPair v1 e2', st', ctx')"
+| ST_Pair2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+             (EPair v1 e2, st, ctx) \<leadsto> (EPair v1 e2', st', ctx')"
 
   (* Projections *)
-| ST_Fst: "value v1 \<Longrightarrow> value v2 \<Longrightarrow>
-           (EFst (EPair v1 v2), st, ctx) \<longrightarrow> (v1, st, ctx)"
+| ST_Fst: "is_value v1 \<Longrightarrow> is_value v2 \<Longrightarrow>
+           (EFst (EPair v1 v2), st, ctx) \<leadsto> (v1, st, ctx)"
 
-| ST_Snd: "value v1 \<Longrightarrow> value v2 \<Longrightarrow>
-           (ESnd (EPair v1 v2), st, ctx) \<longrightarrow> (v2, st, ctx)"
+| ST_Snd: "is_value v1 \<Longrightarrow> is_value v2 \<Longrightarrow>
+           (ESnd (EPair v1 v2), st, ctx) \<leadsto> (v2, st, ctx)"
 
-| ST_FstStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (EFst e, st, ctx) \<longrightarrow> (EFst e', st', ctx')"
+| ST_FstStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (EFst e, st, ctx) \<leadsto> (EFst e', st', ctx')"
 
-| ST_SndStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (ESnd e, st, ctx) \<longrightarrow> (ESnd e', st', ctx')"
+| ST_SndStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (ESnd e, st, ctx) \<leadsto> (ESnd e', st', ctx')"
 
   (* Sum elimination *)
-| ST_CaseInl: "value v \<Longrightarrow>
-               (ECase (EInl v T) x1 e1 x2 e2, st, ctx) \<longrightarrow> (subst x1 v e1, st, ctx)"
+| ST_CaseInl: "is_value v \<Longrightarrow>
+               (ECase (EInl v T) x1 e1 x2 e2, st, ctx) \<leadsto> (subst x1 v e1, st, ctx)"
 
-| ST_CaseInr: "value v \<Longrightarrow>
-               (ECase (EInr v T) x1 e1 x2 e2, st, ctx) \<longrightarrow> (subst x2 v e2, st, ctx)"
+| ST_CaseInr: "is_value v \<Longrightarrow>
+               (ECase (EInr v T) x1 e1 x2 e2, st, ctx) \<leadsto> (subst x2 v e2, st, ctx)"
 
-| ST_CaseStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                (ECase e x1 e1 x2 e2, st, ctx) \<longrightarrow> (ECase e' x1 e1 x2 e2, st', ctx')"
+| ST_CaseStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                (ECase e x1 e1 x2 e2, st, ctx) \<leadsto> (ECase e' x1 e1 x2 e2, st', ctx')"
 
   (* Sum construction congruence *)
-| ST_InlStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (EInl e T, st, ctx) \<longrightarrow> (EInl e' T, st', ctx')"
+| ST_InlStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (EInl e T, st, ctx) \<leadsto> (EInl e' T, st', ctx')"
 
-| ST_InrStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (EInr e T, st, ctx) \<longrightarrow> (EInr e' T, st', ctx')"
+| ST_InrStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (EInr e T, st, ctx) \<leadsto> (EInr e' T, st', ctx')"
 
   (* Conditionals *)
-| ST_IfTrue: "(EIf (EBool True) e2 e3, st, ctx) \<longrightarrow> (e2, st, ctx)"
+| ST_IfTrue: "(EIf (EBool True) e2 e3, st, ctx) \<leadsto> (e2, st, ctx)"
 
-| ST_IfFalse: "(EIf (EBool False) e2 e3, st, ctx) \<longrightarrow> (e3, st, ctx)"
+| ST_IfFalse: "(EIf (EBool False) e2 e3, st, ctx) \<leadsto> (e3, st, ctx)"
 
-| ST_IfStep: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-              (EIf e1 e2 e3, st, ctx) \<longrightarrow> (EIf e1' e2 e3, st', ctx')"
+| ST_IfStep: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+              (EIf e1 e2 e3, st, ctx) \<leadsto> (EIf e1' e2 e3, st', ctx')"
 
   (* Let binding *)
-| ST_LetValue: "value v \<Longrightarrow>
-                (ELet x v e2, st, ctx) \<longrightarrow> (subst x v e2, st, ctx)"
+| ST_LetValue: "is_value v \<Longrightarrow>
+                (ELet x v e2, st, ctx) \<leadsto> (subst x v e2, st, ctx)"
 
-| ST_LetStep: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-               (ELet x e1 e2, st, ctx) \<longrightarrow> (ELet x e1' e2, st', ctx')"
+| ST_LetStep: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+               (ELet x e1 e2, st, ctx) \<leadsto> (ELet x e1' e2, st', ctx')"
 
   (* Effects *)
-| ST_PerformStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                   (EPerform eff e, st, ctx) \<longrightarrow> (EPerform eff e', st', ctx')"
+| ST_PerformStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                   (EPerform eff e, st, ctx) \<leadsto> (EPerform eff e', st', ctx')"
 
-| ST_PerformValue: "value v \<Longrightarrow>
-                    (EPerform eff v, st, ctx) \<longrightarrow> (v, st, ctx)"
+| ST_PerformValue: "is_value v \<Longrightarrow>
+                    (EPerform eff v, st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_HandleStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                  (EHandle e x h, st, ctx) \<longrightarrow> (EHandle e' x h, st', ctx')"
+| ST_HandleStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                  (EHandle e x h, st, ctx) \<leadsto> (EHandle e' x h, st', ctx')"
 
-| ST_HandleValue: "value v \<Longrightarrow>
-                   (EHandle v x h, st, ctx) \<longrightarrow> (subst x v h, st, ctx)"
+| ST_HandleValue: "is_value v \<Longrightarrow>
+                   (EHandle v x h, st, ctx) \<leadsto> (subst x v h, st, ctx)"
 
   (* References *)
-| ST_RefStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (ERef e sl, st, ctx) \<longrightarrow> (ERef e' sl, st', ctx')"
+| ST_RefStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (ERef e sl, st, ctx) \<leadsto> (ERef e' sl, st', ctx')"
 
-| ST_RefValue: "value v \<Longrightarrow> l = fresh_loc st \<Longrightarrow>
-                (ERef v sl, st, ctx) \<longrightarrow> (ELoc l, store_update l v st, ctx)"
+| ST_RefValue: "is_value v \<Longrightarrow> l = fresh_loc st \<Longrightarrow>
+                (ERef v sl, st, ctx) \<leadsto> (ELoc l, store_update l v st, ctx)"
 
-| ST_DerefStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                 (EDeref e, st, ctx) \<longrightarrow> (EDeref e', st', ctx')"
+| ST_DerefStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                 (EDeref e, st, ctx) \<leadsto> (EDeref e', st', ctx')"
 
 | ST_DerefLoc: "store_lookup l st = Some v \<Longrightarrow>
-                (EDeref (ELoc l), st, ctx) \<longrightarrow> (v, st, ctx)"
+                (EDeref (ELoc l), st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_Assign1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-               (EAssign e1 e2, st, ctx) \<longrightarrow> (EAssign e1' e2, st', ctx')"
+| ST_Assign1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+               (EAssign e1 e2, st, ctx) \<leadsto> (EAssign e1' e2, st', ctx')"
 
-| ST_Assign2: "value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-               (EAssign v1 e2, st, ctx) \<longrightarrow> (EAssign v1 e2', st', ctx')"
+| ST_Assign2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+               (EAssign v1 e2, st, ctx) \<leadsto> (EAssign v1 e2', st', ctx')"
 
-| ST_AssignLoc: "store_lookup l st = Some v1 \<Longrightarrow> value v2 \<Longrightarrow>
-                 (EAssign (ELoc l) v2, st, ctx) \<longrightarrow> (EUnit, store_update l v2 st, ctx)"
+| ST_AssignLoc: "store_lookup l st = Some v1 \<Longrightarrow> is_value v2 \<Longrightarrow>
+                 (EAssign (ELoc l) v2, st, ctx) \<leadsto> (EUnit, store_update l v2 st, ctx)"
 
   (* Security *)
-| ST_ClassifyStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                    (EClassify e, st, ctx) \<longrightarrow> (EClassify e', st', ctx')"
+| ST_ClassifyStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                    (EClassify e, st, ctx) \<leadsto> (EClassify e', st', ctx')"
 
-| ST_Declassify1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-                   (EDeclassify e1 e2, st, ctx) \<longrightarrow> (EDeclassify e1' e2, st', ctx')"
+| ST_Declassify1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+                   (EDeclassify e1 e2, st, ctx) \<leadsto> (EDeclassify e1' e2, st', ctx')"
 
-| ST_Declassify2: "value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-                   (EDeclassify v1 e2, st, ctx) \<longrightarrow> (EDeclassify v1 e2', st', ctx')"
+| ST_Declassify2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+                   (EDeclassify v1 e2, st, ctx) \<leadsto> (EDeclassify v1 e2', st', ctx')"
 
-| ST_DeclassifyValue: "value v \<Longrightarrow> declass_ok (EClassify v) p \<Longrightarrow>
-                       (EDeclassify (EClassify v) p, st, ctx) \<longrightarrow> (v, st, ctx)"
+| ST_DeclassifyValue: "is_value v \<Longrightarrow> declass_ok (EClassify v) p \<Longrightarrow>
+                       (EDeclassify (EClassify v) p, st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_ProveStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                 (EProve e, st, ctx) \<longrightarrow> (EProve e', st', ctx')"
+| ST_ProveStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                 (EProve e, st, ctx) \<leadsto> (EProve e', st', ctx')"
 
   (* Capabilities *)
-| ST_RequireStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                   (ERequire eff e, st, ctx) \<longrightarrow> (ERequire eff e', st', ctx')"
+| ST_RequireStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                   (ERequire eff e, st, ctx) \<leadsto> (ERequire eff e', st', ctx')"
 
-| ST_RequireValue: "value v \<Longrightarrow>
-                    (ERequire eff v, st, ctx) \<longrightarrow> (v, st, ctx)"
+| ST_RequireValue: "is_value v \<Longrightarrow>
+                    (ERequire eff v, st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_GrantStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                 (EGrant eff e, st, ctx) \<longrightarrow> (EGrant eff e', st', ctx')"
+| ST_GrantStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                 (EGrant eff e, st, ctx) \<leadsto> (EGrant eff e', st', ctx')"
 
-| ST_GrantValue: "value v \<Longrightarrow>
-                  (EGrant eff v, st, ctx) \<longrightarrow> (v, st, ctx)"
+| ST_GrantValue: "is_value v \<Longrightarrow>
+                  (EGrant eff v, st, ctx) \<leadsto> (v, st, ctx)"
 
 
 section \<open>Multi-step Reduction\<close>
@@ -274,9 +274,9 @@ section \<open>Multi-step Reduction\<close>
 text \<open>Reflexive-transitive closure of step.\<close>
 
 (* Multi-step reduction (matches Coq: Inductive multi_step) *)
-inductive multi_step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<longrightarrow>*" 50) where
-  MS_Refl: "cfg \<longrightarrow>* cfg"
-| MS_Step: "cfg1 \<longrightarrow> cfg2 \<Longrightarrow> cfg2 \<longrightarrow>* cfg3 \<Longrightarrow> cfg1 \<longrightarrow>* cfg3"
+inductive multi_step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<leadsto>*" 50) where
+  MS_Refl: "cfg \<leadsto>* cfg"
+| MS_Step: "cfg1 \<leadsto> cfg2 \<Longrightarrow> cfg2 \<leadsto>* cfg3 \<Longrightarrow> cfg1 \<leadsto>* cfg3"
 
 
 section \<open>Value Non-Stepping Lemmas\<close>
@@ -284,10 +284,10 @@ section \<open>Value Non-Stepping Lemmas\<close>
 text \<open>Values do not step (matches Coq: value_not_step)\<close>
 
 lemma value_not_step:
-  assumes "value v"
-  shows "\<not> (v, st, ctx) \<longrightarrow> cfg"
+  assumes "is_value v"
+  shows "\<not> (v, st, ctx) \<leadsto> cfg"
   using assms
-proof (induction v arbitrary: st ctx cfg rule: value.induct)
+proof (induction v arbitrary: st ctx cfg rule: is_value.induct)
   case VUnit thus ?case by (auto elim: step.cases)
 next
   case (VBool b) thus ?case by (auto elim: step.cases)
@@ -303,13 +303,13 @@ next
   case (VPair v1 v2)
   show ?case
   proof
-    assume "(EPair v1 v2, st, ctx) \<longrightarrow> cfg"
+    assume "(EPair v1 v2, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
-      case (ST_Pair1 e1 e1' e2 st' ctx')
+      case ST_Pair1
       then show ?thesis using VPair.IH(1) by auto
     next
-      case (ST_Pair2 v1' e2 e2' st' ctx')
+      case ST_Pair2
       then show ?thesis using VPair.IH(2) by auto
     qed
   qed
@@ -317,10 +317,10 @@ next
   case (VInl v T)
   show ?case
   proof
-    assume "(EInl v T, st, ctx) \<longrightarrow> cfg"
+    assume "(EInl v T, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
-      case (ST_InlStep e e' T' st' ctx')
+      case ST_InlStep
       then show ?thesis using VInl.IH by auto
     qed
   qed
@@ -328,10 +328,10 @@ next
   case (VInr v T)
   show ?case
   proof
-    assume "(EInr v T, st, ctx) \<longrightarrow> cfg"
+    assume "(EInr v T, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
-      case (ST_InrStep e e' T' st' ctx')
+      case ST_InrStep
       then show ?thesis using VInr.IH by auto
     qed
   qed
@@ -339,10 +339,10 @@ next
   case (VClassify v)
   show ?case
   proof
-    assume "(EClassify v, st, ctx) \<longrightarrow> cfg"
+    assume "(EClassify v, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
-      case (ST_ClassifyStep e e' st' ctx')
+      case ST_ClassifyStep
       then show ?thesis using VClassify.IH by auto
     qed
   qed
@@ -350,10 +350,10 @@ next
   case (VProve v)
   show ?case
   proof
-    assume "(EProve v, st, ctx) \<longrightarrow> cfg"
+    assume "(EProve v, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
-      case (ST_ProveStep e e' st' ctx')
+      case ST_ProveStep
       then show ?thesis using VProve.IH by auto
     qed
   qed
@@ -362,7 +362,7 @@ qed
 text \<open>Values do not step (alternative form) (matches Coq: value_does_not_step)\<close>
 
 lemma value_does_not_step:
-  assumes "value v" and "(v, st, ctx) \<longrightarrow> (e', st', ctx')"
+  assumes "is_value v" and "(v, st, ctx) \<leadsto> (e', st', ctx')"
   shows "False"
   using assms value_not_step by blast
 
@@ -372,339 +372,352 @@ section \<open>Determinism\<close>
 text \<open>Step is deterministic (matches Coq: step_deterministic_cfg)\<close>
 
 theorem step_deterministic_cfg:
-  assumes "cfg \<longrightarrow> cfg1" and "cfg \<longrightarrow> cfg2"
+  assumes "(cfg::config) \<leadsto> cfg1" and "(cfg::config) \<leadsto> cfg2"
   shows "cfg1 = cfg2"
   using assms
 proof (induction cfg cfg1 arbitrary: cfg2 rule: step.induct)
-  case (ST_AppAbs v x T body st ctx)
+  case ST_AppAbs
   from ST_AppAbs.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VLam)
+  proof (cases rule: step.cases)
+    case ST_AppAbs then show ?thesis by auto
+  next
+    case ST_App1 then show ?thesis using value_does_not_step is_value.VLam by blast
+  next
+    case ST_App2 then show ?thesis using ST_AppAbs.hyps(1) value_does_not_step by blast
+  qed
 next
-  case (ST_App1 e1 st ctx e1' st' ctx' e2)
+  case ST_App1
   from ST_App1.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_AppAbs v x T body)
-    then show ?thesis using ST_App1.hyps value_does_not_step value.VLam by blast
+    case ST_AppAbs then show ?thesis using ST_App1.hyps value_does_not_step is_value.VLam by blast
   next
-    case (ST_App1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_App1.IH by auto
+    case ST_App1 then show ?thesis using ST_App1.IH by auto
   next
-    case (ST_App2 v1 e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_App1.hyps value_does_not_step by blast
+    case ST_App2 then show ?thesis using ST_App1.hyps value_does_not_step by blast
   qed
 next
-  case (ST_App2 v1 e2 st ctx e2' st' ctx')
+  case ST_App2
   from ST_App2.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_AppAbs v x T body)
-    then show ?thesis using ST_App2.hyps value_does_not_step by blast
+    case ST_AppAbs then show ?thesis using ST_App2.hyps value_does_not_step by blast
   next
-    case (ST_App1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_App2.hyps value_does_not_step by blast
+    case ST_App1 then show ?thesis using ST_App2.hyps value_does_not_step by blast
   next
-    case (ST_App2 v1a e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_App2.IH by auto
+    case ST_App2 then show ?thesis using ST_App2.IH by auto
   qed
 next
-  case (ST_Pair1 e1 st ctx e1' st' ctx' e2)
+  case ST_Pair1
   from ST_Pair1.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Pair1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_Pair1.IH by auto
+    case ST_Pair1 then show ?thesis using ST_Pair1.IH by auto
   next
-    case (ST_Pair2 v1 e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_Pair1.hyps value_does_not_step by blast
+    case ST_Pair2 then show ?thesis using ST_Pair1.hyps value_does_not_step by blast
   qed
 next
-  case (ST_Pair2 v1 e2 st ctx e2' st' ctx')
+  case ST_Pair2
   from ST_Pair2.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Pair1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_Pair2.hyps value_does_not_step by blast
+    case ST_Pair1 then show ?thesis using ST_Pair2.hyps value_does_not_step by blast
   next
-    case (ST_Pair2 v1a e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_Pair2.IH by auto
+    case ST_Pair2 then show ?thesis using ST_Pair2.IH by auto
   qed
 next
-  case (ST_Fst v1 v2 st ctx)
+  case ST_Fst
   from ST_Fst.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VPair ST_Fst.hyps)
+  proof (cases rule: step.cases)
+    case ST_Fst then show ?thesis by auto
+  next
+    case ST_FstStep then show ?thesis using ST_Fst.hyps value_does_not_step is_value.VPair by blast
+  qed
 next
-  case (ST_Snd v1 v2 st ctx)
+  case ST_Snd
   from ST_Snd.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VPair ST_Snd.hyps)
+  proof (cases rule: step.cases)
+    case ST_Snd then show ?thesis by auto
+  next
+    case ST_SndStep then show ?thesis using ST_Snd.hyps value_does_not_step is_value.VPair by blast
+  qed
 next
-  case (ST_FstStep e st ctx e' st' ctx')
+  case ST_FstStep
   from ST_FstStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Fst v1 v2)
-    then show ?thesis using ST_FstStep.hyps value_does_not_step value.VPair by blast
+    case ST_Fst then show ?thesis using ST_FstStep.hyps value_does_not_step is_value.VPair by blast
   next
-    case (ST_FstStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_FstStep.IH by auto
+    case ST_FstStep then show ?thesis using ST_FstStep.IH by auto
   qed
 next
-  case (ST_SndStep e st ctx e' st' ctx')
+  case ST_SndStep
   from ST_SndStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Snd v1 v2)
-    then show ?thesis using ST_SndStep.hyps value_does_not_step value.VPair by blast
+    case ST_Snd then show ?thesis using ST_SndStep.hyps value_does_not_step is_value.VPair by blast
   next
-    case (ST_SndStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_SndStep.IH by auto
+    case ST_SndStep then show ?thesis using ST_SndStep.IH by auto
   qed
 next
-  case (ST_CaseInl v T x1 e1 x2 e2 st ctx)
+  case ST_CaseInl
   from ST_CaseInl.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VInl ST_CaseInl.hyps)
+  proof (cases rule: step.cases)
+    case ST_CaseInl then show ?thesis by auto
+  next
+    case ST_CaseStep then show ?thesis using ST_CaseInl.hyps value_does_not_step is_value.VInl by blast
+  qed
 next
-  case (ST_CaseInr v T x1 e1 x2 e2 st ctx)
+  case ST_CaseInr
   from ST_CaseInr.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VInr ST_CaseInr.hyps)
+  proof (cases rule: step.cases)
+    case ST_CaseInr then show ?thesis by auto
+  next
+    case ST_CaseStep then show ?thesis using ST_CaseInr.hyps value_does_not_step is_value.VInr by blast
+  qed
 next
-  case (ST_CaseStep e st ctx e' st' ctx' x1 e1 x2 e2)
+  case ST_CaseStep
   from ST_CaseStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_CaseInl v T)
-    then show ?thesis using ST_CaseStep.hyps value_does_not_step value.VInl by blast
+    case ST_CaseInl then show ?thesis using ST_CaseStep.hyps value_does_not_step is_value.VInl by blast
   next
-    case (ST_CaseInr v T)
-    then show ?thesis using ST_CaseStep.hyps value_does_not_step value.VInr by blast
+    case ST_CaseInr then show ?thesis using ST_CaseStep.hyps value_does_not_step is_value.VInr by blast
   next
-    case (ST_CaseStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_CaseStep.IH by auto
+    case ST_CaseStep then show ?thesis using ST_CaseStep.IH by auto
   qed
 next
-  case (ST_InlStep e st ctx e' st' ctx' T)
+  case ST_InlStep
   from ST_InlStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_InlStep.IH)
+  proof (cases rule: step.cases)
+    case ST_InlStep then show ?thesis using ST_InlStep.IH by auto
+  qed
 next
-  case (ST_InrStep e st ctx e' st' ctx' T)
+  case ST_InrStep
   from ST_InrStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_InrStep.IH)
+  proof (cases rule: step.cases)
+    case ST_InrStep then show ?thesis using ST_InrStep.IH by auto
+  qed
 next
-  case (ST_IfTrue e2 e3 st ctx)
+  case ST_IfTrue
   from ST_IfTrue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VBool)
+  proof (cases rule: step.cases)
+    case ST_IfTrue then show ?thesis by auto
+  next
+    case ST_IfFalse then show ?thesis by simp
+  next
+    case ST_IfStep then show ?thesis using value_does_not_step is_value.VBool by blast
+  qed
 next
-  case (ST_IfFalse e2 e3 st ctx)
+  case ST_IfFalse
   from ST_IfFalse.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: value.VBool)
+  proof (cases rule: step.cases)
+    case ST_IfTrue then show ?thesis by simp
+  next
+    case ST_IfFalse then show ?thesis by auto
+  next
+    case ST_IfStep then show ?thesis using value_does_not_step is_value.VBool by blast
+  qed
 next
-  case (ST_IfStep e1 st ctx e1' st' ctx' e2 e3)
+  case ST_IfStep
   from ST_IfStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_IfTrue
-    then show ?thesis using ST_IfStep.hyps value_does_not_step value.VBool by blast
+    case ST_IfTrue then show ?thesis using ST_IfStep.hyps value_does_not_step is_value.VBool by blast
   next
-    case ST_IfFalse
-    then show ?thesis using ST_IfStep.hyps value_does_not_step value.VBool by blast
+    case ST_IfFalse then show ?thesis using ST_IfStep.hyps value_does_not_step is_value.VBool by blast
   next
-    case (ST_IfStep e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_IfStep.IH by auto
+    case ST_IfStep then show ?thesis using ST_IfStep.IH by auto
   qed
 next
-  case (ST_LetValue v x e2 st ctx)
+  case ST_LetValue
   from ST_LetValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_LetValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_LetValue then show ?thesis by auto
+  next
+    case ST_LetStep then show ?thesis using ST_LetValue.hyps value_does_not_step by blast
+  qed
 next
-  case (ST_LetStep e1 st ctx e1' st' ctx' x e2)
+  case ST_LetStep
   from ST_LetStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_LetValue v)
-    then show ?thesis using ST_LetStep.hyps value_does_not_step by blast
+    case ST_LetValue then show ?thesis using ST_LetStep.hyps value_does_not_step by blast
   next
-    case (ST_LetStep e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_LetStep.IH by auto
+    case ST_LetStep then show ?thesis using ST_LetStep.IH by auto
   qed
 next
-  case (ST_PerformStep e st ctx e' st' ctx' eff)
+  case ST_PerformStep
   from ST_PerformStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_PerformStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_PerformStep.IH by auto
+    case ST_PerformStep then show ?thesis using ST_PerformStep.IH by auto
   next
-    case (ST_PerformValue v)
-    then show ?thesis using ST_PerformStep.hyps value_does_not_step by blast
+    case ST_PerformValue then show ?thesis using ST_PerformStep.hyps value_does_not_step by blast
   qed
 next
-  case (ST_PerformValue eff v st ctx)
+  case ST_PerformValue
   from ST_PerformValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_PerformValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_PerformStep then show ?thesis using ST_PerformValue.hyps value_does_not_step by blast
+  next
+    case ST_PerformValue then show ?thesis by auto
+  qed
 next
-  case (ST_HandleStep e st ctx e' st' ctx' x h)
+  case ST_HandleStep
   from ST_HandleStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_HandleStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_HandleStep.IH by auto
+    case ST_HandleStep then show ?thesis using ST_HandleStep.IH by auto
   next
-    case (ST_HandleValue v)
-    then show ?thesis using ST_HandleStep.hyps value_does_not_step by blast
+    case ST_HandleValue then show ?thesis using ST_HandleStep.hyps value_does_not_step by blast
   qed
 next
-  case (ST_HandleValue v x h st ctx)
+  case ST_HandleValue
   from ST_HandleValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_HandleValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_HandleStep then show ?thesis using ST_HandleValue.hyps value_does_not_step by blast
+  next
+    case ST_HandleValue then show ?thesis by auto
+  qed
 next
-  case (ST_RefStep e st ctx e' st' ctx' sl)
+  case ST_RefStep
   from ST_RefStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_RefStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_RefStep.IH by auto
+    case ST_RefStep then show ?thesis using ST_RefStep.IH by auto
   next
-    case (ST_RefValue v l)
-    then show ?thesis using ST_RefStep.hyps value_does_not_step by blast
+    case ST_RefValue then show ?thesis using ST_RefStep.hyps value_does_not_step by blast
   qed
 next
-  case (ST_RefValue v sl st ctx l)
+  case ST_RefValue
   from ST_RefValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step simp: ST_RefValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_RefStep then show ?thesis using ST_RefValue.hyps value_does_not_step by blast
+  next
+    case ST_RefValue then show ?thesis using ST_RefValue.hyps by simp
+  qed
 next
-  case (ST_DerefStep e st ctx e' st' ctx')
+  case ST_DerefStep
   from ST_DerefStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_DerefStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_DerefStep.IH by auto
+    case ST_DerefStep then show ?thesis using ST_DerefStep.IH by auto
   next
-    case (ST_DerefLoc v l)
-    then show ?thesis by auto
+    case ST_DerefLoc then show ?thesis using ST_DerefStep.hyps value_does_not_step is_value.VLoc by blast
   qed
 next
-  case (ST_DerefLoc v l st ctx)
+  case ST_DerefLoc
   from ST_DerefLoc.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_DerefLoc.hyps)
+  proof (cases rule: step.cases)
+    case ST_DerefStep then show ?thesis using value_does_not_step is_value.VLoc by blast
+  next
+    case ST_DerefLoc then show ?thesis using ST_DerefLoc.hyps by auto
+  qed
 next
-  case (ST_Assign1 e1 st ctx e1' st' ctx' e2)
+  case ST_Assign1
   from ST_Assign1.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Assign1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_Assign1.IH by auto
+    case ST_Assign1 then show ?thesis using ST_Assign1.IH by auto
   next
-    case (ST_Assign2 v1 e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_Assign1.hyps value_does_not_step by blast
+    case ST_Assign2 then show ?thesis using ST_Assign1.hyps value_does_not_step by blast
+  next
+    case ST_AssignLoc then show ?thesis using ST_Assign1.hyps value_does_not_step is_value.VLoc by blast
   qed
 next
-  case (ST_Assign2 v1 e2 st ctx e2' st' ctx')
+  case ST_Assign2
   from ST_Assign2.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Assign1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_Assign2.hyps value_does_not_step by blast
+    case ST_Assign1 then show ?thesis using ST_Assign2.hyps value_does_not_step by blast
   next
-    case (ST_Assign2 v1a e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_Assign2.IH by auto
+    case ST_Assign2 then show ?thesis using ST_Assign2.IH by auto
   next
-    case (ST_AssignLoc v1a l v2)
-    then show ?thesis using ST_Assign2.hyps value_does_not_step value.VLoc by blast
+    case ST_AssignLoc then show ?thesis using ST_Assign2.hyps value_does_not_step is_value.VLoc by blast
   qed
 next
-  case (ST_AssignLoc l st v1 v2 ctx)
+  case ST_AssignLoc
   from ST_AssignLoc.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Assign2 v1a e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_AssignLoc.hyps value_does_not_step by blast
+    case ST_Assign1 then show ?thesis using value_does_not_step is_value.VLoc by blast
   next
-    case (ST_AssignLoc v1a l' v2a)
-    then show ?thesis by auto
+    case ST_Assign2 then show ?thesis using ST_AssignLoc.hyps value_does_not_step by blast
+  next
+    case ST_AssignLoc then show ?thesis using ST_AssignLoc.hyps by auto
   qed
 next
-  case (ST_ClassifyStep e st ctx e' st' ctx')
+  case ST_ClassifyStep
   from ST_ClassifyStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_ClassifyStep.IH)
+  proof (cases rule: step.cases)
+    case ST_ClassifyStep then show ?thesis using ST_ClassifyStep.IH by auto
+  qed
 next
-  case (ST_Declassify1 e1 st ctx e1' st' ctx' e2)
+  case ST_Declassify1
   from ST_Declassify1.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Declassify1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_Declassify1.IH by auto
+    case ST_Declassify1 then show ?thesis using ST_Declassify1.IH by auto
   next
-    case (ST_Declassify2 v1 e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_Declassify1.hyps value_does_not_step by blast
+    case ST_Declassify2 then show ?thesis using ST_Declassify1.hyps value_does_not_step by blast
   next
-    case (ST_DeclassifyValue v p)
-    then show ?thesis using ST_Declassify1.hyps value_does_not_step value.VClassify by blast
+    case ST_DeclassifyValue then show ?thesis using ST_Declassify1.hyps value_does_not_step is_value.VClassify by blast
   qed
 next
-  case (ST_Declassify2 v1 e2 st ctx e2' st' ctx')
+  case ST_Declassify2
   from ST_Declassify2.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Declassify1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_Declassify2.hyps value_does_not_step by blast
+    case ST_Declassify1 then show ?thesis using ST_Declassify2.hyps value_does_not_step by blast
   next
-    case (ST_Declassify2 v1a e2a e2a' st_a' ctx_a')
-    then show ?thesis using ST_Declassify2.IH by auto
+    case ST_Declassify2 then show ?thesis using ST_Declassify2.IH by auto
   next
-    case (ST_DeclassifyValue v p)
-    then obtain v0 where "declass_ok (EClassify v) p" "e2 = EProve (EClassify v0)"
-      using ST_Declassify2.hyps unfolding declass_ok_def by auto
-    then show ?thesis using ST_Declassify2.hyps value_does_not_step value.VProve value.VClassify by blast
+    case ST_DeclassifyValue
+    then show ?thesis
+      using ST_Declassify2.hyps value_does_not_step is_value.VProve is_value.VClassify
+      unfolding declass_ok_def by blast
   qed
 next
-  case (ST_DeclassifyValue v p st ctx)
+  case ST_DeclassifyValue
   from ST_DeclassifyValue.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_Declassify1 e1a st_a ctx_a e1a' st_a' ctx_a')
-    then show ?thesis using ST_DeclassifyValue.hyps value_does_not_step value.VClassify by blast
+    case ST_Declassify1 then show ?thesis using ST_DeclassifyValue.hyps value_does_not_step is_value.VClassify by blast
   next
-    case (ST_Declassify2 v1 e2a e2a' st_a' ctx_a')
-    obtain v0 where "p = EProve (EClassify v0)" "value v0"
-      using ST_DeclassifyValue.hyps unfolding declass_ok_def by auto
-    then show ?thesis using ST_Declassify2 value_does_not_step value.VProve value.VClassify by blast
+    case ST_Declassify2
+    then show ?thesis
+      using ST_DeclassifyValue.hyps value_does_not_step is_value.VProve is_value.VClassify
+      unfolding declass_ok_def by blast
   next
-    case (ST_DeclassifyValue va pa)
-    then show ?thesis by auto
+    case ST_DeclassifyValue then show ?thesis by auto
   qed
 next
-  case (ST_ProveStep e st ctx e' st' ctx')
+  case ST_ProveStep
   from ST_ProveStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_ProveStep.IH)
+  proof (cases rule: step.cases)
+    case ST_ProveStep then show ?thesis using ST_ProveStep.IH by auto
+  qed
 next
-  case (ST_RequireStep e st ctx e' st' ctx' eff)
+  case ST_RequireStep
   from ST_RequireStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_RequireStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_RequireStep.IH by auto
+    case ST_RequireStep then show ?thesis using ST_RequireStep.IH by auto
   next
-    case (ST_RequireValue v)
-    then show ?thesis using ST_RequireStep.hyps value_does_not_step by blast
+    case ST_RequireValue then show ?thesis using ST_RequireStep.hyps value_does_not_step by blast
   qed
 next
-  case (ST_RequireValue eff v st ctx)
+  case ST_RequireValue
   from ST_RequireValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_RequireValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_RequireStep then show ?thesis using ST_RequireValue.hyps value_does_not_step by blast
+  next
+    case ST_RequireValue then show ?thesis by auto
+  qed
 next
-  case (ST_GrantStep e st ctx e' st' ctx' eff)
+  case ST_GrantStep
   from ST_GrantStep.prems show ?case
   proof (cases rule: step.cases)
-    case (ST_GrantStep ea st_a ctx_a ea' st_a' ctx_a')
-    then show ?thesis using ST_GrantStep.IH by auto
+    case ST_GrantStep then show ?thesis using ST_GrantStep.IH by auto
   next
-    case (ST_GrantValue v)
-    then show ?thesis using ST_GrantStep.hyps value_does_not_step by blast
+    case ST_GrantValue then show ?thesis using ST_GrantStep.hyps value_does_not_step by blast
   qed
 next
-  case (ST_GrantValue eff v st ctx)
+  case ST_GrantValue
   from ST_GrantValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_GrantValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_GrantStep then show ?thesis using ST_GrantValue.hyps value_does_not_step by blast
+  next
+    case ST_GrantValue then show ?thesis by auto
+  qed
 qed
 
 text \<open>Step is deterministic (matches Coq: step_deterministic)\<close>
 
 theorem step_deterministic:
-  assumes "(t, st, ctx) \<longrightarrow> (t1, st1, ctx1)"
-      and "(t, st, ctx) \<longrightarrow> (t2, st2, ctx2)"
+  assumes "(t, st, ctx) \<leadsto> (t1, st1, ctx1)"
+      and "(t, st, ctx) \<leadsto> (t2, st2, ctx2)"
   shows "t1 = t2 \<and> st1 = st2 \<and> ctx1 = ctx2"
   using step_deterministic_cfg[OF assms] by auto
 
@@ -715,7 +728,7 @@ text \<open>Predicate: all values in store are syntactic values
       (matches Coq: Definition store_has_values)\<close>
 
 definition store_has_values :: "store \<Rightarrow> bool" where
-  "store_has_values st \<equiv> \<forall>l v. store_lookup l st = Some v \<longrightarrow> value v"
+  "store_has_values st \<equiv> \<forall>l v. store_lookup l st = Some v \<longrightarrow> is_value v"
 
 text \<open>Empty store has values property (matches Coq: store_has_values_empty)\<close>
 
@@ -725,13 +738,13 @@ lemma store_has_values_empty: "store_has_values []"
 text \<open>Update preserves store_has_values (matches Coq: store_update_preserves_values)\<close>
 
 lemma store_update_preserves_values:
-  assumes "store_has_values st" and "value v"
+  assumes "store_has_values st" and "is_value v"
   shows "store_has_values (store_update l v st)"
   unfolding store_has_values_def
 proof (intro allI impI)
   fix l' v'
   assume "store_lookup l' (store_update l v st) = Some v'"
-  show "value v'"
+  show "is_value v'"
   proof (cases "l = l'")
     case True
     then have "store_lookup l' (store_update l v st) = Some v"
@@ -749,14 +762,14 @@ qed
 text \<open>Step preserves store_has_values (matches Coq: step_preserves_store_values)\<close>
 
 lemma step_preserves_store_values:
-  assumes "(e, st, ctx) \<longrightarrow> (e', st', ctx')" and "store_has_values st"
+  assumes "(e, st, ctx) \<leadsto> (e', st', ctx')" and "store_has_values st"
   shows "store_has_values st'"
   using assms
 proof (induction "(e, st, ctx)" "(e', st', ctx')" arbitrary: e st ctx e' st' ctx' rule: step.induct)
-  case (ST_RefValue v sl st ctx l)
+  case ST_RefValue
   then show ?case using store_update_preserves_values by auto
 next
-  case (ST_AssignLoc l st v1 v2 ctx)
+  case ST_AssignLoc
   then show ?case using store_update_preserves_values by auto
 qed auto
 
@@ -764,7 +777,7 @@ text \<open>Multi-step preserves store_has_values
       (matches Coq: multi_step_preserves_store_values)\<close>
 
 lemma multi_step_preserves_store_values:
-  assumes "cfg1 \<longrightarrow>* cfg2" and "store_has_values (fst (snd cfg1))"
+  assumes "cfg1 \<leadsto>* cfg2" and "store_has_values (fst (snd cfg1))"
   shows "store_has_values (fst (snd cfg2))"
   using assms
 proof (induction rule: multi_step.induct)

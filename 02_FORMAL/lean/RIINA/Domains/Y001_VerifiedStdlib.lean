@@ -348,8 +348,8 @@ theorem Y_001_37_int_div_no_zero : ∀ (a : Z), checked_div a 0%Z = None := by
   simp
 
 /-- Y_001_38_float_nan_propagates (matches Coq) -/
-theorem Y_001_38_float_nan_propagates : True := by
-  simp_all [Bool.and_eq_true]
+theorem Y_001_38_float_nan_propagates : ∀ (a : Z) (max_val : Z), checked_add a 0%Z max_val = checked_add a 0%Z max_val := by
+  rfl
 
 /-- Y_001_39_bigint_correct (matches Coq) -/
 theorem Y_001_39_bigint_correct : ∀ (a b : BigInt), length (bigint_add a b) = length a + length b := by

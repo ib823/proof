@@ -131,27 +131,27 @@ theorem if_bool_SN : ∀ b e2 e3 st ctx, SN st ctx e2 → SN st ctx e3 → SN st
 
 -- Let with value is SN when substituted body is SN
 /-- let_value_SN (matches Coq) -/
-theorem let_value_SN : ∀ x v e2 st ctx, value v → SN st ctx ([x := v] e2) → SN st ctx (ELet x v e2) := by
+theorem let_value_SN : ∀ x v e2 st ctx, value v → SN st ctx (subst[x := v] e2) → SN st ctx (ELet x v e2) := by
   simp_all [Bool.and_eq_true]
 
 -- App with lambda and value is SN when substituted body is SN
 /-- app_lam_value_SN (matches Coq) -/
-theorem app_lam_value_SN : ∀ x T body v st ctx, value v → SN st ctx ([x := v] body) → SN st ctx (EApp (ELam x T body) v) := by
+theorem app_lam_value_SN : ∀ x T body v st ctx, value v → SN st ctx (subst[x := v] body) → SN st ctx (EApp (ELam x T body) v) := by
   simp_all [Bool.and_eq_true]
 
 -- Handle with value is SN when substituted body is SN
 /-- handle_value_SN (matches Coq) -/
-theorem handle_value_SN : ∀ x v h st ctx, value v → SN st ctx ([x := v] h) → SN st ctx (EHandle v x h) := by
+theorem handle_value_SN : ∀ x v h st ctx, value v → SN st ctx (subst[x := v] h) → SN st ctx (EHandle v x h) := by
   simp_all [Bool.and_eq_true]
 
 -- Case on inl value is SN when left branch substitution is SN
 /-- case_inl_value_SN (matches Coq) -/
-theorem case_inl_value_SN : ∀ v T x1 e1 x2 e2 st ctx, value v → SN st ctx ([x1 := v] e1) → SN st ctx (ECase (EInl v T) x1 e1 x2 e2) := by
+theorem case_inl_value_SN : ∀ v T x1 e1 x2 e2 st ctx, value v → SN st ctx (subst[x1 := v] e1) → SN st ctx (ECase (EInl v T) x1 e1 x2 e2) := by
   simp_all [Bool.and_eq_true]
 
 -- Case on inr value is SN when right branch substitution is SN
 /-- case_inr_value_SN (matches Coq) -/
-theorem case_inr_value_SN : ∀ v T x1 e1 x2 e2 st ctx, value v → SN st ctx ([x2 := v] e2) → SN st ctx (ECase (EInr v T) x1 e1 x2 e2) := by
+theorem case_inr_value_SN : ∀ v T x1 e1 x2 e2 st ctx, value v → SN st ctx (subst[x2 := v] e2) → SN st ctx (ECase (EInr v T) x1 e1 x2 e2) := by
   simp_all [Bool.and_eq_true]
 
 -- Classify of value is SN (it's a value itself)

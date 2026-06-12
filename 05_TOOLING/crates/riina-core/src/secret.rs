@@ -164,6 +164,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::redundant_clone)]
     fn test_secret_clone() {
         let original = Secret::new([0xFFu8; 8]);
         let cloned = original.clone();

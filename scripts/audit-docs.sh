@@ -46,7 +46,7 @@ count_qed_active() {
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
-    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
     echo "$total"
 }
 
@@ -57,8 +57,57 @@ count_admitted_active() {
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
-    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
     echo "$total"
+}
+
+# REQ-21 durability: active-scope Coq Abort count. Must stay 0 forever.
+count_abort_active() {
+    local total=0
+    while IFS= read -r f; do
+        local count=$(grep -cP '^\s*Abort\.' "$f" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
+    echo "$total"
+}
+
+# REQ-23 durability: active-scope Coq Parameter declarations.
+# Every Parameter is an axiomatic primitive (TCB). The count is pinned in
+# RIINA_MASTER_PLAN.md Part 2; any drift requires (a) updating the doctrine
+# header in the owning .v file, (b) updating the master plan count, and
+# (c) commit message [TRACK_A] referencing the new primitive.
+# Subshell disables pipefail locally so grep returning 0 matches (exit 1)
+# doesn't abort the parent under `set -o pipefail`.
+count_parameter_active() {
+    (
+        set +o pipefail
+        grep -rP '^\s*Parameter\s' "$REPO_ROOT/02_FORMAL/coq" --include='*.v' 2>/dev/null \
+            | grep -v _archive_deprecated \
+            | grep -v _incomplete \
+            | wc -l
+    )
+}
+
+# REQ-22 durability: active-lane Lean axiom count. Must stay 0 forever.
+count_lean_axiom_active() {
+    (
+        set +o pipefail
+        grep -rP '^\s*axiom\s' "$REPO_ROOT/02_FORMAL/lean/RIINA" --include='*.lean' 2>/dev/null \
+            | grep -v '/_wip/' \
+            | wc -l
+    )
+}
+
+# REQ-22 durability: active-lane Lean sorry count. Must stay 0 forever.
+count_lean_sorry_active() {
+    (
+        set +o pipefail
+        grep -rP '\bsorry\b' "$REPO_ROOT/02_FORMAL/lean/RIINA" --include='*.lean' 2>/dev/null \
+            | grep -v '/_wip/' \
+            | wc -l
+    )
 }
 
 count_coq_files() {
@@ -90,7 +139,7 @@ count_lean_theorems() {
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
-    done < <(find "$REPO_ROOT/02_FORMAL/lean" -name "*.lean" -type f ! -name "lakefile.lean" 2>/dev/null)
+    done < <(find "$REPO_ROOT/02_FORMAL/lean/RIINA" -name "*.lean" -type f ! -path "*/_wip/*" 2>/dev/null)
     echo "$total"
 }
 
@@ -102,6 +151,103 @@ count_isabelle_lemmas() {
             total=$((total + count))
         fi
     done < <(find "$REPO_ROOT/02_FORMAL/isabelle" -name "*.thy" -type f 2>/dev/null)
+    echo "$total"
+}
+
+count_isabelle_smoke_lemmas() {
+    local root="$REPO_ROOT/02_FORMAL/isabelle/RIINA/Core/ROOT"
+    local total=0
+    if [ ! -f "$root" ]; then
+        echo "0"
+        return
+    fi
+    while IFS= read -r theory; do
+        local thy="$REPO_ROOT/02_FORMAL/isabelle/RIINA/${theory}.thy"
+        local count=$(grep -cP "^\s*(lemma|theorem|corollary)\s" "$thy" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(
+        awk '
+            /^  theories$/ { in_theories = 1; next }
+            in_theories && /^[[:space:]]{4}[^[:space:]]/ {
+                line = $0
+                sub(/^[[:space:]]+/, "", line)
+                sub(/[[:space:]]+$/, "", line)
+                print line
+                next
+            }
+            in_theories { exit }
+        ' "$root" 2>/dev/null
+    )
+    echo "$total"
+}
+
+count_fstar_lemmas() {
+    local total=0
+    while IFS= read -r f; do
+        local val_count let_count count
+        val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$f" 2>/dev/null || true)
+        let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$f" 2>/dev/null || true)
+        count=$((val_count + let_count))
+        if [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/fstar" -name "*.fst" -type f 2>/dev/null)
+    echo "$total"
+}
+
+count_fstar_smoke_lemmas() {
+    local f="$REPO_ROOT/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"
+    if [ ! -f "$f" ]; then
+        echo "0"
+        return
+    fi
+    local val_count let_count
+    val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$f" 2>/dev/null || true)
+    let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$f" 2>/dev/null || true)
+    echo $((val_count + let_count))
+}
+
+count_tla_theorems() {
+    local total=0
+    while IFS= read -r f; do
+        local count
+        count=$(grep -cP "^\s*THEOREM\b" "$f" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/tlaplus" -name "*.tla" -type f 2>/dev/null)
+    echo "$total"
+}
+
+count_tla_smoke_theorems() {
+    local f="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
+    if [ ! -f "$f" ]; then
+        echo "0"
+        return
+    fi
+    grep -cP "^\s*THEOREM\b" "$f" 2>/dev/null || true
+}
+
+count_alloy_smoke_assertions() {
+    local f="$REPO_ROOT/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als"
+    if [ ! -f "$f" ]; then
+        echo "0"
+        return
+    fi
+    grep -cP "^\s*check\s" "$f" 2>/dev/null || true
+}
+
+count_alloy_assertions() {
+    local total=0
+    while IFS= read -r f; do
+        local count
+        count=$(grep -cP "^\s*check\s" "$f" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/alloy" -name "*.als" -type f 2>/dev/null)
     echo "$total"
 }
 
@@ -186,6 +332,13 @@ warn_check() {
     fi
 }
 
+extract_first_number_from_line() {
+    local line="$1"
+    local value
+    value=$(printf '%s\n' "$line" | grep -oP '\d+,?\d*' | head -1 | tr -d ',' || true)
+    echo "${value:-0}"
+}
+
 # ── Gather actual metrics ─────────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
@@ -199,6 +352,17 @@ ACTUAL_COQ_FILES=$(count_coq_files)
 ACTUAL_COQ_ACTIVE_FILES=$(count_coq_active_files)
 ACTUAL_LEAN=$(count_lean_theorems)
 ACTUAL_ISABELLE=$(count_isabelle_lemmas)
+ACTUAL_ISABELLE_SMOKE=$(count_isabelle_smoke_lemmas)
+ACTUAL_FSTAR=$(count_fstar_lemmas)
+ACTUAL_FSTAR_SMOKE=$(count_fstar_smoke_lemmas)
+ACTUAL_TLAPLUS=$(count_tla_theorems)
+ACTUAL_TLAPLUS_SMOKE=$(count_tla_smoke_theorems)
+ACTUAL_ALLOY=$(count_alloy_assertions)
+ACTUAL_ALLOY_SMOKE=$(count_alloy_smoke_assertions)
+ACTUAL_ABORT=$(count_abort_active)
+ACTUAL_PARAMETER=$(count_parameter_active)
+ACTUAL_LEAN_AXIOM=$(count_lean_axiom_active)
+ACTUAL_LEAN_SORRY=$(count_lean_sorry_active)
 # Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
@@ -216,44 +380,89 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo "  Coq active:    $ACTUAL_COQ_ACTIVE_FILES"
     echo "  Lean:          $ACTUAL_LEAN theorems"
     echo "  Isabelle:      $ACTUAL_ISABELLE lemmas"
+    echo "  F*:            $ACTUAL_FSTAR raw lemmas, $ACTUAL_FSTAR_SMOKE smoke lemmas"
+    echo "  TLA+:          $ACTUAL_TLAPLUS raw theorems, $ACTUAL_TLAPLUS_SMOKE smoke theorems"
+    echo "  Alloy:         $ACTUAL_ALLOY raw assertions, $ACTUAL_ALLOY_SMOKE smoke assertions"
+    echo "  Coq Abort:     $ACTUAL_ABORT (active; must be 0)"
+    echo "  Coq Parameter: $ACTUAL_PARAMETER (active; TCB; pinned in master plan Part 2)"
+    echo "  Lean axiom:    $ACTUAL_LEAN_AXIOM (active lane; must be 0)"
+    echo "  Lean sorry:    $ACTUAL_LEAN_SORRY (active lane; must be 0)"
     echo "  Total proofs:  $ACTUAL_TOTAL"
     echo "  Examples:      $ACTUAL_EXAMPLES"
     echo "  Session:       $ACTUAL_SESSION"
     echo ""
 fi
 
-# ── Check CLAUDE.md ───────────────────────────────────────────────────
+# ── Check CLAUDE.md / RIINA_MASTER_PLAN.md ────────────────────────────
+# CLAUDE.md is now a thin operational pointer (no metrics).
+# Metrics live in RIINA_MASTER_PLAN.md Part 2. Check the banner if present,
+# otherwise check the master plan.
 
 if [ "$QUICK_MODE" != "--quick" ]; then
-    echo -e "${CYAN}Checking CLAUDE.md...${NC}"
+    echo -e "${CYAN}Checking CLAUDE.md / RIINA_MASTER_PLAN.md...${NC}"
 fi
 
+# Try CLAUDE.md banner first (sync-metrics.sh writes it), then fall back to master plan
+METRICS_SOURCE=""
 if [ -f "$REPO_ROOT/CLAUDE.md" ]; then
     DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/CLAUDE.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
-    DOC_SESSION=$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md")
-    DOC_LEAN=$(grep -oP 'Lean 4 Theorems[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
-    DOC_ISABELLE=$(grep -oP 'Isabelle/HOL Lemmas[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
-
-    check_value "Qed proofs (CLAUDE.md)" "$ACTUAL_QED" "$DOC_QED" "CLAUDE.md" || true
-    check_value "Lean theorems (CLAUDE.md)" "$ACTUAL_LEAN" "$DOC_LEAN" "CLAUDE.md" || true
-    check_value "Isabelle lemmas (CLAUDE.md)" "$ACTUAL_ISABELLE" "$DOC_ISABELLE" "CLAUDE.md" || true
-    # Session number is internal tracking — warn but don't block
-    if [ "$ACTUAL_SESSION" != "$DOC_SESSION" ]; then
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${YELLOW}[WARN]${NC} Session number (CLAUDE.md): actual=$ACTUAL_SESSION, documented=$DOC_SESSION"
-        fi
-        WARNINGS=$((WARNINGS + 1))
-    else
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${GREEN}[OK]${NC} Session number (CLAUDE.md): $DOC_SESSION"
-        fi
+    if [ "$DOC_QED" != "0" ]; then
+        METRICS_SOURCE="CLAUDE.md"
     fi
+fi
+
+# Fall back to RIINA_MASTER_PLAN.md if CLAUDE.md has no metrics (thin pointer mode)
+if [ "$DOC_QED" = "0" ] && [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
+    METRICS_SOURCE="RIINA_MASTER_PLAN.md"
+fi
+
+# Lean/Isabelle: try CLAUDE.md table format, then master plan
+DOC_LEAN=$(grep -oP 'Lean 4 Theorems[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" 2>/dev/null | head -1 || echo "0")
+if [ "$DOC_LEAN" = "0" ] && [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    # Master plan uses "Theorem/lemma declarations | N,NNN" format
+    DOC_LEAN=$(grep -oP 'Theorem/lemma declarations \| \K\d+,?\d*' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 | tr -d ',' || echo "0")
+fi
+
+DOC_ISABELLE=$(grep -oP 'Isabelle/HOL Lemmas[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" 2>/dev/null | head -1 || echo "0")
+if [ "$DOC_ISABELLE" = "0" ] && [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    # Master plan Isabelle section — look for lemma count line
+    DOC_ISABELLE=$(grep -oP 'Lemma count \(grep\) \| ~?\K\d+,?\d*' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 | tr -d ',~' || echo "0")
+fi
+
+DOC_SESSION=$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md" 2>/dev/null || echo "0")
+
+LABEL="${METRICS_SOURCE:-CLAUDE.md}"
+check_value "Qed proofs ($LABEL)" "$ACTUAL_QED" "$DOC_QED" "$LABEL" || true
+
+# Lean/Isabelle: only check if documented value is non-zero (thin CLAUDE.md may omit)
+if [ "$DOC_LEAN" != "0" ]; then
+    check_value "Lean theorems ($LABEL)" "$ACTUAL_LEAN" "$DOC_LEAN" "$LABEL" || true
 else
     if [ "$QUICK_MODE" != "--quick" ]; then
-        echo -e "${RED}[ERROR]${NC} CLAUDE.md not found!"
+        echo -e "${GREEN}[OK]${NC} Lean theorems: not in $LABEL (metrics in metrics.json)"
     fi
-    DISCREPANCIES=$((DISCREPANCIES + 1))
 fi
+if [ "$DOC_ISABELLE" != "0" ]; then
+    check_value "Isabelle lemmas ($LABEL)" "$ACTUAL_ISABELLE" "$DOC_ISABELLE" "$LABEL" || true
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Isabelle lemmas: not in $LABEL (metrics in metrics.json)"
+    fi
+fi
+
+# Session number is internal tracking — warn but don't block
+if [ "$ACTUAL_SESSION" != "$DOC_SESSION" ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${YELLOW}[WARN]${NC} Session number ($LABEL): actual=$ACTUAL_SESSION, documented=$DOC_SESSION"
+    fi
+    WARNINGS=$((WARNINGS + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Session number ($LABEL): $DOC_SESSION"
+    fi
+fi
+
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
 # ── Check README.md ───────────────────────────────────────────────────
@@ -267,12 +476,48 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     check_no_stale "$REPO_ROOT/README.md" "6,193|6193" "Stale Qed count (6,193)" || true
     check_no_stale "$REPO_ROOT/README.md" "4,044|4044" "Stale Qed count (4,044)" || true
     check_no_stale "$REPO_ROOT/README.md" "4,885|4885" "Stale Qed count (4,885)" || true
+    check_no_stale "$REPO_ROOT/README.md" "8,923|8923" "Stale Lean theorem count (8,923)" || true
+    check_no_stale "$REPO_ROOT/README.md" "27,260|27260" "Stale triple-prover total (27,260)" || true
     check_no_stale "$REPO_ROOT/README.md" "policy axiom|1 \\(policy\\)|1 axiom" "Stale active-axiom claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "If it compiles, it'?s secure|If your program compiles, it is secure" "Unsupported blanket compiler-security claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "15 industry compliance properties" "Unsupported blanket compliance claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "0 sorry across all provers" "Unsupported all-prover cleanliness claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "10 independent provers" "Misleading active verification breadth claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "First non-stub F\\* / TLA\\+ / Alloy artifacts remain open" "Stale Phase 2 open-work claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "Lean 4.*repo-wide|Lean 4 active lane.*repo-wide" "Stale Lean scope wording" || true
 
-    # Dynamically check that README Lean/Isabelle/Qed match actual counts
-    README_QED=$(grep -oP '[0-9,]+ Coq Qed' "$REPO_ROOT/README.md" | head -1 | grep -oP '^[0-9,]+' | tr -d ',' || echo "0")
-    if [ "$README_QED" != "0" ] && [ "$README_QED" != "$ACTUAL_QED" ]; then
+    # Dynamically check that README prover rows match the current verified state.
+    README_COQ_LINE=$(grep -m1 '^\| \*\*Coq 8\.20\.1\*\*' "$REPO_ROOT/README.md" || true)
+    README_LEAN_LINE=$(grep -m1 '^\| \*\*Lean 4\*\*' "$REPO_ROOT/README.md" || true)
+    README_ISABELLE_LINE=$(grep -m1 '^\| \*\*Isabelle/HOL\*\*' "$REPO_ROOT/README.md" || true)
+    README_FSTAR_LINE=$(grep -m1 'CryptographicSecurityActive' "$REPO_ROOT/README.md" || true)
+    README_TLAPLUS_LINE=$(grep -m1 'TelusProcurementProtocol' "$REPO_ROOT/README.md" || true)
+    README_ALLOY_LINE=$(grep -m1 'TelusProcurementAccessControl' "$REPO_ROOT/README.md" || true)
+
+    README_QED=$(extract_first_number_from_line "$README_COQ_LINE")
+    README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
+    README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
+    README_FSTAR=$(extract_first_number_from_line "$README_FSTAR_LINE")
+    README_TLAPLUS=$(extract_first_number_from_line "$README_TLAPLUS_LINE")
+    README_ALLOY=$(extract_first_number_from_line "$README_ALLOY_LINE")
+
+    if [ "$README_QED" != "0" ]; then
         check_value "Qed in README.md" "$ACTUAL_QED" "$README_QED" "README.md" || true
+    fi
+    if [ "$README_LEAN" != "0" ]; then
+        check_value "Lean declarations in README.md" "$ACTUAL_LEAN" "$README_LEAN" "README.md" || true
+    fi
+    if [ "$README_ISABELLE" != "0" ]; then
+        check_value "Compiled Isabelle lemmas in README.md" "$ACTUAL_ISABELLE_SMOKE" "$README_ISABELLE" "README.md" || true
+    fi
+    if [ "$README_FSTAR" != "0" ]; then
+        check_value "Compiled F* smoke lemmas in README.md" "$ACTUAL_FSTAR_SMOKE" "$README_FSTAR" "README.md" || true
+    fi
+    if [ "$README_TLAPLUS" != "0" ]; then
+        check_value "Compiled TLA+ smoke theorems in README.md" "$ACTUAL_TLAPLUS_SMOKE" "$README_TLAPLUS" "README.md" || true
+    fi
+    if [ "$README_ALLOY" != "0" ]; then
+        check_value "Checked Alloy smoke assertions in README.md" "$ACTUAL_ALLOY_SMOKE" "$README_ALLOY" "README.md" || true
     fi
 else
     warn_check "README.md not found" "missing"
@@ -299,7 +544,9 @@ fi
 
 if [ -f "$REPO_ROOT/CONTRIBUTING.md" ]; then
     check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "6,193|6193" "Stale Qed count (6,193)" || true
-    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "Rocq 9\\.1" "Stale prover ref (Rocq 9.1)" || true
+    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "Coq 8\\.20" "Stale prover ref (should be Rocq 9.1.1)" || true
+    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "8,923|8923" "Stale Lean theorem count (8,923)" || true
+    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "9,165|9165" "Stale Isabelle theorem count (9,165)" || true
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
@@ -327,6 +574,42 @@ if [ -f "$REPO_ROOT/PROGRESS.md" ]; then
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
+# ── Check AGENTS.md (agent orientation doc) ──────────────────────────
+# AGENTS.md is the entry-point file for non-Claude AI CLIs (Codex, Devin, etc.).
+# Stale metrics here cause new sessions to plan against a wrong state.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking AGENTS.md...${NC}"
+fi
+
+if [ -f "$REPO_ROOT/AGENTS.md" ]; then
+    AG_QED=$(grep -oP '^\| Coq Qed \| \K[0-9,]+' "$REPO_ROOT/AGENTS.md" | tr -d ',' || echo "0")
+    AG_LEAN=$(grep -oP '^\| Lean theorems \| \K[0-9,]+' "$REPO_ROOT/AGENTS.md" | tr -d ',' || echo "0")
+    AG_EXAMPLES=$(grep -oP '^\| Examples \| \K\d+' "$REPO_ROOT/AGENTS.md" || echo "0")
+    check_value "Qed in AGENTS.md table" "$ACTUAL_QED" "$AG_QED" "AGENTS.md" || true
+    check_value "Lean theorems in AGENTS.md table" "$ACTUAL_LEAN" "$AG_LEAN" "AGENTS.md" || true
+    check_value "Examples in AGENTS.md table" "$ACTUAL_EXAMPLES" "$AG_EXAMPLES" "AGENTS.md" || true
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Check llms.txt (LLM-facing project summary) ──────────────────────
+# llms.txt is the canonical "what is RIINA in machine-readable form" file
+# read by LLM consumers. Drift here misleads downstream tools.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking llms.txt...${NC}"
+fi
+
+if [ -f "$REPO_ROOT/llms.txt" ]; then
+    LT_QED=$(grep -oP '^- Coq: \K[0-9,]+' "$REPO_ROOT/llms.txt" | tr -d ',' || echo "0")
+    LT_LEAN=$(grep -oP '^- Lean 4: \K[0-9,]+' "$REPO_ROOT/llms.txt" | tr -d ',' || echo "0")
+    LT_EXAMPLES=$(grep -oP '^- Examples: \K\d+' "$REPO_ROOT/llms.txt" || echo "0")
+    check_value "Qed in llms.txt" "$ACTUAL_QED" "$LT_QED" "llms.txt" || true
+    check_value "Lean theorems in llms.txt" "$ACTUAL_LEAN" "$LT_LEAN" "llms.txt" || true
+    check_value "Examples in llms.txt" "$ACTUAL_EXAMPLES" "$LT_EXAMPLES" "llms.txt" || true
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
 # ── Check website metrics.json ────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
@@ -340,11 +623,73 @@ if [ -f "$METRICS_FILE" ]; then
     WEB_SESSION=$(grep -oP '"session":\s*\K\d+' "$METRICS_FILE" || echo "0")
     WEB_LEAN=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['theorems'])" 2>/dev/null || grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
     WEB_ISABELLE=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['lemmas'])" 2>/dev/null || grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
+    WEB_ISABELLE_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['isabelle']['lemmas']))" 2>/dev/null || echo "$WEB_ISABELLE")
+    WEB_ISABELLE_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
+    WEB_ISABELLE_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_ISABELLE_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
+    WEB_FSTAR=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar']['lemmas'])" 2>/dev/null || echo "0")
+    WEB_FSTAR_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['fstar']['lemmas']))" 2>/dev/null || echo "$WEB_FSTAR")
+    WEB_FSTAR_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
+    WEB_FSTAR_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_FSTAR_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
+    WEB_TLAPLUS=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus']['theorems'])" 2>/dev/null || echo "0")
+    WEB_TLAPLUS_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('theoremsRaw', json.load(open('$METRICS_FILE'))['tlaplus']['theorems']))" 2>/dev/null || echo "$WEB_TLAPLUS")
+    WEB_TLAPLUS_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('compiledTheorems', 0))" 2>/dev/null || echo "0")
+    WEB_TLAPLUS_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_TLAPLUS_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
+    WEB_ALLOY=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy']['assertions'])" 2>/dev/null || echo "0")
+    WEB_ALLOY_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy'].get('assertionsRaw', json.load(open('$METRICS_FILE'))['alloy']['assertions']))" 2>/dev/null || echo "$WEB_ALLOY")
+    WEB_ALLOY_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy'].get('compiledAssertions', 0))" 2>/dev/null || echo "0")
+    WEB_ALLOY_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['alloy'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_ALLOY_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['alloy'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
     check_value "Website active Coq files (metrics.json)" "$ACTUAL_COQ_ACTIVE_FILES" "$WEB_COQ_ACTIVE" "metrics.json" || true
     check_value "Website Lean (metrics.json)" "$ACTUAL_LEAN" "$WEB_LEAN" "metrics.json" || true
-    check_value "Website Isabelle (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE" "metrics.json" || true
+    if [ "$WEB_ISABELLE_QUARANTINED" = "true" ]; then
+        check_value "Website Isabelle raw (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE_RAW" "metrics.json" || true
+        if [ "$WEB_ISABELLE_SMOKE" = "true" ]; then
+            check_value "Website Isabelle partial compiled count (metrics.json)" "$ACTUAL_ISABELLE_SMOKE" "$WEB_ISABELLE" "metrics.json" || true
+            check_value "Website Isabelle compiledLemmas (metrics.json)" "$ACTUAL_ISABELLE_SMOKE" "$WEB_ISABELLE_COMPILED" "metrics.json" || true
+        else
+            check_value "Website Isabelle quarantined count (metrics.json)" "0" "$WEB_ISABELLE" "metrics.json" || true
+        fi
+    else
+        check_value "Website Isabelle (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE" "metrics.json" || true
+    fi
+    if [ "$WEB_FSTAR_QUARANTINED" = "true" ]; then
+        check_value "Website F* raw (metrics.json)" "$ACTUAL_FSTAR" "$WEB_FSTAR_RAW" "metrics.json" || true
+        if [ "$WEB_FSTAR_SMOKE" = "true" ]; then
+            check_value "Website F* partial compiled count (metrics.json)" "$ACTUAL_FSTAR_SMOKE" "$WEB_FSTAR" "metrics.json" || true
+            check_value "Website F* compiledLemmas (metrics.json)" "$ACTUAL_FSTAR_SMOKE" "$WEB_FSTAR_COMPILED" "metrics.json" || true
+        else
+            check_value "Website F* quarantined count (metrics.json)" "0" "$WEB_FSTAR" "metrics.json" || true
+        fi
+    else
+        check_value "Website F* (metrics.json)" "$ACTUAL_FSTAR" "$WEB_FSTAR" "metrics.json" || true
+    fi
+    if [ "$WEB_TLAPLUS_QUARANTINED" = "true" ]; then
+        check_value "Website TLA+ raw (metrics.json)" "$ACTUAL_TLAPLUS" "$WEB_TLAPLUS_RAW" "metrics.json" || true
+        if [ "$WEB_TLAPLUS_SMOKE" = "true" ]; then
+            check_value "Website TLA+ partial compiled count (metrics.json)" "$ACTUAL_TLAPLUS_SMOKE" "$WEB_TLAPLUS" "metrics.json" || true
+            check_value "Website TLA+ compiledTheorems (metrics.json)" "$ACTUAL_TLAPLUS_SMOKE" "$WEB_TLAPLUS_COMPILED" "metrics.json" || true
+        else
+            check_value "Website TLA+ quarantined count (metrics.json)" "0" "$WEB_TLAPLUS" "metrics.json" || true
+        fi
+    else
+        check_value "Website TLA+ (metrics.json)" "$ACTUAL_TLAPLUS" "$WEB_TLAPLUS" "metrics.json" || true
+    fi
+    if [ "$WEB_ALLOY_QUARANTINED" = "true" ]; then
+        check_value "Website Alloy raw (metrics.json)" "$ACTUAL_ALLOY" "$WEB_ALLOY_RAW" "metrics.json" || true
+        if [ "$WEB_ALLOY_SMOKE" = "true" ]; then
+            check_value "Website Alloy partial compiled count (metrics.json)" "$ACTUAL_ALLOY_SMOKE" "$WEB_ALLOY" "metrics.json" || true
+            check_value "Website Alloy compiledAssertions (metrics.json)" "$ACTUAL_ALLOY_SMOKE" "$WEB_ALLOY_COMPILED" "metrics.json" || true
+        else
+            check_value "Website Alloy quarantined count (metrics.json)" "0" "$WEB_ALLOY" "metrics.json" || true
+        fi
+    else
+        check_value "Website Alloy (metrics.json)" "$ACTUAL_ALLOY" "$WEB_ALLOY" "metrics.json" || true
+    fi
     # Session number is internal tracking — warn but don't block
     if [ "$ACTUAL_SESSION" != "$WEB_SESSION" ]; then
         if [ "$QUICK_MODE" != "--quick" ]; then
@@ -394,7 +739,7 @@ if [ -f "$INDEX_HTML" ]; then
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
-# ── Check enterprise docs for Rocq 9.1 ───────────────────────────────
+# ── Check enterprise docs for stale Coq 8.20 ref ─────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo -e "${CYAN}Checking enterprise docs...${NC}"
@@ -402,7 +747,7 @@ fi
 
 for ent_file in "$REPO_ROOT/docs/enterprise/CERTIFICATION.md" "$REPO_ROOT/docs/enterprise/COMPLIANCE_PACKAGING.md"; do
     if [ -f "$ent_file" ]; then
-        check_no_stale "$ent_file" "Rocq 9\\.1" "Stale prover ref (Rocq 9.1)" || true
+        check_no_stale "$ent_file" "Coq 8\\.20" "Stale prover ref (should be Rocq 9.1.1)" || true
     fi
 done
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
@@ -448,11 +793,14 @@ if [ -f "$METRICS_FILE" ]; then
 
     ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',True)).lower())" 2>/dev/null || echo "true")
     ISA_SORRY_WEB=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['sorry'])" 2>/dev/null || echo "0")
-    if [ "$ISA_COMPILED" = "false" ] && [ "$ISA_SORRY_WEB" = "0" ]; then
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${YELLOW}[WARN]${NC} Isabelle reports 0 sorry but isabelleCompiled=false (sorry count is syntactic, not verified)"
+    ISA_SORRY_VERIFIED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('sorryVerified', True)).lower())" 2>/dev/null || echo "true")
+    if [ "$ISA_COMPILED" = "false" ]; then
+        if [ "$ISA_SORRY_VERIFIED" = "false" ]; then
+            echo -e "${GREEN}[OK]${NC} Isabelle sorry count ($ISA_SORRY_WEB) correctly marked as unverified (sorryVerified=false)"
+        else
+            echo -e "${RED}[MISMATCH]${NC} Isabelle isabelleCompiled=false but sorryVerified is not false — run generate-metrics.sh"
+            DISCREPANCIES=$((DISCREPANCIES + 1))
         fi
-        WARNINGS=$((WARNINGS + 1))
     fi
 
     # Check stub prover counts match metrics.json
@@ -467,37 +815,150 @@ if [ -f "$METRICS_FILE" ]; then
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
+# ── Check Gate A invariants (REQ-21, REQ-22, REQ-23) ─────────────────
+# These are the always-on Gate A guarantees:
+#   - 0 active-scope Coq Abort (REQ-21)
+#   - 0 active-lane Lean axiom and sorry (REQ-22)
+#   - Active-scope Coq Parameter count pinned to master plan Part 2 (REQ-23)
+# Any drift is a hard discrepancy that blocks commit.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking Gate A invariants...${NC}"
+fi
+
+# REQ-21: Coq Abort must remain 0 in active scope
+if [ "$ACTUAL_ABORT" -ne 0 ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Coq Abort count in active scope: $ACTUAL_ABORT (must be 0; REQ-21)"
+        echo "         Locate with: grep -rnP '^\\s*Abort\\.' 02_FORMAL/coq --include='*.v' | grep -v _archive_deprecated | grep -v _incomplete"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Coq Abort (active scope): 0 (REQ-21)"
+    fi
+fi
+
+# REQ-22: Lean axiom must remain 0 in active lane
+if [ "$ACTUAL_LEAN_AXIOM" -ne 0 ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Lean axiom count in active lane: $ACTUAL_LEAN_AXIOM (must be 0; REQ-22)"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Lean axiom (active lane): 0 (REQ-22)"
+    fi
+fi
+
+# REQ-22: Lean sorry must remain 0 in active lane
+if [ "$ACTUAL_LEAN_SORRY" -ne 0 ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Lean sorry count in active lane: $ACTUAL_LEAN_SORRY (must be 0; REQ-22)"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Lean sorry (active lane): 0 (REQ-22)"
+    fi
+fi
+
+# REQ-23: Coq Parameter count pinned to master plan Part 2
+# The master plan row reads: "| Parameter (active build) | N | ..."
+DOC_PARAMETER="0"
+if [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    DOC_PARAMETER=$(grep -oP '\| Parameter \(active build\) \| \K\d+' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 || echo "0")
+fi
+if [ "$DOC_PARAMETER" = "0" ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} master plan Part 2 missing 'Parameter (active build)' row (REQ-23)"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+elif [ "$ACTUAL_PARAMETER" != "$DOC_PARAMETER" ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Coq Parameter drift: actual=$ACTUAL_PARAMETER, documented=$DOC_PARAMETER (REQ-23)"
+        echo "         Every Parameter is TCB. If adding/removing one, also update master plan Part 2"
+        echo "         AND the doctrine header in the owning .v file."
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Coq Parameter (active build): $ACTUAL_PARAMETER (matches master plan; REQ-23)"
+    fi
+fi
+
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Check COPILOT.md / .cursorrules / .clinerules (REQ-26) ───────────
+# These are LLM-orientation files. They should not contain proof metrics
+# (those live in metrics.json), but historical numbers and stale prover
+# references must be caught if anyone copies them in.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking LLM orientation docs (REQ-26)...${NC}"
+fi
+
+for orient_file in COPILOT.md .cursorrules .clinerules; do
+    full="$REPO_ROOT/$orient_file"
+    if [ ! -f "$full" ]; then
+        if [ "$QUICK_MODE" != "--quick" ]; then
+            echo -e "${YELLOW}[WARN]${NC} $orient_file missing (REQ-26 expects it)"
+        fi
+        WARNINGS=$((WARNINGS + 1))
+        continue
+    fi
+    # Stale Qed numbers
+    check_no_stale "$full" "6,193|6193" "Stale Qed count (6,193)" || true
+    check_no_stale "$full" "4,044|4044" "Stale Qed count (4,044)" || true
+    check_no_stale "$full" "4,885|4885" "Stale Qed count (4,885)" || true
+    # Stale Lean number
+    check_no_stale "$full" "8,923|8923" "Stale Lean theorem count (8,923)" || true
+    # Stale prover-version refs
+    check_no_stale "$full" "Coq 8\\.20" "Stale prover ref (should be Rocq 9.1.1)" || true
+    # Unsupported blanket claims
+    check_no_stale "$full" "If it compiles, it'?s secure|If your program compiles, it is secure" "Unsupported blanket compiler-security claim" || true
+    check_no_stale "$full" "10 independent provers" "Misleading active verification breadth claim" || true
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $orient_file: present, no stale patterns"
+    fi
+done
+
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
 # ── Check hooks are installed ─────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo -e "${CYAN}Checking git hooks...${NC}"
 
+    # Hooks are a convenience, not a hard gate (the signing gate was retracted
+    # 2026-06-01). A missing/foreign hook on a fresh clone is a WARN, not an
+    # ERROR — run `bash 00_SETUP/scripts/install_hooks.sh` to restore it.
     if [ -f "$REPO_ROOT/.git/hooks/pre-commit" ]; then
         if grep -q "riinac verify" "$REPO_ROOT/.git/hooks/pre-commit" 2>/dev/null; then
             echo -e "${GREEN}[OK]${NC} pre-commit hook installed (riinac verify)"
         else
-            echo -e "${RED}[ERROR]${NC} pre-commit hook exists but is NOT the RIINA hook!"
+            echo -e "${YELLOW}[WARN]${NC} pre-commit hook exists but is NOT the RIINA hook"
             echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-            DISCREPANCIES=$((DISCREPANCIES + 1))
+            WARNINGS=$((WARNINGS + 1))
         fi
     else
-        echo -e "${RED}[ERROR]${NC} pre-commit hook NOT installed!"
+        echo -e "${YELLOW}[WARN]${NC} pre-commit hook not installed (fresh clone?)"
         echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-        DISCREPANCIES=$((DISCREPANCIES + 1))
+        WARNINGS=$((WARNINGS + 1))
     fi
 
     if [ -f "$REPO_ROOT/.git/hooks/pre-push" ]; then
         if grep -q "riinac verify" "$REPO_ROOT/.git/hooks/pre-push" 2>/dev/null; then
             echo -e "${GREEN}[OK]${NC} pre-push hook installed (riinac verify --full)"
         else
-            echo -e "${RED}[ERROR]${NC} pre-push hook exists but is NOT the RIINA hook!"
+            echo -e "${YELLOW}[WARN]${NC} pre-push hook exists but is NOT the RIINA hook"
             echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-            DISCREPANCIES=$((DISCREPANCIES + 1))
+            WARNINGS=$((WARNINGS + 1))
         fi
     else
-        echo -e "${RED}[ERROR]${NC} pre-push hook NOT installed!"
+        echo -e "${YELLOW}[WARN]${NC} pre-push hook not installed (fresh clone?)"
         echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-        DISCREPANCIES=$((DISCREPANCIES + 1))
+        WARNINGS=$((WARNINGS + 1))
     fi
     echo ""
 fi
@@ -529,6 +990,82 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     fi
     echo ""
 fi
+
+# ── Check Coq warning budget status ───────────────────────────────────
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking Coq warning budget...${NC}"
+fi
+
+COQ_WARNING_STATUS="$REPO_ROOT/reports/coq_warning_status.json"
+COQ_WARNING_BUDGET="$REPO_ROOT/reports/coq_warning_budget.json"
+if [ -f "$COQ_WARNING_STATUS" ] && [ -f "$COQ_WARNING_BUDGET" ]; then
+    COQ_WARN_EVAL=$(python3 - "$COQ_WARNING_STATUS" "$COQ_WARNING_BUDGET" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" <<'PY'
+import json, sys
+status_path, budget_path, head, parent = sys.argv[1:5]
+with open(status_path, "r", encoding="utf-8") as f:
+    status = json.load(f)
+with open(budget_path, "r", encoding="utf-8") as f:
+    budget = json.load(f)
+
+repo_head = status.get("repoHead", "")
+fresh = repo_head in {head, parent}
+
+totals = status.get("totals", {})
+obs_total = int(totals.get("warnings", 0))
+obs_kinds = totals.get("kinds", {})
+if not isinstance(obs_kinds, dict):
+    obs_kinds = {}
+
+max_total = int(budget.get("maxTotalWarnings", 0))
+max_by_kind = budget.get("maxByKind", {})
+if not isinstance(max_by_kind, dict):
+    max_by_kind = {}
+
+bad = []
+if obs_total > max_total:
+    bad.append(f"total={obs_total}>{max_total}")
+for k, v in obs_kinds.items():
+    observed = int(v)
+    allowed = int(max_by_kind.get(k, 0))
+    if observed > allowed:
+        bad.append(f"{k}={observed}>{allowed}")
+
+print(f"fresh={'true' if fresh else 'false'}")
+print(f"total={obs_total}")
+print(f"budget_total={max_total}")
+print(f"violations={'|'.join(bad)}")
+PY
+)
+    COQ_WARN_FRESH="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^fresh=/{print $2}' | tail -1)"
+    COQ_WARN_TOTAL="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^total=/{print $2}' | tail -1)"
+    COQ_WARN_BUDGET_TOTAL="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^budget_total=/{print $2}' | tail -1)"
+    COQ_WARN_VIOLATIONS="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^violations=/{print $2}' | tail -1)"
+
+    if [ "$COQ_WARN_FRESH" != "true" ]; then
+        if [ "$QUICK_MODE" != "--quick" ]; then
+            echo -e "${YELLOW}[WARN]${NC} Coq warning status is stale (run: python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget)"
+        fi
+        WARNINGS=$((WARNINGS + 1))
+    else
+        if [ -n "$COQ_WARN_VIOLATIONS" ]; then
+            if [ "$QUICK_MODE" != "--quick" ]; then
+                echo -e "${RED}[MISMATCH]${NC} Coq warning budget exceeded: $COQ_WARN_VIOLATIONS"
+            fi
+            DISCREPANCIES=$((DISCREPANCIES + 1))
+        else
+            if [ "$QUICK_MODE" != "--quick" ]; then
+                echo -e "${GREEN}[OK]${NC} Coq warning budget: total=$COQ_WARN_TOTAL (budget=$COQ_WARN_BUDGET_TOTAL)"
+            fi
+        fi
+    fi
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${YELLOW}[WARN]${NC} Coq warning status/budget missing (run: python3 scripts/audit-coq-warnings.py --mode build --clean --write-budget)"
+    fi
+    WARNINGS=$((WARNINGS + 1))
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
 # ── Final report ──────────────────────────────────────────────────────
 

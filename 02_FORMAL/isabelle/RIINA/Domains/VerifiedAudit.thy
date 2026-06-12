@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedAudit - Isabelle/HOL Port
@@ -63,7 +65,7 @@
  *)
 
 theory VerifiedAudit
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MerkleNode (matches Coq: Inductive MerkleNode) *)
@@ -73,7 +75,8 @@ datatype merkle_node =
 
 (* log_append_only (matches Coq: Definition log_append_only) *)
 definition log_append_only :: "bool" where
-  "log_append_only \<equiv> andb (Nat"
+  "log_append_only \<equiv> (((log_sequence \<le> old_log) \<and> log_sequence new_log))
+       (((length \<le> (log_entries) old_log)) (length (log_entries new_log)))"
 
 (* sequence_monotonic (matches Coq: Definition sequence_monotonic) *)
 definition sequence_monotonic :: "bool" where
@@ -85,51 +88,51 @@ definition sequence_monotonic :: "bool" where
 
 (* verify_inclusion (matches Coq: Definition verify_inclusion) *)
 definition verify_inclusion :: "InclusionProof \<Rightarrow> bool" where
-  "verify_inclusion proof \<equiv> Nat"
+  "verify_inclusion proof \<equiv> (0 < (length) (incl_path proof))"
 
 (* consistency_size_order (matches Coq: Definition consistency_size_order) *)
 definition consistency_size_order :: "ConsistencyProof \<Rightarrow> bool" where
-  "consistency_size_order proof \<equiv> Nat"
+  "consistency_size_order proof \<equiv> ((cons_old_size \<le> proof)) (cons_new_size proof)"
 
 (* witnesses_sufficient (matches Coq: Definition witnesses_sufficient) *)
 definition witnesses_sufficient :: "Checkpoint \<Rightarrow> nat \<Rightarrow> bool" where
-  "witnesses_sufficient cp min_witnesses \<equiv> Nat"
+  "witnesses_sufficient cp min_witnesses \<equiv> (min_witnesses \<le> (length) (cp_witnesses cp))"
 
 (* witness_root_matches (matches Coq: Definition witness_root_matches) *)
 definition witness_root_matches :: "WitnessSignature \<Rightarrow> nat \<Rightarrow> bool" where
-  "witness_root_matches ws expected \<equiv> Nat"
+  "witness_root_matches ws expected \<equiv> ((witness_root = ws)) expected"
 
 (* timestamp_ordered (matches Coq: Definition timestamp_ordered) *)
 definition timestamp_ordered :: "bool" where
-  "timestamp_ordered \<equiv> Nat"
+  "timestamp_ordered \<equiv> ((entry_timestamp \<le> e1)) (entry_timestamp e2)"
 
 (* principal_logged (matches Coq: Definition principal_logged) *)
 definition principal_logged :: "AuditEntry \<Rightarrow> bool" where
-  "principal_logged entry \<equiv> Nat"
+  "principal_logged entry \<equiv> (0 < (entry_principal) entry)"
 
 (* action_logged (matches Coq: Definition action_logged) *)
 definition action_logged :: "AuditEntry \<Rightarrow> bool" where
-  "action_logged entry \<equiv> Nat"
+  "action_logged entry \<equiv> (0 < (entry_action) entry)"
 
 (* resource_logged (matches Coq: Definition resource_logged) *)
 definition resource_logged :: "AuditEntry \<Rightarrow> bool" where
-  "resource_logged entry \<equiv> Nat"
+  "resource_logged entry \<equiv> (0 < (entry_resource) entry)"
 
 (* hash_matches (matches Coq: Definition hash_matches) *)
 definition hash_matches :: "bool" where
-  "hash_matches \<equiv> Nat"
+  "hash_matches \<equiv> (computed = stored)"
 
 (* log_not_empty (matches Coq: Definition log_not_empty) *)
 definition log_not_empty :: "AuditLog \<Rightarrow> bool" where
-  "log_not_empty log \<equiv> Nat"
+  "log_not_empty log \<equiv> (0 < (length) (log_entries log))"
 
 (* checkpoint_seq_valid (matches Coq: Definition checkpoint_seq_valid) *)
 definition checkpoint_seq_valid :: "Checkpoint \<Rightarrow> AuditLog \<Rightarrow> bool" where
-  "checkpoint_seq_valid cp log \<equiv> Nat"
+  "checkpoint_seq_valid cp log \<equiv> ((cp_sequence \<le> cp)) (log_sequence log)"
 
 (* witness_recent (matches Coq: Definition witness_recent) *)
 definition witness_recent :: "WitnessSignature \<Rightarrow> bool" where
-  "witness_recent ws \<equiv> Nat"
+  "witness_recent ws \<equiv> ((current \<le> -) witness_timestamp ws) max_age"
 
 (* witnesses_diverse (matches Coq: Definition witnesses_diverse) *)
 definition witnesses_diverse :: "bool" where
@@ -137,7 +140,7 @@ definition witnesses_diverse :: "bool" where
 
 (* path_length_ok (matches Coq: Definition path_length_ok) *)
 definition path_length_ok :: "MerklePath \<Rightarrow> nat \<Rightarrow> bool" where
-  "path_length_ok path max_depth \<equiv> Nat"
+  "path_length_ok path max_depth \<equiv> ((length \<le> path)) max_depth"
 
 (* entry_ids_unique (matches Coq: Definition entry_ids_unique) *)
 definition entry_ids_unique :: "bool" where
@@ -145,27 +148,27 @@ definition entry_ids_unique :: "bool" where
 
 (* signature_valid (matches Coq: Definition signature_valid) *)
 definition signature_valid :: "bool" where
-  "signature_valid \<equiv> Nat"
+  "signature_valid \<equiv> (sig = expected)"
 
 (* retention_ok (matches Coq: Definition retention_ok) *)
 definition retention_ok :: "bool" where
-  "retention_ok \<equiv> Nat"
+  "retention_ok \<equiv> (entry_age \<le> max_age)"
 
 (* query_complete (matches Coq: Definition query_complete) *)
 definition query_complete :: "bool" where
-  "query_complete \<equiv> Nat"
+  "query_complete \<equiv> (matching = returned)"
 
 (* storage_redundant (matches Coq: Definition storage_redundant) *)
 definition storage_redundant :: "bool" where
-  "storage_redundant \<equiv> Nat"
+  "storage_redundant \<equiv> (min_copies \<le> copies)"
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "bool" where
-  "tamper_detected \<equiv> negb (Nat"
+  "tamper_detected \<equiv> (\<not> (Nat.eqb) stored_hash computed_hash)"
 
 (* audit_layers (matches Coq: Definition audit_layers) *)
 definition audit_layers :: "bool" where
-  "audit_layers \<equiv> andb merkle (andb witness (andb immutable complete))"
+  "audit_layers \<equiv> (merkle \<and> (andb) witness ((immutable \<and> complete)))"
 
 (* audit_001_entry_hashed (matches Coq) *)
 lemma audit_001_entry_hashed: "\<forall> (entry : AuditEntry), entry_hash entry = entry_hash entry"

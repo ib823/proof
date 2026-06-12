@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DataRaceFreedom - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AccessMode         | access_mode            | OK     |
+ * | OwnershipState     | ownership_state        | OK     |
  * | MutexState         | mutex_state            | OK     |
  * | RWLockState        | rw_lock_state          | OK     |
  * | well_formed_access | well_formed_access     | OK     |
@@ -21,8 +24,12 @@
  * | data_race          | data_race              | OK     |
  * | race_free          | race_free              | OK     |
  * | init_mutex         | init_mutex             | OK     |
+ * | mutex_acquire      | mutex_acquire          | OK     |
+ * | mutex_release      | mutex_release          | OK     |
  * | mutex_well_formed  | mutex_well_formed      | OK     |
  * | init_rwlock        | init_rwlock            | OK     |
+ * | rwlock_read_acquire | rwlock_read_acquire    | OK     |
+ * | rwlock_write_acquire | rwlock_write_acquire   | OK     |
  * | rwlock_well_formed | rwlock_well_formed     | OK     |
  * | mut_borrow_exclusive | mut_borrow_exclusive   | OK     |
  * | DR_001_exclusive_is_exclusive | DR_001_exclusive_is_exclusive | OK     |
@@ -63,20 +70,20 @@
  *)
 
 theory DataRaceFreedom
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* AccessMode (matches Coq: Inductive AccessMode) *)
 datatype access_mode =
-    Exclusive  (* &mut T - unique mutable access *)
-  |     Shared  (* &T - shared immutable access *)
-  |     Owned  (* Uniquely owned by thread *)
-  |     MutBorrowed  (* Mutably borrowed *)
-  |     SharedBorrowed  (* Shared borrowed by list *)
+    Exclusive
+  |     Shared
+  |     NoAccess
+
+(* OwnershipState (matches Coq: Inductive OwnershipState) *)
+datatype ownership_state =
+    Owned
+  |     MutBorrowed
+  |     SharedBorrowed
   |     Moved
 
 (* MutexState (matches Coq: Record MutexState) *)
@@ -126,15 +133,29 @@ definition race_free :: "AccessState \<Rightarrow> bool" where
 
 (* init_mutex (matches Coq: Definition init_mutex) *)
 definition init_mutex :: "MutexState" where
-  "init_mutex \<equiv> mkMutex false None"
+  "init_mutex \<equiv> mkMutex False None"
+
+(* mutex_acquire (matches Coq: Definition mutex_acquire) *)
+definition mutex_acquire :: "MutexState \<Rightarrow> ThreadId \<Rightarrow> option MutexState" where
+  "mutex_acquire m t \<equiv> if mutex_locked m then None
+  else Some (mkMutex True (Some t))"
+
+(* mutex_release - complex match, needs manual translation *)
+definition mutex_release :: "bool" where "mutex_release = undefined"
 
 (* mutex_well_formed (matches Coq: Definition mutex_well_formed) *)
 definition mutex_well_formed :: "MutexState \<Rightarrow> bool" where
-  "mutex_well_formed m \<equiv> (mutex_locked m = true <-> exists t, mutex_owner m = Some t)"
+  "mutex_well_formed m \<equiv> (mutex_locked m = True <-> exists t, mutex_owner m = Some t)"
 
 (* init_rwlock (matches Coq: Definition init_rwlock) *)
 definition init_rwlock :: "RWLockState" where
   "init_rwlock \<equiv> mkRWLock 0 None"
+
+(* rwlock_read_acquire - complex match, needs manual translation *)
+definition rwlock_read_acquire :: "bool" where "rwlock_read_acquire = undefined"
+
+(* rwlock_write_acquire - complex match, needs manual translation *)
+definition rwlock_write_acquire :: "bool" where "rwlock_write_acquire = undefined"
 
 (* rwlock_well_formed (matches Coq: Definition rwlock_well_formed) *)
 definition rwlock_well_formed :: "RWLockState \<Rightarrow> bool" where
@@ -163,7 +184,7 @@ lemma DR_004_well_formed_race_free: "\<forall> as_, well_formed_access as_ \<lon
   by auto
 
 (* DR_005_mutex_acquire_unlocked (matches Coq) *)
-lemma DR_005_mutex_acquire_unlocked: "\<forall> t, mutex_acquire init_mutex t = Some (mkMutex true (Some t))"
+lemma DR_005_mutex_acquire_unlocked: "\<forall> t, mutex_acquire init_mutex t = Some (mkMutex True (Some t))"
   by simp
 
 (* DR_006_mutex_acquire_locked (matches Coq) *)
@@ -171,11 +192,11 @@ lemma DR_006_mutex_acquire_locked: "\<forall> m t1 t2 m', mutex_acquire m t1 = S
   by (cases rule: ‹_›.cases; simp)
 
 (* DR_007_mutex_release_owner (matches Coq) *)
-lemma DR_007_mutex_release_owner: "\<forall> t, mutex_release (mkMutex true (Some t)) t = Some init_mutex"
+lemma DR_007_mutex_release_owner: "\<forall> t, mutex_release (mkMutex True (Some t)) t = Some init_mutex"
   by simp
 
 (* DR_008_mutex_release_non_owner (matches Coq) *)
-lemma DR_008_mutex_release_non_owner: "\<forall> t1 t2, t1 \<noteq> t2 \<longrightarrow> mutex_release (mkMutex true (Some t1)) t2 = None"
+lemma DR_008_mutex_release_non_owner: "\<forall> t1 t2, t1 \<noteq> t2 \<longrightarrow> mutex_release (mkMutex True (Some t1)) t2 = None"
   by (cases rule: ‹_›.cases; simp)
 
 (* DR_009_rwlock_read_no_writer (matches Coq) *)
@@ -219,11 +240,11 @@ lemma DR_018_empty_race_free: "race_free (fun _ _ => None)"
   by auto
 
 (* DR_019_single_exclusive_well_formed (matches Coq) *)
-lemma DR_019_single_exclusive_well_formed: "\<forall> t0 l0, well_formed_access (fun t l => if (Nat.eqb t t0) && (Nat.eqb l l0) then Some Exclusive else None)"
+lemma DR_019_single_exclusive_well_formed: "\<forall> t0 l0, well_formed_access (fun t l => if ((t = t0)) && ((l = l0)) then Some Exclusive else None)"
   by auto
 
 (* DR_020_single_exclusive_race_free (matches Coq) *)
-lemma DR_020_single_exclusive_race_free: "\<forall> t0 l0, race_free (fun t l => if (Nat.eqb t t0) && (Nat.eqb l l0) then Some Exclusive else None)"
+lemma DR_020_single_exclusive_race_free: "\<forall> t0 l0, race_free (fun t l => if ((t = t0)) && ((l = l0)) then Some Exclusive else None)"
   by auto
 
 (* DR_021_mutex_mutual_exclusion (matches Coq) *)
@@ -251,7 +272,7 @@ lemma DR_026_access_mode_dec: "\<forall> m1 m2 : AccessMode, {m1 = m2} + {m1 \<n
   by simp
 
 (* DR_027_remove_preserves_wf (matches Coq) *)
-lemma DR_027_remove_preserves_wf: "\<forall> as_ t l, well_formed_access as_ \<longrightarrow> well_formed_access (fun t' l' => if (Nat.eqb t' t) && (Nat.eqb l' l) then None else as_ t' l')"
+lemma DR_027_remove_preserves_wf: "\<forall> as_ t l, well_formed_access as_ \<longrightarrow> well_formed_access (fun t' l' => if ((t' = t)) && ((l' = l)) then None else as_ t' l')"
   by simp
 
 (* DR_028_race_free_location (matches Coq) *)

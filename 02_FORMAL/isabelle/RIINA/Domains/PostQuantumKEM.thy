@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PostQuantumKEM - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | SecurityLevel      | security_level         | OK     |
+ * | KEMParameterSet    | kem_parameter_set      | OK     |
  * | KeyPair            | key_pair               | OK     |
  * | EncapsResult       | encaps_result          | OK     |
  * | KEMInstance        | kem_instance           | OK     |
@@ -59,19 +62,20 @@
  *)
 
 theory PostQuantumKEM
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
 datatype security_level =
-    Level1  (* ~AES-128 equivalent *)
-  |     Level3  (* ~AES-192 equivalent *)
-  |     ML_KEM_512  (* Level 1 *)
-  |     ML_KEM_768  (* Level 3 *)
+    Level1
+  |     Level3
+  |     Level5
+
+(* KEMParameterSet (matches Coq: Inductive KEMParameterSet) *)
+datatype kem_parameter_set =
+    ML_KEM_512
+  |     ML_KEM_768
+  |     ML_KEM_1024
 
 (* KeyPair (matches Coq: Record KeyPair) *)
 record key_pair =
@@ -118,14 +122,15 @@ fun param_security_level :: "KEMParameterSet \<Rightarrow> SecurityLevel" where
 |   "param_security_level ML_KEM_768 = Level3"
 |   "param_security_level ML_KEM_1024 = Level5"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* kem_correct (matches Coq: Definition kem_correct) *)
 definition kem_correct :: "KEMInstance \<Rightarrow> bool" where
   "kem_correct k \<equiv> kp_valid (kem_keypair k) \<and>
   enc_valid (kem_encaps_result k) \<and>
   kem_decaps_valid k \<and>
-  Nat"
+  ((enc_shared_secret = (kem_encaps_result) k)) (kem_decaps_result k)"
 
 (* indcca_compliant (matches Coq: Definition indcca_compliant) *)
 definition indcca_compliant :: "INDCCASecure \<Rightarrow> bool" where
@@ -147,19 +152,19 @@ definition kem_secure :: "KEMSecurity \<Rightarrow> bool" where
 
 (* mk_valid_keypair (matches Coq: Definition mk_valid_keypair) *)
 definition mk_valid_keypair :: "KeyPair" where
-  "mk_valid_keypair \<equiv> mkKeyPair 1 2 true"
+  "mk_valid_keypair \<equiv> mkKeyPair 1 2 True"
 
 (* mk_valid_encaps (matches Coq: Definition mk_valid_encaps) *)
 definition mk_valid_encaps :: "EncapsResult" where
-  "mk_valid_encaps \<equiv> mkEncapsResult 3 42 true"
+  "mk_valid_encaps \<equiv> mkEncapsResult 3 42 True"
 
 (* mk_compliant_indcca (matches Coq: Definition mk_compliant_indcca) *)
 definition mk_compliant_indcca :: "INDCCASecure" where
-  "mk_compliant_indcca \<equiv> mkINDCCA true true true"
+  "mk_compliant_indcca \<equiv> mkINDCCA True True True"
 
 (* mk_compliant_qr (matches Coq: Definition mk_compliant_qr) *)
 definition mk_compliant_qr :: "QuantumResistant" where
-  "mk_compliant_qr \<equiv> mkQR true true true true"
+  "mk_compliant_qr \<equiv> mkQR True True True True"
 
 (* riina_kem_1024 (matches Coq: Definition riina_kem_1024) *)
 definition riina_kem_1024 :: "KEMInstance" where
@@ -167,8 +172,8 @@ definition riina_kem_1024 :: "KEMInstance" where
   ML_KEM_1024
   mk_valid_keypair
   mk_valid_encaps
-  42  (* Same shared secret for correctness *)
-  true"
+  42  
+  True"
 
 (* riina_kem_security (matches Coq: Definition riina_kem_security) *)
 definition riina_kem_security :: "KEMSecurity" where
@@ -301,7 +306,7 @@ lemma PQ_KEM_023_correct_keypair: "\<forall> k : KEMInstance, kem_correct k = Tr
 
 (* PQ_KEM_024: Correctness Requires Shared Secret Match *)
 (* PQ_KEM_024_shared_secret_match (matches Coq) *)
-lemma PQ_KEM_024_shared_secret_match: "\<forall> k : KEMInstance, kem_correct k = True \<longrightarrow> Nat.eqb (enc_shared_secret (kem_encaps_result k)) (kem_decaps_result k) = True"
+lemma PQ_KEM_024_shared_secret_match: "\<forall> k : KEMInstance, kem_correct k = True \<longrightarrow> ((enc_shared_secret = (kem_encaps_result) k)) (kem_decaps_result k) = True"
   by auto
 
 (* PQ_KEM_025: Complete PQ-KEM Security Theorem *)

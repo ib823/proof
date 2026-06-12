@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ApplicationLifecycle - Isabelle/HOL Port
@@ -30,6 +32,7 @@
  * | save_state         | save_state             | OK     |
  * | restore_state      | restore_state          | OK     |
  * | well_formed_restorable | well_formed_restorable | OK     |
+ * | BG_TIME_LIMIT_MS   | BG_TIME_LIMIT_MS       | OK     |
  * | bg_time_limit      | bg_time_limit          | OK     |
  * | LowMemoryLevel     | LowMemoryLevel         | OK     |
  * | well_formed_ext_app | well_formed_ext_app    | OK     |
@@ -59,7 +62,7 @@
  *)
 
 theory ApplicationLifecycle
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AppState (matches Coq: Inductive AppState) *)
@@ -81,9 +84,9 @@ record application =
 
 (* URLScheme (matches Coq: Record URLScheme) *)
 record url_scheme =
-  url_scheme :: nat  (* hash of scheme *)
-  url_host :: nat  (* hash of host *)
-  url_path :: nat  (* hash of path *)
+  url_scheme :: nat
+  url_host :: nat
+  url_path :: nat
   url_validated :: bool
   url_sanitized :: bool
 
@@ -99,7 +102,7 @@ record widget =
   widget_id :: nat
   widget_app_id :: nat
   widget_last_update :: nat
-  widget_update_interval :: nat  (* minimum milliseconds between updates *)
+  widget_update_interval :: nat
 
 (* AppGroup (matches Coq: Record AppGroup) *)
 record app_group =
@@ -116,7 +119,7 @@ record app_scene =
 (* ExtApp (matches Coq: Record ExtApp) *)
 record ext_app =
   ext_app :: Application
-  ext_bg_time_used :: nat  (* milliseconds *)
+  ext_bg_time_used :: nat
   ext_memory_level :: LowMemoryLevel
   ext_scenes :: 'a list
   ext_activation_count :: nat
@@ -142,7 +145,8 @@ definition relaunched :: "Application \<Rightarrow> bool" where
 definition state :: "Application \<Rightarrow> AppData" where
   "state app \<equiv> app_data app"
 
-(* previous_state - complex match, manual review needed *)
+(* previous_state - complex match, needs manual translation *)
+definition previous_state :: "bool" where "previous_state = undefined"
 
 (* state_invariants_hold (matches Coq: Definition state_invariants_hold) *)
 fun state_invariants_hold :: "Application \<Rightarrow> AppState \<Rightarrow> bool" where
@@ -151,24 +155,30 @@ fun state_invariants_hold :: "Application \<Rightarrow> AppState \<Rightarrow> b
 |   "state_invariants_hold Foreground = True"
 |   "state_invariants_hold Background = app_saved_state"
 
-(* valid_lifecycle_transition - complex match, manual review needed *)
+(* valid_lifecycle_transition - complex match, needs manual translation *)
+definition valid_lifecycle_transition :: "bool" where "valid_lifecycle_transition = undefined"
 
 (* save_state (matches Coq: Definition save_state) *)
 definition save_state :: "Application \<Rightarrow> Application" where
   "save_state app \<equiv> mkApp (app_id app) (app_state app) (app_data app) 
         (Some (app_data app)) (app_supports_restoration app)"
 
-(* restore_state - complex match, manual review needed *)
+(* restore_state - complex match, needs manual translation *)
+definition restore_state :: "bool" where "restore_state = undefined"
 
 (* well_formed_restorable (matches Coq: Definition well_formed_restorable) *)
 definition well_formed_restorable :: "Application \<Rightarrow> bool" where
-  "well_formed_restorable app \<equiv> app_supports_restoration app = true ->
+  "well_formed_restorable app \<equiv> app_supports_restoration app = True ->
   app_saved_state app <> None ->
   app_data (restore_state app) = previous_state app"
 
+(* BG_TIME_LIMIT_MS (matches Coq: Definition BG_TIME_LIMIT_MS) *)
+definition BG_TIME_LIMIT_MS :: "nat" where
+  "BG_TIME_LIMIT_MS \<equiv> Z.to_nat 30000%Z"
+
 (* bg_time_limit (matches Coq: Definition bg_time_limit) *)
 definition bg_time_limit :: "nat" where
-  "bg_time_limit \<equiv> 30000"
+  "bg_time_limit \<equiv> BG_TIME_LIMIT_MS"
 
 (* LowMemoryLevel (matches Coq: Definition LowMemoryLevel) *)
 definition LowMemoryLevel :: "'a" where
@@ -237,7 +247,7 @@ lemma low_memory_warning_delivered: "\<forall> (ea : ExtApp), well_formed_ext_ap
   by auto
 
 (* background_execution_time_limited (matches Coq) *)
-lemma background_execution_time_limited: "\<forall> (ea : ExtApp), well_formed_ext_app ea \<longrightarrow> app_state (ext_app ea) = Background \<longrightarrow> ext_bg_time_used ea \<le> 30000"
+lemma background_execution_time_limited: "\<forall> (ea : ExtApp), well_formed_ext_app ea \<longrightarrow> app_state (ext_app ea) = Background \<longrightarrow> ext_bg_time_used ea \<le> BG_TIME_LIMIT_MS"
   by auto
 
 (* url_scheme_validated (matches Coq) *)

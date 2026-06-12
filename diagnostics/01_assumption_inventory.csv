@@ -1,0 +1,159 @@
+kind,symbol,file,line,context_decl,detail
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/AlgebraicEffects.v,10,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/CommonCriteriaEAL7.v,22,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/CoreBanking.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/CovertChannelElimination.v,16,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/CovertChannels.v,10,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/CrossBorderRemittance.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/DigitalWallet.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/ESGCompliance.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/FormalVerification.v,10,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/FutureSecurity.v,22,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/HealthcareIS.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/HumanFactorSecurity.v,17,,Require Import Coq.Logic.Classical_Prop.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/MLTTFoundation.v,9,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/Metaprogramming.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/PhysicalSecurity.v,11,,Require Import Coq.Logic.Classical_Prop.
+ParameterDecl,synthesize,02_FORMAL/coq/domains/PhysicalSecurity.v,52,,Parameter synthesize : RTLModule -> Netlist.
+ParameterDecl,synthesis_preserves_semantics,02_FORMAL/coq/domains/PhysicalSecurity.v,55,,"Parameter synthesis_preserves_semantics : forall rtl,"
+ParameterUsage,synthesize,02_FORMAL/coq/domains/PhysicalSecurity.v,56,,semantic_equivalent rtl (synthesize rtl).
+ParameterDecl,extract_paths,02_FORMAL/coq/domains/PhysicalSecurity.v,68,,Parameter extract_paths : Netlist -> list TimingPath.
+ParameterUsage,extract_paths,02_FORMAL/coq/domains/PhysicalSecurity.v,72,,"forall path, In path (extract_paths nl) -> path_delay path <= clk."
+ParameterDecl,timing_analysis,02_FORMAL/coq/domains/PhysicalSecurity.v,75,,Parameter timing_analysis : Netlist -> ClockPeriod -> bool.
+ParameterDecl,timing_analysis_correct,02_FORMAL/coq/domains/PhysicalSecurity.v,76,,"Parameter timing_analysis_correct : forall nl clk,"
+ParameterUsage,timing_analysis,02_FORMAL/coq/domains/PhysicalSecurity.v,77,,timing_analysis nl clk = true -> timing_met nl clk.
+ParameterDecl,trojan_scan,02_FORMAL/coq/domains/PhysicalSecurity.v,84,,Parameter trojan_scan : RTLModule -> TrojanStatus.
+ParameterDecl,trojan_scan_sound,02_FORMAL/coq/domains/PhysicalSecurity.v,85,,"Parameter trojan_scan_sound : forall rtl,"
+ParameterUsage,trojan_scan,02_FORMAL/coq/domains/PhysicalSecurity.v,86,,trojan_scan rtl = TrojanFree ->
+ParameterUsage,trojan_scan,02_FORMAL/coq/domains/PhysicalSecurity.v,90,,trojan_scan rtl = TrojanFree.
+ParameterDecl,operation_cycles,02_FORMAL/coq/domains/PhysicalSecurity.v,96,,Parameter operation_cycles : Operation -> list Signal -> CycleCount.
+ParameterUsage,operation_cycles,02_FORMAL/coq/domains/PhysicalSecurity.v,99,,"forall inputs1 inputs2, operation_cycles op inputs1 = operation_cycles op inputs2."
+ParameterDecl,crypto_operation,02_FORMAL/coq/domains/PhysicalSecurity.v,101,,Parameter crypto_operation : Operation -> bool.
+ParameterDecl,crypto_constant_time,02_FORMAL/coq/domains/PhysicalSecurity.v,102,,"Parameter crypto_constant_time : forall op,"
+ParameterUsage,crypto_operation,02_FORMAL/coq/domains/PhysicalSecurity.v,103,,crypto_operation op = true -> constant_time_hw op.
+ParameterDecl,x_ray_compare,02_FORMAL/coq/domains/PhysicalSecurity.v,142,,Parameter x_ray_compare : Chip -> GoldenSample -> XRayMatch.
+ParameterUsage,x_ray_compare,02_FORMAL/coq/domains/PhysicalSecurity.v,146,,x_ray_compare c g = Match.
+ParameterDecl,x_ray_soundness,02_FORMAL/coq/domains/PhysicalSecurity.v,149,,"Parameter x_ray_soundness : forall c g,"
+ParameterUsage,x_ray_compare,02_FORMAL/coq/domains/PhysicalSecurity.v,150,,x_ray_compare c g = Match -> chip_xray c = golden_xray g.
+ParameterDecl,puf_entropy,02_FORMAL/coq/domains/PhysicalSecurity.v,153,,Parameter puf_entropy : Chip -> nat.
+ParameterDecl,puf_physically_unique,02_FORMAL/coq/domains/PhysicalSecurity.v,156,,"Parameter puf_physically_unique : forall c1 c2 challenge,"
+ParameterUsage,puf_entropy,02_FORMAL/coq/domains/PhysicalSecurity.v,158,,puf_entropy c1 <> puf_entropy c2 ->
+ParameterDecl,different_chips_different_entropy,02_FORMAL/coq/domains/PhysicalSecurity.v,162,,"Parameter different_chips_different_entropy : forall c1 c2,"
+ParameterUsage,puf_entropy,02_FORMAL/coq/domains/PhysicalSecurity.v,163,,chip_id c1 <> chip_id c2 -> puf_entropy c1 <> puf_entropy c2.
+ParameterDecl,chip_puf_at_time,02_FORMAL/coq/domains/PhysicalSecurity.v,167,,Parameter chip_puf_at_time : Chip -> Time -> Challenge -> Response.
+ParameterDecl,puf_temperature_stable,02_FORMAL/coq/domains/PhysicalSecurity.v,169,,"Parameter puf_temperature_stable : forall c t1 t2 challenge,"
+ParameterUsage,chip_puf_at_time,02_FORMAL/coq/domains/PhysicalSecurity.v,170,,chip_puf_at_time c t1 challenge = chip_puf_at_time c t2 challenge.
+ParameterDecl,authenticate_chip,02_FORMAL/coq/domains/PhysicalSecurity.v,177,,Parameter authenticate_chip : Chip -> GoldenSample -> AuthResult.
+ParameterDecl,authentication_sound,02_FORMAL/coq/domains/PhysicalSecurity.v,183,,"Parameter authentication_sound : forall c g,"
+ParameterUsage,authenticate_chip,02_FORMAL/coq/domains/PhysicalSecurity.v,184,,~ is_genuine c g -> authenticate_chip c g = Counterfeit.
+ParameterDecl,fab_integrity_check,02_FORMAL/coq/domains/PhysicalSecurity.v,191,,Parameter fab_integrity_check : Chip -> GoldenSample -> FabStatus.
+ParameterDecl,fab_check_sound,02_FORMAL/coq/domains/PhysicalSecurity.v,193,,"Parameter fab_check_sound : forall c g,"
+ParameterUsage,fab_integrity_check,02_FORMAL/coq/domains/PhysicalSecurity.v,194,,fab_integrity_check c g = FabClean ->
+ParameterDecl,detect_probe,02_FORMAL/coq/domains/PhysicalSecurity.v,243,,Parameter detect_probe : DeviceState -> ProbeAttempt.
+ParameterDecl,mesh_detects_probing,02_FORMAL/coq/domains/PhysicalSecurity.v,245,,"Parameter mesh_detects_probing : forall d,"
+ParameterUsage,detect_probe,02_FORMAL/coq/domains/PhysicalSecurity.v,246,,dev_mesh_intact d = false -> detect_probe d = ProbeDetected.
+ParameterDecl,voltage_monitor,02_FORMAL/coq/domains/PhysicalSecurity.v,262,,Parameter voltage_monitor : DeviceState -> bool.
+ParameterDecl,voltage_monitor_correct,02_FORMAL/coq/domains/PhysicalSecurity.v,263,,"Parameter voltage_monitor_correct : forall d,"
+ParameterUsage,voltage_monitor,02_FORMAL/coq/domains/PhysicalSecurity.v,264,,voltage_glitch d -> voltage_monitor d = true.
+ParameterDecl,temp_monitor,02_FORMAL/coq/domains/PhysicalSecurity.v,270,,Parameter temp_monitor : DeviceState -> bool.
+ParameterDecl,temp_monitor_triggers_shutdown,02_FORMAL/coq/domains/PhysicalSecurity.v,271,,"Parameter temp_monitor_triggers_shutdown : forall d,"
+ParameterUsage,temp_monitor,02_FORMAL/coq/domains/PhysicalSecurity.v,272,,temp_violation d -> temp_monitor d = true.
+ParameterDecl,power_trace,02_FORMAL/coq/domains/PhysicalSecurity.v,285,,Parameter power_trace : Operation -> Secret -> PowerTrace.
+ParameterUsage,power_trace,02_FORMAL/coq/domains/PhysicalSecurity.v,289,,"forall s1 s2, power_trace op s1 = power_trace op s2."
+ParameterDecl,crypto_power_independent,02_FORMAL/coq/domains/PhysicalSecurity.v,292,,"Parameter crypto_power_independent : forall op,"
+ParameterUsage,crypto_operation,02_FORMAL/coq/domains/PhysicalSecurity.v,293,,crypto_operation op = true -> power_independent op.
+ParameterUsage,synthesize,02_FORMAL/coq/domains/PhysicalSecurity.v,305,PHY_001_01_rtl_gate_equivalent,synthesize rtl = nl ->
+ParameterUsage,synthesis_preserves_semantics,02_FORMAL/coq/domains/PhysicalSecurity.v,310,PHY_001_01_rtl_gate_equivalent,apply synthesis_preserves_semantics.
+ParameterUsage,timing_analysis,02_FORMAL/coq/domains/PhysicalSecurity.v,315,PHY_001_02_timing_closed,timing_analysis nl clk = true ->
+ParameterUsage,timing_analysis_correct,02_FORMAL/coq/domains/PhysicalSecurity.v,319,PHY_001_02_timing_closed,apply timing_analysis_correct.
+ParameterUsage,trojan_scan,02_FORMAL/coq/domains/PhysicalSecurity.v,325,PHY_001_03_no_trojans,trojan_scan rtl = TrojanFree ->
+ParameterUsage,crypto_operation,02_FORMAL/coq/domains/PhysicalSecurity.v,335,PHY_001_04_hw_constant_time,crypto_operation op = true ->
+ParameterUsage,crypto_constant_time,02_FORMAL/coq/domains/PhysicalSecurity.v,339,PHY_001_04_hw_constant_time,apply crypto_constant_time.
+ParameterUsage,x_ray_compare,02_FORMAL/coq/domains/PhysicalSecurity.v,359,PHY_001_06_golden_equivalent,x_ray_compare c g = Match ->
+ParameterUsage,x_ray_soundness,02_FORMAL/coq/domains/PhysicalSecurity.v,363,PHY_001_06_golden_equivalent,apply x_ray_soundness.
+ParameterUsage,puf_physically_unique,02_FORMAL/coq/domains/PhysicalSecurity.v,373,PHY_001_07_puf_unique,apply puf_physically_unique.
+ParameterUsage,different_chips_different_entropy,02_FORMAL/coq/domains/PhysicalSecurity.v,375,PHY_001_07_puf_unique,- apply different_chips_different_entropy.
+ParameterUsage,chip_puf_at_time,02_FORMAL/coq/domains/PhysicalSecurity.v,381,PHY_001_08_puf_stable,chip_puf_at_time c t1 challenge = chip_puf_at_time c t2 challenge.
+ParameterUsage,puf_temperature_stable,02_FORMAL/coq/domains/PhysicalSecurity.v,384,PHY_001_08_puf_stable,apply puf_temperature_stable.
+ParameterUsage,authenticate_chip,02_FORMAL/coq/domains/PhysicalSecurity.v,390,PHY_001_09_counterfeit_detected,authenticate_chip c g = Counterfeit.
+ParameterUsage,authentication_sound,02_FORMAL/coq/domains/PhysicalSecurity.v,393,PHY_001_09_counterfeit_detected,apply authentication_sound.
+ParameterUsage,fab_integrity_check,02_FORMAL/coq/domains/PhysicalSecurity.v,399,PHY_001_10_no_fab_tampering,fab_integrity_check c g = FabClean ->
+ParameterUsage,fab_check_sound,02_FORMAL/coq/domains/PhysicalSecurity.v,403,PHY_001_10_no_fab_tampering,apply fab_check_sound.
+ParameterUsage,detect_probe,02_FORMAL/coq/domains/PhysicalSecurity.v,414,PHY_001_11_mesh_integrity,detect_probe d = ProbeDetected.
+ParameterUsage,mesh_detects_probing,02_FORMAL/coq/domains/PhysicalSecurity.v,417,PHY_001_11_mesh_integrity,apply mesh_detects_probing.
+ParameterUsage,voltage_monitor,02_FORMAL/coq/domains/PhysicalSecurity.v,440,PHY_001_13_voltage_glitch_detected,voltage_monitor d = true.
+ParameterUsage,voltage_monitor_correct,02_FORMAL/coq/domains/PhysicalSecurity.v,443,PHY_001_13_voltage_glitch_detected,apply voltage_monitor_correct.
+ParameterUsage,temp_monitor,02_FORMAL/coq/domains/PhysicalSecurity.v,450,PHY_001_14_temperature_bounds,temp_monitor d = true.
+ParameterUsage,temp_monitor_triggers_shutdown,02_FORMAL/coq/domains/PhysicalSecurity.v,453,PHY_001_14_temperature_bounds,apply temp_monitor_triggers_shutdown.
+ParameterUsage,crypto_operation,02_FORMAL/coq/domains/PhysicalSecurity.v,459,PHY_001_15_power_independent,crypto_operation op = true ->
+ParameterUsage,crypto_power_independent,02_FORMAL/coq/domains/PhysicalSecurity.v,463,PHY_001_15_power_independent,apply crypto_power_independent.
+ParameterUsage,synthesize,02_FORMAL/coq/domains/PhysicalSecurity.v,523,PHY_001_21_synthesis_all_inputs,rtl_behavior rtl inputs = nl_behavior (synthesize rtl) inputs.
+ParameterUsage,synthesis_preserves_semantics,02_FORMAL/coq/domains/PhysicalSecurity.v,526,PHY_001_21_synthesis_all_inputs,pose proof (synthesis_preserves_semantics rtl) as Hpres.
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/RefinementTypes.v,10,,Require Import Coq.Logic.Classical_Prop.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/S001_HardwareContracts.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/StandardLibrary.v,10,,Require Import Coq.Logic.FunctionalExtensionality.
+ParameterDecl,NANOS_PER_SEC,02_FORMAL/coq/domains/StandardLibrary.v,351,,Parameter NANOS_PER_SEC : nat.
+ParameterDecl,NANOS_PER_SEC_pos,02_FORMAL/coq/domains/StandardLibrary.v,352,,Parameter NANOS_PER_SEC_pos : NANOS_PER_SEC > 0.
+ParameterUsage,NANOS_PER_SEC,02_FORMAL/coq/domains/StandardLibrary.v,352,,Parameter NANOS_PER_SEC_pos : NANOS_PER_SEC > 0.
+ParameterUsage,NANOS_PER_SEC,02_FORMAL/coq/domains/StandardLibrary.v,362,,(dur_secs d1 + dur_secs d2 + total_nanos / NANOS_PER_SEC)
+ParameterUsage,NANOS_PER_SEC,02_FORMAL/coq/domains/StandardLibrary.v,363,,(total_nanos mod NANOS_PER_SEC).
+ParameterUsage,NANOS_PER_SEC,02_FORMAL/coq/domains/StandardLibrary.v,937,P_001_22,dur_nanos (duration_add d1 d2) < NANOS_PER_SEC.
+ParameterUsage,NANOS_PER_SEC_pos,02_FORMAL/coq/domains/StandardLibrary.v,943,P_001_22,pose proof NANOS_PER_SEC_pos.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/TestingQA.v,10,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/TimingSecurity.v,14,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/TimingSecurity.v,18,,Require Import Coq.Logic.Classical_Prop.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/TotalStackFoundation.v,10,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/TranslationValidation.v,11,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/U001_RuntimeGuardian.v,11,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/VerifiedHardware.v,11,,Require Import Coq.Logic.FunctionalExtensionality.
+ParameterDecl,argon2id_hash,02_FORMAL/coq/domains/VerifiedIdentity.v,134,list_eq_sound,Parameter argon2id_hash : list nat -> list nat -> Argon2Params -> list nat.
+ParameterUsage,argon2id_hash,02_FORMAL/coq/domains/VerifiedIdentity.v,139,list_eq_sound,argon2id_hash pw salt params = argon2id_hash pw salt params.
+ParameterUsage,argon2id_hash,02_FORMAL/coq/domains/VerifiedIdentity.v,143,list_eq_sound,pw1 <> pw2 -> argon2id_hash pw1 salt params <> argon2id_hash pw2 salt params.
+ParameterUsage,argon2id_hash,02_FORMAL/coq/domains/VerifiedIdentity.v,672,AA_001_10_password_preimage_resistant,argon2id_hash candidate salt params = hash ->
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/VerifiedInfra.v,12,,Require Import Coq.Logic.Classical_Prop.
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/VerifiedIsolation.v,12,,Require Import Coq.Logic.Classical_Prop.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/VerifiedMicrokernel.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/VerifiedNetwork.v,13,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/VerifiedProtocols.v,12,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/W001_VerifiedMemory.v,11,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/X001_ConcurrencyModel.v,11,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/domains/ZKSTARKSecurity.v,27,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.Classical_Prop,02_FORMAL/coq/domains/mobile_os/SystemArchitecture.v,16,,Require Import Coq.Logic.Classical_Prop.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/properties/MaximumAxiomElimination.v,20,,Require Import Coq.Logic.FunctionalExtensionality.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/properties/NonInterference_v2.v,33,,Require Import Coq.Logic.FunctionalExtensionality.
+ParameterDecl,observer,02_FORMAL/coq/properties/NonInterference_v2.v,43,,Parameter observer : security_level.
+ParameterUsage,observer,02_FORMAL/coq/properties/NonInterference_v2.v,46,,Definition is_low (l : security_level) : Prop := sec_leq l observer.
+ParameterUsage,observer,02_FORMAL/coq/properties/NonInterference_v2.v,50,,sec_leq_dec l observer.
+AxiomDecl,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2.v,1535,store_vals_rel_mono,"Axiom val_rel_n_step_up : forall n Σ T v1 v2,"
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2.v,1587,store_rel_n_step_up,* apply val_rel_n_step_up; [exact Hvrel_n' | exact Hty1 | exact Hty2].
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2.v,1605,store_vals_rel_step_up,apply val_rel_n_step_up.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,23,,Require Import Coq.Logic.FunctionalExtensionality.
+AxiomDecl,logical_relation_declassify,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,1149,stores_agree_low_fo_update_existing,"Axiom logical_relation_declassify : forall Γ Σ Δ e T ε p rho1 rho2 n Σ_base,"
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,1171,val_rel_n_to_val_rel,- apply val_rel_n_step_up; assumption.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,1187,val_rel_n_to_val_rel_any,exists 0. apply val_rel_n_step_up; assumption.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,2290,val_rel_n_prod_fst,{ apply val_rel_n_step_up; [exact Hrel | |];
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,2330,val_rel_n_prod_snd,{ apply val_rel_n_step_up; [exact Hrel | |];
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,2517,val_rel_n_from_prod_fst,{ apply val_rel_n_step_up; [exact Hrel | |];
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,2591,val_rel_n_from_prod_snd,{ apply val_rel_n_step_up; [exact Hrel | |];
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,2792,val_rel_n_from_sum_inl,{ apply val_rel_n_step_up; [exact Hrel | |];
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,2845,val_rel_n_from_sum_inr,{ apply val_rel_n_step_up; [exact Hrel | |];
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3156,step_up_at_0,apply val_rel_n_step_up; assumption.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3454,logical_relation,{ apply val_rel_n_step_up.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3455,logical_relation,- apply val_rel_n_step_up.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3481,logical_relation,{ apply val_rel_n_step_up; [exact Harel | exact Htya1 | exact Htya2]. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3611,logical_relation,{ apply val_rel_n_step_up; assumption. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3613,logical_relation,{ apply val_rel_n_step_up; assumption. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3659,logical_relation,{ apply val_rel_n_step_up; assumption. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3661,logical_relation,{ apply val_rel_n_step_up; assumption. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3754,logical_relation,{ apply val_rel_n_step_up; [exact Hval | exact Htyv1 | exact Htyv2]. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3756,logical_relation,{ apply val_rel_n_step_up; [exact Hval1 | exact Htyv1 | exact Htyv2]. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,3869,logical_relation,{ apply val_rel_n_step_up; [exact Hval | exact Htyv1_sn | exact Htyv2_sn]. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,4585,logical_relation,{ apply val_rel_n_step_up; [exact Hval | exact Htyv1 | exact Htyv2]. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,4587,logical_relation,{ apply val_rel_n_step_up; [exact Hval_up1 | exact Htyv1 | exact Htyv2]. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,4645,logical_relation,{ apply val_rel_n_step_up; [exact Hval1 | exact Htyv1 | exact Htyv1']. }
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,4647,logical_relation,{ apply val_rel_n_step_up; [exact Hval1_up1 | exact Htyv1 | exact Htyv1']. }
+AxiomUsage,logical_relation_declassify,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,4773,logical_relation,eapply logical_relation_declassify.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v,4891,step_up_and_fundamental_mutual,apply val_rel_n_step_up; assumption.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/properties/SubstitutionCommute.v,13,,Require Import Coq.Logic.FunctionalExtensionality.
+AxiomUsage,val_rel_n_step_up,02_FORMAL/coq/properties/ValRelStepLimit_PROOF.v,73,val_rel_n_step_up_k,apply val_rel_n_step_up.
+ClassicalOrExtensionalityImport,Coq.Logic.FunctionalExtensionality,02_FORMAL/coq/termination/ReducibilityFull.v,25,,Require Import Coq.Logic.FunctionalExtensionality.

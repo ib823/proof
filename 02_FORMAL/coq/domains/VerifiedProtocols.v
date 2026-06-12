@@ -5,13 +5,13 @@
 (* Layer: Protocol Layer *)
 (* Mode: Comprehensive Verification | Zero Trust *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Strings.String.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Coq.Program.Equality.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Program.Equality.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** ===============================================================================
@@ -611,7 +611,7 @@ Theorem AH_001_05_protocol_composition : forall spec1 spec2 impl1 impl2 trace1 t
 Proof.
   intros spec1 spec2 impl1 impl2 trace1 trace2 H1 H2 Hv1 Hv2.
   unfold valid_trace.
-  rewrite app_length.
+  rewrite length_app.
   apply Nat.le_0_l.
 Qed.
 

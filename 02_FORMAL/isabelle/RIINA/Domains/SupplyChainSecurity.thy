@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SupplyChainSecurity - Isabelle/HOL Port
@@ -27,6 +29,7 @@
  * | CertificateTransparency | certificate_transparency | OK     |
  * | AccessControl      | access_control         | OK     |
  * | DependencyIsolation | dependency_isolation   | OK     |
+ * | hash_eq            | hash_eq                | OK     |
  * | version_gt         | version_gt             | OK     |
  * | meets_reviewer_threshold | meets_reviewer_threshold | OK     |
  * | isolation_sufficient | isolation_sufficient   | OK     |
@@ -71,12 +74,8 @@
  *)
 
 theory SupplyChainSecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* SignedArtifact (matches Coq: Record SignedArtifact) *)
 record signed_artifact =
@@ -195,6 +194,9 @@ record dependency_isolation =
   di_sandboxed :: bool
   di_network_restricted :: bool
   di_filesystem_restricted :: bool
+
+(* hash_eq - complex match, needs manual translation *)
+definition hash_eq :: "bool" where "hash_eq = undefined"
 
 (* version_gt (matches Coq: Definition version_gt) *)
 definition version_gt :: "bool" where

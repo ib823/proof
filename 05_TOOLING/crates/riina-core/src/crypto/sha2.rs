@@ -591,6 +591,32 @@ fn sha512_sigma1(x: u64) -> u64 {
 mod tests {
     use super::*;
 
+    /// Coq ⇄ Rust formal-equivalence bridge for SHA-256.
+    ///
+    /// `02_FORMAL/coq/crypto/SHA256.v` is a faithful Coq model of this exact
+    /// algorithm (round functions, message schedule, 64-round compression +
+    /// Davies-Meyer feed-forward, padding) and proves, by `vm_compute`, the FIPS
+    /// 180-4 known-answer digests for "abc" and "". This asserts the Rust
+    /// `Sha256::hash` produces those byte-identical digests — so the Coq spec, the
+    /// FIPS vectors, and the shipped implementation all agree.
+    #[test]
+    fn test_sha256_matches_coq_model() {
+        // Coq `sha256_abc` (vm_compute) digest.
+        let abc: [u8; 32] = [
+            0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde, 0x5d, 0xae,
+            0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c, 0xb4, 0x10, 0xff, 0x61,
+            0xf2, 0x00, 0x15, 0xad,
+        ];
+        assert_eq!(Sha256::hash(b"abc"), abc, "SHA-256(abc) must match the Coq model");
+        // Coq `sha256_empty` (vm_compute) digest.
+        let empty: [u8; 32] = [
+            0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f,
+            0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b,
+            0x78, 0x52, 0xb8, 0x55,
+        ];
+        assert_eq!(Sha256::hash(b""), empty, "SHA-256(\"\") must match the Coq model");
+    }
+
     /// FIPS 180-4 test vector: empty string
     #[test]
     fn test_sha256_empty() {
@@ -665,7 +691,7 @@ mod tests {
         let one_shot = Sha256::hash(data);
 
         let mut hasher = Sha256::new();
-        for &byte in data.iter() {
+        for &byte in data {
             hasher.update(&[byte]);
         }
         let byte_by_byte = hasher.finalize();
@@ -775,7 +801,7 @@ mod tests {
         let one_shot = Sha512::hash(data);
 
         let mut hasher = Sha512::new();
-        for &byte in data.iter() {
+        for &byte in data {
             hasher.update(&[byte]);
         }
         let byte_by_byte = hasher.finalize();

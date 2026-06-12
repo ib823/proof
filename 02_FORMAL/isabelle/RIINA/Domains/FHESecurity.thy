@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FHESecurity - Isabelle/HOL Port
@@ -32,6 +34,15 @@
  * | CircularSecurity   | circular_security      | OK     |
  * | LWEHardness        | lwe_hardness           | OK     |
  * | RLWEConfig         | rlwe_config            | OK     |
+ * | NEGLIGIBLE_THRESHOLD_CONST | NEGLIGIBLE_THRESHOLD_CONST | OK     |
+ * | RIINA_ADVANTAGE_CONST | RIINA_ADVANTAGE_CONST  | OK     |
+ * | NOISE_THRESHOLD_CONST | NOISE_THRESHOLD_CONST  | OK     |
+ * | RIINA_KP_PUBLIC_CONST | RIINA_KP_PUBLIC_CONST  | OK     |
+ * | RIINA_KP_SECRET_CONST | RIINA_KP_SECRET_CONST  | OK     |
+ * | RIINA_KP_EVAL_CONST | RIINA_KP_EVAL_CONST    | OK     |
+ * | RLWE_MODULUS_MIN_CONST | RLWE_MODULUS_MIN_CONST | OK     |
+ * | RIINA_RLWE_MODULUS_CONST | RIINA_RLWE_MODULUS_CONST | OK     |
+ * | RIINA_NOISE_BOUND_MODULUS_CONST | RIINA_NOISE_BOUND_MODULUS_CONST | OK     |
  * | ops_fully_homomorphic | ops_fully_homomorphic  | OK     |
  * | fhe_security_complete | fhe_security_complete  | OK     |
  * | noise_managed      | noise_managed          | OK     |
@@ -174,30 +185,26 @@
  *)
 
 theory FHESecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* HomomorphicOps (matches Coq: Record HomomorphicOps) *)
 record homomorphic_ops =
-  ho_addition :: bool  (* Supports homomorphic addition *)
-  ho_multiplication :: bool  (* Supports homomorphic multiplication *)
-  ho_arbitrary_depth :: bool  (* Unlimited circuit depth *)
+  ho_addition :: bool
+  ho_multiplication :: bool
+  ho_arbitrary_depth :: bool
 
 (* FHESecurityProps (matches Coq: Record FHESecurityProps) *)
 record fhe_security_props =
-  fhe_ind_cpa :: bool  (* IND-CPA secure *)
-  fhe_circular_secure :: bool  (* Circular security *)
-  fhe_semantic_secure :: bool  (* Semantic security *)
+  fhe_ind_cpa :: bool
+  fhe_circular_secure :: bool
+  fhe_semantic_secure :: bool
 
 (* NoiseManagement (matches Coq: Record NoiseManagement) *)
 record noise_management =
-  nm_bootstrapping :: bool  (* Noise reduction via bootstrapping *)
-  nm_modulus_switching :: bool  (* Modulus switching *)
-  nm_noise_bounded :: bool  (* Noise growth bounded *)
+  nm_bootstrapping :: bool
+  nm_modulus_switching :: bool
+  nm_noise_bounded :: bool
 
 (* FHEConfig (matches Coq: Record FHEConfig) *)
 record fhe_config =
@@ -209,91 +216,91 @@ record fhe_config =
 
 (* INDCPAGame (matches Coq: Record INDCPAGame) *)
 record indcpa_game =
-  icpa_key_size :: nat  (* Security parameter *)
-  icpa_challenge_bit :: bool  (* Hidden challenge bit *)
-  icpa_encryption_oracle :: bool  (* Has encryption oracle *)
-  icpa_distinguisher_adv :: nat  (* Distinguisher advantage (as 1/n) *)
+  icpa_key_size :: nat
+  icpa_challenge_bit :: bool
+  icpa_encryption_oracle :: bool
+  icpa_distinguisher_adv :: nat
 
 (* SemanticSecurity (matches Coq: Record SemanticSecurity) *)
 record semantic_security =
-  ss_message_space :: nat  (* Size of message space *)
-  ss_ciphertext_space :: nat  (* Size of ciphertext space *)
-  ss_indistinguishable :: bool  (* Ciphertexts indistinguishable *)
-  ss_randomized :: bool  (* Encryption is randomized *)
+  ss_message_space :: nat
+  ss_ciphertext_space :: nat
+  ss_indistinguishable :: bool
+  ss_randomized :: bool
 
 (* HomAddition (matches Coq: Record HomAddition) *)
 record hom_addition =
-  ha_plaintext_modulus :: nat  (* Plaintext modulus t *)
-  ha_ciphertext_modulus :: nat  (* Ciphertext modulus q *)
-  ha_preserves_structure :: bool  (* Addition structure preserved *)
+  ha_plaintext_modulus :: nat
+  ha_ciphertext_modulus :: nat
+  ha_preserves_structure :: bool
 
 (* HomMultiplication (matches Coq: Record HomMultiplication) *)
 record hom_multiplication =
-  hm_plaintext_modulus :: nat  (* Plaintext modulus *)
-  hm_ciphertext_modulus :: nat  (* Ciphertext modulus *)
-  hm_relinearization :: bool  (* Supports relinearization *)
-  hm_key_switching :: bool  (* Supports key switching *)
+  hm_plaintext_modulus :: nat
+  hm_ciphertext_modulus :: nat
+  hm_relinearization :: bool
+  hm_key_switching :: bool
 
 (* HomOperations (matches Coq: Record HomOperations) *)
 record hom_operations =
   hops_addition :: HomAddition
   hops_multiplication :: HomMultiplication
-  hops_composition :: bool  (* Can compose operations *)
+  hops_composition :: bool
 
 (* NoiseModel (matches Coq: Record NoiseModel) *)
 record noise_model =
-  noise_initial :: nat  (* Initial noise after encryption *)
-  noise_add_growth :: nat  (* Noise growth per addition *)
-  noise_mult_growth :: nat  (* Noise growth factor per multiplication *)
-  noise_threshold :: nat  (* Maximum noise before decryption fails *)
+  noise_initial :: nat
+  noise_add_growth :: nat
+  noise_mult_growth :: nat
+  noise_threshold :: nat
 
 (* NoiseBound (matches Coq: Record NoiseBound) *)
 record noise_bound =
-  nb_max_additions :: nat  (* Max additions before noise overflow *)
-  nb_max_multiplications :: nat  (* Max multiplications before noise overflow *)
-  nb_modulus :: nat  (* Ciphertext modulus *)
+  nb_max_additions :: nat
+  nb_max_multiplications :: nat
+  nb_modulus :: nat
 
 (* BootstrappingConfig (matches Coq: Record BootstrappingConfig) *)
 record bootstrapping_config =
-  bs_reduces_noise :: bool  (* Reduces ciphertext noise *)
-  bs_preserves_message :: bool  (* Preserves encrypted message *)
-  bs_polynomial_time :: bool  (* Runs in polynomial time *)
-  bs_noise_output :: nat  (* Output noise level *)
-  bs_noise_input_max :: nat  (* Maximum input noise *)
+  bs_reduces_noise :: bool
+  bs_preserves_message :: bool
+  bs_polynomial_time :: bool
+  bs_noise_output :: nat
+  bs_noise_input_max :: nat
 
 (* UnlimitedFHE (matches Coq: Record UnlimitedFHE) *)
 record unlimited_fhe =
   ufhe_bootstrap_config :: BootstrappingConfig
   ufhe_noise_model :: NoiseModel
-  ufhe_leveled_depth :: nat  (* Depth before bootstrap needed *)
+  ufhe_leveled_depth :: nat
 
 (* KeyGenParams (matches Coq: Record KeyGenParams) *)
 record key_gen_params =
-  kg_security_parameter :: nat  (* Lambda - security parameter *)
-  kg_polynomial_degree :: nat  (* n - ring polynomial degree *)
-  kg_error_distribution :: nat  (* Discrete Gaussian width *)
-  kg_modulus_bits :: nat  (* log q - modulus bit length *)
+  kg_security_parameter :: nat
+  kg_polynomial_degree :: nat
+  kg_error_distribution :: nat
+  kg_modulus_bits :: nat
 
 (* FHEKeyPair (matches Coq: Record FHEKeyPair) *)
 record fhe_key_pair =
-  kp_public :: nat  (* Public key representation *)
-  kp_secret :: nat  (* Secret key representation *)
-  kp_evaluation :: nat  (* Evaluation key for homomorphic ops *)
+  kp_public :: nat
+  kp_secret :: nat
+  kp_evaluation :: nat
   kp_params :: KeyGenParams
 
 (* FHECiphertext (matches Coq: Record FHECiphertext) *)
 record fhe_ciphertext =
-  ct_polynomial_0 :: nat  (* First polynomial component *)
-  ct_polynomial_1 :: nat  (* Second polynomial component *)
-  ct_noise_estimate :: nat  (* Estimated noise level *)
-  ct_level :: nat  (* Current level for leveled FHE *)
-  ct_valid_encryption :: bool  (* Is valid encryption *)
+  ct_polynomial_0 :: nat
+  ct_polynomial_1 :: nat
+  ct_noise_estimate :: nat
+  ct_level :: nat
+  ct_valid_encryption :: bool
 
 (* CiphertextAfterOp (matches Coq: Record CiphertextAfterOp) *)
 record ciphertext_after_op =
   cao_original :: FHECiphertext
   cao_result :: FHECiphertext
-  cao_operation :: nat  (* 0=add, 1=mult *)
+  cao_operation :: nat
 
 (* CompleteFHESystem (matches Coq: Record CompleteFHESystem) *)
 record complete_fhe_system =
@@ -306,23 +313,59 @@ record complete_fhe_system =
 
 (* CircularSecurity (matches Coq: Record CircularSecurity) *)
 record circular_security =
-  cs_key_encryption_safe :: bool  (* Safe to encrypt own key *)
-  cs_kDM_secure :: bool  (* Key-dependent message secure *)
-  cs_multi_key :: bool  (* Multi-key secure *)
+  cs_key_encryption_safe :: bool
+  cs_kDM_secure :: bool
+  cs_multi_key :: bool
 
 (* LWEHardness (matches Coq: Record LWEHardness) *)
 record lwe_hardness =
-  lwe_dimension :: nat  (* n - dimension *)
-  lwe_modulus :: nat  (* q - modulus *)
-  lwe_error_rate :: nat  (* Error parameter *)
-  lwe_assumed_hard :: bool  (* Hardness assumption *)
+  lwe_dimension :: nat
+  lwe_modulus :: nat
+  lwe_error_rate :: nat
+  lwe_assumed_hard :: bool
 
 (* RLWEConfig (matches Coq: Record RLWEConfig) *)
 record rlwe_config =
-  rlwe_ring_degree :: nat  (* Polynomial ring degree *)
-  rlwe_modulus :: nat  (* Coefficient modulus *)
-  rlwe_error_width :: nat  (* Error distribution width *)
-  rlwe_ntt_compatible :: bool  (* NTT-friendly parameters *)
+  rlwe_ring_degree :: nat
+  rlwe_modulus :: nat
+  rlwe_error_width :: nat
+  rlwe_ntt_compatible :: bool
+
+(* NEGLIGIBLE_THRESHOLD_CONST (matches Coq: Definition NEGLIGIBLE_THRESHOLD_CONST) *)
+definition NEGLIGIBLE_THRESHOLD_CONST :: "nat" where
+  "NEGLIGIBLE_THRESHOLD_CONST \<equiv> Z.to_nat 10000%Z"
+
+(* RIINA_ADVANTAGE_CONST (matches Coq: Definition RIINA_ADVANTAGE_CONST) *)
+definition RIINA_ADVANTAGE_CONST :: "nat" where
+  "RIINA_ADVANTAGE_CONST \<equiv> Z.to_nat 100000%Z"
+
+(* NOISE_THRESHOLD_CONST (matches Coq: Definition NOISE_THRESHOLD_CONST) *)
+definition NOISE_THRESHOLD_CONST :: "nat" where
+  "NOISE_THRESHOLD_CONST \<equiv> Z.to_nat 100000%Z"
+
+(* RIINA_KP_PUBLIC_CONST (matches Coq: Definition RIINA_KP_PUBLIC_CONST) *)
+definition RIINA_KP_PUBLIC_CONST :: "nat" where
+  "RIINA_KP_PUBLIC_CONST \<equiv> Z.to_nat 12345%Z"
+
+(* RIINA_KP_SECRET_CONST (matches Coq: Definition RIINA_KP_SECRET_CONST) *)
+definition RIINA_KP_SECRET_CONST :: "nat" where
+  "RIINA_KP_SECRET_CONST \<equiv> Z.to_nat 67890%Z"
+
+(* RIINA_KP_EVAL_CONST (matches Coq: Definition RIINA_KP_EVAL_CONST) *)
+definition RIINA_KP_EVAL_CONST :: "nat" where
+  "RIINA_KP_EVAL_CONST \<equiv> Z.to_nat 11111%Z"
+
+(* RLWE_MODULUS_MIN_CONST (matches Coq: Definition RLWE_MODULUS_MIN_CONST) *)
+definition RLWE_MODULUS_MIN_CONST :: "nat" where
+  "RLWE_MODULUS_MIN_CONST \<equiv> Z.to_nat 32768%Z"
+
+(* RIINA_RLWE_MODULUS_CONST (matches Coq: Definition RIINA_RLWE_MODULUS_CONST) *)
+definition RIINA_RLWE_MODULUS_CONST :: "nat" where
+  "RIINA_RLWE_MODULUS_CONST \<equiv> Z.to_nat 32769%Z"
+
+(* RIINA_NOISE_BOUND_MODULUS_CONST (matches Coq: Definition RIINA_NOISE_BOUND_MODULUS_CONST) *)
+definition RIINA_NOISE_BOUND_MODULUS_CONST :: "nat" where
+  "RIINA_NOISE_BOUND_MODULUS_CONST \<equiv> Z.to_nat 65536%Z"
 
 (* ops_fully_homomorphic (matches Coq: Definition ops_fully_homomorphic) *)
 definition ops_fully_homomorphic :: "HomomorphicOps \<Rightarrow> bool" where
@@ -343,27 +386,27 @@ definition fhe_fully_secure :: "FHEConfig \<Rightarrow> bool" where
 
 (* riina_fhe_ops (matches Coq: Definition riina_fhe_ops) *)
 definition riina_fhe_ops :: "HomomorphicOps" where
-  "riina_fhe_ops \<equiv> mkHomomorphicOps true true true"
+  "riina_fhe_ops \<equiv> mkHomomorphicOps True True True"
 
 (* riina_fhe_sec (matches Coq: Definition riina_fhe_sec) *)
 definition riina_fhe_sec :: "FHESecurityProps" where
-  "riina_fhe_sec \<equiv> mkFHESecurityProps true true true"
+  "riina_fhe_sec \<equiv> mkFHESecurityProps True True True"
 
 (* riina_fhe_noise (matches Coq: Definition riina_fhe_noise) *)
 definition riina_fhe_noise :: "NoiseManagement" where
-  "riina_fhe_noise \<equiv> mkNoiseManagement true true true"
+  "riina_fhe_noise \<equiv> mkNoiseManagement True True True"
 
 (* riina_fhe (matches Coq: Definition riina_fhe) *)
 definition riina_fhe :: "FHEConfig" where
-  "riina_fhe \<equiv> mkFHEConfig riina_fhe_ops riina_fhe_sec riina_fhe_noise true true"
+  "riina_fhe \<equiv> mkFHEConfig riina_fhe_ops riina_fhe_sec riina_fhe_noise True True"
 
 (* negligible_threshold (matches Coq: Definition negligible_threshold) *)
 definition negligible_threshold :: "nat" where
-  "negligible_threshold \<equiv> 10000"
+  "negligible_threshold \<equiv> NEGLIGIBLE_THRESHOLD_CONST"
 
 (* riina_advantage (matches Coq: Definition riina_advantage) *)
 definition riina_advantage :: "nat" where
-  "riina_advantage \<equiv> 100000"
+  "riina_advantage \<equiv> RIINA_ADVANTAGE_CONST"
 
 (* indcpa_secure (matches Coq: Definition indcpa_secure) *)
 definition indcpa_secure :: "INDCPAGame \<Rightarrow> bool" where
@@ -373,7 +416,7 @@ definition indcpa_secure :: "INDCPAGame \<Rightarrow> bool" where
 
 (* riina_indcpa (matches Coq: Definition riina_indcpa) *)
 definition riina_indcpa :: "INDCPAGame" where
-  "riina_indcpa \<equiv> mkINDCPAGame 256 true true riina_advantage"
+  "riina_indcpa \<equiv> mkINDCPAGame 256 True True riina_advantage"
 
 (* semantic_secure (matches Coq: Definition semantic_secure) *)
 definition semantic_secure :: "SemanticSecurity \<Rightarrow> bool" where
@@ -382,7 +425,7 @@ definition semantic_secure :: "SemanticSecurity \<Rightarrow> bool" where
 
 (* riina_semantic (matches Coq: Definition riina_semantic) *)
 definition riina_semantic :: "SemanticSecurity" where
-  "riina_semantic \<equiv> mkSemanticSecurity 256 512 true true"
+  "riina_semantic \<equiv> mkSemanticSecurity 256 512 True True"
 
 (* hom_add_correct (matches Coq: Definition hom_add_correct) *)
 definition hom_add_correct :: "HomAddition \<Rightarrow> bool" where
@@ -391,7 +434,7 @@ definition hom_add_correct :: "HomAddition \<Rightarrow> bool" where
 
 (* riina_hom_add (matches Coq: Definition riina_hom_add) *)
 definition riina_hom_add :: "HomAddition" where
-  "riina_hom_add \<equiv> mkHomAddition 256 1024 true"
+  "riina_hom_add \<equiv> mkHomAddition 256 1024 True"
 
 (* hom_mult_correct (matches Coq: Definition hom_mult_correct) *)
 definition hom_mult_correct :: "HomMultiplication \<Rightarrow> bool" where
@@ -400,7 +443,7 @@ definition hom_mult_correct :: "HomMultiplication \<Rightarrow> bool" where
 
 (* riina_hom_mult (matches Coq: Definition riina_hom_mult) *)
 definition riina_hom_mult :: "HomMultiplication" where
-  "riina_hom_mult \<equiv> mkHomMultiplication 256 1024 true true"
+  "riina_hom_mult \<equiv> mkHomMultiplication 256 1024 True True"
 
 (* hom_ops_valid (matches Coq: Definition hom_ops_valid) *)
 definition hom_ops_valid :: "HomOperations \<Rightarrow> bool" where
@@ -410,7 +453,7 @@ definition hom_ops_valid :: "HomOperations \<Rightarrow> bool" where
 
 (* riina_hom_ops (matches Coq: Definition riina_hom_ops) *)
 definition riina_hom_ops :: "HomOperations" where
-  "riina_hom_ops \<equiv> mkHomOperations riina_hom_add riina_hom_mult true"
+  "riina_hom_ops \<equiv> mkHomOperations riina_hom_add riina_hom_mult True"
 
 (* noise_after_additions (matches Coq: Definition noise_after_additions) *)
 definition noise_after_additions :: "NoiseModel \<Rightarrow> nat \<Rightarrow> nat" where
@@ -426,7 +469,7 @@ definition noise_safe :: "NoiseModel \<Rightarrow> nat \<Rightarrow> bool" where
 
 (* riina_noise_model (matches Coq: Definition riina_noise_model) *)
 definition riina_noise_model :: "NoiseModel" where
-  "riina_noise_model \<equiv> mkNoiseModel 10 2 2 100000"
+  "riina_noise_model \<equiv> mkNoiseModel 10 2 2 NOISE_THRESHOLD_CONST"
 
 (* noise_bound_valid (matches Coq: Definition noise_bound_valid) *)
 definition noise_bound_valid :: "NoiseModel \<Rightarrow> NoiseBound \<Rightarrow> bool" where
@@ -435,7 +478,7 @@ definition noise_bound_valid :: "NoiseModel \<Rightarrow> NoiseBound \<Rightarro
 
 (* riina_noise_bound (matches Coq: Definition riina_noise_bound) *)
 definition riina_noise_bound :: "NoiseBound" where
-  "riina_noise_bound \<equiv> mkNoiseBound 100 8 65536"
+  "riina_noise_bound \<equiv> mkNoiseBound 100 8 RIINA_NOISE_BOUND_MODULUS_CONST"
 
 (* bootstrapping_correct (matches Coq: Definition bootstrapping_correct) *)
 definition bootstrapping_correct :: "BootstrappingConfig \<Rightarrow> bool" where
@@ -444,7 +487,7 @@ definition bootstrapping_correct :: "BootstrappingConfig \<Rightarrow> bool" whe
 
 (* riina_bootstrap (matches Coq: Definition riina_bootstrap) *)
 definition riina_bootstrap :: "BootstrappingConfig" where
-  "riina_bootstrap \<equiv> mkBootstrappingConfig true true true 10 1000"
+  "riina_bootstrap \<equiv> mkBootstrappingConfig True True True 10 1000"
 
 (* unlimited_fhe_valid (matches Coq: Definition unlimited_fhe_valid) *)
 definition unlimited_fhe_valid :: "UnlimitedFHE \<Rightarrow> bool" where
@@ -474,7 +517,7 @@ definition keypair_valid :: "FHEKeyPair \<Rightarrow> bool" where
 
 (* riina_keypair (matches Coq: Definition riina_keypair) *)
 definition riina_keypair :: "FHEKeyPair" where
-  "riina_keypair \<equiv> mkFHEKeyPair 12345 67890 11111 riina_keygen"
+  "riina_keypair \<equiv> mkFHEKeyPair RIINA_KP_PUBLIC_CONST RIINA_KP_SECRET_CONST RIINA_KP_EVAL_CONST riina_keygen"
 
 (* ciphertext_valid (matches Coq: Definition ciphertext_valid) *)
 definition ciphertext_valid :: "FHECiphertext \<Rightarrow> NoiseModel \<Rightarrow> bool" where
@@ -484,7 +527,7 @@ definition ciphertext_valid :: "FHECiphertext \<Rightarrow> NoiseModel \<Rightar
 
 (* riina_ciphertext (matches Coq: Definition riina_ciphertext) *)
 definition riina_ciphertext :: "FHECiphertext" where
-  "riina_ciphertext \<equiv> mkFHECiphertext 1000 2000 50 10 true"
+  "riina_ciphertext \<equiv> mkFHECiphertext 1000 2000 50 10 True"
 
 (* op_preserves_validity (matches Coq: Definition op_preserves_validity) *)
 definition op_preserves_validity :: "CiphertextAfterOp \<Rightarrow> NoiseModel \<Rightarrow> bool" where
@@ -510,7 +553,7 @@ definition circular_secure :: "CircularSecurity \<Rightarrow> bool" where
 
 (* riina_circular (matches Coq: Definition riina_circular) *)
 definition riina_circular :: "CircularSecurity" where
-  "riina_circular \<equiv> mkCircularSecurity true true true"
+  "riina_circular \<equiv> mkCircularSecurity True True True"
 
 (* lwe_secure (matches Coq: Definition lwe_secure) *)
 definition lwe_secure :: "LWEHardness \<Rightarrow> bool" where
@@ -520,17 +563,17 @@ definition lwe_secure :: "LWEHardness \<Rightarrow> bool" where
 
 (* riina_lwe (matches Coq: Definition riina_lwe) *)
 definition riina_lwe :: "LWEHardness" where
-  "riina_lwe \<equiv> mkLWEHardness 1024 2048 8 true"
+  "riina_lwe \<equiv> mkLWEHardness 1024 2048 8 True"
 
 (* rlwe_secure (matches Coq: Definition rlwe_secure) *)
 definition rlwe_secure :: "RLWEConfig \<Rightarrow> bool" where
   "rlwe_secure r \<equiv> (1024 <=? rlwe_ring_degree r) \<and>
-  (32768 <=? rlwe_modulus r) \<and>
+  (RLWE_MODULUS_MIN_CONST <=? rlwe_modulus r) \<and>
   rlwe_ntt_compatible r"
 
 (* riina_rlwe (matches Coq: Definition riina_rlwe) *)
 definition riina_rlwe :: "RLWEConfig" where
-  "riina_rlwe \<equiv> mkRLWEConfig 2048 32769 8 true"
+  "riina_rlwe \<equiv> mkRLWEConfig 2048 RIINA_RLWE_MODULUS_CONST 8 True"
 
 (* ============================================================================
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
@@ -544,7 +587,7 @@ lemma andb3_true_iff: "\<forall> a b c : bool, a && b && c = True <-> a = True \
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* leb_le (matches Coq) *)

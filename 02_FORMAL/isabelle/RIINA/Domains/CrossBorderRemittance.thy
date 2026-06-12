@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CrossBorderRemittance - Isabelle/HOL Port
@@ -26,6 +28,11 @@
  * | CashPickup         | cash_pickup            | OK     |
  * | IBAN               | iban                   | OK     |
  * | RecipientNotification | recipient_notification | OK     |
+ * | AVAILABILITY_99_99_BPS | AVAILABILITY_99_99_BPS | OK     |
+ * | HEDGE_RATIO_MIN_BPS | HEDGE_RATIO_MIN_BPS    | OK     |
+ * | HEDGE_RATIO_MAX_BPS | HEDGE_RATIO_MAX_BPS    | OK     |
+ * | un_member_states   | un_member_states       | OK     |
+ * | iso_4217_currencies | iso_4217_currencies    | OK     |
  * | valid_country_support | valid_country_support  | OK     |
  * | compliant_registry | compliant_registry     | OK     |
  * | compliant_currency_registry | compliant_currency_registry | OK     |
@@ -98,7 +105,7 @@ record corridor =
   send_currency :: CurrencyCode
   receive_currency :: CurrencyCode
   is_enabled :: bool
-  availability_pct :: nat  (* In basis points: 9999 = 99.99% *)
+  availability_pct :: nat
   fees_disclosed :: bool
   is_sanctioned :: bool
 
@@ -123,7 +130,7 @@ record fx_quote =
   customer_rate :: Z
   quote_timestamp :: nat
   guarantee_window :: nat
-  hedge_ratio_bps :: nat  (* In basis points: 10000 = 100% *)
+  hedge_ratio_bps :: nat
 
 (* Transfer (matches Coq: Record Transfer) *)
 record transfer =
@@ -154,7 +161,7 @@ record originator =
   orig_name :: nat
   orig_address :: nat
   kyc_verified :: bool
-  verification_level :: nat  (* 1, 2, or 3 *)
+  verification_level :: nat
 
 (* TravelRuleData (matches Coq: Record TravelRuleData) *)
 record travel_rule_data =
@@ -204,18 +211,38 @@ record recipient_notification =
   channel_used :: nat
   notification_sent :: bool
 
+(* AVAILABILITY_99_99_BPS (matches Coq: Definition AVAILABILITY_99_99_BPS) *)
+definition AVAILABILITY_99_99_BPS :: "nat" where
+  "AVAILABILITY_99_99_BPS \<equiv> Z.to_nat 9999%Z"
+
+(* HEDGE_RATIO_MIN_BPS (matches Coq: Definition HEDGE_RATIO_MIN_BPS) *)
+definition HEDGE_RATIO_MIN_BPS :: "nat" where
+  "HEDGE_RATIO_MIN_BPS \<equiv> Z.to_nat 9800%Z"
+
+(* HEDGE_RATIO_MAX_BPS (matches Coq: Definition HEDGE_RATIO_MAX_BPS) *)
+definition HEDGE_RATIO_MAX_BPS :: "nat" where
+  "HEDGE_RATIO_MAX_BPS \<equiv> Z.to_nat 10200%Z"
+
+(* un_member_states (matches Coq: Definition un_member_states) *)
+definition un_member_states :: "list CountryCode" where
+  "un_member_states \<equiv> seq 1 193"
+
+(* iso_4217_currencies (matches Coq: Definition iso_4217_currencies) *)
+definition iso_4217_currencies :: "list CurrencyCode" where
+  "iso_4217_currencies \<equiv> seq 1 180"
+
 (* valid_country_support (matches Coq: Definition valid_country_support) *)
 definition valid_country_support :: "CountrySupport \<Rightarrow> bool" where
-  "valid_country_support cs \<equiv> sanctioned cs = false -> (can_send cs = true \/ can_receive cs = true)"
+  "valid_country_support cs \<equiv> sanctioned cs = False -> (can_send cs = True \/ can_receive cs = True)"
 
 (* compliant_registry (matches Coq: Definition compliant_registry) *)
 definition compliant_registry :: "CountryRegistry \<Rightarrow> bool" where
   "compliant_registry reg \<equiv> forall c, In c un_member_states ->
-    sanctioned (reg c) = true \/ can_send (reg c) = true \/ can_receive (reg c) = true"
+    sanctioned (reg c) = True \/ can_send (reg c) = True \/ can_receive (reg c) = True"
 
 (* compliant_currency_registry (matches Coq: Definition compliant_currency_registry) *)
 definition compliant_currency_registry :: "CurrencyRegistry \<Rightarrow> bool" where
-  "compliant_currency_registry reg \<equiv> forall c, In c iso_4217_currencies -> is_supported (reg c) = true"
+  "compliant_currency_registry reg \<equiv> forall c, In c iso_4217_currencies -> is_supported (reg c) = True"
 
 (* rate_staleness (matches Coq: Definition rate_staleness) *)
 definition rate_staleness :: "FXQuote \<Rightarrow> nat \<Rightarrow> nat" where
@@ -225,7 +252,8 @@ definition rate_staleness :: "FXQuote \<Rightarrow> nat \<Rightarrow> nat" where
 definition valid_quote :: "FXQuote \<Rightarrow> bool" where
   "valid_quote q \<equiv> customer_rate q = mid_market_rate q + spread q /\
   (guarantee_window q > 0)%nat /\
-  (hedge_ratio_bps q >= 9800)%nat /\ (hedge_ratio_bps q <= 10200)%nat"
+  (hedge_ratio_bps q >= HEDGE_RATIO_MIN_BPS)%nat /\
+  (hedge_ratio_bps q <= HEDGE_RATIO_MAX_BPS)%nat"
 
 (* fresh_quote (matches Coq: Definition fresh_quote) *)
 definition fresh_quote :: "FXQuote \<Rightarrow> nat \<Rightarrow> bool" where
@@ -270,11 +298,11 @@ fun is_local_rail :: "PaymentRail \<Rightarrow> bool" where
 
 (* valid_transfer (matches Coq: Definition valid_transfer) *)
 definition valid_transfer :: "Transfer \<Rightarrow> bool" where
-  "valid_transfer t \<equiv> screening_passed t = true /\
-  (is_swift_rail (rail t) = true -> tracking_available t = true) /\
-  (is_instant_rail (rail t) = true -> (settlement_time_sec t <= 60)%nat) /\
-  (is_blockchain_rail (rail t) = true -> is_atomic t = true) /\
-  (is_mobile_money_rail (rail t) = true -> (settlement_time_sec t <= 5)%nat)"
+  "valid_transfer t \<equiv> screening_passed t = True /\
+  (is_swift_rail (rail t) = True -> tracking_available t = True) /\
+  (is_instant_rail (rail t) = True -> (settlement_time_sec t <= 60)%nat) /\
+  (is_blockchain_rail (rail t) = True -> is_atomic t = True) /\
+  (is_mobile_money_rail (rail t) = True -> (settlement_time_sec t <= 5)%nat)"
 
 (* total_cost (matches Coq: Definition total_cost) *)
 definition total_cost :: "Transfer \<Rightarrow> Z" where
@@ -282,8 +310,8 @@ definition total_cost :: "Transfer \<Rightarrow> Z" where
 
 (* fully_screened (matches Coq: Definition fully_screened) *)
 definition fully_screened :: "Beneficiary \<Rightarrow> bool" where
-  "fully_screened b \<equiv> ofac_screened b = true /\ un_screened b = true /\
-  eu_screened b = true /\ local_screened b = true"
+  "fully_screened b \<equiv> ofac_screened b = True /\ un_screened b = True /\
+  eu_screened b = True /\ local_screened b = True"
 
 (* transfer_allowed (matches Coq: Definition transfer_allowed) *)
 definition transfer_allowed :: "Beneficiary \<Rightarrow> bool" where
@@ -291,24 +319,24 @@ definition transfer_allowed :: "Beneficiary \<Rightarrow> bool" where
 
 (* travel_rule_compliant (matches Coq: Definition travel_rule_compliant) *)
 definition travel_rule_compliant :: "TravelRuleData \<Rightarrow> bool" where
-  "travel_rule_compliant trd \<equiv> data_transmitted trd = true /\
-  kyc_verified (originator_info trd) = true"
+  "travel_rule_compliant trd \<equiv> data_transmitted trd = True /\
+  kyc_verified (originator_info trd) = True"
 
 (* str_compliant (matches Coq: Definition str_compliant) *)
 definition str_compliant :: "SuspiciousActivity \<Rightarrow> bool" where
-  "str_compliant sa \<equiv> str_filed sa = true /\ (filing_timestamp sa <= filing_deadline sa)%nat"
+  "str_compliant sa \<equiv> str_filed sa = True /\ (filing_timestamp sa <= filing_deadline sa)%nat"
 
 (* instant_bank_credit_valid (matches Coq: Definition instant_bank_credit_valid) *)
 definition instant_bank_credit_valid :: "BankCredit \<Rightarrow> bool" where
-  "instant_bank_credit_valid bc \<equiv> is_instant_rail (credit_rail bc) = true -> (credit_time_sec bc <= 60)%nat"
+  "instant_bank_credit_valid bc \<equiv> is_instant_rail (credit_rail bc) = True -> (credit_time_sec bc <= 60)%nat"
 
 (* wallet_credit_valid (matches Coq: Definition wallet_credit_valid) *)
 definition wallet_credit_valid :: "WalletCredit \<Rightarrow> bool" where
-  "wallet_credit_valid wc \<equiv> credit_instant wc = true /\ (credit_latency_ms wc <= 1000)%nat"
+  "wallet_credit_valid wc \<equiv> credit_instant wc = True /\ (credit_latency_ms wc <= 1000)%nat"
 
 (* secure_pickup_code (matches Coq: Definition secure_pickup_code) *)
 definition secure_pickup_code :: "CashPickup \<Rightarrow> bool" where
-  "secure_pickup_code cp \<equiv> code_length cp = 16%nat /\ (expiry_days cp <= 30)%nat /\ code_random cp = true"
+  "secure_pickup_code cp \<equiv> code_length cp = 16%nat /\ (expiry_days cp <= 30)%nat /\ code_random cp = True"
 
 (* valid_cash_pickup (matches Coq: Definition valid_cash_pickup) *)
 definition valid_cash_pickup :: "CashPickup \<Rightarrow> bool" where
@@ -316,11 +344,11 @@ definition valid_cash_pickup :: "CashPickup \<Rightarrow> bool" where
 
 (* iban_validated (matches Coq: Definition iban_validated) *)
 definition iban_validated :: "IBAN \<Rightarrow> bool" where
-  "iban_validated i \<equiv> checksum_valid i = true /\ format_valid i = true"
+  "iban_validated i \<equiv> checksum_valid i = True /\ format_valid i = True"
 
 (* notification_compliant (matches Coq: Definition notification_compliant) *)
 definition notification_compliant :: "RecipientNotification \<Rightarrow> bool" where
-  "notification_compliant rn \<equiv> notification_sent rn = true /\ channel_used rn = channel_preferred rn"
+  "notification_compliant rn \<equiv> notification_sent rn = True /\ channel_used rn = channel_preferred rn"
 
 (* REMIT_001_01_universal_coverage (matches Coq) *)
 lemma REMIT_001_01_universal_coverage: "\<forall> (reg : CountryRegistry), compliant_registry reg \<longrightarrow> \<forall> c, In c un_member_states \<longrightarrow> sanctioned (reg c) = True \<or> can_send (reg c) = True \<or> can_receive (reg c) = True"
@@ -335,7 +363,7 @@ lemma REMIT_001_03_pricing_transparency: "\<forall> (corr : Corridor), is_enable
   by auto
 
 (* REMIT_001_04_corridor_availability (matches Coq) *)
-lemma REMIT_001_04_corridor_availability: "\<forall> (corr : Corridor), is_enabled corr = True \<longrightarrow> (availability_pct corr \<ge> 9999)%nat \<longrightarrow> (availability_pct corr \<ge> 9999)%nat"
+lemma REMIT_001_04_corridor_availability: "\<forall> (corr : Corridor), is_enabled corr = True \<longrightarrow> (availability_pct corr \<ge> AVAILABILITY_99_99_BPS)%nat \<longrightarrow> (availability_pct corr \<ge> AVAILABILITY_99_99_BPS)%nat"
   by auto
 
 (* REMIT_001_05_sanctioned_country_blocking (matches Coq) *)
@@ -359,7 +387,7 @@ lemma REMIT_001_09_no_hidden_margin: "\<forall> (t : Transfer), valid_transfer t
   by simp
 
 (* REMIT_001_10_hedge_ratio_maintenance (matches Coq) *)
-lemma REMIT_001_10_hedge_ratio_maintenance: "\<forall> (q : FXQuote), valid_quote q \<longrightarrow> (hedge_ratio_bps q \<ge> 9800)%nat \<and> (hedge_ratio_bps q \<le> 10200)%nat"
+lemma REMIT_001_10_hedge_ratio_maintenance: "\<forall> (q : FXQuote), valid_quote q \<longrightarrow> (hedge_ratio_bps q \<ge> HEDGE_RATIO_MIN_BPS)%nat \<and> (hedge_ratio_bps q \<le> HEDGE_RATIO_MAX_BPS)%nat"
   by auto
 
 (* REMIT_001_11_swift_gpi_tracking (matches Coq) *)

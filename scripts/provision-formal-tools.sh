@@ -27,9 +27,9 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 FORMAL_TOOLS_DIR="${RIINA_FORMAL_TOOLS_DIR:-$REPO_ROOT/05_TOOLING/tools/formal}"
 
-TLA2TOOLS_VERSION="${RIINA_TLA2TOOLS_VERSION:-1.8.0}"
+TLA2TOOLS_VERSION="${RIINA_TLA2TOOLS_VERSION:-1.7.4}"
 TLA2TOOLS_URL="${RIINA_TLA2TOOLS_URL:-https://github.com/tlaplus/tlaplus/releases/download/v${TLA2TOOLS_VERSION}/tla2tools.jar}"
-TLA2TOOLS_SHA256="${RIINA_TLA2TOOLS_SHA256:-b19fd609e8b6ffd639c6f91e8ec9da341f3fcb32385635cfec5bfc548a25f9f9}"
+TLA2TOOLS_SHA256="${RIINA_TLA2TOOLS_SHA256:-936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88}"
 TLA2TOOLS_JAR="$FORMAL_TOOLS_DIR/tla2tools.jar"
 
 ALLOY_VERSION="${RIINA_ALLOY_VERSION:-6.2.0}"
@@ -112,6 +112,54 @@ install_artifact() {
   echo -e "${GREEN}[ok]${NC} installed $name -> $dest"
 }
 
+alloy_command_rows() {
+  local file="$1"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  java -cp "$ALLOY_JAR" "$class" commands "$file" 2>/dev/null \
+    | awk '/^[0-9]+[[:space:]]+\./ { print $1 ":" tolower($3) }'
+}
+
+alloy_exec_status() {
+  local file="$1"
+  local index="$2"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  local output
+  if ! output="$(cd "$tmp_dir" && java -cp "$ALLOY_JAR" "$class" exec -c "$index" "$file" 2>&1)"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  rm -rf "$tmp_dir"
+  printf '%s\n' "$output" \
+    | tr '\010\r' '  ' \
+    | awk '/^[0-9][0-9]*\. / { print $NF }' \
+    | tail -1
+}
+
+alloy_smoke_ok() {
+  local file="$1"
+  local row idx kind status expected
+  mapfile -t rows < <(alloy_command_rows "$file")
+  if [ "${#rows[@]}" -eq 0 ]; then
+    return 1
+  fi
+  for row in "${rows[@]}"; do
+    idx="${row%%:*}"
+    kind="${row##*:}"
+    case "$kind" in
+      run) expected="SAT" ;;
+      check) expected="UNSAT" ;;
+      *) return 1 ;;
+    esac
+    status="$(alloy_exec_status "$file" "$idx" || true)"
+    if [ "$status" != "$expected" ]; then
+      return 1
+    fi
+  done
+  return 0
+}
+
 run_smoke_checks() {
   if [ "${RIINA_FORMAL_TOOLS_SMOKE:-1}" = "0" ]; then
     echo -e "${YELLOW}[skip]${NC} smoke checks disabled (RIINA_FORMAL_TOOLS_SMOKE=0)."
@@ -123,8 +171,9 @@ run_smoke_checks() {
     return 0
   fi
 
-  local tla_sample="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Domains/SessionTypes.tla"
-  local alloy_sample="$REPO_ROOT/02_FORMAL/alloy/RIINA/Domains/SessionTypes.als"
+  local tla_sample="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
+  local tla_cfg="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.cfg"
+  local alloy_sample="$REPO_ROOT/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als"
 
   if [ -f "$tla_sample" ]; then
     (
@@ -134,13 +183,25 @@ run_smoke_checks() {
       echo -e "${RED}ERROR: TLA2Tools smoke check failed.${NC}" >&2
       return 1
     }
+    if [ -f "$tla_cfg" ]; then
+      local tla_meta
+      tla_meta="$(mktemp -d)"
+      (
+        cd "$(dirname "$tla_sample")"
+        java -cp "$TLA2TOOLS_JAR" tlc2.TLC -cleanup -workers 1 -metadir "$tla_meta" -config "$(basename "$tla_cfg")" "$(basename "$tla_sample")" >/dev/null 2>&1
+      ) || {
+        rm -rf "$tla_meta"
+        echo -e "${RED}ERROR: TLA2Tools TLC smoke check failed.${NC}" >&2
+        return 1
+      }
+      rm -rf "$tla_meta"
+    fi
     echo -e "${GREEN}[ok]${NC} TLA2Tools smoke check passed."
   fi
 
   if [ -f "$alloy_sample" ]; then
-    local alloy_class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
-    java -cp "$ALLOY_JAR" "$alloy_class" commands "$alloy_sample" >/dev/null 2>&1 || {
-      echo -e "${RED}ERROR: Alloy smoke check failed (class=$alloy_class).${NC}" >&2
+    alloy_smoke_ok "$alloy_sample" || {
+      echo -e "${RED}ERROR: Alloy smoke check failed (run/check status mismatch).${NC}" >&2
       return 1
     }
     echo -e "${GREEN}[ok]${NC} Alloy smoke check passed."

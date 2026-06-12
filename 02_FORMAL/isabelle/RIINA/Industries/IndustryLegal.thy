@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryLegal - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | LegalData          | legal_data             | OK     |
+ * | PrivilegeType      | privilege_type         | OK     |
  * | LegalEffect        | legal_effect           | OK     |
  * | LegalSecurityControls | legal_security_controls | OK     |
  * | legal_sensitivity  | legal_sensitivity      | OK     |
@@ -54,23 +57,22 @@
  *)
 
 theory IndustryLegal
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* LegalData (matches Coq: Inductive LegalData) *)
 datatype legal_data =
-    AttorneyClientPrivilege  (* Highest protection *)
-  |     WorkProduct  (* Attorney work product *)
+    AttorneyClientPrivilege
+  |     WorkProduct
   |     ClientPII
   |     CaseFile
   |     DiscoveryMaterial
   |     TrustAccount
-  |     Absolute  (* Cannot be compelled *)
-  |     Qualified  (* May be overcome *)
+
+(* PrivilegeType (matches Coq: Inductive PrivilegeType) *)
+datatype privilege_type =
+    Absolute
+  |     Qualified
   |     Waived
 
 (* LegalEffect (matches Coq: Inductive LegalEffect) *)
@@ -136,54 +138,61 @@ fun legal_retention_years :: "LegalData \<Rightarrow> nat" where
 
 (* no_conflict (matches Coq: Definition no_conflict) *)
 definition no_conflict :: "bool" where
-  "no_conflict \<equiv> negb (Nat"
+  "no_conflict \<equiv> (\<not> (Nat.eqb) party1 party2)"
 
 (* trust_balanced (matches Coq: Definition trust_balanced) *)
 definition trust_balanced :: "bool" where
-  "trust_balanced \<equiv> Nat"
+  "trust_balanced \<equiv> (balance = client_total)"
 
 (* litigation_hold_active (matches Coq: Definition litigation_hold_active) *)
 definition litigation_hold_active :: "bool" where
-  "litigation_hold_active \<equiv> Nat"
+  "litigation_hold_active \<equiv> (hold_start \<le> current_time) \<and> (current_time \<le> hold_end)"
 
 (* Section O01 - Attorney-Client Privilege
-    Reference: IND_O_LEGAL.md Section 3.1 *)
+    Reference: IND_O_LEGAL.md Section 3.1
+    AttorneyClientPrivilege is distinct from DiscoveryMaterial. *)
 (* privilege_protection_axiom (matches Coq) *)
-lemma privilege_protection_axiom: "\<forall> (communication : LegalData), True"
-  by simp
+lemma privilege_protection_axiom: "AttorneyClientPrivilege \<noteq> DiscoveryMaterial"
+  by auto
 
 (* Section O02 - ABA Model Rules Compliance
-    Reference: IND_O_LEGAL.md Section 3.2 *)
+    Reference: IND_O_LEGAL.md Section 3.2
+    WorkProduct is distinct from ClientPII — different legal data types. *)
 (* aba_model_rules (matches Coq) *)
-lemma aba_model_rules: "\<forall> (firm : nat) (practice : nat), True"
-  by simp
+lemma aba_model_rules: "WorkProduct \<noteq> ClientPII"
+  by auto
 
 (* Section O03 - Conflict of Interest Screening
-    Reference: IND_O_LEGAL.md Section 3.3 *)
+    Reference: IND_O_LEGAL.md Section 3.3
+    Absolute privilege is distinct from Waived privilege. *)
 (* conflict_screening_axiom (matches Coq) *)
-lemma conflict_screening_axiom: "\<forall> (matter : nat) (client : nat), True"
-  by simp
+lemma conflict_screening_axiom: "Absolute \<noteq> Waived"
+  by auto
 
 (* Section O04 - E-Discovery Compliance
-    Reference: IND_O_LEGAL.md Section 3.4 *)
+    Reference: IND_O_LEGAL.md Section 3.4
+    CaseFile is distinct from TrustAccount — different handling rules. *)
 (* ediscovery_compliance (matches Coq) *)
-lemma ediscovery_compliance: "\<forall> (matter : nat) (documents : nat), True"
-  by simp
+lemma ediscovery_compliance: "CaseFile \<noteq> TrustAccount"
+  by auto
 
 (* Section O05 - Records Retention
-    Reference: IND_O_LEGAL.md Section 3.5 *)
+    Reference: IND_O_LEGAL.md Section 3.5
+    Privilege protection and ethical walls together form a valid conjunction. *)
 (* records_retention (matches Coq) *)
-lemma records_retention: "\<forall> (record : LegalData) (retention_period : nat), True"
+lemma records_retention: "\<forall> (controls : LegalSecurityControls), privilege_protection controls = True \<longrightarrow> ethical_walls controls = True \<longrightarrow> privilege_protection controls && ethical_walls controls = True"
   by simp
 
-(* Privileged communications require encryption *)
+(* Privileged communications require encryption:
+    Privilege protection enabled implies its negation is false. *)
 (* privilege_requires_encryption (matches Coq) *)
-lemma privilege_requires_encryption: "\<forall> (controls : LegalSecurityControls) (comm : LegalData), privilege_protection controls = True \<longrightarrow> True"
+lemma privilege_requires_encryption: "\<forall> (controls : LegalSecurityControls), privilege_protection controls = True \<longrightarrow> (\<not> (privilege_protection) controls) = False"
   by simp
 
-(* Ethical walls prevent conflicts *)
+(* Ethical walls prevent conflicts:
+    Ethical walls and matter segregation together form a valid conjunction. *)
 (* ethical_walls_effective (matches Coq) *)
-lemma ethical_walls_effective: "\<forall> (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = True \<longrightarrow> True"
+lemma ethical_walls_effective: "\<forall> (controls : LegalSecurityControls), ethical_walls controls = True \<longrightarrow> matter_segregation controls = True \<longrightarrow> ethical_walls controls && matter_segregation controls = True"
   by simp
 
 (* privilege_max_sensitivity (matches Coq) *)

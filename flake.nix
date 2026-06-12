@@ -27,7 +27,7 @@
             meta = with pkgs.lib; {
               description = "RIINA compiler — formally verified, zero-trust programming language";
               homepage = "https://github.com/ib823/riina";
-              license = licenses.unfree;
+              license = licenses.mpl20;
               mainProgram = "riinac";
             };
           };
@@ -38,7 +38,7 @@
         let pkgs = pkgsFor system; in {
           default = pkgs.mkShell {
             buildInputs = with pkgs; [
-              (rust-bin.stable."1.84.0".default)
+              (rust-bin.stable."1.94.1".default)
               coq
               gcc
             ];

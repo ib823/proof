@@ -1,1 +1,6 @@
-Setup completed: Sun Jan 11 03:32:58 UTC 2026
+Setup completed: 2026-02-14T06:00:00Z (post-codespace-upgrade)
+Coq version: The Coq Proof Assistant, version 8.20.1
+Rust version: rustc 1.84.0 (9fc6b4312 2025-01-07)
+Lean version: Lean 4.27.0
+Python version: 3.12.1
+Node version: v24.11.1

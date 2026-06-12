@@ -6,9 +6,9 @@
 (*  Spec Reference: RESEARCH_MOBILEOS01_FOUNDATION.md Section 3.3            *)
 (* ========================================================================= *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (* ========================================================================= *)
@@ -124,7 +124,7 @@ Qed.
 (*  SECTION 5: Extended Network Security Properties                          *)
 (* ========================================================================= *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Network permission model *)
 Definition has_network_permission (app : Application) : Prop :=

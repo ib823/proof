@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ProbabilisticVerification - Isabelle/HOL Port
@@ -44,7 +46,7 @@ begin
 definition negligible :: "bool" where
   "negligible \<equiv> forall c : nat, (0 < c)%nat ->
     exists N : nat, forall n : nat, (n > N)%nat ->
-      Qabs (f n) < 1 # Pos"
+      Qabs (f n) < 1 # Pos.of_nat (Nat.pow n c)"
 
 (* comp_indist (matches Coq: Definition comp_indist) *)
 definition comp_indist :: "bool" where
@@ -54,7 +56,7 @@ definition comp_indist :: "bool" where
 
 (* xor_nat (matches Coq: Definition xor_nat) *)
 definition xor_nat :: "nat" where
-  "xor_nat \<equiv> Nat"
+  "xor_nat \<equiv> Nat.lxor a b"
 
 (* 1 (matches Coq) *)
 lemma 1: "Uniform distribution has non-negative probabilities Theorem uniform_nonneg : \<forall> n (Hn : (0 < n)%nat), all_nonneg (uniform_dist n Hn)"

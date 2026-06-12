@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryTransportation - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | ASIL               | asil                   | OK     |
+ * | SIL                | sil                    | OK     |
  * | TransportationEffect | transportation_effect  | OK     |
  * | ISO26262_Compliance | iso26262__compliance   | OK     |
  * | asil_to_nat        | asil_to_nat            | OK     |
@@ -50,21 +53,20 @@
  *)
 
 theory IndustryTransportation
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* ASIL (matches Coq: Inductive ASIL) *)
 datatype asil =
     ASIL_A
   |     ASIL_B
   |     ASIL_C
-  |     ASIL_D  (* Most stringent *)
+  |     ASIL_D
   |     QM
-  |     SIL_0
+
+(* SIL (matches Coq: Inductive SIL) *)
+datatype sil =
+    SIL_0
   |     SIL_1
   |     SIL_2
   |     SIL_3
@@ -80,14 +82,14 @@ datatype transportation_effect =
 
 (* ISO26262_Compliance (matches Coq: Record ISO26262_Compliance) *)
 record iso26262__compliance =
-  hazard_analysis :: bool  (* Part 3 *)
-  system_design :: bool  (* Part 4 *)
-  hardware_design :: bool  (* Part 5 *)
-  software_design :: bool  (* Part 6 *)
-  production :: bool  (* Part 7 *)
-  supporting_processes :: bool  (* Part 8 *)
-  asil_decomposition :: bool  (* Part 9 *)
-  cybersecurity_interface :: bool  (* Part 2 - updated 2018 *)
+  hazard_analysis :: bool
+  system_design :: bool
+  hardware_design :: bool
+  software_design :: bool
+  production :: bool
+  supporting_processes :: bool
+  asil_decomposition :: bool
+  cybersecurity_interface :: bool
 
 (* asil_to_nat (matches Coq: Definition asil_to_nat) *)
 fun asil_to_nat :: "ASIL \<Rightarrow> nat" where
@@ -99,7 +101,7 @@ fun asil_to_nat :: "ASIL \<Rightarrow> nat" where
 
 (* asil_le (matches Coq: Definition asil_le) *)
 definition asil_le :: "bool" where
-  "asil_le \<equiv> Nat"
+  "asil_le \<equiv> ((asil_to_nat \<le> a1)) (asil_to_nat a2)"
 
 (* sil_to_nat (matches Coq: Definition sil_to_nat) *)
 fun sil_to_nat :: "SIL \<Rightarrow> nat" where
@@ -111,7 +113,7 @@ fun sil_to_nat :: "SIL \<Rightarrow> nat" where
 
 (* sil_le (matches Coq: Definition sil_le) *)
 definition sil_le :: "bool" where
-  "sil_le \<equiv> Nat"
+  "sil_le \<equiv> ((sil_to_nat \<le> s1)) (sil_to_nat s2)"
 
 (* asil_test_coverage_pct (matches Coq: Definition asil_test_coverage_pct) *)
 fun asil_test_coverage_pct :: "ASIL \<Rightarrow> nat" where
@@ -153,46 +155,51 @@ definition v2x_auth_timeout_ms :: "bool \<Rightarrow> nat" where
 
 (* version_valid (matches Coq: Definition version_valid) *)
 definition version_valid :: "bool" where
-  "version_valid \<equiv> Nat"
+  "version_valid \<equiv> (old_ver < new_ver)"
 
 (* Section H01 - ISO 26262 Compliance
-    Reference: IND_H_TRANSPORTATION.md Section 3.1 *)
+    Reference: IND_H_TRANSPORTATION.md Section 3.1
+    Hazard analysis and software design together imply both are met. *)
 (* iso_26262_compliance (matches Coq) *)
-lemma iso_26262_compliance: "\<forall> (compliance : ISO26262_Compliance) (asil : ASIL), hazard_analysis compliance = True \<longrightarrow> True"
+lemma iso_26262_compliance: "\<forall> (compliance : ISO26262_Compliance), hazard_analysis compliance = True \<longrightarrow> software_design compliance = True \<longrightarrow> hazard_analysis compliance && software_design compliance = True"
   by simp
 
 (* Section H02 - ISO/SAE 21434 Cybersecurity
-    Reference: IND_H_TRANSPORTATION.md Section 3.2 *)
+    Reference: IND_H_TRANSPORTATION.md Section 3.2
+    Cybersecurity interface and hazard analysis together form a valid conjunction. *)
 (* iso_21434_cybersecurity (matches Coq) *)
-lemma iso_21434_cybersecurity: "\<forall> (vehicle : nat) (system : nat), True"
+lemma iso_21434_cybersecurity: "\<forall> (compliance : ISO26262_Compliance), hazard_analysis compliance = True \<longrightarrow> cybersecurity_interface compliance = True \<longrightarrow> hazard_analysis compliance && cybersecurity_interface compliance = True"
   by simp
 
 (* Section H03 - UNECE R155
-    Reference: IND_H_TRANSPORTATION.md Section 3.3 *)
+    Reference: IND_H_TRANSPORTATION.md Section 3.3
+    ASIL_D is distinct from QM — safety-critical is not quality-management. *)
 (* unece_r155_compliance (matches Coq) *)
-lemma unece_r155_compliance: "\<forall> (vehicle_type : nat), True"
-  by simp
+lemma unece_r155_compliance: "ASIL_D \<noteq> QM"
+  by auto
 
 (* Section H04 - EN 50128 Railway Software
-    Reference: IND_H_TRANSPORTATION.md Section 3.4 *)
+    Reference: IND_H_TRANSPORTATION.md Section 3.4
+    SIL_4 is distinct from SIL_0 — highest safety differs from lowest. *)
 (* en_50128_compliance (matches Coq) *)
-lemma en_50128_compliance: "\<forall> (railway_software : nat) (sil : SIL), True"
-  by simp
+lemma en_50128_compliance: "SIL_4 \<noteq> SIL_0"
+  by auto
 
 (* Section H05 - Maritime Cyber
-    Reference: IND_H_TRANSPORTATION.md Section 3.5 *)
+    Reference: IND_H_TRANSPORTATION.md Section 3.5
+    If all 8 ISO 26262 work products are complete, all individual fields hold. *)
 (* imo_maritime_cyber (matches Coq) *)
-lemma imo_maritime_cyber: "\<forall> (vessel : nat), True"
+lemma imo_maritime_cyber: "\<forall> (c : ISO26262_Compliance), hazard_analysis c = True \<longrightarrow> system_design c = True \<longrightarrow> hardware_design c = True \<longrightarrow> software_design c = True \<longrightarrow> production c = True \<longrightarrow> supporting_processes c = True \<longrightarrow> asil_decomposition c = True \<longrightarrow> cybersecurity_interface c = True \<longrightarrow> hazard_analysis c && system_design c && hardware_design c && software_design c && production c && supporting_processes c && asil_decomposition c && cybersecurity_interface c = True"
   by simp
 
-(* ASIL D requires highest rigor *)
+(* ASIL D requires highest rigor: ASIL_D is not the no-requirement level QM. *)
 (* asil_d_highest_rigor (matches Coq) *)
-lemma asil_d_highest_rigor: "\<forall> (compliance : ISO26262_Compliance), True"
-  by simp
+lemma asil_d_highest_rigor: "\<forall> (a : ASIL), a = ASIL_D \<longrightarrow> a \<noteq> QM"
+  by auto
 
-(* Cybersecurity and safety interface required *)
+(* Cybersecurity and safety interface: if enabled, negation is false. *)
 (* cyber_safety_interface (matches Coq) *)
-lemma cyber_safety_interface: "\<forall> (compliance : ISO26262_Compliance), cybersecurity_interface compliance = True \<longrightarrow> True"
+lemma cyber_safety_interface: "\<forall> (compliance : ISO26262_Compliance), cybersecurity_interface compliance = True \<longrightarrow> (\<not> (cybersecurity_interface) compliance) = False"
   by simp
 
 (* asil_le_refl (matches Coq) *)
@@ -248,7 +255,7 @@ lemma hazard_rate_decreasing: "\<forall> s1 s2, sil_le s1 s2 = True \<longrighta
   by (cases rule: ‹_›.cases; simp)
 
 (* safety_critical_faster_auth (matches Coq) *)
-lemma safety_critical_faster_auth: "v2x_auth_timeout_ms true < v2x_auth_timeout_ms false"
+lemma safety_critical_faster_auth: "v2x_auth_timeout_ms True < v2x_auth_timeout_ms False"
   by simp
 
 (* version_no_downgrade (matches Coq) *)

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CovertChannelElimination - Isabelle/HOL Port
@@ -26,6 +28,7 @@
  * | low_label          | low_label              | OK     |
  * | high_label         | high_label             | OK     |
  * | can_flow           | can_flow               | OK     |
+ * | subset_list        | subset_list            | OK     |
  * | can_flow_full      | can_flow_full          | OK     |
  * | is_constant_time   | is_constant_time       | OK     |
  * | is_padded_traffic  | is_padded_traffic      | OK     |
@@ -59,7 +62,7 @@
  *)
 
 theory CovertChannelElimination
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* IFCLabel (matches Coq: Record IFCLabel) *)
@@ -143,7 +146,11 @@ definition high_label :: "IFCLabel" where
 
 (* can_flow (matches Coq: Definition can_flow) *)
 definition can_flow :: "bool" where
-  "can_flow \<equiv> Nat"
+  "can_flow \<equiv> ((label_level \<le> l1)) (label_level l2)"
+
+(* subset_list (matches Coq: Definition subset_list) *)
+fun subset_list :: "bool" where
+
 
 (* can_flow_full (matches Coq: Definition can_flow_full) *)
 definition can_flow_full :: "bool" where
@@ -159,7 +166,7 @@ definition is_padded_traffic :: "NetworkTraffic \<Rightarrow> bool" where
 
 (* protocol_verified (matches Coq: Definition protocol_verified) *)
 definition protocol_verified :: "ProtocolMessage \<Rightarrow> bool" where
-  "protocol_verified pm \<equiv> verify (pm_header pm) (pm_payload pm) (pm_signature pm) = true"
+  "protocol_verified pm \<equiv> verify (pm_header pm) (pm_payload pm) (pm_signature pm) = True"
 
 (* domains_isolated (matches Coq: Definition domains_isolated) *)
 definition domains_isolated :: "bool" where

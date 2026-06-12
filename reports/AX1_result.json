@@ -1,0 +1,54 @@
+{
+  "ax_id": "AX1",
+  "status": "blocked",
+  "decl_file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+  "decl_line": 1149,
+  "files_changed": [],
+  "lemmas_added": [],
+  "new_assumptions_introduced": 0,
+  "narrow_checks": [
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "status": "pass",
+      "notes": "Baseline narrow target build passed before attempts (see /tmp/ax1_narrow_target.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "status": "fail",
+      "notes": "Strategy 1 failed at line 4787 while proving substituted declass_ok witness shape (see /tmp/ax1_strategy1.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "status": "fail",
+      "notes": "Strategy 2 reached core blocker at line 4805: missing val_rel_n ... T payload relation; only TSecret-level relation available from IH (see /tmp/ax1_strategy2.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "status": "fail",
+      "notes": "Strategy 3 theorem-conversion failed at line 1166: original statement lacks declass_ok/redex-shape needed for ST_DeclassifyValue (see /tmp/ax1_strategy3.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "status": "pass",
+      "notes": "Post-restore narrow build passed (see /tmp/ax1_restore_check.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2.v",
+      "status": "pass",
+      "notes": "Cone sanity check passed (see /tmp/ax1_check_nonint_v2.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/Declassification.v",
+      "status": "pass",
+      "notes": "Cone sanity check passed (see /tmp/ax1_check_declassification.log)."
+    },
+    {
+      "file": "02_FORMAL/coq/properties/SecurityProperties.v",
+      "status": "pass",
+      "notes": "Cone sanity check passed (see /tmp/ax1_check_securityprops.log)."
+    }
+  ],
+  "full_build_status": "fail",
+  "full_build_notes": "No residual AX1-related compile error after restore (narrow target passes). Full build still fails on pre-existing unrelated baseline error at 02_FORMAL/coq/effects/EffectGate.v:97 (EGrant typing unification), see /tmp/ax1_full_build.log.",
+  "blocker_report": "AX1 is not constructively eliminable under its current declaration shape. The unchanged statement lacks declass_ok/redex-shape premises needed to even perform ST_DeclassifyValue, and usage-site attempts show a second gap: even with declass_ok witness, available IH provides only TSecret-level relation, not required payload val_rel_n at type T. Minimal restatement needs explicit payload relation premise (or equivalent invariant), documented in reports/AX1_proof_notes.md."
+}

@@ -18,12 +18,12 @@
     Phase: 1 (Foundation)
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Wf_nat.
-Require Import Coq.Wellfounded.Lexicographic_Product.
-Require Import Coq.Relations.Relation_Operators.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Arith.Wf_nat.
+From Stdlib Require Import Wellfounded.Lexicographic_Product.
+From Stdlib Require Import Relations.Relation_Operators.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.properties.TypeMeasure.
@@ -240,6 +240,180 @@ Proof.
   - apply IHa. exact Ha.
   - destruct Hb_case as [Heq_a Hb]. rewrite Heq_a. apply IHb. exact Hb.
   - destruct Hc_case as [Heq_a [Heq_b Hc]]. rewrite Heq_a. rewrite Heq_b. apply IHc. exact Hc.
+Qed.
+
+(** ** Additional Lex Order Properties *)
+
+(** lex_lt is transitive *)
+Lemma lex_lt_trans : forall p1 p2 p3,
+  lex_lt p1 p2 -> lex_lt p2 p3 -> lex_lt p1 p3.
+Proof.
+  intros [a1 b1] [a2 b2] [a3 b3] H12 H23.
+  unfold lex_lt in *.
+  destruct H12 as [Ha | [Heq Hb]].
+  - destruct H23 as [Ha' | [Heq' _]].
+    + left. lia.
+    + left. lia.
+  - subst. destruct H23 as [Ha' | [Heq' Hb']].
+    + left. exact Ha'.
+    + subst. right. split; [reflexivity | lia].
+Qed.
+
+(** lex_lt is irreflexive *)
+Lemma lex_lt_irrefl : forall p, ~ lex_lt p p.
+Proof.
+  intros [a b]. unfold lex_lt. lia.
+Qed.
+
+(** step_ty_lt is transitive *)
+Lemma step_ty_lt_trans : forall p1 p2 p3,
+  step_ty_lt p1 p2 -> step_ty_lt p2 p3 -> step_ty_lt p1 p3.
+Proof.
+  intros [n1 T1] [n2 T2] [n3 T3] H12 H23.
+  unfold step_ty_lt in *.
+  destruct H12 as [Hn | [Heq Ht]].
+  - destruct H23 as [Hn' | [Heq' _]].
+    + left. lia.
+    + left. lia.
+  - subst. destruct H23 as [Hn' | [Heq' Ht']].
+    + left. exact Hn'.
+    + subst. right. split; [reflexivity | lia].
+Qed.
+
+(** step_ty_lt is irreflexive *)
+Lemma step_ty_lt_irrefl : forall p, ~ step_ty_lt p p.
+Proof.
+  intros [n T]. unfold step_ty_lt. lia.
+Qed.
+
+(** triple_lt is transitive *)
+Lemma triple_lt_trans : forall p1 p2 p3,
+  triple_lt p1 p2 -> triple_lt p2 p3 -> triple_lt p1 p3.
+Proof.
+  intros [[a1 b1] c1] [[a2 b2] c2] [[a3 b3] c3] H12 H23.
+  unfold triple_lt in *.
+  destruct H12 as [Ha | [[Hae Hb] | [Hae [Hbe Hc]]]].
+  - destruct H23 as [Ha' | [[Hae' _] | [Hae' _]]];
+    left; lia.
+  - subst. destruct H23 as [Ha' | [[Hae' Hb'] | [Hae' [Hbe' Hc']]]].
+    + left. exact Ha'.
+    + subst. right. left. split; [reflexivity | lia].
+    + subst. right. left. split; [reflexivity | lia].
+  - subst. destruct H23 as [Ha' | [[Hae' Hb'] | [Hae' [Hbe' Hc']]]].
+    + left. exact Ha'.
+    + subst. right. left. split; [reflexivity | exact Hb'].
+    + subst. right. right. split; [reflexivity | split; [reflexivity | lia]].
+Qed.
+
+(** triple_lt is irreflexive *)
+Lemma triple_lt_irrefl : forall p, ~ triple_lt p p.
+Proof.
+  intros [[a b] c]. unfold triple_lt. lia.
+Qed.
+
+(** TList component is smaller *)
+Lemma step_ty_lt_list : forall n T,
+  step_ty_lt (n, T) (n, TList T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TOption component is smaller *)
+Lemma step_ty_lt_option : forall n T,
+  step_ty_lt (n, T) (n, TOption T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TRef component is smaller *)
+Lemma step_ty_lt_ref : forall n T sl,
+  step_ty_lt (n, T) (n, TRef T sl).
+Proof.
+  intros. apply step_ty_lt_ty. apply ty_size_ref_content.
+Qed.
+
+(** TLabeled component is smaller *)
+Lemma step_ty_lt_labeled : forall n T sl,
+  step_ty_lt (n, T) (n, TLabeled T sl).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** ** Security Type Component Decreases *)
+
+(** TSecret inner type is smaller *)
+Lemma step_ty_lt_secret : forall n T,
+  step_ty_lt (n, T) (n, TSecret T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TTainted inner type is smaller *)
+Lemma step_ty_lt_tainted : forall n T src,
+  step_ty_lt (n, T) (n, TTainted T src).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TSanitized inner type is smaller *)
+Lemma step_ty_lt_sanitized : forall n T san,
+  step_ty_lt (n, T) (n, TSanitized T san).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TConstantTime inner type is smaller *)
+Lemma step_ty_lt_constant_time : forall n T,
+  step_ty_lt (n, T) (n, TConstantTime T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TZeroizing inner type is smaller *)
+Lemma step_ty_lt_zeroizing : forall n T,
+  step_ty_lt (n, T) (n, TZeroizing T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** ** Bottom Properties *)
+
+(** Nothing is lexicographically less than (0, 0) *)
+Lemma lex_lt_zero_zero_absurd : forall p,
+  lex_lt p (0, 0) -> False.
+Proof.
+  intros [a b]. unfold lex_lt. lia.
+Qed.
+
+(** Nothing is less than (0, T) when ty_size T = 0 *)
+Lemma step_ty_lt_zero_absurd : forall T T',
+  ty_size T = 0 ->
+  step_ty_lt (0, T') (0, T) -> False.
+Proof.
+  intros T T' Hsize. unfold step_ty_lt. lia.
+Qed.
+
+(** ** Triple Order Component Decrease Lemmas *)
+
+(** First component strictly decreases in triple order *)
+Lemma triple_lt_first : forall a a' b b' c c',
+  a' < a -> triple_lt (a', b', c') (a, b, c).
+Proof.
+  intros. unfold triple_lt. left. exact H.
+Qed.
+
+(** Second component strictly decreases (first equal) in triple order *)
+Lemma triple_lt_second : forall a b b' c c',
+  b' < b -> triple_lt (a, b', c') (a, b, c).
+Proof.
+  intros. unfold triple_lt. right. left. split; [reflexivity | exact H].
+Qed.
+
+(** Third component strictly decreases (first two equal) in triple order *)
+Lemma triple_lt_third : forall a b c c',
+  c' < c -> triple_lt (a, b, c') (a, b, c).
+Proof.
+  intros. unfold triple_lt. right. right. repeat split; auto.
 Qed.
 
 (** End of LexOrder.v *)

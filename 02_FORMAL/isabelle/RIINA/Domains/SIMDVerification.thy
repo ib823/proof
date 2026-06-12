@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SIMDVerification - Isabelle/HOL Port
@@ -27,8 +29,13 @@
  * | has_carried_dependency | has_carried_dependency | OK     |
  * | vectorizable       | vectorizable           | OK     |
  * | indices_in_bounds  | indices_in_bounds      | OK     |
+ * | gather             | gather                 | OK     |
  * | list_to_simd       | list_to_simd           | OK     |
  * | aligned_load       | aligned_load           | OK     |
+ * | list_add           | list_add               | OK     |
+ * | list_mul           | list_mul               | OK     |
+ * | list_cmp           | list_cmp               | OK     |
+ * | scalar_exec_add    | scalar_exec_add        | OK     |
  * | all_true_mask      | all_true_mask          | OK     |
  * | all_false_mask     | all_false_mask         | OK     |
  * | PERF_003_01_simd_add_equivalence | PERF_003_01_simd_add_equivalence | OK     |
@@ -56,7 +63,7 @@
  *)
 
 theory SIMDVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MemResult (matches Coq: Inductive MemResult) *)
@@ -80,35 +87,36 @@ definition scalar_mul :: "nat" where
 
 (* scalar_cmp (matches Coq: Definition scalar_cmp) *)
 definition scalar_cmp :: "bool" where
-  "scalar_cmp \<equiv> Nat"
+  "scalar_cmp \<equiv> (a \<le> b)"
 
 (* simd_add (matches Coq: Definition simd_add) *)
 definition simd_add :: "SIMDVec" where
-  "simd_add \<equiv> Vector"
+  "simd_add \<equiv> Vector.map2 scalar_add a b"
 
 (* simd_mul (matches Coq: Definition simd_mul) *)
 definition simd_mul :: "SIMDVec" where
-  "simd_mul \<equiv> Vector"
+  "simd_mul \<equiv> Vector.map2 scalar_mul a b"
 
 (* simd_cmp (matches Coq: Definition simd_cmp) *)
 definition simd_cmp :: "SIMDBoolVec" where
-  "simd_cmp \<equiv> Vector"
+  "simd_cmp \<equiv> Vector.map2 scalar_cmp a b"
 
 (* simd_broadcast (matches Coq: Definition simd_broadcast) *)
 definition simd_broadcast :: "nat \<Rightarrow> SIMDVec" where
-  "simd_broadcast x \<equiv> Vector"
+  "simd_broadcast x \<equiv> Vector.const x VWidth"
 
 (* simd_reduce (matches Coq: Definition simd_reduce) *)
 definition simd_reduce :: "nat \<Rightarrow> SIMDVec \<Rightarrow> nat" where
-  "simd_reduce init v \<equiv> Vector"
+  "simd_reduce init v \<equiv> Vector.fold_left op init v"
 
 (* is_aligned (matches Coq: Definition is_aligned) *)
 definition is_aligned :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "is_aligned addr alignment \<equiv> Nat"
+  "is_aligned addr alignment \<equiv> ((Nat.modulo = addr) alignment) 0"
 
 (* simd_select (matches Coq: Definition simd_select) *)
 definition simd_select :: "SIMDMask \<Rightarrow> SIMDVec" where
-  "simd_select mask \<equiv> Vector"
+  "simd_select mask \<equiv> Vector.map2 (fun (m : bool) (p : nat * nat) => if m then snd p else fst p)
+    mask (Vector.map2 (fun x y => (x, y)) old new_val)"
 
 (* simd_masked_add (matches Coq: Definition simd_masked_add) *)
 definition simd_masked_add :: "SIMDMask \<Rightarrow> SIMDVec" where
@@ -116,32 +124,67 @@ definition simd_masked_add :: "SIMDMask \<Rightarrow> SIMDVec" where
 
 (* has_carried_dependency (matches Coq: Definition has_carried_dependency) *)
 definition has_carried_dependency :: "Loop \<Rightarrow> bool" where
-  "has_carried_dependency l \<equiv> existsb (fun w => existsb (Nat"
+  "has_carried_dependency l \<equiv> existsb (fun w => existsb ((w) = (loop_body_reads) l)) (loop_body_writes l)"
 
 (* vectorizable (matches Coq: Definition vectorizable) *)
 definition vectorizable :: "Loop \<Rightarrow> bool" where
-  "vectorizable l \<equiv> negb (has_carried_dependency l)"
+  "vectorizable l \<equiv> (\<not> (has_carried_dependency) l)"
 
 (* indices_in_bounds (matches Coq: Definition indices_in_bounds) *)
 definition indices_in_bounds :: "nat \<Rightarrow> bool" where
-  "indices_in_bounds bound \<equiv> forallb (fun i => Nat"
+  "indices_in_bounds bound \<equiv> forallb (fun i => (i < bound)) indices"
+
+(* gather (matches Coq: Definition gather) *)
+definition gather :: "option SIMDVec" where
+  "gather \<equiv> let check := Vector.fold_left 
+    (fun acc i => acc \<and> ((i < (length) mem))) 
+    True indices in
+  if check then
+    Some (Vector.map (fun i => List.nth i mem 0) indices)
+  else
+    None"
 
 (* list_to_simd (matches Coq: Definition list_to_simd) *)
 definition list_to_simd :: "SIMDVec" where
-  "list_to_simd \<equiv> let a := List"
+  "list_to_simd \<equiv> let a := List.nth 0 l 0 in
+  let b := List.nth 1 l 0 in
+  let c := List.nth 2 l 0 in
+  let d := List.nth 3 l 0 in
+  Vector.cons nat a 3 (Vector.cons nat b 2 (Vector.cons nat c 1 (Vector.cons nat d 0 (Vector.nil nat))))"
 
 (* aligned_load (matches Coq: Definition aligned_load) *)
 definition aligned_load :: "nat \<Rightarrow> MemResult" where
   "aligned_load addr \<equiv> if is_aligned addr VWidth then
-    if Nat"
+    if ((addr \<le> +) VWidth) (length mem) then
+      MemOK (list_to_simd (firstn VWidth (skipn addr mem)))
+    else
+      MemUB
+  else
+    MemUB"
+
+(* list_add (matches Coq: Definition list_add) *)
+definition list_add :: "list nat" where
+  "list_add \<equiv> List.map (fun p => fst p + snd p) (combine a b)"
+
+(* list_mul (matches Coq: Definition list_mul) *)
+definition list_mul :: "list nat" where
+  "list_mul \<equiv> List.map (fun p => fst p * snd p) (combine a b)"
+
+(* list_cmp (matches Coq: Definition list_cmp) *)
+definition list_cmp :: "list bool" where
+  "list_cmp \<equiv> List.map (fun p => ((fst \<le> p)) (snd p)) (combine a b)"
+
+(* scalar_exec_add (matches Coq: Definition scalar_exec_add) *)
+definition scalar_exec_add :: "list nat" where
+  "scalar_exec_add \<equiv> List.map (fun p => fst p + snd p) (combine a b)"
 
 (* all_true_mask (matches Coq: Definition all_true_mask) *)
 definition all_true_mask :: "SIMDMask" where
-  "all_true_mask \<equiv> Vector"
+  "all_true_mask \<equiv> Vector.const True VWidth"
 
 (* all_false_mask (matches Coq: Definition all_false_mask) *)
 definition all_false_mask :: "SIMDMask" where
-  "all_false_mask \<equiv> Vector"
+  "all_false_mask \<equiv> Vector.const False VWidth"
 
 (* PERF_003_01_simd_add_equivalence (matches Coq) *)
 lemma PERF_003_01_simd_add_equivalence: "\<forall> (a b : SIMDVec), simd_add a b = Vector.map2 Nat.add a b"
@@ -152,7 +195,7 @@ lemma PERF_003_02_simd_mul_equivalence: "\<forall> (a b : SIMDVec), simd_mul a b
   by simp
 
 (* PERF_003_03_simd_cmp_equivalence (matches Coq) *)
-lemma PERF_003_03_simd_cmp_equivalence: "\<forall> (a b : SIMDVec), simd_cmp a b = Vector.map2 Nat.leb a b"
+lemma PERF_003_03_simd_cmp_equivalence: "\<forall> (a b : SIMDVec), simd_cmp a b = Vector.map2 (a \<le> b)"
   by simp
 
 (* PERF_003_04_simd_shuffle_correctness (matches Coq) *)
@@ -160,7 +203,7 @@ lemma PERF_003_04_simd_shuffle_correctness: "\<forall> (v : SIMDVec) (perm : Vec
   by simp
 
 (* PERF_003_05_simd_alignment_requirement (matches Coq) *)
-lemma PERF_003_05_simd_alignment_requirement: "\<forall> (mem : list nat) (addr : nat), (\<exists> v, aligned_load mem addr = MemOK v) <-> (is_aligned addr VWidth = True \<and> Nat.leb (addr + VWidth) (length mem) = True)"
+lemma PERF_003_05_simd_alignment_requirement: "\<forall> (mem : list nat) (addr : nat), (\<exists> v, aligned_load mem addr = MemOK v) <-> (is_aligned addr VWidth = True \<and> ((addr \<le> +) VWidth) (length mem) = True)"
   by simp
 
 (* PERF_003_06_simd_lane_independence (matches Coq) *)
@@ -176,7 +219,7 @@ lemma PERF_003_08_simd_broadcast_correctness: "\<forall> (x : nat) (i : Fin.t VW
   by auto
 
 (* fold_and_all_true (matches Coq) *)
-lemma fold_and_all_true: "\<forall> {n} (v : Vector.t nat n) (f : nat \<longrightarrow> bool), (\<forall> i, f (Vector.nth v i) = True) \<longrightarrow> Vector.fold_left (fun acc x => acc && f x) true v = True"
+lemma fold_and_all_true: "\<forall> {n} (v : Vector.t nat n) (f : nat \<longrightarrow> bool), (\<forall> i, f (Vector.nth v i) = True) \<longrightarrow> Vector.fold_left (fun acc x => acc && f x) True v = True"
   by simp
 
 (* PERF_003_09_simd_gather_safety (matches Coq) *)

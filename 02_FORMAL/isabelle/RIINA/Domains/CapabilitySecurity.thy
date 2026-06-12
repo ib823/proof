@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CapabilitySecurity - Isabelle/HOL Port
@@ -26,6 +28,7 @@
  * | perm_leq           | perm_leq               | OK     |
  * | perm_lt            | perm_lt                | OK     |
  * | perm_eq            | perm_eq                | OK     |
+ * | perm_in            | perm_in                | OK     |
  * | mem_bounds_check   | mem_bounds_check       | OK     |
  * | mem_has_perm       | mem_has_perm           | OK     |
  * | mem_can_read       | mem_can_read           | OK     |
@@ -161,12 +164,8 @@
  *)
 
 theory CapabilitySecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* Permission (matches Coq: Inductive Permission) *)
 datatype permission =
@@ -179,8 +178,9 @@ datatype permission =
 
 (* DelegationType (matches Coq: Inductive DelegationType) *)
 datatype delegation_type =
-    DelegFull  (* Full delegation - delegate can re-delegate *)
-  |     DelegRestricted  (* Delegate cannot re-delegate *)
+    DelegFull
+  |     DelegRestricted
+  |     DelegOnce
 
 (* Capability (matches Coq: Record Capability) *)
 record capability =
@@ -210,11 +210,11 @@ record capability_config =
 
 (* MemCapability (matches Coq: Record MemCapability) *)
 record mem_capability =
-  mem_base :: nat  (* Base address *)
-  mem_length :: nat  (* Length of region *)
-  mem_perms :: PermSet  (* Permissions *)
-  mem_sealed :: bool  (* Whether capability is sealed *)
-  mem_valid :: bool  (* Whether capability is valid (not revoked) *)
+  mem_base :: nat
+  mem_length :: nat
+  mem_perms :: PermSet
+  mem_sealed :: bool
+  mem_valid :: bool
 
 (* RevocationTable (matches Coq: Record RevocationTable) *)
 record revocation_table =
@@ -233,11 +233,11 @@ record confinement_policy =
 
 (* Delegation (matches Coq: Record Delegation) *)
 record delegation =
-  del_from :: nat  (* Delegator principal ID *)
-  del_to :: nat  (* Delegatee principal ID *)
-  del_cap_id :: nat  (* Capability being delegated *)
+  del_from :: nat
+  del_to :: nat
+  del_cap_id :: nat
   del_type :: DelegationType
-  del_active :: bool  (* Whether delegation is still active *)
+  del_active :: bool
 
 (* perm_level (matches Coq: Definition perm_level) *)
 fun perm_level :: "Permission \<Rightarrow> nat" where
@@ -250,35 +250,40 @@ fun perm_level :: "Permission \<Rightarrow> nat" where
 
 (* perm_leq (matches Coq: Definition perm_leq) *)
 definition perm_leq :: "bool" where
-  "perm_leq \<equiv> Nat"
+  "perm_leq \<equiv> ((perm_level \<le> p1)) (perm_level p2)"
 
 (* perm_lt (matches Coq: Definition perm_lt) *)
 definition perm_lt :: "bool" where
-  "perm_lt \<equiv> Nat"
+  "perm_lt \<equiv> ((perm_level < p1)) (perm_level p2)"
 
 (* perm_eq (matches Coq: Definition perm_eq) *)
 definition perm_eq :: "bool" where
-  "perm_eq \<equiv> Nat"
+  "perm_eq \<equiv> ((perm_level = p1)) (perm_level p2)"
+
+(* perm_in (matches Coq: Definition perm_in) *)
+fun perm_in :: "Permission \<Rightarrow> PermSet \<Rightarrow> bool" where
+
 
 (* mem_bounds_check (matches Coq: Definition mem_bounds_check) *)
 definition mem_bounds_check :: "MemCapability \<Rightarrow> nat \<Rightarrow> bool" where
-  "mem_bounds_check mc addr \<equiv> andb (Nat"
+  "mem_bounds_check mc addr \<equiv> (((\<and> \<le> (mem_base)) mc) addr)
+       ((addr < (mem_base) mc + mem_length mc))"
 
 (* mem_has_perm (matches Coq: Definition mem_has_perm) *)
 definition mem_has_perm :: "MemCapability \<Rightarrow> Permission \<Rightarrow> bool" where
-  "mem_has_perm mc p \<equiv> andb (mem_valid mc) (perm_in p (mem_perms mc))"
+  "mem_has_perm mc p \<equiv> (mem_valid mc \<and> perm_in p (mem_perms mc))"
 
 (* mem_can_read (matches Coq: Definition mem_can_read) *)
 definition mem_can_read :: "MemCapability \<Rightarrow> nat \<Rightarrow> bool" where
-  "mem_can_read mc addr \<equiv> andb (mem_bounds_check mc addr) (mem_has_perm mc Read)"
+  "mem_can_read mc addr \<equiv> (mem_bounds_check mc addr \<and> mem_has_perm mc Read)"
 
 (* mem_can_write (matches Coq: Definition mem_can_write) *)
 definition mem_can_write :: "MemCapability \<Rightarrow> nat \<Rightarrow> bool" where
-  "mem_can_write mc addr \<equiv> andb (mem_bounds_check mc addr) (mem_has_perm mc Write)"
+  "mem_can_write mc addr \<equiv> (mem_bounds_check mc addr \<and> mem_has_perm mc Write)"
 
 (* mem_can_execute (matches Coq: Definition mem_can_execute) *)
 definition mem_can_execute :: "MemCapability \<Rightarrow> nat \<Rightarrow> bool" where
-  "mem_can_execute mc addr \<equiv> andb (mem_bounds_check mc addr) (mem_has_perm mc Execute)"
+  "mem_can_execute mc addr \<equiv> (mem_bounds_check mc addr \<and> mem_has_perm mc Execute)"
 
 (* perms_subset (matches Coq: Definition perms_subset) *)
 definition perms_subset :: "bool" where
@@ -286,8 +291,10 @@ definition perms_subset :: "bool" where
 
 (* derive_mem_cap (matches Coq: Definition derive_mem_cap) *)
 definition derive_mem_cap :: "bool" where
-  "derive_mem_cap \<equiv> andb (andb (andb
-    (Nat"
+  "derive_mem_cap \<equiv> (((andb \<and> (Nat.leb) (mem_base parent \<and> mem_base child))
+    (((mem_base \<le> child) + mem_length child) (mem_base parent + mem_length parent)))
+    (perms_subset (mem_perms child) (mem_perms parent)))
+    ((\<not> (mem_sealed) parent))"
 
 (* is_revoked (matches Coq: Definition is_revoked) *)
 definition is_revoked :: "RevocationTable \<Rightarrow> nat \<Rightarrow> bool" where
@@ -295,17 +302,18 @@ definition is_revoked :: "RevocationTable \<Rightarrow> nat \<Rightarrow> bool" 
 
 (* revoke_capability (matches Coq: Definition revoke_capability) *)
 definition revoke_capability :: "RevocationTable \<Rightarrow> nat \<Rightarrow> RevocationTable" where
-  "revoke_capability rt cap_id \<equiv> mkRevTable ((cap_id, true) :: rev_entries rt)"
+  "revoke_capability rt cap_id \<equiv> mkRevTable ((cap_id, True) :: rev_entries rt)"
 
 (* has_capability (matches Coq: Definition has_capability) *)
 definition has_capability :: "Principal \<Rightarrow> nat \<Rightarrow> bool" where
-  "has_capability p cap_id \<equiv> existsb (Nat"
+  "has_capability p cap_id \<equiv> existsb ((cap_id) = (prin_capabilities) p)"
 
 (* confinement_enforced (matches Coq: Definition confinement_enforced) *)
 definition confinement_enforced :: "ConfinementPolicy \<Rightarrow> bool" where
-  "confinement_enforced cp \<equiv> andb (conf_no_ambient cp) (andb (conf_explicit_only cp) (conf_no_escalation cp))"
+  "confinement_enforced cp \<equiv> (conf_no_ambient cp \<and> ((conf_explicit_only \<and> cp)) (conf_no_escalation cp))"
 
-(* can_redelegate - complex match, manual review needed *)
+(* can_redelegate - complex match, needs manual translation *)
+definition can_redelegate :: "bool" where "can_redelegate = undefined"
 
 (* capability_sound (matches Coq: Definition capability_sound) *)
 definition capability_sound :: "Capability \<Rightarrow> bool" where
@@ -325,15 +333,15 @@ definition capability_secure :: "CapabilityConfig \<Rightarrow> bool" where
 
 (* riina_cap (matches Coq: Definition riina_cap) *)
 definition riina_cap :: "Capability" where
-  "riina_cap \<equiv> mkCapability true true true true"
+  "riina_cap \<equiv> mkCapability True True True True"
 
 (* riina_ocap (matches Coq: Definition riina_ocap) *)
 definition riina_ocap :: "ObjectCapability" where
-  "riina_ocap \<equiv> mkOCap true true true true"
+  "riina_ocap \<equiv> mkOCap True True True True"
 
 (* riina_lp (matches Coq: Definition riina_lp) *)
 definition riina_lp :: "LeastPrivilege" where
-  "riina_lp \<equiv> mkLeastPriv true true true"
+  "riina_lp \<equiv> mkLeastPriv True True True"
 
 (* riina_cap_config (matches Coq: Definition riina_cap_config) *)
 definition riina_cap_config :: "CapabilityConfig" where
@@ -341,11 +349,11 @@ definition riina_cap_config :: "CapabilityConfig" where
 
 (* riina_confinement (matches Coq: Definition riina_confinement) *)
 definition riina_confinement :: "ConfinementPolicy" where
-  "riina_confinement \<equiv> mkConfinement true true true"
+  "riina_confinement \<equiv> mkConfinement True True True"
 
 (* riina_mem_cap (matches Coq: Definition riina_mem_cap) *)
 definition riina_mem_cap :: "MemCapability" where
-  "riina_mem_cap \<equiv> mkMemCap 0 1024 [Read; Write] false true"
+  "riina_mem_cap \<equiv> mkMemCap 0 1024 [Read; Write] False True"
 
 (* empty_rev_table (matches Coq: Definition empty_rev_table) *)
 definition empty_rev_table :: "RevocationTable" where
@@ -353,7 +361,7 @@ definition empty_rev_table :: "RevocationTable" where
 
 (* riina_delegation (matches Coq: Definition riina_delegation) *)
 definition riina_delegation :: "Delegation" where
-  "riina_delegation \<equiv> mkDelegation 0 1 100 DelegRestricted true"
+  "riina_delegation \<equiv> mkDelegation 0 1 100 DelegRestricted True"
 
 (* ============================================================================
     SECTION 1: BASIC LEMMAS
@@ -371,11 +379,11 @@ lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = 
   by (cases rule: ‹_›.cases; simp)
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, negb b = False <-> b = True"
+lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
   by (cases rule: ‹_›.cases; simp)
 
 (* ============================================================================
@@ -535,7 +543,7 @@ lemma CAP_038_unforgeable_mem_cap: "mem_valid riina_mem_cap = True"
   by simp
 
 (* CAP_039_sealed_cap_unforgeable (matches Coq) *)
-lemma CAP_039_sealed_cap_unforgeable: "\<forall> mc, mem_sealed mc = True \<longrightarrow> negb (mem_sealed mc) = False"
+lemma CAP_039_sealed_cap_unforgeable: "\<forall> mc, mem_sealed mc = True \<longrightarrow> (\<not> (mem_sealed) mc) = False"
   by simp
 
 (* CAP_040_valid_cap_required (matches Coq) *)
@@ -572,11 +580,11 @@ lemma CAP_044_derive_from_self: "\<forall> mc, mem_sealed mc = False \<longright
   by auto
 
 (* CAP_045_derive_cannot_exceed_parent (matches Coq) *)
-lemma CAP_045_derive_cannot_exceed_parent: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> Nat.leb (mem_base parent) (mem_base child) = True"
+lemma CAP_045_derive_cannot_exceed_parent: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> ((mem_base \<le> parent)) (mem_base child) = True"
   by auto
 
 (* CAP_046_derive_bounds_contained (matches Coq) *)
-lemma CAP_046_derive_bounds_contained: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> Nat.leb (mem_base child + mem_length child) (mem_base parent + mem_length parent) = True"
+lemma CAP_046_derive_bounds_contained: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> ((mem_base \<le> child) + mem_length child) (mem_base parent + mem_length parent) = True"
   by auto
 
 (* CAP_047_derive_perms_subset (matches Coq) *)
@@ -612,7 +620,7 @@ lemma CAP_054_monotonic_no_escalation: "\<forall> c, capability_sound c = True \
   by auto
 
 (* CAP_055_derive_preserves_validity (matches Coq) *)
-lemma CAP_055_derive_preserves_validity: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> mem_valid parent = True \<longrightarrow> mem_valid child = True \<longrightarrow> True"
+lemma CAP_055_derive_preserves_validity: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> perms_subset (mem_perms child) (mem_perms parent) = True"
   by auto
 
 (* CAP_056_empty_not_revoked (matches Coq) *)
@@ -699,15 +707,15 @@ lemma CAP_075_confined_no_escalate: "\<forall> cp, confinement_enforced cp = Tru
   by auto
 
 (* CAP_076_full_can_redelegate (matches Coq) *)
-lemma CAP_076_full_can_redelegate: "can_redelegate (mkDelegation 0 1 100 DelegFull true) = True"
+lemma CAP_076_full_can_redelegate: "can_redelegate (mkDelegation 0 1 100 DelegFull True) = True"
   by simp
 
 (* CAP_077_restricted_cannot_redelegate (matches Coq) *)
-lemma CAP_077_restricted_cannot_redelegate: "can_redelegate (mkDelegation 0 1 100 DelegRestricted true) = False"
+lemma CAP_077_restricted_cannot_redelegate: "can_redelegate (mkDelegation 0 1 100 DelegRestricted True) = False"
   by simp
 
 (* CAP_078_once_cannot_redelegate (matches Coq) *)
-lemma CAP_078_once_cannot_redelegate: "can_redelegate (mkDelegation 0 1 100 DelegOnce true) = False"
+lemma CAP_078_once_cannot_redelegate: "can_redelegate (mkDelegation 0 1 100 DelegOnce True) = False"
   by simp
 
 (* CAP_079_inactive_delegation (matches Coq) *)
@@ -742,15 +750,15 @@ lemma CAP_085_delegation_type_once: "\<forall> d, del_type d = DelegOnce \<longr
     SECTION 17: MEMORY CAPABILITY THEOREMS (CAP_086 - CAP_100)
     ============================================================================ *)
 (* CAP_086_bounds_check_in_range (matches Coq) *)
-lemma CAP_086_bounds_check_in_range: "\<forall> base len addr, base \<le> addr \<longrightarrow> addr < base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] false true) addr = True"
+lemma CAP_086_bounds_check_in_range: "\<forall> base len addr, base \<le> addr \<longrightarrow> addr < base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = True"
   by auto
 
 (* CAP_087_bounds_check_out_of_range_low (matches Coq) *)
-lemma CAP_087_bounds_check_out_of_range_low: "\<forall> base len addr, addr < base \<longrightarrow> mem_bounds_check (mkMemCap base len [] false true) addr = False"
+lemma CAP_087_bounds_check_out_of_range_low: "\<forall> base len addr, addr < base \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = False"
   by simp
 
 (* CAP_088_bounds_check_out_of_range_high (matches Coq) *)
-lemma CAP_088_bounds_check_out_of_range_high: "\<forall> base len addr, addr \<ge> base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] false true) addr = False"
+lemma CAP_088_bounds_check_out_of_range_high: "\<forall> base len addr, addr \<ge> base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = False"
   by simp
 
 (* CAP_089_riina_mem_cap_valid (matches Coq) *)
@@ -786,7 +794,7 @@ lemma CAP_096_sealed_cannot_derive: "\<forall> mc child, mem_sealed mc = True \<
   by auto
 
 (* CAP_097_empty_perms_no_access (matches Coq) *)
-lemma CAP_097_empty_perms_no_access: "\<forall> base len, mem_has_perm (mkMemCap base len [] false true) Read = False"
+lemma CAP_097_empty_perms_no_access: "\<forall> base len, mem_has_perm (mkMemCap base len [] False True) Read = False"
   by simp
 
 (* CAP_098_mem_cap_complete (matches Coq) *)
@@ -794,7 +802,7 @@ lemma CAP_098_mem_cap_complete: "\<forall> mc, mem_valid mc = True \<longrightar
   by auto
 
 (* CAP_099_zero_length_no_access (matches Coq) *)
-lemma CAP_099_zero_length_no_access: "\<forall> base addr, addr \<ge> base \<longrightarrow> mem_bounds_check (mkMemCap base 0 [] false true) addr = False"
+lemma CAP_099_zero_length_no_access: "\<forall> base addr, addr \<ge> base \<longrightarrow> mem_bounds_check (mkMemCap base 0 [] False True) addr = False"
   by simp
 
 (* CAP_100_security_complete (matches Coq) *)

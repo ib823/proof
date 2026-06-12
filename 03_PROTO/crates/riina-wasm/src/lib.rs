@@ -112,17 +112,18 @@ fn json_err(msg: &str) -> String {
 // Pipeline helpers
 // ---------------------------------------------------------------------------
 
-fn do_parse(source: &str) -> Result<riina_types::Expr, String> {
+fn do_parse(source: &str) -> Result<riina_types::Program, String> {
     let mut parser = riina_parser::Parser::new(source);
-    let program = parser.parse_program().map_err(|e| format!("Parse error: {e:?}"))?;
-    Ok(program.desugar())
+    let program = parser
+        .parse_program()
+        .map_err(|e| format!("Parse error: {e:?}"))?;
+    Ok(program)
 }
 
-fn do_typecheck(expr: &riina_types::Expr) -> Result<String, String> {
-    let ctx = riina_typechecker::register_builtin_types(&riina_typechecker::Context::new());
-    match riina_typechecker::type_check(&ctx, expr) {
-        Ok((ty, eff)) => Ok(format!("Type: {ty:?}, Effect: {eff:?}")),
-        Err(e) => Err(format!("Type error: {e:?}")),
+fn do_typecheck(program: &riina_types::Program) -> Result<(riina_types::Expr, String), String> {
+    match riina_typechecker::check_program(program) {
+        Ok((expr, ty, eff)) => Ok((expr, format!("Type: {ty:?}, Effect: {eff:?}"))),
+        Err(e) => Err(format!("Type error: {e}")),
     }
 }
 
@@ -145,8 +146,8 @@ fn do_compile_c(expr: &riina_types::Expr) -> Result<String, String> {
 pub extern "C" fn riina_check(ptr: *const u8, len: usize) -> *mut u8 {
     let result = (|| -> Result<String, String> {
         let source = read_input(ptr, len)?;
-        let expr = do_parse(&source)?;
-        let ty_info = do_typecheck(&expr)?;
+        let program = do_parse(&source)?;
+        let (_expr, ty_info) = do_typecheck(&program)?;
         Ok(ty_info)
     })();
 
@@ -163,8 +164,8 @@ pub extern "C" fn riina_check(ptr: *const u8, len: usize) -> *mut u8 {
 pub extern "C" fn riina_emit_c(ptr: *const u8, len: usize) -> *mut u8 {
     let result = (|| -> Result<String, String> {
         let source = read_input(ptr, len)?;
-        let expr = do_parse(&source)?;
-        let _ = do_typecheck(&expr)?;
+        let program = do_parse(&source)?;
+        let (expr, _ty_info) = do_typecheck(&program)?;
         do_compile_c(&expr)
     })();
 
@@ -181,8 +182,8 @@ pub extern "C" fn riina_emit_c(ptr: *const u8, len: usize) -> *mut u8 {
 pub extern "C" fn riina_emit_ir(ptr: *const u8, len: usize) -> *mut u8 {
     let result = (|| -> Result<String, String> {
         let source = read_input(ptr, len)?;
-        let expr = do_parse(&source)?;
-        let _ = do_typecheck(&expr)?;
+        let program = do_parse(&source)?;
+        let (expr, _ty_info) = do_typecheck(&program)?;
         do_compile_ir(&expr)
     })();
 
@@ -191,4 +192,27 @@ pub extern "C" fn riina_emit_ir(ptr: *const u8, len: usize) -> *mut u8 {
         Err(e) => json_err(&e),
     };
     write_output(&json)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{do_parse, do_typecheck};
+
+    #[test]
+    fn do_typecheck_rejects_missing_capability() {
+        let program = do_parse(
+            "fungsi perlu_rangkaian() -> Nombor kesan Rangkaian { require Rangkaian 1 }\nperlu_rangkaian()",
+        )
+        .expect("program should parse");
+        let err = do_typecheck(&program).expect_err("missing grant should be rejected");
+        assert!(err.contains("Capability violation"));
+    }
+
+    #[test]
+    fn do_typecheck_rejects_invalid_declassification() {
+        let program =
+            do_parse("declassify classify 42 with prove classify 7").expect("program should parse");
+        let err = do_typecheck(&program).expect_err("invalid declassification should fail");
+        assert!(err.contains("Invalid declassification"));
+    }
 }

@@ -24,8 +24,13 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
 
     // Recurse into children
     match expr {
-        Expr::Unit | Expr::Bool(_) | Expr::Int(_) | Expr::String(_)
-        | Expr::Var(_) | Expr::Loc(_) => {}
+        Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::IntN { .. }
+        | Expr::String(_)
+        | Expr::Var(_)
+        | Expr::Loc(_) => {}
 
         Expr::Lam(_, _, body)
         | Expr::Fst(body)
@@ -36,6 +41,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         | Expr::Deref(body)
         | Expr::Classify(body)
         | Expr::Prove(body)
+        | Expr::Return(body)
         | Expr::Require(_, body)
         | Expr::Grant(_, body)
         | Expr::Perform(_, body) => {
@@ -51,7 +57,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
             walk_inner(a, rules, out);
         }
 
-        Expr::Let(_, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
+        Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             walk_inner(v, rules, out);
             walk_inner(b, rules, out);
         }
@@ -67,5 +73,57 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
                 walk_inner(arg, rules, out);
             }
         }
+
+        // JALINAN Phase 6: recurse into sub-expressions so compliance rules
+        // apply inside actor / content-addressed constructs (previously an
+        // unfinished stub that panicked on these variants).
+        Expr::ActorDecl {
+            init_state, handler, ..
+        } => {
+            walk_inner(init_state, rules, out);
+            walk_inner(handler, rules, out);
+        }
+        // ChoreographyBlock carries only a name, roles, and a SessionType —
+        // no value sub-expressions to walk.
+        Expr::ChoreographyBlock { .. } => {}
+        Expr::Spawn(a, b)
+        | Expr::ActorSend(a, b)
+        | Expr::CRDTMerge(a, b)
+        | Expr::ContentVerify(a, b) => {
+            walk_inner(a, rules, out);
+            walk_inner(b, rules, out);
+        }
+        Expr::ActorRecv(e) | Expr::ContentHash(e) => {
+            walk_inner(e, rules, out);
+        }
+        Expr::ContractDeploy(expr) | Expr::ZakatCalculate(expr) => {
+            walk_inner(expr, rules, out);
+        }
+        Expr::TokenTransfer { from, to, amount } => {
+            walk_inner(from, rules, out);
+            walk_inner(to, rules, out);
+            walk_inner(amount, rules, out);
+        }
+
+        // CAHAYA Phase J5
+        Expr::ListLit(elems)
+        | Expr::UIDisplay(elems)
+        | Expr::UIRow(elems)
+        | Expr::UIColumn(elems) => {
+            for e in elems {
+                walk_inner(e, rules, out);
+            }
+        }
+        Expr::RecordLit(_, fields) => {
+            for (_f, e) in fields {
+                walk_inner(e, rules, out);
+            }
+        }
+        Expr::FieldAccess(base, _) => walk_inner(base, rules, out),
+        Expr::UIText(a, b) | Expr::UIButton(a, b) | Expr::UIContrastCheck(a, b) => {
+            walk_inner(a, rules, out);
+            walk_inner(b, rules, out);
+        }
+        Expr::UIColor(_, _, _) | Expr::UIStyleDecl { .. } => {}
     }
 }

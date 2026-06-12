@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CoreBanking - Isabelle/HOL Port
@@ -41,6 +43,7 @@
  * | Sukuk              | sukuk                  | OK     |
  * | ShariahTransaction | shariah_transaction    | OK     |
  * | kyc_complete       | kyc_complete           | OK     |
+ * | unique_customer_ids | unique_customer_ids    | OK     |
  * | total_ownership    | total_ownership        | OK     |
  * | complete_ownership | complete_ownership     | OK     |
  * | all_parties_screened | all_parties_screened   | OK     |
@@ -65,6 +68,7 @@
  * | within_facility_limit | within_facility_limit  | OK     |
  * | payment_within_sla | payment_within_sla     | OK     |
  * | payment_irrevocable | payment_irrevocable    | OK     |
+ * | unique_idempotency_keys | unique_idempotency_keys | OK     |
  * | nostro_balanced    | nostro_balanced        | OK     |
  * | swift_validation_enforced | swift_validation_enforced | OK     |
  * | spot_t_plus_2      | spot_t_plus_2          | OK     |
@@ -183,9 +187,9 @@ record journal_entry =
 (* InterestCalculation (matches Coq: Record InterestCalculation) *)
 record interest_calculation =
   ic_principal :: Z
-  ic_rate_bps :: Z  (* Rate in basis points *)
+  ic_rate_bps :: Z
   ic_days :: Z
-  ic_year_days :: Z  (* 360 or 365 *)
+  ic_year_days :: Z
   ic_calculated_interest :: Z
 
 (* TermDepositContract (matches Coq: Record TermDepositContract) *)
@@ -203,7 +207,7 @@ record loan =
   approved_amount :: Z
   eligibility_limit :: Z
   collateral_value :: Z
-  required_coverage :: Z  (* In basis points, e.g., 12000 = 120% *)
+  required_coverage :: Z
   ltv_ratio :: Z
   is_secured :: bool
 
@@ -262,7 +266,7 @@ record fx_spot_trade =
 (* RepoTransaction (matches Coq: Record RepoTransaction) *)
 record repo_transaction =
   collateral_market_value :: Z
-  haircut_bps :: Z  (* Basis points *)
+  haircut_bps :: Z
   repo_cash_amount :: Z
 
 (* BondPosition (matches Coq: Record BondPosition) *)
@@ -327,9 +331,13 @@ record shariah_transaction =
 
 (* kyc_complete (matches Coq: Definition kyc_complete) *)
 definition kyc_complete :: "Customer \<Rightarrow> bool" where
-  "kyc_complete c \<equiv> kyc_verified c = true /\ address_verified c = true /\
-  risk_assessed c = true /\ pep_screened c = true /\
-  sanctions_screened c = true"
+  "kyc_complete c \<equiv> kyc_verified c = True /\ address_verified c = True /\
+  risk_assessed c = True /\ pep_screened c = True /\
+  sanctions_screened c = True"
+
+(* unique_customer_ids (matches Coq: Definition unique_customer_ids) *)
+fun unique_customer_ids :: "bool" where
+
 
 (* total_ownership (matches Coq: Definition total_ownership) *)
 definition total_ownership :: "Z" where
@@ -341,7 +349,7 @@ definition complete_ownership :: "bool" where
 
 (* all_parties_screened (matches Coq: Definition all_parties_screened) *)
 definition all_parties_screened :: "bool" where
-  "all_parties_screened \<equiv> forall p, In p parties -> party_screened p = true"
+  "all_parties_screened \<equiv> forall p, In p parties -> party_screened p = True"
 
 (* well_formed_savings (matches Coq: Definition well_formed_savings) *)
 definition well_formed_savings :: "Account \<Rightarrow> bool" where
@@ -353,7 +361,7 @@ definition should_be_dormant :: "Account \<Rightarrow> bool" where
 
 (* dormancy_consistent (matches Coq: Definition dormancy_consistent) *)
 definition dormancy_consistent :: "Account \<Rightarrow> bool" where
-  "dormancy_consistent a \<equiv> should_be_dormant a -> is_dormant a = true"
+  "dormancy_consistent a \<equiv> should_be_dormant a -> is_dormant a = True"
 
 (* debits (matches Coq: Definition debits) *)
 definition debits :: "Z" where
@@ -386,7 +394,7 @@ definition early_withdrawal :: "TermDepositContract \<Rightarrow> bool" where
 
 (* penalty_enforced (matches Coq: Definition penalty_enforced) *)
 definition penalty_enforced :: "TermDepositContract \<Rightarrow> bool" where
-  "penalty_enforced td \<equiv> early_withdrawal td -> td_penalty_applied td = true"
+  "penalty_enforced td \<equiv> early_withdrawal td -> td_penalty_applied td = True"
 
 (* within_eligibility (matches Coq: Definition within_eligibility) *)
 definition within_eligibility :: "Loan \<Rightarrow> bool" where
@@ -394,7 +402,7 @@ definition within_eligibility :: "Loan \<Rightarrow> bool" where
 
 (* sufficient_collateral (matches Coq: Definition sufficient_collateral) *)
 definition sufficient_collateral :: "Loan \<Rightarrow> bool" where
-  "sufficient_collateral l \<equiv> is_secured l = true ->
+  "sufficient_collateral l \<equiv> is_secured l = True ->
   collateral_value l * 10000 >= principal l * required_coverage l"
 
 (* installment_total (matches Coq: Definition installment_total) *)
@@ -416,7 +424,7 @@ definition amortization_correct :: "AmortizationSchedule \<Rightarrow> bool" whe
 
 (* covenant_monitoring_correct (matches Coq: Definition covenant_monitoring_correct) *)
 definition covenant_monitoring_correct :: "Covenant \<Rightarrow> bool" where
-  "covenant_monitoring_correct cov \<equiv> covenant_breached cov = true -> event_of_default cov = true"
+  "covenant_monitoring_correct cov \<equiv> covenant_breached cov = True -> event_of_default cov = True"
 
 (* within_facility_limit (matches Coq: Definition within_facility_limit) *)
 definition within_facility_limit :: "CreditFacility \<Rightarrow> bool" where
@@ -428,15 +436,19 @@ definition payment_within_sla :: "Payment \<Rightarrow> bool" where
 
 (* payment_irrevocable (matches Coq: Definition payment_irrevocable) *)
 definition payment_irrevocable :: "Payment \<Rightarrow> bool" where
-  "payment_irrevocable p \<equiv> status p = Completed -> True"
+  "payment_irrevocable p \<equiv> status p = Completed -> status p <> Pending"
+
+(* unique_idempotency_keys (matches Coq: Definition unique_idempotency_keys) *)
+fun unique_idempotency_keys :: "bool" where
+
 
 (* nostro_balanced (matches Coq: Definition nostro_balanced) *)
 definition nostro_balanced :: "NostroAccount \<Rightarrow> bool" where
-  "nostro_balanced n \<equiv> is_reconciled n = true -> internal_balance n = external_balance n"
+  "nostro_balanced n \<equiv> is_reconciled n = True -> internal_balance n = external_balance n"
 
 (* swift_validation_enforced (matches Coq: Definition swift_validation_enforced) *)
 definition swift_validation_enforced :: "SwiftMessage \<Rightarrow> bool" where
-  "swift_validation_enforced msg \<equiv> (sender_bic msg > 0)%nat /\ (receiver_bic msg > 0)%nat -> is_schema_valid msg = true"
+  "swift_validation_enforced msg \<equiv> (sender_bic msg > 0)%nat /\ (receiver_bic msg > 0)%nat -> is_schema_valid msg = True"
 
 (* spot_t_plus_2 (matches Coq: Definition spot_t_plus_2) *)
 definition spot_t_plus_2 :: "FxSpotTrade \<Rightarrow> bool" where
@@ -444,7 +456,7 @@ definition spot_t_plus_2 :: "FxSpotTrade \<Rightarrow> bool" where
 
 (* spot_settlement_correct (matches Coq: Definition spot_settlement_correct) *)
 definition spot_settlement_correct :: "FxSpotTrade \<Rightarrow> bool" where
-  "spot_settlement_correct trade \<equiv> spot_t_plus_2 trade /\ fx_settled trade = true"
+  "spot_settlement_correct trade \<equiv> spot_t_plus_2 trade /\ fx_settled trade = True"
 
 (* repo_haircut_applied (matches Coq: Definition repo_haircut_applied) *)
 definition repo_haircut_applied :: "RepoTransaction \<Rightarrow> bool" where
@@ -471,11 +483,11 @@ definition irs_valuation_correct :: "InterestRateSwap \<Rightarrow> bool" where
 
 (* mtm_beyond_threshold (matches Coq: Definition mtm_beyond_threshold) *)
 definition mtm_beyond_threshold :: "CollateralPosition \<Rightarrow> bool" where
-  "mtm_beyond_threshold cp \<equiv> Z"
+  "mtm_beyond_threshold cp \<equiv> Z.abs (current_mtm cp) > threshold cp"
 
 (* collateral_call_correct (matches Coq: Definition collateral_call_correct) *)
 definition collateral_call_correct :: "CollateralPosition \<Rightarrow> bool" where
-  "collateral_call_correct cp \<equiv> mtm_beyond_threshold cp -> margin_call_triggered cp = true"
+  "collateral_call_correct cp \<equiv> mtm_beyond_threshold cp -> margin_call_triggered cp = True"
 
 (* murabaha_selling_price (matches Coq: Definition murabaha_selling_price) *)
 definition murabaha_selling_price :: "Murabaha \<Rightarrow> Z" where
@@ -487,7 +499,7 @@ definition during_tenure :: "Ijarah \<Rightarrow> bool" where
 
 (* bank_retains_ownership (matches Coq: Definition bank_retains_ownership) *)
 definition bank_retains_ownership :: "Ijarah \<Rightarrow> bool" where
-  "bank_retains_ownership ij \<equiv> during_tenure ij -> bank_owns_asset ij = true"
+  "bank_retains_ownership ij \<equiv> during_tenure ij -> bank_owns_asset ij = True"
 
 (* partner_profit_share (matches Coq: Definition partner_profit_share) *)
 definition partner_profit_share :: "MusharakahPartner \<Rightarrow> Musharakah \<Rightarrow> Z" where
@@ -505,11 +517,11 @@ definition profit_by_ratio_loss_by_capital :: "MusharakahPartner \<Rightarrow> M
 
 (* sukuk_backed_by_assets (matches Coq: Definition sukuk_backed_by_assets) *)
 definition sukuk_backed_by_assets :: "Sukuk \<Rightarrow> bool" where
-  "sukuk_backed_by_assets s \<equiv> is_asset_backed s = true -> underlying_asset_value s >= sukuk_value s"
+  "sukuk_backed_by_assets s \<equiv> is_asset_backed s = True -> underlying_asset_value s >= sukuk_value s"
 
 (* no_riba (matches Coq: Definition no_riba) *)
 definition no_riba :: "ShariahTransaction \<Rightarrow> bool" where
-  "no_riba st \<equiv> shariah_compliant st = true -> txn_type st <> InterestBased"
+  "no_riba st \<equiv> shariah_compliant st = True -> txn_type st <> InterestBased"
 
 (* BANK_001_01_customer_identity_uniqueness (matches Coq) *)
 lemma BANK_001_01_customer_identity_uniqueness: "\<forall> (customers : list Customer) (c1 c2 : Customer), unique_customer_ids customers \<longrightarrow> In c1 customers \<longrightarrow> In c2 customers \<longrightarrow> customer_id c1 = customer_id c2 \<longrightarrow> c1 = c2"

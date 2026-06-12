@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedInfra - Isabelle/HOL Port
@@ -43,10 +45,12 @@
  * | health_check_correct_for | health_check_correct_for | OK     |
  * | load_ratio         | load_ratio             | OK     |
  * | fair_distribution  | fair_distribution      | OK     |
+ * | execute            | execute                | OK     |
  * | commits            | commits                | OK     |
  * | valid_state        | valid_state            | OK     |
  * | state_after        | state_after            | OK     |
  * | survives           | survives               | OK     |
+ * | safe_query_exec    | safe_query_exec        | OK     |
  * | access_audited     | access_audited         | OK     |
  * | sent               | sent                   | OK     |
  * | delivered          | delivered              | OK     |
@@ -54,11 +58,13 @@
  * | eventually         | eventually             | OK     |
  * | delivered_count    | delivered_count        | OK     |
  * | preserves_order    | preserves_order        | OK     |
+ * | safe_deserialize   | safe_deserialize       | OK     |
  * | goes_to_dlq        | goes_to_dlq            | OK     |
  * | queue_has_capacity | queue_has_capacity     | OK     |
  * | backpressure_applied | backpressure_applied   | OK     |
  * | in_log             | in_log                 | OK     |
  * | hash_chain_link_valid | hash_chain_link_valid  | OK     |
+ * | hash_chain_valid   | hash_chain_valid       | OK     |
  * | aol_append         | aol_append             | OK     |
  * | safe_log_entry     | safe_log_entry         | OK     |
  * | tamper_detected    | tamper_detected        | OK     |
@@ -97,7 +103,7 @@
  *)
 
 theory VerifiedInfra
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* TxnOp (matches Coq: Inductive TxnOp) *)
@@ -112,7 +118,7 @@ datatype txn_outcome =
 
 (* SafeQuery (matches Coq: Inductive SafeQuery) *)
 datatype safe_query =
-    SQParam  (* Parameterized query *)
+    SQParam
   |     SQConst
 
 (* TypedPayload (matches Coq: Inductive TypedPayload) *)
@@ -173,7 +179,7 @@ record encrypted_storage =
 record capability =
   cap_subject :: nat
   cap_object :: Key
-  cap_permission :: nat  (* 0=none, 1=read, 2=write, 3=both *)
+  cap_permission :: nat
 
 (* AuditEntry (matches Coq: Record AuditEntry) *)
 record audit_entry =
@@ -240,7 +246,7 @@ record rotation_state =
 
 (* healthy (matches Coq: Definition healthy) *)
 definition healthy :: "Backend \<Rightarrow> bool" where
-  "healthy b \<equiv> backend_healthy b = true"
+  "healthy b \<equiv> backend_healthy b = True"
 
 (* has_capacity (matches Coq: Definition has_capacity) *)
 definition has_capacity :: "Backend \<Rightarrow> bool" where
@@ -274,11 +280,12 @@ definition routes_request :: "LBState \<Rightarrow> HTTPRequest \<Rightarrow> bo
 (* health_check_correct_for (matches Coq: Definition health_check_correct_for) *)
 definition health_check_correct_for :: "Backend \<Rightarrow> HealthCheckResult \<Rightarrow> bool" where
   "health_check_correct_for b hc \<equiv> hc_backend_id hc = backend_id b ->
-  (hc_is_healthy hc = true <-> healthy b)"
+  (hc_is_healthy hc = True <-> healthy b)"
 
 (* load_ratio (matches Coq: Definition load_ratio) *)
 definition load_ratio :: "Backend \<Rightarrow> nat" where
-  "load_ratio b \<equiv> if Nat"
+  "load_ratio b \<equiv> if ((backend_capacity = b)) 0 then 0
+  else (backend_current_load b * 100) / backend_capacity b"
 
 (* fair_distribution (matches Coq: Definition fair_distribution) *)
 definition fair_distribution :: "nat \<Rightarrow> bool" where
@@ -290,13 +297,17 @@ definition fair_distribution :: "nat \<Rightarrow> bool" where
     (load_ratio b1 <= load_ratio b2 + threshold) /\
     (load_ratio b2 <= load_ratio b1 + threshold)"
 
+(* execute (matches Coq: Definition execute) *)
+definition execute :: "DBState \<Rightarrow> Transaction \<Rightarrow> DBState * TxnOutcome" where
+  "execute db txn \<equiv> (db, TxnCommit)"
+
 (* commits (matches Coq: Definition commits) *)
 definition commits :: "DBState \<Rightarrow> Transaction \<Rightarrow> bool" where
   "commits db txn \<equiv> snd (execute db txn) = TxnCommit"
 
 (* valid_state (matches Coq: Definition valid_state) *)
 definition valid_state :: "DBState \<Rightarrow> bool" where
-  "valid_state db \<equiv> True"
+  "valid_state db \<equiv> db EmptyString = None"
 
 (* state_after (matches Coq: Definition state_after) *)
 definition state_after :: "DBState \<Rightarrow> Transaction \<Rightarrow> DBState" where
@@ -304,7 +315,11 @@ definition state_after :: "DBState \<Rightarrow> Transaction \<Rightarrow> DBSta
 
 (* survives (matches Coq: Definition survives) *)
 definition survives :: "DurableTransaction \<Rightarrow> bool" where
-  "survives dtxn \<equiv> dtxn_committed dtxn = true -> dtxn_persisted dtxn = true"
+  "survives dtxn \<equiv> dtxn_committed dtxn = True -> dtxn_persisted dtxn = True"
+
+(* safe_query_exec (matches Coq: Definition safe_query_exec) *)
+fun safe_query_exec :: "SafeQuery \<Rightarrow> DBState \<Rightarrow> option Value" where
+
 
 (* access_audited (matches Coq: Definition access_audited) *)
 definition access_audited :: "AuditLog \<Rightarrow> nat \<Rightarrow> Key \<Rightarrow> bool" where
@@ -328,7 +343,9 @@ definition eventually :: "bool \<Rightarrow> bool" where
 
 (* delivered_count (matches Coq: Definition delivered_count) *)
 definition delivered_count :: "QueueState \<Rightarrow> Message \<Rightarrow> Consumer \<Rightarrow> nat" where
-  "delivered_count q m c \<equiv> List"
+  "delivered_count q m c \<equiv> List.length (List.filter (fun p => (((\<and> = (msg_id)) (fst p)) (msg_id m))
+                                (((snd = p)) c))
+                 (q_delivered q))"
 
 (* preserves_order (matches Coq: Definition preserves_order) *)
 definition preserves_order :: "QueueState \<Rightarrow> bool" where
@@ -338,17 +355,21 @@ definition preserves_order :: "QueueState \<Rightarrow> bool" where
     msg_id m1 < msg_id m2 ->
     True"
 
+(* safe_deserialize (matches Coq: Definition safe_deserialize) *)
+definition safe_deserialize :: "string \<Rightarrow> option TypedPayload" where
+  "safe_deserialize expected \<equiv> Some (TPInt 0)"
+
 (* goes_to_dlq (matches Coq: Definition goes_to_dlq) *)
 fun goes_to_dlq :: "QueueState \<Rightarrow> Message \<Rightarrow> ProcessOutcome \<Rightarrow> bool" where
   "goes_to_dlq POSuccess = True"
 
 (* queue_has_capacity (matches Coq: Definition queue_has_capacity) *)
 definition queue_has_capacity :: "QueueState \<Rightarrow> nat \<Rightarrow> bool" where
-  "queue_has_capacity q max \<equiv> List"
+  "queue_has_capacity q max \<equiv> List.length (q_messages q) < max"
 
 (* backpressure_applied (matches Coq: Definition backpressure_applied) *)
 definition backpressure_applied :: "QueueState \<Rightarrow> nat \<Rightarrow> bool" where
-  "backpressure_applied q max \<equiv> List"
+  "backpressure_applied q max \<equiv> List.length (q_messages q) >= max"
 
 (* in_log (matches Coq: Definition in_log) *)
 definition in_log :: "Log \<Rightarrow> LogEntry \<Rightarrow> nat \<Rightarrow> bool" where
@@ -358,13 +379,17 @@ definition in_log :: "Log \<Rightarrow> LogEntry \<Rightarrow> nat \<Rightarrow>
 definition hash_chain_link_valid :: "bool" where
   "hash_chain_link_valid \<equiv> log_hash e2 = log_prev_hash e1"
 
+(* hash_chain_valid (matches Coq: Definition hash_chain_valid) *)
+fun hash_chain_valid :: "Log \<Rightarrow> bool" where
+
+
 (* aol_append (matches Coq: Definition aol_append) *)
 definition aol_append :: "AppendOnlyLog \<Rightarrow> LogEntry \<Rightarrow> AppendOnlyLog" where
   "aol_append l e \<equiv> mkAOLog (e :: aol_entries l) (S (aol_write_count l))"
 
 (* safe_log_entry (matches Coq: Definition safe_log_entry) *)
 definition safe_log_entry :: "nat \<Rightarrow> string \<Rightarrow> nat \<Rightarrow> LogEntry" where
-  "safe_log_entry level msg ts \<equiv> mkLog ts level msg true 0 0"
+  "safe_log_entry level msg ts \<equiv> mkLog ts level msg True 0 0"
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "Log \<Rightarrow> bool" where
@@ -372,7 +397,7 @@ definition tamper_detected :: "Log \<Rightarrow> bool" where
 
 (* has_access (matches Coq: Definition has_access) *)
 definition has_access :: "SecretsStore \<Rightarrow> Service \<Rightarrow> Secret \<Rightarrow> bool" where
-  "has_access ss svc sec \<equiv> access_policy ss svc (secret_id sec) = true"
+  "has_access ss svc sec \<equiv> access_policy ss svc (secret_id sec) = True"
 
 (* can_read (matches Coq: Definition can_read) *)
 definition can_read :: "SecretsStore \<Rightarrow> Service \<Rightarrow> Secret \<Rightarrow> bool" where

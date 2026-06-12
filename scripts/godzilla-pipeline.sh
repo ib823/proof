@@ -172,6 +172,13 @@ run_audit_pipeline() {
     echo -e "${YELLOW}Skipping dim1/dim9 promotion check: scripts/check-dim1-dim9-promotion.sh not found${NC}"
   fi
 
+  if [ -f "$REPO_ROOT/scripts/check-noncoq-mechanized.sh" ]; then
+    run_step "NON-COQ MECHANIZED READINESS" \
+      bash "$REPO_ROOT/scripts/check-noncoq-mechanized.sh"
+  else
+    echo -e "${YELLOW}Skipping non-coq mechanized check: scripts/check-noncoq-mechanized.sh not found${NC}"
+  fi
+
   run_step "METRICS GENERATION" bash "$REPO_ROOT/scripts/generate-metrics.sh" --fast
 
   if [ "$SYNC_MODE" = "dry" ]; then
@@ -212,6 +219,11 @@ run_audit_pipeline() {
     fi
   else
     echo -e "${YELLOW}Skipping heavy-closure track check: scripts/check-heavy-closure.sh not found${NC}"
+  fi
+  if [ -f "$REPO_ROOT/scripts/check-dim14-runtime.sh" ]; then
+    run_step "DIM14 RUNTIME PROOF CHECK" bash "$REPO_ROOT/scripts/check-dim14-runtime.sh"
+  else
+    echo -e "${YELLOW}Skipping dim14 runtime proof check: scripts/check-dim14-runtime.sh not found${NC}"
   fi
   if [ -f "$REPO_ROOT/scripts/public-quality-gates.sh" ]; then
     run_step "PUBLIC QUALITY GATES" bash "$REPO_ROOT/scripts/public-quality-gates.sh"

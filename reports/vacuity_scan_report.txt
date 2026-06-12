@@ -1,0 +1,379 @@
+========================================================================
+RIINA PROOF VACUITY DETECTION REPORT
+========================================================================
+
+Files scanned:     308
+Total Qed:         12385
+Total findings:    1316
+Overall vacuity:   11%
+
+Pattern breakdown:
+  P1 (True/trivial):         142 critical
+  P2 (reflexivity/boolean):    42 high
+  P3 (False definitions):      12 critical
+  P4 (tautology proofs):     1120 medium
+
+File verdict distribution:
+  VACUOUS (>=70%):     9 files
+  MIXED (40-69%):     25 files
+  MOSTLY_REAL:       161 files
+  CLEAN (0%):        113 files
+
+------------------------------------------------------------------------
+FLAGGED FILES (sorted by vacuity %)
+------------------------------------------------------------------------
+
+  02_FORMAL/coq/domains/HardwareSecurity.v
+    Qed: 34  Vacuous: 34  (100%)  [VACUOUS]
+    [P1] L82: hw_001_spectre_v1_mitigated — Concludes with True, proved by intros sb Hlfence Hbranch. trivial.
+    [P1] L96: hw_002_spectre_v2_mitigated — Concludes with True, proved by intros retpoline ibrs Hmitigation. triv
+    [P1] L109: hw_003_spectre_v4_mitigated — Concludes with True, proved by intros ssbd Hssbd. trivial.
+    [P1] L121: hw_004_meltdown_mitigated — Concludes with True, proved by intros mp Hkpti. trivial.
+    [P1] L134: hw_005_foreshadow_mitigated — Concludes with True, proved by intros mp l1flush Hkpti Hl1. trivial.
+    ... and 29 more findings
+
+  02_FORMAL/coq/domains/NetworkSecurity.v
+    Qed: 26  Vacuous: 26  (100%)  [VACUOUS]
+    [P1] L307: net_001_man_in_the_middle_mitigated — Concludes with True, proved by intros config H_defense. (* Defense ena
+    [P1] L326: net_002_arp_spoofing_mitigated — Concludes with True, proved by intros config H_defense. unfold arp_spo
+    [P1] L345: net_003_dns_poisoning_mitigated — Concludes with True, proved by intros config H_defense. unfold dns_poi
+    [P1] L360: net_004_bgp_hijacking_mitigated — Concludes with True, proved by intros config H_defense. unfold bgp_hij
+    [P1] L375: net_005_ssl_stripping_mitigated — Concludes with True, proved by intros config H_defense. unfold ssl_str
+    ... and 21 more findings
+
+  02_FORMAL/coq/domains/WebSecurity.v
+    Qed: 25  Vacuous: 24  (96%)  [VACUOUS]
+    [P1] L105: web_001_reflected_xss_impossible — Concludes with True, proved by intros. trivial.
+    [P1] L115: web_002_stored_xss_impossible — Concludes with True, proved by intros. trivial.
+    [P1] L131: web_003_dom_xss_impossible — Concludes with True, proved by intros. trivial.
+    [P1] L157: web_005_ssrf_impossible — Concludes with True, proved by intros. trivial.
+    [P1] L167: web_006_clickjacking_impossible — Concludes with True, proved by intros. trivial.
+    ... and 19 more findings
+
+  02_FORMAL/coq/domains/ESGCompliance.v
+    Qed: 35  Vacuous: 33  (94%)  [VACUOUS]
+    [P4] L440: ESG_001_01_scope1_completeness — Tautological proof: intros sys s Hin Hscope Howned. apply (emissions_c
+    [P4] L463: ESG_001_03_scope3_coverage — Tautological proof: intros sys n Hvalid. apply (scope3_complete sys n 
+    [P4] L472: ESG_001_04_emission_factor_accuracy — Tautological proof: intros sys s Hin. apply (emission_factors_verified
+    [P4] L481: ESG_001_05_no_double_counting — Tautological proof: intros sys s1 s2 Hin1 Hin2 Hsame. apply (emissions
+    [P4] L492: ESG_001_06_renewable_tracking — Tautological proof: intros sys r Hin. apply (renewables_unique sys r H
+    ... and 28 more findings
+
+  02_FORMAL/coq/domains/AnonymousComm.v
+    Qed: 25  Vacuous: 23  (92%)  [VACUOUS]
+    [P4] L85: anon_001_sender_anonymity — Tautological proof: intros sender_set k H. unfold k_anonymous in H. ex
+    [P4] L96: anon_002_receiver_anonymity — Tautological proof: intros receiver_set k H. unfold k_anonymous in H. 
+    [P4] L107: anon_003_layers_match_path — Tautological proof: intros msg circuit H. exact H.
+    [P4] L117: anon_004_min_path_length — Tautological proof: intros circuit H. exact H.
+    [P4] L130: anon_005_entry_guard — Tautological proof: intros circuits guard H. unfold entry_guard_fixed 
+    ... and 18 more findings
+
+  02_FORMAL/coq/domains/SupplyChainSecurity.v
+    Qed: 37  Vacuous: 33  (89%)  [VACUOUS]
+    [P4] L366: bool_impl — Tautological proof: intros a b Ha Himpl. apply Himpl. exact Ha.
+    [P4] L380: sup_001_dependency_compromise_mitigated — Tautological proof: intros sa Hverified. exact dep_mitigated.
+    [P4] L390: sup_001_hash_signature_integrity — Tautological proof: intros sa expected_hash Hverified Hhash. apply has
+    [P4] L404: sup_002_typosquatting_mitigated — Tautological proof: intros vp Hname Hallowlist. exact typosquat_mitiga
+    [P4] L415: sup_002_name_verification_canonical — Tautological proof: intros vp Hverified Hname_eq. apply hash_eq_implie
+    ... and 28 more findings
+
+  02_FORMAL/coq/domains/mobile_os/DataPersistence.v
+    Qed: 20  Vacuous: 15  (75%)  [VACUOUS]
+    [P4] L81: migration_lossless — Tautological proof: intros data schema1 schema2 Hmig Hfields Hno_loss.
+    [P4] L272: data_encrypted_at_rest — Tautological proof: intros s Henc. unfold data_encrypted_at_rest_prop 
+    [P4] L283: backup_encrypted_thm — Tautological proof: intros b Henc. unfold backup_encrypted_prop in Hen
+    [P4] L294: migration_atomic — Tautological proof: intros m Hatomic Hmig. apply Hatomic. exact Hmig.
+    [P4] L305: schema_version_tracked — Tautological proof: intros m Hversion. unfold schema_version_tracked_p
+    ... and 10 more findings
+
+  02_FORMAL/coq/domains/mobile_os/NetworkingStack.v
+    Qed: 21  Vacuous: 15  (71%)  [VACUOUS]
+    [P4] L112: cert_validation_correct — Tautological proof: intros cert Haccepted. unfold accepted, acceptable
+    [P4] L280: tls_required_for_external — Tautological proof: intros conn Htls. unfold tls_required in Htls. exa
+    [P4] L291: certificate_validation_complete — Tautological proof: intros cert Hval. unfold cert_validation_complete_
+    [P4] L302: dns_resolution_validated — Tautological proof: intros q Hdns. unfold dns_validated_prop in Hdns. 
+    [P4] L313: no_plaintext_passwords — Tautological proof: intros conn Hno. unfold no_plaintext_password in H
+    ... and 10 more findings
+
+  02_FORMAL/coq/domains/mobile_os/BiometricSystem.v
+    Qed: 20  Vacuous: 14  (70%)  [VACUOUS]
+    [P4] L248: biometric_data_never_exported_thm — Tautological proof: intros t Hnever. unfold biometric_data_never_expor
+    [P4] L259: false_acceptance_rate_bounded — Tautological proof: intros cfg attempt Hfar Hnotauth Hsecure. apply Hf
+    [P4] L271: false_rejection_rate_bounded — Tautological proof: intros cfg Hfrr. unfold frr_bounded in Hfrr. exact
+    [P4] L282: biometric_template_encrypted — Tautological proof: intros t Henc. unfold template_encrypted in Henc. 
+    [P4] L293: liveness_detection_active — Tautological proof: intros cfg Hlive. unfold liveness_active in Hlive.
+    ... and 9 more findings
+
+  02_FORMAL/coq/domains/uiux/VisualAccessibility.v
+    Qed: 42  Vacuous: 28  (67%)  [MIXED]
+    [P4] L107: voiceover_complete_coverage — Tautological proof: intros re H_visible. apply (voiceover_guarantee re
+    [P4] L118: dynamic_type_universal — Tautological proof: intros rt. exact (readability_guarantee rt).
+    [P4] L189: plays_implies_active — Tautological proof: intros anim [H_active _]. exact H_active.
+    [P4] L196: plays_implies_nonessential — Tautological proof: intros anim [_ H_ess]. exact H_ess.
+    [P4] L281: all_visible_elements_in_tree — Tautological proof: intros v elem H_in H_vis. exact (view_coverage v e
+    ... and 23 more findings
+
+  02_FORMAL/coq/domains/AuthenticationSecurity.v
+    Qed: 20  Vacuous: 13  (65%)  [MIXED]
+    [P1] L131: auth_004_pass_the_hash_mitigated — Concludes with True, proved by intros. trivial.
+    [P1] L158: auth_006_kerberoasting_mitigated — Concludes with True, proved by intros. trivial.
+    [P1] L174: auth_007_golden_ticket_mitigated — Concludes with True, proved by intros. trivial.
+    [P1] L190: auth_008_silver_ticket_mitigated — Concludes with True, proved by intros. trivial.
+    [P4] L220: auth_010_session_fixation_mitigated — Tautological proof: intros. exact H.
+    ... and 8 more findings
+
+  02_FORMAL/coq/domains/TrafficResistance.v
+    Qed: 25  Vacuous: 16  (64%)  [MIXED]
+    [P4] L84: traffic_001_constant_rate_hides — Tautological proof: intros flow interval Hrate i p1 p2 H1 H2. unfold c
+    [P4] L99: traffic_002_constant_size_hides — Tautological proof: intros flow size H. unfold constant_size in H. exa
+    [P4] L110: traffic_003_cover_indistinguishable — Tautological proof: intros real_pkt cover_pkt Hsize Htime. exact Hsize
+    [P4] L148: traffic_006_mix_delay — Tautological proof: intros node H. exact H.
+    [P4] L158: traffic_007_batch_anonymity — Tautological proof: intros node H. exact H.
+    ... and 11 more findings
+
+  02_FORMAL/coq/domains/mobile_os/NetworkSecurity.v
+    Qed: 20  Vacuous: 12  (60%)  [MIXED]
+    [P4] L263: packet_inspection_complete — Tautological proof: intros p Hinsp. unfold packet_inspected_prop in Hi
+    [P4] L274: malicious_payload_blocked — Tautological proof: intros p Hblock Hmal. apply Hblock. exact Hmal.
+    [P4] L285: rate_limiting_enforced — Tautological proof: intros rl Hrl. unfold rate_limit_enforced in Hrl. 
+    [P4] L317: replay_attack_prevented — Tautological proof: intros p1 p2 Hrep Hseq Hts. apply Hrep; assumption
+    [P4] L329: session_hijacking_prevented — Tautological proof: intros s ip Hhijack Hvalid. apply Hhijack. exact H
+    ... and 7 more findings
+
+  02_FORMAL/coq/domains/mobile_os/EncryptionSystem.v
+    Qed: 22  Vacuous: 13  (59%)  [MIXED]
+    [P4] L343: key_length_sufficient — Tautological proof: intros key [Hbits _]. exact Hbits.
+    [P4] L353: iv_never_reused_thm — Tautological proof: intros tracker [_ Hnot_in]. exact Hnot_in.
+    [P4] L363: aead_authentication_verified — Tautological proof: intros op Haead. unfold aead_verified in Haead. ex
+    [P4] L374: key_derivation_deterministic — Tautological proof: intros kd1 kd2 Hdet Hsalt Hiter Hmaster. apply Hde
+    [P4] L387: password_hash_one_way_thm — Tautological proof: intros h Hone. unfold password_hash_one_way in Hon
+    ... and 8 more findings
+
+  02_FORMAL/coq/domains/MalaysiaBursaGov.v
+    Qed: 23  Vacuous: 13  (57%)  [MIXED]
+    [P4] L51: bursa_governance — Tautological proof: intros p H. unfold it_governance_established. exac
+    [P4] L67: bursa_integrity — Tautological proof: intros p H. unfold system_integrity. exact H.
+    [P4] L82: bursa_data_protection — Tautological proof: intros p H. unfold data_protected. exact H.
+    [P4] L97: bursa_connectivity — Tautological proof: intros p H. unfold connectivity_secured. exact H.
+    [P4] L112: bursa_bcp — Tautological proof: intros p H. unfold bcp_ready. exact H.
+    ... and 8 more findings
+
+  02_FORMAL/coq/domains/MetadataPrivacy.v
+    Qed: 25  Vacuous: 14  (56%)  [MIXED]
+    [P4] L110: meta_002_constant_size — Tautological proof: intros pm1 pm2 H. exact H.
+    [P4] L165: meta_005_jitter_bounded — Tautological proof: intros base jitter max_jitter H. unfold jittered_t
+    [P4] L176: meta_006_k_anonymity — Tautological proof: intros set k H. unfold k_anonymous in H. exact H.
+    [P4] L200: meta_008_sender_anonymity — Tautological proof: intros sender_set k actual_sender Hk Hin. unfold k
+    [P4] L212: meta_009_receiver_anonymity — Tautological proof: intros receiver_set k actual_receiver Hk Hin. unfo
+    ... and 9 more findings
+
+  02_FORMAL/coq/domains/MalaysiaSCGTRM.v
+    Qed: 24  Vacuous: 13  (54%)  [MIXED]
+    [P4] L61: gtrm_req_1 — Tautological proof: intros e H. unfold gtrm_board_accountable. exact H
+    [P4] L76: gtrm_req_2 — Tautological proof: intros e H. unfold gtrm_risk_framework. exact H.
+    [P4] L108: gtrm_req_4 — Tautological proof: intros e H. unfold gtrm_ai_assessed. exact H.
+    [P4] L139: gtrm_req_6 — Tautological proof: intros e H. unfold gtrm_incident_ready. exact H.
+    [P4] L154: gtrm_req_7 — Tautological proof: intros e H. unfold gtrm_data_protected. exact H.
+    ... and 8 more findings
+
+  02_FORMAL/coq/domains/PhysicalSecurity.v
+    Qed: 21  Vacuous: 11  (52%)  [MIXED]
+    [P4] L314: PHY_001_02_timing_closed — Tautological proof: intros nl clk H_analysis. apply timing_analysis_co
+    [P4] L324: PHY_001_03_no_trojans — Tautological proof: intros rtl H_scan. unfold no_hardware_trojans. exa
+    [P4] L334: PHY_001_04_hw_constant_time — Tautological proof: intros op H_crypto. apply crypto_constant_time. ex
+    [P4] L358: PHY_001_06_golden_equivalent — Tautological proof: intros c g H_match. apply x_ray_soundness. exact H
+    [P4] L380: PHY_001_08_puf_stable — Tautological proof: intros c t1 t2 challenge. apply puf_temperature_st
+    ... and 6 more findings
+
+  02_FORMAL/coq/domains/mobile_os/MemoryManagement.v
+    Qed: 21  Vacuous: 11  (52%)  [MIXED]
+    [P4] L136: memory_isolation_sound — Tautological proof: intros pages Hiso p1 p2 Hin1 Hin2 Howner. unfold p
+    [P4] L261: allocation_always_bounded — Tautological proof: intros h Hbound. unfold allocation_bounded in Hbou
+    [P4] L272: deallocation_complete — Tautological proof: intros b Hstate. unfold block_freed. exact Hstate.
+    [P4] L322: stack_overflow_prevented — Tautological proof: intros s Hbound. unfold stack_within_bounds in Hbo
+    [P4] L333: heap_fragmentation_bounded — Tautological proof: intros h max_frag Hfrag. unfold heap_fragmentation
+    ... and 6 more findings
+
+  02_FORMAL/coq/properties/StoreSafety.v
+    Qed: 36  Vacuous: 17  (47%)  [MIXED]
+    [P4] L35: store_ty_extends_refl — Tautological proof: intros Σ l T sl H. exact H.
+    [P4] L54: store_extend_after_alloc — Tautological proof: exact store_ty_extends_update_fresh.
+    [P4] L66: store_lookup_after_update — Tautological proof: exact store_lookup_update_eq.
+    [P4] L73: store_lookup_update_other — Tautological proof: exact store_lookup_update_neq.
+    [P4] L81: store_ty_update_same — Tautological proof: exact store_ty_lookup_update_eq.
+    ... and 12 more findings
+
+  02_FORMAL/coq/domains/MalaysiaBNMRMiT.v
+    Qed: 28  Vacuous: 13  (46%)  [MIXED]
+    [P4] L83: rmit_domain_2 — Tautological proof: intros fi H. unfold risk_framework_established. ex
+    [P4] L100: rmit_domain_3 — Tautological proof: intros fi H. unfold cyber_controls_adequate. exact
+    [P4] L115: rmit_domain_4 — Tautological proof: intros fi H. unfold ops_resilience_verified. exact
+    [P4] L287: rmit_full_implies_governance — Tautological proof: intros fi [H _]. exact H.
+    [P4] L295: rmit_full_implies_risk — Tautological proof: intros fi [_ [H _]]. exact H.
+    ... and 8 more findings
+
+  02_FORMAL/coq/domains/mobile_os/SystemApps.v
+    Qed: 24  Vacuous: 11  (46%)  [MIXED]
+    [P4] L194: system_app_response_correct — Tautological proof: intros resp H_responds. unfold app_responds_correc
+    [P4] L288: app_sandbox_enforced — Tautological proof: intros app perm [Hsb _]. exact Hsb.
+    [P4] L298: no_cross_app_data_access — Tautological proof: intros app1 app2 Hno_cross Hneq. apply Hno_cross. 
+    [P4] L309: app_permission_checked_at_runtime — Tautological proof: intros perm Hcheck. unfold app_permission_runtime_
+    [P4] L320: background_app_limited — Tautological proof: intros lc Hlim Hbg. apply Hlim. exact Hbg.
+    ... and 6 more findings
+
+  02_FORMAL/coq/domains/mobile_os/FileSystem.v
+    Qed: 20  Vacuous: 9  (45%)  [MIXED]
+    [P4] L270: directory_traversal_prevented — Tautological proof: intros path Hno. unfold no_directory_traversal in 
+    [P4] L281: symlink_attack_prevented — Tautological proof: intros f Hsafe Htype. apply Hsafe. exact Htype.
+    [P4] L292: file_lock_exclusive_thm — Tautological proof: intros f Hlock Hlocked. apply Hlock. exact Hlocked
+    [P4] L303: atomic_rename — Tautological proof: intros f new_id Hatomic. unfold atomic_rename_prop
+    [P4] L335: path_canonicalization — Tautological proof: intros path Hcanon. unfold path_canonical in Hcano
+    ... and 4 more findings
+
+  02_FORMAL/coq/domains/mobile_os/SystemArchitecture.v
+    Qed: 22  Vacuous: 10  (45%)  [MIXED]
+    [P4] L157: process_isolation_sound — Tautological proof: intros procs Hisolated p1 p2 Hin1 Hin2 Hneq. unfol
+    [P4] L266: process_isolation_enforced — Tautological proof: intros pt Hiso p1 p2 Hin1 Hin2 Hneq. apply Hiso; a
+    [P4] L291: syscall_validation_complete — Tautological proof: intros sc [_ Hval]. exact Hval.
+    [P4] L327: user_space_bounded — Tautological proof: intros p Huser. unfold in_user_space in Huser. exa
+    [P4] L349: resource_limits_enforced — Tautological proof: intros p Hlim. unfold resource_within_limit in Hli
+    ... and 5 more findings
+
+  02_FORMAL/coq/domains/DigitalWallet.v
+    Qed: 25  Vacuous: 11  (44%)  [MIXED]
+    [P4] L344: WALLET_001_01_account_uniqueness — Tautological proof: intros wallets w1 w2 Hunique Hin1 Hin2 Hid. unfold
+    [P4] L355: WALLET_001_02_balance_integrity — Tautological proof: intros w txns Hvalid. unfold valid_wallet in Hvali
+    [P4] L365: WALLET_001_03_tier_limit_enforcement — Tautological proof: intros w amount H. exact H.
+    [P4] L378: WALLET_001_04_virtual_account_segregation — Tautological proof: intros vas parent_balance H. unfold virtual_accoun
+    [P4] L406: WALLET_001_06_p2p_instant_settlement — Tautological proof: intros p Hinst. unfold p2p_instant in Hinst. exact
+    ... and 6 more findings
+
+  02_FORMAL/coq/domains/uiux/MotorAccessibility.v
+    Qed: 45  Vacuous: 20  (44%)  [MIXED]
+    [P4] L121: switch_control_complete — Tautological proof: intros sys action. apply (switch_complete sys).
+    [P4] L130: voice_control_complete — Tautological proof: intros sys action. apply (voice_complete sys).
+    [P4] L172: all_actions_switch_accessible — Tautological proof: intros action. unfold possible_with_switch_control
+    [P4] L181: all_actions_voice_accessible — Tautological proof: intros action. unfold speakable_command. apply spe
+    [P4] L293: touch_target_minimum_width — Tautological proof: intros layout t Hin Hinteractive. apply (wl_width_
+    ... and 15 more findings
+
+  02_FORMAL/coq/domains/mobile_os/ConcurrencyFramework.v
+    Qed: 21  Vacuous: 9  (43%)  [MIXED]
+    [P4] L112: actor_isolation_complete — Tautological proof: intros actor1 actor2 data Hdiff Howns1 Hnotin. unf
+    [P4] L125: ownership_exclusive — Tautological proof: intros a1 a2 d Howns Hdiff Hnotin. unfold owns. ex
+    [P4] L138: well_typed_all_annotated — Tautological proof: intros program Hwt. unfold well_typed in Hwt. exac
+    [P4] L273: priority_inversion_prevented — Tautological proof: intros t1 t2 H. exact H.
+    [P4] L292: async_task_cancellable — Tautological proof: intros t H _. exact H.
+    ... and 4 more findings
+
+  02_FORMAL/coq/domains/SingaporeCybersecurityAct.v
+    Qed: 26  Vacuous: 11  (42%)  [MIXED]
+    [P4] L90: cii_obligation_1 — Tautological proof: intros e H. unfold cii_risk_current. exact H.
+    [P4] L122: cii_obligation_3 — Tautological proof: intros i H. unfold sg_incident_reported_in_time. e
+    [P4] L147: cii_obligation_4 — Tautological proof: intros e H. unfold cii_controls_adequate. exact H.
+    [P4] L182: cssp_obligation — Tautological proof: intros e H. unfold cssp_licensed_sg. exact H.
+    [P4] L276: cii_owner_strictest — Tautological proof: intros e t [H _]. exact H.
+    ... and 6 more findings
+
+  02_FORMAL/coq/domains/mobile_os/ApplicationLifecycle.v
+    Qed: 22  Vacuous: 9  (41%)  [MIXED]
+    [P2] L143: not_running_can_launch — Proves field = true by reflexivity on hardcoded boolean record
+    [P2] L150: foreground_can_background — Proves field = true by reflexivity on hardcoded boolean record
+    [P2] L157: background_can_foreground — Proves field = true by reflexivity on hardcoded boolean record
+    [P4] L246: app_state_transition_valid — Tautological proof: intros from to H. exact H.
+    [P4] L321: url_scheme_validated — Tautological proof: intros u H. exact H.
+    ... and 4 more findings
+
+  02_FORMAL/coq/domains/mobile_os/LocationServices.v
+    Qed: 22  Vacuous: 9  (41%)  [MIXED]
+    [P4] L87: geofence_accurate — Tautological proof: intros fence position Hacc. unfold accurate_geofen
+    [P4] L98: inside_within_radius — Tautological proof: intros fence pos Hinside. unfold inside in Hinside
+    [P4] L251: geofence_battery_efficient — Tautological proof: intros fence H. exact H.
+    [P4] L260: location_data_encrypted — Tautological proof: intros l _ Hsrc. exact Hsrc.
+    [P4] L293: altitude_accuracy_bounded — Tautological proof: intros el H. exact H.
+    ... and 4 more findings
+
+  02_FORMAL/coq/domains/MLTTFoundation.v
+    Qed: 25  Vacuous: 10  (40%)  [MIXED]
+    [P4] L324: TYPE_001_01 — Tautological proof: intros G A B Hwf_ctx Hwf_A Hwf_B. apply wf_pi; ass
+    [P4] L339: TYPE_001_02 — Tautological proof: intros G A B f a Hf Ha. apply T_App with (A := A);
+    [P4] L353: TYPE_001_03 — Tautological proof: intros G A B a b Hwf Ha Hb. apply T_Pair; assumpti
+    [P4] L383: TYPE_001_05 — Tautological proof: intros G A a Hwf Ha. apply T_Refl; assumption.
+    [P4] L397: TYPE_001_06 — Tautological proof: intros G A C d p Hwf Hd Hp. apply T_J with (A := A
+    ... and 5 more findings
+
+  02_FORMAL/coq/domains/VerifiedIsolation.v
+    Qed: 35  Vacuous: 14  (40%)  [MIXED]
+    [P4] L647: AI_001_06_user_cannot_map_kernel — Tautological proof: intros s Hucmk d a pte Hind Huser Hkern Hpt. unfol
+    [P4] L663: AI_001_07_iommu_isolation — Tautological proof: intros s Hiso d1 d2 dma phys Hneq Hmap. unfold iom
+    [P4] L699: AI_001_09_capability_unforgeable — Tautological proof: intros s Hunf d c Hind Hholds. unfold capability_u
+    [P4] L713: AI_001_10_capability_bounded — Tautological proof: intros s Hbnd d c Hind Hholds. unfold capability_b
+    [P4] L727: AI_001_11_no_capability_leak — Tautological proof: intros s Hnoleak d1 d2 c Hin1 Hin2 Hneq Hhold1. un
+    ... and 9 more findings
+
+  02_FORMAL/coq/domains/VerifiedNetwork.v
+    Qed: 25  Vacuous: 10  (40%)  [MIXED]
+    [P1] L430: NET_001_06_tls_0rtt_replay_safe — Concludes with True, proved by intros data Hcheck Hnonce. trivial.
+    [P4] L440: NET_001_07_tls_certificate_chain_valid — Tautological proof: intros conn cert Hconn Hin Hverified. unfold valid
+    [P4] L462: NET_001_09_tls_no_truncation — Tautological proof: intros conn Hconn Hbound. apply Nat.le_0_l.
+    [P4] L501: NET_001_12_tcp_seq_unpredictable — Tautological proof: intros conn Hrandom. unfold seq_unpredictable. exa
+    [P4] L526: NET_001_14_tcp_flow_control_correct — Tautological proof: intros conn Hwindow. unfold flow_control_correct. 
+    ... and 5 more findings
+
+  02_FORMAL/coq/domains/security_foundation/GarbageCollector.v
+    Qed: 20  Vacuous: 8  (40%)  [MIXED]
+    [P4] L116: gc_preserves_live_objects — Tautological proof: intros result oid [Hpreserve _] Hreach. apply Hpre
+    [P4] L145: roots_reachable — Tautological proof: intros st oid Hroot Hexists. apply ReachRoot; assu
+    [P4] L174: empty_roots_gc — Tautological proof: intros result Hvalid Hempty obj Hunreach. apply gc
+    [P4] L225: gc_safety — Tautological proof: intros result [_ Hcollect] obj Hexists. apply Hcol
+    [P4] L236: root_reachable_subset — Tautological proof: intros st oid Hroot Hexists. apply ReachRoot; assu
+    ... and 3 more findings
+
+------------------------------------------------------------------------
+CRITICAL FINDINGS (154)
+------------------------------------------------------------------------
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L131 auth_004_pass_the_hash_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L158 auth_006_kerberoasting_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L174 auth_007_golden_ticket_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L190 auth_008_silver_ticket_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L236 auth_011_auth_bypass_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L253 auth_012_oauth_attacks_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L271 auth_013_jwt_attacks_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L288 auth_014_saml_attacks_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L299 auth_015_sso_attacks_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L332 auth_017_biometric_spoof_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L343 auth_018_token_theft_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L390 auth_020_phishing_mitigated
+         Concludes with True, proved by intros. trivial.
+  [P3] 02_FORMAL/coq/domains/ChoreographyTypes.v:L837 chor_waiting
+         Definition chor_waiting := False — all dependent theorems are trivially provable
+  [P1] 02_FORMAL/coq/domains/DELTA001_VerifiedDistribution.v:L315 DELTA_002_06_bft_phases_ordered
+         Concludes with True, proved by intros. trivial.
+  [P1] 02_FORMAL/coq/domains/DataRaceFreedom.v:L503 DR_028_race_free_location
+         Concludes with True, proved by intros as_ l1 l2 Hrf Hneq. exact I.
+  [P1] 02_FORMAL/coq/domains/DistributedConsensus.v:L328 agreement_non_decided
+         Concludes with True, proved by intros. exact I.
+  [P1] 02_FORMAL/coq/domains/HardwareSecurity.v:L82 hw_001_spectre_v1_mitigated
+         Concludes with True, proved by intros sb Hlfence Hbranch. trivial.
+  [P1] 02_FORMAL/coq/domains/HardwareSecurity.v:L96 hw_002_spectre_v2_mitigated
+         Concludes with True, proved by intros retpoline ibrs Hmitigation. trivi
+  [P1] 02_FORMAL/coq/domains/HardwareSecurity.v:L109 hw_003_spectre_v4_mitigated
+         Concludes with True, proved by intros ssbd Hssbd. trivial.
+  [P1] 02_FORMAL/coq/domains/HardwareSecurity.v:L121 hw_004_meltdown_mitigated
+         Concludes with True, proved by intros mp Hkpti. trivial.
+
+========================================================================
+RESULT: 1316 vacuous proofs detected across 308 files
+EXIT CODE: 1
+========================================================================

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedCompliance - Isabelle/HOL Port
@@ -110,7 +112,7 @@
  *)
 
 theory VerifiedCompliance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Regulation (matches Coq: Inductive Regulation) *)
@@ -124,9 +126,9 @@ datatype regulation =
 
 (* ControlStatus (matches Coq: Inductive ControlStatus) *)
 datatype control_status =
-    Proven  (* Formally proven *)
-  |     Implemented  (* Implemented, tested *)
-  |     Partial  (* Partially implemented *)
+    Proven
+  |     Implemented
+  |     Partial
   |     Gap
 
 (* PersonalData (matches Coq: Record PersonalData) *)
@@ -138,17 +140,17 @@ record personal_data =
   pd_consent :: bool
   pd_collected :: nat
   pd_retention :: nat
-  pd_necessary :: bool  (* Is this data necessary for purpose *)
-  pd_accurate :: bool  (* Is this data accurate *)
-  pd_integrity_protected :: bool  (* Is integrity protected *)
-  pd_exportable :: bool  (* Can be exported to subject *)
+  pd_necessary :: bool
+  pd_accurate :: bool
+  pd_integrity_protected :: bool
+  pd_exportable :: bool
 
 (* DataStore (matches Coq: Record DataStore) *)
 record data_store =
   store_data :: 'a list
   store_purpose :: string
-  store_compliant :: bool  (* Is store GDPR compliant *)
-  store_encrypted :: bool  (* Is store encrypted *)
+  store_compliant :: bool
+  store_encrypted :: bool
 
 (* PHI (matches Coq: Record PHI) *)
 record phi =
@@ -168,9 +170,9 @@ record cardholder_data =
   chd_pan :: 'a list
   chd_pan_encrypted :: bool
   chd_expiry :: nat
-  chd_cvv_stored :: bool  (* Must be false post-auth *)
+  chd_cvv_stored :: bool
   chd_cardholder_name :: string
-  chd_in_cde :: bool  (* In cardholder data environment *)
+  chd_in_cde :: bool
 
 (* Control (matches Coq: Record Control) *)
 record control =
@@ -259,168 +261,201 @@ fun is_proven :: "ControlStatus \<Rightarrow> bool" where
 
 (* data_minimization_holds (matches Coq: Definition data_minimization_holds) *)
 definition data_minimization_holds :: "DataStore \<Rightarrow> bool" where
-  "data_minimization_holds store \<equiv> store"
+  "data_minimization_holds store \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_necessary) = True"
 
 (* purpose_limitation_holds (matches Coq: Definition purpose_limitation_holds) *)
 definition purpose_limitation_holds :: "DataStore \<Rightarrow> bool" where
-  "purpose_limitation_holds store \<equiv> store"
+  "purpose_limitation_holds store \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_purpose) = store.(store_purpose)"
 
 (* storage_limitation_holds (matches Coq: Definition storage_limitation_holds) *)
 definition storage_limitation_holds :: "DataStore \<Rightarrow> nat \<Rightarrow> bool" where
-  "storage_limitation_holds store now \<equiv> store"
+  "storage_limitation_holds store now \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) ->
+    pd.(pd_collected) + pd.(pd_retention) >= now"
 
 (* accuracy_holds (matches Coq: Definition accuracy_holds) *)
 definition accuracy_holds :: "DataStore \<Rightarrow> bool" where
-  "accuracy_holds store \<equiv> store"
+  "accuracy_holds store \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_accurate) = True"
 
 (* integrity_holds (matches Coq: Definition integrity_holds) *)
 definition integrity_holds :: "DataStore \<Rightarrow> bool" where
-  "integrity_holds store \<equiv> store"
+  "integrity_holds store \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_integrity_protected) = True"
 
 (* access_right_holds (matches Coq: Definition access_right_holds) *)
 definition access_right_holds :: "DataStore \<Rightarrow> DataSubjectId \<Rightarrow> bool" where
-  "access_right_holds store subject \<equiv> store"
+  "access_right_holds store subject \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_subject) = subject ->
+    pd.(pd_exportable) = True"
 
 (* erasure_right_holds (matches Coq: Definition erasure_right_holds) *)
 definition erasure_right_holds :: "DataSubjectId \<Rightarrow> bool" where
-  "erasure_right_holds subject \<equiv> store"
+  "erasure_right_holds subject \<equiv> store.(store_compliant) = True ->
+  (forall pd, In pd store.(store_data) -> pd.(pd_subject) = subject ->
+    ~ In pd store'.(store_data)) /\
+  (forall pd, In pd store.(store_data) -> pd.(pd_subject) <> subject ->
+    In pd store'.(store_data))"
 
 (* portability_holds (matches Coq: Definition portability_holds) *)
 definition portability_holds :: "DataStore \<Rightarrow> bool" where
-  "portability_holds store \<equiv> store"
+  "portability_holds store \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_exportable) = True"
 
 (* consent_valid_holds (matches Coq: Definition consent_valid_holds) *)
 definition consent_valid_holds :: "DataStore \<Rightarrow> bool" where
-  "consent_valid_holds store \<equiv> store"
+  "consent_valid_holds store \<equiv> store.(store_compliant) = True ->
+  forall pd, In pd store.(store_data) -> pd.(pd_consent) = True"
 
 (* phi_protected (matches Coq: Definition phi_protected) *)
 definition phi_protected :: "PHI \<Rightarrow> bool" where
-  "phi_protected phi \<equiv> phi"
+  "phi_protected phi \<equiv> phi.(phi_in_system) = True ->
+  phi.(phi_encrypted) = True /\ phi.(phi_access_controlled) = True"
 
 (* hipaa_access_control_holds (matches Coq: Definition hipaa_access_control_holds) *)
 definition hipaa_access_control_holds :: "PHI \<Rightarrow> bool" where
-  "hipaa_access_control_holds phi \<equiv> phi"
+  "hipaa_access_control_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_access_controlled) = True"
 
 (* hipaa_audit_holds (matches Coq: Definition hipaa_audit_holds) *)
 definition hipaa_audit_holds :: "PHI \<Rightarrow> bool" where
-  "hipaa_audit_holds phi \<equiv> phi"
+  "hipaa_audit_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_logged) = True"
 
 (* minimum_necessary_holds (matches Coq: Definition minimum_necessary_holds) *)
 definition minimum_necessary_holds :: "PHI \<Rightarrow> bool" where
-  "minimum_necessary_holds phi \<equiv> phi"
+  "minimum_necessary_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_access_controlled) = True"
 
 (* hipaa_encryption_holds (matches Coq: Definition hipaa_encryption_holds) *)
 definition hipaa_encryption_holds :: "PHI \<Rightarrow> bool" where
-  "hipaa_encryption_holds phi \<equiv> phi"
+  "hipaa_encryption_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_encrypted) = True"
 
 (* hipaa_integrity_holds (matches Coq: Definition hipaa_integrity_holds) *)
 definition hipaa_integrity_holds :: "PHI \<Rightarrow> bool" where
-  "hipaa_integrity_holds phi \<equiv> phi"
+  "hipaa_integrity_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_integrity_protected) = True"
 
 (* hipaa_availability_holds (matches Coq: Definition hipaa_availability_holds) *)
 definition hipaa_availability_holds :: "PHI \<Rightarrow> bool" where
-  "hipaa_availability_holds phi \<equiv> phi"
+  "hipaa_availability_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_available) = True"
 
 (* breach_notification_holds (matches Coq: Definition breach_notification_holds) *)
 definition breach_notification_holds :: "PHI \<Rightarrow> bool" where
-  "breach_notification_holds phi \<equiv> phi"
+  "breach_notification_holds phi \<equiv> phi.(phi_in_system) = True -> phi.(phi_logged) = True"
 
 (* network_segmented_holds (matches Coq: Definition network_segmented_holds) *)
 definition network_segmented_holds :: "Network \<Rightarrow> bool" where
-  "network_segmented_holds net \<equiv> net"
+  "network_segmented_holds net \<equiv> net.(net_segmented) = True ->
+  forall n1 n2, In n1 net.(net_cde) -> In n2 net.(net_non_cde) ->
+    n1 <> n2"
 
 (* chd_protected (matches Coq: Definition chd_protected) *)
 definition chd_protected :: "CardholderData \<Rightarrow> bool" where
-  "chd_protected chd \<equiv> chd"
+  "chd_protected chd \<equiv> chd.(chd_in_cde) = True ->
+  chd.(chd_pan_encrypted) = True /\ chd.(chd_cvv_stored) = False"
 
 (* pci_encryption_holds (matches Coq: Definition pci_encryption_holds) *)
 definition pci_encryption_holds :: "CardholderData \<Rightarrow> bool" where
-  "pci_encryption_holds chd \<equiv> chd"
+  "pci_encryption_holds chd \<equiv> chd.(chd_in_cde) = True -> chd.(chd_pan_encrypted) = True"
 
 (* access_restricted_holds (matches Coq: Definition access_restricted_holds) *)
 definition access_restricted_holds :: "CardholderData \<Rightarrow> User \<Rightarrow> bool" where
-  "access_restricted_holds chd user \<equiv> chd"
+  "access_restricted_holds chd user \<equiv> chd.(chd_in_cde) = True ->
+  user.(user_business_need) = True /\ user.(user_unique) = True"
 
 (* unique_ids_holds (matches Coq: Definition unique_ids_holds) *)
 definition unique_ids_holds :: "bool" where
-  "unique_ids_holds \<equiv> forall u, In u users -> u"
+  "unique_ids_holds \<equiv> forall u, In u users -> u.(user_unique) = True"
 
 (* physical_security_holds (matches Coq: Definition physical_security_holds) *)
 definition physical_security_holds :: "PhysicalControl \<Rightarrow> bool" where
-  "physical_security_holds pc \<equiv> pc"
+  "physical_security_holds pc \<equiv> pc.(phys_secured) = True /\ pc.(phys_logged) = True"
 
 (* logging_holds (matches Coq: Definition logging_holds) *)
 definition logging_holds :: "bool" where
-  "logging_holds \<equiv> forall e, In e events -> e"
+  "logging_holds \<equiv> forall e, In e events -> e.(event_security_relevant) = True ->
+    e.(event_logged) = True"
 
 (* testing_holds (matches Coq: Definition testing_holds) *)
 definition testing_holds :: "bool" where
-  "testing_holds \<equiv> forall t, In t tests -> t"
+  "testing_holds \<equiv> forall t, In t tests -> t.(test_performed) = True"
 
 (* control_mapping_complete_holds (matches Coq: Definition control_mapping_complete_holds) *)
 definition control_mapping_complete_holds :: "CompliancePolicy \<Rightarrow> bool" where
-  "control_mapping_complete_holds policy \<equiv> forall ctrl, In ctrl policy"
+  "control_mapping_complete_holds policy \<equiv> forall ctrl, In ctrl policy.(policy_controls) ->
+    exists m, In m policy.(policy_mappings) /\ m.(mapping_control) = ctrl"
 
 (* evidence_chain_valid (matches Coq: Definition evidence_chain_valid) *)
 definition evidence_chain_valid :: "EvidenceChain \<Rightarrow> bool" where
-  "evidence_chain_valid ec \<equiv> ec"
+  "evidence_chain_valid ec \<equiv> ec.(evidence_valid_flag) = True"
 
 (* continuous_monitoring_holds (matches Coq: Definition continuous_monitoring_holds) *)
 definition continuous_monitoring_holds :: "CompliancePolicy \<Rightarrow> bool" where
-  "continuous_monitoring_holds policy \<equiv> policy"
+  "continuous_monitoring_holds policy \<equiv> policy.(policy_compliant) = True ->
+  forall ctrl, In ctrl policy.(policy_controls) ->
+    ctrl.(control_monitored) = True /\ ctrl.(control_has_alert) = True"
 
 (* proof_as_evidence_holds (matches Coq: Definition proof_as_evidence_holds) *)
 definition proof_as_evidence_holds :: "Control \<Rightarrow> bool" where
-  "proof_as_evidence_holds ctrl \<equiv> ctrl"
+  "proof_as_evidence_holds ctrl \<equiv> ctrl.(control_satisfied) = True ->
+  exists ec : EvidenceChain,
+    ec.(evidence_control) = ctrl /\ ec.(evidence_valid_flag) = True"
 
 (* audit_trail_complete_holds (matches Coq: Definition audit_trail_complete_holds) *)
 definition audit_trail_complete_holds :: "CompliancePolicy \<Rightarrow> bool" where
-  "audit_trail_complete_holds policy \<equiv> policy"
+  "audit_trail_complete_holds policy \<equiv> policy.(policy_compliant) = True ->
+  forall ctrl, In ctrl policy.(policy_controls) ->
+    ctrl.(control_monitored) = True"
 
 (* compose_policies (matches Coq: Definition compose_policies) *)
 definition compose_policies :: "CompliancePolicy" where
   "compose_policies \<equiv> mkPolicy
-    p1"
+    p1.(policy_regulation)
+    (p1.(policy_controls) ++ p2.(policy_controls))
+    (p1.(policy_mappings) ++ p2.(policy_mappings))
+    (p1.(policy_compliant) \<and> p2.(policy_compliant))"
 
 (* policy_compliant_prop (matches Coq: Definition policy_compliant_prop) *)
 definition policy_compliant_prop :: "CompliancePolicy \<Rightarrow> bool" where
-  "policy_compliant_prop p \<equiv> p"
+  "policy_compliant_prop p \<equiv> p.(policy_compliant) = True"
 
 (* regulation_coverage_holds (matches Coq: Definition regulation_coverage_holds) *)
 definition regulation_coverage_holds :: "CompliancePolicy \<Rightarrow> bool" where
-  "regulation_coverage_holds policy \<equiv> policy"
+  "regulation_coverage_holds policy \<equiv> policy.(policy_compliant) = True ->
+  forall req, In req reqs -> In req policy.(policy_controls)"
 
 (* control_effectiveness_holds (matches Coq: Definition control_effectiveness_holds) *)
 definition control_effectiveness_holds :: "Control \<Rightarrow> bool" where
-  "control_effectiveness_holds ctrl \<equiv> ctrl"
+  "control_effectiveness_holds ctrl \<equiv> ctrl.(control_satisfied) = True -> ctrl.(control_monitored) = True"
 
 (* gap_detection_holds (matches Coq: Definition gap_detection_holds) *)
 definition gap_detection_holds :: "GapAnalysis \<Rightarrow> bool" where
-  "gap_detection_holds ga \<equiv> ga"
+  "gap_detection_holds ga \<equiv> ga.(gap_analysis_complete) = True ->
+  forall ctrl, In ctrl ga.(gap_policy).(policy_controls) ->
+    ctrl.(control_satisfied) = False -> In ctrl ga.(gap_detected)"
 
 (* remediation_tracked_holds (matches Coq: Definition remediation_tracked_holds) *)
 definition remediation_tracked_holds :: "bool" where
-  "remediation_tracked_holds \<equiv> forall r, In r rems -> r"
+  "remediation_tracked_holds \<equiv> forall r, In r rems -> r.(rem_tracked) = True"
 
 (* make_compliant_store (matches Coq: Definition make_compliant_store) *)
 definition make_compliant_store :: "string \<Rightarrow> DataStore" where
-  "make_compliant_store purpose \<equiv> mkStore data purpose true true"
+  "make_compliant_store purpose \<equiv> mkStore data purpose True True"
 
 (* make_system_phi (matches Coq: Definition make_system_phi) *)
 definition make_system_phi :: "nat \<Rightarrow> nat \<Rightarrow> PHI" where
-  "make_system_phi patient_id created \<equiv> mkPHI patient_id data created accessed_by true true true true true true"
+  "make_system_phi patient_id created \<equiv> mkPHI patient_id data created accessed_by True True True True True True"
 
 (* make_cde_chd (matches Coq: Definition make_cde_chd) *)
 definition make_cde_chd :: "nat \<Rightarrow> string \<Rightarrow> CardholderData" where
-  "make_cde_chd expiry name \<equiv> mkCHD pan true expiry false name true"
+  "make_cde_chd expiry name \<equiv> mkCHD pan True expiry False name True"
 
 (* make_proven_control (matches Coq: Definition make_proven_control) *)
 definition make_proven_control :: "Regulation \<Rightarrow> Control" where
-  "make_proven_control reg \<equiv> mkControl id reg desc true true true"
+  "make_proven_control reg \<equiv> mkControl id reg desc True True True"
 
 (* make_compliant_policy (matches Coq: Definition make_compliant_policy) *)
 definition make_compliant_policy :: "Regulation \<Rightarrow> CompliancePolicy" where
-  "make_compliant_policy reg \<equiv> mkPolicy reg ctrls maps true"
+  "make_compliant_policy reg \<equiv> mkPolicy reg ctrls maps True"
 
 (* AJ_001_01_gdpr_data_minimization (matches Coq) *)
 lemma AJ_001_01_gdpr_data_minimization: "\<forall> data purpose, (\<forall> pd, In pd data \<longrightarrow> pd.(pd_necessary) = True) \<longrightarrow> let store := make_compliant_store data purpose in data_minimization_holds store"
@@ -447,7 +482,7 @@ lemma AJ_001_06_gdpr_access_right: "\<forall> data purpose subject, (\<forall> p
   by simp
 
 (* AJ_001_07_gdpr_erasure_right (matches Coq) *)
-lemma AJ_001_07_gdpr_erasure_right: "\<forall> data purpose subject, let store := make_compliant_store data purpose in let store' := make_compliant_store (filter (fun pd => negb (Nat.eqb pd.(pd_subject) subject)) data) purpose in (\<forall> pd, In pd data \<longrightarrow> pd.(pd_subject) = subject \<longrightarrow> ~ In pd (filter (fun pd => negb (Nat.eqb pd.(pd_subject) subject)) data)) \<longrightarrow> (\<forall> pd, In pd data \<longrightarrow> pd.(pd_subject) \<noteq> subject \<longrightarrow> In pd (filter (fun pd => negb (Nat.eqb pd.(pd_subject) subject)) data)) \<longrightarrow> erasure_right_holds store store' subject"
+lemma AJ_001_07_gdpr_erasure_right: "\<forall> data purpose subject, let store := make_compliant_store data purpose in let store' := make_compliant_store (filter (fun pd => (\<not> (Nat.eqb) pd.(pd_subject) subject)) data) purpose in (\<forall> pd, In pd data \<longrightarrow> pd.(pd_subject) = subject \<longrightarrow> ~ In pd (filter (fun pd => (\<not> (Nat.eqb) pd.(pd_subject) subject)) data)) \<longrightarrow> (\<forall> pd, In pd data \<longrightarrow> pd.(pd_subject) \<noteq> subject \<longrightarrow> In pd (filter (fun pd => (\<not> (Nat.eqb) pd.(pd_subject) subject)) data)) \<longrightarrow> erasure_right_holds store store' subject"
   by simp
 
 (* AJ_001_08_gdpr_portability (matches Coq) *)
@@ -491,7 +526,7 @@ lemma AJ_001_17_hipaa_breach_notification: "\<forall> patient_id data created ac
   by simp
 
 (* AJ_001_18_pci_network_segmentation (matches Coq) *)
-lemma AJ_001_18_pci_network_segmentation: "\<forall> cde non_cde, (\<forall> n1 n2, In n1 cde \<longrightarrow> In n2 non_cde \<longrightarrow> n1 \<noteq> n2) \<longrightarrow> let net := mkNetwork cde non_cde true in network_segmented_holds net"
+lemma AJ_001_18_pci_network_segmentation: "\<forall> cde non_cde, (\<forall> n1 n2, In n1 cde \<longrightarrow> In n2 non_cde \<longrightarrow> n1 \<noteq> n2) \<longrightarrow> let net := mkNetwork cde non_cde True in network_segmented_holds net"
   by auto
 
 (* AJ_001_19_pci_cardholder_protection (matches Coq) *)
@@ -503,7 +538,7 @@ lemma AJ_001_20_pci_encryption: "\<forall> pan expiry name, let chd := make_cde_
   by simp
 
 (* AJ_001_21_pci_access_restricted (matches Coq) *)
-lemma AJ_001_21_pci_access_restricted: "\<forall> pan expiry name user_id, let chd := make_cde_chd pan expiry name in let user := mkUser user_id true true in access_restricted_holds chd user"
+lemma AJ_001_21_pci_access_restricted: "\<forall> pan expiry name user_id, let chd := make_cde_chd pan expiry name in let user := mkUser user_id True True in access_restricted_holds chd user"
   by simp
 
 (* AJ_001_22_pci_unique_ids (matches Coq) *)
@@ -511,7 +546,7 @@ lemma AJ_001_22_pci_unique_ids: "\<forall> users, (\<forall> u, In u users \<lon
   by auto
 
 (* AJ_001_23_pci_physical_security (matches Coq) *)
-lemma AJ_001_23_pci_physical_security: "\<forall> location, let pc := mkPhysical location true true in physical_security_holds pc"
+lemma AJ_001_23_pci_physical_security: "\<forall> location, let pc := mkPhysical location True True in physical_security_holds pc"
   by simp
 
 (* AJ_001_24_pci_logging (matches Coq) *)
@@ -555,7 +590,7 @@ lemma AJ_001_33_control_effectiveness: "\<forall> id desc reg, let ctrl := make_
   by simp
 
 (* AJ_001_34_gap_detection (matches Coq) *)
-lemma AJ_001_34_gap_detection: "\<forall> policy detected, (\<forall> ctrl, In ctrl policy.(policy_controls) \<longrightarrow> ctrl.(control_satisfied) = False \<longrightarrow> In ctrl detected) \<longrightarrow> let ga := mkGapAnalysis policy detected true in gap_detection_holds ga"
+lemma AJ_001_34_gap_detection: "\<forall> policy detected, (\<forall> ctrl, In ctrl policy.(policy_controls) \<longrightarrow> ctrl.(control_satisfied) = False \<longrightarrow> In ctrl detected) \<longrightarrow> let ga := mkGapAnalysis policy detected True in gap_detection_holds ga"
   by auto
 
 (* AJ_001_35_remediation_tracked (matches Coq) *)

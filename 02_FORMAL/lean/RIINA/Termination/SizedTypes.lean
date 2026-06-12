@@ -181,12 +181,12 @@ theorem snd_steps_once : ∀ v1 v2 st ctx, value v1 → value v2 → (ESnd (EPai
 
 -- Case on Inl steps in one step
 /-- case_inl_steps_once (matches Coq) -/
-theorem case_inl_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx) := by
+theorem case_inl_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst[x1 := v] e1, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 -- Case on Inr steps in one step
 /-- case_inr_steps_once (matches Coq) -/
-theorem case_inr_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx) := by
+theorem case_inr_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst[x2 := v] e2, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 -- If true steps in one step
@@ -201,17 +201,17 @@ theorem if_false_steps_once : ∀ e2 e3 st ctx, (EIf (EBool false) e2 e3, st, ct
 
 -- Let with value steps in one step
 /-- let_value_steps_once (matches Coq) -/
-theorem let_value_steps_once : ∀ x v e2 st ctx, value v → (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx) := by
+theorem let_value_steps_once : ∀ x v e2 st ctx, value v → (ELet x v e2, st, ctx) --> (subst[x := v] e2, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 -- Handle with value steps in one step
 /-- handle_value_steps_once (matches Coq) -/
-theorem handle_value_steps_once : ∀ v x h st ctx, value v → (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx) := by
+theorem handle_value_steps_once : ∀ v x h st ctx, value v → (EHandle v x h, st, ctx) --> (subst[x := v] h, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 -- App with lambda and value steps in one step
 /-- app_lam_steps_once (matches Coq) -/
-theorem app_lam_steps_once : ∀ x T body v st ctx, value v → (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx) := by
+theorem app_lam_steps_once : ∀ x T body v st ctx, value v → (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx) := by
   simp_all [Bool.and_eq_true]
 
 /-- step_to_multi (matches Coq) -/

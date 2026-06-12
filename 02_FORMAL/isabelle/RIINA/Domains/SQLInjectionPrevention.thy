@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SQLInjectionPrevention - Isabelle/HOL Port
@@ -12,6 +14,8 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | TaintLevel         | taint_level            | OK     |
+ * | QueryMethod        | query_method           | OK     |
+ * | SQLOperation       | sql_operation          | OK     |
  * | SQLSecurityConfig  | sql_security_config    | OK     |
  * | taint_safe         | taint_safe             | OK     |
  * | method_safe        | method_safe            | OK     |
@@ -51,11 +55,19 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* TaintLevel (matches Coq: Inductive TaintLevel) *)
 datatype taint_level =
-    Untainted  (* Trusted, static data *)
-  |     UserInput  (* Untrusted user input *)
-  |     StringConcat  (* Dangerous: string concatenation *)
-  |     Parameterized  (* Safe: prepared statements *)
-  |     SQL_Select
+    Untainted
+  |     UserInput
+  |     Sanitized
+
+(* QueryMethod (matches Coq: Inductive QueryMethod) *)
+datatype query_method =
+    StringConcat
+  |     Parameterized
+  |     ORM
+
+(* SQLOperation (matches Coq: Inductive SQLOperation) *)
+datatype sql_operation =
+    SQL_Select
   |     SQL_Insert
   |     SQL_Update
   |     SQL_Delete
@@ -92,7 +104,7 @@ definition sql_injection_protected :: "SQLSecurityConfig \<Rightarrow> bool" whe
 (* riina_sql_config (matches Coq: Definition riina_sql_config) *)
 definition riina_sql_config :: "SQLSecurityConfig" where
   "riina_sql_config \<equiv> mkSQLConfig
-  true true true true true"
+  True True True True True"
 
 (* andb_true_iff (matches Coq) *)
 lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"

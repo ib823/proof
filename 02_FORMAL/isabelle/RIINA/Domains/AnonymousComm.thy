@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AnonymousComm - Isabelle/HOL Port
@@ -55,7 +57,7 @@
  *)
 
 theory AnonymousComm
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* unlinkable (matches Coq: Definition unlinkable) *)
@@ -72,7 +74,7 @@ definition entry_guard_fixed :: "nat \<Rightarrow> bool" where
 
 (* exit_diverse (matches Coq: Definition exit_diverse) *)
 definition exit_diverse :: "bool" where
-  "exit_diverse \<equiv> length (nodup Nat"
+  "exit_diverse \<equiv> length (nodup Nat.eq_dec (map (fun c => last (circuit_path c) 0) circuits)) > 1"
 
 (* keys_unique (matches Coq: Definition keys_unique) *)
 definition keys_unique :: "Circuit \<Rightarrow> bool" where
@@ -120,7 +122,7 @@ definition replay_prevented :: "nat \<Rightarrow> bool" where
 
 (* anon_layers (matches Coq: Definition anon_layers) *)
 definition anon_layers :: "bool" where
-  "anon_layers \<equiv> andb encryption (andb routing (andb timing cover))"
+  "anon_layers \<equiv> (encryption \<and> (andb) routing ((timing \<and> cover)))"
 
 (* anon_001_sender_anonymity (matches Coq) *)
 lemma anon_001_sender_anonymity: "\<forall> (sender_set : AnonymitySet) (k : nat), k_anonymous sender_set k \<longrightarrow> length sender_set \<ge> k"

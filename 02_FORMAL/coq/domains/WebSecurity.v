@@ -4,9 +4,9 @@
 (* RIINA Web Application Security Proofs *)
 (* Proves WEB-001 through WEB-025 are impossible/mitigated *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════ *)
@@ -334,7 +334,8 @@ Proof.
 Qed.
 
 (* ---------- WEB-021: IDOR Mitigated ---------- *)
-Definition authorized (user resource : nat) : Prop := True.  (* Simplified *)
+(* Authorization: user owns the resource (matching IDs) *)
+Definition authorized (user resource : nat) : Prop := user = resource.
 
 Theorem web_021_idor_mitigated :
   forall (user resource : nat),

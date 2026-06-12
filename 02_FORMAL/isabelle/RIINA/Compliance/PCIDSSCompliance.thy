@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PCIDSSCompliance - Isabelle/HOL Port
@@ -33,13 +35,16 @@
  * | grant_chd_access   | grant_chd_access       | OK     |
  * | chd_record_compliant | chd_record_compliant   | OK     |
  * | create_audit_entry | create_audit_entry     | OK     |
+ * | audit_chain_valid  | audit_chain_valid      | OK     |
  * | tls_compliant      | tls_compliant          | OK     |
  * | transmission_compliant | transmission_compliant | OK     |
+ * | token_lookup       | token_lookup           | OK     |
  * | data_past_retention | data_past_retention    | OK     |
  * | deletion_secure    | deletion_secure        | OK     |
  * | deletion_unrecoverable | deletion_unrecoverable | OK     |
  * | zone_compliant     | zone_compliant         | OK     |
  * | system_scope_isolated | system_scope_isolated  | OK     |
+ * | nat_nodup          | nat_nodup              | OK     |
  * | users_unique_ids   | users_unique_ids       | OK     |
  * | COMPLY_002_01_pan_masking | COMPLY_002_01_pan_masking | OK     |
  * | COMPLY_002_01_pan_masking_valid | COMPLY_002_01_pan_masking_valid | OK     |
@@ -81,33 +86,29 @@
  *)
 
 theory PCIDSSCompliance
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* CHDType (matches Coq: Inductive CHDType) *)
 datatype chd_type =
-    PAN  (* Primary Account Number - 16 digits *)
-  |     CVV  (* Card Verification Value - 3-4 digits *)
-  |     PIN  (* Personal Identification Number *)
-  |     Expiry  (* Expiration date *)
-  |     CardholderName  (* Cardholder name *)
+    PAN
+  |     CVV
+  |     PIN
+  |     Expiry
+  |     CardholderName
 
 (* EncState (matches Coq: Inductive EncState) *)
 datatype enc_state =
     Plain
   |     AES128
-  |     AES256  (* Minimum for PAN *)
-  |     Tokenized  (* Tokenization *)
+  |     AES256
+  |     Tokenized
 
 (* PANDisplay (matches Coq: Inductive PANDisplay) *)
 datatype pan_display =
-    FullPAN  (* PROHIBITED for display *)
-  |     MaskedPAN  (* ****-****-****-1234 *)
-  |     TokenizedPAN  (* Token reference *)
+    FullPAN
+  |     MaskedPAN
+  |     TokenizedPAN
 
 (* AccessLevel (matches Coq: Inductive AccessLevel) *)
 datatype access_level =
@@ -127,13 +128,13 @@ datatype tls_version =
 datatype deletion_state =
     NotDeleted
   |     MarkedForDeletion
-  |     Overwritten  (* Data overwritten with random *)
-  |     SecurelyDeleted  (* Multiple overwrites, verified *)
+  |     Overwritten
+  |     SecurelyDeleted
 
 (* CHDRecord (matches Coq: Record CHDRecord) *)
 record chd_record =
   chd_type :: CHDType
-  chd_value :: nat  (* Abstract value *)
+  chd_value :: nat
   chd_encryption :: EncState
   chd_display_format :: PANDisplay
 
@@ -141,8 +142,8 @@ record chd_record =
 record key_state =
   key_id :: nat
   key_creation_time :: nat
-  key_rotation_period :: nat  (* Typically 1 year *)
-  key_protected :: bool  (* Stored in HSM or equivalent *)
+  key_rotation_period :: nat
+  key_protected :: bool
 
 (* PCIAudit (matches Coq: Record PCIAudit) *)
 record pci_audit =
@@ -151,13 +152,13 @@ record pci_audit =
   pci_action :: nat
   pci_chd_accessed :: CHDType
   pci_success :: bool
-  pci_hash :: nat  (* For integrity *)
+  pci_hash :: nat
 
 (* TokenVault (matches Coq: Record TokenVault) *)
 record token_vault =
   vault_tokens :: 'a list
-  vault_key :: KeyState  (* Key protecting the vault *)
-  vault_isolated :: bool  (* Network segmented *)
+  vault_key :: KeyState
+  vault_isolated :: bool
 
 (* PCISystem (matches Coq: Record PCISystem) *)
 record pci_system =
@@ -171,7 +172,7 @@ record user =
   user_id :: nat
   user_access_level :: AccessLevel
   user_mfa_enabled :: bool
-  user_need_to_know :: bool  (* Business need for CHD access *)
+  user_need_to_know :: bool
 
 (* Transmission (matches Coq: Record Transmission) *)
 record transmission =
@@ -187,7 +188,7 @@ record retention_policy =
 (* NetworkZone (matches Coq: Record NetworkZone) *)
 record network_zone =
   zone_id :: nat
-  zone_is_cde :: bool  (* Cardholder Data Environment *)
+  zone_is_cde :: bool
   zone_isolated :: bool
   zone_firewall_protected :: bool
 
@@ -213,19 +214,24 @@ fun display_compliant :: "PANDisplay \<Rightarrow> bool" where
 
 (* key_needs_rotation (matches Coq: Definition key_needs_rotation) *)
 definition key_needs_rotation :: "KeyState \<Rightarrow> nat \<Rightarrow> bool" where
-  "key_needs_rotation k current_time \<equiv> Nat"
+  "key_needs_rotation k current_time \<equiv> ((key_creation_time < k) + key_rotation_period k) current_time"
 
-(* grant_chd_access - complex match, manual review needed *)
+(* grant_chd_access - complex match, needs manual translation *)
+definition grant_chd_access :: "bool" where "grant_chd_access = undefined"
 
 (* chd_record_compliant (matches Coq: Definition chd_record_compliant) *)
 definition chd_record_compliant :: "CHDRecord \<Rightarrow> bool" where
-  "chd_record_compliant rec \<equiv> andb (can_store (chd_type rec))
-       (andb (pci_compliant_encryption (chd_encryption rec) (chd_type rec))
+  "chd_record_compliant rec \<equiv> ((can_store \<and> (chd_type) rec))
+       ((pci_compliant_encryption (chd_encryption rec \<and> chd_type rec))
              (display_compliant (chd_display_format rec)))"
 
 (* create_audit_entry (matches Coq: Definition create_audit_entry) *)
 definition create_audit_entry :: "CHDType \<Rightarrow> bool \<Rightarrow> nat \<Rightarrow> PCIAudit" where
   "create_audit_entry chd succ prev_hash \<equiv> mkPCIAudit ts usr act chd succ (prev_hash + ts + usr + act)"
+
+(* audit_chain_valid (matches Coq: Definition audit_chain_valid) *)
+fun audit_chain_valid :: "nat \<Rightarrow> bool" where
+
 
 (* tls_compliant (matches Coq: Definition tls_compliant) *)
 fun tls_compliant :: "TLSVersion \<Rightarrow> bool" where
@@ -236,11 +242,14 @@ fun tls_compliant :: "TLSVersion \<Rightarrow> bool" where
 
 (* transmission_compliant (matches Coq: Definition transmission_compliant) *)
 definition transmission_compliant :: "Transmission \<Rightarrow> bool" where
-  "transmission_compliant t \<equiv> andb (trans_encrypted t) (tls_compliant (trans_tls_version t))"
+  "transmission_compliant t \<equiv> (trans_encrypted t \<and> tls_compliant (trans_tls_version t))"
+
+(* token_lookup - complex match, needs manual translation *)
+definition token_lookup :: "bool" where "token_lookup = undefined"
 
 (* data_past_retention (matches Coq: Definition data_past_retention) *)
 definition data_past_retention :: "bool" where
-  "data_past_retention \<equiv> Nat"
+  "data_past_retention \<equiv> ((creation_time < +) max_days) current_time"
 
 (* deletion_secure (matches Coq: Definition deletion_secure) *)
 fun deletion_secure :: "DeletionState \<Rightarrow> bool" where
@@ -256,18 +265,22 @@ fun deletion_unrecoverable :: "DeletionState \<Rightarrow> bool" where
 (* zone_compliant (matches Coq: Definition zone_compliant) *)
 definition zone_compliant :: "NetworkZone \<Rightarrow> bool" where
   "zone_compliant z \<equiv> if zone_is_cde z then
-    andb (zone_isolated z) (zone_firewall_protected z)
+    (zone_isolated z \<and> zone_firewall_protected z)
   else
-    true"
+    True"
 
 (* system_scope_isolated (matches Coq: Definition system_scope_isolated) *)
 definition system_scope_isolated :: "PCISystem \<Rightarrow> bool" where
   "system_scope_isolated sys \<equiv> vault_isolated (pci_vault sys)"
 
+(* nat_nodup (matches Coq: Definition nat_nodup) *)
+fun nat_nodup :: "list nat" where
+  "nat_nodup nil = nil"
+
 (* users_unique_ids (matches Coq: Definition users_unique_ids) *)
 definition users_unique_ids :: "bool" where
   "users_unique_ids \<equiv> let ids := map user_id users in
-  Nat"
+  ((List.length = ids)) (List.length (nat_nodup ids))"
 
 (* COMPLY_002_01_pan_masking (matches Coq) *)
 lemma COMPLY_002_01_pan_masking: "\<forall> (disp : PANDisplay), disp = FullPAN \<longrightarrow> display_compliant disp = False"
@@ -374,11 +387,11 @@ lemma COMPLY_002_11_transmission_requires_encryption: "\<forall> (t : Transmissi
   by (cases rule: ‹_›.cases; simp)
 
 (* COMPLY_002_12_token_no_key_no_pan (matches Coq) *)
-lemma COMPLY_002_12_token_no_key_no_pan: "\<forall> (vault : TokenVault) (token : nat), token_lookup vault token false = None"
+lemma COMPLY_002_12_token_no_key_no_pan: "\<forall> (vault : TokenVault) (token : nat), token_lookup vault token False = None"
   by simp
 
 (* COMPLY_002_12_tokenization_irreversible_without_key (matches Coq) *)
-lemma COMPLY_002_12_tokenization_irreversible_without_key: "\<forall> (vault : TokenVault) (token pan : nat), token_lookup vault token false = Some pan \<longrightarrow> False"
+lemma COMPLY_002_12_tokenization_irreversible_without_key: "\<forall> (vault : TokenVault) (token pan : nat), token_lookup vault token False = Some pan \<longrightarrow> False"
   by auto
 
 (* COMPLY_002_13_past_retention_detected (matches Coq) *)

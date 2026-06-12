@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SizedTypes - Isabelle/HOL Port
@@ -14,6 +16,7 @@
  * | sized_ty           | sized_ty               | OK     |
  * | sized_ty_base      | sized_ty_base          | OK     |
  * | sized_ty_bound     | sized_ty_bound         | OK     |
+ * | expr_size          | expr_size              | OK     |
  * | terminates         | terminates             | OK     |
  * | step_terminates    | step_terminates        | OK     |
  * | expr_size_pos      | expr_size_pos          | OK     |
@@ -68,8 +71,8 @@ begin
 
 (* sized_ty (matches Coq: Inductive sized_ty) *)
 datatype sized_ty =
-    STBase  (* Base type with implicit size *)
-  |     STSized  (* Type with explicit size bound *)
+    STBase
+  |     STSized
 
 (* sized_ty_base (matches Coq: Definition sized_ty_base) *)
 fun sized_ty_base :: "sized_ty \<Rightarrow> ty" where
@@ -78,6 +81,10 @@ fun sized_ty_base :: "sized_ty \<Rightarrow> ty" where
 (* sized_ty_bound (matches Coq: Definition sized_ty_bound) *)
 fun sized_ty_bound :: "sized_ty \<Rightarrow> nat" where
 
+
+(* expr_size (matches Coq: Definition expr_size) *)
+fun expr_size :: "expr \<Rightarrow> nat" where
+  "expr_size EUnit = 1"
 
 (* terminates (matches Coq: Definition terminates) *)
 definition terminates :: "expr \<Rightarrow> store \<Rightarrow> effect_ctx \<Rightarrow> bool" where
@@ -124,37 +131,37 @@ lemma snd_steps_once: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value 
 
 (* Case on Inl steps in one step *)
 (* case_inl_steps_once (matches Coq) *)
-lemma case_inl_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx)"
+lemma case_inl_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst[x1 := v] e1, st, ctx)"
   by auto
 
 (* Case on Inr steps in one step *)
 (* case_inr_steps_once (matches Coq) *)
-lemma case_inr_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx)"
+lemma case_inr_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst[x2 := v] e2, st, ctx)"
   by auto
 
 (* If true steps in one step *)
 (* if_true_steps_once (matches Coq) *)
-lemma if_true_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool true) e2 e3, st, ctx) --> (e2, st, ctx)"
+lemma if_true_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool True) e2 e3, st, ctx) --> (e2, st, ctx)"
   by auto
 
 (* If false steps in one step *)
 (* if_false_steps_once (matches Coq) *)
-lemma if_false_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool false) e2 e3, st, ctx) --> (e3, st, ctx)"
+lemma if_false_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool False) e2 e3, st, ctx) --> (e3, st, ctx)"
   by auto
 
 (* Let with value steps in one step *)
 (* let_value_steps_once (matches Coq) *)
-lemma let_value_steps_once: "\<forall> x v e2 st ctx, value v \<longrightarrow> (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx)"
+lemma let_value_steps_once: "\<forall> x v e2 st ctx, value v \<longrightarrow> (ELet x v e2, st, ctx) --> (subst[x := v] e2, st, ctx)"
   by auto
 
 (* Handle with value steps in one step *)
 (* handle_value_steps_once (matches Coq) *)
-lemma handle_value_steps_once: "\<forall> v x h st ctx, value v \<longrightarrow> (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx)"
+lemma handle_value_steps_once: "\<forall> v x h st ctx, value v \<longrightarrow> (EHandle v x h, st, ctx) --> (subst[x := v] h, st, ctx)"
   by auto
 
 (* App with lambda and value steps in one step *)
 (* app_lam_steps_once (matches Coq) *)
-lemma app_lam_steps_once: "\<forall> x T body v st ctx, value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx)"
+lemma app_lam_steps_once: "\<forall> x T body v st ctx, value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx)"
   by auto
 
 (* step_to_multi (matches Coq) *)

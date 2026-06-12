@@ -2,11 +2,12 @@
 
 //! Lexer Implementation
 
-use crate::token::{Token, TokenKind, Span};
 use crate::error::LexError;
+use crate::token::{Span, Token, TokenKind};
 use std::iter::Peekable;
 use std::str::Chars;
 
+#[derive(Clone)]
 pub struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
     #[allow(dead_code)] // Reserved for future error recovery and span validation
@@ -109,7 +110,7 @@ impl<'a> Lexer<'a> {
                                         depth -= 1;
                                     }
                                 }
-                                Some(_) => {} // Ignore other characters
+                                Some(_) => {}  // Ignore other characters
                                 None => break, // Unterminated, handled by next_token logic?
                             }
                         }
@@ -131,6 +132,7 @@ impl<'a> Lexer<'a> {
     /// - A string literal is not properly terminated
     /// - A character literal is not properly terminated
     /// - An invalid escape sequence is encountered
+    #[allow(clippy::too_many_lines)]
     pub fn next_token(&mut self) -> Result<Token, LexError> {
         self.skip_whitespace();
 
@@ -152,7 +154,7 @@ impl<'a> Lexer<'a> {
             '@' => TokenKind::At,
             '#' => TokenKind::Hash,
             '$' => TokenKind::Dollar,
-            
+
             '.' => {
                 if let Some('.') = self.peek() {
                     self.advance();
@@ -166,7 +168,7 @@ impl<'a> Lexer<'a> {
                     TokenKind::Dot
                 }
             }
-            
+
             ':' => {
                 if let Some(':') = self.peek() {
                     self.advance();
@@ -179,47 +181,145 @@ impl<'a> Lexer<'a> {
                 }
             }
 
-            '+' => if let Some('=') = self.peek() { self.advance(); TokenKind::PlusEq } else { TokenKind::Plus },
-            '-' => if let Some('=') = self.peek() { self.advance(); TokenKind::MinusEq }
-                   else if let Some('>') = self.peek() { self.advance(); TokenKind::Arrow }
-                   else { TokenKind::Minus },
-            '*' => if let Some('=') = self.peek() { self.advance(); TokenKind::StarEq } else { TokenKind::Star },
-            '/' => if let Some('=') = self.peek() { self.advance(); TokenKind::SlashEq } else { TokenKind::Slash },
-            '%' => if let Some('=') = self.peek() { self.advance(); TokenKind::PercentEq } else { TokenKind::Percent },
-            '^' => if let Some('=') = self.peek() { self.advance(); TokenKind::CaretEq } else { TokenKind::Caret },
-            
-            '&' => if let Some('=') = self.peek() { self.advance(); TokenKind::AndEq }
-                   else if let Some('&') = self.peek() { self.advance(); TokenKind::AndAnd }
-                   else { TokenKind::And },
-            
-            '|' => if let Some('|') = self.peek() { self.advance(); TokenKind::OrOr }
-                   else if let Some('>') = self.peek() { self.advance(); TokenKind::Pipe }
-                   else if let Some('=') = self.peek() { self.advance(); TokenKind::OrEq }
-                   else { TokenKind::Or },
+            '+' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::PlusEq
+                } else {
+                    TokenKind::Plus
+                }
+            }
+            '-' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::MinusEq
+                } else if let Some('>') = self.peek() {
+                    self.advance();
+                    TokenKind::Arrow
+                } else {
+                    TokenKind::Minus
+                }
+            }
+            '*' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::StarEq
+                } else {
+                    TokenKind::Star
+                }
+            }
+            '/' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::SlashEq
+                } else {
+                    TokenKind::Slash
+                }
+            }
+            '%' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::PercentEq
+                } else {
+                    TokenKind::Percent
+                }
+            }
+            '^' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::CaretEq
+                } else {
+                    TokenKind::Caret
+                }
+            }
 
-            '!' => if let Some('=') = self.peek() { self.advance(); TokenKind::Ne } else { TokenKind::Not },
-            '=' => if let Some('=') = self.peek() { self.advance(); TokenKind::EqEq }
-                   else if let Some('>') = self.peek() { self.advance(); TokenKind::FatArrow }
-                   else { TokenKind::Eq },
-            
-            '<' => if let Some('=') = self.peek() { self.advance(); TokenKind::Le }
-                   else if let Some('<') = self.peek() { 
-                       self.advance(); 
-                       if let Some('=') = self.peek() { self.advance(); TokenKind::ShlEq } else { TokenKind::Shl }
-                   } else { TokenKind::Lt },
-            
-            '>' => if let Some('=') = self.peek() { self.advance(); TokenKind::Ge }
-                   else if let Some('>') = self.peek() { 
-                       self.advance(); 
-                       if let Some('=') = self.peek() { self.advance(); TokenKind::ShrEq } else { TokenKind::Shr }
-                   } else { TokenKind::Gt },
+            '&' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::AndEq
+                } else if let Some('&') = self.peek() {
+                    self.advance();
+                    TokenKind::AndAnd
+                } else {
+                    TokenKind::And
+                }
+            }
+
+            '|' => {
+                if let Some('|') = self.peek() {
+                    self.advance();
+                    TokenKind::OrOr
+                } else if let Some('>') = self.peek() {
+                    self.advance();
+                    TokenKind::Pipe
+                } else if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::OrEq
+                } else {
+                    TokenKind::Or
+                }
+            }
+
+            '!' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::Ne
+                } else {
+                    TokenKind::Not
+                }
+            }
+            '=' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::EqEq
+                } else if let Some('>') = self.peek() {
+                    self.advance();
+                    TokenKind::FatArrow
+                } else {
+                    TokenKind::Eq
+                }
+            }
+
+            '<' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::Le
+                } else if let Some('<') = self.peek() {
+                    self.advance();
+                    if let Some('=') = self.peek() {
+                        self.advance();
+                        TokenKind::ShlEq
+                    } else {
+                        TokenKind::Shl
+                    }
+                } else {
+                    TokenKind::Lt
+                }
+            }
+
+            '>' => {
+                if let Some('=') = self.peek() {
+                    self.advance();
+                    TokenKind::Ge
+                } else if let Some('>') = self.peek() {
+                    self.advance();
+                    if let Some('=') = self.peek() {
+                        self.advance();
+                        TokenKind::ShrEq
+                    } else {
+                        TokenKind::Shr
+                    }
+                } else {
+                    TokenKind::Gt
+                }
+            }
 
             '"' => self.read_string(start)?,
             '\'' => self.read_char_or_lifetime(start)?,
-            
-            _ if c.is_ascii_digit() => self.read_number(c),
+
+            _ if c.is_ascii_digit() => self.read_number(c, start)?,
             _ if is_ident_start(c) => self.read_identifier(c, start),
-            
+
             _ => return Err(LexError::UnexpectedChar(c, start)),
         };
 
@@ -254,7 +354,7 @@ impl<'a> Lexer<'a> {
     fn read_char_or_lifetime(&mut self, start: usize) -> Result<TokenKind, LexError> {
         // If it's a lifetime: 'ident
         // If it's a char: 'c' or '\n'
-        
+
         // Peek next
         let c1 = self.peek();
         match c1 {
@@ -305,20 +405,19 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn read_number(&mut self, first: char) -> TokenKind {
+    fn read_number(&mut self, first: char, start: usize) -> Result<TokenKind, LexError> {
         let mut s = String::new();
         s.push(first);
 
-        // Hex/Oct/Bin
+        // Hex/Oct/Bin. Typed suffixes on non-decimal bases (e.g. `0xFFu8`) are a
+        // later numeric-tower slice; for now hex/oct/bin literals carry no suffix.
         if first == '0' {
             if let Some(c) = self.peek() {
                 if c == 'x' || c == 'o' || c == 'b' {
                     self.advance();
                     s.push(c);
                     s.push_str(&self.consume_while(|ch| ch.is_ascii_hexdigit() || ch == '_'));
-                    // Check suffix
-                    // ...
-                    return TokenKind::LiteralInt(s, None); // TODO: Suffix
+                    return Ok(TokenKind::LiteralInt(s, None));
                 }
             }
         }
@@ -332,18 +431,54 @@ impl<'a> Lexer<'a> {
             let mut lookahead = self.input.clone();
             lookahead.next(); // consume .
             if let Some(c) = lookahead.next() {
-                if c != '.' && !is_ident_start(c) { // 1.e5, 1.2
+                if c != '.' && !is_ident_start(c) {
+                    // 1.e5, 1.2
                     self.advance();
                     s.push('.');
                     s.push_str(&self.consume_while(|ch| ch.is_ascii_digit() || ch == '_'));
                     // Exponent
                     // ...
-                    return TokenKind::LiteralFloat(s, None);
+                    return Ok(TokenKind::LiteralFloat(s, None));
                 }
             }
         }
 
-        TokenKind::LiteralInt(s, None) // Default
+        // Typed decimal integer suffix (u8/u16/u32/u64/i8/i16/i32/i64).
+        // **First slice of the numeric tower (Gate C, REQ-28):** the suffix is
+        // lexed and the literal is range-checked against the width *here*. The
+        // suffix is recorded in the token, but the value still types as
+        // `Nombor`/`Ty::Int` — distinct sized-integer TYPES and width-aware
+        // arithmetic/codegen are a later slice. A trailing identifier run that is
+        // not a known width (e.g. `255abc`) is left untouched for normal
+        // tokenization, so this does not change existing programs.
+        if let Some(suffix) = self.peek_int_suffix() {
+            self.advance_n(suffix.len());
+            check_int_literal_fits(&s, &suffix, start)?;
+            return Ok(TokenKind::LiteralInt(s, Some(suffix)));
+        }
+
+        Ok(TokenKind::LiteralInt(s, None)) // Default
+    }
+
+    /// Peek (without consuming) a trailing identifier run and return it iff it is
+    /// a known fixed-width integer suffix. Returns `None` (consuming nothing) for
+    /// any other trailing run, preserving existing tokenization.
+    fn peek_int_suffix(&self) -> Option<String> {
+        let mut look = self.input.clone();
+        let mut run = String::new();
+        while let Some(&ch) = look.peek() {
+            if is_ident_continue(ch) {
+                run.push(ch);
+                look.next();
+            } else {
+                break;
+            }
+        }
+        matches!(
+            run.as_str(),
+            "u8" | "u16" | "u32" | "u64" | "i8" | "i16" | "i32" | "i64"
+        )
+        .then_some(run)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -364,7 +499,7 @@ impl<'a> Lexer<'a> {
             "const" | "tetap" => TokenKind::KwConst,
             "static" | "statik" => TokenKind::KwStatic,
             "type" | "jenis" => TokenKind::KwType,
-            "struct" | "bentuk" => TokenKind::KwStruct,
+            "struct" | "bentuk" | "struktur" => TokenKind::KwStruct,
             "enum" | "pilihan" => TokenKind::KwEnum,
             "union" | "kesatuan" => TokenKind::KwUnion,
             "trait" | "sifat" => TokenKind::KwTrait,
@@ -383,8 +518,12 @@ impl<'a> Lexer<'a> {
             "loop" | "ulang" => TokenKind::KwLoop,
             "while" | "selagi" => TokenKind::KwWhile,
             "with" | "dengan" => TokenKind::KwWith,
-            "break" | "keluar" => TokenKind::KwBreak,
-            "continue" | "terus" => TokenKind::KwContinue,
+            // Loop control. The corpus uses `putus` (break) and `lanjut`
+            // (continue); `keluar`/`terus` are intentionally NOT reserved so
+            // they remain usable as ordinary identifiers (e.g. a `keluar` or
+            // `terus` boolean flag).
+            "break" | "putus" => TokenKind::KwBreak,
+            "continue" | "lanjut" => TokenKind::KwContinue,
             "return" | "pulang" => TokenKind::KwReturn,
 
             // Type cast and reference (English | Bahasa Melayu)
@@ -440,6 +579,11 @@ impl<'a> Lexer<'a> {
             "clone" | "klon" => TokenKind::KwClone,
             "lifetime" | "jangka" => TokenKind::KwLifetime,
 
+            // Linearity keywords (English | Bahasa Melayu)
+            "linear" | "sekali" => TokenKind::KwSekali,
+            "affine" | "paling" => TokenKind::KwPaling,
+            "relevant" | "mesti" => TokenKind::KwMesti,
+
             // Logic keywords (English | Bahasa Melayu)
             "and" | "dan" => TokenKind::KwAnd,
             "or" | "atau" => TokenKind::KwOr,
@@ -447,6 +591,12 @@ impl<'a> Lexer<'a> {
 
             // Guard clause (English | Bahasa Melayu)
             "guard" | "pastikan" => TokenKind::KwGuard,
+
+            // Test keyword (English | Bahasa Melayu)
+            "test" | "ujian" => TokenKind::KwTest,
+
+            // Expect keyword (English | Bahasa Melayu)
+            "expect" | "jangkakan" => TokenKind::KwExpect,
 
             // Sum type constructors
             "inl" => TokenKind::KwInl,
@@ -461,10 +611,14 @@ impl<'a> Lexer<'a> {
             "grant" | "beri" => TokenKind::KwGrant,
 
             // Option/Result constructors (English | Bahasa Melayu)
+            // Option/Result constructors. Each maps to a single token; the
+            // several Bahasa Melayu spellings are accepted as synonyms because
+            // the example corpus uses them interchangeably (Tidak/Tiada for
+            // None; Ralat/Gagal for Err; Berjaya/Jadi for Ok's success variant).
             "Some" | "Ada" => TokenKind::KwSome,
-            "None" | "Tiada" => TokenKind::KwNone,
-            "Ok" | "Jadi" => TokenKind::KwOk,
-            "Err" | "Gagal" => TokenKind::KwErr,
+            "None" | "Tiada" | "Tidak" => TokenKind::KwNone,
+            "Ok" | "Jadi" | "Berjaya" => TokenKind::KwOk,
+            "Err" | "Gagal" | "Ralat" => TokenKind::KwErr,
 
             // Session types (English | Bahasa Melayu)
             "session" | "sesi" => TokenKind::KwSession,
@@ -496,6 +650,46 @@ impl<'a> Lexer<'a> {
             "combined" | "gabungan" => TokenKind::KwCombined,
             "zeroize" | "kosongkan" => TokenKind::KwZeroize,
 
+            // JALINAN Phase 6 (English | Bahasa Melayu)
+            "choreography" | "koreografi" => TokenKind::KwChoreography,
+            "actor" | "pelakon" => TokenKind::KwActor,
+            "role" | "peranan" => TokenKind::KwRole,
+            "state" | "keadaan" => TokenKind::KwState,
+            "supervisor" | "penyelia" => TokenKind::KwSupervisor,
+            "merge" | "gabung" => TokenKind::KwMerge,
+            "content_hash" | "cincang" => TokenKind::KwContentHash,
+            "verify" | "sahkan" => TokenKind::KwVerify,
+            "spawn" | "lahir" => TokenKind::KwSpawn,
+
+            // CAHAYA Phase J5 (English | Bahasa Melayu)
+            "display" | "paparan" => TokenKind::KwDisplay,
+            "layout" | "susun" => TokenKind::KwLayout,
+            "color" | "warna" => TokenKind::KwColor,
+            "text" | "tulisan" => TokenKind::KwText_,
+            "button" | "butang" => TokenKind::KwButton,
+            "input" | "masukan" => TokenKind::KwInput,
+            "image" | "gambar" => TokenKind::KwImage,
+            "style" | "gaya" => TokenKind::KwStyle,
+            "contrast" | "kontras" => TokenKind::KwContrast,
+            "accessible" | "mudahcapai" => TokenKind::KwAccessible,
+            "row" | "baris" => TokenKind::KwRow,
+            "column" | "lajur" => TokenKind::KwColumn,
+            "padding" | "pelapik" => TokenKind::KwPadding,
+            "font_size" | "saiz_fon" => TokenKind::KwFontSize,
+
+            // Blockchain + Syariah Phase J6 (English | Bahasa Melayu)
+            "smart_contract" | "kontrak_pintar" => TokenKind::KwSmartContract,
+            "token" => TokenKind::KwToken,
+            "consensus" | "konsensus" => TokenKind::KwConsensus,
+            "shariah_compliant" | "patuh_syariah" => TokenKind::KwShariahCompliant,
+            "mudarabah" => TokenKind::KwMudarabah,
+            "musharakah" => TokenKind::KwMusharakah,
+            "sukuk" => TokenKind::KwSukuk,
+            "zakat" => TokenKind::KwZakat,
+            "takaful" => TokenKind::KwTakaful,
+            "wakaf" => TokenKind::KwWakaf,
+            "purify" | "tathir" => TokenKind::KwPurify,
+
             _ => TokenKind::Identifier(s),
         }
     }
@@ -507,4 +701,36 @@ fn is_ident_start(c: char) -> bool {
 
 fn is_ident_continue(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
+}
+
+/// Range-check a decimal integer literal against a fixed-width suffix.
+///
+/// The lexer sees only the literal's magnitude (a leading `-` is a separate
+/// unary-minus token), so signed widths accept magnitudes up to `2^(N-1)` — this
+/// admits the most-negative value (e.g. `-128i8`) without tracking sign here.
+/// A magnitude that exceeds the width's range, or does not fit in `u128`, is an
+/// `InvalidNumericLiteral`.
+fn check_int_literal_fits(digits: &str, suffix: &str, pos: usize) -> Result<(), LexError> {
+    let clean: String = digits.chars().filter(|c| *c != '_').collect();
+    let value: u128 = clean
+        .parse()
+        .map_err(|_| LexError::InvalidNumericLiteral(format!("{clean}{suffix}"), pos))?;
+    let max: u128 = match suffix {
+        "u8" => u128::from(u8::MAX),
+        "u16" => u128::from(u16::MAX),
+        "u32" => u128::from(u32::MAX),
+        "u64" => u128::from(u64::MAX),
+        "i8" => 1u128 << 7,
+        "i16" => 1u128 << 15,
+        "i32" => 1u128 << 31,
+        "i64" => 1u128 << 63,
+        _ => return Ok(()), // unreachable: peek_int_suffix gates the suffix set
+    };
+    if value > max {
+        return Err(LexError::InvalidNumericLiteral(
+            format!("{clean}{suffix} (exceeds {suffix} range)"),
+            pos,
+        ));
+    }
+    Ok(())
 }

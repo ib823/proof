@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ValRelStepLimit_PROOF - Isabelle/HOL Port
@@ -21,33 +23,33 @@
  *)
 
 theory ValRelStepLimit_PROOF
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
 (* For first-order types, step indices are irrelevant.
     Uses val_rel_n_fo_equiv from NonInterference_v2.v *)
 (* val_rel_n_to_val_rel_fo_proven (matches Coq) *)
-lemma val_rel_n_to_val_rel_fo_proven: "\<forall> Σ T v1 v2, first_order_type T = True \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel_fo_proven: "\<forall>Σ T v1 v2. first_order_type T = True \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> (\<exists>n. val_rel_n (Suc n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
   by auto
 
 (* Helper: repeated step-up with typing *)
 (* val_rel_n_step_up_k (matches Coq) *)
-lemma val_rel_n_step_up_k: "\<forall> k n Σ T v1 v2, val_rel_n n Σ T v1 v2 \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v1 T EffectPure) \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v2 T EffectPure) \<longrightarrow> val_rel_n (n + k) Σ T v1 v2"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_step_up_k: "\<forall>k n Σ T v1 v2. val_rel_n n Σ T v1 v2 \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v1 T EffectPure) \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v2 T EffectPure) \<longrightarrow> val_rel_n (n + k) Σ T v1 v2"
+  by auto
 
 (* For higher-order types, we need typing preconditions. *)
 (* val_rel_n_to_val_rel_with_typing (matches Coq) *)
-lemma val_rel_n_to_val_rel_with_typing: "\<forall> Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v1 T EffectPure) \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v2 T EffectPure) \<longrightarrow> val_rel Σ T v1 v2"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_to_val_rel_with_typing: "\<forall>Σ T v1 v2. is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> (\<exists>n. val_rel_n (Suc n) Σ T v1 v2) \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v1 T EffectPure) \<longrightarrow> (first_order_type T = False \<longrightarrow> has_type nil Σ Public v2 T EffectPure) \<longrightarrow> val_rel Σ T v1 v2"
+  by auto
 
 (* Helper: Extract typing from val_rel_n structure for TFn *)
 (* val_rel_n_TFn_typing (matches Coq) *)
-lemma val_rel_n_TFn_typing: "\<forall> n Σ T1 T2 eff v1 v2, val_rel_n (S n) Σ (TFn T1 T2 eff) v1 v2 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure \<and> has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure"
+lemma val_rel_n_TFn_typing: "\<forall>n Σ T1 T2 eff v1 v2. val_rel_n (Suc n) Σ (TFn T1 T2 eff) v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure \<and> has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure"
   by auto
 
 (* Helper: For composite types, extract typing from structure *)
 (* val_rel_n_composite_typing (matches Coq) *)
-lemma val_rel_n_composite_typing: "\<forall> n Σ T v1 v2, val_rel_n (S n) Σ T v1 v2 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> first_order_type T = False \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure"
+lemma val_rel_n_composite_typing: "\<forall>n Σ T v1 v2. val_rel_n (Suc n) Σ T v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> first_order_type T = False \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure"
   by auto
 
 (* The original axiom WITHOUT explicit typing preconditions.
@@ -57,7 +59,7 @@ lemma val_rel_n_composite_typing: "\<forall> n Σ T v1 v2, val_rel_n (S n) Σ T 
     2. Higher-order case: Extract typing from val_rel_n structure
        and use val_rel_n_to_val_rel_with_typing *)
 (* val_rel_n_to_val_rel_proven (matches Coq) *)
-lemma val_rel_n_to_val_rel_proven: "\<forall> Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel_proven: "\<forall>Σ T v1 v2. is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> (\<exists>n. val_rel_n (Suc n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
   by auto
 
 (* Summary: All admits eliminated *)

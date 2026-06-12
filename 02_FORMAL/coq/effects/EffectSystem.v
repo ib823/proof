@@ -18,9 +18,9 @@
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
 Require Import RIINA.effects.EffectAlgebra.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (** ** Effect Occurrence Predicate *)
@@ -318,6 +318,328 @@ Proof.
 
   (* T_Prove *)
   - exact IHHty.
+Qed.
+
+(* ================================================================= *)
+(** ** Values Always Perform Within Any Bound *)
+(* ================================================================= *)
+
+(** Values contain no performed effects (they are fully evaluated). *)
+Lemma performs_within_value : forall v eff,
+  value v ->
+  performs_within v eff.
+Proof.
+  intros v eff Hval.
+  induction Hval; simpl; auto.
+Qed.
+
+(** Values perform within EffPure. *)
+Lemma performs_within_value_pure : forall v,
+  value v ->
+  performs_within v EffPure.
+Proof.
+  intros v Hval. apply performs_within_value. exact Hval.
+Qed.
+
+(* ================================================================= *)
+(** ** Performs-Within Structural Properties *)
+(* ================================================================= *)
+
+(** The join of two bounds covers both sub-expressions. *)
+Lemma performs_within_join_l : forall e eff1 eff2,
+  performs_within e eff1 ->
+  performs_within e (effect_join eff1 eff2).
+Proof.
+  intros e eff1 eff2 Hpw.
+  apply performs_within_mono with (eff1 := eff1); auto.
+  apply effect_join_ub_l.
+Qed.
+
+Lemma performs_within_join_r : forall e eff1 eff2,
+  performs_within e eff2 ->
+  performs_within e (effect_join eff1 eff2).
+Proof.
+  intros e eff1 eff2 Hpw.
+  apply performs_within_mono with (eff1 := eff2); auto.
+  apply effect_join_ub_r.
+Qed.
+
+(** Top effect (EffGapura) bounds everything. *)
+Lemma performs_within_top : forall e eff,
+  performs_within e eff ->
+  performs_within e EffGapura.
+Proof.
+  intros e eff Hpw.
+  apply performs_within_mono with (eff1 := eff); auto.
+  apply effect_gapura_top.
+Qed.
+
+(* ================================================================= *)
+(** ** has_type_full Structural Properties *)
+(* ================================================================= *)
+
+(** has_type embeds into has_type_full. *)
+Lemma has_type_embed : forall G S D e T eff,
+  has_type G S D e T eff ->
+  has_type_full G S D e T eff.
+Proof.
+  intros. apply T_Core. exact H.
+Qed.
+
+(** has_type_full preserves effect ordering via performs_within. *)
+Lemma has_type_full_effect_bound : forall G S D e T eff eff',
+  has_type_full G S D e T eff ->
+  effect_leq eff eff' ->
+  performs_within e eff'.
+Proof.
+  intros G S D e T eff eff' Hty Hle.
+  apply performs_within_mono with (eff1 := eff); auto.
+  apply effect_safety with (G := G) (S := S) (D := D) (T := T).
+  exact Hty.
+Qed.
+
+(** The core typing relation's effect is sound for performs_within. *)
+Lemma core_typing_sound : forall G S D e T eff,
+  has_type G S D e T eff ->
+  forall eff', effect_leq eff eff' -> performs_within e eff'.
+Proof.
+  intros G S D e T eff Hty eff' Hle.
+  apply performs_within_mono with (eff1 := eff); auto.
+  apply core_effects_within with (G := G) (S := S) (D := D) (T := T).
+  exact Hty.
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Composition Properties *)
+(* ================================================================= *)
+
+(** Application composes effects correctly: the join covers both sub-effects. *)
+Lemma app_effect_covers_fn_and_arg : forall ε_fn ε1 ε2,
+  effect_leq ε_fn (effect_join ε_fn (effect_join ε1 ε2)) /\
+  effect_leq ε1 (effect_join ε_fn (effect_join ε1 ε2)) /\
+  effect_leq ε2 (effect_join ε_fn (effect_join ε1 ε2)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** If-expression effect covers all three branches. *)
+Lemma if_effect_covers_branches : forall ε1 ε2 ε3,
+  effect_leq ε1 (effect_join ε1 (effect_join ε2 ε3)) /\
+  effect_leq ε2 (effect_join ε1 (effect_join ε2 ε3)) /\
+  effect_leq ε3 (effect_join ε1 (effect_join ε2 ε3)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** Let-expression effect covers binding and body. *)
+Lemma let_effect_covers_both : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split.
+  - apply effect_join_ub_l.
+  - apply effect_join_ub_r.
+Qed.
+
+(** Pair effect covers both components. *)
+Lemma pair_effect_covers_both : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Weakening for Full Typing *)
+(* ================================================================= *)
+
+(** If has_type_full gives effect ε, any effect ε' ≥ ε also bounds the expression. *)
+Lemma has_type_full_weaken_effect : forall G S D e T ε ε',
+  has_type_full G S D e T ε ->
+  effect_leq ε ε' ->
+  performs_within e ε'.
+Proof.
+  intros G S D e T ε ε' Hty Hle.
+  apply performs_within_mono with (eff1 := ε).
+  - exact Hle.
+  - apply effect_safety with (G := G) (S := S) (D := D) (T := T). exact Hty.
+Qed.
+
+(** The pure effect is always a valid lower bound. *)
+Lemma pure_within_any_effect : forall e,
+  performs_within e EffPure ->
+  forall eff, performs_within e eff.
+Proof.
+  intros e Hpw eff.
+  apply performs_within_mono with (eff1 := EffPure).
+  - apply effect_leq_pure.
+  - exact Hpw.
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Composition for Nested Expressions *)
+(* ================================================================= *)
+
+(** Assign composes three effects: lhs + rhs + EffWrite. *)
+Lemma assign_effect_covers : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 (effect_join ε2 EffectWrite)) /\
+  effect_leq ε2 (effect_join ε1 (effect_join ε2 EffectWrite)) /\
+  effect_leq EffectWrite (effect_join ε1 (effect_join ε2 EffectWrite)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** Case expression effect covers scrutinee and both branches. *)
+Lemma case_effect_covers : forall ε ε1 ε2,
+  effect_leq ε (effect_join ε (effect_join ε1 ε2)) /\
+  effect_leq ε1 (effect_join ε (effect_join ε1 ε2)) /\
+  effect_leq ε2 (effect_join ε (effect_join ε1 ε2)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** Handle combines body and handler effects. *)
+Lemma handle_effect_covers : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
+Qed.
+
+(** Declassify composes secret and proof effects. *)
+Lemma declassify_effect_covers : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Idempotence for Programs *)
+(* ================================================================= *)
+
+(** If an expression's effects are bounded by ε, joining with ε is idempotent. *)
+Lemma performs_within_join_self : forall e eff,
+  performs_within e eff ->
+  performs_within e (effect_join eff eff).
+Proof.
+  intros e eff Hpw.
+  rewrite effect_join_idem. exact Hpw.
+Qed.
+
+(** Effect bound is preserved under join with pure. *)
+Lemma performs_within_join_pure_l : forall e eff,
+  performs_within e eff ->
+  performs_within e (effect_join EffPure eff).
+Proof.
+  intros e eff Hpw.
+  rewrite effect_join_pure_l. exact Hpw.
+Qed.
+
+(** Effect bound is preserved under join with pure (right). *)
+Lemma performs_within_join_pure_r : forall e eff,
+  performs_within e eff ->
+  performs_within e (effect_join eff EffPure).
+Proof.
+  intros e eff Hpw.
+  rewrite effect_join_pure_r. exact Hpw.
+Qed.
+
+(** ** Values Always Type With Pure Effect in has_type_full *)
+
+Lemma has_type_full_value_pure : forall v S D T eff,
+  value v ->
+  has_type_full nil S D v T eff ->
+  performs_within v EffPure.
+Proof.
+  intros v S D T eff Hval Hty.
+  apply performs_within_value. exact Hval.
+Qed.
+
+(** ** Effect Safety for Values *)
+
+Lemma effect_safety_value : forall v S D T eff,
+  value v ->
+  has_type_full nil S D v T eff ->
+  forall eff', performs_within v eff'.
+Proof.
+  intros v S D T eff Hval Hty eff'.
+  apply performs_within_value. exact Hval.
+Qed.
+
+(** ** Performs-Within Reflexivity for Pure *)
+
+Lemma performs_within_pure_refl : forall e,
+  performs_within e EffPure ->
+  performs_within e EffPure.
+Proof.
+  intros. exact H.
+Qed.
+
+(** ** Double Join Associativity for Effect Bounds *)
+
+Lemma performs_within_double_join : forall e eff1 eff2 eff3,
+  performs_within e eff1 ->
+  performs_within e (effect_join eff1 (effect_join eff2 eff3)).
+Proof.
+  intros e eff1 eff2 eff3 Hpw.
+  apply performs_within_mono with (eff1 := eff1).
+  - apply effect_join_ub_l.
+  - exact Hpw.
+Qed.
+
+(** ** Structural Decomposition of performs_within *)
+
+(** Pair decomposition: if pair performs within eff, so do both components *)
+Lemma performs_within_pair_components : forall e1 e2 eff,
+  performs_within (EPair e1 e2) eff ->
+  performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros e1 e2 eff H. simpl in H. exact H.
+Qed.
+
+(** App decomposition: if app performs within eff, so do both sub-expressions *)
+Lemma performs_within_app_components : forall e1 e2 eff,
+  performs_within (EApp e1 e2) eff ->
+  performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros e1 e2 eff H. simpl in H. exact H.
+Qed.
+
+(** If decomposition: if-expression components all perform within eff *)
+Lemma performs_within_if_components : forall e1 e2 e3 eff,
+  performs_within (EIf e1 e2 e3) eff ->
+  performs_within e1 eff /\ performs_within e2 eff /\ performs_within e3 eff.
+Proof.
+  intros e1 e2 e3 eff H. simpl in H. exact H.
+Qed.
+
+(** Let decomposition: both binding and body perform within eff *)
+Lemma performs_within_let_components : forall x e1 e2 eff,
+  performs_within (ELet x e1 e2) eff ->
+  performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros x e1 e2 eff H. simpl in H. exact H.
+Qed.
+
+(** Case decomposition: scrutinee and both branches perform within eff *)
+Lemma performs_within_case_components : forall e x1 e1 x2 e2 eff,
+  performs_within (ECase e x1 e1 x2 e2) eff ->
+  performs_within e eff /\ performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros e x1 e1 x2 e2 eff H. simpl in H. exact H.
 Qed.
 
 (** End of EffectSystem.v *)

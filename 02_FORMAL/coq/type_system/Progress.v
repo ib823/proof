@@ -10,8 +10,8 @@
     Mode: Comprehensive Verification | Zero Trust
 *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
 Require Import RIINA.foundations.Typing.
@@ -139,7 +139,7 @@ Proof.
     + destruct (IHHty2 eq_refl eq_refl Hwf) as [Hv2 | [e2' [st2' [ctx2' Hstep2]]]].
       * (* Both values - can beta reduce *)
         destruct (canonical_fn e1 T1 T2 ε ε1 Σ Hty1 Hv1) as [x [body Heq]].
-        subst. right. exists ([x := e2] body), st, ctx.
+        subst. right. exists (subst[x := e2] body), st, ctx.
         apply ST_AppAbs. assumption.
       * (* e2 steps *)
         right. exists (EApp e1 e2'), st2', ctx2'.
@@ -185,9 +185,9 @@ Proof.
   - (* T_Case *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv | [e'' [st'' [ctx'' Hstep]]]].
     + destruct (canonical_sum e T1 T2 ε Σ Hty1 Hv) as [[v' [Heq Hv']] | [v' [Heq Hv']]].
-      * subst. right. exists ([x1 := v'] e1), st, ctx.
+      * subst. right. exists (subst[x1 := v'] e1), st, ctx.
         apply ST_CaseInl; assumption.
-      * subst. right. exists ([x2 := v'] e2), st, ctx.
+      * subst. right. exists (subst[x2 := v'] e2), st, ctx.
         apply ST_CaseInr; assumption.
     + right. exists (ECase e'' x1 e1 x2 e2), st'', ctx''.
       apply ST_CaseStep; assumption.
@@ -201,7 +201,7 @@ Proof.
       apply ST_IfStep; assumption.
   - (* T_Let *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv | [e1'' [st'' [ctx'' Hstep]]]].
-    + right. exists ([x := e1] e2), st, ctx.
+    + right. exists (subst[x := e1] e2), st, ctx.
       apply ST_LetValue; assumption.
     + right. exists (ELet x e1'' e2), st'', ctx''.
       apply ST_LetStep; assumption.
@@ -213,7 +213,7 @@ Proof.
 
   - (* T_Handle *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv | [e' [st' [ctx' Hstep]]]].
-    + right. exists ([x := e] h), st, ctx. apply ST_HandleValue; assumption.
+    + right. exists (subst[x := e] h), st, ctx. apply ST_HandleValue; assumption.
     + right. exists (EHandle e' x h), st', ctx'. apply ST_HandleStep; assumption.
 
   - (* T_Ref *)
@@ -277,6 +277,213 @@ Proof.
     destruct (IHHty eq_refl eq_refl Hwf) as [Hv | [e' [st' [ctx' Hstep]]]].
     + right. exists e, st, ctx. apply ST_GrantValue; assumption.
     + right. exists (EGrant eff e'), st', ctx'. apply ST_GrantStep; assumption.
+Qed.
+
+(** ** Canonical Forms for Additional Types *)
+
+Lemma canonical_unit : forall v ε Σ,
+  has_type nil Σ Public v TUnit ε ->
+  value v ->
+  v = EUnit.
+Proof.
+  intros v ε Σ Hty Hval.
+  inversion Hval; subst; inversion Hty; subst.
+  reflexivity.
+Qed.
+
+Lemma canonical_int : forall v ε Σ,
+  has_type nil Σ Public v TInt ε ->
+  value v ->
+  exists i, v = EInt i.
+Proof.
+  intros v ε Σ Hty Hval.
+  inversion Hval; subst; inversion Hty; subst.
+  exists n. reflexivity.
+Qed.
+
+Lemma canonical_string : forall v ε Σ,
+  has_type nil Σ Public v TString ε ->
+  value v ->
+  exists s, v = EString s.
+Proof.
+  intros v ε Σ Hty Hval.
+  inversion Hval; subst; inversion Hty; subst.
+  exists s. reflexivity.
+Qed.
+
+(** ** Progress Corollaries *)
+
+(** If well-typed and not a value, must step *)
+Corollary progress_non_value : forall e T ε st ctx Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  ~ value e ->
+  exists e' st' ctx', (e, st, ctx) --> (e', st', ctx').
+Proof.
+  intros e T ε st ctx Σ Hty Hwf Hnval.
+  destruct (progress e T ε st ctx Σ Hty Hwf) as [Hval | Hstep].
+  - contradiction.
+  - exact Hstep.
+Qed.
+
+(** ** Canonical Form Invertibility *)
+
+(** If a value has type TBool, it's a boolean constant *)
+Lemma typed_value_bool_inv : forall v ε Σ,
+  has_type nil Σ Public v TBool ε ->
+  value v ->
+  v = EBool true \/ v = EBool false.
+Proof.
+  intros v ε Σ Hty Hval.
+  destruct (canonical_bool v ε Σ Hty Hval) as [b Heq].
+  destruct b; [left | right]; exact Heq.
+Qed.
+
+(** A value of pair type is an EPair *)
+Lemma typed_value_pair_inv : forall v T1 T2 ε Σ,
+  has_type nil Σ Public v (TProd T1 T2) ε ->
+  value v ->
+  exists v1 v2, v = EPair v1 v2.
+Proof.
+  intros v T1 T2 ε Σ Hty Hval.
+  destruct (canonical_pair v T1 T2 ε Σ Hty Hval) as [v1 [v2 [Heq _]]].
+  exists v1, v2. exact Heq.
+Qed.
+
+(** A value of sum type is either EInl or EInr *)
+Lemma typed_value_sum_inv : forall v T1 T2 ε Σ,
+  has_type nil Σ Public v (TSum T1 T2) ε ->
+  value v ->
+  (exists v', v = EInl v' T2) \/ (exists v', v = EInr v' T1).
+Proof.
+  intros v T1 T2 ε Σ Hty Hval.
+  destruct (canonical_sum v T1 T2 ε Σ Hty Hval) as [[v' [Heq _]] | [v' [Heq _]]].
+  - left. exists v'. exact Heq.
+  - right. exists v'. exact Heq.
+Qed.
+
+(** ** Value-Type Correspondence *)
+
+(** A value of function type is a lambda *)
+Lemma typed_value_fn_inv : forall v T1 T2 ε ε' Σ,
+  has_type nil Σ Public v (TFn T1 T2 ε) ε' ->
+  value v ->
+  exists x body, v = ELam x T1 body.
+Proof.
+  intros. eapply canonical_fn; eauto.
+Qed.
+
+(** A value of reference type is a location *)
+Lemma typed_value_ref_inv : forall v T sl ε Σ,
+  has_type nil Σ Public v (TRef T sl) ε ->
+  value v ->
+  exists l, v = ELoc l.
+Proof.
+  intros. eapply canonical_ref; eauto.
+Qed.
+
+(** A value of secret type is a classified expression *)
+Lemma typed_value_secret_inv : forall v T ε Σ,
+  has_type nil Σ Public v (TSecret T) ε ->
+  value v ->
+  exists v', v = EClassify v' /\ value v'.
+Proof.
+  intros. eapply canonical_secret; eauto.
+Qed.
+
+(** A value of proof type is a proved expression *)
+Lemma typed_value_proof_inv : forall v T ε Σ,
+  has_type nil Σ Public v (TProof T) ε ->
+  value v ->
+  exists v', v = EProve v' /\ value v'.
+Proof.
+  intros. eapply canonical_proof; eauto.
+Qed.
+
+(** A value of unit type is EUnit *)
+Lemma typed_value_unit_inv : forall v ε Σ,
+  has_type nil Σ Public v TUnit ε ->
+  value v ->
+  v = EUnit.
+Proof.
+  intros. eapply canonical_unit; eauto.
+Qed.
+
+(** A value of int type is an EInt *)
+Lemma typed_value_int_inv : forall v ε Σ,
+  has_type nil Σ Public v TInt ε ->
+  value v ->
+  exists n, v = EInt n.
+Proof.
+  intros. eapply canonical_int; eauto.
+Qed.
+
+(** A value of string type is an EString *)
+Lemma typed_value_string_inv : forall v ε Σ,
+  has_type nil Σ Public v TString ε ->
+  value v ->
+  exists s, v = EString s.
+Proof.
+  intros. eapply canonical_string; eauto.
+Qed.
+
+(** ** Typed Value Component Typing *)
+
+(** A typed pair value has typed components *)
+Lemma typed_value_pair_components_typed : forall v1 v2 T1 T2 ε Σ,
+  has_type nil Σ Public (EPair v1 v2) (TProd T1 T2) ε ->
+  value v1 -> value v2 ->
+  exists ε1 ε2,
+    has_type nil Σ Public v1 T1 ε1 /\
+    has_type nil Σ Public v2 T2 ε2.
+Proof.
+  intros v1 v2 T1 T2 ε Σ Hty Hv1 Hv2.
+  inversion Hty; subst.
+  eexists. eexists. split; eassumption.
+Qed.
+
+(** A typed classified value has a typed inner value *)
+Lemma typed_value_secret_inner_typed : forall v T ε Σ,
+  has_type nil Σ Public (EClassify v) (TSecret T) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T ε'.
+Proof.
+  intros v T ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
+(** A typed Inl value has a typed inner value *)
+Lemma typed_value_inl_inner_typed : forall v T1 T2 ε Σ,
+  has_type nil Σ Public (EInl v T2) (TSum T1 T2) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T1 ε'.
+Proof.
+  intros v T1 T2 ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
+(** A typed Inr value has a typed inner value *)
+Lemma typed_value_inr_inner_typed : forall v T1 T2 ε Σ,
+  has_type nil Σ Public (EInr v T1) (TSum T1 T2) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T2 ε'.
+Proof.
+  intros v T1 T2 ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
+(** A typed Prove value has a typed inner value *)
+Lemma typed_value_prove_inner_typed : forall v T ε Σ,
+  has_type nil Σ Public (EProve v) (TProof T) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T ε'.
+Proof.
+  intros v T ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
 Qed.
 
 (** End of Progress.v *)

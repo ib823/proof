@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA GarbageCollector - Isabelle/HOL Port
@@ -15,6 +17,7 @@
  * | Object             | object                 | OK     |
  * | HeapState          | heap_state             | OK     |
  * | GCResult           | gc_result              | OK     |
+ * | obj_in_list        | obj_in_list            | OK     |
  * | exists_in_heap     | exists_in_heap         | OK     |
  * | exists_obj         | exists_obj             | OK     |
  * | after_gc_exists    | after_gc_exists        | OK     |
@@ -70,9 +73,13 @@ record gc_result =
   gc_preserves_reachable :: bool
   gc_collects_unreachable :: bool
 
+(* obj_in_list (matches Coq: Definition obj_in_list) *)
+fun obj_in_list :: "ObjectId \<Rightarrow> bool" where
+
+
 (* exists_in_heap (matches Coq: Definition exists_in_heap) *)
 definition exists_in_heap :: "HeapState \<Rightarrow> ObjectId \<Rightarrow> bool" where
-  "exists_in_heap st oid \<equiv> obj_in_list oid (live_objects st) = true"
+  "exists_in_heap st oid \<equiv> obj_in_list oid (live_objects st) = True"
 
 (* exists_obj (matches Coq: Definition exists_obj) *)
 definition exists_obj :: "HeapState \<Rightarrow> Object \<Rightarrow> bool" where
@@ -88,10 +95,9 @@ definition after_gc_not_exists :: "GCResult \<Rightarrow> Object \<Rightarrow> b
 
 (* valid_gc (matches Coq: Definition valid_gc) *)
 definition valid_gc :: "GCResult \<Rightarrow> bool" where
-  "valid_gc result \<equiv> (* All reachable objects in pre-state exist in post-state *)
-  (forall oid, reachable (gc_pre_state result) oid ->
+  "valid_gc result \<equiv> (forall oid, reachable (gc_pre_state result) oid ->
     exists_in_heap (gc_post_state result) oid) /\
-  (* All objects in post-state were reachable in pre-state *)
+  
   (forall obj, exists_obj (gc_post_state result) obj ->
     reachable (gc_pre_state result) (obj_id obj))"
 

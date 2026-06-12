@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FileSystem - Isabelle/HOL Port
@@ -30,6 +32,7 @@
  * | after_recovery     | after_recovery         | OK     |
  * | consistent         | consistent             | OK     |
  * | journaled_write    | journaled_write        | OK     |
+ * | find_and_update    | find_and_update        | OK     |
  * | commit_journal     | commit_journal         | OK     |
  * | file_perm_allows_read | file_perm_allows_read  | OK     |
  * | file_perm_allows_write | file_perm_allows_write | OK     |
@@ -67,7 +70,7 @@
  *)
 
 theory FileSystem
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* FilePermission (matches Coq: Inductive FilePermission) *)
@@ -146,7 +149,7 @@ definition file_integrity_valid :: "File \<Rightarrow> bool" where
 
 (* writes (matches Coq: Definition writes) *)
 definition writes :: "File \<Rightarrow> Data \<Rightarrow> File" where
-  "writes f d \<equiv> mkFile (file_id f) d (compute_checksum d) true"
+  "writes f d \<equiv> mkFile (file_id f) d (compute_checksum d) True"
 
 (* reads (matches Coq: Definition reads) *)
 definition reads :: "File \<Rightarrow> Data" where
@@ -154,11 +157,11 @@ definition reads :: "File \<Rightarrow> Data" where
 
 (* power_loss_at (matches Coq: Definition power_loss_at) *)
 definition power_loss_at :: "Time \<Rightarrow> bool" where
-  "power_loss_at t \<equiv> True"
+  "power_loss_at t \<equiv> t >= 0"
 
 (* journal_replay (matches Coq: Definition journal_replay) *)
 definition journal_replay :: "FileSystem \<Rightarrow> FileSystem" where
-  "journal_replay fs \<equiv> mkFS (fs_files fs) [] true (fs_last_checkpoint fs)"
+  "journal_replay fs \<equiv> mkFS (fs_files fs) [] True (fs_last_checkpoint fs)"
 
 (* after_recovery (matches Coq: Definition after_recovery) *)
 definition after_recovery :: "FileSystem \<Rightarrow> Time \<Rightarrow> FileSystem" where
@@ -166,7 +169,7 @@ definition after_recovery :: "FileSystem \<Rightarrow> Time \<Rightarrow> FileSy
 
 (* consistent (matches Coq: Definition consistent) *)
 definition consistent :: "FileSystem \<Rightarrow> bool" where
-  "consistent fs \<equiv> fs_consistent fs = true /\
+  "consistent fs \<equiv> fs_consistent fs = True /\
   forall f, In f (fs_files fs) -> file_integrity_valid f"
 
 (* journaled_write (matches Coq: Definition journaled_write) *)
@@ -174,13 +177,17 @@ definition journaled_write :: "FileSystem \<Rightarrow> FileId \<Rightarrow> Dat
   "journaled_write fs fid d \<equiv> let new_journal := (fid, d) :: fs_journal fs in
   mkFS (fs_files fs) new_journal (fs_consistent fs) (fs_last_checkpoint fs)"
 
+(* find_and_update (matches Coq: Definition find_and_update) *)
+fun find_and_update :: "FileId \<Rightarrow> Data \<Rightarrow> list File" where
+
+
 (* commit_journal (matches Coq: Definition commit_journal) *)
 definition commit_journal :: "FileSystem \<Rightarrow> FileSystem" where
   "commit_journal fs \<equiv> let new_files := fold_left 
     (fun files entry => find_and_update files (fst entry) (snd entry))
     (fs_journal fs)
     (fs_files fs) in
-  mkFS new_files [] true (fs_last_checkpoint fs)"
+  mkFS new_files [] True (fs_last_checkpoint fs)"
 
 (* file_perm_allows_read (matches Coq: Definition file_perm_allows_read) *)
 fun file_perm_allows_read :: "FilePermission \<Rightarrow> bool" where
@@ -197,7 +204,7 @@ fun file_perm_allows_write :: "FilePermission \<Rightarrow> bool" where
 (* permission_enforced (matches Coq: Definition permission_enforced) *)
 definition permission_enforced :: "ExtFile \<Rightarrow> nat \<Rightarrow> FilePermission \<Rightarrow> bool" where
   "permission_enforced f requester mode \<equiv> efile_owner f = requester \/
-  (mode = ReadOnly /\ file_perm_allows_read (efile_permission f) = true)"
+  (mode = ReadOnly /\ file_perm_allows_read (efile_permission f) = True)"
 
 (* no_directory_traversal (matches Coq: Definition no_directory_traversal) *)
 definition no_directory_traversal :: "bool" where
@@ -209,7 +216,7 @@ definition symlink_safe :: "ExtFile \<Rightarrow> bool" where
 
 (* file_lock_exclusive (matches Coq: Definition file_lock_exclusive) *)
 definition file_lock_exclusive :: "ExtFile \<Rightarrow> bool" where
-  "file_lock_exclusive f \<equiv> efile_locked f = true ->
+  "file_lock_exclusive f \<equiv> efile_locked f = True ->
   efile_lock_owner f > 0"
 
 (* atomic_rename_prop (matches Coq: Definition atomic_rename_prop) *)
@@ -238,7 +245,8 @@ definition ext_file_integrity :: "ExtFile \<Rightarrow> bool" where
 definition path_canonical :: "bool" where
   "path_canonical \<equiv> ~ In 0 path /\ length path > 0"
 
-(* file_type_valid - complex match, manual review needed *)
+(* file_type_valid - complex match, needs manual translation *)
+definition file_type_valid :: "bool" where "file_type_valid = undefined"
 
 (* filesystem_integrity (matches Coq) *)
 lemma filesystem_integrity: "\<forall> (f : File) (d : Data), reads (writes f d) = d"

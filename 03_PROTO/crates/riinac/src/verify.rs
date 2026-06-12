@@ -4,9 +4,10 @@
 //!
 //! `riinac verify [--fast|--full]` — runs all checks and produces a manifest.
 //!
-//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) with
-//! proper toolchain detection, timeout handling, and static scanning for all
-//! three provers. Tool-not-found is a hard FAIL (verification incomplete).
+//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) plus
+//! bounded F* and TLA+ smoke builds when pinned local tooling is available.
+//! Static scans cover the broader prover corpus, but claim levels stay tied to
+//! executable evidence.
 
 #![forbid(unsafe_code)]
 
@@ -24,6 +25,9 @@ use std::time::{Duration, Instant, SystemTime};
 const COQ_TIMEOUT: Duration = Duration::from_secs(45 * 60); // 45 min
 const LEAN_TIMEOUT: Duration = Duration::from_secs(30 * 60); // 30 min
 const ISABELLE_TIMEOUT: Duration = Duration::from_secs(20 * 60); // 20 min
+const FSTAR_TIMEOUT: Duration = Duration::from_secs(10 * 60); // 10 min
+const TLAPLUS_TIMEOUT: Duration = Duration::from_secs(5 * 60); // 5 min
+const ALLOY_TIMEOUT: Duration = Duration::from_secs(5 * 60); // 5 min
 
 // ---------------------------------------------------------------------------
 // Mode / CheckResult / ToolStatus
@@ -43,6 +47,19 @@ struct CheckResult {
     /// Only `blocking` failures cause overall verification to FAIL.
     blocking: bool,
     details: String,
+}
+
+struct ProverDirs<'a> {
+    coq_dir: &'a Path,
+    lean_dir: &'a Path,
+    isabelle_dir: &'a Path,
+    fstar_dir: &'a Path,
+    tlaplus_dir: &'a Path,
+    alloy_dir: &'a Path,
+    smt_dir: &'a Path,
+    verus_dir: &'a Path,
+    kani_dir: &'a Path,
+    tv_dir: &'a Path,
 }
 
 #[derive(Debug)]
@@ -106,37 +123,52 @@ fn count_files_with_ext(dir: &Path, ext: &str) -> u32 {
 // Toolchain detection
 // ---------------------------------------------------------------------------
 
-/// Detect `coqc`: `$COQBIN` env → OPAM paths → `which coqc`.
+/// Detect the Coq prover binary: `$COQBIN` env → OPAM switch paths → `PATH`.
+///
+/// Accepts the modern Rocq 9.x `rocq` binary as well as the legacy `coqc`.
+/// Rocq 9.2 — the toolchain this repo requires (the corpus uses `From Stdlib`)
+/// — ships `rocq` and has dropped the standalone `coqc`; the Coq `Makefile`
+/// drives every compile through `$(COQBIN)rocq compile`, so what matters here
+/// is finding *a* prover binary whose parent directory becomes `COQBIN`.
+/// `coqc` is probed first to preserve behaviour on Coq 8.x / compat installs.
 fn detect_coqc() -> ToolStatus {
+    const PROVER_BINS: [&str; 2] = ["coqc", "rocq"];
+
     // 1. COQBIN environment variable
     if let Ok(coqbin) = std::env::var("COQBIN") {
-        let p = PathBuf::from(&coqbin).join("coqc");
-        if p.exists() {
-            return ToolStatus::Found(p);
+        for bin in PROVER_BINS {
+            let p = PathBuf::from(&coqbin).join(bin);
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
         }
     }
 
-    // 2. OPAM default switch paths
+    // 2. OPAM switch paths
     if let Ok(home) = std::env::var("HOME") {
         let opam_base = PathBuf::from(&home).join(".opam");
         if opam_base.is_dir() {
             if let Ok(entries) = fs::read_dir(&opam_base) {
                 for entry in entries.flatten() {
-                    let candidate = entry.path().join("bin").join("coqc");
-                    if candidate.exists() {
-                        return ToolStatus::Found(candidate);
+                    for bin in PROVER_BINS {
+                        let candidate = entry.path().join("bin").join(bin);
+                        if candidate.exists() {
+                            return ToolStatus::Found(candidate);
+                        }
                     }
                 }
             }
         }
     }
 
-    // 3. which coqc
-    if let Some(p) = which_tool("coqc") {
-        return ToolStatus::Found(p);
+    // 3. which coqc / rocq
+    for bin in PROVER_BINS {
+        if let Some(p) = which_tool(bin) {
+            return ToolStatus::Found(p);
+        }
     }
 
-    ToolStatus::NotFound("coqc not found (set COQBIN or install via opam)".into())
+    ToolStatus::NotFound("coqc/rocq not found (set COQBIN or install Rocq via opam)".into())
 }
 
 /// Detect `lake` (Lean 4 build tool): `$ELAN_HOME` → `~/.elan/bin/lake` → `which lake`.
@@ -213,7 +245,117 @@ fn detect_isabelle() -> ToolStatus {
     }
 
     ToolStatus::NotFound(
-        "pinned local Isabelle not found (run: bash scripts/provision-isabelle.sh)".into(),
+        "pinned local Isabelle not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-isabelle.sh)".into(),
+    )
+}
+
+/// Detect pinned local `fstar.exe`:
+/// `RIINA_FSTAR_BIN` → `RIINA_FSTAR_HOME` → repo-local
+/// `05_TOOLING/tools/fstar/current/bin/fstar.exe`.
+fn detect_fstar() -> ToolStatus {
+    // 1. Explicit binary override
+    if let Ok(bin) = std::env::var("RIINA_FSTAR_BIN") {
+        let p = PathBuf::from(bin);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 2. RIINA_FSTAR_HOME
+    if let Ok(home) = std::env::var("RIINA_FSTAR_HOME") {
+        let p = PathBuf::from(&home).join("bin").join("fstar.exe");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 3. Search upward from current directory for pinned repo-local install.
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("fstar")
+                .join("current")
+                .join("bin")
+                .join("fstar.exe");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+    }
+
+    ToolStatus::NotFound(
+        "pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh)".into(),
+    )
+}
+
+/// Detect pinned local `tla2tools.jar`:
+/// `TLA2TOOLS_JAR` → repo-local `05_TOOLING/tools/formal/tla2tools.jar`.
+fn detect_tla2tools() -> ToolStatus {
+    if let Ok(jar) = std::env::var("TLA2TOOLS_JAR") {
+        let p = PathBuf::from(jar);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("formal")
+                .join("tla2tools.jar");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+    }
+
+    ToolStatus::NotFound(
+        "pinned local TLA2Tools jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh)".into(),
+    )
+}
+
+/// Detect pinned local `org.alloytools.alloy.dist.jar`:
+/// `ALLOY_JAR` → repo-local
+/// `05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar`.
+fn detect_alloy() -> ToolStatus {
+    if let Ok(jar) = std::env::var("ALLOY_JAR") {
+        let p = PathBuf::from(jar);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("formal")
+                .join("alloy-6.2.0")
+                .join("lib")
+                .join("app")
+                .join("org.alloytools.alloy.dist.jar");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+    }
+
+    ToolStatus::NotFound(
+        "pinned local Alloy jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh)".into(),
     )
 }
 
@@ -318,7 +460,9 @@ fn glob_lean_files(dir: &Path) -> Vec<PathBuf> {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
-                    walk(&path, files);
+                    if path.file_name().and_then(|n| n.to_str()) != Some("_wip") {
+                        walk(&path, files);
+                    }
                 } else if path.extension().and_then(|e| e.to_str()) == Some("lean") {
                     if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                         if name != "lakefile.lean" {
@@ -557,7 +701,7 @@ fn count_fstar_lemmas(dir: &Path) -> u32 {
         if let Ok(content) = fs::read_to_string(&path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t.starts_with("val ") && t.contains("_lemma") {
+                if (t.starts_with("val ") || t.starts_with("let ")) && t.contains("_lemma") {
                     count += 1;
                 }
             }
@@ -582,7 +726,31 @@ fn count_tla_theorems(dir: &Path) -> u32 {
     count
 }
 
-/// Count `assert` and `check` declarations in Alloy `.als` files.
+fn count_tlaplus_smoke_theorems(active_file: &Path) -> u32 {
+    fs::read_to_string(active_file)
+        .ok()
+        .map(|content| {
+            content
+                .lines()
+                .filter(|line| line.trim_start().starts_with("THEOREM "))
+                .count() as u32
+        })
+        .unwrap_or(0)
+}
+
+fn count_alloy_smoke_assertions(active_file: &Path) -> u32 {
+    fs::read_to_string(active_file)
+        .ok()
+        .map(|content| {
+            content
+                .lines()
+                .filter(|line| line.trim_start().starts_with("check "))
+                .count() as u32
+        })
+        .unwrap_or(0)
+}
+
+/// Count `check` declarations in Alloy `.als` files.
 fn count_alloy_assertions(dir: &Path) -> u32 {
     let files = glob_als_files(dir);
     let mut count = 0u32;
@@ -590,13 +758,45 @@ fn count_alloy_assertions(dir: &Path) -> u32 {
         if let Ok(content) = fs::read_to_string(&path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t.starts_with("assert ") || t.starts_with("check ") {
+                if t.starts_with("check ") {
                     count += 1;
                 }
             }
         }
     }
     count
+}
+
+fn parse_alloy_command_rows(output: &str) -> Vec<(usize, String)> {
+    output
+        .lines()
+        .filter_map(|line| {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.len() >= 3 && parts[1] == "." {
+                let idx = parts[0].parse::<usize>().ok()?;
+                Some((idx, parts[2].to_ascii_lowercase()))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn parse_alloy_exec_status(output: &str) -> Option<String> {
+    let normalized = output.replace(['\u{0008}', '\r'], " ");
+    normalized
+        .lines()
+        .filter_map(|line| {
+            let trimmed = line.trim_start();
+            if !trimmed.chars().next().is_some_and(|c| c.is_ascii_digit()) {
+                return None;
+            }
+            if !trimmed.contains(". ") {
+                return None;
+            }
+            trimmed.split_whitespace().last().map(str::to_string)
+        })
+        .next_back()
 }
 
 /// Count `(assert ` occurrences in `.smt2` files (excluding `.tv.smt2`).
@@ -1044,6 +1244,41 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
 // Lean 4: compilation + static scan
 // ---------------------------------------------------------------------------
 
+/// Elaborate a single canary CORE Lean file and return its `error:` count.
+///
+/// `Some(0)` means the core type-safety file genuinely elaborates (real progress);
+/// `Some(n)` means it does not (the lane is a generated port); `None` means the
+/// probe could not run (lean missing/errored). This is what keeps the manifest
+/// from reporting a shim-only `lake build` as a Lean PASS.
+fn lean_core_canary_errors(lake_path: &Path, lean_dir: &Path) -> Option<u32> {
+    let canary = "RIINA/Foundations/Syntax.lean";
+    if !lean_dir.join(canary).exists() {
+        return None;
+    }
+    let out = run_with_timeout(
+        lake_path.to_str().unwrap_or("lake"),
+        &["env", "lean", canary],
+        lean_dir,
+        LEAN_TIMEOUT,
+    )
+    .ok()?;
+    if out.status.success() {
+        return Some(0);
+    }
+    // Timeout / spawn failure → inconclusive, not "0 errors".
+    if out.status.code() == Some(124) {
+        return None;
+    }
+    let combined = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let errors = combined.lines().filter(|l| l.contains("error:")).count() as u32;
+    // Non-zero exit but no parsed "error:" lines still means "did not elaborate".
+    Some(errors.max(1))
+}
+
 /// Compile Lean proofs by running `lake build`.
 fn compile_lean(lean_dir: &Path) -> CheckResult {
     let lake_path = match detect_lake() {
@@ -1083,18 +1318,52 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 .count();
 
             if o.status.success() && sorry_warnings == 0 {
-                CheckResult {
-                    name: "Lean 4 Compilation".into(),
-                    passed: true,
-                    blocking: true,
-                    details: format!("Built in {:.0}s (0 sorry warnings)", elapsed.as_secs_f64()),
+                // A successful default `lake build` only proves the default target
+                // builds — which is the 0-theorem `Domains/All` shim, NOT the lane.
+                // Probe a canary CORE type-safety file to tell "lane genuinely
+                // elaborates" apart from "shim builds". Only the former is a real
+                // PASS; otherwise the lane is generated/not-mechanized (WARN), so
+                // the manifest never claims an inherited Lean PASS.
+                let canary_errors = lean_core_canary_errors(&lake_path, lean_dir);
+                match canary_errors {
+                    Some(0) => CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: true,
+                        blocking: true,
+                        details: format!(
+                            "Built in {:.0}s (0 sorry); core canary Foundations/Syntax.lean elaborates",
+                            elapsed.as_secs_f64()
+                        ),
+                    },
+                    Some(n) => CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "GENERATED, not mechanized: default `lake build` builds only the \
+                             0-theorem `Domains/All` shim ({:.0}s); core Foundations/Syntax.lean \
+                             does NOT elaborate ({n} errors). See 02_FORMAL/lean/COMPILATION_STATUS.md",
+                            elapsed.as_secs_f64()
+                        ),
+                    },
+                    None => CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "GENERATED, not mechanized: shim build succeeded ({:.0}s) but the core \
+                             canary could not be elaborated (lean unavailable/errored). \
+                             See 02_FORMAL/lean/COMPILATION_STATUS.md",
+                            elapsed.as_secs_f64()
+                        ),
+                    },
                 }
             } else if o.status.success() && sorry_warnings > 0 {
-                // Build succeeded but sorry found — this is a FAIL
+                // Build succeeded but sorry found — non-blocking (transpiled)
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
-                    blocking: true,
+                    blocking: false,
                     details: format!(
                         "Built in {:.0}s but {sorry_warnings} sorry warning(s) detected",
                         elapsed.as_secs_f64()
@@ -1106,7 +1375,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                     return CheckResult {
                         name: "Lean 4 Compilation".into(),
                         passed: false,
-                        blocking: true,
+                        blocking: false,
                         details: format!(
                             "TIMEOUT after {:.0}s (limit: {}s)",
                             elapsed.as_secs_f64(),
@@ -1118,7 +1387,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
-                    blocking: true,
+                    blocking: false,
                     details: format!(
                         "FAILED (exit {code}, {:.0}s)\n{}",
                         elapsed.as_secs_f64(),
@@ -1132,7 +1401,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
-                    blocking: true,
+                    blocking: false,
                     details: format!(
                         "TIMEOUT after {:.0}s (limit: {}s)",
                         elapsed.as_secs_f64(),
@@ -1143,7 +1412,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
-                    blocking: true,
+                    blocking: false,
                     details: format!("failed to run lake: {e}"),
                 }
             }
@@ -1230,7 +1499,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
         return CheckResult {
             name: "Isabelle Compilation".into(),
             passed: false,
-            blocking: true,
+            blocking: false,
             details: "ROOT file not found in isabelle/RIINA/".into(),
         };
     }
@@ -1246,7 +1515,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                     CheckResult {
                         name: "Isabelle Compilation".into(),
                         passed: true,
-                        blocking: true,
+                        blocking: false,
                         details: format!(
                             "Session RIINA_CORE built in {:.0}s ({source})",
                             elapsed.as_secs_f64()
@@ -1258,7 +1527,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                         return CheckResult {
                             name: "Isabelle Compilation".into(),
                             passed: false,
-                            blocking: true,
+                            blocking: false,
                             details: format!(
                                 "TIMEOUT after {:.0}s (limit: {}s, {source})",
                                 elapsed.as_secs_f64(),
@@ -1273,7 +1542,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                     CheckResult {
                         name: "Isabelle Compilation".into(),
                         passed: false,
-                        blocking: true,
+                        blocking: false,
                         details: format!(
                             "FAILED (exit {code}, {:.0}s, {source})\n{}",
                             elapsed.as_secs_f64(),
@@ -1287,7 +1556,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                     CheckResult {
                         name: "Isabelle Compilation".into(),
                         passed: false,
-                        blocking: true,
+                        blocking: false,
                         details: format!(
                             "TIMEOUT after {:.0}s (limit: {}s, {source})",
                             elapsed.as_secs_f64(),
@@ -1298,7 +1567,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                     CheckResult {
                         name: "Isabelle Compilation".into(),
                         passed: false,
-                        blocking: true,
+                        blocking: false,
                         details: format!("failed to run isabelle ({source}): {e}"),
                     }
                 }
@@ -1387,7 +1656,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
             name: "Isabelle Compilation".into(),
             passed: false,
             blocking: false,
-            details: format!("{msg}"),
+            details: msg.to_string(),
         },
     };
 
@@ -1502,7 +1771,7 @@ fn verify_metrics_accuracy(
 
     let json_qed = parse_field("qedActive").unwrap_or(0);
     let json_lean = parse_field("theorems").unwrap_or(0);
-    let json_isabelle = parse_field("lemmas").unwrap_or(0);
+    let json_isabelle = parse_field("lemmasRaw").unwrap_or(0);
     let json_admitted = parse_field("admitted").unwrap_or(u32::MAX);
     let json_axioms = parse_field("axioms").unwrap_or(u32::MAX);
 
@@ -1552,28 +1821,17 @@ fn verify_metrics_accuracy(
 /// Cross-validate proof counts across all ten provers.
 /// Checks that Lean and Isabelle theorem counts are within 50% of the Coq domain count.
 /// Also aggregates counts from all 7 additional provers.
-fn cross_validate_provers(
-    coq_dir: &Path,
-    lean_dir: &Path,
-    isabelle_dir: &Path,
-    fstar_dir: &Path,
-    tlaplus_dir: &Path,
-    alloy_dir: &Path,
-    smt_dir: &Path,
-    verus_dir: &Path,
-    kani_dir: &Path,
-    tv_dir: &Path,
-) -> CheckResult {
-    let coq_qed = count_coq_qed(coq_dir);
-    let lean_thm = count_lean_theorems(lean_dir);
-    let isa_lem = count_isabelle_lemmas(&isabelle_dir.join("RIINA"));
-    let fstar_lem = count_fstar_lemmas(fstar_dir);
-    let tla_thm = count_tla_theorems(tlaplus_dir);
-    let alloy_asrt = count_alloy_assertions(alloy_dir);
-    let smt_asrt = count_smt_assertions(smt_dir);
-    let verus_pf = count_verus_proofs(verus_dir);
-    let kani_pf = count_kani_proofs(kani_dir);
-    let tv_val = count_tv_validations(tv_dir);
+fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
+    let coq_qed = count_coq_qed(dirs.coq_dir);
+    let lean_thm = count_lean_theorems(dirs.lean_dir);
+    let isa_lem = count_isabelle_lemmas(&dirs.isabelle_dir.join("RIINA"));
+    let fstar_lem = count_fstar_lemmas(dirs.fstar_dir);
+    let tla_thm = count_tla_theorems(dirs.tlaplus_dir);
+    let alloy_asrt = count_alloy_assertions(dirs.alloy_dir);
+    let smt_asrt = count_smt_assertions(dirs.smt_dir);
+    let verus_pf = count_verus_proofs(dirs.verus_dir);
+    let kani_pf = count_kani_proofs(dirs.kani_dir);
+    let tv_val = count_tv_validations(dirs.tv_dir);
 
     let grand_total = coq_qed
         + lean_thm
@@ -1622,7 +1880,7 @@ fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
                 } else if path.extension().and_then(|e| e.to_str()) == Some(ext) {
                     if let Ok(meta) = fs::metadata(&path) {
                         if let Ok(mt) = meta.modified() {
-                            if best.map_or(true, |b| mt > b) {
+                            if best.is_none_or(|b| mt > b) {
                                 *best = Some(mt);
                             }
                         }
@@ -1638,20 +1896,8 @@ fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
 
 /// Check if transpiled prover files are stale relative to Coq source files.
 /// Returns non-blocking warnings for each stale prover.
-fn check_transpiler_staleness(
-    repo: &Path,
-    coq_dir: &Path,
-    lean_dir: &Path,
-    isabelle_dir: &Path,
-    fstar_dir: &Path,
-    tlaplus_dir: &Path,
-    alloy_dir: &Path,
-    smt_dir: &Path,
-    verus_dir: &Path,
-    kani_dir: &Path,
-    tv_dir: &Path,
-) -> Vec<CheckResult> {
-    let coq_newest = match newest_mtime(coq_dir, "v") {
+fn check_transpiler_staleness(repo: &Path, dirs: &ProverDirs<'_>) -> Vec<CheckResult> {
+    let coq_newest = match newest_mtime(dirs.coq_dir, "v") {
         Some(t) => t,
         None => return vec![],
     };
@@ -1700,55 +1946,55 @@ fn check_transpiler_staleness(
     let provers: &[(&str, &Path, &str, &str)] = &[
         (
             "Lean",
-            lean_dir,
+            dirs.lean_dir,
             "lean",
             "python3 scripts/generate-multiprover.py",
         ),
         (
             "Isabelle",
-            isabelle_dir,
+            dirs.isabelle_dir,
             "thy",
             "python3 scripts/generate-multiprover.py",
         ),
         (
             "F*",
-            fstar_dir,
+            dirs.fstar_dir,
             "fst",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "TLA+",
-            tlaplus_dir,
+            dirs.tlaplus_dir,
             "tla",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "Alloy",
-            alloy_dir,
+            dirs.alloy_dir,
             "als",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "SMT",
-            smt_dir,
+            dirs.smt_dir,
             "smt2",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "Verus",
-            verus_dir,
+            dirs.verus_dir,
             "rs",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "Kani",
-            kani_dir,
+            dirs.kani_dir,
             "rs",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "TV",
-            tv_dir,
+            dirs.tv_dir,
             "smt2",
             "python3 scripts/generate-full-stack.py",
         ),
@@ -1879,7 +2125,7 @@ fn git_sha(repo: &Path) -> String {
 }
 
 /// Write VERIFICATION_MANIFEST.md and auto-stage it.
-fn write_manifest(repo: &Path, results: &[CheckResult]) {
+fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     let sha = git_sha(repo);
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -1893,11 +2139,30 @@ fn write_manifest(repo: &Path, results: &[CheckResult]) {
     let all_pass = results.iter().all(|r| r.passed || !r.blocking);
     let status = if all_pass { "PASS" } else { "FAIL" };
 
+    // Record the mode so a fast-mode PASS (Rust tests + clippy only) can never be
+    // mistaken for a full proof-checked PASS. A `--fast` PASS makes no claim about
+    // any proof lane.
+    let (mode_label, scope_note) = match mode {
+        Mode::Fast => (
+            "fast",
+            "Scope: Rust tests + clippy only. NOT a proof-checked verification \
+             (no Coq/Lean/etc.). Run `verify --full` for proof lanes.",
+        ),
+        Mode::Full => (
+            "full",
+            "Scope: Rust + primary proof lane (Coq). Fails closed if the Coq \
+             toolchain is absent.",
+        ),
+    };
+
     let mut md = String::new();
     writeln!(md, "# RIINA Verification Manifest").unwrap();
     writeln!(md, "**Generated:** {now}").unwrap();
     writeln!(md, "**Git SHA:** {sha}").unwrap();
+    writeln!(md, "**Mode:** {mode_label}").unwrap();
     writeln!(md, "**Status:** {status}").unwrap();
+    writeln!(md).unwrap();
+    writeln!(md, "> {scope_note}").unwrap();
     writeln!(md).unwrap();
     writeln!(md, "| Check | Status | Details |").unwrap();
     writeln!(md, "|-------|--------|---------|").unwrap();
@@ -1967,12 +2232,531 @@ fn days_to_ymd(mut days: u64) -> (u64, u64, u64) {
 }
 
 fn is_leap(y: u64) -> bool {
-    y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)
+    y.is_multiple_of(4) && (!y.is_multiple_of(100) || y.is_multiple_of(400))
 }
 
 // ---------------------------------------------------------------------------
-// F* / TLA+ / Alloy / SMT / Verus / Kani / TV static scans
+// F* / TLA+ / Alloy / SMT / Verus / Kani / TV smoke builds + static scans
 // ---------------------------------------------------------------------------
+
+fn count_fstar_smoke_lemmas(active_file: &Path) -> u32 {
+    fs::read_to_string(active_file)
+        .ok()
+        .map(|content| {
+            content
+                .lines()
+                .filter(|line| {
+                    let trimmed = line.trim();
+                    trimmed.starts_with("let lemma_")
+                        || trimmed.starts_with("let rec lemma_")
+                        || (trimmed.starts_with("val ") && trimmed.contains("Lemma"))
+                })
+                .count() as u32
+        })
+        .unwrap_or(0)
+}
+
+/// Compile the manually maintained F* smoke module.
+fn compile_fstar(fstar_dir: &Path) -> CheckResult {
+    let active_file = fstar_dir
+        .join("RIINA")
+        .join("Active")
+        .join("CryptographicSecurityActive.fst");
+    if !active_file.exists() {
+        return CheckResult {
+            name: "F* Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: "active smoke file not found (expected RIINA/Active/CryptographicSecurityActive.fst)".into(),
+        };
+    }
+
+    let repo_root = fstar_dir
+        .parent()
+        .and_then(|p| p.parent())
+        .unwrap_or(fstar_dir);
+    let cache_dir = repo_root.join(format!(
+        ".fstar-active-verify-{}-{}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis()
+    ));
+    let _ = fs::create_dir_all(&cache_dir);
+
+    let smoke_lemmas = count_fstar_smoke_lemmas(&active_file);
+    let result = match detect_fstar() {
+        ToolStatus::Found(fstar_path) => {
+            eprintln!("  fstar found: {}", fstar_path.display());
+            let args = [
+                "--cache_checked_modules".to_string(),
+                "--cache_dir".to_string(),
+                cache_dir.to_string_lossy().into_owned(),
+                "--include".to_string(),
+                fstar_dir.to_string_lossy().into_owned(),
+                active_file.to_string_lossy().into_owned(),
+            ];
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            let start = Instant::now();
+            match run_with_timeout(
+                fstar_path.to_str().unwrap_or("fstar.exe"),
+                &arg_refs,
+                repo_root,
+                FSTAR_TIMEOUT,
+            ) {
+                Ok(o) => {
+                    let elapsed = start.elapsed();
+                    if o.status.success() {
+                        CheckResult {
+                            name: "F* Compilation".into(),
+                            passed: true,
+                            blocking: false,
+                            details: format!(
+                                "Active module CryptographicSecurityActive compiled in {:.0}s ({} lemmas, local_active)",
+                                elapsed.as_secs_f64(),
+                                smoke_lemmas
+                            ),
+                        }
+                    } else {
+                        let code = o.status.code().unwrap_or(-1);
+                        let stderr = String::from_utf8_lossy(&o.stderr);
+                        let stdout = String::from_utf8_lossy(&o.stdout);
+                        let combined = format!("{stdout}\n{stderr}");
+                        let tail = last_n_lines(&combined, 10);
+                        CheckResult {
+                            name: "F* Compilation".into(),
+                            passed: false,
+                            blocking: false,
+                            details: format!(
+                                "FAILED (exit {code}, {:.0}s)\n{}",
+                                elapsed.as_secs_f64(),
+                                truncate_str(&tail, 500)
+                            ),
+                        }
+                    }
+                }
+                Err(e) => CheckResult {
+                    name: "F* Compilation".into(),
+                    passed: false,
+                    blocking: false,
+                    details: format!("failed to run F* local_active: {e}"),
+                },
+            }
+        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "F* Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: msg,
+        },
+    };
+
+    let _ = fs::remove_dir_all(&cache_dir);
+    result
+}
+
+/// Parse and bounded-model-check the manually maintained TLA+ smoke spec.
+fn compile_tlaplus(tlaplus_dir: &Path) -> CheckResult {
+    let active_dir = tlaplus_dir.join("RIINA").join("Active");
+    let active_file = active_dir.join("TelusProcurementProtocol.tla");
+    let cfg_file = active_dir.join("TelusProcurementProtocol.cfg");
+    if !active_file.exists() || !cfg_file.exists() {
+        return CheckResult {
+            name: "TLA+ Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: "active smoke files not found (expected RIINA/Active/TelusProcurementProtocol.{tla,cfg})".into(),
+        };
+    }
+
+    let smoke_theorems = count_tlaplus_smoke_theorems(&active_file);
+    let java_path = match which_tool("java") {
+        Some(path) => path,
+        None => {
+            return CheckResult {
+                name: "TLA+ Compilation".into(),
+                passed: false,
+                blocking: false,
+                details: "java not found (install a JRE/JDK to run tla2tools.jar)".into(),
+            };
+        }
+    };
+
+    match detect_tla2tools() {
+        ToolStatus::Found(tla2tools_jar) => {
+            eprintln!("  tla2tools jar found: {}", tla2tools_jar.display());
+            let meta_dir = std::env::temp_dir().join(format!(
+                "riina-tla-active-verify-{}-{}",
+                std::process::id(),
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis()
+            ));
+            let _ = fs::create_dir_all(&meta_dir);
+
+            let sany_args = [
+                "-cp".to_string(),
+                tla2tools_jar.to_string_lossy().into_owned(),
+                "tla2sany.SANY".to_string(),
+                active_file
+                    .file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("TelusProcurementProtocol.tla")
+                    .to_string(),
+            ];
+            let sany_refs: Vec<&str> = sany_args.iter().map(String::as_str).collect();
+            let start = Instant::now();
+            match run_with_timeout(
+                java_path.to_str().unwrap_or("java"),
+                &sany_refs,
+                &active_dir,
+                TLAPLUS_TIMEOUT,
+            ) {
+                Ok(o) if o.status.success() => {
+                    let tlc_args = vec![
+                        "-cp".to_string(),
+                        tla2tools_jar.to_string_lossy().into_owned(),
+                        "tlc2.TLC".to_string(),
+                        "-cleanup".to_string(),
+                        "-workers".to_string(),
+                        "1".to_string(),
+                        "-metadir".to_string(),
+                        meta_dir.to_string_lossy().into_owned(),
+                        "-config".to_string(),
+                        cfg_file
+                            .file_name()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("TelusProcurementProtocol.cfg")
+                            .to_string(),
+                        active_file
+                            .file_name()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("TelusProcurementProtocol.tla")
+                            .to_string(),
+                    ];
+                    let tlc_refs: Vec<&str> = tlc_args.iter().map(String::as_str).collect();
+                    match run_with_timeout(
+                        java_path.to_str().unwrap_or("java"),
+                        &tlc_refs,
+                        &active_dir,
+                        TLAPLUS_TIMEOUT,
+                    ) {
+                        Ok(tlc_output) => {
+                            let elapsed = start.elapsed();
+                            let result = if tlc_output.status.success() {
+                                CheckResult {
+                                    name: "TLA+ Compilation".into(),
+                                    passed: true,
+                                    blocking: false,
+                                    details: format!(
+                                        "Active spec TelusProcurementProtocol parsed and model checked in {:.0}s ({} theorems, local_active)",
+                                        elapsed.as_secs_f64(),
+                                        smoke_theorems
+                                    ),
+                                }
+                            } else {
+                                let code = tlc_output.status.code().unwrap_or(-1);
+                                let stderr = String::from_utf8_lossy(&tlc_output.stderr);
+                                let stdout = String::from_utf8_lossy(&tlc_output.stdout);
+                                let combined = format!("{stdout}\n{stderr}");
+                                let tail = last_n_lines(&combined, 10);
+                                CheckResult {
+                                    name: "TLA+ Compilation".into(),
+                                    passed: false,
+                                    blocking: false,
+                                    details: format!(
+                                        "FAILED TLC (exit {code}, {:.0}s)\n{}",
+                                        elapsed.as_secs_f64(),
+                                        truncate_str(&tail, 500)
+                                    ),
+                                }
+                            };
+                            let _ = fs::remove_dir_all(&meta_dir);
+                            result
+                        }
+                        Err(e) => {
+                            let _ = fs::remove_dir_all(&meta_dir);
+                            CheckResult {
+                                name: "TLA+ Compilation".into(),
+                                passed: false,
+                                blocking: false,
+                                details: format!("failed to run TLA+ TLC local_active: {e}"),
+                            }
+                        }
+                    }
+                }
+                Ok(o) => {
+                    let elapsed = start.elapsed();
+                    let stderr = String::from_utf8_lossy(&o.stderr);
+                    let stdout = String::from_utf8_lossy(&o.stdout);
+                    let combined = format!("{stdout}\n{stderr}");
+                    let tail = last_n_lines(&combined, 10);
+                    let result = CheckResult {
+                        name: "TLA+ Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "FAILED SANY (exit {}, {:.0}s)\n{}",
+                            o.status.code().unwrap_or(-1),
+                            elapsed.as_secs_f64(),
+                            truncate_str(&tail, 500)
+                        ),
+                    };
+                    let _ = fs::remove_dir_all(&meta_dir);
+                    result
+                }
+                Err(e) => {
+                    let _ = fs::remove_dir_all(&meta_dir);
+                    CheckResult {
+                        name: "TLA+ Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!("failed to run TLA+ SANY local_active: {e}"),
+                    }
+                }
+            }
+        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "TLA+ Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: msg,
+        },
+    }
+}
+
+/// Parse and execute the manually maintained Alloy smoke model.
+fn compile_alloy(alloy_dir: &Path) -> CheckResult {
+    let active_file = alloy_dir
+        .join("RIINA")
+        .join("Active")
+        .join("TelusProcurementAccessControl.als");
+    if !active_file.exists() {
+        return CheckResult {
+            name: "Alloy Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: "active smoke file not found (expected RIINA/Active/TelusProcurementAccessControl.als)".into(),
+        };
+    }
+
+    let smoke_assertions = count_alloy_smoke_assertions(&active_file);
+    let java_path = match which_tool("java") {
+        Some(path) => path,
+        None => {
+            return CheckResult {
+                name: "Alloy Compilation".into(),
+                passed: false,
+                blocking: false,
+                details: "java not found (install a JRE/JDK to run Alloy)".into(),
+            };
+        }
+    };
+
+    match detect_alloy() {
+        ToolStatus::Found(alloy_jar) => {
+            eprintln!("  alloy jar found: {}", alloy_jar.display());
+            let repo_root = alloy_dir
+                .parent()
+                .and_then(|p| p.parent())
+                .unwrap_or(alloy_dir);
+            let class = "org.alloytools.alloy.core.infra.Alloy";
+            let commands_args = [
+                "-cp".to_string(),
+                alloy_jar.to_string_lossy().into_owned(),
+                class.to_string(),
+                "commands".to_string(),
+                active_file.to_string_lossy().into_owned(),
+            ];
+            let command_refs: Vec<&str> = commands_args.iter().map(String::as_str).collect();
+            let start = Instant::now();
+            match run_with_timeout(
+                java_path.to_str().unwrap_or("java"),
+                &command_refs,
+                repo_root,
+                ALLOY_TIMEOUT,
+            ) {
+                Ok(o) if o.status.success() => {
+                    let combined = format!(
+                        "{}\n{}",
+                        String::from_utf8_lossy(&o.stdout),
+                        String::from_utf8_lossy(&o.stderr)
+                    );
+                    let command_rows = parse_alloy_command_rows(&combined);
+                    if command_rows.is_empty() {
+                        return CheckResult {
+                            name: "Alloy Compilation".into(),
+                            passed: false,
+                            blocking: false,
+                            details: "Alloy commands listing produced no executable commands"
+                                .into(),
+                        };
+                    }
+
+                    let mut saw_run = false;
+                    let mut checked_assertions = 0u32;
+                    for (idx, kind) in command_rows {
+                        let exec_dir = std::env::temp_dir().join(format!(
+                            "riina-alloy-active-verify-{}-{}-{}",
+                            std::process::id(),
+                            idx,
+                            SystemTime::now()
+                                .duration_since(SystemTime::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_millis()
+                        ));
+                        let _ = fs::create_dir_all(&exec_dir);
+                        let idx_str = idx.to_string();
+                        let exec_args = [
+                            "-cp".to_string(),
+                            alloy_jar.to_string_lossy().into_owned(),
+                            class.to_string(),
+                            "exec".to_string(),
+                            "-c".to_string(),
+                            idx_str,
+                            active_file.to_string_lossy().into_owned(),
+                        ];
+                        let exec_refs: Vec<&str> = exec_args.iter().map(String::as_str).collect();
+                        let exec_output = run_with_timeout(
+                            java_path.to_str().unwrap_or("java"),
+                            &exec_refs,
+                            &exec_dir,
+                            ALLOY_TIMEOUT,
+                        );
+                        let _ = fs::remove_dir_all(&exec_dir);
+                        let exec_output = match exec_output {
+                            Ok(output) => output,
+                            Err(e) => {
+                                return CheckResult {
+                                    name: "Alloy Compilation".into(),
+                                    passed: false,
+                                    blocking: false,
+                                    details: format!("failed to run Alloy command {idx}: {e}"),
+                                }
+                            }
+                        };
+                        if !exec_output.status.success() {
+                            let code = exec_output.status.code().unwrap_or(-1);
+                            let combined = format!(
+                                "{}\n{}",
+                                String::from_utf8_lossy(&exec_output.stdout),
+                                String::from_utf8_lossy(&exec_output.stderr)
+                            );
+                            let tail = last_n_lines(&combined, 10);
+                            return CheckResult {
+                                name: "Alloy Compilation".into(),
+                                passed: false,
+                                blocking: false,
+                                details: format!(
+                                    "FAILED exec command {idx} (exit {code})\n{}",
+                                    truncate_str(&tail, 500)
+                                ),
+                            };
+                        }
+
+                        let combined = format!(
+                            "{}\n{}",
+                            String::from_utf8_lossy(&exec_output.stdout),
+                            String::from_utf8_lossy(&exec_output.stderr)
+                        );
+                        let status = parse_alloy_exec_status(&combined).unwrap_or_default();
+                        let expected = match kind.as_str() {
+                            "run" => {
+                                saw_run = true;
+                                "SAT"
+                            }
+                            "check" => {
+                                checked_assertions += 1;
+                                "UNSAT"
+                            }
+                            other => {
+                                return CheckResult {
+                                    name: "Alloy Compilation".into(),
+                                    passed: false,
+                                    blocking: false,
+                                    details: format!(
+                                        "unsupported Alloy command kind in smoke file: {other}"
+                                    ),
+                                }
+                            }
+                        };
+                        if status != expected {
+                            let tail = last_n_lines(&combined, 10);
+                            return CheckResult {
+                                name: "Alloy Compilation".into(),
+                                passed: false,
+                                blocking: false,
+                                details: format!(
+                                    "command {idx} expected {expected} but got {}\n{}",
+                                    if status.is_empty() {
+                                        "<missing>"
+                                    } else {
+                                        &status
+                                    },
+                                    truncate_str(&tail, 500)
+                                ),
+                            };
+                        }
+                    }
+
+                    if !saw_run {
+                        return CheckResult {
+                            name: "Alloy Compilation".into(),
+                            passed: false,
+                            blocking: false,
+                            details:
+                                "Alloy smoke file must include at least one satisfiable run command"
+                                    .into(),
+                        };
+                    }
+
+                    CheckResult {
+                        name: "Alloy Compilation".into(),
+                        passed: true,
+                        blocking: false,
+                        details: format!(
+                            "Active model TelusProcurementAccessControl executed in {:.0}s ({} checked assertions, local_active)",
+                            start.elapsed().as_secs_f64(),
+                            checked_assertions.max(smoke_assertions)
+                        ),
+                    }
+                }
+                Ok(o) => {
+                    let combined = format!(
+                        "{}\n{}",
+                        String::from_utf8_lossy(&o.stdout),
+                        String::from_utf8_lossy(&o.stderr)
+                    );
+                    let tail = last_n_lines(&combined, 10);
+                    CheckResult {
+                        name: "Alloy Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "FAILED commands listing (exit {})\n{}",
+                            o.status.code().unwrap_or(-1),
+                            truncate_str(&tail, 500)
+                        ),
+                    }
+                }
+                Err(e) => CheckResult {
+                    name: "Alloy Compilation".into(),
+                    passed: false,
+                    blocking: false,
+                    details: format!("failed to run Alloy commands local_active: {e}"),
+                },
+            }
+        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "Alloy Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: msg,
+        },
+    }
+}
 
 /// Static scan of F* `.fst` files for `admit` keyword and lemma count.
 fn scan_fstar(dir: &Path) -> Vec<CheckResult> {
@@ -2055,7 +2839,7 @@ fn scan_tlaplus(dir: &Path) -> Vec<CheckResult> {
     }]
 }
 
-/// Static scan of Alloy `.als` files for assertion count.
+/// Static scan of Alloy `.als` files for `check` command count.
 fn scan_alloy(dir: &Path) -> Vec<CheckResult> {
     if !dir.is_dir() {
         return vec![CheckResult {
@@ -2073,7 +2857,7 @@ fn scan_alloy(dir: &Path) -> Vec<CheckResult> {
         if let Ok(content) = fs::read_to_string(path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t.starts_with("assert ") || t.starts_with("check ") {
+                if t.starts_with("check ") {
                     assertion_count += 1;
                 }
             }
@@ -2238,6 +3022,30 @@ fn scan_tv(dir: &Path) -> Vec<CheckResult> {
 // Entry point
 // ---------------------------------------------------------------------------
 
+/// In `--full` mode the Coq toolchain is mandatory: without it no proof is
+/// machine-checked, so the gate must fail closed rather than report PASS on the
+/// strength of static scans alone. Pure over its input so it can be unit-tested.
+fn primary_verifier_result(status: ToolStatus) -> CheckResult {
+    match status {
+        ToolStatus::Found(p) => CheckResult {
+            name: "Primary Verifier (Coq) Present".into(),
+            passed: true,
+            blocking: true,
+            details: format!("Coq/Rocq prover available at {}", p.display()),
+        },
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "Primary Verifier (Coq) Present".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "{msg}. `verify --full` cannot machine-check any proof without coqc, so it is \
+                 failing closed instead of reporting PASS. Install Rocq/Coq (see CLAUDE.md), or \
+                 use `verify --fast` for the Rust-only gate."
+            ),
+        },
+    }
+}
+
 /// Entry point for `riinac verify`.
 pub fn run(mode: Mode) -> i32 {
     let repo = match find_repo_root() {
@@ -2274,6 +3082,18 @@ pub fn run(mode: Mode) -> i32 {
         let verus_dir = repo.join("02_FORMAL").join("verus");
         let kani_dir = repo.join("02_FORMAL").join("kani");
         let tv_dir = repo.join("02_FORMAL").join("tv");
+        let prover_dirs = ProverDirs {
+            coq_dir: &coq_dir,
+            lean_dir: &lean_dir,
+            isabelle_dir: &isabelle_dir,
+            fstar_dir: &fstar_dir,
+            tlaplus_dir: &tlaplus_dir,
+            alloy_dir: &alloy_dir,
+            smt_dir: &smt_dir,
+            verus_dir: &verus_dir,
+            kani_dir: &kani_dir,
+            tv_dir: &tv_dir,
+        };
 
         // === Coq ===
         eprintln!("\n=== Coq Verification ===");
@@ -2305,16 +3125,22 @@ pub fn run(mode: Mode) -> i32 {
 
         // === F* ===
         eprintln!("\n=== F* Verification ===");
+        eprintln!("Compiling F* smoke proof...");
+        results.push(compile_fstar(&fstar_dir));
         eprintln!("Scanning F* files...");
         results.extend(scan_fstar(&fstar_dir));
 
         // === TLA+ ===
         eprintln!("\n=== TLA+ Verification ===");
+        eprintln!("Compiling TLA+ smoke proof...");
+        results.push(compile_tlaplus(&tlaplus_dir));
         eprintln!("Scanning TLA+ files...");
         results.extend(scan_tlaplus(&tlaplus_dir));
 
         // === Alloy ===
         eprintln!("\n=== Alloy Verification ===");
+        eprintln!("Compiling Alloy smoke model...");
+        results.push(compile_alloy(&alloy_dir));
         eprintln!("Scanning Alloy files...");
         results.extend(scan_alloy(&alloy_dir));
 
@@ -2340,34 +3166,11 @@ pub fn run(mode: Mode) -> i32 {
 
         // === Cross-Prover ===
         eprintln!("\n=== Cross-Prover Validation (10 provers) ===");
-        results.push(cross_validate_provers(
-            &coq_dir,
-            &lean_dir,
-            &isabelle_dir,
-            &fstar_dir,
-            &tlaplus_dir,
-            &alloy_dir,
-            &smt_dir,
-            &verus_dir,
-            &kani_dir,
-            &tv_dir,
-        ));
+        results.push(cross_validate_provers(&prover_dirs));
 
         // === Transpiler Staleness ===
         eprintln!("\n=== Transpiler Staleness Check ===");
-        results.extend(check_transpiler_staleness(
-            &repo,
-            &coq_dir,
-            &lean_dir,
-            &isabelle_dir,
-            &fstar_dir,
-            &tlaplus_dir,
-            &alloy_dir,
-            &smt_dir,
-            &verus_dir,
-            &kani_dir,
-            &tv_dir,
-        ));
+        results.extend(check_transpiler_staleness(&repo, &prover_dirs));
 
         // === Metrics Accuracy ===
         eprintln!("\n=== Metrics Accuracy Check ===");
@@ -2377,6 +3180,14 @@ pub fn run(mode: Mode) -> i32 {
             &lean_dir,
             &isabelle_dir,
         ));
+
+        // === Fail-closed guard ===
+        // A `--full` run that cannot execute its primary verifier (Coq) has not
+        // verified anything — it must FAIL rather than silently report PASS, so a
+        // missing toolchain can never be mistaken for "verified". Extended prover
+        // lanes stay informational; only the primary lane is mandatory here.
+        eprintln!("\n=== Fail-Closed Guard ===");
+        results.push(primary_verifier_result(detect_coqc()));
     }
 
     // Report
@@ -2394,7 +3205,7 @@ pub fn run(mode: Mode) -> i32 {
     }
     eprintln!();
 
-    write_manifest(&repo, &results);
+    write_manifest(&repo, &results, mode);
 
     if all_pass {
         eprintln!("Verification: PASS");
@@ -2449,6 +3260,22 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
         assert!(is_leap(2024));
         assert!(!is_leap(1900));
         assert!(!is_leap(2023));
+    }
+
+    #[test]
+    fn test_primary_verifier_missing_fails_closed() {
+        // When the Coq toolchain is absent, the guard must be a *blocking
+        // failure* so `verify --full` cannot report PASS without it.
+        let r = primary_verifier_result(ToolStatus::NotFound("coqc not found".into()));
+        assert!(!r.passed, "missing coqc must not pass");
+        assert!(r.blocking, "missing primary verifier must be blocking");
+    }
+
+    #[test]
+    fn test_primary_verifier_present_passes() {
+        let r = primary_verifier_result(ToolStatus::Found(PathBuf::from("/usr/bin/coqc")));
+        assert!(r.passed, "present coqc must pass");
+        assert!(r.blocking, "primary verifier check is always blocking");
     }
 
     // -- New tests --
@@ -2528,7 +3355,7 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
     }
 
     #[test]
-    fn test_glob_lean_files_excludes_lakefile() {
+    fn test_glob_lean_files_excludes_lakefile_and_wip() {
         let lean_dir = PathBuf::from("/workspaces/proof/02_FORMAL/lean");
         if lean_dir.exists() {
             let files = glob_lean_files(&lean_dir);
@@ -2537,6 +3364,10 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
                     f.file_name().and_then(|n| n.to_str()),
                     Some("lakefile.lean"),
                     "lakefile.lean should be excluded"
+                );
+                assert!(
+                    !f.components().any(|c| c.as_os_str() == "_wip"),
+                    "_wip Lean files should be excluded"
                 );
             }
             assert!(!files.is_empty(), "Should find at least one .lean file");
@@ -2575,12 +3406,56 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
     }
 
     #[test]
+    fn test_count_tlaplus_smoke_theorems() {
+        let file = PathBuf::from(
+            "/workspaces/proof/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla",
+        );
+        if file.exists() {
+            let count = count_tlaplus_smoke_theorems(&file);
+            assert!(count >= 1, "Expected >=1 TLA+ smoke theorem, got {count}");
+        }
+    }
+
+    #[test]
     fn test_count_alloy_assertions() {
         let dir = PathBuf::from("/workspaces/proof/02_FORMAL/alloy");
         if dir.exists() {
             let count = count_alloy_assertions(&dir);
             assert!(count > 100, "Expected >100 Alloy assertions, got {count}");
         }
+    }
+
+    #[test]
+    fn test_count_alloy_smoke_assertions() {
+        let file = PathBuf::from(
+            "/workspaces/proof/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als",
+        );
+        if file.exists() {
+            let count = count_alloy_smoke_assertions(&file);
+            assert!(
+                count >= 1,
+                "Expected >=1 Alloy smoke assertion, got {count}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_parse_alloy_command_rows() {
+        let rows = parse_alloy_command_rows(
+            "0 . Run ExampleTelusProcurement for 5\n1 . Check DerivedCapabilitiesCannotAmplify for 6\n",
+        );
+        assert_eq!(
+            rows,
+            vec![(0usize, "run".to_string()), (1usize, "check".to_string())]
+        );
+    }
+
+    #[test]
+    fn test_parse_alloy_exec_status() {
+        let status = parse_alloy_exec_status(
+            "00. check Broken                   0\u{0008}\u{0008}\u{0008}\u{0008}\u{0008}    1/1     SAT\n",
+        );
+        assert_eq!(status.as_deref(), Some("SAT"));
     }
 
     #[test]

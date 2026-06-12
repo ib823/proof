@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# RIINA pre-push hook — runs riinac verify --full + security checks.
+# RIINA pre-push hook — runs riinac verify --full + strict security gates.
 # Install: cp 00_SETUP/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
 
 set -euo pipefail
@@ -10,13 +10,19 @@ if [ -f "${HOME}/.cargo/env" ]; then
     source "${HOME}/.cargo/env"
 fi
 
+# Source opam environment if available
+# (needed for Coq compilation via riinac verify --full)
+if command -v opam &> /dev/null; then
+    eval $(opam env --switch=coq820 2>/dev/null) || true
+fi
+
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 echo "================================================================"
 echo "  RIINA PRE-PUSH VERIFICATION"
 echo "================================================================"
 
-# ── Step 1: Locate riinac ──────────────────────────────────────────
+# ── Step 1: Locate riinac (with staleness check) ──────────────────
 RIINAC=""
 for candidate in \
     "${REPO_ROOT}/03_PROTO/target/release/riinac" \
@@ -27,8 +33,20 @@ for candidate in \
     fi
 done
 
-if [ -z "$RIINAC" ]; then
-    echo "riinac not found — building..."
+# Staleness check: rebuild if any riinac crate source is newer than the binary
+REBUILD_NEEDED=0
+if [ -n "$RIINAC" ]; then
+    NEWEST_SRC=$(find "${REPO_ROOT}/03_PROTO/crates/riinac" -name "*.rs" -newer "$RIINAC" 2>/dev/null | head -1)
+    if [ -n "$NEWEST_SRC" ]; then
+        echo "  riinac binary is stale ($(basename "$NEWEST_SRC") is newer) — rebuilding..."
+        REBUILD_NEEDED=1
+    fi
+fi
+
+if [ -z "$RIINAC" ] || [ "$REBUILD_NEEDED" -eq 1 ]; then
+    if [ -z "$RIINAC" ]; then
+        echo "riinac not found — building..."
+    fi
     (cd "${REPO_ROOT}/03_PROTO" && cargo build --release -p riinac 2>&1) || {
         echo "FAIL: could not build riinac"
         exit 1
@@ -36,70 +54,58 @@ if [ -z "$RIINAC" ]; then
     RIINAC="${REPO_ROOT}/03_PROTO/target/release/riinac"
 fi
 
-# ── Step 2: Run riinac verify --full ───────────────────────────────
-echo "[1/4] Running riinac verify --full..."
-"$RIINAC" verify --full || {
-    echo "BLOCKED: riinac verify --full failed"
+# ── Step 2: Run riinac verify ─────────────────────────────────────
+# On resource-constrained machines (<=2 cores), use --fast to avoid OOM/crash
+# from compiling 250+ Coq files. Pre-commit hook already validates Coq individually.
+CORES=$(nproc 2>/dev/null || echo 4)
+if [ "$CORES" -le 2 ]; then
+    VERIFY_MODE="--fast"
+    echo "[1/4] Running riinac verify --fast (${CORES}-core machine; Coq verified at commit time)..."
+else
+    VERIFY_MODE="--full"
+    echo "[1/4] Running riinac verify --full..."
+fi
+"$RIINAC" verify $VERIFY_MODE || {
+    echo "BLOCKED: riinac verify $VERIFY_MODE failed"
     exit 1
 }
-echo "      riinac verify --full passed"
+echo "      riinac verify $VERIFY_MODE passed"
 
-# ── Step 3: GPG signature check ───────────────────────────────────
-echo "[2/4] Verifying commit signatures..."
-GPG_SIGN=$(git config --get commit.gpgsign 2>/dev/null || echo "false")
-REMOTE=$1
+# ── Step 3: Strict security gates ──────────────────────────────────
+echo "[2/4] Running strict security gates..."
 ZERO="0000000000000000000000000000000000000000"
+RANGES=()
 
-if [ "$GPG_SIGN" = "true" ]; then
-    while read local_ref local_sha remote_ref remote_sha; do
-        if [ "$local_sha" = "$ZERO" ]; then
-            continue
-        fi
-        if [ "$remote_sha" = "$ZERO" ]; then
-            range="$local_sha --not --remotes"
-        else
-            range="$remote_sha..$local_sha"
-        fi
-        UNSIGNED=$(git log --pretty=format:"%H %G?" $range 2>/dev/null \
-            | grep -v " G$" | grep -v " U$" || true)
-        if [ -n "$UNSIGNED" ]; then
-            echo "BLOCKED: Unsigned commits detected:"
-            echo "$UNSIGNED"
-            exit 1
-        fi
-    done
-    echo "      All commits signed"
-else
-    echo "      GPG signing not configured — skipping signature check"
-    echo "      (Enable with: git config --global commit.gpgsign true)"
-fi
-
-# ── Step 4: Secret detection ──────────────────────────────────────
-echo "[3/4] Scanning for secrets..."
-SECRETS_PATTERN='(password|secret|api[_-]?key|token|private[_-]?key)\s*[=:]\s*["\x27][^"\x27]+'
-STAGED=$(git diff --name-only --diff-filter=ACM HEAD~1..HEAD 2>/dev/null || true)
-if [ -n "$STAGED" ]; then
-    FOUND=$(echo "$STAGED" | xargs grep -lEi "$SECRETS_PATTERN" 2>/dev/null || true)
-    if [ -n "$FOUND" ]; then
-        echo "BLOCKED: Potential secrets detected:"
-        echo "$FOUND"
-        exit 1
+while read local_ref local_sha remote_ref remote_sha; do
+    if [ -z "${local_sha:-}" ]; then
+        continue
     fi
-fi
-echo "      No secrets detected"
+    if [ "$local_sha" = "$ZERO" ]; then
+        continue
+    fi
 
-# ── Step 5: Trojan source (bidi Unicode) ──────────────────────────
-echo "[4/4] Scanning for Trojan source attacks..."
-TROJAN=$(grep -rPl \
-    '[\x{202A}\x{202B}\x{202C}\x{202D}\x{202E}\x{2066}\x{2067}\x{2068}\x{2069}]' \
-    --include="*.v" --include="*.rs" --include="*.rii" --include="*.md" \
-    "$REPO_ROOT" 2>/dev/null || true)
-if [ -n "$TROJAN" ]; then
-    echo "BLOCKED: Trojan source (bidi Unicode) characters detected:"
-    echo "$TROJAN"
-    exit 1
+    if [ "$remote_sha" = "$ZERO" ]; then
+        # New remote ref; compare against HEAD ancestry as best-effort fallback.
+        RANGES+=("$local_sha")
+    else
+        RANGES+=("$remote_sha..$local_sha")
+    fi
+done
+
+if [ ${#RANGES[@]} -eq 0 ]; then
+    RANGES=("origin/main..HEAD")
 fi
-echo "      No Trojan source attacks detected"
+
+SECURITY_CMD=(bash "$REPO_ROOT/scripts/security-gates.sh")
+for range in "${RANGES[@]}"; do
+    SECURITY_CMD+=(--range "$range")
+done
+
+"${SECURITY_CMD[@]}" || {
+    echo "BLOCKED: strict security gates failed"
+    exit 1
+}
+echo "      strict security gates passed"
 
 echo ""
 echo "================================================================"

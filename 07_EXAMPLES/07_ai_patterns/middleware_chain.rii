@@ -1,0 +1,256 @@
+/// middleware_chain.rii
+/// Request/response middleware pattern with function composition
+/// Demonstrates: function composition, effect accumulation,
+/// security context propagation through middleware stack
+///
+/// Pattern: Each middleware is a function that wraps the next handler.
+/// Effects accumulate — an auth middleware adds Kripto, a logging
+/// middleware adds Tulis. The final composed handler has the union
+/// of all middleware effects. Security context flows top-down.
+
+modul rantaian_middleware;
+
+/// HTTP-like request/response types
+jenis Permintaan = {
+    kaedah: Teks,
+    laluan: Teks,
+    badan: Teks,
+    pengepala: Senarai<(Teks, Teks)>,
+    konteks_keselamatan: Mungkin<KonteksKeselamatan>,
+};
+
+jenis Respons = {
+    status: Nombor,
+    badan: Teks,
+    pengepala: Senarai<(Teks, Teks)>,
+};
+
+jenis KonteksKeselamatan = {
+    id_pengguna: Teks,
+    peranan: Teks,
+    token: Rahsia<Teks>,
+};
+
+/// Middleware type alias — takes a handler, returns a wrapped handler
+/// Pengendali: fungsi(Permintaan) -> Respons
+/// Middleware: fungsi(Pengendali) -> Pengendali
+
+/// ─── Individual middleware functions ────────────────────────────────
+
+/// Logging middleware — logs request and response
+/// Adds kesan Tulis
+fungsi middleware_log(
+    pengendali_seterusnya: Fn(Permintaan) -> Respons,
+    permintaan: Permintaan
+) -> Respons kesan Tulis {
+    cetak_baris("[LOG] " + permintaan.kaedah + " " + permintaan.laluan);
+
+    biar respons = pengendali_seterusnya(permintaan);
+
+    cetak_baris("[LOG] Status: " + ke_teks(respons.status));
+    pulang respons;
+}
+
+/// Authentication middleware — validates token
+/// Adds kesan Kripto (token validation)
+fungsi middleware_pengesahan(
+    pengendali_seterusnya: Fn(Permintaan) -> Respons,
+    permintaan: Permintaan
+) -> Respons kesan Bersih {
+    biar token = cari_pengepala(permintaan.pengepala, "Authorization");
+
+    padan token {
+        Tiada => {
+            pulang {
+                status: 401,
+                badan: "Token pengesahan diperlukan",
+                pengepala: [],
+            };
+        },
+        Ada(nilai_token) => {
+            /// Validate and attach security context
+            biar konteks = {
+                id_pengguna: "pengguna_123",
+                peranan: "pentadbir",
+                token: Rahsia(nilai_token),
+            };
+
+            biar permintaan_baru = {
+                kaedah: permintaan.kaedah,
+                laluan: permintaan.laluan,
+                badan: permintaan.badan,
+                pengepala: permintaan.pengepala,
+                konteks_keselamatan: Ada(konteks),
+            };
+
+            pulang pengendali_seterusnya(permintaan_baru);
+        },
+    };
+}
+
+/// CORS middleware — adds Cross-Origin headers
+fungsi middleware_cors(
+    pengendali_seterusnya: Fn(Permintaan) -> Respons,
+    permintaan: Permintaan
+) -> Respons kesan Bersih {
+    biar respons = pengendali_seterusnya(permintaan);
+
+    biar pengepala_baru = respons.pengepala + [
+        ("Access-Control-Allow-Origin", "*"),
+        ("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"),
+    ];
+
+    pulang {
+        status: respons.status,
+        badan: respons.badan,
+        pengepala: pengepala_baru,
+    };
+}
+
+/// Rate limiting middleware
+biar ubah kiraan_permintaan: Nombor = 0;
+tetap HAD_KADAR: Nombor = 100;
+
+fungsi middleware_had_kadar(
+    pengendali_seterusnya: Fn(Permintaan) -> Respons,
+    permintaan: Permintaan
+) -> Respons kesan Tulis {
+    kiraan_permintaan = kiraan_permintaan + 1;
+
+    kalau kiraan_permintaan > HAD_KADAR {
+        pulang {
+            status: 429,
+            badan: "Terlalu banyak permintaan",
+            pengepala: [("Retry-After", "60")],
+        };
+    }
+
+    pulang pengendali_seterusnya(permintaan);
+}
+
+/// Authorization middleware — checks role after auth
+fungsi middleware_kebenaran(
+    peranan_diperlukan: Teks,
+    pengendali_seterusnya: Fn(Permintaan) -> Respons,
+    permintaan: Permintaan
+) -> Respons kesan Bersih {
+    padan permintaan.konteks_keselamatan {
+        Tiada => {
+            pulang {
+                status: 401,
+                badan: "Pengesahan diperlukan terlebih dahulu",
+                pengepala: [],
+            };
+        },
+        Ada(konteks) => {
+            kalau konteks.peranan != peranan_diperlukan {
+                pulang {
+                    status: 403,
+                    badan: "Akses ditolak: perlu peranan " + peranan_diperlukan,
+                    pengepala: [],
+                };
+            }
+            pulang pengendali_seterusnya(permintaan);
+        },
+    };
+}
+
+/// ─── Application handler ────────────────────────────────────────────
+
+fungsi pengendali_api(permintaan: Permintaan) -> Respons kesan Bersih {
+    padan permintaan.laluan {
+        "/api/pengguna" => {
+            status: 200,
+            badan: "[{\"nama\": \"Ahmad\"}]",
+            pengepala: [("Content-Type", "application/json")],
+        },
+        "/api/status" => {
+            status: 200,
+            badan: "{\"status\": \"sihat\"}",
+            pengepala: [("Content-Type", "application/json")],
+        },
+        _ => {
+            status: 404,
+            badan: "Tidak dijumpai",
+            pengepala: [],
+        },
+    };
+}
+
+/// ─── Compose the full middleware stack ──────────────────────────────
+
+/// Final handler: CORS -> RateLimit -> Log -> Auth -> AuthZ -> Handler
+fungsi kendali_permintaan(permintaan: Permintaan) -> Respons kesan Tulis {
+    pulang middleware_cors(
+        fungsi(p: Permintaan) -> Respons {
+            middleware_had_kadar(
+                fungsi(p2: Permintaan) -> Respons {
+                    middleware_log(
+                        fungsi(p3: Permintaan) -> Respons {
+                            middleware_pengesahan(
+                                fungsi(p4: Permintaan) -> Respons {
+                                    middleware_kebenaran("pentadbir", pengendali_api, p4)
+                                },
+                                p3
+                            )
+                        },
+                        p2
+                    )
+                },
+                p
+            )
+        },
+        permintaan
+    );
+}
+
+/// Helpers
+fungsi cari_pengepala(pengepala: Senarai<(Teks, Teks)>, kunci: Teks) -> Mungkin<Teks> kesan Bersih {
+    untuk (k, v) dalam pengepala {
+        kalau k == kunci {
+            pulang Ada(v);
+        }
+    }
+    pulang Tiada;
+}
+
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+
+ujian "laluan_tidak_dijumpai" {
+    biar permintaan = {
+        kaedah: "GET",
+        laluan: "/tidak/wujud",
+        badan: "",
+        pengepala: [("Authorization", "token_sah")],
+        konteks_keselamatan: Tiada,
+    };
+    biar respons = pengendali_api(permintaan);
+    tegaskan_sama(respons.status, 404);
+}
+
+ujian "pengesahan_tanpa_token_ditolak" {
+    biar permintaan = {
+        kaedah: "GET",
+        laluan: "/api/pengguna",
+        badan: "",
+        pengepala: [],
+        konteks_keselamatan: Tiada,
+    };
+    biar respons = middleware_pengesahan(pengendali_api, permintaan);
+    tegaskan_sama(respons.status, 401);
+}
+
+ujian "cors_tambah_pengepala" {
+    biar permintaan = {
+        kaedah: "GET",
+        laluan: "/api/status",
+        badan: "",
+        pengepala: [],
+        konteks_keselamatan: Tiada,
+    };
+    biar respons = middleware_cors(pengendali_api, permintaan);
+    /// Should have CORS headers added
+    tegaskan(panjang(respons.pengepala) > 1);
+}
+
+fungsi panjang(s: Senarai<(Teks, Teks)>) -> Nombor kesan Bersih { pulang 0; }

@@ -12,8 +12,8 @@
     Proves RIINA's defense against Spectre-class speculative execution attacks.
     ============================================================================ *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (** ============================================================================

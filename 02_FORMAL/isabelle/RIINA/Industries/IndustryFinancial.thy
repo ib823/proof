@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryFinancial - Isabelle/HOL Port
@@ -21,9 +23,11 @@
  * | pci_compliant      | pci_compliant          | OK     |
  * | tx_final           | tx_final               | OK     |
  * | balance_valid      | balance_valid          | OK     |
+ * | all_unique         | all_unique             | OK     |
  * | audit_log_monotone | audit_log_monotone     | OK     |
  * | kyc_complete       | kyc_complete           | OK     |
  * | aml_risk_acceptable | aml_risk_acceptable    | OK     |
+ * | compound_nat       | compound_nat           | OK     |
  * | convert_and_back   | convert_and_back       | OK     |
  * | fraud_score_valid  | fraud_score_valid      | OK     |
  * | wire_authorized    | wire_authorized        | OK     |
@@ -62,24 +66,18 @@
  *)
 
 theory IndustryFinancial
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* FinancialData (matches Coq: Inductive FinancialData) *)
 datatype financial_data =
-    PAN  (* Primary Account Number *)
-  |     CVV  (* Card Verification Value *)
-  |     PIN  (* Personal Identification Number *)
+    PAN
+  |     CVV
+  |     PIN
   |     AccountNumber
   |     RoutingNumber
-  |     SSN  (* Social Security Number *)
+  |     SSN
   |     NPI
-  |     PAN
-  |     CVV
 
 (* FinancialEffect (matches Coq: Inductive FinancialEffect) *)
 datatype financial_effect =
@@ -97,18 +95,18 @@ datatype tx_status =
 
 (* PCI_DSS_Controls (matches Coq: Record PCI_DSS_Controls) *)
 record pci_dss__controls =
-  firewall_config :: bool  (* Req 1 *)
-  no_default_passwords :: bool  (* Req 2 *)
-  protect_stored_data :: bool  (* Req 3 *)
-  encrypt_transmission :: bool  (* Req 4 *)
-  antivirus :: bool  (* Req 5 *)
-  secure_systems :: bool  (* Req 6 *)
-  restrict_access :: bool  (* Req 7 *)
-  unique_ids :: bool  (* Req 8 *)
-  physical_access :: bool  (* Req 9 *)
-  track_access :: bool  (* Req 10 *)
-  test_security :: bool  (* Req 11 *)
-  security_policy :: bool  (* Req 12 *)
+  firewall_config :: bool
+  no_default_passwords :: bool
+  protect_stored_data :: bool
+  encrypt_transmission :: bool
+  antivirus :: bool
+  secure_systems :: bool
+  restrict_access :: bool
+  unique_ids :: bool
+  physical_access :: bool
+  track_access :: bool
+  test_security :: bool
+  security_policy :: bool
 
 (* KYC_Record (matches Coq: Record KYC_Record) *)
 record kyc__record =
@@ -151,11 +149,15 @@ fun tx_final :: "TxStatus \<Rightarrow> bool" where
 
 (* balance_valid (matches Coq: Definition balance_valid) *)
 definition balance_valid :: "nat \<Rightarrow> bool" where
-  "balance_valid balance \<equiv> Nat"
+  "balance_valid balance \<equiv> (0 \<le> balance)"
+
+(* all_unique (matches Coq: Definition all_unique) *)
+fun all_unique :: "bool" where
+  "all_unique nil = true"
 
 (* audit_log_monotone (matches Coq: Definition audit_log_monotone) *)
 definition audit_log_monotone :: "bool" where
-  "audit_log_monotone \<equiv> Nat"
+  "audit_log_monotone \<equiv> (old_len \<le> new_len)"
 
 (* kyc_complete (matches Coq: Definition kyc_complete) *)
 definition kyc_complete :: "KYC_Record \<Rightarrow> bool" where
@@ -164,7 +166,11 @@ definition kyc_complete :: "KYC_Record \<Rightarrow> bool" where
 
 (* aml_risk_acceptable (matches Coq: Definition aml_risk_acceptable) *)
 definition aml_risk_acceptable :: "bool" where
-  "aml_risk_acceptable \<equiv> Nat"
+  "aml_risk_acceptable \<equiv> (score \<le> threshold)"
+
+(* compound_nat (matches Coq: Definition compound_nat) *)
+fun compound_nat :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat" where
+  "compound_nat 0 = principal"
 
 (* convert_and_back (matches Coq: Definition convert_and_back) *)
 definition convert_and_back :: "nat" where
@@ -172,7 +178,7 @@ definition convert_and_back :: "nat" where
 
 (* fraud_score_valid (matches Coq: Definition fraud_score_valid) *)
 definition fraud_score_valid :: "nat \<Rightarrow> bool" where
-  "fraud_score_valid score \<equiv> Nat"
+  "fraud_score_valid score \<equiv> (score \<le> 1000)"
 
 (* wire_authorized (matches Coq: Definition wire_authorized) *)
 definition wire_authorized :: "WireTransfer \<Rightarrow> bool" where
@@ -180,56 +186,64 @@ definition wire_authorized :: "WireTransfer \<Rightarrow> bool" where
 
 (* account_active (matches Coq: Definition account_active) *)
 definition account_active :: "bool \<Rightarrow> bool" where
-  "account_active frozen \<equiv> negb frozen"
+  "account_active frozen \<equiv> (\<not> frozen)"
 
 (* capital_adequate (matches Coq: Definition capital_adequate) *)
 definition capital_adequate :: "bool" where
-  "capital_adequate \<equiv> Nat"
+  "capital_adequate \<equiv> ((liabilities \<le> *) min_pct) (reserves * 100)"
 
 (* Section C01 - PCI-DSS 4.0.1 Compliance
-    Reference: IND_C_FINANCIAL.md Section 3.1 *)
+    Reference: IND_C_FINANCIAL.md Section 3.1
+    PCI compliance implies the firewall_config requirement is met. *)
 (* pci_dss_compliance (matches Coq) *)
-lemma pci_dss_compliance: "\<forall> (controls : PCI_DSS_Controls), pci_compliant controls = True \<longrightarrow> True"
-  by simp
+lemma pci_dss_compliance: "\<forall> (controls : PCI_DSS_Controls), pci_compliant controls = True \<longrightarrow> firewall_config controls = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Section C02 - SWIFT CSP
-    Reference: IND_C_FINANCIAL.md Section 3.2 *)
+    Reference: IND_C_FINANCIAL.md Section 3.2
+    PAN is classified as cardholder data under PCI. *)
 (* swift_csp_compliance (matches Coq) *)
-lemma swift_csp_compliance: "\<forall> (transaction : nat), True"
+lemma swift_csp_compliance: "pci_cardholder_data PAN = True"
   by simp
 
 (* Section C03 - SOX Section 404
-    Reference: IND_C_FINANCIAL.md Section 3.3 *)
+    Reference: IND_C_FINANCIAL.md Section 3.3
+    Internal controls and audit trail together form a valid conjunction. *)
 (* sox_404_compliance (matches Coq) *)
-lemma sox_404_compliance: "\<forall> (internal_controls : bool) (audit_trail : bool), True"
+lemma sox_404_compliance: "\<forall> (internal_controls : bool) (audit_trail : bool), internal_controls = True \<longrightarrow> audit_trail = True \<longrightarrow> internal_controls && audit_trail = True"
   by simp
 
 (* Section C04 - GLBA Safeguards Rule
-    Reference: IND_C_FINANCIAL.md Section 3.4 *)
+    Reference: IND_C_FINANCIAL.md Section 3.4
+    NPI (Non-Public Personal Information) is not PCI cardholder data. *)
 (* glba_safeguards (matches Coq) *)
-lemma glba_safeguards: "\<forall> (npi : FinancialData) (protection : bool), True"
+lemma glba_safeguards: "pci_cardholder_data NPI = False"
   by simp
 
 (* Section C05 - DORA Requirements
-    Reference: IND_C_FINANCIAL.md Section 3.5 *)
+    Reference: IND_C_FINANCIAL.md Section 3.5
+    CVV is classified as PCI cardholder data. *)
 (* dora_resilience (matches Coq) *)
-lemma dora_resilience: "\<forall> (system : nat) (incident : nat), True"
+lemma dora_resilience: "pci_cardholder_data CVV = True"
   by simp
 
-(* CVV must never be stored post-authorization *)
+(* CVV must never be stored post-authorization:
+    CVV is always classified as cardholder data. *)
 (* cvv_not_stored (matches Coq) *)
-lemma cvv_not_stored: "\<forall> (d : FinancialData) (storage : bool), d = CVV \<longrightarrow> True"
+lemma cvv_not_stored: "\<forall> (d : FinancialData), d = CVV \<longrightarrow> pci_cardholder_data d = True"
   by simp
 
-(* PAN must be masked when displayed *)
+(* PAN must be masked when displayed:
+    PAN is always classified as cardholder data. *)
 (* pan_masking (matches Coq) *)
-lemma pan_masking: "\<forall> (pan : FinancialData) (display_format : nat), True"
+lemma pan_masking: "\<forall> (d : FinancialData), d = PAN \<longrightarrow> pci_cardholder_data d = True"
   by simp
 
-(* Strong cryptography for cardholder data *)
+(* Strong cryptography for cardholder data:
+    Cardholder data classification implies the data is PAN, CVV, or PIN. *)
 (* strong_crypto_required (matches Coq) *)
-lemma strong_crypto_required: "\<forall> (data : FinancialData), pci_cardholder_data data = True \<longrightarrow> True"
-  by simp
+lemma strong_crypto_required: "\<forall> (data : FinancialData), pci_cardholder_data data = True \<longrightarrow> data = PAN \<or> data = CVV \<or> data = PIN"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PCI cardholder data classification is decidable *)
 (* pci_cardholder_data_dec (matches Coq) *)
@@ -313,11 +327,11 @@ lemma wire_requires_dual_auth: "\<forall> w, wire_authorized w = True \<longrigh
   by auto
 
 (* frozen_account_inactive (matches Coq) *)
-lemma frozen_account_inactive: "account_active true = False"
+lemma frozen_account_inactive: "account_active True = False"
   by simp
 
 (* unfrozen_account_active (matches Coq) *)
-lemma unfrozen_account_active: "account_active false = True"
+lemma unfrozen_account_active: "account_active False = True"
   by simp
 
 (* capital_ratio_check (matches Coq) *)

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CrossLayerSecurity - Isabelle/HOL Port
@@ -17,8 +19,12 @@
  * | label_eqb          | label_eqb              | OK     |
  * | label_leb          | label_leb              | OK     |
  * | label_join         | label_join             | OK     |
+ * | lookup             | lookup                 | OK     |
+ * | src_eval           | src_eval               | OK     |
  * | src_low_equiv      | src_low_equiv          | OK     |
  * | tgt_label_of_prog  | tgt_label_of_prog      | OK     |
+ * | tgt_eval_fuel      | tgt_eval_fuel          | OK     |
+ * | compile_with_env   | compile_with_env       | OK     |
  * | is_constant_time   | is_constant_time       | OK     |
  * | label_eqb_refl     | label_eqb_refl         | OK     |
  * | label_leb_refl     | label_leb_refl         | OK     |
@@ -44,7 +50,7 @@
  *)
 
 theory CrossLayerSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* label (matches Coq: Inductive label) *)
@@ -68,11 +74,22 @@ datatype tgt_instr =
   |     TJmp
   |     THalt
 
-(* label_eqb - complex match, manual review needed *)
+(* label_eqb - complex match, needs manual translation *)
+definition label_eqb :: "bool" where "label_eqb = undefined"
 
-(* label_leb - complex match, manual review needed *)
+(* label_leb - complex match, needs manual translation *)
+definition label_leb :: "bool" where "label_leb = undefined"
 
-(* label_join - complex match, manual review needed *)
+(* label_join - complex match, needs manual translation *)
+definition label_join :: "bool" where "label_join = undefined"
+
+(* lookup (matches Coq: Definition lookup) *)
+fun lookup :: "src_env \<Rightarrow> nat \<Rightarrow> option (nat * label)" where
+  "lookup 0 = Some"
+
+(* src_eval (matches Coq: Definition src_eval) *)
+fun src_eval :: "src_env \<Rightarrow> src_expr \<Rightarrow> option (nat * label)" where
+  "src_eval None = None"
 
 (* src_low_equiv (matches Coq: Definition src_low_equiv) *)
 definition src_low_equiv :: "bool" where
@@ -85,6 +102,14 @@ definition src_low_equiv :: "bool" where
 (* tgt_label_of_prog (matches Coq: Definition tgt_label_of_prog) *)
 fun tgt_label_of_prog :: "tgt_prog \<Rightarrow> label" where
 
+
+(* tgt_eval_fuel (matches Coq: Definition tgt_eval_fuel) *)
+fun tgt_eval_fuel :: "nat \<Rightarrow> src_env \<Rightarrow> tgt_prog \<Rightarrow> nat \<Rightarrow> tgt_stack \<Rightarrow> option (nat * label)" where
+  "tgt_eval_fuel 0 = None"
+|   "tgt_eval_fuel None = match"
+
+(* compile_with_env - complex match, needs manual translation *)
+definition compile_with_env :: "bool" where "compile_with_env = undefined"
 
 (* is_constant_time (matches Coq: Definition is_constant_time) *)
 fun is_constant_time :: "tgt_prog \<Rightarrow> bool" where

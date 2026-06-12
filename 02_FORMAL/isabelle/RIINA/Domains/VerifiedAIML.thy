@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedAIML - Isabelle/HOL Port
@@ -63,12 +65,12 @@
  *)
 
 theory VerifiedAIML
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Layer (matches Coq: Inductive Layer) *)
 datatype layer =
-    Dense  (* input_dim, output_dim *)
+    Dense
   |     ReLU
   |     Softmax
   |     Sigmoid
@@ -76,8 +78,8 @@ datatype layer =
 (* FixedPoint (matches Coq: Record FixedPoint) *)
 record fixed_point =
   fp_int :: Z
-  fp_frac :: nat  (* Fractional part, scaled by 10000 *)
-  fp_scale :: nat  (* Scale factor *)
+  fp_frac :: nat
+  fp_scale :: nat
 
 (* InputBounds (matches Coq: Record InputBounds) *)
 record input_bounds =
@@ -87,13 +89,13 @@ record input_bounds =
 (* Model (matches Coq: Record Model) *)
 record model =
   model_weights :: 'a list
-  model_hash :: nat  (* For integrity check *)
+  model_hash :: nat
 
 (* ActionSpace (matches Coq: Record ActionSpace) *)
 record action_space =
   action_min :: Z
   action_max :: Z
-  action_rate_limit :: Z  (* Max change per step *)
+  action_rate_limit :: Z
 
 (* rval_add (matches Coq: Definition rval_add) *)
 definition rval_add :: "RVal" where
@@ -103,70 +105,74 @@ definition rval_add :: "RVal" where
 
 (* relu (matches Coq: Definition relu) *)
 definition relu :: "Z \<Rightarrow> Z" where
-  "relu x \<equiv> Z"
+  "relu x \<equiv> Z.max 0 x"
 
 (* sigmoid_approx (matches Coq: Definition sigmoid_approx) *)
 definition sigmoid_approx :: "Z \<Rightarrow> Z" where
-  "sigmoid_approx x \<equiv> (* Approximation: 0 if x < -4, 1 if x > 4, linear in between *)
-  if Z"
+  "sigmoid_approx x \<equiv> if Z.(x < (-4)) then 0
+  else if Z.(4 < x) then 1000  
+  else (500 + x * 125)%Z"
 
 (* softmax_valid (matches Coq: Definition softmax_valid) *)
 definition softmax_valid :: "Z \<Rightarrow> bool" where
-  "softmax_valid scale \<equiv> Z"
+  "softmax_valid scale \<equiv> Z.((fold_left = Z.add) outputs 0%Z) scale"
 
 (* lipschitz_bound (matches Coq: Definition lipschitz_bound) *)
 definition lipschitz_bound :: "Z" where
-  "lipschitz_bound \<equiv> fold_left Z"
+  "lipschitz_bound \<equiv> fold_left Z.max (map Z.abs weights) 0%Z"
 
 (* within_epsilon (matches Coq: Definition within_epsilon) *)
 definition within_epsilon :: "Z \<Rightarrow> bool" where
-  "within_epsilon epsilon \<equiv> Z"
+  "within_epsilon epsilon \<equiv> Z.((Z.abs \<le> (x1) - x2)) epsilon"
 
 (* input_valid (matches Coq: Definition input_valid) *)
 definition input_valid :: "Z \<Rightarrow> InputBounds \<Rightarrow> bool" where
-  "input_valid x bounds \<equiv> andb (Z"
+  "input_valid x bounds \<equiv> ((Z.(\<and> \<le> (ib_min)) bounds) x) (Z.(x \<le> (ib_max) bounds))"
 
 (* model_integrity (matches Coq: Definition model_integrity) *)
 definition model_integrity :: "Model \<Rightarrow> nat \<Rightarrow> bool" where
-  "model_integrity m expected_hash \<equiv> Nat"
+  "model_integrity m expected_hash \<equiv> ((model_hash = m)) expected_hash"
 
 (* confidence_calibrated (matches Coq: Definition confidence_calibrated) *)
 definition confidence_calibrated :: "Z \<Rightarrow> Z \<Rightarrow> Z \<Rightarrow> bool" where
-  "confidence_calibrated confidence accuracy tolerance \<equiv> Z"
+  "confidence_calibrated confidence accuracy tolerance \<equiv> Z.((Z.abs \<le> (confidence) - accuracy)) tolerance"
 
 (* demographic_parity (matches Coq: Definition demographic_parity) *)
 definition demographic_parity :: "Z \<Rightarrow> bool" where
-  "demographic_parity threshold \<equiv> Z"
+  "demographic_parity threshold \<equiv> Z.((Z.abs \<le> (group_a_rate) - group_b_rate)) threshold"
 
 (* action_safe (matches Coq: Definition action_safe) *)
 definition action_safe :: "ActionSpace \<Rightarrow> bool" where
-  "action_safe space \<equiv> andb (andb (Z"
+  "action_safe space \<equiv> ((andb \<and> (Z.leb) (action_min space) action)
+             (Z.(action \<le> (action_max) space)))
+       (Z.((Z.abs \<le> (action) - prev_action)) (action_rate_limit space))"
 
 (* output_bounded (matches Coq: Definition output_bounded) *)
 definition output_bounded :: "Z \<Rightarrow> bool" where
-  "output_bounded output \<equiv> andb (Z"
+  "output_bounded output \<equiv> (Z.(min \<le> output) \<and> Z.(output \<le> max))"
 
 (* classify (matches Coq: Definition classify) *)
 definition classify :: "Z \<Rightarrow> Z \<Rightarrow> Z" where
-  "classify x threshold \<equiv> if Z"
+  "classify x threshold \<equiv> if Z.(threshold \<le> x) then 1 else 0"
 
 (* inference (matches Coq: Definition inference) *)
 definition inference :: "Model \<Rightarrow> Z \<Rightarrow> Z" where
-  "inference model input \<equiv> fold_left Z"
+  "inference model input \<equiv> fold_left Z.add (model_weights model) input"
 
 (* numerically_stable (matches Coq: Definition numerically_stable) *)
 definition numerically_stable :: "Z \<Rightarrow> Z \<Rightarrow> bool" where
-  "numerically_stable x bound \<equiv> Z"
+  "numerically_stable x bound \<equiv> Z.((Z.abs \<le> x)) bound"
 
 (* explanation_faithful (matches Coq: Definition explanation_faithful) *)
 definition explanation_faithful :: "Z \<Rightarrow> bool" where
-  "explanation_faithful tolerance \<equiv> Z"
+  "explanation_faithful tolerance \<equiv> Z.((Z.abs \<le> (importance) - actual_contribution)) tolerance"
 
 (* gradient_step (matches Coq: Definition gradient_step) *)
 definition gradient_step :: "Z \<Rightarrow> Z \<Rightarrow> Z \<Rightarrow> Z" where
   "gradient_step loss learning_rate gradient \<equiv> loss - learning_rate * gradient"
 
-(* mat_mul_elem - complex match, manual review needed *)
+(* mat_mul_elem - complex match, needs manual translation *)
+definition mat_mul_elem :: "bool" where "mat_mul_elem = undefined"
 
 (* lipschitz_output (matches Coq: Definition lipschitz_output) *)
 definition lipschitz_output :: "Z \<Rightarrow> Z \<Rightarrow> Z" where

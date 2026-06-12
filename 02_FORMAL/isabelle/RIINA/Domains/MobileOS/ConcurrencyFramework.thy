@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ConcurrencyFramework - Isabelle/HOL Port
@@ -63,13 +65,13 @@
  *)
 
 theory ConcurrencyFramework
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ConcurrencyType (matches Coq: Inductive ConcurrencyType) *)
 datatype concurrency_type =
-    Sendable  (* Can be sent across actors *)
-  |     NonSendable  (* Must stay in one actor *)
+    Sendable
+  |     NonSendable
   |     Isolated
 
 (* TaskState (matches Coq: Inductive TaskState) *)
@@ -88,7 +90,7 @@ record typed_expr =
 (* Resource (matches Coq: Record Resource) *)
 record resource =
   resource_id :: ResourceId
-  resource_order :: nat  (* Acquisition order *)
+  resource_order :: nat
 
 (* Actor (matches Coq: Record Actor) *)
 record actor =
@@ -127,7 +129,7 @@ record future =
   future_id :: nat
   future_resolved :: bool
   future_value :: option
-  future_resolve_count :: nat  (* should be 0 or 1 *)
+  future_resolve_count :: nat
 
 (* Channel (matches Coq: Record Channel) *)
 record channel =
@@ -140,7 +142,7 @@ record channel =
 record ext_actor =
   ea_id :: ActorId
   ea_mailbox :: 'a list
-  ea_processed :: nat  (* last processed sequence number *)
+  ea_processed :: nat
 
 (* ResourceId (matches Coq: Definition ResourceId) *)
 definition ResourceId :: "'a" where
@@ -154,11 +156,12 @@ definition ActorId :: "'a" where
 definition Program :: "'a" where
   "Program \<equiv> list TypedExpr"
 
-(* all_typed - complex match, manual review needed *)
+(* all_typed - complex match, needs manual translation *)
+definition all_typed :: "bool" where "all_typed = undefined"
 
 (* well_typed (matches Coq: Definition well_typed) *)
 definition well_typed :: "Program \<Rightarrow> bool" where
-  "well_typed p \<equiv> all_typed p = true"
+  "well_typed p \<equiv> all_typed p = True"
 
 (* respects_lock_order (matches Coq: Definition respects_lock_order) *)
 definition respects_lock_order :: "bool" where
@@ -203,13 +206,13 @@ definition well_formed_semaphore :: "Semaphore \<Rightarrow> bool" where
 definition well_formed_barrier :: "Barrier \<Rightarrow> bool" where
   "well_formed_barrier b \<equiv> barrier_count b <= barrier_total b /\
   barrier_total b > 0 /\
-  (barrier_released b = true <-> barrier_count b = barrier_total b)"
+  (barrier_released b = True <-> barrier_count b = barrier_total b)"
 
 (* well_formed_future (matches Coq: Definition well_formed_future) *)
 definition well_formed_future :: "Future \<Rightarrow> bool" where
   "well_formed_future f \<equiv> future_resolve_count f <= 1 /\
-  (future_resolved f = true <-> future_resolve_count f = 1) /\
-  (future_resolved f = true -> future_value f <> None)"
+  (future_resolved f = True <-> future_resolve_count f = 1) /\
+  (future_resolved f = True -> future_value f <> None)"
 
 (* well_formed_channel (matches Coq: Definition well_formed_channel) *)
 definition well_formed_channel :: "Channel \<Rightarrow> bool" where

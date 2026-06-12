@@ -1,0 +1,106 @@
+/// LINEAR_TYPES.RII - Linear Type System
+/// Jenis linear untuk pengurusan sumber yang selamat
+/// Demonstrates: Sekali (use-exactly-once), Paling (use-at-most-once), linearity enforcement
+///
+/// Coq reference: 02_FORMAL/coq/domains/LinearTypes.v
+/// Typechecker: LinearityViolation (LIN0001)
+
+/// ── Linear (Sekali): Must be used exactly once ──────────────────────
+/// A linear resource cannot be duplicated or discarded.
+/// This prevents double-free, use-after-move, and resource leaks.
+
+fungsi guna_kunci_sekali(kunci: Sekali Teks) -> Teks kesan Kripto {
+    /// Kunci kriptografi mesti digunakan tepat sekali
+    /// Cryptographic key must be used exactly once
+    biar hasil = nyahsulit(kunci);  /// kunci used here — exactly once ✓
+    pulang hasil;
+}
+
+/// ── Affine (Paling): May be used at most once ──────────────────────
+/// An affine resource can be discarded (not used) but not duplicated.
+/// This models file handles, network connections, and database cursors.
+
+fungsi baca_fail_paling(pemegang: Paling Fail) -> Teks kesan Baca {
+    /// Pemegang fail boleh digunakan sekali atau diabaikan
+    /// File handle may be used once or dropped
+    biar isi = pemegang.baca();  /// pemegang used once ✓
+    pulang isi;
+}
+
+fungsi tutup_atau_abaikan(sambungan: Paling Sambungan) -> Unit kesan Rangkaian {
+    /// Sambungan rangkaian boleh ditutup atau diabaikan (auto-close)
+    /// Network connection may be closed explicitly or dropped (auto-close)
+    sambungan.tutup();  /// used once ✓
+    /// Or: simply return without using it — affine allows this
+}
+
+/// ── Relevant (Mesti): Must be used at least once ───────────────────
+/// A relevant resource cannot be discarded — it must be consumed.
+/// This models audit obligations and mandatory acknowledgments.
+
+fungsi sahkan_audit(rekod: Mesti RekodAudit) -> Benar kesan Tulis {
+    /// Rekod audit MESTI diproses — tidak boleh diabaikan
+    /// Audit record MUST be processed — cannot be discarded
+    biar sah = rekod.sahkan();  /// rekod used ✓ (mandatory)
+    log("Audit disahkan");
+    pulang sah;
+}
+
+/// ── Unrestricted (normal): No restrictions ─────────────────────────
+/// Regular values can be used any number of times. This is the default.
+
+fungsi kira_jumlah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    /// Pembolehubah biasa boleh digunakan berulang kali
+    /// Regular variables can be used multiple times
+    biar a = x + y;    /// x used
+    biar b = x * y;    /// x used again — unrestricted ✓
+    pulang a + b;
+}
+
+/// ── Real-world example: Secure session token ───────────────────────
+/// Session tokens are linear: use once to authenticate, then invalidated.
+
+fungsi sahkan_sesi(token: Sekali Token) -> Pengguna kesan Baca {
+    /// Token sesi digunakan tepat sekali untuk pengesahan
+    /// Session token used exactly once for authentication
+    biar pengguna = cari_pengguna(token);  /// token consumed here
+    /// token CANNOT be used again — prevents replay attacks
+    pulang pengguna;
+}
+
+/// ── Real-world example: Database transaction ───────────────────────
+/// Transactions must be either committed or rolled back (relevant),
+/// and cannot be committed twice (linear commit handle).
+
+fungsi jalankan_transaksi(db: Sambungan) -> Benar kesan SistemFail {
+    biar txn = db.mula_transaksi();
+    biar komit_handle: Sekali KomitHandle = txn.sediakan();
+
+    /// Process the transaction...
+    txn.masukkan("jadual", rekod);
+
+    /// Commit handle must be used exactly once
+    komit_handle.komit();  /// consumed — cannot double-commit
+
+    pulang betul;
+}
+
+/// ── What the compiler rejects ──────────────────────────────────────
+///
+/// ERROR: Linear variable used twice (LIN0001)
+///   biar k: Sekali Teks = jana_kunci();
+///   guna(k);   // first use
+///   guna(k);   // ERROR: Linear variable 'k' already consumed
+///
+/// ERROR: Linear variable never used (LIN0001)
+///   biar k: Sekali Teks = jana_kunci();
+///   pulang 0;  // ERROR: Linear variable 'k' was never used (resource leak)
+///
+/// ERROR: Affine variable used twice (LIN0001)
+///   biar f: Paling Fail = buka("data.txt");
+///   baca(f);   // first use
+///   baca(f);   // ERROR: Affine variable 'f' already consumed
+///
+/// OK: Affine variable never used (no error — can be dropped)
+///   biar f: Paling Fail = buka("data.txt");
+///   pulang 0;  // OK — affine allows drop

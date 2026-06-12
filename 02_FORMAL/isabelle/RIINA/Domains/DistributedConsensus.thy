@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DistributedConsensus - Isabelle/HOL Port
@@ -21,7 +23,9 @@
  * | decided_nodes_agree | decided_nodes_agree    | OK     |
  * | round_update       | round_update           | OK     |
  * | decision_stable    | decision_stable        | OK     |
+ * | count_honest       | count_honest           | OK     |
  * | mem_nat            | mem_nat                | OK     |
+ * | intersect          | intersect              | OK     |
  * | 1                  | 1                      | OK     |
  * | 2                  | 2                      | OK     |
  * | 3                  | 3                      | OK     |
@@ -49,7 +53,7 @@
  *)
 
 theory DistributedConsensus
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* bft_assumption (matches Coq: Definition bft_assumption) *)
@@ -66,24 +70,24 @@ definition is_quorum :: "Config \<Rightarrow> bool" where
 
 (* all_honest_propose (matches Coq: Definition all_honest_propose) *)
 definition all_honest_propose :: "Config \<Rightarrow> nat \<Rightarrow> bool" where
-  "all_honest_propose c v \<equiv> forall nd, In nd (nodes c) -> honest c (node_id nd) = true -> node_value nd = v"
+  "all_honest_propose c v \<equiv> forall nd, In nd (nodes c) -> honest c (node_id nd) = True -> node_value nd = v"
 
 (* honest_decided (matches Coq: Definition honest_decided) *)
 definition honest_decided :: "Config \<Rightarrow> Node \<Rightarrow> bool" where
-  "honest_decided c nd \<equiv> honest c (node_id nd) = true /\ node_decided nd = true"
+  "honest_decided c nd \<equiv> honest c (node_id nd) = True /\ node_decided nd = True"
 
 (* honest_votes_once_per_round (matches Coq: Definition honest_votes_once_per_round) *)
 definition honest_votes_once_per_round :: "Config \<Rightarrow> bool" where
   "honest_votes_once_per_round c \<equiv> forall v1 v2,
     In v1 (votes c) -> In v2 (votes c) ->
-    honest c (vote_sender v1) = true ->
+    honest c (vote_sender v1) = True ->
     vote_sender v1 = vote_sender v2 ->
     vote_round v1 = vote_round v2 ->
     vote_value v1 = vote_value v2"
 
 (* messages_from_honest_authentic (matches Coq: Definition messages_from_honest_authentic) *)
 definition messages_from_honest_authentic :: "Config \<Rightarrow> bool" where
-  "messages_from_honest_authentic c \<equiv> forall m, In m (messages c) -> honest c (msg_sender m) = true -> msg_authentic m = true"
+  "messages_from_honest_authentic c \<equiv> forall m, In m (messages c) -> honest c (msg_sender m) = True -> msg_authentic m = True"
 
 (* decided_nodes_agree (matches Coq: Definition decided_nodes_agree) *)
 definition decided_nodes_agree :: "Config \<Rightarrow> bool" where
@@ -99,12 +103,20 @@ definition round_update :: "bool" where
 (* decision_stable (matches Coq: Definition decision_stable) *)
 definition decision_stable :: "bool" where
   "decision_stable \<equiv> node_id nd_before = node_id nd_after ->
-  node_decided nd_before = true ->
-  node_decided nd_after = true /\ node_decision nd_after = node_decision nd_before"
+  node_decided nd_before = True ->
+  node_decided nd_after = True /\ node_decision nd_after = node_decision nd_before"
+
+(* count_honest (matches Coq: Definition count_honest) *)
+fun count_honest :: "nat" where
+
 
 (* mem_nat (matches Coq: Definition mem_nat) *)
 definition mem_nat :: "nat \<Rightarrow> bool" where
-  "mem_nat x \<equiv> existsb (Nat"
+  "mem_nat x \<equiv> existsb ((x) = l)"
+
+(* intersect (matches Coq: Definition intersect) *)
+fun intersect :: "list nat" where
+
 
 (* 1 (matches Coq) *)
 lemma 1: "Agreement --- If the configuration satisfies decided_nodes_agree, then any two honest decided nodes have the same decision. This is modeled as: the agreement property is preserved by construction. Theorem agreement : \<forall> c n1 n2, decided_nodes_agree c \<longrightarrow> In n1 (nodes c) \<longrightarrow> In n2 (nodes c) \<longrightarrow> honest_decided c n1 \<longrightarrow> honest_decided c n2 \<longrightarrow> node_decision n1 = node_decision n2"

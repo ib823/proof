@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MemoryVirtualization - Isabelle/HOL Port
@@ -18,8 +20,10 @@
  * | EPTEntry           | ept_entry              | OK     |
  * | ExtendedPageTable  | extended_page_table    | OK     |
  * | MemVirtState       | mem_virt_state         | OK     |
+ * | find_ept           | find_ept               | OK     |
  * | hypervisor_owns_ept | hypervisor_owns_ept    | OK     |
  * | has_vm_creation_capability | has_vm_creation_capability | OK     |
+ * | translate_gpa      | translate_gpa          | OK     |
  * | gpa_in_ept         | gpa_in_ept             | OK     |
  * | perm_read          | perm_read              | OK     |
  * | perm_write         | perm_write             | OK     |
@@ -49,7 +53,7 @@
  *)
 
 theory MemoryVirtualization
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* VMId (matches Coq: Inductive VMId) *)
@@ -63,7 +67,7 @@ datatype process_id =
 (* Process (matches Coq: Record Process) *)
 record process =
   proc_id :: ProcessId
-  proc_vm_create_cap :: bool  (* capability to create VMs *)
+  proc_vm_create_cap :: bool
 
 (* VirtualMachine (matches Coq: Record VirtualMachine) *)
 record virtual_machine =
@@ -74,9 +78,9 @@ record virtual_machine =
 
 (* EPTEntry (matches Coq: Record EPTEntry) *)
 record ept_entry =
-  ept_gpa :: nat  (* Guest Physical Address *)
-  ept_hpa :: nat  (* Host Physical Address *)
-  ept_permissions :: nat  (* read=1, write=2, exec=4 *)
+  ept_gpa :: nat
+  ept_hpa :: nat
+  ept_permissions :: nat
   ept_valid :: bool
 
 (* ExtendedPageTable (matches Coq: Record ExtendedPageTable) *)
@@ -91,17 +95,24 @@ record mem_virt_state =
   all_epts :: 'a list
   all_vms :: 'a list
 
+(* find_ept (matches Coq: Definition find_ept) *)
+fun find_ept :: "VMId \<Rightarrow> option ExtendedPageTable" where
+
+
 (* hypervisor_owns_ept (matches Coq: Definition hypervisor_owns_ept) *)
 definition hypervisor_owns_ept :: "ExtendedPageTable \<Rightarrow> bool" where
   "hypervisor_owns_ept ept \<equiv> True"
 
 (* has_vm_creation_capability (matches Coq: Definition has_vm_creation_capability) *)
 definition has_vm_creation_capability :: "Process \<Rightarrow> bool" where
-  "has_vm_creation_capability p \<equiv> proc_vm_create_cap p = true"
+  "has_vm_creation_capability p \<equiv> proc_vm_create_cap p = True"
+
+(* translate_gpa - complex match, needs manual translation *)
+definition translate_gpa :: "bool" where "translate_gpa = undefined"
 
 (* gpa_in_ept (matches Coq: Definition gpa_in_ept) *)
 definition gpa_in_ept :: "ExtendedPageTable \<Rightarrow> nat \<Rightarrow> bool" where
-  "gpa_in_ept ept gpa \<equiv> exists entry, In entry (ept_entries ept) /\ ept_gpa entry = gpa /\ ept_valid entry = true"
+  "gpa_in_ept ept gpa \<equiv> exists entry, In entry (ept_entries ept) /\ ept_gpa entry = gpa /\ ept_valid entry = True"
 
 (* perm_read (matches Coq: Definition perm_read) *)
 definition perm_read :: "nat" where
@@ -117,7 +128,7 @@ definition perm_exec :: "nat" where
 
 (* has_permission (matches Coq: Definition has_permission) *)
 definition has_permission :: "EPTEntry \<Rightarrow> nat \<Rightarrow> bool" where
-  "has_permission entry perm \<equiv> negb (Nat"
+  "has_permission entry perm \<equiv> (\<not> (Nat.eqb) (Nat.land (ept_permissions entry) perm) 0)"
 
 (* Theorem: Guest VMs cannot modify their own Extended Page Tables.
     EPT modification is hypervisor-only operation. *)

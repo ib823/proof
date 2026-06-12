@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BackendTraitVerification - Isabelle/HOL Port
@@ -55,14 +57,14 @@ datatype target =
 
 (* BackendKind (matches Coq: Inductive BackendKind) *)
 datatype backend_kind =
-    BKC  (* CBackend *)
-  |     BKWasm  (* WasmBackend *)
+    BKC
+  |     BKWasm
   |     BKMobile
 
 (* OutputFormat (matches Coq: Inductive OutputFormat) *)
 datatype output_format =
-    FmtC  (* .c file *)
-  |     FmtWasm  (* .wasm binary *)
+    FmtC
+  |     FmtWasm
   |     FmtCWithBridge
 
 (* SecurityProp (matches Coq: Inductive SecurityProp) *)
@@ -87,7 +89,7 @@ fun backend_format :: "BackendKind \<Rightarrow> OutputFormat" where
 
 (* preserves (matches Coq: Definition preserves) *)
 definition preserves :: "BackendKind \<Rightarrow> SecurityProp \<Rightarrow> bool" where
-  "preserves bk prop \<equiv> true"
+  "preserves bk prop \<equiv> True"
 
 (* backend_001_dispatch_total (matches Coq) *)
 lemma backend_001_dispatch_total: "\<forall> t, \<exists> bk, dispatch t = bk"

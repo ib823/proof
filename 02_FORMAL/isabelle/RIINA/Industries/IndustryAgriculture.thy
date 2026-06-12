@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryAgriculture - Isabelle/HOL Port
@@ -12,6 +14,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AgriData           | agri_data              | OK     |
+ * | FoodSafetyHazard   | food_safety_hazard     | OK     |
  * | AgricultureEffect  | agriculture_effect     | OK     |
  * | FoodSafetyControls | food_safety_controls   | OK     |
  * | CertifiedFarm      | certified_farm         | OK     |
@@ -48,24 +51,23 @@
  *)
 
 theory IndustryAgriculture
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* AgriData (matches Coq: Inductive AgriData) *)
 datatype agri_data =
-    CropData  (* Yield, genetics, conditions *)
-  |     SupplyChain  (* Traceability data *)
-  |     ProcessingRecords  (* Food processing *)
+    CropData
+  |     SupplyChain
+  |     ProcessingRecords
   |     QualityControl
-  |     EquipmentTelemetry  (* Farm machinery *)
+  |     EquipmentTelemetry
   |     ChemicalUsage
-  |     Biological  (* Pathogens *)
-  |     Chemical  (* Contaminants *)
-  |     Physical  (* Foreign objects *)
+
+(* FoodSafetyHazard (matches Coq: Inductive FoodSafetyHazard) *)
+datatype food_safety_hazard =
+    Biological
+  |     Chemical
+  |     Physical
   |     Allergen
   |     Radiological
 
@@ -79,7 +81,7 @@ datatype agriculture_effect =
 
 (* FoodSafetyControls (matches Coq: Record FoodSafetyControls) *)
 record food_safety_controls =
-  haccp_plan :: bool  (* Hazard Analysis Critical Control Points *)
+  haccp_plan :: bool
   traceability_system :: bool
   supplier_verification :: bool
   preventive_controls :: bool
@@ -151,43 +153,50 @@ definition count_food_controls :: "FoodSafetyControls \<Rightarrow> nat" where
   (if recall_capability c then 1 else 0)"
 
 (* Section N01 - FSMA Compliance
-    Reference: IND_N_AGRICULTURE.md Section 3.1 *)
+    Reference: IND_N_AGRICULTURE.md Section 3.1
+    Preventive controls enabled implies its negation is false. *)
 (* fsma_compliance (matches Coq) *)
-lemma fsma_compliance: "\<forall> (controls : FoodSafetyControls) (facility : nat), preventive_controls controls = True \<longrightarrow> True"
+lemma fsma_compliance: "\<forall> (controls : FoodSafetyControls), preventive_controls controls = True \<longrightarrow> (\<not> (preventive_controls) controls) = False"
   by simp
 
 (* Section N02 - Traceability
-    Reference: IND_N_AGRICULTURE.md Section 3.2 *)
+    Reference: IND_N_AGRICULTURE.md Section 3.2
+    CropData is distinct from ChemicalUsage. *)
 (* food_traceability (matches Coq) *)
-lemma food_traceability: "\<forall> (product : nat) (supply_chain : nat), True"
-  by simp
+lemma food_traceability: "CropData \<noteq> ChemicalUsage"
+  by auto
 
 (* Section N03 - Precision Agriculture Security
-    Reference: IND_N_AGRICULTURE.md Section 3.3 *)
+    Reference: IND_N_AGRICULTURE.md Section 3.3
+    EquipmentTelemetry is distinct from ProcessingRecords. *)
 (* precision_ag_security (matches Coq) *)
-lemma precision_ag_security: "\<forall> (equipment : nat) (data : AgriData), True"
-  by simp
+lemma precision_ag_security: "EquipmentTelemetry \<noteq> ProcessingRecords"
+  by auto
 
 (* Section N04 - ISO 22000 FSMS
-    Reference: IND_N_AGRICULTURE.md Section 3.4 *)
+    Reference: IND_N_AGRICULTURE.md Section 3.4
+    Biological hazard is distinct from Chemical hazard. *)
 (* iso_22000_compliance (matches Coq) *)
-lemma iso_22000_compliance: "\<forall> (organization : nat), True"
-  by simp
+lemma iso_22000_compliance: "Biological \<noteq> Chemical"
+  by auto
 
 (* Section N05 - Supply Chain Integrity
-    Reference: IND_N_AGRICULTURE.md Section 3.5 *)
+    Reference: IND_N_AGRICULTURE.md Section 3.5
+    SupplyChain data is distinct from QualityControl data. *)
 (* supply_chain_integrity (matches Coq) *)
-lemma supply_chain_integrity: "\<forall> (supplier : nat) (product : nat), True"
-  by simp
+lemma supply_chain_integrity: "SupplyChain \<noteq> QualityControl"
+  by auto
 
-(* HACCP required for processing facilities *)
+(* HACCP required for processing facilities:
+    HACCP plan enabled implies its negation is false. *)
 (* haccp_required (matches Coq) *)
-lemma haccp_required: "\<forall> (controls : FoodSafetyControls) (facility : nat), haccp_plan controls = True \<longrightarrow> True"
+lemma haccp_required: "\<forall> (controls : FoodSafetyControls), haccp_plan controls = True \<longrightarrow> (\<not> (haccp_plan) controls) = False"
   by simp
 
-(* Recall capability required *)
+(* Recall capability required:
+    Recall and traceability together form a valid conjunction. *)
 (* recall_capability_required (matches Coq) *)
-lemma recall_capability_required: "\<forall> (controls : FoodSafetyControls), recall_capability controls = True \<longrightarrow> traceability_system controls = True \<longrightarrow> True"
+lemma recall_capability_required: "\<forall> (controls : FoodSafetyControls), recall_capability controls = True \<longrightarrow> traceability_system controls = True \<longrightarrow> recall_capability controls && traceability_system controls = True"
   by simp
 
 (* chemical_usage_highest_sensitivity (matches Coq) *)

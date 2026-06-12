@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedHardware - Isabelle/HOL Port
@@ -25,11 +27,13 @@
  * | initial_rtl_state  | initial_rtl_state      | OK     |
  * | rtl_to_arch        | rtl_to_arch            | OK     |
  * | rtl_execute_instr  | rtl_execute_instr      | OK     |
+ * | rtl_exec           | rtl_exec               | OK     |
  * | cycles             | cycles                 | OK     |
  * | public_equiv       | public_equiv           | OK     |
  * | rtl_public_equiv   | rtl_public_equiv       | OK     |
  * | timing_independent_prop | timing_independent_prop | OK     |
  * | instr_leakage      | instr_leakage          | OK     |
+ * | program_leakage    | program_leakage        | OK     |
  * | constant_time_prog | constant_time_prog     | OK     |
  * | speculating        | speculating            | OK     |
  * | scub_blocks_speculation | scub_blocks_speculation | OK     |
@@ -103,7 +107,7 @@
  *)
 
 theory VerifiedHardware
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
@@ -113,21 +117,21 @@ datatype security_level =
 
 (* Instruction (matches Coq: Inductive Instruction) *)
 datatype instruction =
-    IAdd  (* rd = rs1 + rs2 *)
-  |     ISub  (* rd = rs1 - rs2 *)
-  |     IAnd  (* rd = rs1 & rs2 *)
+    IAdd
+  |     ISub
+  |     IAnd
   |     IOr
-  |     IXor  (* rd = rs1 ^ rs2 *)
-  |     IMul  (* rd = rs1 * rs2 *)
-  |     IDiv  (* rd = rs1 / rs2 *)
-  |     ILoad  (* rd = mem[rs1 + imm] *)
-  |     IStore  (* mem[rs1 + imm] = rs2 *)
-  |     IBranch  (* if rs1 = rs2 goto imm *)
-  |     IJump  (* goto imm *)
-  |     ISCUB  (* Speculative barrier *)
-  |     IFENCESC  (* Side-channel fence *)
-  |     IISOL  (* Enter isolation mode *)
-  |     IZEROIZE  (* Zeroize registers *)
+  |     IXor
+  |     IMul
+  |     IDiv
+  |     ILoad
+  |     IStore
+  |     IBranch
+  |     IJump
+  |     ISCUB
+  |     IFENCESC
+  |     IISOL
+  |     IZEROIZE
   |     INop
 
 (* PipelineStage (matches Coq: Inductive PipelineStage) *)
@@ -168,9 +172,9 @@ record rtl_state =
   rtl_cycle :: nat
   rtl_security_labels :: RegId
   rtl_isolation_mode :: bool
-  rtl_speculating :: bool  (* Always false for in-order *)
-  rtl_scub_active :: bool  (* SCUB barrier active *)
-  rtl_fencesc_active :: bool  (* Side-channel fence active *)
+  rtl_speculating :: bool
+  rtl_scub_active :: bool
+  rtl_fencesc_active :: bool
 
 (* ECCWord (matches Coq: Record ECCWord) *)
 record ecc_word =
@@ -197,7 +201,7 @@ definition initial_arch_state :: "ArchState" where
      mem := fun _ => 0;
      pc := 0;
      security_labels := fun _ => Public;
-     isolation_mode := false |}"
+     isolation_mode := False |}"
 
 (* initial_rtl_state (matches Coq: Definition initial_rtl_state) *)
 definition initial_rtl_state :: "RTLState" where
@@ -207,10 +211,10 @@ definition initial_rtl_state :: "RTLState" where
      rtl_pipeline := [];
      rtl_cycle := 0;
      rtl_security_labels := fun _ => Public;
-     rtl_isolation_mode := false;
-     rtl_speculating := false;
-     rtl_scub_active := false;
-     rtl_fencesc_active := false |}"
+     rtl_isolation_mode := False;
+     rtl_speculating := False;
+     rtl_scub_active := False;
+     rtl_fencesc_active := False |}"
 
 (* rtl_to_arch (matches Coq: Definition rtl_to_arch) *)
 definition rtl_to_arch :: "RTLState \<Rightarrow> ArchState" where
@@ -220,7 +224,13 @@ definition rtl_to_arch :: "RTLState \<Rightarrow> ArchState" where
      security_labels := rtl_security_labels s;
      isolation_mode := rtl_isolation_mode s |}"
 
-(* rtl_execute_instr - complex match, manual review needed *)
+(* rtl_execute_instr (matches Coq: Definition rtl_execute_instr) *)
+fun rtl_execute_instr :: "Instruction \<Rightarrow> RTLState \<Rightarrow> RTLState" where
+
+
+(* rtl_exec (matches Coq: Definition rtl_exec) *)
+fun rtl_exec :: "RTLState \<Rightarrow> RTLState" where
+
 
 (* cycles (matches Coq: Definition cycles) *)
 fun cycles :: "Instruction \<Rightarrow> nat" where
@@ -252,6 +262,10 @@ definition timing_independent_prop :: "Instruction \<Rightarrow> bool" where
 definition instr_leakage :: "Instruction \<Rightarrow> RTLState \<Rightarrow> LeakageTrace" where
   "instr_leakage instr s \<equiv> [LTiming (cycles instr)]"
 
+(* program_leakage (matches Coq: Definition program_leakage) *)
+fun program_leakage :: "RTLState \<Rightarrow> LeakageTrace" where
+
+
 (* constant_time_prog (matches Coq: Definition constant_time_prog) *)
 definition constant_time_prog :: "bool" where
   "constant_time_prog \<equiv> forall s1 s2,
@@ -260,11 +274,11 @@ definition constant_time_prog :: "bool" where
 
 (* speculating (matches Coq: Definition speculating) *)
 definition speculating :: "RTLState \<Rightarrow> bool" where
-  "speculating s \<equiv> rtl_speculating s = true"
+  "speculating s \<equiv> rtl_speculating s = True"
 
 (* scub_blocks_speculation (matches Coq: Definition scub_blocks_speculation) *)
 definition scub_blocks_speculation :: "RTLState \<Rightarrow> bool" where
-  "scub_blocks_speculation s \<equiv> rtl_scub_active s = true -> ~speculating s"
+  "scub_blocks_speculation s \<equiv> rtl_scub_active s = True -> ~speculating s"
 
 (* no_spec_mem_access (matches Coq: Definition no_spec_mem_access) *)
 definition no_spec_mem_access :: "RTLState \<Rightarrow> bool" where
@@ -272,11 +286,11 @@ definition no_spec_mem_access :: "RTLState \<Rightarrow> bool" where
 
 (* verified (matches Coq: Definition verified) *)
 definition verified :: "RTLState \<Rightarrow> bool" where
-  "verified s \<equiv> rtl_speculating s = false"
+  "verified s \<equiv> rtl_speculating s = False"
 
 (* behavior_in_spec (matches Coq: Definition behavior_in_spec) *)
 definition behavior_in_spec :: "bool" where
-  "behavior_in_spec \<equiv> s = s' \/  (* Reflexive: no step needed *)
+  "behavior_in_spec \<equiv> s = s' \/  
   exists instr, 
     rtl_to_arch s' = rtl_to_arch (rtl_execute_instr instr s) /\
     (exists a', isa_step instr (rtl_to_arch s) a' /\ a' = rtl_to_arch s')"
@@ -294,15 +308,20 @@ definition has_payload_logic :: "RTLState \<Rightarrow> bool" where
 
 (* inject_single_error (matches Coq: Definition inject_single_error) *)
 definition inject_single_error :: "ECCWord \<Rightarrow> nat \<Rightarrow> ECCWord" where
-  "inject_single_error w bit \<equiv> {| ecc_data := Nat"
+  "inject_single_error w bit \<equiv> {| ecc_data := Nat.lxor (ecc_data w) (Nat.pow 2 bit);
+     ecc_syndrome := bit;
+     ecc_parity := (\<not> (ecc_parity) w) |}"
 
 (* ecc_correct_single (matches Coq: Definition ecc_correct_single) *)
 definition ecc_correct_single :: "ECCWord \<Rightarrow> Word" where
-  "ecc_correct_single w \<equiv> if Nat"
+  "ecc_correct_single w \<equiv> if ((ecc_syndrome = w)) 0 then
+    ecc_data w
+  else
+    Nat.lxor (ecc_data w) (Nat.pow 2 (ecc_syndrome w))"
 
 (* ecc_is_double_error (matches Coq: Definition ecc_is_double_error) *)
 definition ecc_is_double_error :: "ECCWord \<Rightarrow> bool" where
-  "ecc_is_double_error w \<equiv> andb (negb (Nat"
+  "ecc_is_double_error w \<equiv> (((\<not> \<and>) (Nat.eqb) (ecc_syndrome w) 0)) (ecc_parity w)"
 
 (* exec_zeroize (matches Coq: Definition exec_zeroize) *)
 definition exec_zeroize :: "RTLState \<Rightarrow> RTLState" where
@@ -313,15 +332,15 @@ definition exec_zeroize :: "RTLState \<Rightarrow> RTLState" where
      rtl_cycle := rtl_cycle s + 32;
      rtl_security_labels := fun _ => Public;
      rtl_isolation_mode := rtl_isolation_mode s;
-     rtl_speculating := false;
-     rtl_scub_active := false;
-     rtl_fencesc_active := false |}"
+     rtl_speculating := False;
+     rtl_scub_active := False;
+     rtl_fencesc_active := False |}"
 
 (* create_checkpoint (matches Coq: Definition create_checkpoint) *)
 definition create_checkpoint :: "RTLState \<Rightarrow> Checkpoint" where
   "create_checkpoint s \<equiv> {| chk_regs := rtl_regs s;
      chk_pc := rtl_pc s;
-     chk_valid := true |}"
+     chk_valid := True |}"
 
 (* restore_checkpoint (matches Coq: Definition restore_checkpoint) *)
 definition restore_checkpoint :: "RTLState \<Rightarrow> Checkpoint \<Rightarrow> RTLState" where
@@ -333,9 +352,9 @@ definition restore_checkpoint :: "RTLState \<Rightarrow> Checkpoint \<Rightarrow
        rtl_cycle := rtl_cycle s;
        rtl_security_labels := rtl_security_labels s;
        rtl_isolation_mode := rtl_isolation_mode s;
-       rtl_speculating := false;
-       rtl_scub_active := false;
-       rtl_fencesc_active := false |}
+       rtl_speculating := False;
+       rtl_scub_active := False;
+       rtl_fencesc_active := False |}
   else s"
 
 (* VoltageRange (matches Coq: Definition VoltageRange) *)
@@ -348,11 +367,11 @@ definition normal_voltage_range :: "VoltageRange" where
 
 (* voltage_in_range (matches Coq: Definition voltage_in_range) *)
 definition voltage_in_range :: "nat \<Rightarrow> VoltageRange \<Rightarrow> bool" where
-  "voltage_in_range v range \<equiv> andb (Nat"
+  "voltage_in_range v range \<equiv> (((\<and> \<le> (fst)) range) v) ((v \<le> (snd) range))"
 
 (* voltage_glitch_detected (matches Coq: Definition voltage_glitch_detected) *)
 definition voltage_glitch_detected :: "nat \<Rightarrow> bool" where
-  "voltage_glitch_detected v \<equiv> negb (voltage_in_range v normal_voltage_range)"
+  "voltage_glitch_detected v \<equiv> (\<not> (voltage_in_range) v normal_voltage_range)"
 
 (* FrequencyRange (matches Coq: Definition FrequencyRange) *)
 definition FrequencyRange :: "'a" where
@@ -364,16 +383,16 @@ definition normal_frequency_range :: "FrequencyRange" where
 
 (* frequency_in_range (matches Coq: Definition frequency_in_range) *)
 definition frequency_in_range :: "nat \<Rightarrow> FrequencyRange \<Rightarrow> bool" where
-  "frequency_in_range f range \<equiv> andb (Nat"
+  "frequency_in_range f range \<equiv> (((\<and> \<le> (fst)) range) f) ((f \<le> (snd) range))"
 
 (* frequency_manipulation_detected (matches Coq: Definition frequency_manipulation_detected) *)
 definition frequency_manipulation_detected :: "nat \<Rightarrow> bool" where
-  "frequency_manipulation_detected f \<equiv> negb (frequency_in_range f normal_frequency_range)"
+  "frequency_manipulation_detected f \<equiv> (\<not> (frequency_in_range) f normal_frequency_range)"
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "TamperState \<Rightarrow> bool" where
-  "tamper_detected ts \<equiv> negb (andb (andb (tamper_seal_intact ts) (tamper_mesh_intact ts))
-             (andb (tamper_voltage_ok ts) (tamper_frequency_ok ts)))"
+  "tamper_detected ts \<equiv> (\<not> ((((tamper_seal_intact) \<and> ts) \<and> tamper_mesh_intact ts))
+             ((tamper_voltage_ok ts \<and> tamper_frequency_ok ts)))"
 
 (* update_eq (matches Coq) *)
 lemma update_eq: "\<forall> {A : Type} (f : nat \<longrightarrow> A) k v, update f k v k = v"

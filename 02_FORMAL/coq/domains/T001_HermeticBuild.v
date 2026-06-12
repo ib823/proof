@@ -5,11 +5,11 @@
 (* Layer: Build System *)
 (* Theorems: 28 | Admitted: 0 | admit: 0 | new Axiom: 0 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Strings.String.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** ===============================================================================

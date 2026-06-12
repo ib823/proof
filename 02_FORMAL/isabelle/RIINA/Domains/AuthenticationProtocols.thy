@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AuthenticationProtocols - Isabelle/HOL Port
@@ -26,6 +28,16 @@
  * | ChallengeConfig    | challenge_config       | OK     |
  * | NonceTracker       | nonce_tracker          | OK     |
  * | AuthConfig         | auth_config            | OK     |
+ * | PBKDF2_ITER_MIN    | PBKDF2_ITER_MIN        | OK     |
+ * | ARGON2_MEMORY_MIN  | ARGON2_MEMORY_MIN      | OK     |
+ * | WEBAUTHN_TIMEOUT_MIN_MS | WEBAUTHN_TIMEOUT_MIN_MS | OK     |
+ * | WEBAUTHN_TIMEOUT_MAX_MS | WEBAUTHN_TIMEOUT_MAX_MS | OK     |
+ * | WEBAUTHN_TIMEOUT_DEFAULT_MS | WEBAUTHN_TIMEOUT_DEFAULT_MS | OK     |
+ * | SESSION_EXPIRY_MIN_S | SESSION_EXPIRY_MIN_S   | OK     |
+ * | SESSION_EXPIRY_MAX_S | SESSION_EXPIRY_MAX_S   | OK     |
+ * | CHALLENGE_EXPIRY_MAX_MS | CHALLENGE_EXPIRY_MAX_MS | OK     |
+ * | CHALLENGE_EXPIRY_DEFAULT_MS | CHALLENGE_EXPIRY_DEFAULT_MS | OK     |
+ * | NONCE_WINDOW_DEFAULT | NONCE_WINDOW_DEFAULT   | OK     |
  * | pbkdf2_secure      | pbkdf2_secure          | OK     |
  * | riina_pbkdf2       | riina_pbkdf2           | OK     |
  * | argon2_secure      | argon2_secure          | OK     |
@@ -159,12 +171,8 @@
  *)
 
 theory AuthenticationProtocols
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* TokenValidation (matches Coq: Inductive TokenValidation) *)
 datatype token_validation =
@@ -182,25 +190,25 @@ record password_security =
 
 (* PBKDF2Config (matches Coq: Record PBKDF2Config) *)
 record pbkdf2_config =
-  pbkdf2_iterations :: nat  (* Number of iterations *)
-  pbkdf2_salt_bits :: nat  (* Salt size in bits *)
-  pbkdf2_output_bits :: nat  (* Derived key size in bits *)
-  pbkdf2_hash_alg :: nat  (* 0=SHA-256, 1=SHA-512 *)
+  pbkdf2_iterations :: nat
+  pbkdf2_salt_bits :: nat
+  pbkdf2_output_bits :: nat
+  pbkdf2_hash_alg :: nat
 
 (* Argon2Config (matches Coq: Record Argon2Config) *)
 record argon2_config =
-  argon2_time_cost :: nat  (* Time cost parameter *)
-  argon2_memory_cost :: nat  (* Memory cost in KiB *)
-  argon2_parallelism :: nat  (* Degree of parallelism *)
-  argon2_salt_bits :: nat  (* Salt size in bits *)
-  argon2_output_bits :: nat  (* Derived key size in bits *)
-  argon2_variant :: nat  (* 0=Argon2d, 1=Argon2i, 2=Argon2id *)
+  argon2_time_cost :: nat
+  argon2_memory_cost :: nat
+  argon2_parallelism :: nat
+  argon2_salt_bits :: nat
+  argon2_output_bits :: nat
+  argon2_variant :: nat
 
 (* BcryptConfig (matches Coq: Record BcryptConfig) *)
 record bcrypt_config =
-  bcrypt_cost_factor :: nat  (* Cost factor (2^n iterations) *)
-  bcrypt_salt_bits :: nat  (* Salt size - always 128 for bcrypt *)
-  bcrypt_output_bits :: nat  (* Output size - always 184 for bcrypt *)
+  bcrypt_cost_factor :: nat
+  bcrypt_salt_bits :: nat
+  bcrypt_output_bits :: nat
 
 (* MFASecurity (matches Coq: Record MFASecurity) *)
 record mfa_security =
@@ -211,19 +219,19 @@ record mfa_security =
 
 (* TOTPConfig (matches Coq: Record TOTPConfig) *)
 record totp_config =
-  totp_secret_bits :: nat  (* Shared secret size *)
-  totp_digits :: nat  (* Number of digits in code *)
-  totp_period :: nat  (* Time step in seconds *)
-  totp_hash_alg :: nat  (* 0=SHA-1, 1=SHA-256, 2=SHA-512 *)
-  totp_drift_window :: nat  (* Allowed clock drift windows *)
+  totp_secret_bits :: nat
+  totp_digits :: nat
+  totp_period :: nat
+  totp_hash_alg :: nat
+  totp_drift_window :: nat
 
 (* WebAuthnConfig (matches Coq: Record WebAuthnConfig) *)
 record web_authn_config =
-  webauthn_attestation :: nat  (* 0=none, 1=indirect, 2=direct *)
-  webauthn_user_verification :: nat  (* 0=discouraged, 1=preferred, 2=required *)
-  webauthn_resident_key :: bool  (* Resident key (discoverable) required *)
-  webauthn_challenge_bits :: nat  (* Challenge size in bits *)
-  webauthn_timeout_ms :: nat  (* Timeout in milliseconds *)
+  webauthn_attestation :: nat
+  webauthn_user_verification :: nat
+  webauthn_resident_key :: bool
+  webauthn_challenge_bits :: nat
+  webauthn_timeout_ms :: nat
 
 (* SessionSecurity (matches Coq: Record SessionSecurity) *)
 record session_security =
@@ -234,46 +242,46 @@ record session_security =
 
 (* SessionTokenConfig (matches Coq: Record SessionTokenConfig) *)
 record session_token_config =
-  token_entropy_bits :: nat  (* Token entropy in bits *)
-  token_expiry_seconds :: nat  (* Token expiry time *)
-  token_rotation :: bool  (* Token rotation on use *)
-  token_binding :: bool  (* Bound to client fingerprint *)
-  token_secure_flag :: bool  (* Secure cookie flag *)
-  token_httponly_flag :: bool  (* HttpOnly flag *)
-  token_samesite :: nat  (* 0=None, 1=Lax, 2=Strict *)
+  token_entropy_bits :: nat
+  token_expiry_seconds :: nat
+  token_rotation :: bool
+  token_binding :: bool
+  token_secure_flag :: bool
+  token_httponly_flag :: bool
+  token_samesite :: nat
 
 (* OAuth2Config (matches Coq: Record OAuth2Config) *)
 record o_auth2_config =
-  oauth2_pkce :: bool  (* PKCE required *)
-  oauth2_state_param :: bool  (* State parameter required *)
-  oauth2_nonce_param :: bool  (* Nonce parameter (for OIDC) *)
-  oauth2_token_binding :: bool  (* Token binding *)
-  oauth2_code_bits :: nat  (* Authorization code entropy *)
-  oauth2_code_expiry :: nat  (* Code expiry in seconds *)
-  oauth2_refresh_rotation :: bool  (* Refresh token rotation *)
+  oauth2_pkce :: bool
+  oauth2_state_param :: bool
+  oauth2_nonce_param :: bool
+  oauth2_token_binding :: bool
+  oauth2_code_bits :: nat
+  oauth2_code_expiry :: nat
+  oauth2_refresh_rotation :: bool
 
 (* OIDCConfig (matches Coq: Record OIDCConfig) *)
 record oidc_config =
-  oidc_base :: OAuth2Config  (* OAuth 2.0 base config *)
-  oidc_id_token_alg :: nat  (* 0=RS256, 1=ES256, 2=EdDSA *)
-  oidc_id_token_expiry :: nat  (* ID token expiry in seconds *)
-  oidc_userinfo_signed :: bool  (* UserInfo endpoint signed *)
-  oidc_claims_verified :: bool  (* Claims verified at server *)
+  oidc_base :: OAuth2Config
+  oidc_id_token_alg :: nat
+  oidc_id_token_expiry :: nat
+  oidc_userinfo_signed :: bool
+  oidc_claims_verified :: bool
 
 (* ChallengeConfig (matches Coq: Record ChallengeConfig) *)
 record challenge_config =
-  challenge_bits :: nat  (* Challenge entropy in bits *)
-  challenge_expiry_ms :: nat  (* Challenge expiry in milliseconds *)
-  challenge_single_use :: bool  (* Single-use challenge *)
-  challenge_bound :: bool  (* Bound to session *)
-  challenge_signed :: bool  (* Server signature on challenge *)
+  challenge_bits :: nat
+  challenge_expiry_ms :: nat
+  challenge_single_use :: bool
+  challenge_bound :: bool
+  challenge_signed :: bool
 
 (* NonceTracker (matches Coq: Record NonceTracker) *)
 record nonce_tracker =
-  nonce_size_bits :: nat  (* Nonce size in bits *)
-  nonce_window_size :: nat  (* Size of tracking window *)
-  nonce_timestamp_bound :: nat  (* Max age in seconds *)
-  nonce_counter_mode :: bool  (* Counter-based nonces *)
+  nonce_size_bits :: nat
+  nonce_window_size :: nat
+  nonce_timestamp_bound :: nat
+  nonce_counter_mode :: bool
 
 (* AuthConfig (matches Coq: Record AuthConfig) *)
 record auth_config =
@@ -281,34 +289,74 @@ record auth_config =
   auth_mfa :: MFASecurity
   auth_session :: SessionSecurity
 
+(* PBKDF2_ITER_MIN (matches Coq: Definition PBKDF2_ITER_MIN) *)
+definition PBKDF2_ITER_MIN :: "nat" where
+  "PBKDF2_ITER_MIN \<equiv> Z.to_nat 600000%Z"
+
+(* ARGON2_MEMORY_MIN (matches Coq: Definition ARGON2_MEMORY_MIN) *)
+definition ARGON2_MEMORY_MIN :: "nat" where
+  "ARGON2_MEMORY_MIN \<equiv> Z.to_nat 65536%Z"
+
+(* WEBAUTHN_TIMEOUT_MIN_MS (matches Coq: Definition WEBAUTHN_TIMEOUT_MIN_MS) *)
+definition WEBAUTHN_TIMEOUT_MIN_MS :: "nat" where
+  "WEBAUTHN_TIMEOUT_MIN_MS \<equiv> Z.to_nat 60000%Z"
+
+(* WEBAUTHN_TIMEOUT_MAX_MS (matches Coq: Definition WEBAUTHN_TIMEOUT_MAX_MS) *)
+definition WEBAUTHN_TIMEOUT_MAX_MS :: "nat" where
+  "WEBAUTHN_TIMEOUT_MAX_MS \<equiv> Z.to_nat 300000%Z"
+
+(* WEBAUTHN_TIMEOUT_DEFAULT_MS (matches Coq: Definition WEBAUTHN_TIMEOUT_DEFAULT_MS) *)
+definition WEBAUTHN_TIMEOUT_DEFAULT_MS :: "nat" where
+  "WEBAUTHN_TIMEOUT_DEFAULT_MS \<equiv> Z.to_nat 120000%Z"
+
+(* SESSION_EXPIRY_MIN_S (matches Coq: Definition SESSION_EXPIRY_MIN_S) *)
+definition SESSION_EXPIRY_MIN_S :: "nat" where
+  "SESSION_EXPIRY_MIN_S \<equiv> Z.to_nat 86400%Z"
+
+(* SESSION_EXPIRY_MAX_S (matches Coq: Definition SESSION_EXPIRY_MAX_S) *)
+definition SESSION_EXPIRY_MAX_S :: "nat" where
+  "SESSION_EXPIRY_MAX_S \<equiv> Z.to_nat 604800%Z"
+
+(* CHALLENGE_EXPIRY_MAX_MS (matches Coq: Definition CHALLENGE_EXPIRY_MAX_MS) *)
+definition CHALLENGE_EXPIRY_MAX_MS :: "nat" where
+  "CHALLENGE_EXPIRY_MAX_MS \<equiv> Z.to_nat 300000%Z"
+
+(* CHALLENGE_EXPIRY_DEFAULT_MS (matches Coq: Definition CHALLENGE_EXPIRY_DEFAULT_MS) *)
+definition CHALLENGE_EXPIRY_DEFAULT_MS :: "nat" where
+  "CHALLENGE_EXPIRY_DEFAULT_MS \<equiv> Z.to_nat 60000%Z"
+
+(* NONCE_WINDOW_DEFAULT (matches Coq: Definition NONCE_WINDOW_DEFAULT) *)
+definition NONCE_WINDOW_DEFAULT :: "nat" where
+  "NONCE_WINDOW_DEFAULT \<equiv> Z.to_nat 10000%Z"
+
 (* pbkdf2_secure (matches Coq: Definition pbkdf2_secure) *)
 definition pbkdf2_secure :: "PBKDF2Config \<Rightarrow> bool" where
-  "pbkdf2_secure cfg \<equiv> (600000 <=? pbkdf2_iterations cfg) \<and>      (* OWASP 2023: 600k for SHA-256 *)
-  (128 <=? pbkdf2_salt_bits cfg) \<and>          (* Min 128-bit salt *)
-  (256 <=? pbkdf2_output_bits cfg) \<and>        (* Min 256-bit output *)
+  "pbkdf2_secure cfg \<equiv> (PBKDF2_ITER_MIN <=? pbkdf2_iterations cfg) \<and>      
+  (128 <=? pbkdf2_salt_bits cfg) \<and>          
+  (256 <=? pbkdf2_output_bits cfg) \<and>        
   (pbkdf2_hash_alg cfg <=? 1)"
 
 (* riina_pbkdf2 (matches Coq: Definition riina_pbkdf2) *)
 definition riina_pbkdf2 :: "PBKDF2Config" where
-  "riina_pbkdf2 \<equiv> mkPBKDF2 600000 256 256 0"
+  "riina_pbkdf2 \<equiv> mkPBKDF2 PBKDF2_ITER_MIN 256 256 0"
 
 (* argon2_secure (matches Coq: Definition argon2_secure) *)
 definition argon2_secure :: "Argon2Config \<Rightarrow> bool" where
-  "argon2_secure cfg \<equiv> (3 <=? argon2_time_cost cfg) \<and>            (* Min 3 iterations *)
-  (65536 <=? argon2_memory_cost cfg) \<and>      (* Min 64 MiB *)
-  (1 <=? argon2_parallelism cfg) \<and>          (* At least 1 thread *)
-  (128 <=? argon2_salt_bits cfg) \<and>          (* Min 128-bit salt *)
-  (256 <=? argon2_output_bits cfg) \<and>        (* Min 256-bit output *)
+  "argon2_secure cfg \<equiv> (3 <=? argon2_time_cost cfg) \<and>            
+  (ARGON2_MEMORY_MIN <=? argon2_memory_cost cfg) \<and>      
+  (1 <=? argon2_parallelism cfg) \<and>          
+  (128 <=? argon2_salt_bits cfg) \<and>          
+  (256 <=? argon2_output_bits cfg) \<and>        
   (argon2_variant cfg =? 2)"
 
 (* riina_argon2 (matches Coq: Definition riina_argon2) *)
 definition riina_argon2 :: "Argon2Config" where
-  "riina_argon2 \<equiv> mkArgon2 4 65536 4 256 256 2"
+  "riina_argon2 \<equiv> mkArgon2 4 ARGON2_MEMORY_MIN 4 256 256 2"
 
 (* bcrypt_secure (matches Coq: Definition bcrypt_secure) *)
 definition bcrypt_secure :: "BcryptConfig \<Rightarrow> bool" where
-  "bcrypt_secure cfg \<equiv> (12 <=? bcrypt_cost_factor cfg) \<and>         (* Min cost factor 12 *)
-  (bcrypt_salt_bits cfg =? 128) \<and>           (* bcrypt uses 128-bit salt *)
+  "bcrypt_secure cfg \<equiv> (12 <=? bcrypt_cost_factor cfg) \<and>         
+  (bcrypt_salt_bits cfg =? 128) \<and>           
   (bcrypt_output_bits cfg =? 184)"
 
 (* riina_bcrypt (matches Coq: Definition riina_bcrypt) *)
@@ -317,9 +365,9 @@ definition riina_bcrypt :: "BcryptConfig" where
 
 (* totp_secure (matches Coq: Definition totp_secure) *)
 definition totp_secure :: "TOTPConfig \<Rightarrow> bool" where
-  "totp_secure cfg \<equiv> (160 <=? totp_secret_bits cfg) \<and>          (* Min 160-bit secret *)
-  (6 <=? totp_digits cfg) \<and>                 (* Min 6 digits *)
-  (totp_period cfg =? 30) \<and>                 (* Standard 30s period *)
+  "totp_secure cfg \<equiv> (160 <=? totp_secret_bits cfg) \<and>          
+  (6 <=? totp_digits cfg) \<and>                 
+  (totp_period cfg =? 30) \<and>                 
   (totp_drift_window cfg <=? 1)"
 
 (* riina_totp (matches Coq: Definition riina_totp) *)
@@ -328,73 +376,73 @@ definition riina_totp :: "TOTPConfig" where
 
 (* webauthn_secure (matches Coq: Definition webauthn_secure) *)
 definition webauthn_secure :: "WebAuthnConfig \<Rightarrow> bool" where
-  "webauthn_secure cfg \<equiv> (webauthn_user_verification cfg =? 2) \<and>   (* User verification required *)
-  (128 <=? webauthn_challenge_bits cfg) \<and>   (* Min 128-bit challenge *)
-  (60000 <=? webauthn_timeout_ms cfg) \<and>     (* At least 60s timeout *)
-  (webauthn_timeout_ms cfg <=? 300000)"
+  "webauthn_secure cfg \<equiv> (webauthn_user_verification cfg =? 2) \<and>   
+  (128 <=? webauthn_challenge_bits cfg) \<and>   
+  (WEBAUTHN_TIMEOUT_MIN_MS <=? webauthn_timeout_ms cfg) \<and>     
+  (webauthn_timeout_ms cfg <=? WEBAUTHN_TIMEOUT_MAX_MS)"
 
 (* riina_webauthn (matches Coq: Definition riina_webauthn) *)
 definition riina_webauthn :: "WebAuthnConfig" where
-  "riina_webauthn \<equiv> mkWebAuthn 2 2 true 256 120000"
+  "riina_webauthn \<equiv> mkWebAuthn 2 2 True 256 WEBAUTHN_TIMEOUT_DEFAULT_MS"
 
 (* session_token_secure (matches Coq: Definition session_token_secure) *)
 definition session_token_secure :: "SessionTokenConfig \<Rightarrow> bool" where
-  "session_token_secure cfg \<equiv> (256 <=? token_entropy_bits cfg) \<and>        (* Min 256-bit entropy *)
-  (86400 <=? token_expiry_seconds cfg) \<and>    (* Min 24h expiry *)
-  (token_expiry_seconds cfg <=? 604800) \<and>   (* Max 7 day expiry *)
-  token_rotation cfg \<and>                       (* Rotation required *)
-  token_binding cfg \<and>                        (* Binding required *)
-  token_secure_flag cfg \<and>                    (* Secure flag required *)
-  token_httponly_flag cfg \<and>                  (* HttpOnly required *)
+  "session_token_secure cfg \<equiv> (256 <=? token_entropy_bits cfg) \<and>        
+  (SESSION_EXPIRY_MIN_S <=? token_expiry_seconds cfg) \<and>    
+  (token_expiry_seconds cfg <=? SESSION_EXPIRY_MAX_S) \<and>   
+  token_rotation cfg \<and>                       
+  token_binding cfg \<and>                        
+  token_secure_flag cfg \<and>                    
+  token_httponly_flag cfg \<and>                  
   (1 <=? token_samesite cfg)"
 
 (* riina_session_token (matches Coq: Definition riina_session_token) *)
 definition riina_session_token :: "SessionTokenConfig" where
-  "riina_session_token \<equiv> mkSessionToken 256 86400 true true true true 2"
+  "riina_session_token \<equiv> mkSessionToken 256 SESSION_EXPIRY_MIN_S True True True True 2"
 
 (* oauth2_secure (matches Coq: Definition oauth2_secure) *)
 definition oauth2_secure :: "OAuth2Config \<Rightarrow> bool" where
-  "oauth2_secure cfg \<equiv> oauth2_pkce cfg \<and>                         (* PKCE required *)
-  oauth2_state_param cfg \<and>                  (* State required *)
-  (128 <=? oauth2_code_bits cfg) \<and>          (* Min 128-bit code *)
-  (oauth2_code_expiry cfg <=? 60) \<and>         (* Max 60s code expiry *)
+  "oauth2_secure cfg \<equiv> oauth2_pkce cfg \<and>                         
+  oauth2_state_param cfg \<and>                  
+  (128 <=? oauth2_code_bits cfg) \<and>          
+  (oauth2_code_expiry cfg <=? 60) \<and>         
   oauth2_refresh_rotation cfg"
 
 (* riina_oauth2 (matches Coq: Definition riina_oauth2) *)
 definition riina_oauth2 :: "OAuth2Config" where
-  "riina_oauth2 \<equiv> mkOAuth2 true true true true 256 30 true"
+  "riina_oauth2 \<equiv> mkOAuth2 True True True True 256 30 True"
 
 (* oidc_secure (matches Coq: Definition oidc_secure) *)
 definition oidc_secure :: "OIDCConfig \<Rightarrow> bool" where
   "oidc_secure cfg \<equiv> oauth2_secure (oidc_base cfg) \<and>
-  (1 <=? oidc_id_token_alg cfg) \<and>           (* Prefer ES256 or EdDSA *)
-  (oidc_id_token_expiry cfg <=? 3600) \<and>     (* Max 1h ID token expiry *)
+  (1 <=? oidc_id_token_alg cfg) \<and>           
+  (oidc_id_token_expiry cfg <=? 3600) \<and>     
   oidc_claims_verified cfg"
 
 (* riina_oidc (matches Coq: Definition riina_oidc) *)
 definition riina_oidc :: "OIDCConfig" where
-  "riina_oidc \<equiv> mkOIDC riina_oauth2 2 300 true true"
+  "riina_oidc \<equiv> mkOIDC riina_oauth2 2 300 True True"
 
 (* challenge_secure (matches Coq: Definition challenge_secure) *)
 definition challenge_secure :: "ChallengeConfig \<Rightarrow> bool" where
-  "challenge_secure cfg \<equiv> (128 <=? challenge_bits cfg) \<and>            (* Min 128-bit challenge *)
-  (challenge_expiry_ms cfg <=? 300000) \<and>    (* Max 5min expiry *)
-  challenge_single_use cfg \<and>                 (* Must be single-use *)
+  "challenge_secure cfg \<equiv> (128 <=? challenge_bits cfg) \<and>            
+  (challenge_expiry_ms cfg <=? CHALLENGE_EXPIRY_MAX_MS) \<and>    
+  challenge_single_use cfg \<and>                 
   challenge_bound cfg"
 
 (* riina_challenge (matches Coq: Definition riina_challenge) *)
 definition riina_challenge :: "ChallengeConfig" where
-  "riina_challenge \<equiv> mkChallenge 256 60000 true true true"
+  "riina_challenge \<equiv> mkChallenge 256 CHALLENGE_EXPIRY_DEFAULT_MS True True True"
 
 (* replay_prevention_secure (matches Coq: Definition replay_prevention_secure) *)
 definition replay_prevention_secure :: "NonceTracker \<Rightarrow> bool" where
-  "replay_prevention_secure cfg \<equiv> (128 <=? nonce_size_bits cfg) \<and>           (* Min 128-bit nonce *)
-  (1000 <=? nonce_window_size cfg) \<and>        (* Track at least 1000 nonces *)
+  "replay_prevention_secure cfg \<equiv> (128 <=? nonce_size_bits cfg) \<and>           
+  (1000 <=? nonce_window_size cfg) \<and>        
   (nonce_timestamp_bound cfg <=? 300)"
 
 (* riina_nonce_tracker (matches Coq: Definition riina_nonce_tracker) *)
 definition riina_nonce_tracker :: "NonceTracker" where
-  "riina_nonce_tracker \<equiv> mkNonceTracker 256 10000 60 true"
+  "riina_nonce_tracker \<equiv> mkNonceTracker 256 NONCE_WINDOW_DEFAULT 60 True"
 
 (* password_secure (matches Coq: Definition password_secure) *)
 definition password_secure :: "PasswordSecurity \<Rightarrow> bool" where
@@ -414,15 +462,15 @@ definition auth_complete :: "AuthConfig \<Rightarrow> bool" where
 
 (* riina_pwd (matches Coq: Definition riina_pwd) *)
 definition riina_pwd :: "PasswordSecurity" where
-  "riina_pwd \<equiv> mkPwdSec true true true true"
+  "riina_pwd \<equiv> mkPwdSec True True True True"
 
 (* riina_mfa (matches Coq: Definition riina_mfa) *)
 definition riina_mfa :: "MFASecurity" where
-  "riina_mfa \<equiv> mkMFA true true true true"
+  "riina_mfa \<equiv> mkMFA True True True True"
 
 (* riina_session (matches Coq: Definition riina_session) *)
 definition riina_session :: "SessionSecurity" where
-  "riina_session \<equiv> mkSession true true true true"
+  "riina_session \<equiv> mkSession True True True True"
 
 (* riina_auth (matches Coq: Definition riina_auth) *)
 definition riina_auth :: "AuthConfig" where
@@ -440,7 +488,7 @@ lemma andb3_true_iff: "\<forall> a b c : bool, a && b && c = True <-> a = True \
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* leb_le (matches Coq) *)
@@ -561,7 +609,7 @@ lemma PBKDF2_001_riina_secure: "pbkdf2_secure riina_pbkdf2 = True"
 
 (* PBKDF2_002: Secure PBKDF2 has sufficient iterations *)
 (* PBKDF2_002_sufficient_iterations (matches Coq) *)
-lemma PBKDF2_002_sufficient_iterations: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> (600000 <=? pbkdf2_iterations cfg) = True"
+lemma PBKDF2_002_sufficient_iterations: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> (PBKDF2_ITER_MIN <=? pbkdf2_iterations cfg) = True"
   by auto
 
 (* PBKDF2_003: Secure PBKDF2 has sufficient salt *)
@@ -581,7 +629,7 @@ lemma PBKDF2_005_approved_algorithm: "\<forall> cfg, pbkdf2_secure cfg = True \<
 
 (* PBKDF2_006: Iterations provide work factor security *)
 (* PBKDF2_006_work_factor (matches Coq) *)
-lemma PBKDF2_006_work_factor: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> pbkdf2_iterations cfg \<ge> 600000"
+lemma PBKDF2_006_work_factor: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> pbkdf2_iterations cfg \<ge> PBKDF2_ITER_MIN"
   by auto
 
 (* ARGON2_001: RIINA Argon2 is secure *)
@@ -596,7 +644,7 @@ lemma ARGON2_002_sufficient_time: "\<forall> cfg, argon2_secure cfg = True \<lon
 
 (* ARGON2_003: Secure Argon2 has sufficient memory cost *)
 (* ARGON2_003_sufficient_memory (matches Coq) *)
-lemma ARGON2_003_sufficient_memory: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> (65536 <=? argon2_memory_cost cfg) = True"
+lemma ARGON2_003_sufficient_memory: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> (ARGON2_MEMORY_MIN <=? argon2_memory_cost cfg) = True"
   by auto
 
 (* ARGON2_004: Secure Argon2 uses Argon2id variant *)
@@ -606,7 +654,7 @@ lemma ARGON2_004_argon2id_variant: "\<forall> cfg, argon2_secure cfg = True \<lo
 
 (* ARGON2_005: Memory hardness prevents GPU attacks *)
 (* ARGON2_005_memory_hardness (matches Coq) *)
-lemma ARGON2_005_memory_hardness: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> argon2_memory_cost cfg \<ge> 65536"
+lemma ARGON2_005_memory_hardness: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> argon2_memory_cost cfg \<ge> ARGON2_MEMORY_MIN"
   by auto
 
 (* ARGON2_006: Secure Argon2 has parallelism *)
@@ -686,7 +734,7 @@ lemma WEBAUTHN_003_challenge_entropy: "\<forall> cfg, webauthn_secure cfg = True
 
 (* WEBAUTHN_004: Secure WebAuthn has appropriate timeout *)
 (* WEBAUTHN_004_timeout_range (matches Coq) *)
-lemma WEBAUTHN_004_timeout_range: "\<forall> cfg, webauthn_secure cfg = True \<longrightarrow> (60000 <=? webauthn_timeout_ms cfg) = True \<and> (webauthn_timeout_ms cfg <=? 300000) = True"
+lemma WEBAUTHN_004_timeout_range: "\<forall> cfg, webauthn_secure cfg = True \<longrightarrow> (WEBAUTHN_TIMEOUT_MIN_MS <=? webauthn_timeout_ms cfg) = True \<and> (webauthn_timeout_ms cfg <=? WEBAUTHN_TIMEOUT_MAX_MS) = True"
   by auto
 
 (* WEBAUTHN_005: User verification prevents impersonation *)
@@ -811,7 +859,7 @@ lemma CHALLENGE_002_sufficient_entropy: "\<forall> cfg, challenge_secure cfg = T
 
 (* CHALLENGE_003: Secure challenge has short expiry *)
 (* CHALLENGE_003_short_expiry (matches Coq) *)
-lemma CHALLENGE_003_short_expiry: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> (challenge_expiry_ms cfg <=? 300000) = True"
+lemma CHALLENGE_003_short_expiry: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> (challenge_expiry_ms cfg <=? CHALLENGE_EXPIRY_MAX_MS) = True"
   by auto
 
 (* CHALLENGE_004: Secure challenge is single-use *)

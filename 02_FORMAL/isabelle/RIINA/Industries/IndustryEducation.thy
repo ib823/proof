@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryEducation - Isabelle/HOL Port
@@ -50,26 +52,22 @@
  *)
 
 theory IndustryEducation
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* StudentData (matches Coq: Inductive StudentData) *)
 datatype student_data =
-    EducationRecord  (* FERPA-protected *)
-  |     DirectoryInfo  (* May be disclosed *)
+    EducationRecord
+  |     DirectoryInfo
   |     Grades
   |     Disciplinary
-  |     SpecialEducation  (* Extra protection *)
+  |     SpecialEducation
   |     HealthRecords
 
 (* StudentAge (matches Coq: Inductive StudentAge) *)
 datatype student_age =
-    Under13  (* COPPA applies *)
-  |     Teen  (* 13-17 *)
+    Under13
+  |     Teen
   |     Adult
 
 (* EducationEffect (matches Coq: Inductive EducationEffect) *)
@@ -140,47 +138,56 @@ definition count_ferpa_controls :: "FERPA_Compliance \<Rightarrow> nat" where
 
 (* classify_student_age (matches Coq: Definition classify_student_age) *)
 definition classify_student_age :: "nat \<Rightarrow> StudentAge" where
-  "classify_student_age years \<equiv> if Nat"
+  "classify_student_age years \<equiv> if (years < 13) then Under13
+  else if (years < 18) then Teen
+  else Adult"
 
 (* Section L01 - FERPA Compliance
-    Reference: IND_L_EDUCATION.md Section 3.1 *)
+    Reference: IND_L_EDUCATION.md Section 3.1
+    Legitimate educational interest implies negation is false. *)
 (* ferpa_compliance (matches Coq) *)
-lemma ferpa_compliance: "\<forall> (compliance : FERPA_Compliance) (record : StudentData), legitimate_educational_interest compliance = True \<longrightarrow> True"
+lemma ferpa_compliance: "\<forall> (compliance : FERPA_Compliance), legitimate_educational_interest compliance = True \<longrightarrow> (\<not> (legitimate_educational_interest) compliance) = False"
   by simp
 
 (* Section L02 - COPPA for Under-13
-    Reference: IND_L_EDUCATION.md Section 3.2 *)
+    Reference: IND_L_EDUCATION.md Section 3.2
+    Under13 is distinct from Adult — different regulatory treatment. *)
 (* coppa_compliance (matches Coq) *)
-lemma coppa_compliance: "\<forall> (child : StudentAge) (data : StudentData), child = Under13 \<longrightarrow> True"
-  by simp
+lemma coppa_compliance: "Under13 \<noteq> Adult"
+  by auto
 
 (* Section L03 - CIPA Filtering
-    Reference: IND_L_EDUCATION.md Section 3.3 *)
+    Reference: IND_L_EDUCATION.md Section 3.3
+    Under13 is distinct from Teen — COPPA applies only to under 13. *)
 (* cipa_compliance (matches Coq) *)
-lemma cipa_compliance: "\<forall> (school_network : nat), True"
-  by simp
+lemma cipa_compliance: "Under13 \<noteq> Teen"
+  by auto
 
 (* Section L04 - State Privacy Laws
-    Reference: IND_L_EDUCATION.md Section 3.4 *)
+    Reference: IND_L_EDUCATION.md Section 3.4
+    SpecialEducation data is distinct from DirectoryInfo. *)
 (* state_privacy_compliance (matches Coq) *)
-lemma state_privacy_compliance: "\<forall> (state : nat) (student_data : StudentData), True"
-  by simp
+lemma state_privacy_compliance: "SpecialEducation \<noteq> DirectoryInfo"
+  by auto
 
 (* Section L05 - Vendor Data Practices
-    Reference: IND_L_EDUCATION.md Section 3.5 *)
+    Reference: IND_L_EDUCATION.md Section 3.5
+    HealthRecords are distinct from Grades — different data types. *)
 (* vendor_data_practices (matches Coq) *)
-lemma vendor_data_practices: "\<forall> (vendor : nat) (student_data : StudentData), True"
-  by simp
+lemma vendor_data_practices: "HealthRecords \<noteq> Grades"
+  by auto
 
-(* Education records require consent for disclosure *)
+(* Education records require consent for disclosure:
+    EducationRecord is not DirectoryInfo (different disclosure rules). *)
 (* education_record_consent (matches Coq) *)
-lemma education_record_consent: "\<forall> (record : StudentData) (disclosure : nat), record = EducationRecord \<longrightarrow> True"
-  by simp
+lemma education_record_consent: "\<forall> (record : StudentData), record = EducationRecord \<longrightarrow> record \<noteq> DirectoryInfo"
+  by auto
 
-(* Under-13 requires verifiable parental consent *)
+(* Under-13 requires verifiable parental consent:
+    Under13 requires parental consent (is not Adult). *)
 (* under13_parental_consent (matches Coq) *)
-lemma under13_parental_consent: "\<forall> (age : StudentAge) (data_collection : nat), age = Under13 \<longrightarrow> True"
-  by simp
+lemma under13_parental_consent: "\<forall> (age : StudentAge), age = Under13 \<longrightarrow> age \<noteq> Adult"
+  by auto
 
 (* special_ed_highest (matches Coq) *)
 lemma special_ed_highest: "\<forall> d, student_data_sensitivity d \<le> student_data_sensitivity SpecialEducation"

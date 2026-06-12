@@ -4,11 +4,11 @@
 (* Spec: 01_RESEARCH/01_DOMAIN_A_TYPE_THEORY/linear_types/ *)
 (* Security Property: Resource used exactly once *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Logic.Decidable.
-Require Import Coq.Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Logic.Decidable.
+From Stdlib Require Import Arith.PeanoNat.
 Import ListNotations.
 
 (* Linearity qualifiers *)

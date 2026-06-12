@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DisplayDriver - Isabelle/HOL Port
@@ -90,11 +92,11 @@ definition owns_buffer :: "Application \<Rightarrow> FrameBuffer \<Rightarrow> b
 
 (* has_screen_capture_permission (matches Coq: Definition has_screen_capture_permission) *)
 definition has_screen_capture_permission :: "Application \<Rightarrow> bool" where
-  "has_screen_capture_permission app \<equiv> app_screen_capture_perm app = true"
+  "has_screen_capture_permission app \<equiv> app_screen_capture_perm app = True"
 
 (* has_overlay_permission (matches Coq: Definition has_overlay_permission) *)
 definition has_overlay_permission :: "Application \<Rightarrow> bool" where
-  "has_overlay_permission app \<equiv> app_overlay_perm app = true"
+  "has_overlay_permission app \<equiv> app_overlay_perm app = True"
 
 (* valid_framebuffer (matches Coq: Definition valid_framebuffer) *)
 definition valid_framebuffer :: "FrameBuffer \<Rightarrow> bool" where

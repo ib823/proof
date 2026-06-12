@@ -1,0 +1,4 @@
+# AX2-STRICT produced no persistent source changes.
+# All experimental edits were reverted after three failed constructive strategies.
+# Current tree keeps AX2 axiom unchanged at:
+#   02_FORMAL/coq/properties/NonInterference_v2.v:1535

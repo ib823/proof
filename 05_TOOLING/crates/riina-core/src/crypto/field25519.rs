@@ -28,7 +28,7 @@
 //! # References
 //!
 //! - RFC 7748: Elliptic Curves for Security
-//! - DJB's Curve25519 paper: https://cr.yp.to/ecdh.html
+//! - DJB's Curve25519 paper: <https://cr.yp.to/ecdh.html>
 //! - Adam Langley's curve25519-donna
 
 use core::ops::{Add, Mul, Sub};
@@ -36,11 +36,11 @@ use core::ops::{Add, Mul, Sub};
 /// A field element in GF(2^255-19), represented in radix 2^51.
 ///
 /// Internally stored as 5 limbs, each up to 51 bits:
-/// - limbs[0]: bits 0..51
-/// - limbs[1]: bits 51..102
-/// - limbs[2]: bits 102..153
-/// - limbs[3]: bits 153..204
-/// - limbs[4]: bits 204..255
+/// - `limbs[0]`: bits 0..51
+/// - `limbs[1]`: bits 51..102
+/// - `limbs[2]`: bits 102..153
+/// - `limbs[3]`: bits 153..204
+/// - `limbs[4]`: bits 204..255
 ///
 /// # Invariants
 ///
@@ -255,8 +255,11 @@ impl FieldElement {
 
         // If borrow is -1, we had underflow, so keep original limbs
         // If borrow is 0, we successfully subtracted p, so use result
-        // Use constant-time selection
-        let mask = borrow; // -1 or 0
+        // Use constant-time selection. The `black_box` barrier stops LLVM from
+        // recognising `mask` as a sign test (`borrow = … >> 63`) and lowering the
+        // branchless select back into a `js` branch (a secret-dependent branch —
+        // see `scripts/ct-structural-check.sh`); same discipline as `aes::ct_lookup`.
+        let mask = core::hint::black_box(borrow); // -1 or 0
         for i in 0..5 {
             limbs[i] = (limbs[i] & mask) | (result[i] & !mask);
         }
@@ -304,6 +307,21 @@ impl FieldElement {
         }
     }
 
+    /// Constant-time select: returns `a` if `choice == 0`, `b` if `choice == 1`.
+    ///
+    /// Branchless: `a ^ (mask & (a ^ b))` per limb, with `mask` = all-ones when
+    /// `choice == 1`. No branch depends on `choice` or on the secret operands.
+    #[must_use]
+    pub fn conditional_select(a: &Self, b: &Self, choice: u8) -> Self {
+        debug_assert!(choice == 0 || choice == 1, "choice must be 0 or 1");
+        let mask = -(i64::from(choice)); // 0 or -1 (all bits set)
+        let mut limbs = [0i64; 5];
+        for i in 0..5 {
+            limbs[i] = a.limbs[i] ^ (mask & (a.limbs[i] ^ b.limbs[i]));
+        }
+        Self { limbs }
+    }
+
     /// Constant-time equality check.
     ///
     /// Returns 1 if self == other, 0 otherwise.
@@ -320,9 +338,11 @@ impl FieldElement {
             diff |= a.limbs[i] ^ b.limbs[i];
         }
 
-        // If diff == 0, all limbs were equal
-        // Return 1 if diff == 0, else 0
-        let zero = (diff | -diff) >> 63; // -1 if diff != 0, 0 if diff == 0
+        // If diff == 0, all limbs were equal. Return 1 if diff == 0, else 0.
+        // `black_box` stops LLVM from turning the fold-to-mask into a `diff == 0`
+        // branch (would be a secret-dependent branch — see ct-structural-check.sh).
+        let d = core::hint::black_box(diff);
+        let zero = (d | d.wrapping_neg()) >> 63; // -1 if diff != 0, 0 if diff == 0
         (zero + 1) & 1 // Convert to 0 or 1
     }
 
@@ -381,8 +401,14 @@ impl FieldElement {
     /// Panics if self is zero (zero has no inverse)
     #[must_use]
     pub fn invert(self) -> Self {
-        // Verify not zero (in debug mode)
-        debug_assert!(!self.is_zero(), "Cannot invert zero");
+        // Total-function convention: invert(0) = 0. The Fermat addition chain
+        // below maps 0 -> 0 (every term derives from `self`), the standard CT
+        // convention (cf. fiat-crypto / curve25519-dalek). The constant-time
+        // X25519 contributory path (`montgomery::u_coordinate_ct`) relies on it:
+        // it inverts a possibly-zero, secret-derived Z without a branch, and Z=0
+        // yields the all-zero (rejected) shared secret. A previous
+        // `debug_assert!(!is_zero())` here panicked on that intended case in
+        // debug/test builds (and would itself have been a secret-dependent panic).
 
         // Compute a^(p-2) using addition chain
         // p - 2 = 2^255 - 21
@@ -554,6 +580,38 @@ impl Eq for FieldElement {}
 mod tests {
     use super::*;
 
+    /// Coq ⇄ Rust formal-equivalence bridge for the GF(2^255-19) field multiply.
+    ///
+    /// `02_FORMAL/coq/crypto/Field25519.v` models the radix-2^51 limb arithmetic
+    /// and proves (by `ring` + modular arithmetic) the deep theorem
+    /// `mul_correct_mod`: the schoolbook + `2^255 ≡ 19` fold computes `a*b mod p`.
+    /// This confirms the *full* Rust `Mul` (including carry propagation, which
+    /// preserves the value mod p) on concrete vectors, one of which exercises the
+    /// reduction.
+    #[test]
+    fn test_mul_matches_coq_model() {
+        // (p-1)^2 ≡ 1 (mod p).
+        let pm1: [u8; 32] = [
+            0xec, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0x7f,
+        ];
+        let mut one = [0u8; 32];
+        one[0] = 1;
+        let a = FieldElement::from_bytes(&pm1);
+        assert_eq!((a * a).to_bytes(), one, "(p-1)^2 must be 1 (mod p) — Coq pm1_squared_is_one");
+
+        // 2^254 * 4 = 2^256 ≡ 38 (mod p) — exercises the 2^255 ≡ 19 fold.
+        let mut two254 = [0u8; 32];
+        two254[31] = 0x40;
+        let mut four = [0u8; 32];
+        four[0] = 4;
+        let mut thirty_eight = [0u8; 32];
+        thirty_eight[0] = 0x26;
+        let prod = FieldElement::from_bytes(&two254) * FieldElement::from_bytes(&four);
+        assert_eq!(prod.to_bytes(), thirty_eight, "2^254*4 must reduce to 38 (mod p)");
+    }
+
     #[test]
     fn test_zero_and_one() {
         let zero = FieldElement::ZERO;
@@ -637,5 +695,16 @@ mod tests {
         a.conditional_swap(&mut b, 1);
         assert_eq!(a.ct_eq(&orig_b), 1);
         assert_eq!(b.ct_eq(&orig_a), 1);
+    }
+
+    #[test]
+    fn test_conditional_select() {
+        let a = FieldElement::from_i64(12345);
+        let b = FieldElement::from_i64(67890);
+        // choice 0 -> a, choice 1 -> b (the branchless select used by the
+        // Ed25519 scalar-mult ladder on the secret scalar bit).
+        assert_eq!(FieldElement::conditional_select(&a, &b, 0).ct_eq(&a), 1);
+        assert_eq!(FieldElement::conditional_select(&a, &b, 1).ct_eq(&b), 1);
+        assert_eq!(FieldElement::conditional_select(&a, &b, 0).ct_eq(&b), 0);
     }
 }

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA KeyLifecycle - Isabelle/HOL Port
@@ -64,7 +66,7 @@
  *)
 
 theory KeyLifecycle
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* KeyState (matches Coq: Inductive KeyState) *)
@@ -86,26 +88,27 @@ datatype key_type =
 
 (* entropy_sufficient (matches Coq: Definition entropy_sufficient) *)
 definition entropy_sufficient :: "KeyMetadata \<Rightarrow> nat \<Rightarrow> bool" where
-  "entropy_sufficient key min_entropy \<equiv> Nat"
+  "entropy_sufficient key min_entropy \<equiv> (min_entropy \<le> (key_entropy_bits) key)"
 
 (* is_usable_state (matches Coq: Definition is_usable_state) *)
 fun is_usable_state :: "KeyState \<Rightarrow> bool" where
   "is_usable_state Active = true"
 |   "is_usable_state _ = false"
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* key_not_expired (matches Coq: Definition key_not_expired) *)
 definition key_not_expired :: "KeyMetadata \<Rightarrow> nat \<Rightarrow> bool" where
-  "key_not_expired key current_time \<equiv> Nat"
+  "key_not_expired key current_time \<equiv> (current_time < (key_expires) key)"
 
 (* rotation_valid (matches Coq: Definition rotation_valid) *)
 definition rotation_valid :: "RotationRecord \<Rightarrow> bool" where
-  "rotation_valid rot \<equiv> negb (Nat"
+  "rotation_valid rot \<equiv> (\<not> (Nat.eqb) (rot_old_key rot) (rot_new_key rot))"
 
 (* rotation_after_creation (matches Coq: Definition rotation_after_creation) *)
 definition rotation_after_creation :: "KeyMetadata \<Rightarrow> RotationRecord \<Rightarrow> bool" where
-  "rotation_after_creation key rot \<equiv> Nat"
+  "rotation_after_creation key rot \<equiv> ((key_created < key)) (rot_timestamp rot)"
 
 (* destruction_verified (matches Coq: Definition destruction_verified) *)
 definition destruction_verified :: "DestructionRecord \<Rightarrow> bool" where
@@ -113,43 +116,44 @@ definition destruction_verified :: "DestructionRecord \<Rightarrow> bool" where
 
 (* escrow_threshold_valid (matches Coq: Definition escrow_threshold_valid) *)
 definition escrow_threshold_valid :: "EscrowShare \<Rightarrow> bool" where
-  "escrow_threshold_valid share \<equiv> andb (Nat"
+  "escrow_threshold_valid share \<equiv> (((\<and> \<le> 1)) (escrow_threshold share))
+       (((escrow_threshold \<le> share)) (escrow_total share))"
 
 (* escrow_share_index_valid (matches Coq: Definition escrow_share_index_valid) *)
 definition escrow_share_index_valid :: "EscrowShare \<Rightarrow> bool" where
-  "escrow_share_index_valid share \<equiv> Nat"
+  "escrow_share_index_valid share \<equiv> ((escrow_share_index < share)) (escrow_total share)"
 
 (* destruction_method_valid (matches Coq: Definition destruction_method_valid) *)
 definition destruction_method_valid :: "DestructionRecord \<Rightarrow> bool" where
-  "destruction_method_valid dest \<equiv> Nat"
+  "destruction_method_valid dest \<equiv> ((dest_method \<le> dest)) 2"
 
 (* symmetric_key_size_ok (matches Coq: Definition symmetric_key_size_ok) *)
 definition symmetric_key_size_ok :: "bool" where
-  "symmetric_key_size_ok \<equiv> Nat"
+  "symmetric_key_size_ok \<equiv> (min_bits \<le> bits)"
 
 (* asymmetric_key_size_ok (matches Coq: Definition asymmetric_key_size_ok) *)
 definition asymmetric_key_size_ok :: "bool" where
-  "asymmetric_key_size_ok \<equiv> Nat"
+  "asymmetric_key_size_ok \<equiv> (min_bits \<le> bits)"
 
 (* purpose_matches (matches Coq: Definition purpose_matches) *)
 definition purpose_matches :: "bool" where
-  "purpose_matches \<equiv> Nat"
+  "purpose_matches \<equiv> (key_purpose = allowed_purpose)"
 
 (* lifetime_ok (matches Coq: Definition lifetime_ok) *)
 definition lifetime_ok :: "bool" where
-  "lifetime_ok \<equiv> Nat"
+  "lifetime_ok \<equiv> ((expires \<le> -) created) max_lifetime"
 
 (* rotation_due (matches Coq: Definition rotation_due) *)
 definition rotation_due :: "bool" where
-  "rotation_due \<equiv> Nat"
+  "rotation_due \<equiv> (max_period < (current) - last_rotation)"
 
 (* derivation_depth_ok (matches Coq: Definition derivation_depth_ok) *)
 definition derivation_depth_ok :: "bool" where
-  "derivation_depth_ok \<equiv> Nat"
+  "derivation_depth_ok \<equiv> (depth \<le> max_depth)"
 
 (* access_allowed (matches Coq: Definition access_allowed) *)
 definition access_allowed :: "bool" where
-  "access_allowed \<equiv> Nat"
+  "access_allowed \<equiv> (required_level \<le> requester_level)"
 
 (* hsm_stored (matches Coq: Definition hsm_stored) *)
 definition hsm_stored :: "bool \<Rightarrow> bool" where
@@ -157,23 +161,23 @@ definition hsm_stored :: "bool \<Rightarrow> bool" where
 
 (* audit_complete (matches Coq: Definition audit_complete) *)
 definition audit_complete :: "bool" where
-  "audit_complete \<equiv> Nat"
+  "audit_complete \<equiv> (operations = logged)"
 
 (* backup_encrypted (matches Coq: Definition backup_encrypted) *)
 definition backup_encrypted :: "nat \<Rightarrow> bool" where
-  "backup_encrypted encryption_key \<equiv> Nat"
+  "backup_encrypted encryption_key \<equiv> (0 < encryption_key)"
 
 (* custodians_diverse (matches Coq: Definition custodians_diverse) *)
 definition custodians_diverse :: "nat \<Rightarrow> bool" where
-  "custodians_diverse min_custodians \<equiv> Nat"
+  "custodians_diverse min_custodians \<equiv> (min_custodians \<le> (length) (nodup Nat.eq_dec custodians))"
 
 (* recovery_tested (matches Coq: Definition recovery_tested) *)
 definition recovery_tested :: "bool" where
-  "recovery_tested \<equiv> Nat"
+  "recovery_tested \<equiv> ((current \<le> -) last_test) max_interval"
 
 (* key_layers (matches Coq: Definition key_layers) *)
 definition key_layers :: "bool" where
-  "key_layers \<equiv> andb entropy (andb state (andb rotation (andb destroy escrow)))"
+  "key_layers \<equiv> (entropy \<and> (andb) state ((rotation \<and> (andb) destroy escrow)))"
 
 (* key_001_entropy_sufficient (matches Coq) *)
 lemma key_001_entropy_sufficient: "\<forall> (key : KeyMetadata) (min_entropy : nat), entropy_sufficient key min_entropy = True \<longrightarrow> min_entropy \<le> key_entropy_bits key"

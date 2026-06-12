@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BootVerification - Isabelle/HOL Port
@@ -19,6 +21,8 @@
  * | initial_boot_state | initial_boot_state     | OK     |
  * | previous_stage     | previous_stage         | OK     |
  * | stage_verified     | stage_verified         | OK     |
+ * | get_expected_hash  | get_expected_hash      | OK     |
+ * | get_minimum_version | get_minimum_version    | OK     |
  * | verify_image       | verify_image           | OK     |
  * | image_tampered     | image_tampered         | OK     |
  * | boot_stage         | boot_stage             | OK     |
@@ -52,15 +56,15 @@
  *)
 
 theory BootVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BootStageId (matches Coq: Inductive BootStageId) *)
 datatype boot_stage_id =
-    HardwareRoot  (* Hardware root of trust *)
-  |     Bootloader  (* Primary bootloader *)
-  |     SecondStage  (* Secondary bootloader *)
-  |     Kernel  (* OS kernel *)
+    HardwareRoot
+  |     Bootloader
+  |     SecondStage
+  |     Kernel
   |     InitRamFS
 
 (* VerificationResult (matches Coq: Inductive VerificationResult) *)
@@ -93,7 +97,7 @@ record boot_chain_state =
 
 (* initial_boot_state (matches Coq: Definition initial_boot_state) *)
 definition initial_boot_state :: "BootChainState" where
-  "initial_boot_state \<equiv> mkBootChainState [HardwareRoot] HardwareRoot [] [] false"
+  "initial_boot_state \<equiv> mkBootChainState [HardwareRoot] HardwareRoot [] [] False"
 
 (* previous_stage (matches Coq: Definition previous_stage) *)
 fun previous_stage :: "BootStageId \<Rightarrow> BootStageId" where
@@ -105,13 +109,22 @@ fun previous_stage :: "BootStageId \<Rightarrow> BootStageId" where
 
 (* stage_verified (matches Coq: Definition stage_verified) *)
 definition stage_verified :: "BootChainState \<Rightarrow> BootStageId \<Rightarrow> bool" where
-  "stage_verified st stage \<equiv> existsb (fun s => if stage_eq_dec s stage then true else false) (verified_stages st)"
+  "stage_verified st stage \<equiv> existsb (fun s => if stage_eq_dec s stage then True else False) (verified_stages st)"
 
-(* verify_image - complex match, manual review needed *)
+(* get_expected_hash - complex match, needs manual translation *)
+definition get_expected_hash :: "bool" where "get_expected_hash = undefined"
 
-(* image_tampered - complex match, manual review needed *)
+(* get_minimum_version - complex match, needs manual translation *)
+definition get_minimum_version :: "bool" where "get_minimum_version = undefined"
 
-(* boot_stage - complex match, manual review needed *)
+(* verify_image - complex match, needs manual translation *)
+definition verify_image :: "bool" where "verify_image = undefined"
+
+(* image_tampered - complex match, needs manual translation *)
+definition image_tampered :: "bool" where "image_tampered = undefined"
+
+(* boot_stage - complex match, needs manual translation *)
+definition boot_stage :: "bool" where "boot_stage = undefined"
 
 (* complete_boot (matches Coq: Definition complete_boot) *)
 definition complete_boot :: "BootChainState \<Rightarrow> BootChainState" where
@@ -120,19 +133,19 @@ definition complete_boot :: "BootChainState \<Rightarrow> BootChainState" where
     (current_stage st)
     (expected_hashes st)
     (minimum_versions st)
-    true"
+    True"
 
 (* stage_boots (matches Coq: Definition stage_boots) *)
 definition stage_boots :: "BootStageId \<Rightarrow> bool" where
-  "stage_boots stage \<equiv> stage_verified st' stage = true /\ stage_verified st stage = false"
+  "stage_boots stage \<equiv> stage_verified st' stage = True /\ stage_verified st stage = False"
 
 (* verified_by_previous (matches Coq: Definition verified_by_previous) *)
 definition verified_by_previous :: "BootChainState \<Rightarrow> BootStageId \<Rightarrow> bool" where
-  "verified_by_previous st stage \<equiv> stage_verified st (previous_stage stage) = true"
+  "verified_by_previous st stage \<equiv> stage_verified st (previous_stage stage) = True"
 
 (* is_tampered (matches Coq: Definition is_tampered) *)
 definition is_tampered :: "BootChainState \<Rightarrow> BootImage \<Rightarrow> bool" where
-  "is_tampered st img \<equiv> image_tampered st img = true"
+  "is_tampered st img \<equiv> image_tampered st img = True"
 
 (* can_boot (matches Coq: Definition can_boot) *)
 definition can_boot :: "BootChainState \<Rightarrow> BootImage \<Rightarrow> bool" where

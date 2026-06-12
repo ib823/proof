@@ -5,11 +5,11 @@
 (* Layer: Performance & Optimization *)
 (* Mode: Comprehensive Verification | Zero Trust *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** ===============================================================================
@@ -351,7 +351,7 @@ Theorem PI_003_04_msq_enqueue_length : forall q v,
   length (msq_items (msq_enqueue q v)) = S (length (msq_items q)).
 Proof.
   intros q v. unfold msq_enqueue. simpl.
-  rewrite app_length. simpl. lia.
+  rewrite length_app. simpl. lia.
 Qed.
 
 Theorem PI_003_05_cas_success : forall v new_val,

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ASEANCompliance - Isabelle/HOL Port
@@ -28,6 +30,7 @@
  * | breach_notification_compliant | breach_notification_compliant | OK     |
  * | mcc_adequate       | mcc_adequate           | OK     |
  * | mutual_recognition | mutual_recognition     | OK     |
+ * | all_localizations  | all_localizations      | OK     |
  * | dpo_requirement_met | dpo_requirement_met    | OK     |
  * | 1                  | 1                      | OK     |
  * | 2                  | 2                      | OK     |
@@ -66,8 +69,8 @@ begin
 
 (* DataLocalization (matches Coq: Inductive DataLocalization) *)
 datatype data_localization =
-    LocalOnly  (* Must stay in jurisdiction *)
-  |     RegionalASEAN  (* Can move within ASEAN *)
+    LocalOnly
+  |     RegionalASEAN
   |     GlobalAllowed
 
 (* auth_covers (matches Coq: Definition auth_covers) *)
@@ -124,13 +127,13 @@ definition adequacy_recognized :: "ASEANDataPolicy \<Rightarrow> jurisdiction \<
 
 (* cbf_compliant (matches Coq: Definition cbf_compliant) *)
 definition cbf_compliant :: "CBDataFlow \<Rightarrow> bool" where
-  "cbf_compliant flow \<equiv> (adp_consent_required (cbf_source_policy flow) = true ->
-   cbf_consent_obtained flow = true) /\
+  "cbf_compliant flow \<equiv> (adp_consent_required (cbf_source_policy flow) = True ->
+   cbf_consent_obtained flow = True) /\
   localization_permits_transfer
     (adp_localization (cbf_source_policy flow))
     (data_jurisdiction (cbf_data flow))
     (cbf_target_jurisdiction flow) /\
-  (cbf_safeguards_in_place flow = true)"
+  (cbf_safeguards_in_place flow = True)"
 
 (* breach_notification_compliant (matches Coq: Definition breach_notification_compliant) *)
 definition breach_notification_compliant :: "ASEANDataPolicy \<Rightarrow> bool" where
@@ -139,16 +142,20 @@ definition breach_notification_compliant :: "ASEANDataPolicy \<Rightarrow> bool"
 (* mcc_adequate (matches Coq: Definition mcc_adequate) *)
 definition mcc_adequate :: "ModelContractualClause \<Rightarrow> nat \<Rightarrow> bool" where
   "mcc_adequate mcc min_standard \<equiv> mcc_data_protection_standard mcc >= min_standard /\
-  mcc_audit_rights mcc = true /\
-  mcc_termination_clause mcc = true"
+  mcc_audit_rights mcc = True /\
+  mcc_termination_clause mcc = True"
 
 (* mutual_recognition (matches Coq: Definition mutual_recognition) *)
 definition mutual_recognition :: "Agreements \<Rightarrow> bool" where
   "mutual_recognition agreements \<equiv> authorized agreements j1 j2 0 /\ authorized agreements j2 j1 0"
 
+(* all_localizations (matches Coq: Definition all_localizations) *)
+definition all_localizations :: "list DataLocalization" where
+  "all_localizations \<equiv> [LocalOnly; RegionalASEAN; GlobalAllowed]"
+
 (* dpo_requirement_met (matches Coq: Definition dpo_requirement_met) *)
 definition dpo_requirement_met :: "ASEANDataPolicy \<Rightarrow> bool \<Rightarrow> bool" where
-  "dpo_requirement_met policy dpo_appointed \<equiv> adp_dpo_required policy = true -> dpo_appointed = true"
+  "dpo_requirement_met policy dpo_appointed \<equiv> adp_dpo_required policy = True -> dpo_appointed = True"
 
 (* 1 (matches Coq) *)
 lemma 1: "Data Residency — data stays in declared jurisdiction Definition data_resident (d : DataItem) (loc : jurisdiction) : Prop := data_jurisdiction d = loc. Theorem data_residency : \<forall> d : DataItem, data_resident d (data_jurisdiction d)"
@@ -259,7 +266,7 @@ lemma localization_coverage: "\<forall> (dl : DataLocalization), In dl all_local
   by auto
 
 (* dpo_appointed_when_required (matches Coq) *)
-lemma dpo_appointed_when_required: "\<forall> (policy : ASEANDataPolicy), adp_dpo_required policy = True \<longrightarrow> dpo_requirement_met policy true"
+lemma dpo_appointed_when_required: "\<forall> (policy : ASEANDataPolicy), adp_dpo_required policy = True \<longrightarrow> dpo_requirement_met policy True"
   by simp
 
 (* dpo_not_required_always_met (matches Coq) *)

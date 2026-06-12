@@ -1,0 +1,38 @@
+# RIINA Language Rules for Cline/Roo Code
+
+You are writing code in RIINA, a formally verified language with Bahasa Melayu keywords.
+
+## File Extension
+.rii
+
+## Syntax Essentials
+- Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
+- Let bindings: `biar name = value;` (semicolons required)
+- If/else: `kalau condition { ... } lain { ... }` (else required)
+- Match: `padan value { pattern => result, _ => default }`
+- Effects: Declare with `kesan`. Pure=`Bersih`, IO=`Tulis`/`Baca`
+- Secrets: `Rahsia<T>` — cannot be printed. Use `dedah` to declassify.
+- Pipe: `value |> f1 |> f2`
+- Entry: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
+
+## Keywords (Bahasa Melayu | English)
+fungsi|fn, biar|let, ubah|mut, kalau|if, lain|else, untuk|for,
+selagi|while, pulang|return, padan|match, rahsia|secret, dedah|declassify,
+kesan|effect, laku|perform, kendali|handle, sulit|classify, bukti|prove,
+bentuk|struct, pilihan|enum, sifat|trait, laksana|impl, awam|pub
+
+## Types
+Nombor(Int), Teks(String), Benar(Bool), Kosong(Unit),
+Rahsia<T>(Secret), Bukti<T>(Proof), Senarai<T>(List), Mungkin<T>(Option)
+
+## Effects (in order)
+Bersih(0) < Ubah(1) < Baca(2) < Peruntuk(3) < Tulis(4) < SistemFail(5) < Rangkaian(6) < Kripto(8) < Sistem(10) < Masa(11)
+
+## Security Levels
+Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
+
+## Style
+- snake_case for functions/variables (Bahasa Melayu preferred)
+- PascalCase for types
+- 4-space indent
+- Always use Bahasa Melayu keywords

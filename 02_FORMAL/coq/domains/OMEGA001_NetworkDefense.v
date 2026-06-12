@@ -5,11 +5,11 @@
 (* Layer: Network Security & DDoS Mitigation *)
 (* Mode: Comprehensive Verification | Zero Trust *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** ===============================================================================
@@ -350,7 +350,7 @@ Qed.
 Theorem OMEGA_004_03_conn_count_bound : forall table src,
   conn_count_by_src table src <= length table.
 Proof.
-  intros. unfold conn_count_by_src. apply filter_length.
+  intros. unfold conn_count_by_src. apply filter_length_le.
 Qed.
 
 Theorem OMEGA_004_04_conn_lookup_deterministic : forall table src dst c1 c2,
@@ -381,7 +381,7 @@ Qed.
 Theorem OMEGA_005_02_pow_zero_difficulty_impossible : forall n c,
   pow_valid n c 0 = false.
 Proof.
-  intros. unfold pow_valid, pow_hash. apply Nat.ltb_irrefl.
+  intros. unfold pow_valid, pow_hash. apply Nat.ltb_ge. lia.
 Qed.
 
 Theorem OMEGA_005_03_pow_verify_complete : forall n c d,

@@ -1,3 +1,4 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
@@ -30,6 +31,7 @@
  * | KeyDatabase        | key_database           | OK     |
  * | SecureBootPolicy   | secure_boot_policy     | OK     |
  * | SecureBootConfig   | secure_boot_config     | OK     |
+ * | RIINA_PCR_DIGEST_EXAMPLE | RIINA_PCR_DIGEST_EXAMPLE | OK     |
  * | rom_is_root_of_trust | rom_is_root_of_trust   | OK     |
  * | rom_fully_secure   | rom_fully_secure       | OK     |
  * | key_valid_for_verification | key_valid_for_verification | OK     |
@@ -302,6 +304,10 @@ record secure_boot_config =
   sb_key_db :: KeyDatabase
   sb_policy :: SecureBootPolicy
 
+(* RIINA_PCR_DIGEST_EXAMPLE (matches Coq: Definition RIINA_PCR_DIGEST_EXAMPLE) *)
+definition RIINA_PCR_DIGEST_EXAMPLE :: "nat" where
+  "RIINA_PCR_DIGEST_EXAMPLE \<equiv> Z.to_nat 12345%Z"
+
 (* rom_is_root_of_trust (matches Coq: Definition rom_is_root_of_trust) *)
 definition rom_is_root_of_trust :: "BootROM \<Rightarrow> bool" where
   "rom_is_root_of_trust rom \<equiv> rom_hash_verified rom \<and> rom_fused rom \<and> rom_contains_root_key rom"
@@ -447,7 +453,7 @@ definition riina_boot_chain :: "BootChain" where
 
 (* riina_pcr (matches Coq: Definition riina_pcr) *)
 definition riina_pcr :: "PCRValue" where
-  "riina_pcr \<equiv> mkPCR 0 12345 True True"
+  "riina_pcr \<equiv> mkPCR 0 RIINA_PCR_DIGEST_EXAMPLE True True"
 
 (* riina_tpm (matches Coq: Definition riina_tpm) *)
 definition riina_tpm :: "TPMState" where

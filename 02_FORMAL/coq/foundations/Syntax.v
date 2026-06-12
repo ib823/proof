@@ -9,9 +9,9 @@
     Mode: Comprehensive Verification | Zero Trust
 *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
 Import ListNotations.
 
 (** ** Identifiers *)
@@ -511,7 +511,282 @@ Fixpoint subst (x : ident) (v : expr) (e : expr) : expr :=
   | EGrant eff e1 => EGrant eff (subst x v e1)
   end.
 
-Notation "[ x := v ] e" := (subst x v e) (at level 20).
+Notation "'subst[' x := v ']' e" := (subst x v e) (at level 20).
+
+(** ** Security Lattice Properties *)
+
+Lemma sec_leq_refl : forall l, sec_leq l l.
+Proof. intros l. unfold sec_leq. apply Nat.le_refl. Qed.
+
+Lemma sec_leq_trans : forall l1 l2 l3,
+  sec_leq l1 l2 -> sec_leq l2 l3 -> sec_leq l1 l3.
+Proof.
+  intros l1 l2 l3 H12 H23. unfold sec_leq in *.
+  eapply Nat.le_trans; eassumption.
+Qed.
+
+Lemma sec_leq_antisym : forall l1 l2,
+  sec_leq l1 l2 -> sec_leq l2 l1 -> l1 = l2.
+Proof.
+  intros l1 l2 H12 H21. unfold sec_leq in *.
+  assert (sec_level_num l1 = sec_level_num l2) by (apply Nat.le_antisymm; assumption).
+  destruct l1; destruct l2; simpl in H; try reflexivity; discriminate.
+Qed.
+
+Lemma sec_leq_total : forall l1 l2,
+  sec_leq l1 l2 \/ sec_leq l2 l1.
+Proof.
+  intros l1 l2. unfold sec_leq.
+  destruct (Nat.le_ge_cases (sec_level_num l1) (sec_level_num l2)); auto.
+Qed.
+
+Lemma sec_leq_public_bottom : forall l, sec_leq LPublic l.
+Proof. intros l. unfold sec_leq. simpl. apply Nat.le_0_l. Qed.
+
+Lemma sec_leq_secret_top : forall l, sec_leq l LSecret.
+Proof. intros l. unfold sec_leq. simpl. destruct l; simpl; repeat constructor. Qed.
+
+Lemma sec_leq_dec_correct : forall l1 l2,
+  sec_leq_dec l1 l2 = true <-> sec_leq l1 l2.
+Proof.
+  intros l1 l2. unfold sec_leq_dec, sec_leq.
+  split; apply Nat.leb_le.
+Qed.
+
+Lemma sec_join_ub_l : forall l1 l2, sec_leq l1 (sec_join l1 l2).
+Proof.
+  intros l1 l2. unfold sec_join, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.leb_le in H. exact H.
+  - apply Nat.le_refl.
+Qed.
+
+Lemma sec_join_ub_r : forall l1 l2, sec_leq l2 (sec_join l1 l2).
+Proof.
+  intros l1 l2. unfold sec_join, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.le_refl.
+  - apply Nat.leb_nle in H.
+    apply Nat.lt_le_incl. apply Nat.nle_gt. exact H.
+Qed.
+
+Lemma sec_meet_lb_l : forall l1 l2, sec_leq (sec_meet l1 l2) l1.
+Proof.
+  intros l1 l2. unfold sec_meet, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.le_refl.
+  - apply Nat.leb_nle in H.
+    apply Nat.lt_le_incl. apply Nat.nle_gt. exact H.
+Qed.
+
+Lemma sec_meet_lb_r : forall l1 l2, sec_leq (sec_meet l1 l2) l2.
+Proof.
+  intros l1 l2. unfold sec_meet, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.leb_le in H. exact H.
+  - apply Nat.le_refl.
+Qed.
+
+Lemma sec_join_comm : forall l1 l2, sec_join l1 l2 = sec_join l2 l1.
+Proof.
+  intros l1 l2. unfold sec_join.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H12;
+  destruct (Nat.leb (sec_level_num l2) (sec_level_num l1)) eqn:H21.
+  - apply Nat.leb_le in H12. apply Nat.leb_le in H21.
+    apply sec_leq_antisym; unfold sec_leq; assumption.
+  - reflexivity.
+  - reflexivity.
+  - apply Nat.leb_nle in H12. apply Nat.leb_nle in H21.
+    exfalso. apply H12. apply Nat.lt_le_incl. apply Nat.nle_gt. exact H21.
+Qed.
+
+Lemma sec_meet_comm : forall l1 l2, sec_meet l1 l2 = sec_meet l2 l1.
+Proof.
+  intros l1 l2. unfold sec_meet.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H12;
+  destruct (Nat.leb (sec_level_num l2) (sec_level_num l1)) eqn:H21.
+  - apply Nat.leb_le in H12. apply Nat.leb_le in H21.
+    apply sec_leq_antisym; unfold sec_leq; assumption.
+  - reflexivity.
+  - reflexivity.
+  - apply Nat.leb_nle in H12. apply Nat.leb_nle in H21.
+    exfalso. apply H12. apply Nat.lt_le_incl. apply Nat.nle_gt. exact H21.
+Qed.
+
+Lemma sec_join_idem : forall l, sec_join l l = l.
+Proof. intros l. unfold sec_join. rewrite Nat.leb_refl. reflexivity. Qed.
+
+Lemma sec_meet_idem : forall l, sec_meet l l = l.
+Proof. intros l. unfold sec_meet. rewrite Nat.leb_refl. reflexivity. Qed.
+
+(** Security lattice associativity: join is associative. *)
+Lemma sec_join_assoc : forall l1 l2 l3,
+  sec_join l1 (sec_join l2 l3) = sec_join (sec_join l1 l2) l3.
+Proof.
+  intros l1 l2 l3.
+  destruct l1, l2, l3; reflexivity.
+Qed.
+
+(** Security lattice associativity: meet is associative. *)
+Lemma sec_meet_assoc : forall l1 l2 l3,
+  sec_meet l1 (sec_meet l2 l3) = sec_meet (sec_meet l1 l2) l3.
+Proof.
+  intros l1 l2 l3.
+  destruct l1, l2, l3; reflexivity.
+Qed.
+
+(** Absorption law: join(l, meet(l, m)) = l. *)
+Lemma sec_join_meet_absorb : forall l1 l2,
+  sec_join l1 (sec_meet l1 l2) = l1.
+Proof.
+  intros l1 l2.
+  destruct l1, l2; reflexivity.
+Qed.
+
+(** Absorption law: meet(l, join(l, m)) = l. *)
+Lemma sec_meet_join_absorb : forall l1 l2,
+  sec_meet l1 (sec_join l1 l2) = l1.
+Proof.
+  intros l1 l2.
+  destruct l1, l2; reflexivity.
+Qed.
+
+(** Distributivity: join(l1, meet(l2, l3)) = meet(join(l1, l2), join(l1, l3)). *)
+Lemma sec_join_meet_distrib : forall l1 l2 l3,
+  sec_join l1 (sec_meet l2 l3) = sec_meet (sec_join l1 l2) (sec_join l1 l3).
+Proof.
+  intros l1 l2 l3.
+  destruct l1, l2, l3; reflexivity.
+Qed.
+
+(** Distributivity: meet(l1, join(l2, l3)) = join(meet(l1, l2), meet(l1, l3)). *)
+Lemma sec_meet_join_distrib : forall l1 l2 l3,
+  sec_meet l1 (sec_join l2 l3) = sec_join (sec_meet l1 l2) (sec_meet l1 l3).
+Proof.
+  intros l1 l2 l3.
+  destruct l1, l2, l3; reflexivity.
+Qed.
+
+(** Join is the least upper bound: if l1 <= l3 and l2 <= l3 then join(l1,l2) <= l3. *)
+Lemma sec_join_lub : forall l1 l2 l3,
+  sec_leq l1 l3 -> sec_leq l2 l3 -> sec_leq (sec_join l1 l2) l3.
+Proof.
+  intros l1 l2 l3 H1 H2. unfold sec_join, sec_leq in *.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)); assumption.
+Qed.
+
+(** Meet is the greatest lower bound: if l3 <= l1 and l3 <= l2 then l3 <= meet(l1,l2). *)
+Lemma sec_meet_glb : forall l1 l2 l3,
+  sec_leq l3 l1 -> sec_leq l3 l2 -> sec_leq l3 (sec_meet l1 l2).
+Proof.
+  intros l1 l2 l3 H1 H2. unfold sec_meet, sec_leq in *.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)); assumption.
+Qed.
+
+(** If l1 <= l2, then join(l1, l2) = l2. *)
+Lemma sec_join_leq_r : forall l1 l2,
+  sec_leq l1 l2 -> sec_join l1 l2 = l2.
+Proof.
+  intros l1 l2 Hle. unfold sec_join, sec_leq in *.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - reflexivity.
+  - apply Nat.leb_nle in H. exfalso. apply H. exact Hle.
+Qed.
+
+(** If l1 <= l2, then meet(l1, l2) = l1. *)
+Lemma sec_meet_leq_l : forall l1 l2,
+  sec_leq l1 l2 -> sec_meet l1 l2 = l1.
+Proof.
+  intros l1 l2 Hle. unfold sec_meet, sec_leq in *.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - reflexivity.
+  - apply Nat.leb_nle in H. exfalso. apply H. exact Hle.
+Qed.
+
+(** Security level equality is decidable. *)
+Lemma sec_level_eq_dec : forall (l1 l2 : security_level), {l1 = l2} + {l1 <> l2}.
+Proof.
+  intros l1 l2.
+  destruct l1, l2;
+    try (left; reflexivity);
+    right; discriminate.
+Defined.
+
+(** Effect equality is decidable. *)
+Lemma effect_eq_dec : forall (e1 e2 : effect), {e1 = e2} + {e1 <> e2}.
+Proof.
+  intros e1 e2.
+  destruct e1, e2;
+    try (left; reflexivity);
+    right; discriminate.
+Defined.
+
+(** Effect join is associative (direct proof by enumeration). *)
+Lemma effect_join_assoc_direct : forall e1 e2 e3,
+  effect_join e1 (effect_join e2 e3) = effect_join (effect_join e1 e2) e3.
+Proof.
+  intros e1 e2 e3.
+  destruct e1, e2, e3; reflexivity.
+Qed.
+
+(** Value predicate is decidable. *)
+Lemma value_dec : forall e, {value e} + {~ value e}.
+Proof.
+  induction e; try (right; intro H; inversion H; fail).
+  - left. constructor.
+  - left. constructor.
+  - left. constructor.
+  - left. constructor.
+  - left. constructor.
+  - left. constructor.
+  - (* EPair *)
+    destruct IHe1 as [Hv1 | Hn1]; destruct IHe2 as [Hv2 | Hn2].
+    + left. constructor; assumption.
+    + right. intro H. inversion H; subst. apply Hn2. assumption.
+    + right. intro H. inversion H; subst. apply Hn1. assumption.
+    + right. intro H. inversion H; subst. apply Hn1. assumption.
+  - (* EInl *)
+    destruct IHe as [Hv | Hn].
+    + left. constructor. assumption.
+    + right. intro H. inversion H; subst. apply Hn. assumption.
+  - (* EInr *)
+    destruct IHe as [Hv | Hn].
+    + left. constructor. assumption.
+    + right. intro H. inversion H; subst. apply Hn. assumption.
+  - (* EClassify *)
+    destruct IHe as [Hv | Hn].
+    + left. constructor. assumption.
+    + right. intro H. inversion H; subst. apply Hn. assumption.
+  - (* EProve *)
+    destruct IHe as [Hv | Hn].
+    + left. constructor. assumption.
+    + right. intro H. inversion H; subst. apply Hn. assumption.
+Defined.
+
+(** Substitution with a different variable from the binding does not affect that variable. *)
+Lemma subst_diff_var : forall x y v,
+  x <> y ->
+  subst[x := v] (EVar y) = EVar y.
+Proof.
+  intros x y v Hneq. simpl.
+  destruct (String.eqb x y) eqn:Heq.
+  - apply String.eqb_eq in Heq. contradiction.
+  - reflexivity.
+Qed.
+
+(** Substitution with the same variable as the target replaces it. *)
+Lemma subst_same_var : forall x v,
+  subst[x := v] (EVar x) = v.
+Proof.
+  intros x v. simpl.
+  rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** Session duality is an involution *)
+Theorem session_dual_involutive : forall s, session_dual (session_dual s) = s.
+Proof.
+  induction s; simpl; try rewrite IHs; try rewrite IHs1; try rewrite IHs2; reflexivity.
+Qed.
 
 (** ** Basic Lemmas *)
 
@@ -521,7 +796,7 @@ Definition declass_ok (e1 e2 : expr) : Prop :=
 Lemma value_subst : forall x v1 v2,
   value v1 ->
   value v2 ->
-  value ([x := v2] v1).
+  value (subst[x := v2] v1).
 Proof.
   intros x v1 v2 Hv1 Hv2.
   induction Hv1; simpl.
@@ -541,11 +816,11 @@ Qed.
 Lemma declass_ok_subst : forall x v e1 e2,
   value v ->
   declass_ok e1 e2 ->
-  declass_ok ([x := v] e1) ([x := v] e2).
+  declass_ok (subst[x := v] e1) (subst[x := v] e2).
 Proof.
   intros x v e1 e2 Hv Hok.
   destruct Hok as [v0 [Hv0 [He1 He2]]]; subst.
-  simpl. exists ([x := v] v0). split.
+  simpl. exists (subst[x := v] v0). split.
   - apply value_subst; assumption.
   - split; reflexivity.
 Qed.
@@ -577,7 +852,7 @@ Qed.
     1. A 'closed' predicate ensuring values have no free variables, or
     2. A 'free_vars' function to check if x is free in e.
 
-    The naive statement "forall x v e, value e -> [x := v] e = e" is false
+    The naive statement "forall x v e, value e -> subst[x := v] e = e" is false
     because lambda bodies can contain free variables. We will add the
     correct formulation in Preservation.v when needed for type safety. *)
 

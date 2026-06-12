@@ -5,11 +5,11 @@
 (* Proves TRAFFIC-001 through TRAFFIC-025 *)
 (* Generated for RIINA formal verification *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Logic.Decidable.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Logic.Decidable.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ======================================================================= *)
@@ -195,7 +195,7 @@ Theorem traffic_010_sender_anonymity :
 Proof.
   intros batch H.
   unfold sender_anonymity_set.
-  rewrite map_length. exact H.
+  rewrite length_map. exact H.
 Qed.
 
 (* ---------- TRAFFIC-011: Receiver Anonymity Set ---------- *)
@@ -210,7 +210,7 @@ Theorem traffic_011_receiver_anonymity :
 Proof.
   intros batch H.
   unfold receiver_anonymity_set.
-  rewrite map_length. exact H.
+  rewrite length_map. exact H.
 Qed.
 
 (* ---------- TRAFFIC-012: Padding Ratio Correct ---------- *)

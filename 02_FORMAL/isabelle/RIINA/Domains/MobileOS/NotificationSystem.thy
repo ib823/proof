@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NotificationSystem - Isabelle/HOL Port
@@ -90,7 +92,7 @@ record notification =
   notif_priority :: Priority
   notif_state :: NotificationState
   notif_created_at :: Time
-  notif_ttl :: Time  (* Time to live *)
+  notif_ttl :: Time
   notif_delivered_at :: option
 
 (* NotificationChannel (matches Coq: Record NotificationChannel) *)
@@ -98,7 +100,7 @@ record notification_channel =
   channel_id :: nat
   channel_enabled :: bool
   channel_priority :: Priority
-  channel_sound_volume :: nat  (* 0-100 *)
+  channel_sound_volume :: nat
   channel_vibration :: bool
   channel_badge :: bool
 
@@ -125,7 +127,7 @@ record notif_history =
 record ext_notification =
   ext_notif :: Notification
   ext_content_sanitized :: bool
-  ext_sound_volume :: nat  (* 0-100 *)
+  ext_sound_volume :: nat
   ext_badge_count :: nat
   ext_expiry_time :: nat
   ext_delivery_confirmed :: bool
@@ -179,14 +181,14 @@ definition is_spam :: "nat \<Rightarrow> bool" where
 
 (* notification_permission_granted (matches Coq: Definition notification_permission_granted) *)
 definition notification_permission_granted :: "bool \<Rightarrow> bool" where
-  "notification_permission_granted granted \<equiv> granted = true"
+  "notification_permission_granted granted \<equiv> granted = True"
 
 (* well_formed_notification (matches Coq: Definition well_formed_notification) *)
 definition well_formed_notification :: "ExtNotification \<Rightarrow> bool" where
-  "well_formed_notification en \<equiv> ext_content_sanitized en = true /\
+  "well_formed_notification en \<equiv> ext_content_sanitized en = True /\
   ext_sound_volume en <= 100 /\
-  (ext_is_silent en = true -> ext_sound_volume en = 0) /\
-  (ext_delivery_confirmed en = true ->
+  (ext_is_silent en = True -> ext_sound_volume en = 0) /\
+  (ext_delivery_confirmed en = True ->
     notif_state (ext_notif en) = Delivered \/ notif_state (ext_notif en) = Read)"
 
 (* well_formed_group (matches Coq: Definition well_formed_group) *)

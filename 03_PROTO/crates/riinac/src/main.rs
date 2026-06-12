@@ -10,15 +10,17 @@
 #![forbid(unsafe_code)]
 
 mod diagnostics;
+mod frontend;
+mod mcp;
 mod repl;
 mod verify;
 
 use std::fs;
+use std::io::Read as _;
 use std::path::PathBuf;
 use std::process;
 
 use riina_parser::Parser;
-use riina_typechecker::{type_check, Context};
 
 #[derive(Debug)]
 enum Command {
@@ -31,6 +33,8 @@ enum Command {
     Fmt,
     Doc,
     Lsp,
+    Test,
+    Mcp,
     Verify(verify::Mode),
     Pkg(Vec<String>),
     ListCompliance,
@@ -51,6 +55,14 @@ struct Options {
     report: Option<ReportFormat>,
     report_output: Option<PathBuf>,
     target: Option<riina_codegen::Target>,
+    /// Output JSON instead of text (for AI agent consumption)
+    json: bool,
+    /// Read source from stdin instead of file
+    stdin: bool,
+    /// Auto-update expected values in jangkakan (expect-test) assertions
+    update: bool,
+    /// Run the compiled binary after building (native: ./output, wasm: wasmtime)
+    run_after_build: bool,
 }
 
 fn usage() -> ! {
@@ -59,17 +71,22 @@ fn usage() -> ! {
     eprintln!("Commands:");
     eprintln!("  check    Parse and typecheck only (default)");
     eprintln!("  run      Parse, typecheck, and interpret");
-    eprintln!("  build    Parse, typecheck, emit C, and compile");
+    eprintln!("  build    Parse, typecheck, emit C/WASM, and compile (--run to execute)");
     eprintln!("  emit-c   Parse, typecheck, and emit C to stdout");
     eprintln!("  emit-ir  Parse, typecheck, lower, and print IR");
+    eprintln!("  test     Discover and run inline ujian (test) blocks");
     eprintln!("  doc      Generate HTML documentation");
     eprintln!("  fmt      Format a .rii file");
     eprintln!("  lsp      Start LSP server (stdio)");
+    eprintln!("  mcp      Start MCP server for AI agents (stdio)");
     eprintln!("  repl     Interactive read-eval-print loop");
     eprintln!("  verify   Run verification gate [--fast|--full]");
     eprintln!("  pkg      Package manager (init/add/remove/lock/build/...)");
     eprintln!();
     eprintln!("Options:");
+    eprintln!("  --json                   Output structured JSON (for AI agents)");
+    eprintln!("  --stdin                  Read source from stdin instead of file");
+    eprintln!("  --update                 Auto-update jangkakan (expect-test) expected values");
     eprintln!("  --compliance <profiles>  Run compliance checks (comma-separated)");
     eprintln!("  --report                 Generate compliance report (text)");
     eprintln!("  --report-json            Generate compliance report (JSON)");
@@ -115,10 +132,12 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
         "build" => (Command::Build, &args[2..]),
         "emit-c" => (Command::EmitC, &args[2..]),
         "emit-ir" => (Command::EmitIR, &args[2..]),
+        "test" => (Command::Test, &args[2..]),
         "doc" => (Command::Doc, &args[2..]),
         "fmt" => (Command::Fmt, &args[2..]),
         "repl" => return (Command::Repl, None, Options::default()),
         "lsp" => return (Command::Lsp, None, Options::default()),
+        "mcp" => return (Command::Mcp, None, Options::default()),
         _ => {
             // No command given — default to Check, treat arg[1] as file
             (Command::Check, &args[1..])
@@ -135,6 +154,18 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
         match rest_slice[i] {
             "--list-compliance" => {
                 return (Command::ListCompliance, None, Options::default());
+            }
+            "--json" => {
+                opts.json = true;
+            }
+            "--stdin" => {
+                opts.stdin = true;
+            }
+            "--update" => {
+                opts.update = true;
+            }
+            "--run" => {
+                opts.run_after_build = true;
             }
             "--compliance" => {
                 i += 1;
@@ -175,7 +206,9 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
                     Some(t) => opts.target = Some(t),
                     None => {
                         eprintln!("Unknown target: {}", rest_slice[i]);
-                        eprintln!("Available targets: native, wasm32, wasm64, android-arm64, ios-arm64");
+                        eprintln!(
+                            "Available targets: native, wasm32, wasm64, android-arm64, ios-arm64"
+                        );
                         process::exit(1);
                     }
                 }
@@ -192,6 +225,93 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
     }
 
     (cmd, file, opts)
+}
+
+/// Escape a string for JSON output (no external dependencies).
+fn json_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if c < '\x20' => {
+                out.push_str(&format!("\\u{:04x}", c as u32));
+            }
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// Parse an expect-test mismatch error message.
+/// Returns (actual_value, expected_value) if the message matches the expect mismatch format.
+fn parse_expect_mismatch(msg: &str) -> Option<(String, String)> {
+    // Format from jangkakan builtin:
+    //   expect mismatch:
+    //     actual:   <value>
+    //     expected: <value>
+    if !msg.contains("expect mismatch") {
+        return None;
+    }
+    let actual = msg
+        .split("actual:")
+        .nth(1)?
+        .split('\n')
+        .next()?
+        .trim()
+        .to_string();
+    let expected = msg.split("expected:").nth(1)?.trim().to_string();
+    if actual.is_empty() || expected.is_empty() {
+        return None;
+    }
+    Some((actual, expected))
+}
+
+/// Format a JSON diagnostic from a parse error.
+fn format_parse_error_json(e: &riina_parser::ParseError, filename: &str) -> String {
+    let code = e.kind.error_code();
+    let msg = json_escape(&e.to_string());
+    let fix = e
+        .kind
+        .fix_hint()
+        .map(|h| json_escape(&h))
+        .unwrap_or_default();
+
+    format!(
+        r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"{code}","message":"{msg}","file":"{fn_esc}","line":0,"column":{start},"end_column":{end},"fix_hint":"{fix}","rule":null,"related":[]}}]}}"#,
+        fn_esc = json_escape(filename),
+        start = e.span.start,
+        end = e.span.end,
+    )
+}
+
+/// Format a JSON diagnostic from a type error.
+fn format_type_error_json(e: &riina_typechecker::TypeError, filename: &str) -> String {
+    let code = e.error_code();
+    let msg = json_escape(&e.to_string());
+    let fix = e.fix_hint().map(|h| json_escape(&h)).unwrap_or_default();
+    let rule = e
+        .coq_rule()
+        .map(|r| format!("\"{}\"", json_escape(r)))
+        .unwrap_or_else(|| "null".to_string());
+
+    format!(
+        r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"{code}","message":"{msg}","file":"{fn_esc}","line":0,"column":0,"fix_hint":"{fix}","rule":{rule},"related":[]}}]}}"#,
+        fn_esc = json_escape(filename),
+    )
+}
+
+/// Format a JSON success result.
+fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::Effect, filename: &str) -> String {
+    let ty_str = json_escape(&format!("{:?}", ty));
+    let eff_str = json_escape(&format!("{:?}", eff));
+    format!(
+        r#"{{"success":true,"diagnostics":[],"file":"{fn_esc}","type":"{ty_str}","effect":"{eff_str}"}}"#,
+        fn_esc = json_escape(filename),
+    )
 }
 
 fn main() {
@@ -219,6 +339,14 @@ fn main() {
         return;
     }
 
+    if let Command::Mcp = command {
+        if let Err(e) = mcp::run() {
+            eprintln!("MCP error: {e}");
+            process::exit(1);
+        }
+        return;
+    }
+
     if let Command::Verify(mode) = command {
         process::exit(verify::run(mode));
     }
@@ -231,35 +359,92 @@ fn main() {
         return;
     }
 
-    let input = input.expect("file path required");
-    let source = match fs::read_to_string(&input) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("Error reading file: {}", e);
+    // Read source from --stdin or file
+    let (source, filename, input_path) = if opts.stdin {
+        let mut buf = String::new();
+        if let Err(e) = std::io::stdin().read_to_string(&mut buf) {
+            if opts.json {
+                println!(
+                    r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"I0001","message":"Failed to read stdin: {}","file":"<stdin>","line":0,"column":0,"fix_hint":"Pipe source code to stdin","rule":null,"related":[]}}]}}"#,
+                    json_escape(&e.to_string())
+                );
+            } else {
+                eprintln!("Error reading stdin: {}", e);
+            }
             process::exit(1);
         }
+        (buf, "<stdin>".to_string(), None)
+    } else {
+        let path = input.expect("file path required");
+        let src = match fs::read_to_string(&path) {
+            Ok(s) => s,
+            Err(e) => {
+                if opts.json {
+                    println!(
+                        r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"I0002","message":"Cannot read file: {}","file":"{}","line":0,"column":0,"fix_hint":"Check the file path exists","rule":null,"related":[]}}]}}"#,
+                        json_escape(&e.to_string()),
+                        json_escape(&path.display().to_string())
+                    );
+                } else {
+                    eprintln!("Error reading file: {}", e);
+                }
+                process::exit(1);
+            }
+        };
+        let name = path.display().to_string();
+        (src, name, Some(path))
     };
 
-    let filename = input.display().to_string();
-
-    // 1. Parse program (top-level declarations) and desugar to expression
+    // 1. Parse program (top-level declarations)
     let mut parser = Parser::new(&source);
-    let expr = match parser.parse_program() {
-        Ok(program) => program.desugar(),
+    let program = match parser.parse_program() {
+        Ok(p) => p,
         Err(e) => {
-            eprintln!("{}", diagnostics::format_diagnostic(
-                &source, &e.span, &e.to_string(), &filename
-            ));
+            if opts.json {
+                println!("{}", format_parse_error_json(&e, &filename));
+            } else {
+                eprintln!(
+                    "{}",
+                    diagnostics::format_diagnostic(&source, &e.span, &e.to_string(), &filename)
+                );
+            }
             process::exit(1);
         }
     };
 
-    // 2. Typecheck (with builtin types registered)
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    let (ty, eff) = match type_check(&ctx, &expr) {
+    // Extract test blocks before desugaring (desugar() consumes the Program)
+    let test_blocks: Vec<(String, riina_types::Expr)> = program
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            riina_types::TopLevelDecl::Test { name, body } => {
+                Some((name.clone(), (**body).clone()))
+            }
+            _ => None,
+        })
+        .collect();
+
+    // Save non-test decls for building test expressions
+    let non_test_decls: Vec<riina_types::TopLevelDecl> = if matches!(command, Command::Test) {
+        program
+            .decls
+            .iter()
+            .filter(|d| !matches!(d, riina_types::TopLevelDecl::Test { .. }))
+            .cloned()
+            .collect()
+    } else {
+        vec![]
+    };
+
+    // 2. Typecheck through the shared Coq-matching frontend path.
+    let (expr, ty, eff) = match frontend::check_program(&program) {
         Ok(r) => r,
         Err(e) => {
-            eprintln!("error: {}", e);
+            if opts.json {
+                println!("{}", format_type_error_json(&e, &filename));
+            } else {
+                eprintln!("error: {}", e);
+            }
             process::exit(1);
         }
     };
@@ -307,21 +492,150 @@ fn main() {
     // 4. Dispatch by command
     match command {
         Command::Check => {
-            eprintln!("RIINA Compiler v0.1.0");
-            eprintln!("Compiling: {:?}", input);
-            eprintln!("Success!");
-            println!("Type: {:?}", ty);
-            println!("Effect: {:?}", eff);
-        }
-        Command::Run => {
-            match riina_codegen::eval_with_builtins(&expr) {
-                Ok(val) => println!("{:?}", val),
-                Err(e) => {
-                    eprintln!("Runtime Error: {}", e);
-                    process::exit(1);
-                }
+            if opts.json {
+                println!("{}", format_success_json(&ty, &eff, &filename));
+            } else {
+                eprintln!("RIINA Compiler v0.1.0");
+                eprintln!("Compiling: {}", filename);
+                eprintln!("Success!");
+                println!("Type: {:?}", ty);
+                println!("Effect: {:?}", eff);
             }
         }
+        Command::Test => {
+            let total = test_blocks.len();
+            let mut passed = 0usize;
+            let mut failed = 0usize;
+            let mut results: Vec<(String, bool, std::time::Duration, String)> = Vec::new();
+            // Collect expect-test updates: (old_expected, new_actual)
+            let mut expect_updates: Vec<(String, String)> = Vec::new();
+
+            if !opts.json {
+                eprintln!("RIINA Test Runner v0.1.0");
+                eprintln!("File: {}", filename);
+                eprintln!("Typecheck: LULUS (passed)");
+                eprintln!();
+            }
+
+            for (name, body) in &test_blocks {
+                let test_expr = riina_types::Program::new(non_test_decls.clone())
+                    .desugar_with_body(body.clone());
+
+                let start = std::time::Instant::now();
+                match riina_codegen::eval_with_builtins(&test_expr) {
+                    Ok(_) => {
+                        let elapsed = start.elapsed();
+                        passed += 1;
+                        if !opts.json {
+                            eprintln!(
+                                "ujian \"{}\" ... LULUS ({:.1}ms)",
+                                name,
+                                elapsed.as_secs_f64() * 1000.0
+                            );
+                        }
+                        results.push((name.clone(), true, elapsed, String::new()));
+                    }
+                    Err(e) => {
+                        let elapsed = start.elapsed();
+                        let msg = e.to_string();
+
+                        // Check if this is an expect-test mismatch (for --update)
+                        if opts.update {
+                            if let Some((actual, expected)) = parse_expect_mismatch(&msg) {
+                                expect_updates.push((expected, actual));
+                            }
+                        }
+
+                        failed += 1;
+                        if !opts.json {
+                            eprintln!(
+                                "ujian \"{}\" ... GAGAL ({:.1}ms)",
+                                name,
+                                elapsed.as_secs_f64() * 1000.0
+                            );
+                            eprintln!("  {}", msg);
+                        }
+                        results.push((name.clone(), false, elapsed, msg));
+                    }
+                }
+            }
+
+            // Apply expect-test updates if --update was specified
+            if opts.update && !expect_updates.is_empty() {
+                let mut updated_source = source.clone();
+                let mut update_count = 0;
+                for (old_expected, new_actual) in &expect_updates {
+                    // Find jangkakan/expect calls with the old expected string and replace
+                    let old_pattern = format!("\"{}\"", old_expected);
+                    let new_pattern = format!("\"{}\"", new_actual);
+                    if updated_source.contains(&old_pattern) {
+                        updated_source = updated_source.replacen(&old_pattern, &new_pattern, 1);
+                        update_count += 1;
+                    }
+                }
+                if update_count > 0 {
+                    if let Some(ref path) = input_path {
+                        if let Err(e) = fs::write(path, &updated_source) {
+                            eprintln!("Error updating file: {e}");
+                        } else {
+                            eprintln!();
+                            eprintln!(
+                                "Updated {} jangkakan expected value(s) in {}",
+                                update_count, filename
+                            );
+                        }
+                    }
+                }
+            }
+
+            if opts.json {
+                let tests_json: Vec<String> = results
+                    .iter()
+                    .map(|(name, pass, elapsed, msg)| {
+                        format!(
+                            r#"{{"name":"{}","passed":{},"duration_ms":{:.1},"message":"{}"}}"#,
+                            json_escape(name),
+                            pass,
+                            elapsed.as_secs_f64() * 1000.0,
+                            json_escape(msg)
+                        )
+                    })
+                    .collect();
+                println!(
+                    r#"{{"success":{},"tests":[{}],"file":"{}","summary":{{"total":{},"passed":{},"failed":{}}}}}"#,
+                    failed == 0,
+                    tests_json.join(","),
+                    json_escape(&filename),
+                    total,
+                    passed,
+                    failed
+                );
+            } else {
+                eprintln!();
+                eprintln!("{} ujian, {} lulus, {} gagal", total, passed, failed);
+            }
+
+            if failed > 0 && !opts.update {
+                process::exit(1);
+            }
+        }
+        Command::Run => match riina_codegen::eval_with_builtins(&expr) {
+            Ok(val) => {
+                if ty == riina_types::Ty::Element {
+                    if let riina_codegen::Value::String(rendered) = val {
+                        println!("{rendered}");
+                    } else {
+                        println!("{val}");
+                    }
+                } else {
+                    println!("{:?}", val);
+                }
+            }
+            Err(e) => {
+                eprintln!("Runtime Error: {}", e);
+                process::exit(1);
+            }
+        },
         Command::EmitC => {
             let target = opts.target.unwrap_or(riina_codegen::Target::Native);
             match riina_codegen::compile(&expr) {
@@ -345,15 +659,13 @@ fn main() {
                 }
             }
         }
-        Command::EmitIR => {
-            match riina_codegen::compile(&expr) {
-                Ok(program) => println!("{:#?}", program),
-                Err(e) => {
-                    eprintln!("Codegen Error: {}", e);
-                    process::exit(1);
-                }
+        Command::EmitIR => match riina_codegen::compile(&expr) {
+            Ok(program) => println!("{:#?}", program),
+            Err(e) => {
+                eprintln!("Codegen Error: {}", e);
+                process::exit(1);
             }
-        }
+        },
         Command::Build => {
             let target = opts.target.unwrap_or(riina_codegen::Target::Native);
 
@@ -374,10 +686,14 @@ fn main() {
                 }
             };
 
-            let stem = input.file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("output");
-            let output_dir = input.parent()
+            let basename = std::path::Path::new(&filename)
+                .file_name()
+                .map(|f| f.to_string_lossy().to_string())
+                .unwrap_or_else(|| filename.clone());
+            let stem = basename.strip_suffix(".rii").unwrap_or(&basename);
+            let output_dir = input_path
+                .as_ref()
+                .and_then(|p| p.parent())
                 .unwrap_or_else(|| std::path::Path::new("."));
 
             if target == riina_codegen::Target::Native {
@@ -391,7 +707,8 @@ fn main() {
 
                 let status = process::Command::new("cc")
                     .args([
-                        "-o", &output_name.to_string_lossy(),
+                        "-o",
+                        &output_name.to_string_lossy(),
                         &*tmp_c.to_string_lossy(),
                     ])
                     .status();
@@ -401,6 +718,17 @@ fn main() {
                 match status {
                     Ok(s) if s.success() => {
                         eprintln!("Built: {}", output_name.display());
+                        if opts.run_after_build {
+                            let run_status = process::Command::new(&output_name).status();
+                            match run_status {
+                                Ok(s) if s.success() => {}
+                                Ok(s) => process::exit(s.code().unwrap_or(1)),
+                                Err(e) => {
+                                    eprintln!("Failed to run {}: {}", output_name.display(), e);
+                                    process::exit(1);
+                                }
+                            }
+                        }
                     }
                     Ok(s) => {
                         eprintln!("C compiler exited with: {}", s);
@@ -430,20 +758,39 @@ fn main() {
                 }
 
                 eprintln!("Built for target: {}", target);
-            }
-        }
-        Command::Fmt => {
-            match riina_fmt::format_source(&source) {
-                Ok(formatted) => print!("{formatted}"),
-                Err(e) => {
-                    eprintln!("Format error: {e}");
-                    process::exit(1);
+
+                // --run: execute WASM with wasmtime
+                if opts.run_after_build {
+                    let wasm_path = output_dir.join(format!("{}{}", stem, output.extension));
+                    let status = process::Command::new("wasmtime")
+                        .arg("run")
+                        .arg(&wasm_path)
+                        .status();
+                    match status {
+                        Ok(s) if s.success() => {}
+                        Ok(s) => {
+                            eprintln!("wasmtime exited with: {}", s);
+                            process::exit(s.code().unwrap_or(1));
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to invoke wasmtime: {} (install: curl https://wasmtime.dev/install.sh -sSf | bash)", e);
+                            process::exit(1);
+                        }
+                    }
                 }
             }
         }
+        Command::Fmt => match riina_fmt::format_source(&source) {
+            Ok(formatted) => print!("{formatted}"),
+            Err(e) => {
+                eprintln!("Format error: {e}");
+                process::exit(1);
+            }
+        },
         Command::Doc => {
-            let title = input
-                .file_stem()
+            let title = input_path
+                .as_ref()
+                .and_then(|p| p.file_stem())
                 .and_then(|s| s.to_str())
                 .unwrap_or("RIINA");
             match riina_doc::generate_from_source(title, &source) {
@@ -456,6 +803,7 @@ fn main() {
         }
         Command::Repl => unreachable!("handled above"),
         Command::Lsp => unreachable!("handled above"),
+        Command::Mcp => unreachable!("handled above"),
         Command::Verify(_) => unreachable!("handled above"),
         Command::Pkg(_) => unreachable!("handled above"),
         Command::ListCompliance => unreachable!("handled above"),

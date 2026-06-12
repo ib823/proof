@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ZKSNARKSecurity - Isabelle/HOL Port
@@ -175,28 +177,24 @@
  *)
 
 theory ZKSNARKSecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* ZKProperties (matches Coq: Record ZKProperties) *)
 record zk_properties =
-  zk_completeness :: bool  (* Honest prover convinces verifier *)
-  zk_soundness :: bool  (* Cheating prover cannot convince *)
-  zk_zero_knowledge :: bool  (* Verifier learns nothing beyond validity *)
+  zk_completeness :: bool
+  zk_soundness :: bool
+  zk_zero_knowledge :: bool
 
 (* SNARKProperties (matches Coq: Record SNARKProperties) *)
 record snark_properties =
-  snark_succinctness :: bool  (* Short proofs *)
-  snark_non_interactive :: bool  (* Single message *)
-  snark_knowledge_sound :: bool  (* Extractor exists *)
+  snark_succinctness :: bool
+  snark_non_interactive :: bool
+  snark_knowledge_sound :: bool
 
 (* TrustedSetup (matches Coq: Record TrustedSetup) *)
 record trusted_setup =
-  ts_mpc_ceremony :: bool  (* Multi-party computation *)
+  ts_mpc_ceremony :: bool
   ts_toxic_waste_destroyed :: bool
   ts_verifiable :: bool
 
@@ -205,113 +203,113 @@ record zksnark_config =
   zks_zk :: ZKProperties
   zks_snark :: SNARKProperties
   zks_setup :: TrustedSetup
-  zks_post_quantum :: bool  (* Resistant to quantum attacks *)
+  zks_post_quantum :: bool
 
 (* KnowledgeExtractor (matches Coq: Record KnowledgeExtractor) *)
 record knowledge_extractor =
-  ke_exists :: bool  (* Extractor algorithm exists *)
-  ke_polynomial_time :: bool  (* Extractor runs in polynomial time *)
-  ke_extraction_prob :: nat  (* Probability of successful extraction in % *)
-  ke_rewinding_allowed :: bool  (* Extractor may use rewinding *)
-  ke_auxiliary_input :: bool  (* Handles auxiliary input *)
+  ke_exists :: bool
+  ke_polynomial_time :: bool
+  ke_extraction_prob :: nat
+  ke_rewinding_allowed :: bool
+  ke_auxiliary_input :: bool
 
 (* WitnessRelation (matches Coq: Record WitnessRelation) *)
 record witness_relation =
-  wr_statement_size :: nat  (* Size of public statement *)
-  wr_witness_size :: nat  (* Size of private witness *)
-  wr_verification_time :: nat  (* Time to verify relation *)
-  wr_satisfiable :: bool  (* Relation is satisfiable *)
+  wr_statement_size :: nat
+  wr_witness_size :: nat
+  wr_verification_time :: nat
+  wr_satisfiable :: bool
 
 (* ZKSimulator (matches Coq: Record ZKSimulator) *)
 record zk_simulator =
-  sim_exists :: bool  (* Simulator exists *)
-  sim_polynomial_time :: bool  (* Runs in polynomial time *)
-  sim_indistinguishable :: bool  (* Output indistinguishable from real proofs *)
-  sim_no_witness_needed :: bool  (* Works without knowing witness *)
-  sim_programmable_ro :: bool  (* Can program random oracle *)
+  sim_exists :: bool
+  sim_polynomial_time :: bool
+  sim_indistinguishable :: bool
+  sim_no_witness_needed :: bool
+  sim_programmable_ro :: bool
 
 (* DistIndistinguishability (matches Coq: Record DistIndistinguishability) *)
 record dist_indistinguishability =
-  di_computational :: bool  (* Computationally indistinguishable *)
-  di_statistical :: bool  (* Statistically indistinguishable *)
-  di_perfect :: bool  (* Perfectly indistinguishable *)
-  di_advantage_bound :: nat  (* Upper bound on distinguishing advantage *)
+  di_computational :: bool
+  di_statistical :: bool
+  di_perfect :: bool
+  di_advantage_bound :: nat
 
 (* ProverConfig (matches Coq: Record ProverConfig) *)
 record prover_config =
-  pv_honest :: bool  (* Prover is honest *)
-  pv_knows_witness :: bool  (* Prover knows valid witness *)
-  pv_follows_protocol :: bool  (* Prover follows protocol *)
-  pv_polynomial_time :: bool  (* Prover is efficient *)
-  pv_randomness_fresh :: bool  (* Uses fresh randomness *)
+  pv_honest :: bool
+  pv_knows_witness :: bool
+  pv_follows_protocol :: bool
+  pv_polynomial_time :: bool
+  pv_randomness_fresh :: bool
 
 (* VerifierConfig (matches Coq: Record VerifierConfig) *)
 record verifier_config =
-  vf_honest :: bool  (* Verifier is honest *)
-  vf_follows_protocol :: bool  (* Verifier follows protocol *)
-  vf_polynomial_time :: bool  (* Verifier is efficient *)
-  vf_accepts_valid :: bool  (* Accepts valid proofs *)
+  vf_honest :: bool
+  vf_follows_protocol :: bool
+  vf_polynomial_time :: bool
+  vf_accepts_valid :: bool
 
 (* ProofSize (matches Coq: Record ProofSize) *)
 record proof_size =
-  ps_proof_bytes :: nat  (* Proof size in bytes *)
-  ps_verification_ops :: nat  (* Verification operations *)
-  ps_statement_dependent :: bool  (* Size depends on statement? *)
-  ps_witness_independent :: bool  (* Size independent of witness? *)
+  ps_proof_bytes :: nat
+  ps_verification_ops :: nat
+  ps_statement_dependent :: bool
+  ps_witness_independent :: bool
 
 (* AsymptoticComplexity (matches Coq: Record AsymptoticComplexity) *)
 record asymptotic_complexity =
-  ac_proof_size :: nat  (* O(1) = 0, O(log n) = 1, O(n) = 2 *)
-  ac_verification_time :: nat  (* Complexity class *)
-  ac_prover_time :: nat  (* Prover complexity *)
-  ac_setup_time :: nat  (* Setup complexity *)
+  ac_proof_size :: nat
+  ac_verification_time :: nat
+  ac_prover_time :: nat
+  ac_setup_time :: nat
 
 (* MPCCeremony (matches Coq: Record MPCCeremony) *)
 record mpc_ceremony =
-  mpc_participants :: nat  (* Number of participants *)
-  mpc_threshold :: nat  (* Threshold for security *)
-  mpc_verifiable :: bool  (* Ceremony is verifiable *)
-  mpc_contributions_published :: bool  (* All contributions public *)
-  mpc_random_beacon :: bool  (* Uses random beacon *)
+  mpc_participants :: nat
+  mpc_threshold :: nat
+  mpc_verifiable :: bool
+  mpc_contributions_published :: bool
+  mpc_random_beacon :: bool
 
 (* ToxicWaste (matches Coq: Record ToxicWaste) *)
 record toxic_waste =
-  tw_generated_securely :: bool  (* Generated with proper randomness *)
-  tw_never_stored :: bool  (* Never stored persistently *)
-  tw_destroyed_immediately :: bool  (* Destroyed after use *)
-  tw_verified_destruction :: bool  (* Destruction was verified *)
-  tw_multi_party :: bool  (* Split across parties *)
+  tw_generated_securely :: bool
+  tw_never_stored :: bool
+  tw_destroyed_immediately :: bool
+  tw_verified_destruction :: bool
+  tw_multi_party :: bool
 
 (* Groth16Config (matches Coq: Record Groth16Config) *)
 record groth16_config =
-  g16_pairing_friendly :: bool  (* Uses pairing-friendly curve *)
-  g16_proof_elements :: nat  (* Number of group elements in proof *)
-  g16_verification_pairings :: nat  (* Number of pairing operations *)
-  g16_trusted_setup :: bool  (* Requires trusted setup *)
-  g16_circuit_specific :: bool  (* Setup is circuit-specific *)
+  g16_pairing_friendly :: bool
+  g16_proof_elements :: nat
+  g16_verification_pairings :: nat
+  g16_trusted_setup :: bool
+  g16_circuit_specific :: bool
 
 (* Groth16Proof (matches Coq: Record Groth16Proof) *)
 record groth16_proof =
-  g16p_element_a :: nat  (* Group element A *)
-  g16p_element_b :: nat  (* Group element B *)
-  g16p_element_c :: nat  (* Group element C *)
-  g16p_valid_curve_points :: bool  (* Points are on curve *)
-  g16p_valid_subgroup :: bool  (* Points in correct subgroup *)
+  g16p_element_a :: nat
+  g16p_element_b :: nat
+  g16p_element_c :: nat
+  g16p_valid_curve_points :: bool
+  g16p_valid_subgroup :: bool
 
 (* PLONKConfig (matches Coq: Record PLONKConfig) *)
 record plonk_config =
-  plonk_universal_setup :: bool  (* Universal/updatable setup *)
-  plonk_polynomial_commitment :: bool  (* Uses polynomial commitments *)
-  plonk_arithmetic_gates :: bool  (* Supports arithmetic gates *)
-  plonk_custom_gates :: bool  (* Supports custom gates *)
-  plonk_lookup_tables :: bool  (* Supports lookup arguments *)
+  plonk_universal_setup :: bool
+  plonk_polynomial_commitment :: bool
+  plonk_arithmetic_gates :: bool
+  plonk_custom_gates :: bool
+  plonk_lookup_tables :: bool
 
 (* PLONKGate (matches Coq: Record PLONKGate) *)
 record plonk_gate =
-  pg_degree :: nat  (* Gate degree *)
-  pg_fan_in :: nat  (* Number of inputs *)
-  pg_fan_out :: nat  (* Number of outputs *)
-  pg_is_arithmetic :: bool  (* Is arithmetic gate *)
+  pg_degree :: nat
+  pg_fan_in :: nat
+  pg_fan_out :: nat
+  pg_is_arithmetic :: bool
 
 (* FullZKSNARKConfig (matches Coq: Record FullZKSNARKConfig) *)
 record full_zksnark_config =
@@ -324,17 +322,17 @@ record full_zksnark_config =
 
 (* SoundnessError (matches Coq: Record SoundnessError) *)
 record soundness_error =
-  se_statistical :: nat  (* Statistical soundness error (neg exponent) *)
-  se_computational :: nat  (* Computational soundness error (neg exponent) *)
-  se_knowledge :: nat  (* Knowledge error (neg exponent) *)
-  se_security_parameter :: nat  (* Security parameter lambda *)
+  se_statistical :: nat
+  se_computational :: nat
+  se_knowledge :: nat
+  se_security_parameter :: nat
 
 (* ProofSystemType (matches Coq: Record ProofSystemType) *)
 record proof_system_type =
-  pst_is_argument :: bool  (* Argument (computational soundness) *)
-  pst_is_proof :: bool  (* Proof (statistical soundness) *)
-  pst_knowledge_property :: bool  (* Has knowledge property *)
-  pst_succinctness :: bool  (* Is succinct *)
+  pst_is_argument :: bool
+  pst_is_proof :: bool
+  pst_knowledge_property :: bool
+  pst_succinctness :: bool
 
 (* zk_secure (matches Coq: Definition zk_secure) *)
 definition zk_secure :: "ZKProperties \<Rightarrow> bool" where
@@ -354,19 +352,19 @@ definition zksnark_secure :: "ZKSNARKConfig \<Rightarrow> bool" where
 
 (* riina_zk (matches Coq: Definition riina_zk) *)
 definition riina_zk :: "ZKProperties" where
-  "riina_zk \<equiv> mkZKProperties true true true"
+  "riina_zk \<equiv> mkZKProperties True True True"
 
 (* riina_snark (matches Coq: Definition riina_snark) *)
 definition riina_snark :: "SNARKProperties" where
-  "riina_snark \<equiv> mkSNARKProperties true true true"
+  "riina_snark \<equiv> mkSNARKProperties True True True"
 
 (* riina_setup (matches Coq: Definition riina_setup) *)
 definition riina_setup :: "TrustedSetup" where
-  "riina_setup \<equiv> mkTrustedSetup true true true"
+  "riina_setup \<equiv> mkTrustedSetup True True True"
 
 (* riina_zksnark (matches Coq: Definition riina_zksnark) *)
 definition riina_zksnark :: "ZKSNARKConfig" where
-  "riina_zksnark \<equiv> mkZKSNARK riina_zk riina_snark riina_setup false"
+  "riina_zksnark \<equiv> mkZKSNARK riina_zk riina_snark riina_setup False"
 
 (* ke_secure (matches Coq: Definition ke_secure) *)
 definition ke_secure :: "KnowledgeExtractor \<Rightarrow> bool" where
@@ -379,12 +377,12 @@ definition wr_valid :: "WitnessRelation \<Rightarrow> bool" where
 (* riina_ke (matches Coq: Definition riina_ke) *)
 definition riina_ke :: "KnowledgeExtractor" where
   "riina_ke \<equiv> mkKnowledgeExtractor
-  true true 99 true true"
+  True True 99 True True"
 
 (* riina_wr (matches Coq: Definition riina_wr) *)
 definition riina_wr :: "WitnessRelation" where
   "riina_wr \<equiv> mkWitnessRelation
-  256 512 100 true"
+  256 512 100 True"
 
 (* sim_secure (matches Coq: Definition sim_secure) *)
 definition sim_secure :: "ZKSimulator \<Rightarrow> bool" where
@@ -398,12 +396,12 @@ definition di_strong :: "DistIndistinguishability \<Rightarrow> bool" where
 (* riina_sim (matches Coq: Definition riina_sim) *)
 definition riina_sim :: "ZKSimulator" where
   "riina_sim \<equiv> mkZKSimulator
-  true true true true true"
+  True True True True True"
 
 (* riina_di (matches Coq: Definition riina_di) *)
 definition riina_di :: "DistIndistinguishability" where
   "riina_di \<equiv> mkDistIndist
-  true true false 0"
+  True True False 0"
 
 (* completeness_holds (matches Coq: Definition completeness_holds) *)
 definition completeness_holds :: "ProverConfig \<Rightarrow> VerifierConfig \<Rightarrow> bool" where
@@ -413,17 +411,17 @@ definition completeness_holds :: "ProverConfig \<Rightarrow> VerifierConfig \<Ri
 (* riina_prover (matches Coq: Definition riina_prover) *)
 definition riina_prover :: "ProverConfig" where
   "riina_prover \<equiv> mkProverConfig
-  true true true true true"
+  True True True True True"
 
 (* riina_verifier (matches Coq: Definition riina_verifier) *)
 definition riina_verifier :: "VerifierConfig" where
   "riina_verifier \<equiv> mkVerifierConfig
-  true true true true"
+  True True True True"
 
 (* ps_succinct (matches Coq: Definition ps_succinct) *)
 definition ps_succinct :: "ProofSize \<Rightarrow> bool" where
-  "ps_succinct ps \<equiv> (ps_proof_bytes ps <=? 512) \<and>           (* Max 512 bytes *)
-  (ps_verification_ops ps <=? 1000) \<and>     (* Max 1000 ops *)
+  "ps_succinct ps \<equiv> (ps_proof_bytes ps <=? 512) \<and>           
+  (ps_verification_ops ps <=? 1000) \<and>     
   ps_witness_independent ps"
 
 (* ac_polylog (matches Coq: Definition ac_polylog) *)
@@ -433,7 +431,7 @@ definition ac_polylog :: "AsymptoticComplexity \<Rightarrow> bool" where
 (* riina_proof_size (matches Coq: Definition riina_proof_size) *)
 definition riina_proof_size :: "ProofSize" where
   "riina_proof_size \<equiv> mkProofSize
-  256 500 false true"
+  256 500 False True"
 
 (* riina_ac (matches Coq: Definition riina_ac) *)
 definition riina_ac :: "AsymptoticComplexity" where
@@ -456,17 +454,17 @@ definition tw_secure :: "ToxicWaste \<Rightarrow> bool" where
 (* riina_mpc (matches Coq: Definition riina_mpc) *)
 definition riina_mpc :: "MPCCeremony" where
   "riina_mpc \<equiv> mkMPCCeremony
-  100 1 true true true"
+  100 1 True True True"
 
 (* riina_tw (matches Coq: Definition riina_tw) *)
 definition riina_tw :: "ToxicWaste" where
   "riina_tw \<equiv> mkToxicWaste
-  true true true true true"
+  True True True True True"
 
 (* g16_secure (matches Coq: Definition g16_secure) *)
 definition g16_secure :: "Groth16Config \<Rightarrow> bool" where
   "g16_secure g \<equiv> g16_pairing_friendly g \<and>
-  (g16_proof_elements g =? 3) \<and>       (* 3 elements: A, B, C *)
+  (g16_proof_elements g =? 3) \<and>       
   (g16_verification_pairings g <=? 4)"
 
 (* g16p_valid (matches Coq: Definition g16p_valid) *)
@@ -476,12 +474,12 @@ definition g16p_valid :: "Groth16Proof \<Rightarrow> bool" where
 (* riina_g16 (matches Coq: Definition riina_g16) *)
 definition riina_g16 :: "Groth16Config" where
   "riina_g16 \<equiv> mkGroth16Config
-  true 3 3 true true"
+  True 3 3 True True"
 
 (* riina_g16_proof (matches Coq: Definition riina_g16_proof) *)
 definition riina_g16_proof :: "Groth16Proof" where
   "riina_g16_proof \<equiv> mkGroth16Proof
-  1 2 3 true true"
+  1 2 3 True True"
 
 (* plonk_secure (matches Coq: Definition plonk_secure) *)
 definition plonk_secure :: "PLONKConfig \<Rightarrow> bool" where
@@ -495,12 +493,12 @@ definition pg_valid :: "PLONKGate \<Rightarrow> bool" where
 (* riina_plonk (matches Coq: Definition riina_plonk) *)
 definition riina_plonk :: "PLONKConfig" where
   "riina_plonk \<equiv> mkPLONKConfig
-  true true true true true"
+  True True True True True"
 
 (* riina_plonk_gate (matches Coq: Definition riina_plonk_gate) *)
 definition riina_plonk_gate :: "PLONKGate" where
   "riina_plonk_gate \<equiv> mkPLONKGate
-  2 3 1 true"
+  2 3 1 True"
 
 (* full_zk_secure (matches Coq: Definition full_zk_secure) *)
 definition full_zk_secure :: "FullZKSNARKConfig \<Rightarrow> bool" where
@@ -539,7 +537,7 @@ definition pst_is_stark :: "ProofSystemType \<Rightarrow> bool" where
 (* riina_pst (matches Coq: Definition riina_pst) *)
 definition riina_pst :: "ProofSystemType" where
   "riina_pst \<equiv> mkProofSystemType
-  true false true true"
+  True False True True"
 
 (* ============================================================================
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
@@ -557,7 +555,7 @@ lemma andb4_true_iff: "\<forall> a b c d : bool, a && b && c && d = True <-> a =
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, negb b = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by (cases rule: ‹_›.cases; simp)
 
 (* leb_le (matches Coq) *)

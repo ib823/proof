@@ -236,7 +236,7 @@ def is_canonical (path : List Nat) : Bool :=
 
 /-- authorized (matches Coq: Definition authorized) -/
 def authorized (user resource : Nat) : Prop :=
-  True
+  user = resource
 
 /-- web_001_reflected_xss_impossible (matches Coq) -/
 theorem web_001_reflected_xss_impossible : ∀ (content : HTMLContent), xss_safe content → True := by

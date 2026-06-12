@@ -69,6 +69,14 @@ if git -C "$REPO_ROOT" tag -l "$TAG" | grep -q "$TAG"; then
 fi
 echo -e "${GREEN}[✓] Tag $TAG is available${NC}"
 
+if [ -f "$REPO_ROOT/scripts/security-gates.sh" ]; then
+    echo "Running strict security gates..."
+    bash "$REPO_ROOT/scripts/security-gates.sh" --range origin/main..HEAD || {
+        echo -e "${RED}ERROR: strict security gates failed${NC}"; exit 1;
+    }
+    echo -e "${GREEN}[✓] strict security gates pass${NC}"
+fi
+
 # Run tests
 echo ""
 echo "Running Rust tests (03_PROTO)..."
@@ -153,7 +161,6 @@ git -C "$REPO_ROOT" commit -m "$(cat <<EOF
 
 Version $NEW_VERSION released.
 See CHANGELOG.md for details.
-
 EOF
 )"
 echo -e "${GREEN}[✓] Release commit created${NC}"
@@ -221,7 +228,7 @@ $RELEASE_BODY
 
 **Install:**
 \`\`\`bash
-curl -fsSL https://riina.my/install.sh | bash
+curl -fsSL https://ib823.github.io/riina/install.sh | bash
 \`\`\`
 EOF
 )" \
@@ -230,6 +237,18 @@ EOF
         || echo -e "${YELLOW}    GitHub Release creation failed (may need auth)${NC}"
 else
     echo -e "${YELLOW}    gh CLI not found, skipping GitHub Release${NC}"
+fi
+
+# ── Step 10: Deploy website ────────────────────────────────────────────────────
+
+echo ""
+if [ -f "$REPO_ROOT/scripts/deploy-website.sh" ]; then
+    bash "$REPO_ROOT/scripts/deploy-website.sh" || {
+        echo -e "${RED}ERROR: Website deployment failed${NC}"; exit 1;
+    }
+    echo -e "${GREEN}[✓] Website deployed${NC}"
+else
+    echo -e "${YELLOW}    deploy-website.sh not found, skipping${NC}"
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
@@ -241,5 +260,7 @@ echo "================================================================"
 echo ""
 echo "  Tag:     $TAG"
 echo "  Tarball: $TARBALL"
+echo "  Website: https://ib823.github.io/riina/"
+echo "  Release: https://github.com/ib823/riina/releases/tag/$TAG"
 echo "  Next:    Update [Unreleased] in CHANGELOG.md as you work"
 echo ""

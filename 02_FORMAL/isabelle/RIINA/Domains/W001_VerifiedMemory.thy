@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA W001_VerifiedMemory - Isabelle/HOL Port
@@ -24,6 +26,7 @@
  * | heap_disjoint      | heap_disjoint          | OK     |
  * | heap_union         | heap_union             | OK     |
  * | heap_subset        | heap_subset            | OK     |
+ * | satisfies          | satisfies              | OK     |
  * | precise            | precise                | OK     |
  * | hoare_triple       | hoare_triple           | OK     |
  * | init_alloc         | init_alloc             | OK     |
@@ -31,6 +34,8 @@
  * | free               | free                   | OK     |
  * | alloc_invariant    | alloc_invariant        | OK     |
  * | block_size         | block_size             | OK     |
+ * | buddy_split        | buddy_split            | OK     |
+ * | buddy_merge        | buddy_merge            | OK     |
  * | init_ownership     | init_ownership         | OK     |
  * | transfer_ownership | transfer_ownership     | OK     |
  * | borrow             | borrow                 | OK     |
@@ -83,7 +88,7 @@
  *)
 
 theory W001_VerifiedMemory
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* assertion (matches Coq: Inductive assertion) *)
@@ -140,7 +145,7 @@ definition emp_heap :: "Heap" where
 
 (* singleton (matches Coq: Definition singleton) *)
 definition singleton :: "Loc \<Rightarrow> Val \<Rightarrow> Heap" where
-  "singleton l v \<equiv> fun l' => if Nat"
+  "singleton l v \<equiv> fun l' => if (l = l') then Some v else None"
 
 (* in_dom (matches Coq: Definition in_dom) *)
 definition in_dom :: "Heap \<Rightarrow> Loc \<Rightarrow> bool" where
@@ -150,11 +155,16 @@ definition in_dom :: "Heap \<Rightarrow> Loc \<Rightarrow> bool" where
 definition heap_disjoint :: "bool" where
   "heap_disjoint \<equiv> forall l, ~(in_dom h1 l /\ in_dom h2 l)"
 
-(* heap_union - complex match, manual review needed *)
+(* heap_union - complex match, needs manual translation *)
+definition heap_union :: "bool" where "heap_union = undefined"
 
 (* heap_subset (matches Coq: Definition heap_subset) *)
 definition heap_subset :: "bool" where
   "heap_subset \<equiv> forall l v, h1 l = Some v -> h2 l = Some v"
+
+(* satisfies (matches Coq: Definition satisfies) *)
+fun satisfies :: "Heap \<Rightarrow> assertion \<Rightarrow> bool" where
+  "satisfies AEmp = h"
 
 (* precise (matches Coq: Definition precise) *)
 definition precise :: "assertion \<Rightarrow> bool" where
@@ -179,12 +189,16 @@ definition init_alloc :: "AllocState" where
 (* alloc (matches Coq: Definition alloc) *)
 definition alloc :: "AllocState \<Rightarrow> nat \<Rightarrow> Loc \<Rightarrow> AllocState" where
   "alloc st sz new_loc \<equiv> mkAlloc (free_lists st) 
-          (fun l => if Nat"
+          (fun l => if (l = new_loc) then Some sz else allocated st l)
+          (heap_start st)
+          (total_heap_size st)"
 
 (* free (matches Coq: Definition free) *)
 definition free :: "AllocState \<Rightarrow> Loc \<Rightarrow> AllocState" where
   "free st l \<equiv> mkAlloc (free_lists st)
-          (fun l' => if Nat"
+          (fun l' => if (l' = l) then None else allocated st l')
+          (heap_start st)
+          (total_heap_size st)"
 
 (* alloc_invariant (matches Coq: Definition alloc_invariant) *)
 definition alloc_invariant :: "AllocState \<Rightarrow> bool" where
@@ -195,25 +209,33 @@ definition alloc_invariant :: "AllocState \<Rightarrow> bool" where
 definition block_size :: "SizeClass \<Rightarrow> nat" where
   "block_size sc \<equiv> 2 ^ sc"
 
+(* buddy_split (matches Coq: Definition buddy_split) *)
+definition buddy_split :: "SizeClass \<Rightarrow> Loc \<Rightarrow> (Loc * Loc)" where
+  "buddy_split sc l \<equiv> (l, l + block_size (sc - 1))"
+
+(* buddy_merge (matches Coq: Definition buddy_merge) *)
+definition buddy_merge :: "SizeClass \<Rightarrow> option Loc" where
+  "buddy_merge sc \<equiv> if (l2 = (l1) + block_size sc) then Some l1 else None"
+
 (* init_ownership (matches Coq: Definition init_ownership) *)
 definition init_ownership :: "OwnershipMap" where
   "init_ownership \<equiv> fun _ => Moved"
 
 (* transfer_ownership (matches Coq: Definition transfer_ownership) *)
 definition transfer_ownership :: "OwnershipMap \<Rightarrow> Loc \<Rightarrow> OwnershipMap" where
-  "transfer_ownership om l \<equiv> fun l' => if Nat"
+  "transfer_ownership om l \<equiv> fun l' => if (l' = l) then Moved else om l'"
 
 (* borrow (matches Coq: Definition borrow) *)
 definition borrow :: "OwnershipMap \<Rightarrow> Loc \<Rightarrow> nat \<Rightarrow> OwnershipMap" where
-  "borrow om l lifetime \<equiv> fun l' => if Nat"
+  "borrow om l lifetime \<equiv> fun l' => if (l' = l) then Borrowed lifetime else om l'"
 
 (* shared_borrow (matches Coq: Definition shared_borrow) *)
 definition shared_borrow :: "OwnershipMap \<Rightarrow> Loc \<Rightarrow> nat \<Rightarrow> OwnershipMap" where
-  "shared_borrow om l lifetime \<equiv> fun l' => if Nat"
+  "shared_borrow om l lifetime \<equiv> fun l' => if (l' = l) then SharedBorrow lifetime else om l'"
 
 (* end_borrow (matches Coq: Definition end_borrow) *)
 definition end_borrow :: "OwnershipMap \<Rightarrow> Loc \<Rightarrow> OwnershipMap" where
-  "end_borrow om l \<equiv> fun l' => if Nat"
+  "end_borrow om l \<equiv> fun l' => if (l' = l) then Owned else om l'"
 
 (* region_contains (matches Coq: Definition region_contains) *)
 definition region_contains :: "Region \<Rightarrow> Loc \<Rightarrow> bool" where
@@ -221,7 +243,7 @@ definition region_contains :: "Region \<Rightarrow> Loc \<Rightarrow> bool" wher
 
 (* kill_region (matches Coq: Definition kill_region) *)
 definition kill_region :: "Region \<Rightarrow> Region" where
-  "kill_region r \<equiv> mkRegion (region_id r) (region_locs r) false"
+  "kill_region r \<equiv> mkRegion (region_id r) (region_locs r) False"
 
 (* bounds_ok (matches Coq: Definition bounds_ok) *)
 definition bounds_ok :: "AllocState \<Rightarrow> Loc \<Rightarrow> nat \<Rightarrow> bool" where
@@ -232,7 +254,7 @@ definition bounds_ok :: "AllocState \<Rightarrow> Loc \<Rightarrow> nat \<Righta
 
 (* aligned (matches Coq: Definition aligned) *)
 definition aligned :: "Loc \<Rightarrow> nat \<Rightarrow> bool" where
-  "aligned l align \<equiv> align > 0 /\ Nat"
+  "aligned l align \<equiv> align > 0 /\ Nat.modulo l align = 0"
 
 (* W_001_01_sep_emp_neutral (matches Coq) *)
 lemma W_001_01_sep_emp_neutral: "\<forall> a h, satisfies h a <-> satisfies h (ASep AEmp a)"

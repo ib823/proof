@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DistributedSecurity - Isabelle/HOL Port
@@ -91,12 +93,8 @@
  *)
 
 theory DistributedSecurity
-  imports Main
+  imports Main CoqCompat
 begin
-
-(* Boolean conjunction helper (matches Coq: andb_true_iff) *)
-lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
-  by auto
 
 (* BFTConfig (matches Coq: Record BFTConfig) *)
 record bft_config =
@@ -191,7 +189,7 @@ record quorum_config =
 
 (* bft_valid (matches Coq: Definition bft_valid) *)
 definition bft_valid :: "BFTConfig \<Rightarrow> bool" where
-  "bft_valid cfg \<equiv> Nat"
+  "bft_valid cfg \<equiv> ((3 < *) bft_faulty_tolerance cfg) (bft_total_nodes cfg)"
 
 (* sybil_protected (matches Coq: Definition sybil_protected) *)
 definition sybil_protected :: "IdentityVerification \<Rightarrow> bool" where
@@ -334,7 +332,7 @@ lemma dist_007_checks_effects_interactions_pattern: "\<forall> (checks_first eff
   by simp
 
 (* dist_007_locked_guard_prevents_reentry (matches Coq) *)
-lemma dist_007_locked_guard_prevents_reentry: "\<forall> (is_locked : bool), is_locked = True \<longrightarrow> negb is_locked = False"
+lemma dist_007_locked_guard_prevents_reentry: "\<forall> (is_locked : bool), is_locked = True \<longrightarrow> (\<not> is_locked) = False"
   by simp
 
 (* dist_008_frontrunning_mitigated (matches Coq) *)
@@ -342,7 +340,7 @@ lemma dist_008_frontrunning_mitigated: "\<forall> (fo : FairOrdering), fo_commit
   by simp
 
 (* dist_008_commit_reveal_hides_intent (matches Coq) *)
-lemma dist_008_commit_reveal_hides_intent: "\<forall> (committed revealed : bool), committed = True \<longrightarrow> revealed = False \<longrightarrow> committed && negb revealed = True"
+lemma dist_008_commit_reveal_hides_intent: "\<forall> (committed revealed : bool), committed = True \<longrightarrow> revealed = False \<longrightarrow> committed && (\<not> revealed) = True"
   by simp
 
 (* dist_009_mev_extraction_mitigated_private (matches Coq) *)

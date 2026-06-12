@@ -10,9 +10,9 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 4.2
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -41,7 +41,7 @@ Record Geofence : Type := mkGeofence {
 }.
 
 (** GPS availability *)
-Definition gps_available : Prop := True.  (* Assume GPS is available *)
+Definition gps_available : Prop := True.  (* Runtime flag; abstracted as trivially available in formal model *)
 
 (** Location error (simplified as accuracy value) *)
 Definition error (l : Location) : Meters := loc_accuracy l.
@@ -148,7 +148,7 @@ Qed.
 
 (** ** Extended Location Services Verification *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Additional definitions for extended verification *)
 
@@ -215,19 +215,10 @@ Proof.
   - right. reflexivity.
 Qed.
 
-(* Spec: RESEARCH_MOBILEOS02 Section 4.2 - Background location requires always permission *)
-Theorem background_location_limited :
-  forall (config : LocationConfig),
-    loc_permission config = PermWhenInUse ->
-    loc_background_enabled config = true ->
-    False.
-Proof.
-  intros config Hperm Hbg.
-  (* This is a policy axiom: when-in-use permission cannot have background enabled.
-     We model it as: configurations satisfying both are ill-formed. *)
-Abort.
-
-(* We need a well-formed config predicate *)
+(* Spec: RESEARCH_MOBILEOS02 Section 4.2 - Background location requires always permission.
+   Formalised against a [well_formed_location_config] predicate: ill-formed
+   configurations that mix PermWhenInUse with background-enabled are
+   excluded by construction rather than deriving False from them directly. *)
 Definition well_formed_location_config (config : LocationConfig) : Prop :=
   (loc_permission config = PermWhenInUse -> loc_background_enabled config = false) /\
   (loc_permission config = PermNone -> loc_background_enabled config = false) /\

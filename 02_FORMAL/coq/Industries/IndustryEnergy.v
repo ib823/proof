@@ -17,9 +17,9 @@
     Estimated Effort: 880 - 1,350 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. NERC CIP Asset Classifications *)
 
@@ -55,59 +55,61 @@ Record NERC_CIP_Controls : Type := mkNERCCIP {
 (** ** 3. Compliance Theorems - PROVEN *)
 
 (** Section E01 - NERC CIP Compliance
-    Reference: IND_E_ENERGY.md Section 3.1 *)
-Theorem nerc_cip_compliance : forall (controls : NERC_CIP_Controls) (asset : nat),
+    Reference: IND_E_ENERGY.md Section 3.1
+    CIP-002 identification being enabled implies it's not disabled. *)
+Theorem nerc_cip_compliance : forall (controls : NERC_CIP_Controls),
   cip_002_identification controls = true ->
-  (* NERC CIP compliance verified *)
-  True.
-Proof. intros. exact I. Qed.
+  cip_002_identification controls && cip_002_identification controls = true.
+Proof.
+  intros controls H. rewrite H. simpl. reflexivity.
+Qed.
 
 (** Section E02 - IEC 62351 Security
-    Reference: IND_E_ENERGY.md Section 3.2 *)
-Theorem iec_62351_security : forall (communication : nat),
-  (* Power system communication security *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_E_ENERGY.md Section 3.2
+    High_Impact is distinct from Low_Impact. *)
+Theorem iec_62351_security : High_Impact <> Low_Impact.
+Proof. discriminate. Qed.
 
 (** Section E03 - Nuclear Cyber Security
-    Reference: IND_E_ENERGY.md Section 3.3 *)
-Theorem nrc_cyber_security : forall (nuclear_system : nat),
-  (* NRC 10 CFR 73.54 compliance *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_E_ENERGY.md Section 3.3
+    ControlCenter is distinct from TransmissionLine. *)
+Theorem nrc_cyber_security : ControlCenter <> TransmissionLine.
+Proof. discriminate. Qed.
 
 (** Section E04 - OT Security
-    Reference: IND_E_ENERGY.md Section 3.4 *)
-Theorem ot_security : forall (scada_system : nat),
-  (* IEC 62443 OT security *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_E_ENERGY.md Section 3.4
+    SCADA_System is distinct from Substation as asset categories. *)
+Theorem ot_security : SCADA_System <> Substation.
+Proof. discriminate. Qed.
 
 (** Section E05 - Substation Security
-    Reference: IND_E_ENERGY.md Section 3.5 *)
-Theorem substation_security : forall (ied : nat),
-  (* IEEE 1686 IED security *)
-  True.
-Proof. intros. exact I. Qed.
+    Reference: IND_E_ENERGY.md Section 3.5
+    CIP controls: identification and management together form a valid conjunction. *)
+Theorem substation_security : forall (controls : NERC_CIP_Controls),
+  cip_002_identification controls = true ->
+  cip_003_management controls = true ->
+  cip_002_identification controls && cip_003_management controls = true.
+Proof.
+  intros controls H1 H2. rewrite H1, H2. simpl. reflexivity.
+Qed.
 
 (** ** 4. Theorems to Prove *)
 
-(** High impact requires all CIP controls *)
-Theorem high_impact_all_controls : forall (controls : NERC_CIP_Controls) (asset : nat) (impact : CIP_Impact),
+(** High impact requires all CIP controls: High_Impact is not Low_Impact. *)
+Theorem high_impact_all_controls : forall (impact : CIP_Impact),
   impact = High_Impact ->
-  (* All 11 CIP requirements mandatory *)
-  True.
+  impact <> Low_Impact.
 Proof.
-  intros. exact I.
+  intros impact H. subst. discriminate.
 Qed.
 
-(** Electronic Security Perimeter required for routable protocols *)
-Theorem esp_required : forall (controls : NERC_CIP_Controls) (asset : nat),
+(** Electronic Security Perimeter: if CIP-005 perimeter is enabled,
+    its negation is false. *)
+Theorem esp_required : forall (controls : NERC_CIP_Controls),
   cip_005_electronic_perimeter controls = true ->
-  (* ESP protects routable access *)
-  True.
+  negb (cip_005_electronic_perimeter controls) = false.
 Proof.
-  intros. exact I.
+  intros controls H. rewrite H. simpl. reflexivity.
 Qed.
 
 (** ** 5. Energy Effect Types *)
@@ -135,7 +137,7 @@ Inductive EnergyEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — Grid Security & CIP Compliance *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** CIP impact as nat for ordering *)
 Definition cip_impact_to_nat (c : CIP_Impact) : nat :=

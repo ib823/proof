@@ -76,15 +76,15 @@ lemma free_in_context:
   shows "\<exists>T'. env_lookup x \<Gamma> = Some T'"
 using assms
 proof (induction e arbitrary: \<Gamma> \<Sigma> \<Delta> T \<epsilon>)
-  case EUnit thus ?case by (cases "free_in x EUnit") simp
+  case EUnit thus ?case by simp
 next
-  case (EBool b) thus ?case by (cases "free_in x (EBool b)") simp
+  case (EBool b) thus ?case by simp
 next
-  case (EInt n) thus ?case by (cases "free_in x (EInt n)") simp
+  case (EInt n) thus ?case by simp
 next
-  case (EString s) thus ?case by (cases "free_in x (EString s)") simp
+  case (EString s) thus ?case by simp
 next
-  case (ELoc l) thus ?case by (cases "free_in x (ELoc l)") simp
+  case (ELoc l) thus ?case by simp
 next
   case (EVar y)
   from EVar.prems have "x = y" and "env_lookup y \<Gamma> = Some T"
@@ -212,9 +212,13 @@ lemma store_ty_extends_preserves_typing:
   assumes "store_ty_extends \<Sigma> \<Sigma>'"
     and "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon>"
   shows "has_type \<Gamma> \<Sigma>' \<Delta> e T \<epsilon>"
-  using assms
-  by (induction \<Gamma> \<Sigma> \<Delta> e T \<epsilon> rule: has_type.induct)
-     (auto intro: has_type.intros simp: store_ty_extends_def)
+  using assms(2,1)
+proof (induction \<Gamma> \<Sigma> \<Delta> e T \<epsilon> rule: has_type.induct)
+  case (T_Loc l \<Sigma> T sl \<Gamma> \<Delta>)
+  from T_Loc.hyps T_Loc.prems show ?case
+    unfolding store_ty_extends_def
+    by (auto intro: has_type.T_Loc)
+qed (auto intro: has_type.intros)
 
 lemma store_ty_extends_refl: "store_ty_extends \<Sigma> \<Sigma>"
   unfolding store_ty_extends_def by simp
@@ -239,14 +243,14 @@ qed
 lemma store_wf_update_existing:
   assumes hwf: "store_wf \<Sigma> st"
     and hlook: "store_ty_lookup l \<Sigma> = Some (T, sl)"
-    and hval: "value v"
+    and hval: "is_value v"
     and hty: "has_type [] \<Sigma> LPublic v T EffPure"
   shows "store_wf \<Sigma> (store_update l v st)"
   unfolding store_wf_def
 proof (intro conjI allI impI)
   fix l0 T0 sl0
   assume h: "store_ty_lookup l0 \<Sigma> = Some (T0, sl0)"
-  show "\<exists>v0. store_lookup l0 (store_update l v st) = Some v0 \<and> value v0 \<and>
+  show "\<exists>v0. store_lookup l0 (store_update l v st) = Some v0 \<and> is_value v0 \<and>
              has_type [] \<Sigma> LPublic v0 T0 EffPure"
   proof (cases "l0 = l")
     case True
@@ -259,14 +263,14 @@ proof (intro conjI allI impI)
     hence "store_lookup l0 (store_update l v st) = store_lookup l0 st"
       by (rule store_lookup_update_neq)
     moreover from hwf h obtain v0 where
-      "store_lookup l0 st = Some v0" "value v0" "has_type [] \<Sigma> LPublic v0 T0 EffPure"
+      "store_lookup l0 st = Some v0" "is_value v0" "has_type [] \<Sigma> LPublic v0 T0 EffPure"
       unfolding store_wf_def by blast
     ultimately show ?thesis by auto
   qed
 next
   fix l0 v0
   assume h: "store_lookup l0 (store_update l v st) = Some v0"
-  show "\<exists>T0 sl0. store_ty_lookup l0 \<Sigma> = Some (T0, sl0) \<and> value v0 \<and>
+  show "\<exists>T0 sl0. store_ty_lookup l0 \<Sigma> = Some (T0, sl0) \<and> is_value v0 \<and>
                   has_type [] \<Sigma> LPublic v0 T0 EffPure"
   proof (cases "l0 = l")
     case True
@@ -284,14 +288,14 @@ lemma store_wf_update_fresh:
   assumes hwf: "store_wf \<Sigma> st"
     and hst: "store_lookup l st = None"
     and hsig: "store_ty_lookup l \<Sigma> = None"
-    and hval: "value v"
+    and hval: "is_value v"
     and hty: "has_type [] \<Sigma> LPublic v T EffPure"
   shows "store_wf (store_ty_update l T sl \<Sigma>) (store_update l v st)"
   unfolding store_wf_def
 proof (intro conjI allI impI)
   fix l0 T0 sl0
   assume h: "store_ty_lookup l0 (store_ty_update l T sl \<Sigma>) = Some (T0, sl0)"
-  show "\<exists>v0. store_lookup l0 (store_update l v st) = Some v0 \<and> value v0 \<and>
+  show "\<exists>v0. store_lookup l0 (store_update l v st) = Some v0 \<and> is_value v0 \<and>
              has_type [] (store_ty_update l T sl \<Sigma>) LPublic v0 T0 EffPure"
   proof (cases "l0 = l")
     case True
@@ -306,7 +310,7 @@ proof (intro conjI allI impI)
     hence hlook0: "store_ty_lookup l0 \<Sigma> = Some (T0, sl0)"
       using h store_ty_lookup_update_neq by metis
     with hwf obtain v0 where
-      hv0: "store_lookup l0 st = Some v0" "value v0"
+      hv0: "store_lookup l0 st = Some v0" "is_value v0"
            "has_type [] \<Sigma> LPublic v0 T0 EffPure"
       unfolding store_wf_def by blast
     moreover have "store_lookup l0 (store_update l v st) = store_lookup l0 st"
@@ -318,7 +322,7 @@ proof (intro conjI allI impI)
 next
   fix l0 v0
   assume h: "store_lookup l0 (store_update l v st) = Some v0"
-  show "\<exists>T0 sl0. store_ty_lookup l0 (store_ty_update l T sl \<Sigma>) = Some (T0, sl0) \<and> value v0 \<and>
+  show "\<exists>T0 sl0. store_ty_lookup l0 (store_ty_update l T sl \<Sigma>) = Some (T0, sl0) \<and> is_value v0 \<and>
                   has_type [] (store_ty_update l T sl \<Sigma>) LPublic v0 T0 EffPure"
   proof (cases "l0 = l")
     case True
@@ -333,7 +337,7 @@ next
     hence "store_lookup l0 st = Some v0"
       using h store_lookup_update_neq by metis
     with hwf obtain T0 sl0 where
-      "store_ty_lookup l0 \<Sigma> = Some (T0, sl0)" "value v0"
+      "store_ty_lookup l0 \<Sigma> = Some (T0, sl0)" "is_value v0"
       "has_type [] \<Sigma> LPublic v0 T0 EffPure"
       unfolding store_wf_def by blast
     moreover have "store_ty_lookup l0 (store_ty_update l T sl \<Sigma>) = Some (T0, sl0)"
@@ -416,7 +420,7 @@ section \<open>Substitution Preserves Typing\<close>
 
 text \<open>
   The substitution lemma: if e is well-typed in context (x, S) # \<Gamma>,
-  and v is a closed well-typed value of type S, then [x := v] e is
+  and v is a closed well-typed is_value of type S, then subst x v e is
   well-typed in \<Gamma> with the same type.
 
   Proof by induction on the typing derivation with careful handling of
@@ -426,7 +430,7 @@ text \<open>
 lemma substitution_preserves_typing:
   "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon> \<Longrightarrow>
    \<Gamma> = (x, S) # \<Gamma>0 \<Longrightarrow>
-   value v \<Longrightarrow>
+   is_value v \<Longrightarrow>
    has_type [] \<Sigma> \<Delta> v S EffPure \<Longrightarrow>
    has_type \<Gamma>0 \<Sigma> \<Delta> (subst x v e) T \<epsilon>"
 proof (induction arbitrary: x S \<Gamma>0 v rule: has_type.induct)
@@ -441,16 +445,16 @@ next
   case (T_Loc l \<Sigma> T' sl \<Gamma> \<Delta>)
   thus ?case by (simp add: has_type.T_Loc)
 next
-  case (T_Var y T' \<Gamma> \<Sigma> \<Delta>)
+  case (T_Var y \<Gamma>v Tv \<Sigma>v \<Delta>v)
   show ?case
   proof (cases "x = y")
     case True
-    then have "S = T'" using T_Var by simp
+    then have "S = Tv" using T_Var by simp
     moreover have "subst x v (EVar y) = v" using True by simp
     ultimately show ?thesis using T_Var closed_typing_weakening by auto
   next
     case False
-    then have "env_lookup y \<Gamma>0 = Some T'" using T_Var by auto
+    then have "env_lookup y \<Gamma>0 = Some Tv" using T_Var by auto
     then show ?thesis using False by (simp add: has_type.T_Var)
   qed
 next
@@ -638,11 +642,11 @@ qed
 section \<open>Value Has Pure Effect\<close>
 
 lemma value_has_pure_effect:
-  assumes "value v"
+  assumes "is_value v"
     and "has_type [] \<Sigma> \<Delta> v T \<epsilon>"
   shows "has_type [] \<Sigma> \<Delta> v T EffPure"
   using assms
-proof (induction v arbitrary: \<Sigma> \<Delta> T \<epsilon> rule: value.induct)
+proof (induction v arbitrary: \<Sigma> \<Delta> T \<epsilon> rule: is_value.induct)
   case VUnit
   from VUnit.prems show ?case by (auto elim: has_type.cases intro: has_type.T_Unit)
 next
@@ -716,12 +720,12 @@ section \<open>THE PRESERVATION THEOREM\<close>
 
 text \<open>
   Helper: substitution_preserves_typing specialized for the preservation theorem.
-  When we have has_type ((x, S) # []) and a closed typed value, substitute.
+  When we have has_type ((x, S) # []) and a closed typed is_value, substitute.
 \<close>
 
 lemma subst_preserves_typing_closed:
   assumes "has_type [(x, S)] \<Sigma> \<Delta> body T \<epsilon>"
-    and "value v"
+    and "is_value v"
     and "has_type [] \<Sigma> \<Delta> v S EffPure"
   shows "has_type [] \<Sigma> \<Delta> (subst x v body) T \<epsilon>"
   using substitution_preserves_typing[of "[(x, S)]" \<Sigma> \<Delta> body T \<epsilon> x S "[]" v]
@@ -951,7 +955,7 @@ next
     using store_ty_extends_preserves_typing[OF hext h3] .
   show ?case using has_type.T_If[OF h1' h2' h3'] hext hwf' by blast
 next
-  (* === Let value === *)
+  (* === Let is_value === *)
   case (ST_LetValue v0 x e2 st ctx)
   from ST_LetValue.prems obtain T1 \<epsilon>1 \<epsilon>2 where
     h1: "has_type [] \<Sigma> LPublic v0 T1 \<epsilon>1" and
@@ -986,7 +990,7 @@ next
     h0': "has_type [] \<Sigma>' LPublic e0' T0 \<epsilon>0'" by blast
   show ?case using has_type.T_Perform[OF h0'] teq hext hwf' by blast
 next
-  (* === Perform value === *)
+  (* === Perform is_value === *)
   case (ST_PerformValue v0 eff st ctx)
   from ST_PerformValue.prems obtain T0 \<epsilon>0 where
     h0: "has_type [] \<Sigma> LPublic v0 T0 \<epsilon>0" and teq: "T = T0"
@@ -1006,7 +1010,7 @@ next
     using store_ty_extends_preserves_typing[OF hext hh] .
   show ?case using has_type.T_Handle[OF h0' hh'] hext hwf' by blast
 next
-  (* === Handle value === *)
+  (* === Handle is_value === *)
   case (ST_HandleValue v0 x h st ctx)
   from ST_HandleValue.prems obtain T1 \<epsilon>1 \<epsilon>2 where
     h0: "has_type [] \<Sigma> LPublic v0 T1 \<epsilon>1" and
@@ -1028,7 +1032,7 @@ next
     h0': "has_type [] \<Sigma>' LPublic e0' T0 \<epsilon>0'" by blast
   show ?case using has_type.T_Ref[OF h0'] teq hext hwf' by blast
 next
-  (* === Ref value (allocation) === *)
+  (* === Ref is_value (allocation) === *)
   case (ST_RefValue v0 sl st ctx l)
   from ST_RefValue.prems obtain T0 \<epsilon>0 where
     h0: "has_type [] \<Sigma> LPublic v0 T0 \<epsilon>0" and teq: "T = TRef T0 sl"
@@ -1161,7 +1165,7 @@ next
     using store_ty_extends_preserves_typing[OF hext h1] .
   show ?case using has_type.T_Declassify[OF h1' h2'] teq hext hwf' by blast
 next
-  (* === Declassify value === *)
+  (* === Declassify is_value === *)
   case (ST_DeclassifyValue v0 p st ctx)
   from ST_DeclassifyValue.prems obtain T0 \<epsilon>1 \<epsilon>2 where
     h1: "has_type [] \<Sigma> LPublic (EClassify v0) (TSecret T0) \<epsilon>1" and
@@ -1191,7 +1195,7 @@ next
     h0': "has_type [] \<Sigma>' LPublic e0' T0 \<epsilon>0'" by blast
   show ?case using has_type.T_Require[OF h0'] teq hext hwf' by blast
 next
-  (* === Require value === *)
+  (* === Require is_value === *)
   case (ST_RequireValue v0 eff st ctx)
   from ST_RequireValue.prems obtain T0 \<epsilon>0 where
     h0: "has_type [] \<Sigma> LPublic v0 T0 \<epsilon>0" and teq: "T = T0"
@@ -1208,7 +1212,7 @@ next
     h0': "has_type [] \<Sigma>' LPublic e0' T0 \<epsilon>0'" by blast
   show ?case using has_type.T_Grant[OF h0'] teq hext hwf' by blast
 next
-  (* === Grant value === *)
+  (* === Grant is_value === *)
   case (ST_GrantValue v0 eff st ctx)
   from ST_GrantValue.prems obtain T0 where
     h0: "has_type [] \<Sigma> LPublic v0 T0 \<epsilon>" and teq: "T = T0"

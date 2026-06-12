@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedIsolation - Isabelle/HOL Port
@@ -116,7 +118,7 @@
  *)
 
 theory VerifiedIsolation
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DomainType (matches Coq: Inductive DomainType) *)
@@ -187,14 +189,14 @@ record cgroup_limit =
 (* SeccompFilter (matches Coq: Record SeccompFilter) *)
 record seccomp_filter =
   seccomp_allowed_syscalls :: 'a list
-  seccomp_default_action :: bool  (* true = allow, false = deny *)
+  seccomp_default_action :: bool
 
 (* ContainerConfig (matches Coq: Record ContainerConfig) *)
 record container_config =
   cfg_namespaces :: 'a list
   cfg_cgroups :: CgroupLimit
   cfg_seccomp :: SeccompFilter
-  cfg_rootfs :: nat  (* root filesystem ID *)
+  cfg_rootfs :: nat
   cfg_network_isolated :: bool
 
 (* ContainerState (matches Coq: Record ContainerState) *)
@@ -244,7 +246,7 @@ record attestation_report =
 (* SealingKey (matches Coq: Record SealingKey) *)
 record sealing_key =
   seal_enclave_id :: nat
-  seal_key_policy :: nat  (* 0 = MRENCLAVE, 1 = MRSIGNER *)
+  seal_key_policy :: nat
   seal_key_value :: nat
 
 (* EnclaveState (matches Coq: Record EnclaveState) *)
@@ -265,75 +267,101 @@ record enclave_platform =
 
 (* addr_in_region (matches Coq: Definition addr_in_region) *)
 definition addr_in_region :: "Addr \<Rightarrow> MemoryRegion \<Rightarrow> bool" where
-  "addr_in_region a r \<equiv> r"
+  "addr_in_region a r \<equiv> r.(region_base) <= a < r.(region_base) + r.(region_size)"
 
 (* addr_in_region_b (matches Coq: Definition addr_in_region_b) *)
 definition addr_in_region_b :: "Addr \<Rightarrow> MemoryRegion \<Rightarrow> bool" where
-  "addr_in_region_b a r \<equiv> (r"
+  "addr_in_region_b a r \<equiv> (r.(region_base) <=? a) \<and> (a <? r.(region_base) + r.(region_size))"
 
 (* domain_owns_addr (matches Coq: Definition domain_owns_addr) *)
 definition domain_owns_addr :: "Domain \<Rightarrow> Addr \<Rightarrow> bool" where
-  "domain_owns_addr d a \<equiv> exists r, In r d"
+  "domain_owns_addr d a \<equiv> exists r, In r d.(domain_regions) /\ addr_in_region a r"
 
 (* domains_unique (matches Coq: Definition domains_unique) *)
 definition domains_unique :: "SystemState \<Rightarrow> bool" where
-  "domains_unique s \<equiv> forall d1 d2, In d1 s"
+  "domains_unique s \<equiv> forall d1 d2, In d1 s.(sys_domains) -> In d2 s.(sys_domains) ->
+    d1.(domain_id) = d2.(domain_id) -> d1 = d2"
 
 (* regions_disjoint (matches Coq: Definition regions_disjoint) *)
 definition regions_disjoint :: "SystemState \<Rightarrow> bool" where
   "regions_disjoint s \<equiv> forall d1 d2 r1 r2 a,
-    In d1 s"
+    In d1 s.(sys_domains) -> In d2 s.(sys_domains) ->
+    d1.(domain_id) <> d2.(domain_id) ->
+    In r1 d1.(domain_regions) -> In r2 d2.(domain_regions) ->
+    ~ (addr_in_region a r1 /\ addr_in_region a r2)"
 
 (* page_table_consistent (matches Coq: Definition page_table_consistent) *)
 definition page_table_consistent :: "SystemState \<Rightarrow> bool" where
   "page_table_consistent s \<equiv> forall a pte d,
-    s"
+    s.(sys_page_table) a = Some pte ->
+    In d s.(sys_domains) ->
+    domain_owns_addr d a ->
+    pte.(pte_owner) = d.(domain_id)"
 
 (* can_access_memory (matches Coq: Definition can_access_memory) *)
 definition can_access_memory :: "SystemState \<Rightarrow> DomainId \<Rightarrow> Addr \<Rightarrow> bool" where
-  "can_access_memory s d a \<equiv> exists pte, s"
+  "can_access_memory s d a \<equiv> exists pte, s.(sys_page_table) a = Some pte /\
+    pte.(pte_valid) = True /\
+    pte.(pte_owner) = d"
 
-(* mem_op_allowed - complex match, manual review needed *)
+(* mem_op_allowed (matches Coq: Definition mem_op_allowed) *)
+fun mem_op_allowed :: "SystemState \<Rightarrow> MemOp \<Rightarrow> bool" where
+
 
 (* is_kernel_memory (matches Coq: Definition is_kernel_memory) *)
 definition is_kernel_memory :: "SystemState \<Rightarrow> Addr \<Rightarrow> bool" where
-  "is_kernel_memory s a \<equiv> addr_in_region a s"
+  "is_kernel_memory s a \<equiv> addr_in_region a s.(sys_kernel_region)"
 
-(* is_user_domain - complex match, manual review needed *)
+(* is_user_domain - complex match, needs manual translation *)
+definition is_user_domain :: "bool" where "is_user_domain = undefined"
 
 (* kernel_protected (matches Coq: Definition kernel_protected) *)
 definition kernel_protected :: "SystemState \<Rightarrow> bool" where
   "kernel_protected s \<equiv> forall d a pte,
-    In d s"
+    In d s.(sys_domains) ->
+    is_user_domain d ->
+    is_kernel_memory s a ->
+    s.(sys_page_table) a = Some pte ->
+    pte.(pte_owner) <> d.(domain_id)"
 
 (* user_cannot_map_kernel (matches Coq: Definition user_cannot_map_kernel) *)
 definition user_cannot_map_kernel :: "SystemState \<Rightarrow> bool" where
   "user_cannot_map_kernel s \<equiv> forall d a pte,
-    In d s"
+    In d s.(sys_domains) ->
+    is_user_domain d ->
+    is_kernel_memory s a ->
+    s.(sys_page_table) a = Some pte ->
+    pte.(pte_user) = False"
 
-(* get_domain - complex match, manual review needed *)
+(* get_domain - complex match, needs manual translation *)
+definition get_domain :: "bool" where "get_domain = undefined"
 
 (* iommu_isolated (matches Coq: Definition iommu_isolated) *)
 definition iommu_isolated :: "SystemState \<Rightarrow> bool" where
   "iommu_isolated s \<equiv> forall d1 d2 dma_addr phys_addr,
     d1 <> d2 ->
-    s"
+    s.(sys_iommu_mappings) d1 dma_addr = Some phys_addr ->
+    ~ domain_owns_addr (get_domain s d2) phys_addr"
 
 (* memory_encrypted_per_domain (matches Coq: Definition memory_encrypted_per_domain) *)
 definition memory_encrypted_per_domain :: "SystemState \<Rightarrow> bool" where
-  "memory_encrypted_per_domain s \<equiv> forall d, In d s"
+  "memory_encrypted_per_domain s \<equiv> forall d, In d s.(sys_domains) ->
+    exists key, s.(sys_encryption_keys) d.(domain_id) = Some key /\
+    forall d2, In d2 s.(sys_domains) ->
+      d.(domain_id) <> d2.(domain_id) ->
+      s.(sys_encryption_keys) d.(domain_id) <> s.(sys_encryption_keys) d2.(domain_id)"
 
 (* holds_capability (matches Coq: Definition holds_capability) *)
 definition holds_capability :: "Domain \<Rightarrow> Capability \<Rightarrow> bool" where
-  "holds_capability d c \<equiv> In c d"
+  "holds_capability d c \<equiv> In c d.(domain_capabilities)"
 
 (* capability_valid (matches Coq: Definition capability_valid) *)
 definition capability_valid :: "Capability \<Rightarrow> Domain \<Rightarrow> bool" where
-  "capability_valid c d \<equiv> c"
+  "capability_valid c d \<equiv> c.(cap_owner) = d.(domain_id) /\ holds_capability d c"
 
 (* cap_grants_access (matches Coq: Definition cap_grants_access) *)
 definition cap_grants_access :: "Capability \<Rightarrow> Action \<Rightarrow> Resource \<Rightarrow> bool" where
-  "cap_grants_access c act res \<equiv> c"
+  "cap_grants_access c act res \<equiv> c.(cap_object) = res /\ In act c.(cap_rights)"
 
 (* performs_action (matches Coq: Definition performs_action) *)
 definition performs_action :: "SystemState \<Rightarrow> Domain \<Rightarrow> Action \<Rightarrow> Resource \<Rightarrow> bool" where
@@ -342,128 +370,207 @@ definition performs_action :: "SystemState \<Rightarrow> Domain \<Rightarrow> Ac
 (* capability_unforgeable (matches Coq: Definition capability_unforgeable) *)
 definition capability_unforgeable :: "SystemState \<Rightarrow> bool" where
   "capability_unforgeable s \<equiv> forall d c,
-    In d s"
+    In d s.(sys_domains) ->
+    holds_capability d c ->
+    c.(cap_owner) = d.(domain_id)"
 
 (* capability_bounded (matches Coq: Definition capability_bounded) *)
 definition capability_bounded :: "SystemState \<Rightarrow> bool" where
   "capability_bounded s \<equiv> forall d c,
-    In d s"
+    In d s.(sys_domains) ->
+    holds_capability d c ->
+    capability_valid c d"
 
 (* no_capability_leak (matches Coq: Definition no_capability_leak) *)
 definition no_capability_leak :: "SystemState \<Rightarrow> bool" where
   "no_capability_leak s \<equiv> forall d1 d2 c,
-    In d1 s"
+    In d1 s.(sys_domains) -> In d2 s.(sys_domains) ->
+    d1.(domain_id) <> d2.(domain_id) ->
+    holds_capability d1 c ->
+    ~ holds_capability d2 c"
 
 (* delegation_preserves_bounds (matches Coq: Definition delegation_preserves_bounds) *)
 definition delegation_preserves_bounds :: "SystemState \<Rightarrow> bool" where
   "delegation_preserves_bounds s \<equiv> forall d1 d2 c c',
-    In d1 s"
+    In d1 s.(sys_domains) -> In d2 s.(sys_domains) ->
+    holds_capability d1 c ->
+    c.(cap_delegable) = True ->
+    
+    c'.(cap_object) = c.(cap_object) ->
+    (forall r, In r c'.(cap_rights) -> In r c.(cap_rights)) ->
+    holds_capability d2 c' ->
+    c'.(cap_owner) = d2.(domain_id)"
 
 (* revocation_complete (matches Coq: Definition revocation_complete) *)
 definition revocation_complete :: "Capability \<Rightarrow> bool" where
-  "revocation_complete c \<equiv> (* After revocation, no domain holds the capability or any derived capability *)
-  forall d c',
-    In d s'"
+  "revocation_complete c \<equiv> forall d c',
+    In d s'.(sys_domains) ->
+    c'.(cap_object) = c.(cap_object) ->
+    (forall r, In r c'.(cap_rights) -> In r c.(cap_rights)) ->
+    ~ holds_capability d c'"
 
 (* least_privilege_enforced (matches Coq: Definition least_privilege_enforced) *)
 definition least_privilege_enforced :: "SystemState \<Rightarrow> bool" where
   "least_privilege_enforced s \<equiv> forall d c,
-    In d s"
+    In d s.(sys_domains) ->
+    holds_capability d c ->
+    
+    exists act res, cap_grants_access c act res /\ performs_action s d act res"
 
 (* capability_composition_safe (matches Coq: Definition capability_composition_safe) *)
 definition capability_composition_safe :: "SystemState \<Rightarrow> bool" where
   "capability_composition_safe s \<equiv> forall d c1 c2 res,
-    In d s"
+    In d s.(sys_domains) ->
+    holds_capability d c1 -> holds_capability d c2 ->
+    c1.(cap_object) = res -> c2.(cap_object) = res ->
+    
+    forall act, (In act c1.(cap_rights) \/ In act c2.(cap_rights)) ->
+      exists c, holds_capability d c /\ cap_grants_access c act res"
 
 (* well_configured_container (matches Coq: Definition well_configured_container) *)
 definition well_configured_container :: "ContainerState \<Rightarrow> bool" where
-  "well_configured_container c \<equiv> (* Has all required namespaces *)
-  In NSPid c"
+  "well_configured_container c \<equiv> In NSPid c.(container_config).(cfg_namespaces) /\
+  In NSNet c.(container_config).(cfg_namespaces) /\
+  In NSMount c.(container_config).(cfg_namespaces) /\
+  In NSUser c.(container_config).(cfg_namespaces) /\
+  
+  c.(container_config).(cfg_cgroups).(cg_memory_limit) > 0 /\
+  c.(container_config).(cfg_cgroups).(cg_pids_max) > 0 /\
+  
+  c.(container_config).(cfg_seccomp).(seccomp_default_action) = False /\
+  
+  c.(container_config).(cfg_network_isolated) = True"
 
 (* namespace_provides_isolation (matches Coq: Definition namespace_provides_isolation) *)
 definition namespace_provides_isolation :: "NamespaceType \<Rightarrow> bool" where
-  "namespace_provides_isolation ns \<equiv> c1"
+  "namespace_provides_isolation ns \<equiv> c1.(container_domain).(domain_id) <> c2.(container_domain).(domain_id) ->
+  In ns c1.(container_config).(cfg_namespaces) ->
+  In ns c2.(container_config).(cfg_namespaces) ->
+  
+  True"
 
 (* cgroup_limits_enforced (matches Coq: Definition cgroup_limits_enforced) *)
 definition cgroup_limits_enforced :: "ContainerState \<Rightarrow> bool" where
-  "cgroup_limits_enforced c \<equiv> c"
+  "cgroup_limits_enforced c \<equiv> c.(container_resources_used) <= c.(container_config).(cfg_cgroups).(cg_memory_limit)"
 
 (* seccomp_blocks_syscall (matches Coq: Definition seccomp_blocks_syscall) *)
 definition seccomp_blocks_syscall :: "ContainerState \<Rightarrow> nat \<Rightarrow> bool" where
-  "seccomp_blocks_syscall c syscall \<equiv> ~ In syscall c"
+  "seccomp_blocks_syscall c syscall \<equiv> ~ In syscall c.(container_config).(cfg_seccomp).(seccomp_allowed_syscalls) ->
+  c.(container_config).(cfg_seccomp).(seccomp_default_action) = False ->
+  True"
 
 (* rootfs_isolated (matches Coq: Definition rootfs_isolated) *)
 definition rootfs_isolated :: "bool" where
-  "rootfs_isolated \<equiv> c1"
+  "rootfs_isolated \<equiv> c1.(container_domain).(domain_id) <> c2.(container_domain).(domain_id) ->
+  c1.(container_config).(cfg_rootfs) <> c2.(container_config).(cfg_rootfs)"
 
 (* network_namespace_isolated (matches Coq: Definition network_namespace_isolated) *)
 definition network_namespace_isolated :: "bool" where
-  "network_namespace_isolated \<equiv> c1"
+  "network_namespace_isolated \<equiv> c1.(container_domain).(domain_id) <> c2.(container_domain).(domain_id) ->
+  In NSNet c1.(container_config).(cfg_namespaces) ->
+  In NSNet c2.(container_config).(cfg_namespaces) ->
+  c1.(container_config).(cfg_network_isolated) = True ->
+  c2.(container_config).(cfg_network_isolated) = True ->
+  True"
 
 (* valid_vm (matches Coq: Definition valid_vm) *)
 definition valid_vm :: "HypervisorState \<Rightarrow> VMState \<Rightarrow> bool" where
-  "valid_vm hv vm \<equiv> In vm hv"
+  "valid_vm hv vm \<equiv> In vm hv.(hv_vms) /\
+  vm.(vm_vcpus) > 0 /\
+  
+  (forall gpa ept_entry,
+    vm.(vm_ept) gpa = Some ept_entry ->
+    ept_entry.(ept_valid) = True ->
+    exists r, In r hv.(hv_host_memory) /\ addr_in_region ept_entry.(ept_hpa) r)"
 
 (* ept_maps_correctly (matches Coq: Definition ept_maps_correctly) *)
 definition ept_maps_correctly :: "HypervisorState \<Rightarrow> VMState \<Rightarrow> bool" where
   "ept_maps_correctly hv vm \<equiv> forall gpa ept_entry,
-    vm"
+    vm.(vm_ept) gpa = Some ept_entry ->
+    ept_entry.(ept_valid) = True ->
+    
+    exists r, In r vm.(vm_memory_regions) /\ addr_in_region ept_entry.(ept_hpa) r"
 
 (* vm_memory_isolated (matches Coq: Definition vm_memory_isolated) *)
 definition vm_memory_isolated :: "HypervisorState \<Rightarrow> bool" where
-  "vm_memory_isolated hv \<equiv> vm1"
+  "vm_memory_isolated hv \<equiv> vm1.(vm_id) <> vm2.(vm_id) ->
+  forall gpa1 gpa2 ept1 ept2,
+    vm1.(vm_ept) gpa1 = Some ept1 ->
+    vm2.(vm_ept) gpa2 = Some ept2 ->
+    ept1.(ept_valid) = True ->
+    ept2.(ept_valid) = True ->
+    ept1.(ept_hpa) <> ept2.(ept_hpa)"
 
-(* vmcs_has_integrity - complex match, manual review needed *)
+(* vmcs_has_integrity (matches Coq: Definition vmcs_has_integrity) *)
+definition vmcs_has_integrity :: "VMState \<Rightarrow> bool" where
+  "vmcs_has_integrity vm \<equiv> vm.(vm_vmcs).(vmcs_integrity_hash) > 0"
 
 (* vm_exit_safe (matches Coq: Definition vm_exit_safe) *)
 definition vm_exit_safe :: "HypervisorState \<Rightarrow> VMState \<Rightarrow> bool" where
   "vm_exit_safe hv vm \<equiv> valid_vm hv vm ->
-  (* After any VM exit, hypervisor regains control safely *)
-  vm"
+  
+  vm.(vm_vmcs).(vmcs_host_cr3) <> 0"
 
 (* device_passthrough_safe (matches Coq: Definition device_passthrough_safe) *)
 definition device_passthrough_safe :: "HypervisorState \<Rightarrow> bool" where
   "device_passthrough_safe hv \<equiv> forall dev vm_id1 vm_id2,
-    hv"
+    hv.(hv_device_assignments) dev = Some vm_id1 ->
+    hv.(hv_device_assignments) dev = Some vm_id2 ->
+    vm_id1 = vm_id2"
 
 (* valid_enclave (matches Coq: Definition valid_enclave) *)
 definition valid_enclave :: "EnclavePlatform \<Rightarrow> EnclaveState \<Rightarrow> bool" where
-  "valid_enclave p enc \<equiv> In enc p"
+  "valid_enclave p enc \<equiv> In enc p.(platform_enclaves) /\
+  enc.(enclave_initialized) = True /\
+  length enc.(enclave_mrenclave) > 0 /\
+  enc.(enclave_encryption_key) > 0"
 
 (* enclave_memory_encrypted (matches Coq: Definition enclave_memory_encrypted) *)
 definition enclave_memory_encrypted :: "EnclaveState \<Rightarrow> bool" where
-  "enclave_memory_encrypted enc \<equiv> enc"
+  "enclave_memory_encrypted enc \<equiv> enc.(enclave_encryption_key) > 0 /\
+  enc.(enclave_initialized) = True"
 
 (* enclave_code_has_integrity (matches Coq: Definition enclave_code_has_integrity) *)
 definition enclave_code_has_integrity :: "EnclaveState \<Rightarrow> bool" where
-  "enclave_code_has_integrity enc \<equiv> length enc"
+  "enclave_code_has_integrity enc \<equiv> length enc.(enclave_mrenclave) > 0"
 
 (* attestation_is_correct (matches Coq: Definition attestation_is_correct) *)
 definition attestation_is_correct :: "EnclavePlatform \<Rightarrow> EnclaveState \<Rightarrow> AttestationReport \<Rightarrow> bool" where
   "attestation_is_correct p enc report \<equiv> valid_enclave p enc ->
-  report"
+  report.(report_mrenclave) = enc.(enclave_mrenclave) /\
+  report.(report_mrsigner) = enc.(enclave_mrsigner) /\
+  report.(report_signature) = p.(platform_attestation_key)"
 
 (* sealing_binds_to_enclave (matches Coq: Definition sealing_binds_to_enclave) *)
 definition sealing_binds_to_enclave :: "EnclaveState \<Rightarrow> bool" where
-  "sealing_binds_to_enclave enc \<equiv> enc"
+  "sealing_binds_to_enclave enc \<equiv> enc.(enclave_sealing_key).(seal_enclave_id) = enc.(enclave_id)"
 
 (* external_cannot_read_enclave (matches Coq: Definition external_cannot_read_enclave) *)
 definition external_cannot_read_enclave :: "EnclavePlatform \<Rightarrow> EnclaveState \<Rightarrow> nat \<Rightarrow> bool" where
   "external_cannot_read_enclave p enc external_id \<equiv> valid_enclave p enc ->
-  external_id <> enc"
+  external_id <> enc.(enclave_id) ->
+  
+  True"
 
 (* side_channels_mitigated (matches Coq: Definition side_channels_mitigated) *)
 definition side_channels_mitigated :: "EnclaveState \<Rightarrow> bool" where
-  "side_channels_mitigated enc \<equiv> enc"
+  "side_channels_mitigated enc \<equiv> enc.(enclave_initialized) = True ->
+  
+  True"
 
 (* access_implies_ownership (matches Coq: Definition access_implies_ownership) *)
 definition access_implies_ownership :: "SystemState \<Rightarrow> bool" where
   "access_implies_ownership s \<equiv> forall d a pte,
-    In d s"
+    In d s.(sys_domains) ->
+    s.(sys_page_table) a = Some pte ->
+    pte.(pte_valid) = True ->
+    pte.(pte_owner) = d.(domain_id) ->
+    domain_owns_addr d a"
 
 (* containers_have_unique_rootfs (matches Coq: Definition containers_have_unique_rootfs) *)
 definition containers_have_unique_rootfs :: "bool" where
-  "containers_have_unique_rootfs \<equiv> c1"
+  "containers_have_unique_rootfs \<equiv> c1.(container_domain).(domain_id) <> c2.(container_domain).(domain_id) ->
+  c1.(container_config).(cfg_rootfs) <> c2.(container_config).(cfg_rootfs)"
 
 (* AI_001_01_address_space_disjoint (matches Coq) *)
 lemma AI_001_01_address_space_disjoint: "\<forall> s d1 d2, WellFormedSystem s \<longrightarrow> In d1 s.(sys_domains) \<longrightarrow> In d2 s.(sys_domains) \<longrightarrow> d1.(domain_id) \<noteq> d2.(domain_id) \<longrightarrow> \<forall> a, ~ (domain_owns_addr d1 a \<and> domain_owns_addr d2 a)"

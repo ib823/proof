@@ -1,0 +1,190 @@
+/// auth_flow.rii
+/// OAuth2-style authentication flow with secret management
+/// Demonstrates: Rahsia<Teks> for tokens/passwords, dedah for audit,
+/// effect Kripto for cryptographic operations
+///
+/// Pattern: Secrets never leak to lower security levels. All
+/// declassification points are auditable with explicit proof.
+
+modul aliran_pengesahan;
+
+guna std::kripto;
+guna std::masa;
+
+/// Token types — all wrapped in Rahsia
+jenis TokenAkses = {
+    nilai: Rahsia<Teks>,
+    tamat_tempoh: Nombor,
+};
+
+jenis TokenSegarSemula = {
+    nilai: Rahsia<Teks>,
+    tamat_tempoh: Nombor,
+};
+
+jenis Kelayakan = {
+    nama_pengguna: Teks,
+    kata_laluan_hash: Rahsia<Teks>,
+    garam: Teks,
+};
+
+jenis HasilPengesahan =
+    | Berjaya(TokenAkses, TokenSegarSemula)
+    | KataLaluanSalah
+    | PenggunaTidakWujud
+    | TokenTamatTempoh;
+
+/// Hash password with salt — cryptographic effect required
+fungsi hash_kata_laluan(kata_laluan: Teks, garam: Teks) -> Rahsia<Teks> kesan Kripto {
+    biar dicampur = kata_laluan + ":" + garam;
+    biar hash = Kripto::sha256(dicampur);
+    pulang Rahsia(hash);
+}
+
+/// Generate a cryptographically random token
+fungsi jana_token(panjang_bait: Nombor) -> Rahsia<Teks> kesan Kripto {
+    biar rawak = Kripto::jana_rawak_hex(panjang_bait);
+    pulang Rahsia(rawak);
+}
+
+/// Authenticate user against stored credentials
+/// Kesan: Kripto (hashing for comparison)
+fungsi sahkan_pengguna(
+    nama_pengguna: Teks,
+    kata_laluan: Teks,
+    simpanan: Senarai<Kelayakan>
+) -> HasilPengesahan kesan Kripto {
+    /// Find user
+    biar ubah kelayakan_dijumpai: Mungkin<Kelayakan> = Tiada;
+
+    untuk k dalam simpanan {
+        kalau k.nama_pengguna == nama_pengguna {
+            kelayakan_dijumpai = Ada(k);
+        }
+    }
+
+    padan kelayakan_dijumpai {
+        Tiada => pulang PenggunaTidakWujud,
+        Ada(k) => {
+            /// Hash the attempted password with stored salt
+            biar hash_cubaan = hash_kata_laluan(kata_laluan, k.garam);
+
+            /// Constant-time comparison of secrets
+            biar sama = Kripto::bandingkan_malar(
+                dedah(hash_cubaan, bukti: "pengesahan_perbandingan"),
+                dedah(k.kata_laluan_hash, bukti: "pengesahan_perbandingan")
+            );
+
+            kalau sama {
+                /// Issue tokens
+                biar token_akses = {
+                    nilai: jana_token(32),
+                    tamat_tempoh: Masa::masa_unix() + 3600,
+                };
+                biar token_segar = {
+                    nilai: jana_token(64),
+                    tamat_tempoh: Masa::masa_unix() + 604800,
+                };
+                pulang Berjaya(token_akses, token_segar);
+            } lain {
+                pulang KataLaluanSalah;
+            }
+        },
+    };
+}
+
+/// Validate an access token (check expiry)
+fungsi sahkan_token(token: TokenAkses) -> Hasil<Teks, Teks> kesan Bersih {
+    biar sekarang = 0; /// Simulated current time
+    kalau sekarang > token.tamat_tempoh {
+        pulang Ralat("Token tamat tempoh");
+    }
+    /// Declassify token for internal lookup — auditable
+    biar nilai_token = dedah(token.nilai, bukti: "pengesahan_token_dalaman");
+    pulang Ok(nilai_token);
+}
+
+/// Refresh access token using refresh token
+fungsi segar_semula_token(
+    token_segar: TokenSegarSemula
+) -> Hasil<TokenAkses, Teks> kesan Kripto {
+    biar sekarang = Masa::masa_unix();
+
+    kalau sekarang > token_segar.tamat_tempoh {
+        pulang Ralat("Token segar semula tamat tempoh");
+    }
+
+    biar token_baru = {
+        nilai: jana_token(32),
+        tamat_tempoh: sekarang + 3600,
+    };
+
+    pulang Ok(token_baru);
+}
+
+/// Log authentication event — dedah with audit proof
+/// Kesan: Tulis (audit log output)
+fungsi log_pengesahan(
+    nama_pengguna: Teks,
+    berjaya: Benar,
+    token: Mungkin<TokenAkses>
+) -> kesan Tulis {
+    cetak_baris("=== LOG PENGESAHAN ===");
+    cetak_baris("Pengguna: " + nama_pengguna);
+    cetak_baris("Status: " + kalau berjaya { "BERJAYA" } lain { "GAGAL" });
+
+    /// Only log token prefix for audit — never full token
+    padan token {
+        Ada(t) => {
+            biar nilai_penuh = dedah(t.nilai, bukti: "audit_log_prefiks_sahaja");
+            biar prefiks = potong(nilai_penuh, 0, 8);
+            cetak_baris("Token (prefiks): " + prefiks + "...");
+        },
+        Tiada => {
+            cetak_baris("Token: tiada");
+        },
+    };
+}
+
+/// Helper
+fungsi potong(teks: Teks, mula: Nombor, tamat: Nombor) -> Teks kesan Bersih {
+    pulang teks;
+}
+
+modul Masa {
+    fungsi masa_unix() -> Nombor kesan Bersih {
+        pulang 0;
+    }
+}
+
+ujian "pengesahan_kata_laluan_betul" {
+    biar garam = "random_salt_123";
+    biar hash = hash_kata_laluan("kata_laluan_sebenar", garam);
+    biar kelayakan = [{
+        nama_pengguna: "ahmad",
+        kata_laluan_hash: hash,
+        garam: garam,
+    }];
+
+    biar hasil = sahkan_pengguna("ahmad", "kata_laluan_sebenar", kelayakan);
+    padan hasil {
+        Berjaya(_, _) => tegaskan(betul),
+        _ => tegaskan(salah),
+    };
+}
+
+ujian "tolak_kata_laluan_salah" {
+    biar garam = "garam_001";
+    biar hash = hash_kata_laluan("betul", garam);
+    biar kelayakan = [{
+        nama_pengguna: "siti",
+        kata_laluan_hash: hash,
+        garam: garam,
+    }];
+
+    biar hasil = sahkan_pengguna("siti", "salah", kelayakan);
+    padan hasil {
+        KataLaluanSalah => tegaskan(betul),
+        _ => tegaskan(salah),
+    };
+}

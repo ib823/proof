@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkDriver - Isabelle/HOL Port
@@ -21,6 +23,7 @@
  * | owns_socket        | owns_socket            | OK     |
  * | socket_usable      | socket_usable          | OK     |
  * | has_network_permission | has_network_permission | OK     |
+ * | firewall_permits   | firewall_permits       | OK     |
  * | network_isolation  | network_isolation      | OK     |
  * | socket_ownership_exclusive | socket_ownership_exclusive | OK     |
  * | unbound_socket_not_usable | unbound_socket_not_usable | OK     |
@@ -45,7 +48,7 @@
  *)
 
 theory NetworkDriver
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AppId (matches Coq: Inductive AppId) *)
@@ -91,11 +94,15 @@ definition owns_socket :: "Application \<Rightarrow> Socket \<Rightarrow> bool" 
 
 (* socket_usable (matches Coq: Definition socket_usable) *)
 definition socket_usable :: "Socket \<Rightarrow> bool" where
-  "socket_usable sock \<equiv> socket_bound sock = true"
+  "socket_usable sock \<equiv> socket_bound sock = True"
 
 (* has_network_permission (matches Coq: Definition has_network_permission) *)
 definition has_network_permission :: "Application \<Rightarrow> bool" where
-  "has_network_permission app \<equiv> app_network_perm app = true"
+  "has_network_permission app \<equiv> app_network_perm app = True"
+
+(* firewall_permits (matches Coq: Definition firewall_permits) *)
+fun firewall_permits :: "bool" where
+
 
 (* Theorem: An application cannot access another application's sockets. *)
 (* network_isolation (matches Coq) *)

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA EncryptionSystem - Isabelle/HOL Port
@@ -21,6 +23,7 @@
  * | KeyRotation        | key_rotation           | OK     |
  * | IVTracker          | iv_tracker             | OK     |
  * | TimingTest         | timing_test            | OK     |
+ * | PASSWORD_HASH_MIN_ITERS | PASSWORD_HASH_MIN_ITERS | OK     |
  * | strong_encryption  | strong_encryption      | OK     |
  * | e2e_encrypted      | e2e_encrypted          | OK     |
  * | securely_managed   | securely_managed       | OK     |
@@ -31,6 +34,8 @@
  * | key_bits_sufficient | key_bits_sufficient    | OK     |
  * | is_aes_or_chacha   | is_aes_or_chacha       | OK     |
  * | is_strong_key      | is_strong_key          | OK     |
+ * | encrypt_data       | encrypt_data           | OK     |
+ * | decrypt_data       | decrypt_data           | OK     |
  * | encryption_decryption_inverse_prop | encryption_decryption_inverse_prop | OK     |
  * | key_length_sufficient_prop | key_length_sufficient_prop | OK     |
  * | iv_never_reused    | iv_never_reused        | OK     |
@@ -76,10 +81,10 @@ begin
 (* EncryptionKey (matches Coq: Record EncryptionKey) *)
 record encryption_key =
   key_id :: nat
-  key_bits :: nat  (* Key size: 128, 256, etc. *)
-  key_algorithm :: nat  (* 0=AES, 1=ChaCha20, 2=RSA *)
+  key_bits :: nat
+  key_algorithm :: nat
   key_is_private :: bool
-  key_stored_in_se :: bool  (* Stored in Secure Enclave *)
+  key_stored_in_se :: bool
 
 (* EncryptedMessage (matches Coq: Record EncryptedMessage) *)
 record encrypted_message =
@@ -127,7 +132,7 @@ record password_hash =
   pwd_hash_value :: nat
   pwd_salt :: nat
   pwd_iterations :: nat
-  pwd_algorithm :: nat  (* 0=Argon2, 1=bcrypt, 2=PBKDF2 *)
+  pwd_algorithm :: nat
 
 (* KeyRotation (matches Coq: Record KeyRotation) *)
 record key_rotation =
@@ -148,6 +153,10 @@ record timing_test =
   tt_time_ns :: nat
   tt_constant_time :: bool
 
+(* PASSWORD_HASH_MIN_ITERS (matches Coq: Definition PASSWORD_HASH_MIN_ITERS) *)
+definition PASSWORD_HASH_MIN_ITERS :: "nat" where
+  "PASSWORD_HASH_MIN_ITERS \<equiv> Z.to_nat 10000%Z"
+
 (* strong_encryption (matches Coq: Definition strong_encryption) *)
 definition strong_encryption :: "EncryptionKey \<Rightarrow> bool" where
   "strong_encryption key \<equiv> key_bits key >= 256 /\
@@ -155,35 +164,35 @@ definition strong_encryption :: "EncryptionKey \<Rightarrow> bool" where
 
 (* e2e_encrypted (matches Coq: Definition e2e_encrypted) *)
 definition e2e_encrypted :: "EncryptedMessage \<Rightarrow> bool" where
-  "e2e_encrypted msg \<equiv> is_e2e msg = true /\
+  "e2e_encrypted msg \<equiv> is_e2e msg = True /\
   strong_encryption (encryption_key_used msg) /\
-  key_stored_in_se (encryption_key_used msg) = true"
+  key_stored_in_se (encryption_key_used msg) = True"
 
 (* securely_managed (matches Coq: Definition securely_managed) *)
 definition securely_managed :: "EncryptionKey \<Rightarrow> bool" where
-  "securely_managed key \<equiv> key_is_private key = true ->
-  key_stored_in_se key = true"
+  "securely_managed key \<equiv> key_is_private key = True ->
+  key_stored_in_se key = True"
 
 (* provides_confidentiality (matches Coq: Definition provides_confidentiality) *)
 definition provides_confidentiality :: "SecureChannel \<Rightarrow> bool" where
-  "provides_confidentiality ch \<equiv> channel_encrypted ch = true /\
+  "provides_confidentiality ch \<equiv> channel_encrypted ch = True /\
   strong_encryption (sender_key ch) /\
   strong_encryption (receiver_key ch)"
 
 (* provides_integrity (matches Coq: Definition provides_integrity) *)
 definition provides_integrity :: "SecureChannel \<Rightarrow> bool" where
-  "provides_integrity ch \<equiv> channel_authenticated ch = true"
+  "provides_integrity ch \<equiv> channel_authenticated ch = True"
 
 (* full_e2e_security (matches Coq: Definition full_e2e_security) *)
 definition full_e2e_security :: "SecureChannel \<Rightarrow> bool" where
   "full_e2e_security ch \<equiv> provides_confidentiality ch /\
   provides_integrity ch /\
-  forward_secrecy ch = true"
+  forward_secrecy ch = True"
 
 (* correct_decryption (matches Coq: Definition correct_decryption) *)
 definition correct_decryption :: "EncryptedMessage \<Rightarrow> DecryptedMessage \<Rightarrow> bool" where
   "correct_decryption enc dec \<equiv> msg_id enc = dec_msg_id dec /\
-  integrity_verified dec = true /\
+  integrity_verified dec = True /\
   key_id (encryption_key_used enc) = key_id (decryption_key dec)"
 
 (* key_bits_sufficient (matches Coq: Definition key_bits_sufficient) *)
@@ -198,6 +207,14 @@ definition is_aes_or_chacha :: "EncryptionKey \<Rightarrow> bool" where
 definition is_strong_key :: "EncryptionKey \<Rightarrow> bool" where
   "is_strong_key key \<equiv> key_bits_sufficient key \<and> is_aes_or_chacha key"
 
+(* encrypt_data (matches Coq: Definition encrypt_data) *)
+definition encrypt_data :: "nat \<Rightarrow> list nat" where
+  "encrypt_data key \<equiv> map (fun x => x + key) plaintext"
+
+(* decrypt_data (matches Coq: Definition decrypt_data) *)
+definition decrypt_data :: "nat \<Rightarrow> list nat" where
+  "decrypt_data key \<equiv> map (fun x => x - key) ciphertext"
+
 (* encryption_decryption_inverse_prop (matches Coq: Definition encryption_decryption_inverse_prop) *)
 definition encryption_decryption_inverse_prop :: "nat \<Rightarrow> bool" where
   "encryption_decryption_inverse_prop key \<equiv> decrypt_data key (encrypt_data key plaintext) = plaintext"
@@ -208,12 +225,12 @@ definition key_length_sufficient_prop :: "EncryptionKey \<Rightarrow> bool" wher
 
 (* iv_never_reused (matches Coq: Definition iv_never_reused) *)
 definition iv_never_reused :: "IVTracker \<Rightarrow> bool" where
-  "iv_never_reused tracker \<equiv> iv_unique tracker = true /\
+  "iv_never_reused tracker \<equiv> iv_unique tracker = True /\
   ~ In (iv_current tracker) (iv_used_list tracker)"
 
 (* aead_verified (matches Coq: Definition aead_verified) *)
 definition aead_verified :: "EncryptionOperation \<Rightarrow> bool" where
-  "aead_verified op \<equiv> enc_op_aead_verified op = true"
+  "aead_verified op \<equiv> enc_op_aead_verified op = True"
 
 (* key_derivation_deterministic_prop (matches Coq: Definition key_derivation_deterministic_prop) *)
 definition key_derivation_deterministic_prop :: "bool" where
@@ -224,7 +241,7 @@ definition key_derivation_deterministic_prop :: "bool" where
 
 (* password_hash_one_way (matches Coq: Definition password_hash_one_way) *)
 definition password_hash_one_way :: "PasswordHash \<Rightarrow> bool" where
-  "password_hash_one_way h \<equiv> pwd_hash_value h > 0 /\ pwd_iterations h >= 10000"
+  "password_hash_one_way h \<equiv> pwd_hash_value h > 0 /\ pwd_iterations h >= PASSWORD_HASH_MIN_ITERS"
 
 (* salt_unique (matches Coq: Definition salt_unique) *)
 definition salt_unique :: "bool" where
@@ -232,8 +249,8 @@ definition salt_unique :: "bool" where
 
 (* key_rotation_seamless (matches Coq: Definition key_rotation_seamless) *)
 definition key_rotation_seamless :: "KeyRotation \<Rightarrow> bool" where
-  "key_rotation_seamless kr \<equiv> kr_rotation_complete kr = true ->
-  kr_old_key_destroyed kr = true"
+  "key_rotation_seamless kr \<equiv> kr_rotation_complete kr = True ->
+  kr_old_key_destroyed kr = True"
 
 (* encrypted_data_indistinguishable (matches Coq: Definition encrypted_data_indistinguishable) *)
 definition encrypted_data_indistinguishable :: "bool" where
@@ -243,20 +260,20 @@ definition encrypted_data_indistinguishable :: "bool" where
 
 (* padding_oracle_prevented (matches Coq: Definition padding_oracle_prevented) *)
 definition padding_oracle_prevented :: "EncryptionOperation \<Rightarrow> bool" where
-  "padding_oracle_prevented op \<equiv> enc_op_aead_verified op = true"
+  "padding_oracle_prevented op \<equiv> enc_op_aead_verified op = True"
 
 (* timing_attack_prevented (matches Coq: Definition timing_attack_prevented) *)
 definition timing_attack_prevented :: "TimingTest \<Rightarrow> bool" where
-  "timing_attack_prevented tt \<equiv> tt_constant_time tt = true"
+  "timing_attack_prevented tt \<equiv> tt_constant_time tt = True"
 
 (* key_zeroization_complete (matches Coq: Definition key_zeroization_complete) *)
 definition key_zeroization_complete :: "KeyRotation \<Rightarrow> bool" where
-  "key_zeroization_complete kr \<equiv> kr_old_key_destroyed kr = true ->
+  "key_zeroization_complete kr \<equiv> kr_old_key_destroyed kr = True ->
   key_bits (kr_old_key kr) >= 0"
 
 (* hardware_key_storage_prop (matches Coq: Definition hardware_key_storage_prop) *)
 definition hardware_key_storage_prop :: "EncryptionKey \<Rightarrow> bool" where
-  "hardware_key_storage_prop key \<equiv> key_is_private key = true -> key_stored_in_se key = true"
+  "hardware_key_storage_prop key \<equiv> key_is_private key = True -> key_stored_in_se key = True"
 
 (* encryption_algorithm_approved (matches Coq: Definition encryption_algorithm_approved) *)
 definition encryption_algorithm_approved :: "EncryptionKey \<Rightarrow> bool" where
@@ -315,7 +332,7 @@ lemma key_derivation_deterministic: "\<forall> (kd1 kd2 : KeyDerivation), key_de
   by auto
 
 (* password_hash_one_way_thm (matches Coq) *)
-lemma password_hash_one_way_thm: "\<forall> (h : PasswordHash), password_hash_one_way h \<longrightarrow> pwd_hash_value h > 0 \<and> pwd_iterations h \<ge> 10000"
+lemma password_hash_one_way_thm: "\<forall> (h : PasswordHash), password_hash_one_way h \<longrightarrow> pwd_hash_value h > 0 \<and> pwd_iterations h \<ge> PASSWORD_HASH_MIN_ITERS"
   by auto
 
 (* salt_unique_per_password (matches Coq) *)

@@ -4,11 +4,11 @@
 (* Spec: 01_RESEARCH/23_DOMAIN_W_VERIFIED_MEMORY/ *)
 (* Model: Rust-style ownership and borrowing *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* Lifetime (represented as natural number, larger = longer) *)

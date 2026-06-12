@@ -1,0 +1,56 @@
+# RIINA constant-time TIMING certification (self-hosted bare-metal).
+#
+# The TIMING half of constant-time verification (data-independent timing / TVLA)
+# needs a quiet, non-virtualised, isolated core — so it CANNOT run on the normal
+# GitHub-hosted runners (those are virtualised and grade INDICATIVE). This
+# workflow is manual-only and targets a SELF-HOSTED runner you register on a
+# bare-metal box prepared per `scripts/ct-host-prep.sh`.
+#
+# Setup (once):
+#   1. On a non-virtualised Linux box (spare desktop, or AWS *.metal / Equinix /
+#      Hetzner|OVH dedicated): `sudo CT_CORE=2 bash scripts/ct-host-prep.sh`,
+#      add the printed `isolcpus=...` line to GRUB, reboot.
+#   2. Install a GitHub Actions self-hosted runner there with the label `ct-metal`
+#      (Settings -> Actions -> Runners -> New self-hosted runner).
+#   3. Run this workflow (Actions -> ct-timing -> Run workflow). The report is
+#      archived as a build artifact.
+#
+# It wraps the repo's own gate (scripts/ct-timing-certify.sh) — no divergent check.
+
+name: ct-timing
+
+on:
+  workflow_dispatch:
+    inputs:
+      core:
+        description: "Isolated core to pin to (must match the isolcpus= core)"
+        required: false
+        default: "2"
+      scale:
+        description: "dudect sample multiplier (>= 50 for a real run)"
+        required: false
+        default: "50"
+
+permissions:
+  contents: read
+
+jobs:
+  ct-timing:
+    name: Timing CT (self-hosted bare-metal)
+    # Register a self-hosted runner with the `ct-metal` label on your prepared box.
+    runs-on: [self-hosted, ct-metal]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      - name: Certify (grades the host, then measures; fails if INDICATIVE-unclean or a primitive flags)
+        env:
+          CT_CORE: ${{ github.event.inputs.core }}
+          CT_SCALE: ${{ github.event.inputs.scale }}
+        run: bash scripts/ct-timing-certify.sh
+      - name: Upload timing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ct-timing-evidence
+          path: reports/ct_evidence/
+          if-no-files-found: warn

@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Reducibility - Isabelle/HOL Port
@@ -112,12 +114,12 @@ lemma SN_value_irreducible: "\<forall> v st ctx, value v \<longrightarrow> SN st
 
 (* Case on inl steps to the left branch *)
 (* case_inl_typed_steps (matches Coq) *)
-lemma case_inl_typed_steps: "\<forall> v T2 x1 e1 x2 e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = [x1 := v] e1 \<and> st' = st \<and> ctx' = ctx"
+lemma case_inl_typed_steps: "\<forall> v T2 x1 e1 x2 e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = subst[x1 := v] e1 \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Case on inr steps to the right branch *)
 (* case_inr_typed_steps (matches Coq) *)
-lemma case_inr_typed_steps: "\<forall> v T1 x1 e1 x2 e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = [x2 := v] e2 \<and> st' = st \<and> ctx' = ctx"
+lemma case_inr_typed_steps: "\<forall> v T1 x1 e1 x2 e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = subst[x2 := v] e2 \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Pair of values is a value *)
@@ -247,7 +249,7 @@ lemma snd_pair_step_value: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> v
 
 (* App with lambda and value steps *)
 (* app_lam_steps (matches Coq) *)
-lemma app_lam_steps: "\<forall> x T body v st ctx, value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx)"
+lemma app_lam_steps: "\<forall> x T body v st ctx, value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx)"
   by auto
 
 end

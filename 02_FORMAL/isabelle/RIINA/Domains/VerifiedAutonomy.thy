@@ -1,4 +1,6 @@
+(* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized. *)
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedAutonomy - Isabelle/HOL Port
@@ -63,7 +65,7 @@
  *)
 
 theory VerifiedAutonomy
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* FailsafeTrigger (matches Coq: Inductive FailsafeTrigger) *)
@@ -89,19 +91,19 @@ datatype verify_result =
 
 (* velocity_in_envelope (matches Coq: Definition velocity_in_envelope) *)
 definition velocity_in_envelope :: "SystemState \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
-  "velocity_in_envelope state env \<equiv> Nat"
+  "velocity_in_envelope state env \<equiv> ((state_velocity \<le> state)) (env_max_velocity env)"
 
 (* distance_safe (matches Coq: Definition distance_safe) *)
 definition distance_safe :: "nat \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
-  "distance_safe current_distance env \<equiv> Nat"
+  "distance_safe current_distance env \<equiv> ((env_min_distance \<le> env)) current_distance"
 
 (* heading_rate_ok (matches Coq: Definition heading_rate_ok) *)
 definition heading_rate_ok :: "nat \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
-  "heading_rate_ok rate env \<equiv> Nat"
+  "heading_rate_ok rate env \<equiv> (rate \<le> (env_max_heading_rate) env)"
 
 (* confidence_sufficient (matches Coq: Definition confidence_sufficient) *)
 definition confidence_sufficient :: "Decision \<Rightarrow> nat \<Rightarrow> bool" where
-  "confidence_sufficient dec min_conf \<equiv> Nat"
+  "confidence_sufficient dec min_conf \<equiv> (min_conf \<le> (dec_confidence) dec)"
 
 (* should_failsafe (matches Coq: Definition should_failsafe) *)
 fun should_failsafe :: "FailsafeTrigger \<Rightarrow> bool" where
@@ -113,63 +115,66 @@ fun should_failsafe :: "FailsafeTrigger \<Rightarrow> bool" where
 
 (* reaction_ok (matches Coq: Definition reaction_ok) *)
 definition reaction_ok :: "ReactionTime \<Rightarrow> bool" where
-  "reaction_ok rt \<equiv> Nat"
+  "reaction_ok rt \<equiv> ((react_measured \<le> rt)) (react_deadline rt)"
 
 (* valid_failsafe_action (matches Coq: Definition valid_failsafe_action) *)
 definition valid_failsafe_action :: "FailsafeAction \<Rightarrow> bool" where
-  "valid_failsafe_action action \<equiv> true"
+  "valid_failsafe_action action \<equiv> True"
 
-(* valid_mode_transition - complex match, manual review needed *)
+(* valid_mode_transition - complex match, needs manual translation *)
+definition valid_mode_transition :: "bool" where "valid_mode_transition = undefined"
 
 (* decision_fresh (matches Coq: Definition decision_fresh) *)
 definition decision_fresh :: "Decision \<Rightarrow> bool" where
-  "decision_fresh dec \<equiv> Nat"
+  "decision_fresh dec \<equiv> ((current \<le> -) dec_timestamp dec) max_age"
 
 (* action_bounded (matches Coq: Definition action_bounded) *)
 definition action_bounded :: "Decision \<Rightarrow> nat \<Rightarrow> bool" where
-  "action_bounded dec max_mag \<equiv> Nat"
+  "action_bounded dec max_mag \<equiv> ((dec_magnitude \<le> dec)) max_mag"
 
-(* sensors_agree - complex match, manual review needed *)
+(* sensors_agree (matches Coq: Definition sensors_agree) *)
+fun sensors_agree :: "nat \<Rightarrow> bool" where
+
 
 (* watchdog_ok (matches Coq: Definition watchdog_ok) *)
 definition watchdog_ok :: "bool" where
-  "watchdog_ok \<equiv> Nat"
+  "watchdog_ok \<equiv> ((current < -) last_kick) timeout"
 
 (* controllers_redundant (matches Coq: Definition controllers_redundant) *)
 definition controllers_redundant :: "bool" where
-  "controllers_redundant \<equiv> Nat"
+  "controllers_redundant \<equiv> (min_required \<le> active_count)"
 
 (* in_geofence (matches Coq: Definition in_geofence) *)
 definition in_geofence :: "bool" where
-  "in_geofence \<equiv> andb (Nat"
+  "in_geofence \<equiv> ((fence_min \<le> position) \<and> (position \<le> fence_max))"
 
 (* path_collision_free (matches Coq: Definition path_collision_free) *)
 definition path_collision_free :: "bool" where
-  "path_collision_free \<equiv> forallb (fun p => negb (existsb (fun o => Nat"
+  "path_collision_free \<equiv> forallb (fun p => (\<not> (existsb) (fun o => (p = o)) obstacles)) path_points"
 
 (* energy_sufficient (matches Coq: Definition energy_sufficient) *)
 definition energy_sufficient :: "bool" where
-  "energy_sufficient \<equiv> Nat"
+  "energy_sufficient \<equiv> (required \<le> current)"
 
 (* link_quality_ok (matches Coq: Definition link_quality_ok) *)
 definition link_quality_ok :: "bool" where
-  "link_quality_ok \<equiv> Nat"
+  "link_quality_ok \<equiv> (min_quality \<le> quality)"
 
 (* constraints_met (matches Coq: Definition constraints_met) *)
 definition constraints_met :: "nat \<Rightarrow> bool" where
-  "constraints_met violations \<equiv> Nat"
+  "constraints_met violations \<equiv> (violations = 0)"
 
 (* decisions_logged (matches Coq: Definition decisions_logged) *)
 definition decisions_logged :: "bool" where
-  "decisions_logged \<equiv> Nat"
+  "decisions_logged \<equiv> ((length \<le> decisions)) (length logged)"
 
 (* verified_before_exec (matches Coq: Definition verified_before_exec) *)
 definition verified_before_exec :: "bool" where
-  "verified_before_exec \<equiv> orb (negb executed) verified"
+  "verified_before_exec \<equiv> (((\<not> \<or>) executed)) verified"
 
 (* autonomy_layers (matches Coq: Definition autonomy_layers) *)
 definition autonomy_layers :: "bool" where
-  "autonomy_layers \<equiv> andb envelope (andb failsafe (andb override verify))"
+  "autonomy_layers \<equiv> (envelope \<and> (andb) failsafe ((override \<and> verify)))"
 
 (* auto_001_velocity_bounded (matches Coq) *)
 lemma auto_001_velocity_bounded: "\<forall> (state : SystemState) (env : SafetyEnvelope), velocity_in_envelope state env = True \<longrightarrow> state_velocity state \<le> env_max_velocity env"
