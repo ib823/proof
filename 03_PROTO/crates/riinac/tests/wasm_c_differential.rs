@@ -194,3 +194,45 @@ fn diff_bare_64bit() {
     // A bare 64-bit expression echoed by the trampoline.
     assert_byte_equal("bare_64bit", "9000000000");
 }
+
+// ── W2.1: arbitrary-precision BigInt (`besar`) construction + display ─────────
+// `besar` parses a base-10 literal of any length into a linear-memory bignum
+// (base-2^32 limbs, matching bigint.rs / BigIntModel.v) and renders it back; the
+// WASM output must be byte-identical to the C backend (which uses its own proven
+// bignum runtime). BigInt arithmetic still fails closed on WASM (a follow-up).
+
+#[test]
+fn diff_besar_small() {
+    assert_byte_equal(
+        "besar_small",
+        "fungsi utama() -> Nombor kesan Sistem { cetak(besar(\"7\")); pulang 0 }",
+    );
+}
+
+#[test]
+fn diff_besar_two_limb() {
+    // 12345678901234567890 < 2^64 occupies exactly two base-2^32 limbs (the case
+    // that exposed the bump-pointer-alignment bug).
+    assert_byte_equal(
+        "besar_two_limb",
+        "fungsi utama() -> Nombor kesan Sistem { cetak(besar(\"12345678901234567890\")); pulang 0 }",
+    );
+}
+
+#[test]
+fn diff_besar_2pow64() {
+    // 2^64 — the smallest three-limb value.
+    assert_byte_equal(
+        "besar_2p64",
+        "fungsi utama() -> Nombor kesan Sistem { cetak(besar(\"18446744073709551616\")); pulang 0 }",
+    );
+}
+
+#[test]
+fn diff_besar_2pow128_cetakln() {
+    // 2^128 (39 digits), via cetakln (trailing newline).
+    assert_byte_equal(
+        "besar_2p128",
+        "fungsi utama() -> Nombor kesan Sistem { cetakln(besar(\"340282366920938463463374607431768211456\")); pulang 0 }",
+    );
+}

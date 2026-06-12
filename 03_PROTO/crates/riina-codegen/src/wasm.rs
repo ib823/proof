@@ -183,17 +183,42 @@ impl WasmBackend {
 
         let alloc_func_index = NUM_IMPORTS; // 2 imports, then alloc is index 2
 
+        // === Bignum (BigInt / `besar`) runtime helpers ===
+        // Internal WASM functions for arbitrary-precision integers, inserted
+        // between $alloc and the user functions; they share alloc's (i32)->i32
+        // type. W2.1: from_str + to_str (construction + display) — BigInt
+        // arithmetic is added in later increments (its binops still fail closed).
+        // Emitted only when the program actually uses BigInt, so non-BigInt
+        // modules carry no bignum-runtime bloat.
+        let uses_bigint = program.functions.values().any(|f| {
+            f.blocks
+                .iter()
+                .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::BigInt)))
+        });
+        let n_bignum_fns: u32 = if uses_bigint { 2 } else { 0 };
+        let (bi_from_str_index, bi_to_str_index) = if uses_bigint {
+            let from = NUM_IMPORTS + 1;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_bi_from_str(alloc_func_index));
+            let to = NUM_IMPORTS + 2;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_bi_to_str(alloc_func_index));
+            (from, to)
+        } else {
+            (0, 0) // unused: no BigInt op is emitted when the program has none
+        };
+
         // === User functions ===
         let mut func_ids: Vec<FuncId> = program.functions.keys().copied().collect();
         func_ids.sort_by_key(|f| f.0); // Deterministic order
         let mut func_index_map: HashMap<FuncId, u32> = HashMap::new();
         for (i, &fid) in func_ids.iter().enumerate() {
-            // User functions start after imports + alloc
-            func_index_map.insert(fid, NUM_IMPORTS + 1 + i as u32);
+            // User functions start after imports + alloc + bignum helpers
+            func_index_map.insert(fid, NUM_IMPORTS + 1 + n_bignum_fns + i as u32);
         }
 
         // Table for indirect calls (closures)
-        let total_funcs = NUM_IMPORTS + 1 + func_ids.len() as u32;
+        let total_funcs = NUM_IMPORTS + 1 + n_bignum_fns + func_ids.len() as u32;
         module.tables.push(TableType {
             min: total_funcs,
             max: Some(total_funcs),
@@ -230,6 +255,8 @@ impl WasmBackend {
                 &string_table,
                 alloc_func_index,
                 user_func_type_idx,
+                bi_from_str_index,
+                bi_to_str_index,
             )?;
             module.codes.push(body);
         }
@@ -303,7 +330,8 @@ impl WasmBackend {
                 code: trampoline_code,
             });
 
-            let start_func_index = NUM_IMPORTS + 1 + func_ids.len() as u32; // after alloc + user funcs
+            // after alloc + bignum helpers + user funcs
+            let start_func_index = NUM_IMPORTS + 1 + n_bignum_fns + func_ids.len() as u32;
             module.exports.push(Export {
                 name: "_start".to_string(),
                 kind: ExportKind::Func,
@@ -368,12 +396,436 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `bi_from_str(str_ptr: i32) -> i32`: parse a base-10 string
+    /// `[len:i32][bytes]` into a fresh BigInt record `[len:i32][neg:i32][u32 limbs]`
+    /// (little-endian base-2^32, matching `bigint.rs`); returns the record pointer.
+    /// Per digit `d`: `acc = acc*10 + d` as an in-place limb pass
+    /// (`carry=d; for j<len: cur=limb[j]*10+carry; limb[j]=cur mod 2^32; carry=cur/2^32`).
+    /// W2.1 parses unsigned magnitudes (no sign — the parsed literals are
+    /// non-negative; signed results come from arithmetic in W2.2).
+    fn emit_bi_from_str(&self, alloc_func_index: u32) -> FuncBody {
+        // param 0 = str_ptr; i32 locals 1..=6, i64 locals 7..=8.
+        const STR: u32 = 0;
+        const REC: u32 = 1;
+        const SLEN: u32 = 2;
+        const I: u32 = 3;
+        const LEN: u32 = 4;
+        const J: u32 = 5;
+        const ADDR: u32 = 6;
+        const CARRY: u32 = 7;
+        const CUR: u32 = 8;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+
+        // slen = mem[str]
+        lget(&mut c, STR);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SLEN);
+        // rec = alloc(8 + (slen+2)*4)
+        lget(&mut c, SLEN);
+        wasm_i32c(&mut c, 2);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        op(&mut c, Op::Call);
+        wasm_encode::encode_uleb128(alloc_func_index as u64, &mut c);
+        lset(&mut c, REC);
+        // mem[rec+0] = 0 (len); mem[rec+4] = 0 (neg)
+        lget(&mut c, REC);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, REC);
+        wasm_i32c(&mut c, 0);
+        wasm_store(&mut c, 4);
+        // len = 0; i = 0
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, LEN);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, I);
+        // outer: for i in 0..slen
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        // if i >= slen: break (br 1)
+        lget(&mut c, I);
+        lget(&mut c, SLEN);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // carry = (i64)(mem[str+4+i] - '0')
+        lget(&mut c, STR);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, I);
+        op(&mut c, Op::I32Add);
+        wasm_load8u(&mut c, 0);
+        wasm_i32c(&mut c, 48);
+        op(&mut c, Op::I32Sub);
+        op(&mut c, Op::I64ExtendI32U);
+        lset(&mut c, CARRY);
+        // j = 0
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, J);
+        // inner: for j in 0..len  (scale-by-10-add)
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        // if j >= len: break (br 1)
+        lget(&mut c, J);
+        lget(&mut c, LEN);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // addr = rec + 8 + j*4
+        lget(&mut c, REC);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, J);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, ADDR);
+        // cur = (i64)mem[addr]*10 + carry
+        lget(&mut c, ADDR);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        wasm_i64c(&mut c, 10);
+        op(&mut c, Op::I64Mul);
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, CUR);
+        // mem[addr] = (i32)(cur mod 2^32)
+        lget(&mut c, ADDR);
+        lget(&mut c, CUR);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        // carry = cur / 2^32
+        lget(&mut c, CUR);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64DivU);
+        lset(&mut c, CARRY);
+        // j += 1; continue
+        lget(&mut c, J);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, J);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (inner)
+        op(&mut c, Op::End); // block (inner)
+        // if carry != 0 { limb[len] = (i32)carry; len += 1 }
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I64Eqz);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, REC);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, CARRY);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, LEN);
+        op(&mut c, Op::End); // if
+        // i += 1; continue
+        lget(&mut c, I);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, I);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (outer)
+        op(&mut c, Op::End); // block (outer)
+        // mem[rec+0] = len
+        lget(&mut c, REC);
+        lget(&mut c, LEN);
+        wasm_store(&mut c, 0);
+        // return rec
+        lget(&mut c, REC);
+
+        FuncBody {
+            locals: vec![(6, ValType::I32), (2, ValType::I64)],
+            code: c,
+        }
+    }
+
+    /// Emit `bi_to_str(rec: i32) -> i32`: render a BigInt record to a heap string
+    /// `[len:i32][bytes]` and return its pointer. Copies the magnitude to scratch,
+    /// then repeatedly divides it by 10 (`for k=slen-1..0: cur=rem*2^32+limb[k];
+    /// limb[k]=cur/10; rem=cur%10`), writing each remainder digit backward.
+    fn emit_bi_to_str(&self, alloc_func_index: u32) -> FuncBody {
+        const REC: u32 = 0;
+        const LEN: u32 = 1;
+        const NEG: u32 = 2;
+        const MAXD: u32 = 3;
+        const BUF: u32 = 4;
+        const SCR: u32 = 5;
+        const SLEN2: u32 = 6;
+        const WP: u32 = 7;
+        const K: u32 = 8;
+        const ADDR: u32 = 9;
+        const REM: u32 = 11;
+        const CUR: u32 = 12;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call_alloc = |c: &mut Vec<u8>| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+        };
+
+        // len = mem[rec+0]; neg = mem[rec+4]
+        lget(&mut c, REC);
+        wasm_load(&mut c, 0);
+        lset(&mut c, LEN);
+        lget(&mut c, REC);
+        wasm_load(&mut c, 4);
+        lset(&mut c, NEG);
+        // if len == 0 { return the string "0" }
+        lget(&mut c, LEN);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        wasm_i32c(&mut c, 8);
+        call_alloc(&mut c);
+        lset(&mut c, BUF);
+        lget(&mut c, BUF);
+        wasm_i32c(&mut c, 1);
+        wasm_store(&mut c, 0); // len prefix = 1
+        lget(&mut c, BUF);
+        wasm_i32c(&mut c, 48);
+        wasm_store8(&mut c, 4); // '0'
+        lget(&mut c, BUF);
+        op(&mut c, Op::Return);
+        op(&mut c, Op::End); // if (len==0)
+        // maxd = len*10 + 1
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 10);
+        op(&mut c, Op::I32Mul);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, MAXD);
+        // buf = alloc(align4(maxd + 5))   [4-byte len prefix + maxd digits + slack]
+        // Round up to a multiple of 4 so the bump pointer stays 4-aligned for the
+        // scratch alloc and the i32 length-prefix store (see emit_ke_teks).
+        lget(&mut c, MAXD);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        wasm_i32c(&mut c, -4);
+        op(&mut c, Op::I32And);
+        call_alloc(&mut c);
+        lset(&mut c, BUF);
+        // scr = alloc(len*4); copy magnitude into it
+        lget(&mut c, LEN);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        call_alloc(&mut c);
+        lset(&mut c, SCR);
+        wasm_i32c(&mut c, 0);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        lget(&mut c, LEN);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // scr[k] = mem[rec + 8 + k*4]
+        lget(&mut c, SCR);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, REC);
+        wasm_i32c(&mut c, 8);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        wasm_store(&mut c, 0);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (copy)
+        op(&mut c, Op::End); // block (copy)
+        // slen2 = len; wp = buf + 4 + maxd
+        lget(&mut c, LEN);
+        lset(&mut c, SLEN2);
+        lget(&mut c, BUF);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, MAXD);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, WP);
+        // outer: while slen2 > 0
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, SLEN2);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // rem = 0; for k = slen2-1 downto 0
+        wasm_i64c(&mut c, 0);
+        lset(&mut c, REM);
+        lget(&mut c, SLEN2);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, K);
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32LtS);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // addr = scr + k*4
+        lget(&mut c, SCR);
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        lset(&mut c, ADDR);
+        // cur = rem*2^32 + (i64)mem[addr]
+        lget(&mut c, REM);
+        wasm_i64c(&mut c, 4294967296);
+        op(&mut c, Op::I64Mul);
+        lget(&mut c, ADDR);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I64ExtendI32U);
+        op(&mut c, Op::I64Add);
+        lset(&mut c, CUR);
+        // mem[addr] = (i32)(cur/10)
+        lget(&mut c, ADDR);
+        lget(&mut c, CUR);
+        wasm_i64c(&mut c, 10);
+        op(&mut c, Op::I64DivU);
+        op(&mut c, Op::I32WrapI64);
+        wasm_store(&mut c, 0);
+        // rem = cur % 10
+        lget(&mut c, CUR);
+        wasm_i64c(&mut c, 10);
+        op(&mut c, Op::I64RemU);
+        lset(&mut c, REM);
+        // k -= 1; continue
+        lget(&mut c, K);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, K);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (divmod)
+        op(&mut c, Op::End); // block (divmod)
+        // shrink slen2 while top limb == 0
+        op(&mut c, Op::Block);
+        c.push(0x40);
+        op(&mut c, Op::Loop);
+        c.push(0x40);
+        lget(&mut c, SLEN2);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        // if mem[scr + (slen2-1)*4] != 0: stop
+        lget(&mut c, SCR);
+        lget(&mut c, SLEN2);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Mul);
+        op(&mut c, Op::I32Add);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::BrIf);
+        wasm_encode::encode_uleb128(1, &mut c);
+        lget(&mut c, SLEN2);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, SLEN2);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (shrink)
+        op(&mut c, Op::End); // block (shrink)
+        // wp -= 1; mem[wp] = '0' + (i32)rem
+        lget(&mut c, WP);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, WP);
+        lget(&mut c, WP);
+        lget(&mut c, REM);
+        op(&mut c, Op::I32WrapI64);
+        wasm_i32c(&mut c, 48);
+        op(&mut c, Op::I32Add);
+        wasm_store8(&mut c, 0);
+        op(&mut c, Op::Br);
+        wasm_encode::encode_uleb128(0, &mut c);
+        op(&mut c, Op::End); // loop (outer)
+        op(&mut c, Op::End); // block (outer)
+        // if neg { wp -= 1; mem[wp] = '-' }
+        lget(&mut c, NEG);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, WP);
+        wasm_i32c(&mut c, 1);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, WP);
+        lget(&mut c, WP);
+        wasm_i32c(&mut c, 45);
+        wasm_store8(&mut c, 0);
+        op(&mut c, Op::End); // if (neg)
+        // nd = (buf + 4 + maxd) - wp; mem[wp-4] = nd; return wp-4
+        lget(&mut c, BUF);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, MAXD);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, WP);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, MAXD); // reuse MAXD to hold nd
+        lget(&mut c, WP);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Sub);
+        lget(&mut c, MAXD);
+        wasm_store(&mut c, 0);
+        lget(&mut c, WP);
+        wasm_i32c(&mut c, 4);
+        op(&mut c, Op::I32Sub);
+
+        FuncBody {
+            locals: vec![(10, ValType::I32), (2, ValType::I64)],
+            code: c,
+        }
+    }
+
     /// Emit WASM instructions for a function.
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
     /// proper WASM structured control flow (if/else/end) instead of
     /// invalid bare br_if instructions.
+    #[allow(clippy::too_many_arguments)] // threads alloc + bignum + type indices
     fn emit_function(
         &self,
         func: &Function,
@@ -381,6 +833,8 @@ impl WasmBackend {
         string_table: &HashMap<String, u32>,
         alloc_func_index: u32,
         user_func_type_idx: u32,
+        bi_from_str_index: u32,
+        bi_to_str_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -474,6 +928,8 @@ impl WasmBackend {
             string_table,
             alloc_func_index,
             user_func_type_idx,
+            bi_from_str_index,
+            bi_to_str_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -1219,6 +1675,20 @@ impl WasmBackend {
                 Self::emit_str_add(lhs, rhs, ctx, code);
             }
             Instruction::BinOp(op, lhs, rhs) => {
+                // BigInt arithmetic is not yet wired on WASM (W2.1 lands besar
+                // construction + display; cmp/add/sub/mul/divmod are W2.2+). Fail
+                // closed so a `besar` binop never falls through to `i64.*` on the
+                // record pointers — a guaranteed miscompile.
+                if matches!(ctx.var_to_ty.get(lhs), Some(Ty::BigInt))
+                    || matches!(ctx.var_to_ty.get(rhs), Some(Ty::BigInt))
+                {
+                    return Err(crate::Error::InvalidOperation(
+                        "BigInt (`besar`) arithmetic is not yet supported by the WASM \
+                         backend (construction + display work; arithmetic is a follow-up). \
+                         Use the C backend or the interpreter."
+                            .to_string(),
+                    ));
+                }
                 // Numeric tower: division/modulo/comparison of a *signed* sized int
                 // (`Ty::IntN{signed}`) narrower than i32 must sign-extend its
                 // operands first — the cell holds the width-masked (unsigned-range)
@@ -1592,6 +2062,42 @@ impl WasmBackend {
                             _ => None,
                         };
                         Self::emit_print_int(arg, signed_bits, ctx, code);
+                    } else if matches!(ctx.var_to_ty.get(arg), Some(Ty::BigInt)) {
+                        // BigInt: render to a decimal heap string via bi_to_str,
+                        // then print it. The string pointer is read twice by the
+                        // iovec setup, so stash it in a scratch i32 local.
+                        Self::emit_local_get(arg, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.bi_to_str_index as u64, code);
+                        wasm_local(code, Op::LocalSet, ctx.scratch); // scratch = string ptr (i32)
+                        // heap[0] = strptr + 4 (iovec.ptr = data start)
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        wasm_local(code, Op::LocalGet, ctx.scratch);
+                        wasm_i32c(code, 4);
+                        code.push(Op::I32Add as u8);
+                        wasm_store(code, 0);
+                        // heap[4] = mem[strptr] (iovec.len)
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        wasm_i32c(code, 4);
+                        code.push(Op::I32Add as u8);
+                        wasm_local(code, Op::LocalGet, ctx.scratch);
+                        wasm_load(code, 0);
+                        wasm_store(code, 0);
+                        // fd_write(1, heap, 1, heap+8); drop
+                        wasm_i32c(code, 1);
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        wasm_i32c(code, 1);
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        wasm_i32c(code, 8);
+                        code.push(Op::I32Add as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(0, code);
+                        code.push(Op::Drop as u8);
                     } else {
                         // String pointer (len-prefixed in data section):
                         // Layout: [len:u32][bytes...]. fd_write needs an iovec
@@ -1657,6 +2163,14 @@ impl WasmBackend {
                             // Int (or sized int) → heap string.
                             Self::emit_ke_teks(arg, ctx, code);
                         }
+                        Some(Ty::BigInt) => {
+                            // BigInt → decimal heap string via bi_to_str.
+                            Self::emit_local_get(arg, ctx.var_map, code);
+                            code.push(Op::I32WrapI64 as u8);
+                            code.push(Op::Call as u8);
+                            wasm_encode::encode_uleb128(ctx.bi_to_str_index as u64, code);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
                         Some(Ty::String | Ty::Element | Ty::Color | Ty::UIStyle) => {
                             // `ke_teks` of a string-typed value is identity — the
                             // value is already a `[len][bytes]` heap string. This
@@ -1672,19 +2186,28 @@ impl WasmBackend {
                     }
                 } else if name == "gabung_teks" {
                     Self::emit_gabung_teks(arg, ctx, code);
-                } else if name == "besar"
-                    || name == "perpuluhan"
+                } else if name == "besar" || name == "bigint" {
+                    // BigInt construction (W2): parse the base-10 string literal
+                    // into a linear-memory BigInt record via the bi_from_str helper.
+                    // The arg is a `[len][bytes]` string pointer (i64 cell) → wrap
+                    // to an i32 address, parse, lift the result record pointer back
+                    // into the i64 cell.
+                    Self::emit_local_get(arg, ctx.var_map, code);
+                    code.push(Op::I32WrapI64 as u8);
+                    code.push(Op::Call as u8);
+                    wasm_encode::encode_uleb128(ctx.bi_from_str_index as u64, code);
+                    code.push(Op::I64ExtendI32U as u8);
+                } else if name == "perpuluhan"
                     || name == "wang"
                     || name == "titik_tetap"
                     || name == "qmn"
                 {
-                    // The boxed numeric-tower types (BigInt `besar`, Decimal
-                    // `perpuluhan`, fixed-point `wang`/`titik_tetap`, Q-format
-                    // `qmn`) have no WASM representation yet (the C backend boxes
-                    // them; WASM holds untagged i32). Fail closed rather than stub
-                    // to 0 — such a value cannot exist in a WASM program without
-                    // its constructor, so this one guard prevents any silent
-                    // miscompile. (Tracked: numeric-tower WASM codegen.)
+                    // The remaining boxed numeric-tower types (Decimal `perpuluhan`,
+                    // fixed-point `wang`/`titik_tetap`, Q-format `qmn`) have no WASM
+                    // representation yet (the C backend boxes them). Fail closed
+                    // rather than stub to 0 — such a value cannot exist in a WASM
+                    // program without its constructor, so this guard prevents any
+                    // silent miscompile. (Tracked: W3 numeric-tower WASM codegen.)
                     return Err(crate::Error::InvalidOperation(format!(
                         "{name} (boxed numeric tower) is not supported \
                          by the WASM backend yet; use the C backend or the interpreter"
@@ -1834,6 +2357,28 @@ fn wasm_i32c(code: &mut Vec<u8>, n: i64) {
 fn wasm_i64c(code: &mut Vec<u8>, n: i64) {
     code.push(Op::I64Const as u8);
     wasm_encode::encode_sleb128(n, code);
+}
+
+// ── linear-memory access helpers (i32 addresses; used by the bignum runtime) ──
+fn wasm_load(code: &mut Vec<u8>, off: u8) {
+    code.push(Op::I32Load as u8);
+    code.push(0x02);
+    code.push(off);
+}
+fn wasm_store(code: &mut Vec<u8>, off: u8) {
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(off);
+}
+fn wasm_load8u(code: &mut Vec<u8>, off: u8) {
+    code.push(Op::I32Load8U as u8);
+    code.push(0x00);
+    code.push(off);
+}
+fn wasm_store8(code: &mut Vec<u8>, off: u8) {
+    code.push(Op::I32Store8 as u8);
+    code.push(0x00);
+    code.push(off);
 }
 
 /// Numeric tower: the width of a *signed* `Ty::IntN` narrower than the 64-bit
@@ -2034,6 +2579,9 @@ struct EmitCtx<'a> {
     string_table: &'a HashMap<String, u32>,
     alloc_func_index: u32,
     user_func_type_idx: u32,
+    /// Function indices of the bignum runtime helpers (`besar`): parse and render.
+    bi_from_str_index: u32,
+    bi_to_str_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,
