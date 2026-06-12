@@ -1,6 +1,6 @@
 # RIINA Compliance System — User Guide
 
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2875 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2877 Rust tests
 
 ## Overview
 
