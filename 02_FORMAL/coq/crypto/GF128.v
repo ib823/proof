@@ -111,8 +111,12 @@ Lemma gf_mul_distr_r : forall x a b,
   gf_mul x (Z.lxor a b) = Z.lxor (gf_mul x a) (gf_mul x b).
 Proof.
   intros x a b. unfold gf_mul.
-  rewrite <- (Z.lxor_0_l 0) at 1. (* 0 = lxor 0 0 *)
-  apply gf_iter_distr_y.
+  (* The accumulator 0 must be exhibited as [Z.lxor 0 0]; [exact] with
+     explicit arguments decides that by conversion ([Z.lxor 0 0] reduces
+     to [0]), where the previous [rewrite <- (Z.lxor_0_l 0) at 1] drove
+     the setoid-rewrite occurrence machinery through the unfolded
+     [gf_iter 128] goal — pathologically slow (hours on a slow vCPU). *)
+  exact (gf_iter_distr_y 128%nat 127 a b 0 0 x).
 Qed.
 
 (** ** Left-linearity: [(a + b) * y = a*y + b*y] *)
@@ -132,8 +136,8 @@ Lemma gf_mul_distr_l : forall a b y,
   gf_mul (Z.lxor a b) y = Z.lxor (gf_mul a y) (gf_mul b y).
 Proof.
   intros a b y. unfold gf_mul.
-  rewrite <- (Z.lxor_0_l 0) at 1.
-  apply gf_iter_distr_x.
+  (* Same conversion-based closure as [gf_mul_distr_r] above. *)
+  exact (gf_iter_distr_x 128%nat 127 y 0 0 a b).
 Qed.
 
 (** ** Multiplicative identity: [x * 1 = x] *)
