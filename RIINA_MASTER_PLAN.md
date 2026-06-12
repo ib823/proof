@@ -2430,8 +2430,10 @@ four lanes: +6 REQ-27 IFC sink tests, +1 generated-stdlib-doc drift guard, +8 fu
 **0 discrepancies**, proof ledger up to date. `metrics.json` (source of truth):
 `tests`/`testsVerified` = **2898**, `qedActive` **12,613**, `filesActive` **327**, `examples` **165**
 (61 pass `riinac check`, all 26 of `00_basics/`). Clean tree; **merged fast-forward to `main` and
-pushed 2026-06-12** (`aae4785..9f74cc8` + deploy follow-ups), **`v0.4.0` tagged**, public branch
-synced and reconciled (see the session-conclusion entry below).
+pushed 2026-06-12** (`aae4785..9f74cc8` + deploy follow-ups), **`v0.4.0` tag created at `aae4785`
+(local only — the managed proxy rejects tag pushes; from any normal clone run:
+`git push origin v0.4.0`)**, public branch synced and reconciled to `74d4ad46c`
+(see the session-conclusion entry below).
 
 **Environment note (unchanged, still load-bearing):** the pre-push `riinac verify --full` runs a
 fail-closed "Primary Verifier (Coq) Present" guard that REQUIRES a `rocq`/`coqc` binary, plus a
@@ -2497,6 +2499,15 @@ install; decide add+purge); `04_SPECS/cross-cutting/DOMAIN_R5_CHECKLIST_v1_0_0.m
 deploy NOT run:** `deploy-website.sh` pushes `gh-pages` on `ib823/riina`, outside this session's repo
 scope — runbook: `git remote add riina https://ib823:<TOKEN>@github.com/ib823/riina.git`, then
 `bash scripts/deploy-website.sh` (Node/npm present; Dim1/Dim9 + public-quality gates green on main).
+**Deploy outcome (verified post-push):** reconcile executed via `sync-public.sh --reconcile`
+(owner-approved) → public `74d4ad46c`: 3,922 files set to main's blobs, contamination self-check
+clean; 16/16 sentinel files blob-identical main↔public (incl. `flake.nix`, `_CoqProject`, ledgers,
+`metrics.json`); the quality gates **run on the public tree itself** now report Active-build hygiene
+PASS / **Metrics alignment PASS (12,613 Qed reproducible from public)** / Claim integrity PASS, with
+only the documented structural ledger-freshness FAIL remaining. Zero internal leaks on public
+(isabelle toolchain, `_archive_deprecated`, delegation docs, master plan: 0 hits). The `v0.4.0` tag
+could NOT be pushed from this environment (proxy rejects tag pushes; retried 4× with backoff) — it
+exists locally; push from any normal clone.
 
 **Twelfth session (2026-06-10), part 19 — three-lane increment: Gate C File-I/O effect Coq model + REQ-27 secret-sink enforcement + Gate I human docs.**
 All three named lanes landed, each verified by running the artifact: **(1) Gate C / TRACK_A** —
