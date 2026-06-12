@@ -394,4 +394,32 @@ mod tests {
         let total = subtotal.add(&tax);
         assert_eq!(total.to_string_repr(), "48.13");
     }
+
+    /// Coq⇄Rust formal-equivalence bridge. The running money type reproduces the
+    /// exact round-half-to-even values the model proves in
+    /// `02_FORMAL/coq/foundations/FixedPointModel.v` — the `round_he` KATs
+    /// (`wang_10_div_3`, `wang_1p55_squared`, `wang_0p5_squared_even`,
+    /// `titik_tetap_3p145`, `titik_tetap_3p155`), whose `round_he_nearest` +
+    /// `round_he_tie_even` lemmas prove the rounding is correct (nearest, ties to
+    /// even). The Coq KATs pin the rounded mantissas; the running `mul`/`div` /
+    /// `parse_scaled` below reproduce them.
+    #[test]
+    fn test_fixed_matches_coq_model() {
+        // FixedPointModel.v `wang_10_div_3`: round_he 1000 3 = 333 → 3.33.
+        assert_eq!(w("10.00").div(&w("3")).unwrap().to_string_repr(), "3.33");
+        // `wang_1p55_squared`: round_he 24025 100 = 240 → 2.40.
+        assert_eq!(w("1.55").mul(&w("1.55")).to_string_repr(), "2.40");
+        // `wang_0p5_squared_even`: round_he 25 10 = 2 (tie to even) → 0.2.
+        assert_eq!(w("0.5").mul(&w("0.5")).to_string_repr(), "0.2");
+        // `titik_tetap_3p145`: round_he 3145 10 = 314 (tie, even) → 3.14.
+        assert_eq!(
+            Fixed::parse_scaled("3.145", 2).unwrap().to_string_repr(),
+            "3.14"
+        );
+        // `titik_tetap_3p155`: round_he 3155 10 = 316 (tie, odd→up) → 3.16.
+        assert_eq!(
+            Fixed::parse_scaled("3.155", 2).unwrap().to_string_repr(),
+            "3.16"
+        );
+    }
 }

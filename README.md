@@ -82,7 +82,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes — 12,581 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
+| Formal proof corpus in repo | Yes — 12,594 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
 | Multi-prover work | Coq mechanized; 9 other lanes are generated/smoke-only (not independent verification) | No | No | No |
 | Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
@@ -230,7 +230,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | What is actually proven | Notes |
 |--------|-------------------------|-------|
-| **Rocq 9.2** (Primary) | 12,581 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **30 `Parameter` declarations** (logically equivalent to axioms in Coq), the propositional ones modelling the trusted hardware interface — see `PROOF_STATUS.md` |
+| **Rocq 9.2** (Primary) | 12,594 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **30 `Parameter` declarations** (logically equivalent to axioms in Coq), the propositional ones modelling the trusted hardware interface — see `PROOF_STATUS.md` |
 | **Lean 4** | **215 theorems across 7 files** actually elaborate (measured 2026-06-01, Lean 4.16.0; self-contained `Domains/Verified*` files — the core type-safety files do **not** compile) | The other ~12,360 declarations are transpiler-generated with placeholder tactics (`simp_all [Bool.and_eq_true]`, in 304 files) that do **not** prove their goals; `lake build RIINA` passes only because its default target is a 0-theorem shim. See `02_FORMAL/lean/COMPILATION_STATUS.md`. Claim level: **generated**, not mechanized |
 | **Isabelle/HOL** | `RIINA_CORE` smoke session — **unverified** (`smokeBuildOk:false`; toolchain download 403 here) | 368 `.thy` files total, machine-generated from Coq; remainder unverified generated corpora |
 | **F\*** | Effectively nothing | 315 `.fst` files, but **`admit()` appears ~12,010 times** — nearly every lemma body is `admit ()`. Generated, not proven |
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,581 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2848 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2850 Rust tests
 
 | Area | Status |
 |------|--------|
