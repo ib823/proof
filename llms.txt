@@ -1,83 +1,150 @@
-# RIINA
+# RIINA™
 
-> Write with vibes. Ship with proofs.
+> Rigorous Immutable Invariant, No Assumptions
 
-RIINA (Rigorous Immutable Invariant, No Assumptions) is the world's first formally verified programming language designed for AI-native code generation. Every security property is mathematically proven across 10 independent provers. If AI-generated code compiles, it is provably secure by construction.
+RIINA is a programming language with Bahasa Melayu (Malaysian) keywords and a
+machine-checked Coq proof corpus for its core type/effect system. Note: the
+shipped compiler enforces a subset of the modeled security properties — the full
+proof corpus is not yet wired end-to-end into the compiler (see Verified State).
 
 - File extension: `.rii`
+- Version: 0.3.0
 - Keywords: Bahasa Melayu (Malaysian) + English dual syntax
 - Repository: https://github.com/ib823/riina
-- Formal proofs: 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) + 7,924 Lean + 8,072 Isabelle
-- Verification: 10-prover (Coq, Lean 4, Isabelle/HOL, F*, TLA+, Alloy, Z3/CVC5, Verus, Kani, TV)
-- Security: 6-level information flow lattice, mandatory effect tracking
 - License: Proprietary
+
+## Verified State (command-derived)
+
+IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
+other lanes were machine-GENERATED from the Coq sources (via
+`scripts/generate-full-stack.py` / `generate-multiprover.py`) and are mostly
+unproven placeholders or single small smoke artifacts. Do NOT cite their raw
+theorem counts as "verified theorems."
+
+- Coq: 12,553 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 324 active .v files.
+  Caveat: 32 active `Parameter` declarations are logically equivalent to axioms
+  (the propositional ones model the trusted hardware interface) — these are the de-facto trusted assumptions.
+- Lean 4: 12,576 theorem/lemma declarations, but **only 215 across 7 files
+  actually elaborate** (measured 2026-06-01, Lean 4.16.0; self-contained
+  `Domains/Verified*` files — the core type-safety files do NOT compile). The
+  remaining ~12,360 declarations use placeholder tactics
+  (`simp_all [Bool.and_eq_true]`, in 304 files) that do NOT prove their goals.
+  `lake build RIINA` passes only because its default target is a 0-theorem shim.
+  Claim: **generated**, not mechanized. See
+  `02_FORMAL/lean/COMPILATION_STATUS.md`.
+- F*: 315 .fst files; 1 smoke module (`CryptographicSecurityActive.fst`) verifies
+  3 trivial lemmas (constant-time eq + zeroize length; re-verified 2026-06-01,
+  F* 2025.12.15). The rest carry ~11,935 `admit ()` — effectively nothing else is
+  proven. Claim: generated (1 trivial smoke module aside).
+- Isabelle: 368 .thy (generated). 12,931 = raw grep; the `RIINA_CORE` smoke theory is
+  UNVERIFIED (metrics `smokeBuildOk:false`; toolchain not provisionable here, download 403).
+- TLA+ / Alloy / SMT: 1 small hand-written smoke artifact each, re-verified 2026-06-01 —
+  TLA+ 5 THEOREMs (TLA2Tools), Alloy 6 assertions (Alloy 6.2.0), SMT 25 Z3-unsat lattice
+  properties (Z3 4.8.12). Raw corpus counts (12,282 / 11,627 / 12,405) are generated mirrors,
+  NOT verified. (The SMT "11,843 verified" figure cited elsewhere was a counting error → 25.)
+- Verus / Kani / TV: generated stubs, explicitly quarantined (`quarantined: true`).
+- Authoritative per-lane claim levels: `website/public/metrics.json`.
+- Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +
+  5 tooling crates, 0 external runtime deps (proto). This part is solid.
+- Examples: 157 .rii files, of which 53 currently pass `riinac check` (all 22 of
+  `00_basics/`); the shipped parser accepts a narrower grammar than some examples
+  assume — see `07_EXAMPLES/README.md`.
+
+## Session Protocol
+
+All LLM CLIs MUST follow RIINA_MASTER_PLAN.md Part 8 (8 mandatory steps):
+ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
+
+During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker. Current active gate:
+`B — Compiler Enforcement Parity` (Gate A closed 2026-06-01; REQ-21..26 all DONE).
+Highest-priority open REQ: REQ-27 (compiler enforcement parity, PARTIAL).
+
+Work on `main` or your assigned managed-session branch (`claude/*`, syncs back to `main`).
+Never commit to `public` or `gh-pages`.
+Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (never --no-verify) → sync-public.sh → sync-metrics.sh → deploy-website.sh
 
 ## Docs
 
-- [Full AI Reference](llms-full.txt): Complete language reference for AI agents (~30K tokens)
-- [Language Spec](04_SPECS/language/RIINA_LANGUAGE_REFERENCE_AI.md): Canonical AI-optimized reference
-- [Examples](07_EXAMPLES/): 130+ example .rii files across 9 categories
-- [Formal Proofs](02_FORMAL/coq/): Coq proof library (7,929 Qed proofs)
+- [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
+- [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
+- [Language Specs](04_SPECS/): Formal specifications
+- [Examples](07_EXAMPLES/): 157 example .rii files
+- [Formal Proofs](02_FORMAL/coq/): Coq proof library
+- [llms-full.txt](llms-full.txt): Complete language specification for LLMs
 
-## Quick Syntax
+## Quick Syntax Reference
 
 ```riina
-// Function with effect annotation
+// Functions with effect declarations
 fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
-    x + y
+    pulang x + y;
 }
 
-// Secret types — compiler prevents leaks
-fungsi proses(kata: Rahsia<Teks>) -> Benar kesan Kripto {
-    biar hash = sha256(kata);
-    // cetak(kata);  // COMPILE ERROR: cannot output secret
-    betul
+// Actors (JALINAN Phase 6)
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
 }
 
-// Declassification requires proof
-fungsi dedah_selamat(data: Rahsia<Teks>, bukti: Bukti<Rahsia<Teks>>) -> Teks kesan Bersih {
-    dedah(data, bukti)
-}
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)
 
-// Effect tracking — pure functions cannot perform I/O
-fungsi tulen(x: Nombor) -> Nombor kesan Bersih {
-    x * 2
-    // cetak(x);  // COMPILE ERROR: effect Tulis not in Bersih
+// Choreography (multiparty session types)
+koreografi Pembelian {
+    peranan Pemohon, Pelulus;
+    Pemohon -> Pelulus: hantar Nombor;
+    Pelulus -> Pemohon: hantar Benar;
+    tamat;
 }
 ```
 
-## Key Concepts
+## Keywords
 
-### Security Levels (Lattice)
-`Awam` (Public) < `Dalaman` (Internal) < `Sesi` (Session) < `Pengguna` (User) < `Sistem` (System) < `Rahsia` (Secret)
+### Core
+fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
+selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
+sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)
 
-### Effects (17 tracked effects)
-`Bersih`(Pure) | `Ubah`(Mut) | `Baca`(Read) | `Peruntuk`(Alloc) | `Tulis`(Write) | `SistemFail`(FileSystem) | `Rangkaian`(Network) | `RangkaianSelamat`(NetworkSecure) | `Kripto`(Crypto) | `Rawak`(Random) | `Sistem`(System) | `Masa`(Time) | `Proses`(Process) | `Panel` | `Zirah` | `Benteng` | `Sandi` | `Menara` | `Gapura`
+### Security
+rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
+tercemar (tainted), bersihkan (sanitize)
 
-### Core Keywords (Bahasa Melayu | English)
-`fungsi`|fn, `biar`|let, `ubah`|mut, `kalau`|if, `lain`|else, `untuk`|for, `selagi`|while, `pulang`|return, `padan`|match, `rahsia`|secret, `dedah`|declassify, `kesan`|effect, `laku`|perform, `kendali`|handle, `sulit`|classify, `bukti`|prove
+### Effects
+kesan (effect), bersih (pure), laku (perform), kendali (handle)
 
-### Compiler Commands
+### Linearity
+sekali (linear), paling (affine), mesti (relevant)
+
+### JALINAN (Distributed Computing)
+pelakon (actor), lahir (spawn), hantar (send), terima (recv),
+koreografi (choreography), peranan (role), keadaan (state),
+penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)
+
+### Capabilities
+keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)
+
+### Session Types
+sesi (session), pilih (select), cabang (branch), tamat (end)
+
+## CLI
+
 ```bash
-riinac check file.rii          # Typecheck
-riinac check --json file.rii   # JSON output for AI agents
-riinac run file.rii             # Interpret
-riinac build file.rii           # Compile to native
-riinac test file.rii            # Run inline tests
-riinac fmt file.rii             # Format
-riinac repl                     # Interactive REPL
+riinac check file.rii     # Type-check + verify security
+riinac run file.rii       # Execute directly
+riinac build file.rii     # Compile to native via C
+riinac emit-c file.rii    # Generate C source
+riinac emit-ir file.rii   # Generate IR
+riinac repl               # Interactive mode
+riinac fmt file.rii       # Format source
+riinac doc file.rii       # Generate HTML docs
+riinac lsp                # Language server
+riinac verify --fast      # Quick verification (pre-commit)
+riinac verify --full      # Full verification (pre-push)
+riinac pkg init           # Initialize package
+riinac pkg add dep        # Add dependency
+riinac pkg build          # Build with dependencies
+riinac mcp                # MCP server for AI tools
 ```
-
-## API
-
-- `riinac check --json --stdin`: Pipe source, get structured JSON diagnostics
-- `riinac test --json`: Structured test results
-- `riinac emit-ir`: Dump IR for analysis
-
-## Examples
-
-- [Hello World](07_EXAMPLES/hello_dunia.rii)
-- [Authentication](07_EXAMPLES/pengesahan.rii)
-- [Cryptography](07_EXAMPLES/kripto.rii)
-- [AI Patterns](07_EXAMPLES/07_ai_patterns/)
-- [Training Pairs](07_EXAMPLES/08_ai_training/)
