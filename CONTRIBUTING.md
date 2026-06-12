@@ -1,6 +1,6 @@
 # Contributing to RIINA™
 
-**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2869 Rust tests
+**Verification:** 12,594 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2872 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 2869 passing)
+# Run all tests (should show 2872 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out
