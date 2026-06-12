@@ -98,6 +98,9 @@ pub enum Op {
     I32RemU = 0x70,
     I32And = 0x71,
     I32Or = 0x72,
+    // Shifts (used by the bignum bit-serial divmod: shl1, bit extract/set).
+    I32Shl = 0x74,
+    I32ShrU = 0x76,
     // Sign-extension operators (standardized; supported by wasmtime). Used by the
     // numeric tower to sign-extend a width-8/16 signed `Ty::IntN` to full i32.
     I32Extend8S = 0xC0,
@@ -783,6 +786,9 @@ mod tests {
         assert_eq!(Op::I32WrapI64 as u8, 0xA7);
         assert_eq!(Op::I64ExtendI32S as u8, 0xAC);
         assert_eq!(Op::I64ExtendI32U as u8, 0xAD);
+        // i32 shifts (bignum divmod):
+        assert_eq!(Op::I32Shl as u8, 0x74);
+        assert_eq!(Op::I32ShrU as u8, 0x76);
         // i64 comparisons (result is i32 0/1):
         assert_eq!(Op::I64Eqz as u8, 0x50);
         assert_eq!(Op::I64Eq as u8, 0x51);
