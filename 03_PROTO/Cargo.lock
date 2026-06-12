@@ -4,25 +4,29 @@ version = 4
 
 [[package]]
 name = "riina-arena"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "riina-codegen"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
+ "riina-os",
+ "riina-parser",
+ "riina-runtime",
+ "riina-typechecker",
  "riina-types",
 ]
 
 [[package]]
 name = "riina-compliance"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-types",
 ]
 
 [[package]]
 name = "riina-doc"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-lexer",
  "riina-parser",
@@ -31,7 +35,7 @@ dependencies = [
 
 [[package]]
 name = "riina-fmt"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-lexer",
  "riina-parser",
@@ -40,11 +44,11 @@ dependencies = [
 
 [[package]]
 name = "riina-lexer"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "riina-lsp"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-lexer",
  "riina-parser",
@@ -53,8 +57,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "riina-os"
+version = "0.3.0"
+
+[[package]]
 name = "riina-parser"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-lexer",
  "riina-types",
@@ -62,36 +70,52 @@ dependencies = [
 
 [[package]]
 name = "riina-pkg"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-types",
 ]
 
 [[package]]
+name = "riina-receipt"
+version = "0.3.0"
+
+[[package]]
+name = "riina-runtime"
+version = "0.3.0"
+
+[[package]]
 name = "riina-span"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "riina-symbols"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "riina-typechecker"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
+ "riina-parser",
  "riina-types",
 ]
 
 [[package]]
 name = "riina-types"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-lexer",
 ]
 
 [[package]]
+name = "riina-ui"
+version = "0.3.0"
+dependencies = [
+ "riina-types",
+]
+
+[[package]]
 name = "riina-wasm"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-codegen",
  "riina-parser",
@@ -101,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "riinac"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "riina-codegen",
  "riina-compliance",
