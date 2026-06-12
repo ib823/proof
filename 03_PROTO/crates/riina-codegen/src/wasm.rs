@@ -198,8 +198,15 @@ impl WasmBackend {
                 .iter()
                 .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::Decimal)))
         });
-        // Decimal mantissas are BigInts, so either type needs the bignum runtime.
-        let needs_bignum = uses_bigint || uses_decimal;
+        let uses_fixed = program.functions.values().any(|f| {
+            f.blocks
+                .iter()
+                .any(|b| b.instrs.iter().any(|i| matches!(i.ty, Ty::Fixed)))
+        });
+        // Fixed (`wang`/`titik_tetap`) shares the Decimal record layout and reuses
+        // its parse/render/addsub/compare helpers; both are BigInt-mantissa types.
+        let needs_decimal = uses_decimal || uses_fixed;
+        let needs_bignum = uses_bigint || needs_decimal;
         let n_bignum_fns: u32 = if needs_bignum { 9 } else { 0 };
         // Helper signatures shared by the bignum + decimal runtimes.
         let (bin_type_idx, ter_type_idx) = if needs_bignum {
@@ -273,15 +280,16 @@ impl WasmBackend {
         // W3.1b: arithmetic — scale-aligned exact add/sub, mul (scales add),
         // half-to-even div to 34 places + trailing-zero strip, value-based compare
         // (matching `decimal.rs`). Mod/And/Or stay fail-closed (typechecker rejects).
-        let n_decimal_fns: u32 = if uses_decimal { 7 } else { 0 };
+        let n_decimal_fns: u32 = if needs_decimal { 7 } else { 0 };
         let (
             dec_from_str_index,
             dec_to_str_index,
+            dec_pow10_mul_index,
             dec_addsub_index,
             dec_mul_index,
             dec_cmp_index,
             dec_div_index,
-        ) = if uses_decimal {
+        ) = if needs_decimal {
             let base = NUM_IMPORTS + n_bignum_fns;
             let dfrom = base + 1;
             module.functions.push(alloc_type_idx);
@@ -324,11 +332,57 @@ impl WasmBackend {
                 bi_addsub_index,
                 dpow,
             ));
-            (dfrom, dto, daddsub, dmul, dcmp, ddiv)
+            (dfrom, dto, dpow, daddsub, dmul, dcmp, ddiv)
         } else {
-            (0, 0, 0, 0, 0, 0)
+            (0, 0, 0, 0, 0, 0, 0)
         };
-        let n_helper_fns = n_bignum_fns + n_decimal_fns;
+
+        // === Fixed-point (`wang`/`titik_tetap`) runtime ===
+        // A Fixed shares the Decimal record layout `[scale][mantissa]` and reuses
+        // dec_from_str/dec_to_str/dec_addsub/dec_cmp (parse, scale-preserving
+        // display, exact aligned add/sub, value-based compare). New here (W3.2):
+        // mul/div round **half-to-even back to max(scale)** via fix_round_q, and
+        // `titik_tetap` parses then rescales to an explicit target scale.
+        let n_fixed_fns: u32 = if uses_fixed { 4 } else { 0 };
+        let (fix_mul_index, fix_div_index, fix_titik_tetap_index) = if uses_fixed {
+            let base = NUM_IMPORTS + n_bignum_fns + n_decimal_fns;
+            // fix_round_q(num, den) -> round-half-to-even BigInt quotient
+            // (internal to the three helpers below).
+            let fround = base + 1;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_fix_round_q(
+                alloc_func_index,
+                bi_divmod_index,
+                bi_mul_index,
+                bi_cmp_mag_index,
+                bi_addsub_index,
+            ));
+            let fmul = base + 2;
+            module.functions.push(bin_type_idx);
+            module.codes.push(self.emit_fix_mul(
+                alloc_func_index,
+                bi_mul_index,
+                dec_pow10_mul_index,
+                fround,
+            ));
+            let fdiv = base + 3;
+            module.functions.push(bin_type_idx);
+            module
+                .codes
+                .push(self.emit_fix_div(alloc_func_index, dec_pow10_mul_index, fround));
+            let ftt = base + 4;
+            module.functions.push(alloc_type_idx);
+            module.codes.push(self.emit_fix_titik_tetap(
+                alloc_func_index,
+                dec_from_str_index,
+                dec_pow10_mul_index,
+                fround,
+            ));
+            (fmul, fdiv, ftt)
+        } else {
+            (0, 0, 0)
+        };
+        let n_helper_fns = n_bignum_fns + n_decimal_fns + n_fixed_fns;
 
         // === User functions ===
         let mut func_ids: Vec<FuncId> = program.functions.keys().copied().collect();
@@ -389,6 +443,9 @@ impl WasmBackend {
                 dec_mul_index,
                 dec_cmp_index,
                 dec_div_index,
+                fix_mul_index,
+                fix_div_index,
+                fix_titik_tetap_index,
             )?;
             module.codes.push(body);
         }
@@ -3281,6 +3338,404 @@ impl WasmBackend {
         }
     }
 
+    /// Emit `fix_round_q(num: i32, den: i32) -> i32`: BigInt quotient `num/den`
+    /// rounded **half-to-even** — the single fixed-point rounding primitive
+    /// (matching `fixed.rs::round_quotient`, proven in `FixedPointModel.v`).
+    /// `2|r|` vs `|den|` via the sign-insensitive `bi_cmp_mag`; Greater bumps the
+    /// quotient away from zero, a tie bumps only when the quotient is odd.
+    /// `den` must be nonzero (callers check).
+    fn emit_fix_round_q(
+        &self,
+        alloc_func_index: u32,
+        bi_divmod_index: u32,
+        bi_mul_index: u32,
+        bi_cmp_mag_index: u32,
+        bi_addsub_index: u32,
+    ) -> FuncBody {
+        const NUM: u32 = 0;
+        const DEN: u32 = 1;
+        const Q: u32 = 2;
+        const R: u32 = 3;
+        const TWO: u32 = 4;
+        const CMPRES: u32 = 5;
+        const RESNEG: u32 = 6;
+        const ONE: u32 = 7;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        let mkconst = |c: &mut Vec<u8>, dst: u32, v: i64| {
+            wasm_i32c(c, 12);
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+            wasm_local(c, Op::LocalSet, dst);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 1);
+            wasm_store(c, 0);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 0);
+            wasm_store(c, 4);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, v);
+            wasm_store(c, 8);
+        };
+        // q = num / den; r = num % den
+        lget(&mut c, NUM);
+        lget(&mut c, DEN);
+        wasm_i32c(&mut c, 0);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, Q);
+        lget(&mut c, NUM);
+        lget(&mut c, DEN);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        lset(&mut c, R);
+        // cmpres = cmp_mag(2*r, den)
+        mkconst(&mut c, TWO, 2);
+        lget(&mut c, R);
+        lget(&mut c, TWO);
+        call(&mut c, bi_mul_index);
+        lget(&mut c, DEN);
+        call(&mut c, bi_cmp_mag_index);
+        lset(&mut c, CMPRES);
+        // resneg = (num.neg != den.neg)
+        lget(&mut c, NUM);
+        wasm_load(&mut c, 4);
+        lget(&mut c, DEN);
+        wasm_load(&mut c, 4);
+        op(&mut c, Op::I32Ne);
+        lset(&mut c, RESNEG);
+        mkconst(&mut c, ONE, 1);
+        // if cmpres > 0 { q = bi_addsub(q, 1, resneg) }
+        lget(&mut c, CMPRES);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, Q);
+        lget(&mut c, ONE);
+        lget(&mut c, RESNEG);
+        call(&mut c, bi_addsub_index);
+        lset(&mut c, Q);
+        op(&mut c, Op::Else);
+        // else if cmpres == 0 && q odd { bump }
+        lget(&mut c, CMPRES);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, Q);
+        lget(&mut c, TWO);
+        wasm_i32c(&mut c, 1);
+        call(&mut c, bi_divmod_index);
+        wasm_load(&mut c, 0); // parity remainder len: 0 = even
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, Q);
+        lget(&mut c, ONE);
+        lget(&mut c, RESNEG);
+        call(&mut c, bi_addsub_index);
+        lset(&mut c, Q);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        op(&mut c, Op::End);
+        lget(&mut c, Q);
+        FuncBody {
+            locals: vec![(6, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `fix_mul(a: i32, b: i32) -> i32`: fixed-point multiply — the exact
+    /// product (scale `sa+sb`) is rounded half-to-even back to `max(sa, sb)`
+    /// (`1.55 * 1.55` at scale 2 → `2.40`), matching `fixed.rs::mul`.
+    fn emit_fix_mul(
+        &self,
+        alloc_func_index: u32,
+        bi_mul_index: u32,
+        dec_pow10_mul_index: u32,
+        fix_round_q_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const SA: u32 = 2;
+        const SB: u32 = 3;
+        const TARGET: u32 = 4;
+        const DROP: u32 = 5;
+        const M: u32 = 6;
+        const ONE: u32 = 7;
+        const D: u32 = 8;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        let mkconst = |c: &mut Vec<u8>, dst: u32, v: i64| {
+            wasm_i32c(c, 12);
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+            wasm_local(c, Op::LocalSet, dst);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 1);
+            wasm_store(c, 0);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 0);
+            wasm_store(c, 4);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, v);
+            wasm_store(c, 8);
+        };
+        // sa, sb, target = max(sa, sb), drop = sa + sb - target
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SB);
+        lget(&mut c, SA);
+        lset(&mut c, TARGET);
+        lget(&mut c, SB);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, SB);
+        lset(&mut c, TARGET);
+        op(&mut c, Op::End);
+        lget(&mut c, SA);
+        lget(&mut c, SB);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, TARGET);
+        op(&mut c, Op::I32Sub);
+        lset(&mut c, DROP);
+        // m = bi_mul(a.mant, b.mant)
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        call(&mut c, bi_mul_index);
+        lset(&mut c, M);
+        // if drop > 0 { m = fix_round_q(m, 10^drop) }
+        lget(&mut c, DROP);
+        wasm_i32c(&mut c, 0);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        mkconst(&mut c, ONE, 1);
+        lget(&mut c, M);
+        lget(&mut c, ONE);
+        lget(&mut c, DROP);
+        call(&mut c, dec_pow10_mul_index);
+        call(&mut c, fix_round_q_index);
+        lset(&mut c, M);
+        op(&mut c, Op::End);
+        // d = alloc(8); d.scale = target; d.mant = m
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, TARGET);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, M);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        FuncBody {
+            locals: vec![(7, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `fix_div(a: i32, b: i32) -> i32`: fixed-point divide — rounded
+    /// half-to-even to `max(sa, sb)` (the fixed scale is preserved, not extended:
+    /// `10.00 / 3 = 3.33`), matching `fixed.rs::div`. The scale shift
+    /// `target + sb - sa` is always ≥ 0 (target ≥ sa), so only the numerator is
+    /// scaled. Division by zero traps, matching the C runtime's abort.
+    fn emit_fix_div(
+        &self,
+        alloc_func_index: u32,
+        dec_pow10_mul_index: u32,
+        fix_round_q_index: u32,
+    ) -> FuncBody {
+        const A: u32 = 0;
+        const B: u32 = 1;
+        const SA: u32 = 2;
+        const SB: u32 = 3;
+        const TARGET: u32 = 4;
+        const M: u32 = 5;
+        const D: u32 = 6;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        // trap on zero divisor
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        wasm_load(&mut c, 0);
+        op(&mut c, Op::I32Eqz);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        op(&mut c, Op::Unreachable);
+        op(&mut c, Op::End);
+        // sa, sb, target = max
+        lget(&mut c, A);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SA);
+        lget(&mut c, B);
+        wasm_load(&mut c, 0);
+        lset(&mut c, SB);
+        lget(&mut c, SA);
+        lset(&mut c, TARGET);
+        lget(&mut c, SB);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32GtS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, SB);
+        lset(&mut c, TARGET);
+        op(&mut c, Op::End);
+        // m = fix_round_q(a.mant * 10^(target + sb - sa), b.mant)
+        lget(&mut c, A);
+        wasm_load(&mut c, 4);
+        lget(&mut c, TARGET);
+        lget(&mut c, SB);
+        op(&mut c, Op::I32Add);
+        lget(&mut c, SA);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        lget(&mut c, B);
+        wasm_load(&mut c, 4);
+        call(&mut c, fix_round_q_index);
+        lset(&mut c, M);
+        // d = alloc(8); d.scale = target; d.mant = m
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, TARGET);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, M);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        FuncBody {
+            locals: vec![(5, ValType::I32)],
+            code: c,
+        }
+    }
+
+    /// Emit `fix_titik_tetap(pair: i32) -> i32`: the explicit-scale constructor —
+    /// `titik_tetap(("3.14159", 2))` parses the literal then **rescales** to the
+    /// target scale (grow: ×10^(to−from); shrink: round half-to-even), matching
+    /// `fixed.rs::parse_scaled`/`rescaled`. The arg is a `[fst:i64][snd:i64]`
+    /// heap pair of (string ptr, target scale).
+    fn emit_fix_titik_tetap(
+        &self,
+        alloc_func_index: u32,
+        dec_from_str_index: u32,
+        dec_pow10_mul_index: u32,
+        fix_round_q_index: u32,
+    ) -> FuncBody {
+        const PAIR: u32 = 0;
+        const TARGET: u32 = 1;
+        const PARSED: u32 = 2;
+        const FROM: u32 = 3;
+        const M: u32 = 4;
+        const ONE: u32 = 5;
+        const D: u32 = 6;
+        let mut c = Vec::new();
+        let lget = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalGet, i);
+        let lset = |c: &mut Vec<u8>, i: u32| wasm_local(c, Op::LocalSet, i);
+        let op = |c: &mut Vec<u8>, o: Op| c.push(o as u8);
+        let call = |c: &mut Vec<u8>, idx: u32| {
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(idx as u64, c);
+        };
+        let mkconst = |c: &mut Vec<u8>, dst: u32, v: i64| {
+            wasm_i32c(c, 12);
+            c.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(alloc_func_index as u64, c);
+            wasm_local(c, Op::LocalSet, dst);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 1);
+            wasm_store(c, 0);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, 0);
+            wasm_store(c, 4);
+            wasm_local(c, Op::LocalGet, dst);
+            wasm_i32c(c, v);
+            wasm_store(c, 8);
+        };
+        // target = (i32)pair.snd; parsed = dec_from_str((i32)pair.fst)
+        lget(&mut c, PAIR);
+        c.push(Op::I64Load as u8);
+        c.push(0x02);
+        c.push(0x08);
+        op(&mut c, Op::I32WrapI64);
+        lset(&mut c, TARGET);
+        lget(&mut c, PAIR);
+        c.push(Op::I64Load as u8);
+        c.push(0x02);
+        c.push(0x00);
+        op(&mut c, Op::I32WrapI64);
+        call(&mut c, dec_from_str_index);
+        lset(&mut c, PARSED);
+        lget(&mut c, PARSED);
+        wasm_load(&mut c, 0);
+        lset(&mut c, FROM);
+        lget(&mut c, PARSED);
+        wasm_load(&mut c, 4);
+        lset(&mut c, M);
+        // rescale: grow (×10^(target−from)) or shrink (round half-to-even)
+        lget(&mut c, TARGET);
+        lget(&mut c, FROM);
+        op(&mut c, Op::I32GeS);
+        op(&mut c, Op::If);
+        c.push(0x40);
+        lget(&mut c, M);
+        lget(&mut c, TARGET);
+        lget(&mut c, FROM);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        lset(&mut c, M);
+        op(&mut c, Op::Else);
+        mkconst(&mut c, ONE, 1);
+        lget(&mut c, M);
+        lget(&mut c, ONE);
+        lget(&mut c, FROM);
+        lget(&mut c, TARGET);
+        op(&mut c, Op::I32Sub);
+        call(&mut c, dec_pow10_mul_index);
+        call(&mut c, fix_round_q_index);
+        lset(&mut c, M);
+        op(&mut c, Op::End);
+        // d = alloc(8); d.scale = target; d.mant = m
+        wasm_i32c(&mut c, 8);
+        call(&mut c, alloc_func_index);
+        lset(&mut c, D);
+        lget(&mut c, D);
+        lget(&mut c, TARGET);
+        wasm_store(&mut c, 0);
+        lget(&mut c, D);
+        lget(&mut c, M);
+        wasm_store(&mut c, 4);
+        lget(&mut c, D);
+        FuncBody {
+            locals: vec![(6, ValType::I32)],
+            code: c,
+        }
+    }
+
     ///
     /// This method analyzes the block structure to detect if/else patterns
     /// (CondBranch → then_block/else_block → merge via Phi) and emits
@@ -3306,6 +3761,9 @@ impl WasmBackend {
         dec_mul_index: u32,
         dec_cmp_index: u32,
         dec_div_index: u32,
+        fix_mul_index: u32,
+        fix_div_index: u32,
+        fix_titik_tetap_index: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
@@ -3411,6 +3869,9 @@ impl WasmBackend {
             dec_mul_index,
             dec_cmp_index,
             dec_div_index,
+            fix_mul_index,
+            fix_div_index,
+            fix_titik_tetap_index,
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
@@ -4301,6 +4762,62 @@ impl WasmBackend {
                     }
                 }
             }
+            Instruction::BinOp(op, lhs, rhs)
+                if matches!(ctx.var_to_ty.get(lhs), Some(Ty::Fixed))
+                    || matches!(ctx.var_to_ty.get(rhs), Some(Ty::Fixed)) =>
+            {
+                // Fixed-point (`wang`/`titik_tetap`) operands (W3.2). Add/sub and
+                // compare are the same scale-aligned operations as Decimal (the
+                // record layout is shared), so they reuse dec_addsub/dec_cmp;
+                // mul/div round half-to-even back to max(scale) via the fix_*
+                // helpers. `%`/And/Or are undefined for fixed-point; fail closed.
+                match op {
+                    BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Gt | BinOp::Le | BinOp::Ge => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.dec_cmp_index as u64, code);
+                        Self::emit_cmp_result_to_bool(op, code);
+                    }
+                    BinOp::Add | BinOp::Sub => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        wasm_i32c(code, if matches!(op, BinOp::Sub) { 1 } else { 0 });
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.dec_addsub_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Mul => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.fix_mul_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    BinOp::Div => {
+                        Self::emit_local_get(lhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        Self::emit_local_get(rhs, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(ctx.fix_div_index as u64, code);
+                        code.push(Op::I64ExtendI32U as u8);
+                    }
+                    _ => {
+                        return Err(crate::Error::InvalidOperation(format!(
+                            "Fixed-point (`wang`/`titik_tetap`) operator {op:?} is not \
+                             supported by the WASM backend (it is undefined for \
+                             fixed-point)"
+                        )));
+                    }
+                }
+            }
             Instruction::BinOp(op, lhs, rhs) => {
                 // Numeric tower: division/modulo/comparison of a *signed* sized int
                 // (`Ty::IntN{signed}`) narrower than i32 must sign-extend its
@@ -4675,9 +5192,11 @@ impl WasmBackend {
                             _ => None,
                         };
                         Self::emit_print_int(arg, signed_bits, ctx, code);
-                    } else if matches!(ctx.var_to_ty.get(arg), Some(Ty::Decimal)) {
-                        // Decimal: render via dec_to_str, then print it (same iovec
-                        // path as BigInt; stash the string pointer in scratch).
+                    } else if matches!(ctx.var_to_ty.get(arg), Some(Ty::Decimal | Ty::Fixed)) {
+                        // Decimal/Fixed: render via dec_to_str (the record layout is
+                        // shared; Fixed display preserves its scale, which is what
+                        // dec_to_str does), then print it (same iovec path as
+                        // BigInt; stash the string pointer in scratch).
                         Self::emit_local_get(arg, ctx.var_map, code);
                         code.push(Op::I32WrapI64 as u8);
                         code.push(Op::Call as u8);
@@ -4817,8 +5336,8 @@ impl WasmBackend {
                             wasm_encode::encode_uleb128(ctx.bi_to_str_index as u64, code);
                             code.push(Op::I64ExtendI32U as u8);
                         }
-                        Some(Ty::Decimal) => {
-                            // Decimal → heap string via dec_to_str.
+                        Some(Ty::Decimal | Ty::Fixed) => {
+                            // Decimal/Fixed → heap string via dec_to_str.
                             Self::emit_local_get(arg, ctx.var_map, code);
                             code.push(Op::I32WrapI64 as u8);
                             code.push(Op::Call as u8);
@@ -4860,13 +5379,30 @@ impl WasmBackend {
                     code.push(Op::Call as u8);
                     wasm_encode::encode_uleb128(ctx.dec_from_str_index as u64, code);
                     code.push(Op::I64ExtendI32U as u8);
-                } else if name == "wang" || name == "titik_tetap" || name == "qmn" {
-                    // The remaining boxed numeric-tower types (fixed-point
-                    // `wang`/`titik_tetap`, Q-format `qmn`) have no WASM
-                    // representation yet (the C backend boxes them). Fail closed
-                    // rather than stub to 0 — such a value cannot exist in a WASM
-                    // program without its constructor, so this guard prevents any
-                    // silent miscompile. (Tracked: W3 fixed-point WASM codegen.)
+                } else if name == "wang" {
+                    // Fixed-point construction, scale inferred from the literal
+                    // (W3.2). The parse is identical to Decimal's (the record
+                    // layout is shared), so reuse dec_from_str.
+                    Self::emit_local_get(arg, ctx.var_map, code);
+                    code.push(Op::I32WrapI64 as u8);
+                    code.push(Op::Call as u8);
+                    wasm_encode::encode_uleb128(ctx.dec_from_str_index as u64, code);
+                    code.push(Op::I64ExtendI32U as u8);
+                } else if name == "titik_tetap" {
+                    // Fixed-point construction at an explicit scale (W3.2): the arg
+                    // is a (string, scale) heap pair; fix_titik_tetap parses then
+                    // rescales (half-to-even when shrinking).
+                    Self::emit_local_get(arg, ctx.var_map, code);
+                    code.push(Op::I32WrapI64 as u8);
+                    code.push(Op::Call as u8);
+                    wasm_encode::encode_uleb128(ctx.fix_titik_tetap_index as u64, code);
+                    code.push(Op::I64ExtendI32U as u8);
+                } else if name == "qmn" {
+                    // Q-format binary fixed-point has no WASM representation yet
+                    // (the C backend boxes it). Fail closed rather than stub to 0 —
+                    // such a value cannot exist in a WASM program without its
+                    // constructor, so this guard prevents any silent miscompile.
+                    // (Tracked: W3.3 qmn WASM codegen.)
                     return Err(crate::Error::InvalidOperation(format!(
                         "{name} (boxed numeric tower) is not supported \
                          by the WASM backend yet; use the C backend or the interpreter"
@@ -5258,6 +5794,12 @@ struct EmitCtx<'a> {
     dec_mul_index: u32,
     dec_cmp_index: u32,
     dec_div_index: u32,
+    /// Function indices of the fixed-point (`wang`/`titik_tetap`) runtime:
+    /// round-to-scale multiply/divide and the explicit-scale constructor.
+    /// (Parse/display/add/sub/compare reuse the Decimal helpers above.)
+    fix_mul_index: u32,
+    fix_div_index: u32,
+    fix_titik_tetap_index: u32,
     /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
     /// int-printing (itoa) path vs. a string-pointer path.
     var_to_ty: &'a HashMap<VarId, Ty>,

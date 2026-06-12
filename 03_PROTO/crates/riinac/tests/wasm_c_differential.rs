@@ -491,3 +491,60 @@ fn diff_perpuluhan_cmp_and_ties() {
         }",
     );
 }
+
+// ── W3.2: fixed-point wang/titik_tetap (fix_mul / fix_div / fix_titik_tetap) ─
+// Fixed shares the Decimal record and reuses its parse/display/add/sub/compare;
+// mul/div round half-to-even BACK to max(scale) (10.00/3 = 3.33, not 3.333…)
+// and display preserves trailing zeros (the money contract). titik_tetap takes
+// (literal, scale) and rescales half-to-even. All byte-identical to C.
+// (00_basics/fixed.rii joins the corpus differential at W3.3 when qmn lands.)
+
+#[test]
+fn diff_wang_display_addsub() {
+    assert_byte_equal(
+        "wang_display_addsub",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(wang(\"19.99\"));\n\
+            cetakln(wang(\"100.00\"));\n\
+            cetakln(wang(\"1.10\") + wang(\"2.20\"));\n\
+            cetakln(wang(\"5.00\") - wang(\"0.01\"));\n\
+            cetakln(wang(\"0.00\") - wang(\"7.25\"));\n\
+            kalau wang(\"3.30\") == wang(\"3.3\") { cetak(1) } lain { cetak(0) }\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_wang_mul_div_round_to_scale() {
+    // mul: 1.55*1.55 = 2.4025 -> 2.40 (rounded back to scale 2);
+    // div: 10.00/3 = 3.33 (scale preserved, not extended);
+    // banker's at the kept digit: 0.5*0.5 = 0.25 -> 0.2 (round to even).
+    assert_byte_equal(
+        "wang_mul_div",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(wang(\"1.55\") * wang(\"1.55\"));\n\
+            cetakln(wang(\"19.99\") * wang(\"3\"));\n\
+            cetakln(wang(\"10.00\") / wang(\"3\"));\n\
+            cetakln(wang(\"100.00\") / wang(\"3\"));\n\
+            cetakln(wang(\"0.5\") * wang(\"0.5\"));\n\
+            pulang 0\n\
+        }",
+    );
+}
+
+#[test]
+fn diff_titik_tetap_rescale() {
+    // explicit-scale constructor: round half-to-even when shrinking
+    // (3.145 -> 3.14, 3.155 -> 3.16), zero-pad when growing (5 -> 5.000).
+    assert_byte_equal(
+        "titik_tetap",
+        "fungsi utama() -> Nombor kesan Sistem {\n\
+            cetakln(titik_tetap((\"3.14159\", 2)));\n\
+            cetakln(titik_tetap((\"3.145\", 2)));\n\
+            cetakln(titik_tetap((\"3.155\", 2)));\n\
+            cetakln(titik_tetap((\"5\", 3)));\n\
+            pulang 0\n\
+        }",
+    );
+}
