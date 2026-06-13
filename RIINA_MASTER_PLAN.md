@@ -2530,6 +2530,20 @@ validation + MAC-verify dead API, small + test-pinned), REQ-37/38 refresh batche
 examples parse-gap lanes. **REQ-42(a)/(b) executed immediately after (2026-06-13, see the
 REQ-42 row): 05_TOOLING 294→298/0, clippy clean — the current tooling baseline is 298.**
 
+**Examples parse-gap lane — first increment (2026-06-13): corpus 61→64/165.** A genuine
+parser gap closed (TRACK_B): prefix `!` (deref) and `bukan`/`not` (logical-neg) parsed their
+operand at `parse_unary` level, BELOW the `parse_app` postfix-call loop, so `!f(x)` / `bukan
+f(x)` left the `(x)` dangling ("Unexpected token: LParen" — 12 corpus files). Operand now
+parsed at `parse_app` level (correct precedence `!(f(x))`); +3 parser tests; 312→313 parser
+tests, 03_PROTO workspace 2910→2911/0, clippy clean. This advanced 9 files past the parse
+error (most have further gaps) and, with three effect-annotation example corrections
+(`05_patterns/factory.rii`, `05_patterns/visitor.rii`, `04_compliance/iso27001_controls.rii`
+declared `kesan Bersih` but print via `cetak_baris` = Write — checker correctly rejected;
+fixed to `kesan Tulis`), flipped the corpus 61→64. **Remaining top classes** (re-derived):
+18 generic-type-application in type position (`Rahsia<Teks>`, `SaluranSelamat<()>`), struct
+literals, constructor-arg patterns (`Ok(x) ->`, `Taint.Tercemar(s) ->`) — each a larger
+grammar feature warranting its own focused increment + Coq parity, not a quick gap-fix.
+
 **Verified baseline at handoff (2026-06-11, twelfth session, last commit `beb93fa`; all re-run by command that session):**
 `cargo test --workspace --release` (03_PROTO) = **2898 / 0** (was 2877 at the start of this session's
 four lanes: +6 REQ-27 IFC sink tests, +1 generated-stdlib-doc drift guard, +8 fuzz-robustness tests,
