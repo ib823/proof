@@ -2570,8 +2570,17 @@ examples OR make selected keywords contextual/soft. (2) **generic function decla
 `fungsi laku<E, T>(…)` (the `<E,T>` decl, distinct from type application) — unimplemented;
 needs parser + typechecker + Coq parity. (3) **struct literals** `Name { field: val }`
 (`DataBerlabel { … }`) — unimplemented. (4) **missing stdlib builtins** (14 files: `aes_enkripsi`,
-`baca_fail`, `masa_unix`, `tulis_ke_fail`, `hasilkan_garam`, `sortir_menaik`, … ) — each a
-distinct stdlib surface, some genuine I/O/crypto not yet exposed. (5) **non-canonical syntax in
+`baca_fail`, `masa_unix`, `tulis_ke_fail`, `hasilkan_garam`, `sortir_menaik`, … ) — **empirically re-triaged
+2026-06-13: this cluster is NOT predominantly registry gaps.** A `teks_pecah` alias experiment
+(parallel to the existing `teks_belah`) advanced `email_validator.rii` by exactly one gap, revealing
+the next: the files use **qualified module calls** (`teks::rapi`, `teks::pecah`, `teks::ke_kecil`,
+`teks::tamat_dengan`) AND **define their own** `fungsi rapi(...)` inside namespace blocks —
+so the real gap is **user-module / namespace resolution** (so a `teks::X` call resolves to a
+user-defined `X` in scope, not only to a flat builtin), plus `sortir_menaik`-style user functions
+in giant aggregate files (forward-reference/scoping in `06_ai_context/all_examples.rii`). Adding
+builtin aliases is futile here (and risks shadowing user functions); the speculative `teks_pecah`
+alias was reverted. Genuine I/O/crypto builtins (`baca_fail`, `aes_enkripsi`) remain a separate,
+effectful surface. (5) **non-canonical syntax in
 aspirational examples** (e.g. `dedah(s, bukti: "…")` vs the canonical `dedah s dengan bukti …`)
 — example rewrites. (6) **specialized features**: FFI C-types (`CInt`/`CChar`/`RawPtr`),
 session types, CRDT types, linear-use obligations — each its own track. Highest-leverage *real*
