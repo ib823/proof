@@ -332,12 +332,29 @@ pub struct HybridVerifyingKey {
 }
 
 impl HybridVerifyingKey {
-    /// Create from bytes
+    /// Create from bytes, validating both component public keys (REQ-42a —
+    /// previously accepted ANY bytes despite the documented contract).
+    ///
+    /// The Ed25519 component must be a canonical, on-curve point (strict
+    /// RFC 8032 §5.1.3 decoding). The ML-DSA-65 component has no structural
+    /// invariant beyond its length under FIPS 204 (every byte pattern decodes
+    /// to a valid (ρ, t1)), which the fixed-size array already enforces — it
+    /// is still routed through its own `from_bytes` so any future component
+    /// validation is picked up here automatically.
     ///
     /// # Errors
-    /// Returns error if validation fails.
+    /// Returns an error if either component public key fails validation.
     pub fn from_bytes(bytes: &[u8; HYBRID_SIG_PUBLIC_KEY_SIZE]) -> CryptoResult<Self> {
-        // TODO: Validate both public keys
+        let ed25519_pk: [u8; ED25519_PUBLIC_KEY_SIZE] = bytes[..ED25519_PUBLIC_KEY_SIZE]
+            .try_into()
+            .map_err(|_| CryptoError::InvalidKeyLength)?;
+        let _ = Ed25519VerifyingKey::from_bytes(&ed25519_pk)?;
+
+        let ml_dsa_pk: [u8; ML_DSA_PUBLIC_KEY_SIZE] = bytes[ED25519_PUBLIC_KEY_SIZE..]
+            .try_into()
+            .map_err(|_| CryptoError::InvalidKeyLength)?;
+        let _ = MlDsa65VerifyingKey::from_bytes(&ml_dsa_pk)?;
+
         Ok(Self { bytes: *bytes })
     }
 
@@ -415,6 +432,36 @@ mod tests {
         assert_eq!(HYBRID_KEM_SECRET_KEY_SIZE, 32 + 2400);
         assert_eq!(HYBRID_KEM_CIPHERTEXT_SIZE, 32 + 1088);
         assert_eq!(HYBRID_KEM_SHARED_SECRET_SIZE, 32);
+    }
+
+    #[test]
+    fn test_hybrid_verifying_key_rejects_invalid_ed25519_component() {
+        // REQ-42a regression: from_bytes previously accepted ANY bytes.
+        // An all-0xFF Ed25519 component encodes y >= p — non-canonical,
+        // rejected by strict RFC 8032 decoding — so construction must fail.
+        let mut bytes = [0u8; HYBRID_SIG_PUBLIC_KEY_SIZE];
+        for b in bytes.iter_mut().take(ED25519_PUBLIC_KEY_SIZE) {
+            *b = 0xFF;
+        }
+        assert!(
+            HybridVerifyingKey::from_bytes(&bytes).is_err(),
+            "off-curve/non-canonical Ed25519 component must be rejected at construction"
+        );
+    }
+
+    #[test]
+    fn test_hybrid_verifying_key_roundtrips_and_verifies() {
+        // A genuinely generated hybrid public key must still construct, and
+        // a signature made by the signing key must verify through the
+        // reconstructed verifying key (validation is not over-strict).
+        let random = [42u8; 64];
+        let sk = HybridSigningKey::generate(&random).expect("generate hybrid signing key");
+        let pk_bytes = sk.public_key();
+        let vk = HybridVerifyingKey::from_bytes(&pk_bytes)
+            .expect("valid generated public key must construct");
+        let msg = b"REQ-42a roundtrip";
+        let sig = sk.sign(msg).expect("sign");
+        vk.verify(msg, &sig).expect("signature must verify via reconstructed key");
     }
 
     #[test]

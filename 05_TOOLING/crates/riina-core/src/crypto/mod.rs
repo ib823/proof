@@ -193,23 +193,26 @@ pub trait Mac {
         Ok(mac.finalize())
     }
 
-    /// Verify a MAC tag in constant time
+    /// Verify a MAC tag in constant time.
     ///
-    /// TODO: Fix type mismatch - ct_eq expects &[u8; 32] but tag is &[u8]
-    fn verify(_key: &[u8], _data: &[u8], _tag: &[u8]) -> CryptoResult<bool>
+    /// The tag comparison is constant-time (`ct_eq_slices`); the length check
+    /// is not secret-dependent (tag lengths are public). Previously this
+    /// default was disabled over an `&[u8; 32]`-vs-`&[u8]` mismatch (REQ-42b);
+    /// `ct_eq_slices` compares slices directly.
+    ///
+    /// # Errors
+    /// Returns `InvalidTagLength` if `tag` is not exactly the MAC's output
+    /// length — a truncated tag is an API misuse, not merely a failed
+    /// verification, so callers cannot mistake the two.
+    fn verify(key: &[u8], data: &[u8], tag: &[u8]) -> CryptoResult<bool>
     where
         Self: Sized,
     {
-        // Temporarily disabled due to pre-existing type mismatch
-        Err(CryptoError::InvalidTagLength)
-        /*
-        use crate::constant_time::ConstantTimeEq;
         let computed = Self::mac(key, data)?;
         if tag.len() != computed.len() {
             return Err(CryptoError::InvalidTagLength);
         }
-        Ok(computed.ct_eq(tag))
-        */
+        Ok(crate::constant_time::ct_eq_slices(&computed, tag))
     }
 }
 
@@ -323,5 +326,63 @@ mod tests {
             format!("{}", CryptoError::AuthenticationFailed),
             "authentication failed"
         );
+    }
+
+    /// Minimal `Mac` implementor over the real HMAC-SHA256 — exercises the
+    /// trait's DEFAULT `verify` (REQ-42b: previously disabled, fail-closed,
+    /// dead API; no in-tree type implements `Mac`, so the default needs its
+    /// own test harness).
+    struct TestHmac(crate::crypto::hmac::HmacSha256);
+
+    impl Mac for TestHmac {
+        const OUTPUT_SIZE: usize = 32;
+
+        fn new(key: &[u8]) -> CryptoResult<Self> {
+            Ok(Self(crate::crypto::hmac::HmacSha256::new(key)))
+        }
+
+        fn update(&mut self, data: &[u8]) {
+            self.0.update(data);
+        }
+
+        fn finalize(self) -> [u8; 32] {
+            self.0.finalize()
+        }
+    }
+
+    #[test]
+    fn mac_default_verify_accepts_correct_and_rejects_wrong_tag() {
+        let key = b"a test key";
+        let data = b"a test message";
+        let tag = TestHmac::mac(key, data).expect("mac");
+        assert_eq!(
+            TestHmac::verify(key, data, &tag).expect("verify runs"),
+            true,
+            "correct tag must verify"
+        );
+        let mut wrong = tag;
+        wrong[0] ^= 1;
+        assert_eq!(
+            TestHmac::verify(key, data, &wrong).expect("verify runs"),
+            false,
+            "a single flipped bit must fail verification"
+        );
+        assert_eq!(
+            TestHmac::verify(key, b"other message", &tag).expect("verify runs"),
+            false,
+            "tag over different data must fail verification"
+        );
+    }
+
+    #[test]
+    fn mac_default_verify_rejects_truncated_tag_as_error() {
+        // A wrong-length tag is an API misuse (Err), not a forgery (Ok(false)).
+        let key = b"a test key";
+        let data = b"a test message";
+        let tag = TestHmac::mac(key, data).expect("mac");
+        assert!(matches!(
+            TestHmac::verify(key, data, &tag[..31]),
+            Err(CryptoError::InvalidTagLength)
+        ));
     }
 }
