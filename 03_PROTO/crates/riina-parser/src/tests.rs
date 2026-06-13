@@ -4117,3 +4117,25 @@ fn test_prefix_not_binds_call() {
     let mut p = Parser::new("kalau !ada_fail(nama) { 1 } lain { 0 }");
     assert!(p.parse_expr().is_ok(), "kalau !f(x) {{..}} must parse");
 }
+
+#[test]
+fn test_modul_block_flattens_functions_to_prefixed_top_level() {
+    // `modul M { fungsi f(...) }` must flatten to a top-level `M_f` function so
+    // the existing `M::f` -> `M_f` qualified-call resolution finds the user
+    // definition (previously the module body was skipped/dropped entirely).
+    let src = "modul teks { fungsi pecah(s: Teks, d: Teks) -> Senarai<Teks> kesan Bersih { pulang []; } }\nfungsi utama() -> Nombor kesan Bersih { 0 }";
+    let prog = Parser::new(src).parse_program().expect("module program must parse");
+    let names: Vec<&str> = prog
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            TopLevelDecl::Function { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        names.contains(&"teks_pecah"),
+        "module function must flatten to teks_pecah; got {names:?}"
+    );
+    assert!(names.contains(&"utama"), "main must still be present; got {names:?}");
+}

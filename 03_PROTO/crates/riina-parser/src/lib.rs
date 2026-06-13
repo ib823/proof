@@ -152,6 +152,11 @@ pub struct Parser<'a> {
     /// When set, the next [`Parser::consume_type_close`] consumes it without
     /// advancing the real token stream.
     pending_gt: bool,
+    /// Top-level decls flattened out of `modul Name { ... }` blocks, queued to
+    /// be returned by `parse_top_level_decl` before resuming the token stream.
+    /// A module function `fungsi f` becomes a top-level `Name_f` so the existing
+    /// `Name::f` -> `Name_f` qualified-call resolution finds it.
+    pending_decls: Vec<TopLevelDecl>,
 }
 
 /// A surface match pattern, used only during `padan` compilation. The AST has
@@ -229,6 +234,7 @@ impl<'a> Parser<'a> {
             depth: 0,
             gensym: 0,
             pending_gt: false,
+            pending_decls: Vec::new(),
         }
     }
 
@@ -313,17 +319,53 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_top_level_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
+        // Drain any decls flattened out of a `modul { ... }` block first.
+        if !self.pending_decls.is_empty() {
+            return Ok(self.pending_decls.remove(0));
+        }
         match self.peek().map(|t| &t.kind) {
             Some(TokenKind::KwMod) => {
-                // Module declaration (no module system yet — both forms are
-                // skipped):
-                //   modul name;            (external/forward declaration)
-                //   modul name { ...decls } (inline module — body skipped)
+                // Module declaration. `modul name;` (forward decl) is skipped.
+                // `modul name { ...decls }` is FLATTENED: each inner `fungsi f`
+                // becomes a top-level `name_f` so the existing `name::f` ->
+                // `name_f` qualified-call resolution (parse_module_path) finds
+                // the user definition. Non-function inner items are skipped
+                // (struct/enum/let have no top-level semantics yet).
                 self.consume(TokenKind::KwMod)?;
-                let _name = self.parse_ident()?;
+                let modname = self.parse_ident()?;
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
                     self.consume(TokenKind::LBrace)?;
-                    self.skip_balanced_braces();
+                    while !matches!(
+                        self.peek().map(|t| &t.kind),
+                        Some(TokenKind::RBrace) | None
+                    ) {
+                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn)) {
+                            let decl = self.parse_function_decl()?;
+                            if let TopLevelDecl::Function {
+                                name,
+                                params,
+                                return_ty,
+                                effect,
+                                effect_set,
+                                body,
+                            } = decl
+                            {
+                                self.pending_decls.push(TopLevelDecl::Function {
+                                    name: format!("{modname}_{name}"),
+                                    params,
+                                    return_ty,
+                                    effect,
+                                    effect_set,
+                                    body,
+                                });
+                            }
+                        } else {
+                            // Skip a non-function inner item up to the next
+                            // top-level boundary within the module.
+                            self.next();
+                        }
+                    }
+                    self.consume(TokenKind::RBrace)?;
                 } else {
                     self.consume(TokenKind::Semi)?;
                 }

@@ -2580,7 +2580,20 @@ user-defined `X` in scope, not only to a flat builtin), plus `sortir_menaik`-sty
 in giant aggregate files (forward-reference/scoping in `06_ai_context/all_examples.rii`). Adding
 builtin aliases is futile here (and risks shadowing user functions); the speculative `teks_pecah`
 alias was reverted. Genuine I/O/crypto builtins (`baca_fail`, `aes_enkripsi`) remain a separate,
-effectful surface. (5) **non-canonical syntax in
+effectful surface. **Module system PARTIALLY landed 2026-06-13 (TRACK_B):** `modul Name { fungsi f … }`
+blocks were previously parsed-and-DROPPED (`skip_balanced_braces`), so 14 corpus files using them
+silently lost their definitions. The parser now FLATTENS each module function to a prefixed
+top-level `Name_f` (via a `pending_decls` queue), so the existing `Name::f` → `Name_f` qualified-call
+resolution finds the user definition — verified by `test_modul_block_flattens_functions_to_prefixed_top_level`.
+**But the corpus payoff is gated by a deeper limitation: RIINA has NO forward references / mutual
+recursion** — `Program::desugar` builds a back-to-front `Let`-chain, so a function only sees those
+defined EARLIER; a `utama` that calls a helper/module defined later (the natural top-down style of
+most corpus files) fails with "Variable not found". **Forward-reference support (a recursive
+top-level binding GROUP — pre-collect all function signatures, then check bodies) is the next
+high-leverage increment** — it unblocks modules AND ordinary top-down code across many files, but it
+is a CORE semantic change (desugar + evaluator + typechecker, Coq parity for the recursive-binding
+rule), scoped as a dedicated increment not rushed. Module flattening is the tested building block landed now.
+(5) **non-canonical syntax in
 aspirational examples** (e.g. `dedah(s, bukti: "…")` vs the canonical `dedah s dengan bukti …`)
 — example rewrites. (6) **specialized features**: FFI C-types (`CInt`/`CChar`/`RawPtr`),
 session types, CRDT types, linear-use obligations — each its own track. Highest-leverage *real*
