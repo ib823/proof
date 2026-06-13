@@ -484,22 +484,20 @@ fn power2round(r: i32) -> (i32, i32) {
 /// Decompose: split r into (r1, r0) s.t. r = r1*alpha + r0, |r0| <= alpha/2
 /// alpha = 2 * gamma2
 fn decompose(r: i32) -> (i32, i32) {
-    let a = freeze(r);
-    let alpha = 2 * params::GAMMA2 as i32;
+    // REQ-43 M-4 (residual): branchless AND divisionless. The previous body used
+    // `a % alpha` / `(a - r0) / alpha` (variable-latency `div` on the secret
+    // w - c*s2 during signing) plus two data-dependent branches. This is the
+    // pq-crystals reference `decompose` for GAMMA2 = (Q-1)/32 (ML-DSA-65).
+    // Proven byte-identical to the previous logic over the ENTIRE [0, Q) input
+    // domain by `tests::decompose_ct_matches_reference_over_full_domain`.
+    let a = freeze(r); // a in [0, Q)
     let q = params::Q as i32;
-
-    let mut r0 = a % alpha;
-    if r0 > alpha / 2 {
-        r0 -= alpha;
-    }
-    let r1;
-    if a - r0 == q - 1 {
-        r1 = 0;
-        r0 -= 1;
-    } else {
-        r1 = (a - r0) / alpha;
-    }
-    (r1, r0)
+    let mut a1 = (a + 127) >> 7;
+    a1 = (a1 * 1025 + (1 << 21)) >> 22;
+    a1 &= 15;
+    let mut a0 = a - a1 * 2 * (params::GAMMA2 as i32);
+    a0 -= (((q - 1) / 2 - a0) >> 31) & q;
+    (a1, a0)
 }
 
 /// HighBits: extract high bits
@@ -516,11 +514,8 @@ fn low_bits(r: i32) -> i32 {
 fn make_hint(z: i32, r: i32) -> i32 {
     let r1 = high_bits(r);
     let v1 = high_bits(freeze(r + z));
-    if r1 != v1 {
-        1
-    } else {
-        0
-    }
+    // Branchless: `!=` lowers to setcc, not a conditional jump (REQ-43 M-4).
+    i32::from(r1 != v1)
 }
 
 /// UseHint: adjust high bits based on hint
@@ -1812,6 +1807,33 @@ impl Signature for MlDsa65 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn decompose_ct_matches_reference_over_full_domain() {
+        // REQ-43 M-4: the branchless+divisionless `decompose` must be byte-
+        // identical to the previous branchy `%/÷ alpha` logic for EVERY input
+        // in [0, Q) (the range of freeze). Guards ACVP byte-exactness.
+        fn reference(a: i32) -> (i32, i32) {
+            let alpha = 2 * params::GAMMA2 as i32;
+            let q = params::Q as i32;
+            let mut r0 = a % alpha;
+            if r0 > alpha / 2 {
+                r0 -= alpha;
+            }
+            let r1;
+            if a - r0 == q - 1 {
+                r1 = 0;
+                r0 -= 1;
+            } else {
+                r1 = (a - r0) / alpha;
+            }
+            (r1, r0)
+        }
+        for a in 0..params::Q as i32 {
+            // freeze(a) == a for a in [0, Q), so decompose(a) sees the same input.
+            assert_eq!(decompose(a), reference(a), "decompose mismatch at a={a}");
+        }
+    }
 
     #[test]
     fn unpack_hint_rejects_noncanonical_indices() {
