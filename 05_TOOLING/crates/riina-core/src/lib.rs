@@ -13,6 +13,38 @@
 //! - **Law 4**: All secrets are zeroized when no longer needed
 //! - **Law 8**: Zero third-party runtime dependencies
 //!
+//! # Randomness — the caller contract (REQ-43 M-1)
+//!
+//! **This crate contains NO entropy source.** There is no CSPRNG, DRBG, RNG
+//! syscall, or hardware-RNG access anywhere in `riina-core` (a deliberate
+//! consequence of Law 8 and of keeping the primitives deterministic and
+//! testable). Every randomized operation â key generation, ML-KEM
+//! encapsulation, Ed25519/ML-DSA key generation, and ML-DSA *hedged* signing â
+//! takes its randomness as an explicit `random: &[u8]` / seed argument supplied
+//! by the **caller**.
+//!
+//! Therefore the security of those operations rests **entirely** on the caller:
+//!
+//! - The caller MUST supply uniformly-distributed, cryptographically-strong
+//!   bytes from the operating system CSPRNG (`getrandom(2)` / `/dev/urandom` /
+//!   `BCryptGenRandom` / `getentropy`), of at least the documented length.
+//! - The library performs **no** entropy collection, **no** health testing,
+//!   **no** reseeding, and **no** validation that the supplied bytes are
+//!   high-entropy. Passing a constant, low-entropy, predictable, or reused
+//!   buffer (e.g. an uninitialized or zeroed array) silently destroys all
+//!   security guarantees of the affected operation.
+//! - ML-DSA hedged signing (`sign_hedged`) requires **fresh** randomness on
+//!   **every** invocation; reuse across signatures is a key-recovery hazard.
+//!   Deterministic ML-DSA signing (`sign`) needs no randomness and is safe to
+//!   call without it.
+//! - Ed25519 signing is deterministic (RFC 8032) and draws **no** randomness;
+//!   only key generation consumes a seed.
+//!
+//! Deterministic seeds are intentionally accepted (the FIPS/ACVP known-answer
+//! tests depend on it), which is exactly why the crate cannot enforce entropy
+//! quality itself â the contract above is the control, and it is the embedding
+//! applicationâs responsibility to honor it.
+//!
 //! # Modules
 //!
 //! - `zeroize`: Secure memory zeroization

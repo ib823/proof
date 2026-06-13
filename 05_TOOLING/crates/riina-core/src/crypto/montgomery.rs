@@ -124,7 +124,13 @@ impl MontgomeryPoint {
     /// The point (u:1)
     #[must_use]
     pub fn from_bytes(bytes: &[u8; 32]) -> Self {
-        let u = FieldElement::from_bytes(bytes);
+        // RFC 7748 Â§5: the received u-coordinate is 255 bits â mask off bit 255
+        // explicitly before decoding (REQ-43 L-2). The field decode reduces mod
+        // p anyway, but the explicit mask is spec-literal and robust against any
+        // future change to the limb packing in `FieldElement::from_bytes`.
+        let mut masked = *bytes;
+        masked[31] &= 0x7f;
+        let u = FieldElement::from_bytes(&masked);
         Self::from_affine(u)
     }
 

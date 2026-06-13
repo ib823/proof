@@ -522,8 +522,14 @@ impl Scalar {
     /// The scalar is reduced modulo L.
     #[must_use]
     pub fn from_bytes_mod_order(bytes: &[u8; 32]) -> Self {
-        // For now, just copy (proper reduction would clamp to < L)
-        Self { bytes: *bytes }
+        // REQ-43 L-1: actually reduce mod L (the name promised it; the body was
+        // a raw copy guarded only by the fact that every caller pre-validated
+        // s < L or passed a clamped scalar). Zero-extend to 64 bytes and reuse
+        // the Barrett wide-reduction so a non-canonical 32-byte input can no
+        // longer produce an out-of-range Scalar.
+        let mut wide = [0u8; 64];
+        wide[..32].copy_from_slice(bytes);
+        reduce_scalar_wide(&wide)
     }
 
     /// Create a scalar from 64 bytes (used in signing)
