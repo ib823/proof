@@ -17,7 +17,7 @@ jenis PelawatOperasi = {
 };
 
 /// Evaluate the expression
-fungsi nilaikan(node: NodesPokok) -> Nombor kesan Bersih {
+fungsi nilaikan(node: NodesPokok) -> Nombor kesan Tulis {
     padan node {
         Nombor(n) => n,
         Penambahan(kiri, kanan) => nilaikan(kiri) + nilaikan(kanan),
@@ -26,7 +26,7 @@ fungsi nilaikan(node: NodesPokok) -> Nombor kesan Bersih {
 }
 
 /// Print the expression
-fungsi cetak_ungkapan(node: NodesPokok) -> Teks kesan Bersih {
+fungsi cetak_ungkapan(node: NodesPokok) -> Teks kesan Tulis {
     padan node {
         Nombor(n) => format!("{}", n),
         Penambahan(kiri, kanan) => {
@@ -38,7 +38,7 @@ fungsi cetak_ungkapan(node: NodesPokok) -> Teks kesan Bersih {
     };
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== CORAK PELAWAT ===\n");
 
     // Build expression: (3 + 4) * 5
@@ -54,6 +54,6 @@ awam fungsi utama() -> kesan Bersih {
     cetak_baris(format!("Nilai: {}", hasil));
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format(s: Teks, arg: T) -> Teks kesan Tulis {
     pulang s;
 }

@@ -1594,16 +1594,22 @@ impl<'a> Parser<'a> {
         let kind = self.peek().map(|t| t.kind.clone());
         match kind {
             Some(TokenKind::Not) => {
-                // `!e` is dereference (ML-style), not logical negation.
+                // `!e` is dereference (ML-style), not logical negation. The
+                // operand is parsed at the postfix (`parse_app`) level so a
+                // following call/index binds INSIDE the operator â `!f(x)` is
+                // `Deref(f(x))`, not `(Deref f)(x)` (which left the `(x)` dangling
+                // -> "Unexpected token: LParen").
                 self.consume(TokenKind::Not)?;
-                let e = self.parse_unary()?;
+                let e = self.parse_app()?;
                 Ok(Expr::Deref(Box::new(e)))
             }
             Some(TokenKind::KwNot) => {
                 // `bukan e` / `not e` is logical negation, desugared to
-                // `kalau e { salah } lain { betul }` (reuses If — no new AST node).
+                // `kalau e { salah } lain { betul }` (reuses If â no new AST node).
+                // Operand at `parse_app` level so `bukan f(x)` negates the call
+                // result (same prefix-then-call gap as `!` above).
                 self.consume(TokenKind::KwNot)?;
-                let e = self.parse_unary()?;
+                let e = self.parse_app()?;
                 Ok(Expr::If(
                     Box::new(e),
                     Box::new(Expr::Bool(false)),

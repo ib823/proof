@@ -4095,3 +4095,25 @@ fn test_lowercase_ident_still_var() {
     let mut p = Parser::new("bulatan");
     assert_eq!(p.parse_expr().unwrap(), Expr::Var("bulatan".to_string()));
 }
+
+#[test]
+fn test_prefix_not_binds_call() {
+    // REQ (examples parse-gap): `!f(x)` is `Deref(f(x))` and `bukan f(x)` is
+    // `If(f(x), false, true)` — the prefix operand must include the postfix
+    // call, not stop before `(x)` (which raised "Unexpected token: LParen").
+    let mut p = Parser::new("!ada_fail(nama)");
+    match p.parse_expr().expect("!f(x) must parse") {
+        Expr::Deref(inner) => assert!(matches!(*inner, Expr::App(_, _)), "operand is the call"),
+        other => panic!("expected Deref(App), got {other:?}"),
+    }
+
+    let mut p = Parser::new("bukan ada_fail(nama)");
+    match p.parse_expr().expect("bukan f(x) must parse") {
+        Expr::If(cond, _, _) => assert!(matches!(*cond, Expr::App(_, _)), "condition is the call"),
+        other => panic!("expected If(App, ..), got {other:?}"),
+    }
+
+    // Inside `kalau`, the original failing shape.
+    let mut p = Parser::new("kalau !ada_fail(nama) { 1 } lain { 0 }");
+    assert!(p.parse_expr().is_ok(), "kalau !f(x) {{..}} must parse");
+}

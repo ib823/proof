@@ -15,7 +15,7 @@ jenis Penyimpanan = {
 };
 
 /// Factory function
-fungsi ciptakan_penyimpanan(jenis: JenisPenyimpanan) -> Penyimpanan kesan Bersih {
+fungsi ciptakan_penyimpanan(jenis: JenisPenyimpanan) -> Penyimpanan kesan Tulis {
     padan jenis {
         FAIL => {
             cetak_baris("Membuat penyimpanan fail");
@@ -41,7 +41,7 @@ fungsi ciptakan_penyimpanan(jenis: JenisPenyimpanan) -> Penyimpanan kesan Bersih
     };
 }
 
-fungsi simpan(penyimpanan: Penyimpanan, kunci: Teks, nilai: Teks) -> kesan Bersih {
+fungsi simpan(penyimpanan: Penyimpanan, kunci: Teks, nilai: Teks) -> kesan Tulis {
     padan penyimpanan.jenis {
         FAIL => cetak_baris(format!("Menyimpan ke fail: {} = {}", kunci, nilai)),
         PERKHIDMATAN => cetak_baris(format!("Menyimpan ke API: {} = {}", kunci, nilai)),
@@ -49,7 +49,7 @@ fungsi simpan(penyimpanan: Penyimpanan, kunci: Teks, nilai: Teks) -> kesan Bersi
     };
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== CORAK KILANG ===\n");
 
     // Factory creates appropriate storage
@@ -60,6 +60,6 @@ awam fungsi utama() -> kesan Bersih {
     simpan(penyimpanan_cache, "cache", "nilai2");
 }
 
-fungsi format(s: Teks, a: Teks) -> Teks kesan Bersih {
+fungsi format(s: Teks, a: Teks) -> Teks kesan Tulis {
     pulang s;
 }
