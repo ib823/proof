@@ -933,16 +933,27 @@ fn unpack_hint(buf: &[u8], h: &mut PolyVecK) -> bool {
         if limit < idx || limit > params::OMEGA {
             return false;
         }
+        // FIPS 204 Alg. 21 (HintBitUnpack): within polynomial i's segment
+        // [first..limit) the indices buf[idx] must be STRICTLY INCREASING.
+        // REQ-43 M-3: this check was an empty block, so non-canonical hints
+        // (duplicate / out-of-order indices) were accepted — a signature-
+        // malleability gap (SUF-CMA / ACVP invalid-hint negatives). This is the
+        // public verification path, so an early return on a malformed signature
+        // is correct and not a side channel.
+        let mut first = true;
+        let mut prev = 0u8;
         while idx < limit {
-            // Check monotonicity (required for canonical encoding)
-            if idx > 0 && i > 0 {
-                // within same polynomial, indices must be strictly increasing
+            let j_byte = buf[idx];
+            if !first && j_byte <= prev {
+                return false; // non-strictly-increasing => non-canonical hint
             }
-            let j = buf[idx] as usize;
+            let j = j_byte as usize;
             if j >= params::N {
                 return false;
             }
             h.polys[i].coeffs[j] = 1;
+            prev = j_byte;
+            first = false;
             idx += 1;
         }
     }
@@ -1289,18 +1300,24 @@ impl MlDsa65SigningKey {
             w_minus_cs2.reduce();
             w_minus_cs2.caddq();
 
-            // Check low bits norm
+            // Check low bits norm.
+            // REQ-43 M-4: this loop previously early-`break`'d on the first
+            // out-of-bound coefficient of the SECRET w - c*s2, leaking its
+            // position via timing (unlike the deliberately non-short-circuiting
+            // `check_norm` used for z). It now scans every coefficient and
+            // accumulates with a non-short-circuiting `&=`, so the
+            // accept/reject decision no longer reveals which coefficient failed.
+            // (Residual, tracked under REQ-43: `decompose`/`low_bits` still have
+            // per-coefficient data-dependent branches and a `%/÷ alpha`, shared
+            // with the reference Dilithium design; a fully branchless+
+            // divisionless decompose that preserves ACVP byte-exactness is a
+            // separate work item.)
+            let low_bound = params::GAMMA2 - params::BETA;
             let mut low_norm_ok = true;
             for i in 0..params::K {
                 for j in 0..params::N {
                     let r0 = low_bits(w_minus_cs2.polys[i].coeffs[j]);
-                    if r0.unsigned_abs() >= params::GAMMA2 - params::BETA {
-                        low_norm_ok = false;
-                        break;
-                    }
-                }
-                if !low_norm_ok {
-                    break;
+                    low_norm_ok &= r0.unsigned_abs() < low_bound;
                 }
             }
             if !low_norm_ok {
@@ -1795,6 +1812,38 @@ impl Signature for MlDsa65 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unpack_hint_rejects_noncanonical_indices() {
+        // REQ-43 M-3: HintBitUnpack must reject non-strictly-increasing indices
+        // within a polynomial segment (FIPS 204 Alg. 21) — otherwise non-
+        // canonical hints are accepted = signature malleability.
+        let total = params::OMEGA + params::K;
+
+        // Canonical: poly0 has indices [3, 5]; all limits cumulative = 2.
+        let mut canon = vec![0u8; total];
+        canon[0] = 3;
+        canon[1] = 5;
+        for i in 0..params::K {
+            canon[params::OMEGA + i] = 2;
+        }
+        let mut h = PolyVecK::zero();
+        assert!(unpack_hint(&canon, &mut h), "canonical hint must be accepted");
+
+        // Out of order: [5, 3] — must be rejected.
+        let mut ooo = canon.clone();
+        ooo[0] = 5;
+        ooo[1] = 3;
+        let mut h2 = PolyVecK::zero();
+        assert!(!unpack_hint(&ooo, &mut h2), "out-of-order indices must be rejected");
+
+        // Duplicate: [5, 5] — must be rejected (not STRICTLY increasing).
+        let mut dup = canon.clone();
+        dup[0] = 5;
+        dup[1] = 5;
+        let mut h3 = PolyVecK::zero();
+        assert!(!unpack_hint(&dup, &mut h3), "duplicate indices must be rejected");
+    }
 
     /// Proves the constant-time `check_norm` is byte-for-byte equivalent to the
     /// previous branchy logic across a wide value sweep (the safety net for the
