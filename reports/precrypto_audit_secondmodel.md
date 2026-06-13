@@ -770,3 +770,45 @@ container/CI. It is now a ~10-minute task on any real metal:
 *Indicative only — actual quotes depend on final scope and current availability; get fixed bids from
 all three. The mechanized-proof + green-structural-CT package should reduce ramp-up (hence cost) at
 any of them. Commissioning (firm choice, contract, budget) is the owner's decision.
+
+---
+
+## Internal pre-audit — adversarial review 2026-06-13 (RIINA-conducted, NCC/ToB/Cure53-grade methodology)
+
+A full adversarial review of `riina-core` (15.6k LoC) conducted to the external-audit
+benchmark BEFORE commissioning REQ-28, so the external team meets a hardened target.
+Every finding verified against source by command (Zero-Trust: not from comments/test names).
+Severity uses the dossier's bar (Medium+ is actionable). Calibrated by a lead reviewer —
+where the parallel review over-rated severity (e.g. KyberSlash → "Critical"), the rating is
+tempered to reflect actual exploitability on the stated primary target (x86-64 release) with
+the residual-target risk stated explicitly.
+
+### Findings
+
+| ID | Sev | Location | Finding | Remediation |
+|----|-----|----------|---------|-------------|
+| H-1 | High | `ml_kem.rs:456,476,555,169` | **KyberSlash class.** `/q` and `%q` (q=3329 const) on **secret** data on the decaps path (`encode_message`, `compress`, `to_positive`). Strength-reduced to mul-shift on x86-64 release (likely CT there) but a real `div` in debug + on non-strength-reducing targets (32-bit ARM, RISC-V no-M) → secret-dependent timing oracle. Contradicts the unconditional CT claim (`ml_kem.rs:46`). | Explicit multiply-shift (KyberSlash-patch reciprocal constants) + asm/no-`div` test. |
+| M-1 | Med | crate-wide (`lib.rs`, all `generate`) | **No entropy source / undocumented RNG contract.** 0 `getrandom`/`OsRng`/`rdrand`/DRBG; all keygen/encaps/sign take caller `random: &[u8]`, unvalidated (all-zero seed accepted). | Document the hard caller contract (OS-CSPRNG; no in-crate entropy/health/reseed) on the public API; reject all-zero/low-entropy seeds. |
+| M-2 | Med | `gcm.rs` (no bound), `ghash.rs:99` | **GCM no max-length.** No `2^39-256`-bit cap → >64 GiB message wraps the 32-bit CTR (`inc32`) = keystream reuse; `wrapping_mul(8)` silently truncates the GHASH length block ≥2^61 B. | Enforce GCM length bound; reject oversize before processing. |
+| M-3 | Med | `ml_dsa.rs:937-940` | **Non-canonical ML-DSA hint accepted.** The monotonicity-enforcement block is empty (comment only) → signature malleability (SUF-CMA / ACVP invalid-hint negatives). | Implement strictly-increasing within-poly index check; reject otherwise. |
+| M-4 | Med | `ml_dsa.rs:1293-1337` | **Non-CT ML-DSA rejection loops.** r0/LowBits + hint checks early-`break` on secret-dependent values (unlike branchless `check_norm`) → coefficient-position timing leak. | Non-short-circuiting accumulate + branchless `decompose`/`make_hint`/`use_hint`. |
+| L-1 | Low | `ed25519.rs:524` | `from_bytes_mod_order` does not reduce mod L (safe-by-accident at all call sites today). | Implement reduction or rename `..._unchecked` + document precondition. |
+| L-2 | Low | `montgomery.rs:126` | X25519 missing explicit `u[31] &= 0x7f` high-bit mask (correct only via later reduction; brittle). | Add the explicit RFC 7748 §5 mask. |
+| L-3 | Low | `ed25519.rs:321,415` | Public-data decode branches (`if correct_neg`, sign-adjust) contradict the blanket CT claim. | Use `conditional_select`. |
+| L-4 | Low | `gcm.rs:319-360` | GCM transient keystream/counter/`s` not zeroized (struct-level secrets are). | Zeroize transients per iteration/before return. |
+| L-5 | Low/Info | `gcm.rs:19`, `ghash.rs:8` | "All operations constant-time" over-claim vs the honest AES `ct_lookup` caveat. | Carry the AES caveat; gate the claim behind dudect/ctgrind CI. |
+
+### Verified-correct (clean findings — as valuable as bugs, evidence-cited)
+
+- **ML-KEM FO implicit rejection IS constant-time** over the FULL ciphertext (accumulating `diff |=`, mask-select, reject secret = `J(z‖c)`), + decaps-key hash check present and CT — `ml_kem.rs:1043-1069`, `:994-1002`. The single most important thing to get right.
+- **AES S-box is a masked 256-entry scan** (`ct_lookup`, `aes.rs:91-107`), not a raw secret-indexed table; GF(2^8) `xtime`/`gf_mul` branchless. **GHASH** GF(2^128) multiply branchless with correct `0xe1` reduction + correct J0/length block.
+- **AEAD verify-before-release upheld + constant-time tag compare** (`gcm.rs:151`, `:363`).
+- **Ed25519** strict RFC 8032 §5.1.3 decode (canonical-y, x=0/sign rejected) + `s<L` malleability gate (`ed25519.rs:369/331/1195`); deterministic nonce correct, no reuse (`:1099`); the prior variable-time `while carry` scalar-mul leak is **genuinely fixed** (`:977`) — dossier claim confirmed.
+- **HKDF** output cap + RFC 5869 vectors; **zeroize** uses `write_volatile` + `compiler_fence`; `unsafe` blocks (3 in core) are minimal and contract-documented.
+
+### Disposition
+
+Tracked as **REQ-43** (P0) in `RIINA_MASTER_PLAN.md` Part 3. H-1/M-1/M-2/M-3/M-4 are the
+pre-external-audit fix list. None block *commissioning* REQ-28; all should precede sign-off.
+Wave-0 (REQ-42a/b) already removed two findings (unvalidated hybrid key, dead MAC verify)
+before this pass — those are not re-listed here.
