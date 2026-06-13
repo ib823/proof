@@ -812,3 +812,33 @@ Tracked as **REQ-43** (P0) in `RIINA_MASTER_PLAN.md` Part 3. H-1/M-1/M-2/M-3/M-4
 pre-external-audit fix list. None block *commissioning* REQ-28; all should precede sign-off.
 Wave-0 (REQ-42a/b) already removed two findings (unvalidated hybrid key, dead MAC verify)
 before this pass — those are not re-listed here.
+
+### Machine-level CT evidence extended to ML-KEM decapsulation (2026-06-13)
+
+Following the REQ-43 remediation, the deterministic structural-CT gate
+(`scripts/ct-structural-check.sh`, ctgrind/Valgrind secret-poisoning) was
+extended from 4 to **5 primitives** to cover the post-quantum path where the
+headline fixes landed. A new `mlkem` probe in `examples/ctgrind_ct.rs` poisons
+**only the secret portions** of the ML-KEM-768 decapsulation key — `dk_pke`
+(the secret s-vector, `sk[..1152]`) and `z` (the implicit-reject secret,
+`sk[2368..2400]`) — leaving `ek` (which holds the public seed ρ used to sample Â)
+defined, then runs full `decapsulate`. This exercises the secret path through
+`k_pke_decrypt` (message decode — the H-1 `fdiv_q` site), the FO re-encryption
+`k_pke_encrypt` (`compress`/`to_positive` — the other H-1 sites), and the
+constant-time implicit-rejection select.
+
+**Result: ML-KEM decaps is STRUCTURALLY CT-CLEAN** — 0 memcheck errors, 0
+secret-dependent jumps (gate output: `aes/cteq/x25519/ed25519/mlkem` all clean,
+5/5; positive control still detected, baseline 0). The gate is wired into CI
+(`verify.yml` `ct-structural`), so a reintroduced secret-dependent branch /
+memory index in the ML-KEM decaps path now fails the build.
+
+**Honest scope:** ctgrind sees secret-dependent BRANCHES and MEMORY ADDRESSES,
+not variable-latency instructions, so it confirms the decaps path has no secret
+branch/memory access; the KyberSlash *division-freedom* (H-1) is separately
+guaranteed by the source (no `/q`/`%q` remains; the `fdiv_q` multiply-shift is
+pinned exact by an exhaustive test). ML-DSA signing is deliberately NOT added to
+this gate: its rejection-sampling control flow legitimately branches on
+secret-derived data (the accepted Dilithium leak), so a whole-operation ctgrind
+would flag known-safe branches; the M-4 `decompose` branchlessness is instead
+proven by the exhaustive `decompose_ct_matches_reference` equivalence test.

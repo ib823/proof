@@ -65,7 +65,7 @@ echo ""
 echo "  Primitive   memcheck_errors   secret-dependent_JUMPs   verdict"
 echo "  ─────────   ───────────────   ──────────────────────   ───────"
 clean=0; triage=0
-for t in aes cteq x25519 ed25519; do
+for t in aes cteq x25519 ed25519 mlkem; do
   run "$t"
   if [ "$ERRS" -eq 0 ]; then
     verdict="STRUCTURALLY CT-CLEAN"; clean=$((clean+1))
@@ -80,7 +80,7 @@ echo "[ct-structural] $clean clean, $triage flagged for triage."
 echo "  Note: memcheck flags constant-time cmov/masked-select the same as a real"
 echo "  branch; a flagged *conditional jump* (jcc) on a secret or a secret-indexed"
 echo "  load is the actual leak to chase (disassemble the 'at' address: cmov/set ="
-echo "  CT; jcc = investigate). The four covered primitives are currently CT-clean."
+echo "  CT; jcc = investigate). The five covered primitives (incl. ML-KEM decaps) are currently CT-clean."
 if [ "$triage" -ne 0 ]; then
   echo "[ct-structural] REGRESSION: a primitive newly flags — triage the new jcc-on-secret."
   exit 1

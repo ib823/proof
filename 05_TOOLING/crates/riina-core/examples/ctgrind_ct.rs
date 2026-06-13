@@ -38,6 +38,10 @@ use riina_core::constant_time::ct_eq_bytes;
 use riina_core::crypto::aes::Aes256;
 use riina_core::crypto::ed25519::Ed25519SigningKey;
 use riina_core::crypto::montgomery;
+use riina_core::crypto::ml_kem::{
+    MlKem768, CIPHERTEXT_SIZE, PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SHARED_SECRET_SIZE,
+};
+use riina_core::crypto::Kem;
 
 // ── Valgrind memcheck client requests (x86-64), dependency-free ──────────────
 //
@@ -130,12 +134,54 @@ fn ct_eq() {
     black_box(eq);
 }
 
+/// ML-KEM-768 decapsulation: poison ONLY the secret portions of the decapsulation
+/// key and run the full decaps. This exercises the secret path through
+/// `k_pke_decrypt` (message decode — the REQ-43 H-1 `fdiv_q` site), the FO
+/// re-encryption `k_pke_encrypt` (`compress`/`to_positive` — the other H-1
+/// sites), and the constant-time implicit-rejection select. Memcheck flags any
+/// secret-dependent branch or memory index; a constant-time decaps yields zero.
+///
+/// Poisoning is SELECTIVE: `dk_pke` (the secret s-vector, bytes[..1152]) and `z`
+/// (the implicit-reject secret, bytes[2368..2400]) are poisoned; `ek`
+/// (bytes[1152..2336]) is left defined because it holds the PUBLIC seed `rho`
+/// used to sample matrix Â during re-encryption — sampling Â branches on public
+/// data and must not be mistaken for a secret leak.
+///
+/// NOTE (honest scope): ctgrind sees secret-dependent BRANCHES and MEMORY
+/// ADDRESSES, not variable-latency instructions. The `KyberSlash` fix (H-1)
+/// replaced a secret `/q` with a multiply-shift; ctgrind confirms the decaps
+/// path has no secret branch/memory access, while the *division-freedom* itself
+/// is guaranteed by the source (no `/`/`%` by q remains) — the two together are
+/// the machine-checkable evidence. ML-DSA signing is deliberately NOT covered
+/// here: its rejection-sampling control flow legitimately branches on
+/// secret-derived data (the accepted Dilithium leak), so a whole-operation
+/// ctgrind would flag known-safe branches; its `decompose` branchlessness is
+/// instead proven by the exhaustive `decompose_ct_matches_reference` test.
+fn ct_mlkem_decaps() {
+    let mut sk = [0u8; SECRET_KEY_SIZE];
+    let mut pk = [0u8; PUBLIC_KEY_SIZE];
+    MlKem768::generate_keypair(&[0x42u8; 64], &mut sk, &mut pk).expect("ml-kem keygen");
+
+    let mut ct = [0u8; CIPHERTEXT_SIZE];
+    let mut ss_enc = [0u8; SHARED_SECRET_SIZE];
+    MlKem768::encapsulate(&[0x24u8; 32], &pk, &mut ct, &mut ss_enc).expect("ml-kem encaps");
+
+    poison(&sk[..1152]); // dk_pke: the secret s-vector
+    poison(&sk[2368..2400]); // z: implicit-reject secret
+
+    let mut ss_dec = [0u8; SHARED_SECRET_SIZE];
+    MlKem768::decapsulate(&sk, &ct, &mut ss_dec).expect("ml-kem decaps");
+    unpoison(&ss_dec);
+    black_box(&ss_dec);
+}
+
 fn battery() {
     ct_aes();
     ct_x25519();
     ct_ed25519();
     ct_eq();
-    println!("ctgrind battery ran (AES key, X25519 scalar, Ed25519 seed, ct_eq) — \
+    ct_mlkem_decaps();
+    println!("ctgrind battery ran (AES key, X25519 scalar, Ed25519 seed, ct_eq, ML-KEM decaps) — \
               verdict = Valgrind error count (expect 0)");
 }
 
@@ -176,6 +222,7 @@ fn main() {
         Some("x25519") => ct_x25519(),
         Some("ed25519") => ct_ed25519(),
         Some("cteq") => ct_eq(),
+        Some("mlkem") => ct_mlkem_decaps(),
         _ => battery(),
     }
 }
