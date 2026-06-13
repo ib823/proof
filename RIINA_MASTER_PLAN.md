@@ -2539,10 +2539,25 @@ tests, 03_PROTO workspace 2910→2911/0, clippy clean. This advanced 9 files pas
 error (most have further gaps) and, with three effect-annotation example corrections
 (`05_patterns/factory.rii`, `05_patterns/visitor.rii`, `04_compliance/iso27001_controls.rii`
 declared `kesan Bersih` but print via `cetak_baris` = Write — checker correctly rejected;
-fixed to `kesan Tulis`), flipped the corpus 61→64. **Remaining top classes** (re-derived):
-18 generic-type-application in type position (`Rahsia<Teks>`, `SaluranSelamat<()>`), struct
-literals, constructor-arg patterns (`Ok(x) ->`, `Taint.Tercemar(s) ->`) — each a larger
-grammar feature warranting its own focused increment + Coq parity, not a quick gap-fix.
+fixed to `kesan Tulis`), flipped the corpus 61→64. **Remaining 101 failures — root-caused taxonomy (2026-06-13 investigation; the lane is a long
+tail, not a few high-leverage gaps).** Generic *type application* in type position is NOT the
+gap — `parse_ty` already handles `Rahsia<T>`/`Mungkin<T>`/`Senarai<T>`/`Bukti<T>`. The real
+clusters, each needing dedicated work (most files carry SEVERAL, so one fix rarely flips a
+file): (1) **keyword-as-identifier** conflicts — examples bind names that are reserved words,
+e.g. `bukti` (= `KwProve`, used in `dedah X dengan bukti Y`) as a parameter name in
+`declassify.rii`; `benar` as a value (only `betul`/`true` are bool literals). Fix = rename in
+examples OR make selected keywords contextual/soft. (2) **generic function declarations**
+`fungsi laku<E, T>(…)` (the `<E,T>` decl, distinct from type application) — unimplemented;
+needs parser + typechecker + Coq parity. (3) **struct literals** `Name { field: val }`
+(`DataBerlabel { … }`) — unimplemented. (4) **missing stdlib builtins** (14 files: `aes_enkripsi`,
+`baca_fail`, `masa_unix`, `tulis_ke_fail`, `hasilkan_garam`, `sortir_menaik`, … ) — each a
+distinct stdlib surface, some genuine I/O/crypto not yet exposed. (5) **non-canonical syntax in
+aspirational examples** (e.g. `dedah(s, bukti: "…")` vs the canonical `dedah s dengan bukti …`)
+— example rewrites. (6) **specialized features**: FFI C-types (`CInt`/`CChar`/`RawPtr`),
+session types, CRDT types, linear-use obligations — each its own track. Highest-leverage *real*
+features to invest next: struct literals and generic-fn-decls (each appears across multiple
+files); the rest is per-file example correctness + incremental stdlib. Banked increment this
+session: the `!`/`bukan` precedence fix + 3 effect-annotation flips (61→64).
 
 **Verified baseline at handoff (2026-06-11, twelfth session, last commit `beb93fa`; all re-run by command that session):**
 `cargo test --workspace --release` (03_PROTO) = **2898 / 0** (was 2877 at the start of this session's
