@@ -209,10 +209,25 @@ hardware, not sufficient** — and RIINA states so rather than over-claiming.
   responsibility.
 - **Residual:** **High, platform-level — accepted & disclosed (§7 OR-6).**
 
+### 6.3a SLAP & FLOP — Apple M-series load predictors (2025; REQ-37)
+
+- **Threat.** Disclosed Jan 2025 on Apple M-series: **SLAP** abuses the **Load
+  Address Predictor** (speculate a load's *address*) and **FLOP** the **Load Value
+  Predictor** (speculate a load's *value*); both open a Spectre-class transient
+  window that computes on mispredicted data and leaks across boundaries (e.g.
+  Safari process isolation). They are a sibling pair and are **distinct from the
+  DMP/GoFetch prefetcher** (§6.2) — predictor-driven, not prefetcher-driven.
+- **RIINA's position.** Same as the rest of §6: source-level constant-time covers
+  instruction-timing and secret-branch/secret-memory channels; it does **NOT**
+  defeat predictor-driven transient execution on affected microarchitectures.
+  Mitigation is deploy-time (vendor microcode/OS controls; not co-locating secrets
+  with attacker-controlled JS). A portable compiler cannot close it from source.
+- **Residual:** **High, platform-level — accepted & disclosed (§7 OR-6a).**
+
 ### 6.4 What *is* verifiable today (so the section isn't all caveats)
 
 - **Structural CT** (`scripts/ct-structural-check.sh`, ctgrind secret-poisoning) is a **CI gate**:
-  AES, `ct_eq`, X25519, Ed25519 are structurally CT-clean (0 memcheck errors), after *real fixes,
+  AES, `ct_eq`, X25519, Ed25519, **and ML-KEM-768 decapsulation** (added 2026-06-13, REQ-43) are structurally CT-clean (0 memcheck errors; 5/5 primitives), after *real fixes,
   zero suppressions* (the `overflow-checks` change above; `black_box` barriers on selects LLVM had
   lowered to `js`; a genuine variable-time `while carry>0` loop in `ed25519::scalar_mul` fixed to a
   fixed trip count).
@@ -253,6 +268,7 @@ Every Medium-or-higher residual from the tables above, consolidated so nothing h
 | **OR-4** | `riina-wasm` FFI dereferences caller-supplied `(ptr,len)` | Medium | Playground shim, outside compiler TCB; documented contract. Could add a length/sanity guard. |
 | **OR-5** | DMP/GoFetch leak on affected HW despite source-level CT | High (HW-specific) | **Accepted & disclosed** — requires DIT/DMP-disable at deploy time; a portable compiler cannot set it. |
 | **OR-6** | Transient-execution (Downfall/Inception) leaks at the platform level | High (platform) | **Accepted & disclosed** — CPU-microcode + OS-mitigation territory. |
+| **OR-6a** | SLAP/FLOP load-predictor transient leaks on Apple M-series (2025) | High (platform) | **Accepted & disclosed** (§6.3a) — predictor-driven; deploy-time vendor/OS controls, not a source-level fix. |
 | **OR-7** | Verification-claim authenticity rests on self-run scripts, not third-party attestation | Medium | Gate F signed/attested releases; the external audit (REQ-28) independently re-derives. |
 | **OR-8** | Bus factor = 1 (REQ-36) weakens non-repudiation & continuity | Medium | Gate J: recruit ≥2 maintainers. Owner decision. |
 | **OR-9** | External compiler/crypto audit not yet performed (REQ-28/Gate G) | — (process) | **OPEN, owner-gated** — the pre-audit dossier is ready; engagement is a budget decision. |
@@ -268,7 +284,13 @@ Every Medium-or-higher residual from the tables above, consolidated so nothing h
    whole defense.
 3. **The compiler is batch, single-tenant.** RIINA does not (today) run untrusted code in the same
    address space as secrets, which bounds the transient-execution exposure to the compile process.
-4. **Non-goals:** RIINA does not claim to defeat physical attacks, fault injection, power/EM analysis
+4. **Hardware root of trust is assumed, not provided (REQ-37).** RIINA's secure-boot / attestation
+   story (REQ-31 SBOM + reproducible build) and this threat model assume a trustworthy silicon
+   **root of trust** below the software — the named industry anchors are **Caliptra** (OCP/CHIPS-Alliance
+   datacenter RoT) and **OpenTitan** (lowRISC discrete RoT). RIINA is a language + verified stdlib; the
+   RoT is *out of the language boundary* — its measured-boot/attestation/key-storage guarantees are
+   the hardware layer RIINA's software attestation chains to, not something RIINA implements.
+5. **Non-goals:** RIINA does not claim to defeat physical attacks, fault injection, power/EM analysis
    (Collide+Power), or a malicious host OS. These are out of the language/compiler's reach.
 
 ---

@@ -76,7 +76,7 @@ pub const HYBRID_KEM_CIPHERTEXT_SIZE: usize = X25519_PUBLIC_KEY_SIZE + ML_KEM_CI
 pub const HYBRID_KEM_SHARED_SECRET_SIZE: usize = 32;
 
 /// Domain separation context for hybrid KEM
-const HYBRID_KEM_CONTEXT: &[u8] = b"RIINA-HYBRID-KEM-X25519-ML-KEM-768-v1";
+const HYBRID_KEM_CONTEXT: &[u8] = b"RIINA-HYBRID-KEM-X25519-ML-KEM-768-v2";
 
 /// Hybrid key encapsulation combining X25519 and ML-KEM-768
 pub struct HybridKem {
@@ -157,7 +157,19 @@ impl HybridKem {
         combined_ikm[..X25519_SHARED_SECRET_SIZE].copy_from_slice(&x25519_ss);
         combined_ikm[X25519_SHARED_SECRET_SIZE..].copy_from_slice(&ml_kem_ss);
 
-        let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, HYBRID_KEM_CONTEXT);
+        // X-Wing-style transcript binding (REQ-37): bind the X25519 ciphertext
+        // (ephemeral pk) and the recipient's static X25519 pk into the KDF
+        // context. X25519-as-KEM is malleable, so without committing to the
+        // X25519 transcript the hybrid's IND-CCA argument does not close
+        // (cf. draft-connolly-cfrg-xwing-kem, which hashes ct_X || pk_X into the
+        // combiner). HKDF `info` is the binding site; must match encapsulate.
+        let mut info = [0u8; { HYBRID_KEM_CONTEXT.len() + 2 * X25519_PUBLIC_KEY_SIZE }];
+        info[..HYBRID_KEM_CONTEXT.len()].copy_from_slice(HYBRID_KEM_CONTEXT);
+        let p = HYBRID_KEM_CONTEXT.len();
+        info[p..p + X25519_PUBLIC_KEY_SIZE].copy_from_slice(&ephemeral_x25519);
+        info[p + X25519_PUBLIC_KEY_SIZE..].copy_from_slice(self.x25519.public_key());
+
+        let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, &info);
 
         // Zeroize intermediate values
         combined_ikm.zeroize();
@@ -217,7 +229,16 @@ pub fn hybrid_kem_encapsulate(
     combined_ikm[..X25519_SHARED_SECRET_SIZE].copy_from_slice(&x25519_ss);
     combined_ikm[X25519_SHARED_SECRET_SIZE..].copy_from_slice(&ml_kem_ss);
 
-    let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, HYBRID_KEM_CONTEXT);
+    // X-Wing-style transcript binding (REQ-37): bind ct_X25519 (ephemeral pk)
+    // and pk_X25519 (recipient static pk) into the KDF context, matching
+    // decapsulate. See draft-connolly-cfrg-xwing-kem.
+    let mut info = [0u8; { HYBRID_KEM_CONTEXT.len() + 2 * X25519_PUBLIC_KEY_SIZE }];
+    info[..HYBRID_KEM_CONTEXT.len()].copy_from_slice(HYBRID_KEM_CONTEXT);
+    let p = HYBRID_KEM_CONTEXT.len();
+    info[p..p + X25519_PUBLIC_KEY_SIZE].copy_from_slice(ephemeral.public_key());
+    info[p + X25519_PUBLIC_KEY_SIZE..].copy_from_slice(&x25519_pk);
+
+    let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, &info);
 
     // Zeroize intermediate values
     combined_ikm.zeroize();
