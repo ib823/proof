@@ -177,9 +177,20 @@ mod tests {
         // This requires architecture-specific BTB manipulation and
         // is beyond the scope of a portable test.
         //
-        // For now, we rely on compiler-generated retpolines.
-
-        // TODO: Add BTB poisoning test for x86_64
-        // TODO: Add performance counters to detect speculative mispredictions
+        // REQ-42d: BTB-poisoning resistance is a CODEGEN property (retpoline /
+        // converting an indirect call to a return), not something a portable
+        // unit test can assert without arch-specific microarchitectural probing
+        // (which would be flaky in CI). What IS deterministically verifiable is
+        // that the mitigation wrapper preserves FUNCTIONAL correctness — the
+        // indirect call must still dispatch to the right target and return the
+        // right value through the (future) retpoline thunk. Verify that; the
+        // actual transient-execution resistance is a deploy-time CPU/OS +
+        // codegen concern documented in THREAT_MODEL section 6.3 / OR-6.
+        let mut targets = 0u32;
+        let r1 = safe_indirect_call(|| { targets += 1; 0xAAu8 });
+        let r2 = safe_indirect_call(|| { targets += 1; 0x55u8 });
+        assert_eq!(r1, 0xAA, "indirect call must dispatch to the first target");
+        assert_eq!(r2, 0x55, "indirect call must dispatch to the second target");
+        assert_eq!(targets, 2, "each protected indirect call runs exactly once");
     }
 }

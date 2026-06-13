@@ -82,6 +82,26 @@ jobs:
       - name: fuzz_robustness (full-pipeline fuzz)
         run: cargo test --manifest-path 03_PROTO/Cargo.toml -p riinac --test fuzz_robustness
 
+  frontend-coverage:
+    name: Frontend coverage gate (REQ-30, >=80% lines)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "03_PROTO -> target"
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      # Thin wrapper over the in-repo gate (scripts/coverage-check.sh): line
+      # coverage of the untrusted-input frontend (lexer+parser+typechecker, the
+      # REQ-30 fuzz target) must stay >=80%. The script is the source of truth;
+      # CI just runs it. No CI-divergent check.
+      - name: scripts/coverage-check.sh
+        run: bash scripts/coverage-check.sh 80
+
   sbom-freshness:
     name: SBOM freshness (REQ-31)
     runs-on: ubuntu-latest
