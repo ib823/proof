@@ -2530,6 +2530,26 @@ validation + MAC-verify dead API, small + test-pinned), REQ-37/38 refresh batche
 examples parse-gap lanes. **REQ-42(a)/(b) executed immediately after (2026-06-13, see the
 REQ-42 row): 05_TOOLING 294→298/0, clippy clean — the current tooling baseline is 298.**
 
+**Addendum (2026-06-13, fourteenth-session continuation) — "address them all" sweep across the
+remaining lanes.** Worked each lane *accordingly*: **(1) REQ-43 crypto audit + full remediation**
+(H-1 KyberSlash → constant-time `fdiv_q`; M-1..M-4; L-1..L-5; residuals L-3 + M-4 `decompose`
+closed branchless/divisionless) → DONE; **machine-level CT evidence** extended the ctgrind gate to
+ML-KEM decaps (5/5 structurally CT-clean). **(2) Examples parse-gap** → 61→64 + the `!`/`bukan`
+precedence parser fix + full root-cause taxonomy (the lane is a long tail needing dedicated
+features). **(3) Struct literals**: found ALREADY supported (`RecordLit` fully wired); corpus
+failures there are cascades, not a struct gap. **(4) Generic fn declarations**: blocked by design —
+`Ty` has no type-variable variant, so generics need a Coq parametric-polymorphism model extension
+(a dedicated phase, not a quick increment; rushing = a forbidden shortcut). **(5) REQ-37 PQC/hardware
+research** (Batch 4) + the X-Wing combiner hardening (hybrid.rs transcript binding) + SLAP/RoT threat
+model → research DONE, code follow-ons executed. **(6) REQ-38 AI/ML-security research** (Batch 5) +
+withdrew the unsubstantiated OWASP-LLM "90%" → DONE. **Owner-gated/blocked (unchanged, documented):**
+REQ-28 external-audit commissioning (owner), release signing (key+secret), v0.4.0 tag (re-attempted
+4× with backoff — the managed proxy accepts the push as "Everything up-to-date" but strips the tag
+ref; v0.4.0 exists locally at `aae47857`, push from any normal clone), FN-DSA/HQC (await final
+FIPS+ACVP), byte-exact X-Wing vectors (await draft publication), Nix-runner reproducibility (REQ-31).
+All machine-doable work this sweep is committed + pushed; every push under full pre-push verify
+(Coq rebuilt, ct-structural 5/5, ACVP byte-exact, clippy 0). 05_TOOLING 303/0; 03_PROTO 2911/0.**
+
 **Examples parse-gap lane — first increment (2026-06-13): corpus 61→64/165.** A genuine
 parser gap closed (TRACK_B): prefix `!` (deref) and `bukan`/`not` (logical-neg) parsed their
 operand at `parse_unary` level, BELOW the `parse_app` postfix-call loop, so `!f(x)` / `bukan
