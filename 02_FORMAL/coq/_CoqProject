@@ -10,6 +10,7 @@ foundations/SizedInt.v
 foundations/BigIntModel.v
 foundations/DecimalModel.v
 foundations/FixedPointModel.v
+foundations/RecursionSafety.v
 foundations/VerifiedList.v
 foundations/VerifiedMapSet.v
 foundations/VerifiedString.v

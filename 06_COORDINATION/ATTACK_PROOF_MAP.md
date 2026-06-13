@@ -6,7 +6,7 @@
 > Do not use it as the live execution source of truth.
 > Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`, `PROOF_STATUS.md`, and `website/public/metrics.json`.
 
-**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2912 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,626 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2912 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ```
 Version: 1.0.0
