@@ -16,7 +16,12 @@
 //! - NEVER reuse a nonce with the same key
 //! - The 96-bit nonce allows for 2^32 messages per key safely
 //! - All sensitive data is zeroized on drop (Law 4)
-//! - All operations are constant-time (Law 3)
+//! - The GF(2^128)/CTR/GHASH paths use constant-time idioms (no secret-
+//!   dependent branches). The AES core is a masked-scan S-box (`aes::ct_lookup`)
+//!   whose constant-time property is *contract-relative* and best-effort at the
+//!   source level (see the `aes` module docs); it is NOT a machine-level proof.
+//!   Verify on emitted asm per target+toolchain via the dudect/ctgrind harness
+//!   before relying on the guarantee (REQ-43 L-5).
 
 use crate::crypto::aes::{Aes256, BLOCK_SIZE, KEY_SIZE as AES_KEY_SIZE};
 use crate::crypto::ghash::Ghash;
@@ -29,6 +34,25 @@ pub const KEY_SIZE: usize = AES_KEY_SIZE;
 pub const NONCE_SIZE: usize = 12;
 /// AES-256-GCM tag size (16 bytes)
 pub const TAG_SIZE: usize = 16;
+
+/// SP 800-38D maximum plaintext per (key, nonce): 2^39 − 256 bits = 2^36 − 32
+/// bytes. Beyond this the 32-bit GCTR counter (`inc32`) wraps and reuses
+/// keystream within a single message — a catastrophic confidentiality break
+/// (REQ-43 M-2).
+pub const MAX_PLAINTEXT_LEN: u64 = (1 << 36) - 32;
+/// SP 800-38D maximum AAD: 2^64 − 1 bits. Bounded so the 64-bit GHASH
+/// length-field encoding (`len·8`) cannot silently overflow.
+pub const MAX_AAD_LEN: u64 = (1 << 61) - 1;
+
+/// Enforce the GCM length limits (REQ-43 M-2). `data_len` is the plaintext (or
+/// ciphertext-minus-tag) length. Public lengths — not a side channel.
+#[inline]
+fn check_gcm_lengths(data_len: usize, aad_len: usize) -> CryptoResult<()> {
+    if data_len as u64 > MAX_PLAINTEXT_LEN || aad_len as u64 > MAX_AAD_LEN {
+        return Err(CryptoError::InvalidInputLength);
+    }
+    Ok(())
+}
 
 /// AES-256-GCM cipher
 pub struct Aes256Gcm {
@@ -81,6 +105,7 @@ impl Aes256Gcm {
         if output.len() < plaintext.len() + TAG_SIZE {
             return Err(CryptoError::BufferTooSmall);
         }
+        check_gcm_lengths(plaintext.len(), aad.len())?;
 
         // Compute initial counter J0
         let j0 = compute_j0(nonce);
@@ -137,6 +162,7 @@ impl Aes256Gcm {
         if output.len() < ct_len {
             return Err(CryptoError::BufferTooSmall);
         }
+        check_gcm_lengths(ct_len, aad.len())?;
 
         let ct = &ciphertext[..ct_len];
         let tag = &ciphertext[ct_len..];
@@ -169,6 +195,9 @@ impl Aes256Gcm {
         let mut tag = [0u8; TAG_SIZE];
         gctr(&self.cipher, j0, &s, &mut tag);
 
+        let mut s = s; // REQ-43 L-4: scrub the GHASH output (aids forgery if leaked)
+        s.zeroize();
+
         tag
     }
 
@@ -198,6 +227,7 @@ impl Aes256Gcm {
         if buffer.len() < plaintext_len + TAG_SIZE {
             return Err(CryptoError::BufferTooSmall);
         }
+        check_gcm_lengths(plaintext_len, aad.len())?;
 
         let j0 = compute_j0(nonce);
         let mut counter = j0;
@@ -239,6 +269,7 @@ impl Aes256Gcm {
         }
 
         let ct_len = buffer.len() - TAG_SIZE;
+        check_gcm_lengths(ct_len, aad.len())?;
         let j0 = compute_j0(nonce);
 
         // Verify tag first
@@ -333,9 +364,11 @@ fn gctr(cipher: &Aes256, icb: &[u8; BLOCK_SIZE], input: &[u8], output: &mut [u8]
             output[offset + i] = input[offset + i] ^ keystream[i];
         }
 
+        keystream.zeroize(); // REQ-43 L-4: scrub the keystream block
         offset += block_len;
         inc32(&mut counter);
     }
+    counter.zeroize();
 }
 
 /// GCTR in place
@@ -354,9 +387,11 @@ fn gctr_in_place(cipher: &Aes256, icb: &[u8; BLOCK_SIZE], data: &mut [u8]) {
             data[offset + i] ^= keystream[i];
         }
 
+        keystream.zeroize(); // REQ-43 L-4: scrub the keystream block
         offset += block_len;
         inc32(&mut counter);
     }
+    counter.zeroize();
 }
 
 /// Constant-time comparison
@@ -376,6 +411,25 @@ fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[cfg(target_pointer_width = "64")]
+    fn gcm_rejects_oversize_lengths() {
+        // REQ-43 M-2: the length guard must accept the SP 800-38D maxima and
+        // reject anything beyond (preventing CTR-32 keystream wraparound and
+        // GHASH length-field overflow). Tested on the guard directly — the
+        // byte buffers themselves are far too large to allocate.
+        assert!(check_gcm_lengths(MAX_PLAINTEXT_LEN as usize, 0).is_ok());
+        assert!(check_gcm_lengths(0, MAX_AAD_LEN as usize).is_ok());
+        assert!(matches!(
+            check_gcm_lengths(MAX_PLAINTEXT_LEN as usize + 1, 0),
+            Err(CryptoError::InvalidInputLength)
+        ));
+        assert!(matches!(
+            check_gcm_lengths(0, MAX_AAD_LEN as usize + 1),
+            Err(CryptoError::InvalidInputLength)
+        ));
+    }
 
     /// NIST GCM Test Vector - Case 1 (empty plaintext and AAD)
     #[test]

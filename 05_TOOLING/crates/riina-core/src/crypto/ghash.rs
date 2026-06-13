@@ -9,7 +9,10 @@
 //!
 //! This implementation uses constant-time GF(2^128) multiplication
 //! to prevent timing attacks. The multiplication is performed using
-//! bit-by-bit operations without secret-dependent branches.
+//! bit-by-bit operations without secret-dependent branches. As with all of
+//! `riina-core`, this is a source-level constant-time idiom, not a machine-
+//! level proof: confirm on emitted asm per target+toolchain via the
+//! dudect/ctgrind harness (REQ-43 L-5).
 //!
 //! # Security Notes
 //!
