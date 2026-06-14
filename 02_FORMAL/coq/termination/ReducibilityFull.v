@@ -10,6 +10,16 @@
     KEY THEOREM: well_typed_SN
       If e has type T, then e is strongly normalizing.
 
+    SCOPE (REQ-44, Option A — 2026-06-14). This SN result is for the
+    RECURSION-FREE core calculus (foundations/Syntax.v has no primitive
+    recursion). The implementation's general recursion (`fungsi`/`fix`,
+    desugared to `LetRec`) is Turing-complete and INTENTIONALLY not strongly
+    normalizing — its guarantee is type safety (progress + preservation,
+    mechanized for `fix` in foundations/RecursionSafety.v), NOT termination.
+    Structurally-decreasing recursion is separately covered by sized types
+    (domains/V001_TerminationGuarantees.v). SN is therefore an honestly-scoped
+    fragment property, not a whole-language claim.
+
     This unlocks:
     - SN_app: applications of SN functions to SN arguments are SN
     - TFn step-up in NonInterference_v2.v

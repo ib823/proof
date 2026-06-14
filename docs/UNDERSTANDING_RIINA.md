@@ -126,7 +126,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track V — The Termination Office
 
-**What it proves:** Every RIINA program that should terminate, does terminate. No infinite loops unless explicitly intended. Uses sized types and strong normalization — mathematical techniques that guarantee programs finish.
+**What it proves:** Strong normalization for the **recursion-free core** — those programs always finish. Programs using general recursion (`fungsi`/`fix`) are Turing-complete and *can* loop by design; for them the guarantee is **type safety** (they never crash or get stuck — progress + preservation, mechanized for `fix`), not termination. Structurally-decreasing recursion is covered by **sized types**. Techniques: reducibility/strong-normalization + sized types.
 
 ### Track W — The Memory Authority
 
