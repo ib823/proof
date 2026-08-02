@@ -177,14 +177,31 @@ jobs:
       # 8m35s of toolchain setup for 4m45s of actual proof checking. The cache
       # key pins the compiler + Rocq version, so it invalidates exactly when the
       # pin moves. Restored before setup-ocaml so the switch already exists.
+      # `setup-ocaml@v3` may place the switch in the global opam root (~/.opam)
+      # or in a workspace-local `_opam`, so both are cached; a missing path is a
+      # no-op. The first populate run saved only 33.7 MB under this key, which
+      # is too small for a Rocq switch -- the diagnostic step below prints the
+      # real root and its size so the next run settles it from evidence instead
+      # of assumption. If `Install Rocq` does not collapse on a warm cache, this
+      # block is wrong and should be reverted rather than tuned blindly.
       - name: Cache opam root (pinned Rocq toolchain)
+        id: opam-cache
         uses: actions/cache@v4
         with:
-          path: ~/.opam
-          key: opam-${{ runner.os }}-ocaml5.2-rocq9.1.1-v1
+          path: |
+            ~/.opam
+            _opam
+          key: opam-${{ runner.os }}-ocaml5.2-rocq9.1.1-v2
       - uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: "5.2"
+      - name: Where is the opam root (cache diagnostic)
+        run: |
+          echo "cache-hit: ${{ steps.opam-cache.outputs.cache-hit }}"
+          echo "opam root: $(opam var root 2>/dev/null || echo unknown)"
+          for d in "$HOME/.opam" "$GITHUB_WORKSPACE/_opam"; do
+            [ -d "$d" ] && echo "$(du -sh "$d" 2>/dev/null | cut -f1)  $d" || echo "absent          $d"
+          done
       # The corpus uses `From Stdlib`, so it requires the Rocq 9.x prover, not
       # legacy Coq 8.x. If the exact package name/version differs in the opam
       # repo, pin it here to match the toolchain in CLAUDE.md (Rocq 9.1.1).
