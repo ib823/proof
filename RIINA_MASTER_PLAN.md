@@ -3451,6 +3451,158 @@ The Coq read/write model `VerifiedFileSystem.v` (109 Qed) already exists — do 
   + elan for Lean v4.16.0; Lean/Isabelle remain `generated` (Gate D), not mechanized.
 - **Commit serially** — concurrent `cargo test` pre-commit hook runs race and spuriously fail.
 
+**Addendum (2026-08-02, fifteenth session) — full by-command lane/gate audit + CI toolchain repair.**
+Owner asked for a complete assessment before choosing the next completion scope, and chose
+"full audit first, then decide". Everything below was re-derived by command on a fresh container at
+`dfb51e7`; nothing was copied from this file or from `metrics.json`. Where a naive re-derivation
+disagreed with a recorded number and the RECORDED number turned out to be right, that is stated too
+— the audit's own false starts are logged, per Zero Trust.
+
+**Container baseline.** Fresh clone, hooks NOT installed (expected — `.git/hooks` untracked),
+Rust 1.94.1 present, **no Rocq / Lean / Isabelle / F\* / Z3 binary of any kind** (`command -v`).
+Rocq 9.1.1 was provisioned this session via opam per CLAUDE.md (apt indexes needed `apt-get update`
+first — same finding as the thirteenth session; `--disable-sandboxing` also required under an
+unprivileged container).
+
+**FINDING 1 (P0, fixed this session) — CI has been RED on `main` for at least the last 8 pushes,
+and the cause is a toolchain pin, not a code regression.** `.github/workflows/verify.yml` installed
+`dtolnay/rust-toolchain@1.84.0` while both workspaces declare `rust-version = "1.94.1"`. Cargo
+rejects the build outright before compiling anything — job log (run `27492995407`, HEAD `dfb51e7`):
+`riina-types@0.3.0 requires rustc 1.94.1 … ##[error]Process completed with exit code 101`, failing
+in **0–2 seconds**. Five of nine jobs were red for this reason alone: `Rust tests (03_PROTO)`,
+`Rust tests (05_TOOLING)`, `Fuzz robustness`, `Frontend coverage gate`, `WASM/C differential`.
+The four that passed are the ones that never invoke `cargo build/test`: `Coq active build
+(Rocq 9.1.1)` ✓, `Constant-time structural (ctgrind)` ✓, `Docs/metrics parity` ✓, `SBOM freshness` ✓.
+Note `rust-toolchain.toml` exists **only under `05_TOOLING/`**, so nothing rescued the pin for jobs
+run from the repo root. **Repaired**: all 8 `dtolnay/rust-toolchain@1.84.0` references in
+`verify.yml` + `ct-timing.yml` bumped to `1.94.1`. The coverage job already requested
+`llvm-tools-preview`, so no other change was needed. **This did not invalidate any local
+verification** — the in-repo gates are genuinely green on 1.94.1 (below); it was the CI wrapper that
+was broken. But `README.md` "Build: Passing" and `metrics.json` `status.build = "passing"` were
+false for the CI signal for ~8 commits, and no in-repo gate covers "is CI actually green".
+
+**Lane A — Rust (verified green locally on 1.94.1).**
+- `cargo build --release -p riinac` — clean, 47 s.
+- `cargo test --all` 03_PROTO — **2912 passed / 0 failed / 3 ignored** (matches `metrics.json` 2912).
+- `cargo test --all` 05_TOOLING — **304 passed / 0 failed**.
+- `cargo clippy -- -D warnings` (the ENFORCED form — CLAUDE.md, CONTRIBUTING.md, and
+  `verify.rs::run_clippy` which shells `cargo clippy --all`) — **exit 0 on both workspaces**.
+- **FINDING 2 (P2, recorded not fixed): the stricter `--all-targets` form is NOT clean**, contrary
+  to `NEXT_SESSION.md:51` which lists `cargo clippy --all-targets -- -D warnings` as a baseline check
+  and asserts "clean". Four real lints, all in test code: `riinac/tests/fuzz_robustness.rs:257`
+  (`unnecessary_cast`, `u8`→`u8`) and `riina-core/src/crypto/mod.rs:358/365/370`
+  (`assert_eq!` with a literal bool). Either fix the four lints or correct `NEXT_SESSION.md` —
+  the two documented commands disagree about what the gate is, and CI runs **no** clippy at all.
+- `todo!()`/`unimplemented!()` outside tests: **0** — Gate B exit criterion **HOLDS**.
+- `unsafe` sites re-derived and cross-checked against `04_SPECS/security/UNSAFE_AUDIT.md`:
+  `riina-arena` **5**, `riina-core/src` **4** — both match the audit doc exactly, and the doc's
+  deliberate exclusion of `examples/ctgrind_ct.rs` (a CT measurement harness, not shipped) is stated
+  in-file. **No undocumented `unsafe` site exists**; the audit-log review gate holds.
+- Law 8 confirmed independently via SBOM: `riina-proto.cdx.json` = 19 components, **0 external**;
+  `riina-tooling.cdx.json` = 129 components, **121 external**. (A naive "non-`riina`-prefixed" count
+  gives 122; the extra is the first-party `runtime-proof-verify` crate — the committed 121 is right.)
+
+**Lane B — Coq (the only mechanized lane).** **Rebuilt from clean on Rocq 9.1.1 — the strongest evidence in this audit.**
+`make -C 02_FORMAL/coq -j4` → **exit 0, 328/328 active files compiled, 0 errors**, 2 m 15 s wall
+(5 m 57 s CPU on 4 cores). Post-build re-derivation from the compiled active set:
+**Qed 12,626 / Admitted 0 / Abort 0 / `Axiom` 0 / `Parameter` 30** — matching `PROOF_STATUS.md`
+and `metrics.json` **exactly**, digit for digit.
+
+Crucially, the build itself emits **180 `Print Assumptions` reports and every single one reads
+"Closed under the global context"** — zero reports listing any axiom. That is machine-checked
+evidence of axiom-freedom from the kernel, not a grep over source text, and it is the one claim in
+this repository that is verified at the strongest available standard. The 30 `Parameter`
+declarations remain the honest TCB (they are axioms in all but name, tracked in `AXIOMS.md` and
+`PROOF_STATUS.md`, and correctly NOT gated to 0). 6 build warnings — the known stale
+warning-budget item, unchanged.
+
+The Coq lane is real. Nothing in this audit contradicts it.
+
+**Lane C — the 9 generated lanes.** Every raw corpus count reproduced within counting-convention
+noise; every `claimLevels` entry is honest.
+
+| Lane | Files (measured) | Raw decls (measured) | Actually checked | Claim |
+|---|---|---|---|---|
+| Lean 4 | 325 strict | 12,723 `theorem`/`lemma` | 7/326 files elaborate, 215 theorems | `generated` ✓ |
+| Isabelle | 368 | 12,931 lemmas | **0** theories compiled | `generated` ✓ |
+| F\* | 315 | 22 named lemmas | 3 trivial smoke lemmas | `generated` ✓ |
+| TLA+ | 317 | 12,282 `THEOREM` | 5 TLC-checked | `generated` ✓ |
+| Alloy | 306 | 11,627 `check` | 6 bounded-checked | `generated` ✓ |
+| SMT | 317 | 12,420 `(assert` | 25 unsat (lattice) | `generated` ✓ |
+| Verus | 323 | 6,395 `proof fn` | 0 (quarantined) | `generated` ✓ |
+| Kani | 307 | 5,664 harnesses | 0 (quarantined) | `generated` ✓ |
+| TV | — | 17,463 recorded | 0 (quarantined) | `generated` ✓ |
+
+Lean strict lane `sorry` **0** / `axiom` **0** (2 `sorry` in `_wip`, as recorded); Isabelle
+`sorry`/`oops` **0**. F\* carries **12,010 `admit()` + 292 `assume`** against 22 named lemmas — the
+sharpest single illustration of why the lane is `generated`. All seven of
+`fstar/tlaplus/alloy/smt/verus/kani/tv` carry the `GENERATED-CORPUS-NOT-VERIFIED.md` notice, so the
+Gate D2 remedy is verified present in-tree, not merely claimed.
+
+**Lane D — docs, metrics, supply chain.**
+- `scripts/audit-docs.sh` → **exit 0, 0 discrepancies, 4 warnings**, and all four are the
+  documented-expected ones (Lean syntactic-sorry; pre-commit + pre-push absent on a fresh clone;
+  stale Coq warning-budget snapshot). No undocumented warning appeared.
+- `scripts/update-proof-ledger.sh --check` → **"Proof ledgers are up to date."**
+- `scripts/generate-sbom.sh --check` → both SBOMs fresh.
+- `metrics.json` `git.commit` = `02a5a020` = `HEAD^` — within the documented HEAD/HEAD^ tolerance.
+- **FINDING 3 (P3, recorded): Rocq-version drift survives in two files.** `metrics.json`
+  `coq.prover` says **"Rocq 9.2"** and `NEXT_SESSION.md`'s whole provisioning block says 9.2, but the
+  generated `02_FORMAL/coq/Makefile` header says **"GNUMakefile for Rocq 9.1.1"**, CLAUDE.md was
+  corrected to 9.1.1 in the thirteenth session, and the passing CI job is literally named
+  *"Coq active build (Rocq 9.1.1)"*. No count depends on it, but this is exactly the drift class
+  `audit-docs.sh` exists to catch and `audit-docs.sh` does not check the prover string.
+- `_CoqProject` naive line count says 329 active files vs `metrics.json` 328 — **`metrics.json` is
+  right**: one line is the commented-out `# properties/FundamentalTheorem.v`, which
+  `generate-metrics.sh` correctly skips. Recorded so the next audit does not re-raise it.
+
+**FINDING 4 (P1) — REQ-44(b) forward-reference gap independently reproduced.** A two-function
+program where `utama` calls a helper defined LATER fails `riinac check` with
+`error: Variable not found: bantu`; the byte-identical program with the helper defined FIRST returns
+`Success!`. Confirmed against a release binary built from `dfb51e7`.
+
+**Corpus re-measured at `dfb51e7`: 165 examples, 64 pass / 101 fail** (up from the thirteenth
+session's 61/165 — module flattening moved 3). Failure classes re-derived by running every failure:
+
+| Class | Count | Share |
+|---|---|---|
+| Unexpected token (parse) | 53 | 52% |
+| Expected identifier (parse) | 18 | 18% |
+| Variable not found (forward-ref, REQ-44b) | 15 | 15% |
+| Effect violation | 5 | 5% |
+| Expected type | 4 | 4% |
+| Type mismatch | 3 | 3% |
+| Linearity / session / CRDT | 1 each | 3% |
+
+**71 of 101 failures (70%) are parse-level and 15 are the REQ-44(b) forward-reference gap — together
+85% of the corpus gap.** Per REQ-44's own de-risking note, the forward-ref half is a Rust-only
+typechecker+evaluator change, NOT Coq-blocked, because the core Coq calculus has no recursion
+constructor to widen and `RecursionSafety.v` already mechanizes the rule the implementation uses.
+
+**Gate scoring against exit criteria (audit verdict).**
+
+| Gate | Marker says | Audit verdict |
+|---|---|---|
+| A | CLOSED | **Holds** — 0 Admitted / 0 Axiom / 0 Abort active; 30 `Parameter` pinned; audit-docs 0 discrepancies |
+| B | CLOSED | **Holds** — 0 `todo!()` outside tests; parity test surface present |
+| C | ACTIVE | **Correctly active and engineering-complete.** Sole open exit criterion is REQ-28 (external crypto audit), **owner-deferred 2026-06-10**. Gate C cannot be closed by any session — it is budget-blocked, not work-blocked |
+| D | Satisfied by D2 | **Holds** — retraction verified in-tree |
+| E | Open | Coverage gate DONE (81.34% ≥ 80%) and fuzz harness present — but **both CI jobs were red on the 1.84.0 pin until this session's fix**. Remaining: continuous/scheduled fuzz, OSS-Fuzz, codegen-differential fuzz |
+| F | Open | SBOM done + drift-guarded; `flake.nix` present. Remaining: hermetic `nix build` verification (no Nix in container), signed releases (needs external key) |
+| G | Open | Threat model, unsafe audit, CVE policy, `make verify-all`, CT harnesses all verified present. Remaining: external audit + independent side-channel sign-off (both external) |
+| H | Open | No certification; direction chosen (Fintech/PCI-DSS + Syariah). Entirely external, 6 months–3 years |
+| I | Open | 4 of 7 deliverables DONE. Remaining: Language Reference, compiler-internals doc, stability/migration policy |
+| J | Open | Bus factor **1**; Proprietary license resolved, which intentionally blocks the open-contribution items |
+
+**The structural finding — why "complete the gates" is the wrong frame.** Of the ten gates, every
+remaining blocker on the critical path is **external or owner-gated**: external crypto audit (C, G),
+certification (H), an offline signing key (F), maintainer recruitment (J), a Nix-capable runner (F).
+No session can close any of them. The work a session CAN complete is not on any gate's exit path:
+it is the corpus/language-surface gap (REQ-44 + the two parse lanes, 85% of 101 failures), Gate I's
+three missing documents, and Gate E's continuous-fuzz tail. **A plan that says "close the gates"
+stalls at C on day one; a plan that says "make the shipped language accept what the documentation
+shows" has ~85% of its work unblocked today and is the honest reading of "complete it".**
+
 ---
 
 *This document is the SOLE planning authority for the RIINA project.*
