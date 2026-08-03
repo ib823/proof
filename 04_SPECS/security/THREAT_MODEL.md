@@ -176,6 +176,53 @@ subject of the deepest assurance in the repo (9 Coq formal-equivalence proofs + 
 REQ-32 explicitly requires this section to cover the **DMP/prefetcher class (GoFetch, 2024)** and the
 **transient-execution families (Downfall, Inception)**, per `01_RESEARCH/29_REFRESH_2026H1/`.
 
+### 6.0 Formal CT-scope: the leakage-contract framing (Guarnieri et al., S&P 2021) — REQ-39
+
+The subsections below are easier to reason about — and RIINA's claims easier to
+falsify — when the constant-time promise is stated as a **hardware-software
+leakage contract** in the sense of Guarnieri, Köpf, Reineke & Vila,
+*Hardware-Software Contracts for Secure Speculation* (IEEE S&P 2021). This is
+RIINA's **official CT-scope statement**; §§6.1–6.4 are its consequences.
+
+- **The contract RIINA targets is `ct` (constant-time observer) under
+  sequential execution — `[[·]]^seq_ct`.** Under this contract the microarchitectural
+  attacker observes, per executed instruction, only the **program-counter trace
+  (control flow)** and the **addresses of memory loads/stores** — never the
+  *values* at those addresses, and never operand-dependent instruction latency.
+  A program is contract-satisfying iff any two executions that agree on public
+  (non-secret) inputs produce **identical `ct` traces**.
+
+- **RIINA discharges the SOFTWARE side of that contract.** The CT discipline
+  (`masa_tetap`/`ct`, the `riina-core` primitives) is exactly the set of
+  source-level obligations that make the `ct` trace secret-independent: no
+  secret-dependent branch (equal pc-trace), no secret-dependent memory index
+  (equal address-trace), branchless selects and operand-independent primitives
+  (no secret-dependent latency). §6.4's structural-CT gate (ctgrind
+  secret-poisoning) and the dudect timing probe are the *evidence* that the
+  shipped primitives meet this obligation; the Coq CT lanes model it.
+
+- **Every residual in §§6.2–6.3a is one thing: the DEPLOYED HARDWARE HONORS A
+  STRONGER CONTRACT THAN `[[·]]^seq_ct`.** The contract framing makes each leak a
+  precise *contract mismatch*, not a vague "CT isn't enough":
+  - **DMP / GoFetch (§6.2)** — the CPU's true contract leaks a **value-dependent
+    address** (the prefetcher dereferences data that looks like a pointer), i.e.
+    it reveals loaded *values*, which `ct` explicitly excludes. Contract violated
+    on the hardware side.
+  - **Transient execution — Spectre/Downfall/Inception (§6.3), SLAP/FLOP
+    (§6.3a)** — the CPU's true contract is **speculative** (`[[·]]^spec_ct` /
+    predictor-specific variants such as `ct-pht`, `ct-stl`), which exposes the
+    trace of *mispredicted* transient paths that `[[·]]^seq_ct` never contains.
+
+- **Why this is honest, not a dodge.** A portable source-level compiler can only
+  discharge the software half of a contract; it **cannot unilaterally guarantee
+  the hardware half**. When the platform provides `[[·]]^seq_ct` (e.g. DMP
+  disabled via **DIT**/the DMP MSR; the vendor microcode + OS mitigations that
+  restore a sequential-`ct` contract), RIINA's proofs and CT evidence carry the
+  end-to-end guarantee. When it does not, the gap is a **named hardware/OS
+  obligation** (§§6.2–6.3a residuals, tracked in §7 OR-5/OR-6/OR-6a), not a
+  silent hole. RIINA's contribution is to make the software side *provably*
+  contract-satisfying so those deploy-time controls are meaningful.
+
 ### 6.1 What RIINA controls and what it does not
 
 RIINA's CT discipline (`masa_tetap`/`ct`, and the `riina-core` primitives) targets the **classical
