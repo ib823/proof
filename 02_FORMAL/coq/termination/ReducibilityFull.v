@@ -1224,6 +1224,60 @@ Proof.
   exact Hty_app.
 Qed.
 
+(** ------------------------------------------------------------------------
+    THE SN SCOPE, MACHINE-CHECKED (REQ-44, Option A)
+    ------------------------------------------------------------------------
+
+    [well_typed_SN] quantifies over EVERY well-typed [expr]. That is sound
+    today only because the core calculus ([foundations/Syntax.v]) has no
+    primitive recursion constructor — a fact which, until now, was recorded
+    solely in this file's header SCOPE comment and in the prose docs.
+
+    Prose cannot fail a build. The theorem below re-states the SN result with
+    the recursion-freedom side condition made EXPLICIT, so the scope travels
+    with the theorem rather than with a comment a future editor may not read.
+
+    Stated honestly: because the current core has no recursion constructor,
+    [recursion_free] holds of every term ([Syntax.core_is_recursion_free]), so
+    this is currently EQUIVALENT to [well_typed_SN] — it is not a
+    strengthening, and it is not new mathematical content. Its value is
+    structural and forward-looking:
+
+      1. The scope becomes a machine-checked hypothesis, not a caveat.
+      2. Together with the tripwire [core_is_recursion_free], adding a [fix]
+         constructor to [expr] BREAKS THE BUILD rather than silently
+         falsifying an exported theorem — a diverging [fix] is not SN, so
+         [well_typed_SN] as literally stated would become FALSE.
+      3. When the REQ-44 full-core [fix] integration lands, THIS is the
+         statement that survives unchanged; [well_typed_SN] is the one that
+         must then be retired or re-derived from it. *)
+
+(** Strong normalization, with the recursion-free scope stated explicitly. *)
+Theorem well_typed_SN_recursion_free : forall Σ pc e T ε,
+  recursion_free e ->
+  has_type nil Σ pc e T ε ->
+  SN_expr e.
+Proof.
+  intros Σ pc e T ε _ Hty.
+  (* The scope hypothesis is currently redundant (the core has no recursion
+     constructor) but becomes load-bearing the moment one is added. *)
+  apply well_typed_SN with (Σ := Σ) (pc := pc) (T := T) (ε := ε).
+  exact Hty.
+Qed.
+
+(** The scope condition is discharged for every term of the CURRENT core, so
+    the explicitly-scoped theorem applies wherever the unscoped one did. This
+    equivalence is precisely what stops holding once recursion is added. *)
+Corollary recursion_free_scope_currently_total : forall Σ pc e T ε,
+  has_type nil Σ pc e T ε ->
+  SN_expr e.
+Proof.
+  intros Σ pc e T ε Hty.
+  apply well_typed_SN_recursion_free with (Σ := Σ) (pc := pc) (T := T) (ε := ε).
+  - apply core_is_recursion_free.
+  - exact Hty.
+Qed.
+
 (** ========================================================================
     SECTION 12: ADDITIONAL USEFUL LEMMAS
     ======================================================================== *)

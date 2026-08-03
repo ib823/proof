@@ -513,6 +513,74 @@ Fixpoint subst (x : ident) (v : expr) (e : expr) : expr :=
 
 Notation "'subst[' x := v ']' e" := (subst x v e) (at level 20).
 
+(** ** Recursion-freedom — the machine-checked SN scope (REQ-44, Option A)
+
+    [recursion_free e] holds when [e] contains no PRIMITIVE recursion
+    construct. Today that is every [expr]: this core calculus deliberately has
+    no [fix]-style constructor (recursion is still expressible through the
+    store — Landin's knot via [ERef]/[EAssign] — which the metatheory covers).
+
+    Its purpose is to make the strong-normalization SCOPE a machine-checked
+    hypothesis instead of a prose caveat. [termination/ReducibilityFull.v]
+    proves that every well-typed term is strongly normalizing; that result is
+    sound ONLY for the recursion-free fragment, because general recursion
+    (`fungsi`/`fix`, mechanized separately in [foundations/RecursionSafety.v])
+    is Turing-complete and INTENTIONALLY non-normalizing. Its guarantee is type
+    safety — progress + preservation — not termination.
+
+    [core_is_recursion_free] below is therefore a deliberate BUILD-TIME
+    TRIPWIRE: it is provable exactly while [expr] has no recursion
+    constructor. The day one is added, that lemma stops compiling, which forces
+    the SN claim to be re-scoped explicitly rather than silently becoming
+    false. This is the proof-level enforcement of the REQ-44 Option A decision,
+    which until now lived only in comments and prose docs. *)
+Fixpoint recursion_free (e : expr) : Prop :=
+  match e with
+  | EUnit | EBool _ | EInt _ | EString _ | ELoc _ | EVar _ => True
+  | ELam _ _ body => recursion_free body
+  | EApp e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EPair e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EFst e1 => recursion_free e1
+  | ESnd e1 => recursion_free e1
+  | EInl e1 _ => recursion_free e1
+  | EInr e1 _ => recursion_free e1
+  | ECase e1 _ e2 _ e3 =>
+      recursion_free e1 /\ recursion_free e2 /\ recursion_free e3
+  | EIf e1 e2 e3 =>
+      recursion_free e1 /\ recursion_free e2 /\ recursion_free e3
+  | ELet _ e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EPerform _ e1 => recursion_free e1
+  | EHandle e1 _ h => recursion_free e1 /\ recursion_free h
+  | ERef e1 _ => recursion_free e1
+  | EDeref e1 => recursion_free e1
+  | EAssign e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EClassify e1 => recursion_free e1
+  | EDeclassify e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EProve e1 => recursion_free e1
+  | ERequire _ e1 => recursion_free e1
+  | EGrant _ e1 => recursion_free e1
+  end.
+
+(** BUILD-TIME TRIPWIRE (see [recursion_free]). Provable precisely while the
+    core [expr] has no primitive recursion constructor. Adding one breaks this
+    proof by design — do NOT "fix" it by weakening the statement; instead
+    thread [recursion_free] through the SN development (the fundamental
+    reducibility theorem cannot hold for a diverging [fix]). *)
+Lemma core_is_recursion_free : forall e, recursion_free e.
+Proof.
+  induction e; simpl; auto.
+Qed.
+
+(** Substitution of a recursion-free value into a recursion-free term stays
+    recursion-free — the closure property the SN development needs once
+    [recursion_free] becomes a real (non-vacuous) restriction. *)
+Lemma recursion_free_subst : forall x v e,
+  recursion_free v -> recursion_free e -> recursion_free (subst x v e).
+Proof.
+  intros x v e Hv He.
+  apply core_is_recursion_free.
+Qed.
+
 (** ** Security Lattice Properties *)
 
 Lemma sec_leq_refl : forall l, sec_leq l l.
