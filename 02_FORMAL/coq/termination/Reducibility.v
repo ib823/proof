@@ -193,13 +193,20 @@ Lemma app_typed_steps_once : forall f T1 T2 ε ε' Σ a st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros f T1 T2 ε ε' Σ a st ctx Hty Hvalf Hvala.
-  destruct (value_fn_decompose f T1 T2 ε ε' Σ Hty Hvalf) as [x [body Heq]].
-  subst f.
-  exists (subst[x := a] body), st, ctx.
-  split; [| split].
-  - apply ST_AppAbs. assumption.
-  - reflexivity.
-  - reflexivity.
+  destruct (value_fn_decompose f T1 T2 ε ε' Σ Hty Hvalf)
+    as [[x [body Heq]] | [w Heq]]; subst f.
+  - exists (subst[x := a] body), st, ctx.
+    split; [| split].
+    + apply ST_AppAbs. assumption.
+    + reflexivity.
+    + reflexivity.
+  - (* REQ-44: a recursive function unrolls via ST_AppFix; the store and the
+       effect context are likewise untouched. *)
+    exists (EApp (EApp w (EFix w)) a), st, ctx.
+    split; [| split].
+    + apply ST_AppFix. assumption.
+    + reflexivity.
+    + reflexivity.
 Qed.
 
 (** ** Additional Reducibility Lemmas *)

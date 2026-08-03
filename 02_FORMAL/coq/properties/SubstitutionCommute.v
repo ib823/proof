@@ -135,6 +135,7 @@ Proof.
   - (* EDeclassify *) f_equal; [apply IHe1 | apply IHe2];
       intro Hfree; apply Hnotfree; simpl; [left | right]; exact Hfree.
   - (* EProve *) f_equal. apply IHe. intro Hfree. apply Hnotfree. simpl. exact Hfree.
+  - (* EFix *) f_equal. apply IHe. intro Hfree. apply Hnotfree. simpl. exact Hfree.
   - (* ERequire *) f_equal. apply IHe. intro Hfree. apply Hnotfree. simpl. exact Hfree.
   - (* EGrant *) f_equal. apply IHe. intro Hfree. apply Hnotfree. simpl. exact Hfree.
 Qed.
@@ -245,6 +246,7 @@ Proof.
   - (* VInr *) constructor. auto.
   - (* VClassify *) constructor. auto.
   - (* VProve *) constructor. auto.
+  - (* VFix *) constructor.
 Qed.
 
 (** ----------------------------------------------------------------- *)

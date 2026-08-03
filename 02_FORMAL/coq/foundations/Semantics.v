@@ -250,6 +250,18 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
       (e, st, ctx) --> (e', st', ctx') ->
       (EProve e, st, ctx) --> (EProve e', st', ctx')
 
+  (* General recursion (REQ-44). Mirrors ST_FixAbs / ST_Fix in
+     foundations/RecursionSafety.v: [fix] of a lambda unrolls by substituting
+     the WHOLE fix for the recursive variable; otherwise reduce the operand. *)
+  (* Standard fix unrolling: [fix w] behaves as [w (fix w)]. Stated at the
+     APPLICATION site so [EFix w] stays a value (which the effect system's
+     value-restricted substitution lemma needs). Unrolling this way is TOTAL —
+     it covers every value operand [w], not just lambdas, so a nested
+     [EFix (EFix w')] is not stuck and progress holds. *)
+  | ST_AppFix : forall w v st ctx,
+      value v ->
+      (EApp (EFix w) v, st, ctx) --> (EApp (EApp w (EFix w)) v, st, ctx)
+
   | ST_RequireStep : forall eff e e' st st' ctx ctx',
       (e, st, ctx) --> (e', st', ctx') ->
       (ERequire eff e, st, ctx) --> (ERequire eff e', st', ctx')
@@ -374,6 +386,16 @@ Ltac solve_val_step_pair :=
       exfalso; eapply value_not_step; [ apply VPair; eauto | exact Hs ]
   end.
 
+(* REQ-44: a recursive-function VALUE [EFix v] cannot step, so any hypothesis
+   claiming it does is contradictory. *)
+Ltac solve_val_step_fix :=
+  match goal with
+  | Hs : (EFix _, _, _) --> _ |- _ =>
+      exfalso; eapply value_not_step; [ apply VFix | exact Hs ]
+  | Hs : (ELam _ _ _, _, _) --> _ |- _ =>
+      exfalso; eapply value_not_step; [ apply VLam | exact Hs ]
+  end.
+
 Theorem step_deterministic_cfg : forall cfg cfg1 cfg2,
   step cfg cfg1 ->
   step cfg cfg2 ->
@@ -385,6 +407,7 @@ Proof.
     try solve_ctx_ih;
     try reflexivity;
     try solve_val_step_pair;
+    try solve_val_step_fix;
     try solve_val_step.
   - (* ST_AppAbs vs ST_App1 *)
     exfalso.

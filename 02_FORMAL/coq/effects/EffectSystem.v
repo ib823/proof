@@ -58,6 +58,7 @@ Fixpoint performs_within (e : expr) (eff : effect) : Prop :=
   | EClassify e1 => performs_within e1 eff
   | EDeclassify e1 e2 => performs_within e1 eff /\ performs_within e2 eff
   | EProve e1 => performs_within e1 eff
+  | EFix _ => True  (* a fix VALUE is a thunk; effects occur on unrolling *)
   | ERequire _ e1 => performs_within e1 eff
   | EGrant _ e1 => performs_within e1 eff
   end.
@@ -88,8 +89,8 @@ Proof.
   - destruct Hpw as [H1 H2]. split; [apply IHe1 | apply IHe2]; assumption.
   - apply IHe. exact Hpw.
   - destruct Hpw as [H1 H2]. split; [apply IHe1 | apply IHe2]; assumption.
-  - apply IHe. exact Hpw.
-  - apply IHe. exact Hpw.
+  - apply IHe. exact Hpw.  (* EProve *)
+  - apply IHe. exact Hpw.  (* ERequire *)
   - apply IHe. exact Hpw.  (* EGrant case *)
 Qed.
 
@@ -209,6 +210,10 @@ Proof.
 
   (* T_Prove: eff = ε *)
   - exact IHHty.
+
+  (* T_Fix: a recursive function VALUE is a thunk — it performs nothing until
+     unrolled at the application site. *)
+  - exact I.
 
   (* T_Require: eff = effect_join ε eff0 *)
   - apply (performs_within_mono e ε); [apply effect_join_ub_l | exact IHHty].

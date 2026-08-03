@@ -71,11 +71,13 @@ Qed.
 Lemma canonical_fn : forall v T1 T2 ε_body ε Σ,
   has_type nil Σ Public v (TFn T1 T2 ε_body) ε ->
   value v ->
-  exists x body, v = ELam x T1 body.
+  (* REQ-44: with general recursion a function value is a lambda OR a fix. *)
+  (exists x body, v = ELam x T1 body) \/ (exists w, v = EFix w).
 Proof.
   intros v T1 T2 ε_body ε Σ Hty Hval.
   inversion Hval; subst; inversion Hty; subst.
-  exists x, e. reflexivity.
+  - left. exists x, e. reflexivity.
+  - right. exists e. reflexivity.
 Qed.
 
 (** A closed value of product type must be a pair of values. *)
@@ -348,14 +350,17 @@ Lemma value_shape : forall v Σ T ε,
   (exists v' T2, v = EInl v' T2) \/
   (exists v' T1, v = EInr v' T1) \/
   (exists v', v = EClassify v') \/
-  (exists v', v = EProve v').
+  (exists v', v = EProve v') \/
+  (* REQ-44: recursive function values *)
+  (exists v', v = EFix v').
 Proof.
   intros v Σ T ε Hty Hval.
   inversion Hval; subst; eauto 10.
   - right. right. right. right. right. right. right. left. eauto.
   - right. right. right. right. right. right. right. right. left. eauto.
   - right. right. right. right. right. right. right. right. right. left. eauto.
-  - right. right. right. right. right. right. right. right. right. right. eauto.
+  - right. right. right. right. right. right. right. right. right. right. left. eauto.
+  - right. right. right. right. right. right. right. right. right. right. right. eauto.
 Qed.
 
 (* ================================================================= *)

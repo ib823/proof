@@ -172,6 +172,10 @@ Proof.
     destruct IHe.
     + left. assumption.
     + right. assumption.
+  - (* EFix *)
+    destruct IHe.
+    + left. assumption.
+    + right. assumption.
   - (* ERequire *)
     destruct IHe.
     + left. assumption.

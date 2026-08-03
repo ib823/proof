@@ -80,6 +80,7 @@ Fixpoint free_in (x : ident) (e : expr) : Prop :=
   | EClassify e0 => free_in x e0
   | EDeclassify e1 e2 => free_in x e1 \/ free_in x e2
   | EProve e0 => free_in x e0
+  | EFix e0 => free_in x e0
   | ERequire _ e0 => free_in x e0
   | EGrant _ e0 => free_in x e0
   end.
@@ -205,6 +206,22 @@ Inductive has_type : type_env -> store_ty -> security_level ->
       has_type Γ Σ Δ e T ε ->
       has_type Γ Σ Δ (EProve e) (TProof T) ε
 
+  (* General recursion (REQ-44). THE recursion rule: the fixpoint of a
+     self-map T -> T has type T. Mirrors [T_Fix] in
+     foundations/RecursionSafety.v, where progress + preservation for this
+     exact rule are mechanized. The function's latent effect is propagated,
+     since unrolling runs the body. *)
+  (* [fix] is restricted to FUNCTION types. This is essential, not cosmetic:
+     [EFix v] is a value, and a value of a BASE type must be a canonical base
+     value (canonical_forms_unit/bool/...). A [fix] at base type is really a
+     divergent computation, not a value, so admitting it would break canonical
+     forms and hence progress. Restricting to arrows keeps [EFix] inhabiting
+     only function types, where canonical_forms_fn now admits it alongside
+     [ELam] — matching ST_AppFix, which unrolls at the application site. *)
+  | T_Fix : forall Γ Σ Δ e A B εb,
+      has_type Γ Σ Δ e (TFn (TFn A B εb) (TFn A B εb) EffectPure) EffectPure ->
+      has_type Γ Σ Δ (EFix e) (TFn A B εb) EffectPure
+
   (* Capabilities *)
   | T_Require : forall Γ Σ Δ eff e T ε,
       has_type Γ Σ Δ e T ε ->
@@ -271,6 +288,7 @@ Proof.
     | G S D e T ε Ht IHt
     | G S D e1 e2 T ε1 ε2 Ht1 IHt1 Ht2 IHt2 Hok
     | G S D e T ε Ht IHt
+    | G S D e A B eb Ht IHt
     | G S D eff e T ε Ht IHt
     | G S D eff e T ε Ht IHt
     ]; intros ε2' T2' H2; inversion H2; subst; try (split; reflexivity).
@@ -458,6 +476,19 @@ Proof.
       | specialize (IHt _ _ H10) as [HT Heps]
       ];
     subst; split; reflexivity.
+  - (* T_Fix *)
+    (* From the inverted T_Fix premise, the IH equates the two arrow types;
+       inverting that equality gives the result type and latent effect. *)
+    first
+      [ specialize (IHt _ _ H4) as [HT Heps]
+      | specialize (IHt _ _ H5) as [HT Heps]
+      | specialize (IHt _ _ H6) as [HT Heps]
+      | specialize (IHt _ _ H7) as [HT Heps]
+      | specialize (IHt _ _ H8) as [HT Heps]
+      | specialize (IHt _ _ H9) as [HT Heps]
+      | specialize (IHt _ _ H10) as [HT Heps]
+      ];
+    inversion HT; subst; split; reflexivity.
   - (* T_Require *)
     match goal with
     | Ht' : has_type _ _ _ _ _ _ |- _ =>
@@ -525,14 +556,19 @@ Proof.
 Qed.
 
 (** Function type: only ELam is a value of function type *)
+(** With general recursion (REQ-44) a function VALUE is no longer necessarily a
+    lambda: [EFix w] is also a value of function type. This disjunction is the
+    honest canonical-forms statement; [ST_AppFix] gives the application-site
+    reduction for the new alternative, so progress still holds. *)
 Lemma canonical_forms_fn : forall Γ Σ Δ v T1 T2 ε_fn ε,
   value v ->
   has_type Γ Σ Δ v (TFn T1 T2 ε_fn) ε ->
-  exists x body, v = ELam x T1 body.
+  (exists x body, v = ELam x T1 body) \/ (exists w, v = EFix w).
 Proof.
   intros Γ Σ Δ v T1 T2 ε_fn ε Hval Htype.
   inversion Hval; subst; inversion Htype; subst.
-  exists x, e. reflexivity.
+  - left. exists x, e. reflexivity.
+  - right. eexists. reflexivity.
 Qed.
 
 (** Product type: only EPair is a value of product type *)
@@ -607,7 +643,7 @@ Lemma canonical_forms : forall Γ Σ Δ v T ε,
   | TBool => exists b, v = EBool b
   | TInt => exists n, v = EInt n
   | TString => exists s, v = EString s
-  | TFn T1 T2 _ => exists x body, v = ELam x T1 body
+  | TFn T1 T2 _ => (exists x body, v = ELam x T1 body) \/ (exists w, v = EFix w)
   | TProd T1 T2 => exists v1 v2, v = EPair v1 v2 /\ value v1 /\ value v2
   | TSum T1 T2 => (exists v', v = EInl v' T2 /\ value v') \/
                    (exists v', v = EInr v' T1 /\ value v')

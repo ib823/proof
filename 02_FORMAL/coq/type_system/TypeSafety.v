@@ -172,7 +172,8 @@ Qed.
 Corollary fn_type_safety : forall e T1 T2 ε_fn ε Σ,
   has_type nil Σ Public e (TFn T1 T2 ε_fn) ε ->
   value e ->
-  exists x body, e = ELam x T1 body.
+  (* REQ-44: a function value is a lambda OR a recursive function. *)
+  (exists x body, e = ELam x T1 body) \/ (exists w, e = EFix w).
 Proof.
   intros e T1 T2 ε_fn ε Σ Hty Hval.
   exact (canonical_forms_fn nil Σ Public e T1 T2 ε_fn ε Hval Hty).

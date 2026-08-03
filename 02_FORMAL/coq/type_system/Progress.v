@@ -39,11 +39,13 @@ Qed.
 Lemma canonical_fn : forall v T1 T2 ε ε' Σ,
   has_type nil Σ Public v (TFn T1 T2 ε) ε' ->
   value v ->
-  exists x body, v = ELam x T1 body.
+  (* REQ-44: with general recursion a function value is a lambda OR a fix. *)
+  (exists x body, v = ELam x T1 body) \/ (exists w, v = EFix w).
 Proof.
   intros v T1 T2 ε ε' Σ Hty Hval.
   inversion Hval; subst; inversion Hty; subst.
-  exists x, e. reflexivity.
+  - left. exists x, e. reflexivity.
+  - right. exists e. reflexivity.
 Qed.
 
 Lemma canonical_pair : forall v T1 T2 ε Σ,
@@ -137,10 +139,16 @@ Proof.
   - (* T_App *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv1 | [e1' [st1' [ctx1' Hstep1]]]].
     + destruct (IHHty2 eq_refl eq_refl Hwf) as [Hv2 | [e2' [st2' [ctx2' Hstep2]]]].
-      * (* Both values - can beta reduce *)
-        destruct (canonical_fn e1 T1 T2 ε ε1 Σ Hty1 Hv1) as [x [body Heq]].
-        subst. right. exists (subst[x := e2] body), st, ctx.
-        apply ST_AppAbs. assumption.
+      * (* Both values. The function value is a lambda (beta) or, with
+           general recursion (REQ-44), a fix — which unrolls at the
+           application site via ST_AppFix. Progress holds either way. *)
+        destruct (canonical_fn e1 T1 T2 ε ε1 Σ Hty1 Hv1)
+          as [[x [body Heq]] | [w Heq]].
+        -- subst. right. exists (subst[x := e2] body), st, ctx.
+           apply ST_AppAbs. assumption.
+        -- (* Recursive function value: unroll [fix w] to [w (fix w)]. *)
+           subst. right. exists (EApp (EApp w (EFix w)) e2), st, ctx.
+           apply ST_AppFix. assumption.
       * (* e2 steps *)
         right. exists (EApp e1 e2'), st2', ctx2'.
         apply ST_App2; assumption.
@@ -268,6 +276,10 @@ Proof.
     + left. apply VProve. assumption.
     + right. exists (EProve e'), st', ctx'. apply ST_ProveStep; assumption.
 
+  - (* T_Fix — a recursive function is itself a value (it unrolls only when
+       applied, via ST_AppFix), so progress is immediate. *)
+    left. apply VFix.
+
   - (* T_Require *)
     destruct (IHHty eq_refl eq_refl Hwf) as [Hv | [e' [st' [ctx' Hstep]]]].
     + right. exists e, st, ctx. apply ST_RequireValue; assumption.
@@ -364,11 +376,11 @@ Qed.
 
 (** ** Value-Type Correspondence *)
 
-(** A value of function type is a lambda *)
+(** A value of function type is a lambda OR a recursive function (REQ-44). *)
 Lemma typed_value_fn_inv : forall v T1 T2 ε ε' Σ,
   has_type nil Σ Public v (TFn T1 T2 ε) ε' ->
   value v ->
-  exists x body, v = ELam x T1 body.
+  (exists x body, v = ELam x T1 body) \/ (exists w, v = EFix w).
 Proof.
   intros. eapply canonical_fn; eauto.
 Qed.

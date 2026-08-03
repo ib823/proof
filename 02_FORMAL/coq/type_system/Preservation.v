@@ -168,6 +168,9 @@ Proof.
   - (* EProve *)
     inversion Hty; subst.
     eapply IHe; eauto.
+  - (* EFix *)
+    inversion Hty; subst.
+    eapply IHe; eauto.
   - (* ERequire *)
     inversion Hty; subst.
     eapply IHe; eauto.
@@ -480,6 +483,9 @@ Proof.
   - (* T_Prove *)
     apply T_Prove.
     apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
+  - (* T_Fix *)
+    apply T_Fix.
+    apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
   - (* T_Require *)
     apply T_Require with (eff := eff).
     apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
@@ -721,6 +727,9 @@ Proof.
   (* EProve *)
   - inversion Hty; subst.
     eapply T_Prove. eapply IHe. eassumption.
+  (* EFix *)
+  - inversion Hty; subst.
+    eapply T_Fix. eapply IHe. eassumption.
   (* ERequire *)
   - inversion Hty; subst.
     eapply T_Require. eapply IHe. eassumption.
@@ -765,6 +774,8 @@ Proof.
     eapply T_Classify. eapply IHHval. eassumption.
   - (* VProve *)
     eapply T_Prove. eapply IHHval. eassumption.
+  - (* VFix — a recursive function value is pure by T_Fix *)
+    apply T_Fix. assumption.
 Qed.
 
 (** Helper lemma for preservation with proper IH *)
@@ -1165,6 +1176,20 @@ Proof.
     + split.
       * exact Hwf'.
       * eapply T_Prove. exact Hty'.
+  (* ST_AppFix: unrolling [fix w] to [w (fix w)] preserves typing.
+     From T_App + T_Fix inversion: w : (A->B) -> (A->B) purely, and
+     EFix w : A->B purely. So [EApp w (EFix w)] : A->B, and applying it to the
+     argument reproduces the original result type. *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EFix _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply T_App; [ eapply T_App; eassumption | eassumption ].
   (* ST_RequireStep *)
   - inversion Hty; subst.
     edestruct IHHstep as [Σ' [ε' [Hext [Hwf' Hty']]]]; try reflexivity; eauto.

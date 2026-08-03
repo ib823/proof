@@ -119,11 +119,15 @@ Qed.
 (** Helper: When e1 is a value, SN_app follows from SN(e2) *)
 Lemma SN_app_value_left_aux : forall v cfg,
   value v ->
+  (* REQ-44 scope: SN is a RECURSION-FREE result. A recursive function value
+     [EFix w] unrolls forever under application, so the conclusion genuinely
+     fails for it; the hypothesis discharges that case. *)
+  recursion_free v ->
   SN cfg ->
   (forall x body v' st' ctx', value v' -> SN (subst[x := v'] body, st', ctx')) ->
   SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg).
 Proof.
-  intros v cfg Hv Hsn2 Hbeta.
+  intros v cfg Hv Hrf Hsn2 Hbeta.
   induction Hsn2 as [[[e2 st] ctx] Hacc2 IH2].
   simpl. constructor.
   intros [[e' st'] ctx'] Hstep.
@@ -136,16 +140,19 @@ Proof.
   - (* ST_App2: value v, e2 --> e2' *)
     apply (IH2 (e2', st', ctx')).
     unfold step_inv. simpl. assumption.
+  - (* ST_AppFix: excluded by recursion-freedom *)
+    simpl in Hrf. contradiction.
 Qed.
 
 Lemma SN_app_value_left : forall v e2 st ctx,
   value v ->
+  recursion_free v ->
   SN (e2, st, ctx) ->
   (forall x body v' st' ctx', value v' -> SN (subst[x := v'] body, st', ctx')) ->
   SN (EApp v e2, st, ctx).
 Proof.
-  intros v e2 st ctx Hv Hsn2 Hbeta.
-  exact (SN_app_value_left_aux v (e2, st, ctx) Hv Hsn2 Hbeta).
+  intros v e2 st ctx Hv Hrf Hsn2 Hbeta.
+  exact (SN_app_value_left_aux v (e2, st, ctx) Hv Hrf Hsn2 Hbeta).
 Qed.
 
 (** Main lemma with store-polymorphic e2 premise *)

@@ -96,6 +96,7 @@ Fixpoint expr_size (e : expr) : nat :=
   | EClassify e => 1 + expr_size e
   | EDeclassify e1 e2 => 1 + expr_size e1 + expr_size e2
   | EProve e => 1 + expr_size e
+  | EFix e => 1 + expr_size e
   | ERequire _ e => 1 + expr_size e
   | EGrant _ e => 1 + expr_size e
   end.
@@ -168,11 +169,13 @@ Qed.
 Lemma value_fn_decompose : forall v T1 T2 ε ε' Σ,
   has_type nil Σ Public v (TFn T1 T2 ε) ε' ->
   value v ->
-  exists x body, v = ELam x T1 body.
+  (* REQ-44: with general recursion a function value is a lambda OR a fix. *)
+  (exists x body, v = ELam x T1 body) \/ (exists w, v = EFix w).
 Proof.
   intros v T1 T2 ε ε' Σ Hty Hval.
   inversion Hval; subst; inversion Hty; subst.
-  exists x, e. reflexivity.
+  - left. exists x, e. reflexivity.
+  - right. exists e. reflexivity.
 Qed.
 
 (** ** Single-Step Progress for Elimination Forms
