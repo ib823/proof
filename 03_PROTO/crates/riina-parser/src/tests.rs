@@ -1526,23 +1526,27 @@ fn test_parse_program_desugar() {
     let prog = p.parse_program().unwrap();
     assert_eq!(prog.decls.len(), 2);
     let desugared = prog.desugar();
-    // Should be LetRec("f", ..., Lam("x", Int, Var("x")), App(Var("f"), Int(42)))
+    // Top-level functions now form a mutually-recursive GROUP (REQ-44 forward
+    // references), so a single function `f` desugars to
+    // LetRecGroup([("f", .., Lam("x", Int, Var "x"))], App(Var "f", Int 42)).
     match desugared {
-        Expr::LetRec(name, _ty, lam, body) => {
+        Expr::LetRecGroup(bindings, body) => {
+            assert_eq!(bindings.len(), 1);
+            let (name, _ty, lam) = &bindings[0];
             assert_eq!(name, "f");
-            match *lam {
+            match lam {
                 Expr::Lam(p, ty, _) => {
                     assert_eq!(p, "x");
-                    assert_eq!(ty, Ty::Int);
+                    assert_eq!(*ty, Ty::Int);
                 }
                 other => panic!("Expected Lam, got {:?}", other),
             }
-            match *body {
+            match body.as_ref() {
                 Expr::App(_, _) => {}
                 other => panic!("Expected App, got {:?}", other),
             }
         }
-        other => panic!("Expected LetRec, got {:?}", other),
+        other => panic!("Expected LetRecGroup, got {:?}", other),
     }
 }
 

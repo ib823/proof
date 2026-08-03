@@ -227,6 +227,24 @@ impl VarEnv {
 
 /// Compute the set of free variables in an expression.
 /// A variable is free if it is referenced but not bound within the expression.
+/// Expand a mutually-recursive binding GROUP into a nested `LetRec` chain
+/// (backward-reference scoping). Codegen (C/WASM) does not need forward
+/// references — the corpus's forward-ref/module examples are exercised through
+/// the typechecker + interpreter, and the C/WASM differential set uses none —
+/// so treating a group as a chain here is sound and never crashes.
+fn letrec_group_to_chain(bindings: &[(riina_types::Ident, riina_types::Ty, Expr)], cont: &Expr) -> Expr {
+    let mut result = cont.clone();
+    for (name, ty, e) in bindings.iter().rev() {
+        result = Expr::LetRec(
+            name.clone(),
+            ty.clone(),
+            Box::new(e.clone()),
+            Box::new(result),
+        );
+    }
+    result
+}
+
 fn free_vars(expr: &Expr) -> HashSet<Ident> {
     match expr {
         Expr::Unit
@@ -269,6 +287,7 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv1.extend(fv2);
             fv1
         }
+        Expr::LetRecGroup(bindings, cont) => free_vars(&letrec_group_to_chain(bindings, cont)),
         Expr::If(c, t, f) => {
             let mut fv = free_vars(c);
             fv.extend(free_vars(t));
@@ -754,6 +773,7 @@ impl Lower {
             Expr::If(_, t, _)
             | Expr::Let(_, _, _, t)
             | Expr::LetRec(_, _, _, t)
+            | Expr::LetRecGroup(_, t)
             | Expr::Case(_, _, t, _, _) => self.infer_type(t),
             Expr::App(e1, _) => {
                 // A boxed numeric constructor (`besar`/`perpuluhan`) yields its
@@ -904,6 +924,9 @@ impl Lower {
             | Expr::Var(_) => Effect::Pure,
             Expr::Lam(_, _, _) => Effect::Pure,
             Expr::LetRec(_, _, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
+            Expr::LetRecGroup(bindings, cont) => {
+                self.infer_effect(&letrec_group_to_chain(bindings, cont))
+            }
             Expr::Pair(e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
             Expr::Fst(e) | Expr::Snd(e) => self.infer_effect(e),
             Expr::Inl(e, _) | Expr::Inr(e, _) => self.infer_effect(e),
@@ -1652,6 +1675,11 @@ impl Lower {
                 self.var_struct = saved_struct;
 
                 Ok(result)
+            }
+
+            Expr::LetRecGroup(bindings, cont) => {
+                // Codegen: expand the group to a nested LetRec chain and lower.
+                self.lower_expr(&letrec_group_to_chain(bindings, cont))
             }
 
             Expr::LetRec(name, ty_ann, binding, body) => {

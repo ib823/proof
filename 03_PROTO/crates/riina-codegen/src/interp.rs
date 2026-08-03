@@ -688,6 +688,47 @@ impl Interpreter {
                 }
             }
 
+            // E_LetRecGroup: mutually-recursive binding group (REQ-44 forward
+            // references). Each lambda member becomes a closure whose body
+            // re-establishes the whole lambda group — the generalized single-
+            // binding re-bind fixpoint trick — so every function sees all its
+            // siblings. Recursion soundness is mechanized in
+            // foundations/RecursionSafety.v. Non-lambda (zero-arg) members are
+            // evaluated once in the lambda-populated env (they are NOT re-run on
+            // each call, so a zero-arg `utama` body is not re-executed when a
+            // helper lambda is invoked).
+            Expr::LetRecGroup(bindings, body) => {
+                let lambda_bindings: Vec<(riina_types::Ident, riina_types::Ty, Expr)> = bindings
+                    .iter()
+                    .filter(|(_, _, e)| matches!(e, Expr::Lam(_, _, _)))
+                    .cloned()
+                    .collect();
+                let mut new_env = env.clone();
+                for (name, _ty, e) in bindings {
+                    if let Expr::Lam(param, param_ty, lam_body) = e {
+                        let rec_body =
+                            Expr::LetRecGroup(lambda_bindings.clone(), lam_body.clone());
+                        let closure = Value::Closure(Closure {
+                            env: env.clone(),
+                            param: param.clone(),
+                            param_ty: param_ty.clone(),
+                            body: Rc::new(rec_body),
+                        });
+                        new_env = new_env.extend(name.clone(), closure);
+                    }
+                }
+                for (name, _ty, e) in bindings {
+                    if !matches!(e, Expr::Lam(_, _, _)) {
+                        let val = match self.eval_with_env(&new_env, e) {
+                            Err(Error::Return(v)) => *v,
+                            other => other?,
+                        };
+                        new_env = new_env.extend(name.clone(), val);
+                    }
+                }
+                self.eval_with_env(&new_env, body)
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // EFFECTS (E_Perform, E_Handle)
             // ═══════════════════════════════════════════════════════════════

@@ -62,6 +62,13 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
             walk_inner(b, rules, out);
         }
 
+        Expr::LetRecGroup(bindings, cont) => {
+            for (_, _, e) in bindings {
+                walk_inner(e, rules, out);
+            }
+            walk_inner(cont, rules, out);
+        }
+
         Expr::If(c, t, e) | Expr::Case(c, _, t, _, e) => {
             walk_inner(c, rules, out);
             walk_inner(t, rules, out);

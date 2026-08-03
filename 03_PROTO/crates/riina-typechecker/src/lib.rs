@@ -3440,6 +3440,39 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             Ok((t2, eff1.join(eff2)))
         }
 
+        // Mutually-recursive group (REQ-44 forward references): all group names
+        // are in scope in every body AND the continuation. Grant every declared
+        // effect (over-granting only admits MORE programs — the body-effect <=
+        // declared discipline is enforced separately in validate_top_level_decls,
+        // so this never falsely rejects). Recursion soundness is mechanized in
+        // foundations/RecursionSafety.v.
+        Expr::LetRecGroup(bindings, cont) => {
+            let mut ctx_rec = ctx.clone();
+            for (name, ty_ann, _) in bindings {
+                ctx_rec = ctx_rec.extend_gamma(name.clone(), ty_ann.clone());
+            }
+            for (_, ty_ann, _) in bindings {
+                if let Ty::Fn(_, _, fn_eff) = ty_ann {
+                    ctx_rec = ctx_rec.with_grant(*fn_eff);
+                }
+            }
+            let mut eff = Effect::Pure;
+            for (_, ty_ann, e1) in bindings {
+                let mut c = ctx_rec.clone();
+                let (t1, eff1) = type_check_full(&mut c, e1)?;
+                if !types_compatible(ty_ann, &t1) {
+                    return Err(TypeError::AnnotationMismatch {
+                        expected: ty_ann.clone(),
+                        found: t1,
+                    });
+                }
+                eff = eff.join(eff1);
+            }
+            let mut c2 = ctx_rec;
+            let (t2, eff2) = type_check_full(&mut c2, cont)?;
+            Ok((t2, eff.join(eff2)))
+        }
+
         // ════════════════════════════════════════════════════════════════════
         // FORMALIZED: Effects (T_Perform, T_Handle)
         // ════════════════════════════════════════════════════════════════════
@@ -4342,6 +4375,27 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             }
             let (t2, eff2) = type_check(&ctx_rec, e2)?;
             Ok((t2, eff1.join(eff2)))
+        }
+
+        // Mutually-recursive group (REQ-44) — plain checker path.
+        Expr::LetRecGroup(bindings, cont) => {
+            let mut ctx_rec = ctx.clone();
+            for (name, ty_ann, _) in bindings {
+                ctx_rec = ctx_rec.extend(name.clone(), ty_ann.clone());
+            }
+            let mut eff = Effect::Pure;
+            for (_, ty_ann, e1) in bindings {
+                let (t1, eff1) = type_check(&ctx_rec, e1)?;
+                if !types_compatible(ty_ann, &t1) {
+                    return Err(TypeError::AnnotationMismatch {
+                        expected: ty_ann.clone(),
+                        found: t1,
+                    });
+                }
+                eff = eff.join(eff1);
+            }
+            let (t2, eff2) = type_check(&ctx_rec, cont)?;
+            Ok((t2, eff.join(eff2)))
         }
 
         // UNVERIFIED: Effects (Pending formalization in Typing.v)
