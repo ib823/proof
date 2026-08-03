@@ -1,0 +1,83 @@
+# RIINA continuous fuzzing (REQ-30)
+#
+# The per-PR `fuzz-robustness` job in verify.yml runs the untrusted-input
+# harness (03_PROTO/crates/riinac/tests/fuzz_robustness.rs) at a fixed, fast
+# budget (2000 iterations, fixed seed) so it stays reproducible and cheap on
+# every pull request. THIS workflow is the *continuous* half of REQ-30: it runs
+# the same harness on a nightly schedule with a much larger iteration budget and
+# a run-unique seed, so fuzzing keeps exploring FRESH regions of the input space
+# over time instead of re-checking the identical deterministic stream every run.
+#
+# Reproducibility: the harness logs its effective `iters`/`seed` (the `[fuzz]`
+# lines). A crash is reproduced locally by re-exporting the same
+# RIINA_FUZZ_ITERS + RIINA_FUZZ_SEED and running the named test; on failure the
+# harness also dumps the offending input to /tmp/fuzz_hang.rii, uploaded here as
+# an artifact for triage.
+#
+# This wraps the in-tree stable-Rust harness (pinned 1.94.1, dependency-free);
+# it deliberately does NOT introduce cargo-fuzz/libFuzzer (nightly-only, against
+# the toolchain pin). OSS-Fuzz onboarding remains the larger REQ-30 goal.
+
+name: fuzz-continuous
+
+on:
+  schedule:
+    # 03:17 UTC daily — off-peak, avoids the top-of-hour scheduling stampede.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      iters:
+        description: "Iterations per randomized pass (RIINA_FUZZ_ITERS)"
+        required: false
+        default: "40000"
+      seed:
+        description: "Seed offset (RIINA_FUZZ_SEED) — set to reproduce a finding"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  # Mirror verify.yml: the tree-walking interpreter recurses on the native
+  # stack, so the interp stage of the fuzz harness needs the large min-stack.
+  RUST_MIN_STACK: "67108864"
+
+concurrency:
+  # Never overlap nightly runs; a manual dispatch cancels a running nightly.
+  group: fuzz-continuous
+  cancel-in-progress: false
+
+jobs:
+  fuzz:
+    name: Continuous fuzz (untrusted-input pipeline)
+    runs-on: ubuntu-latest
+    # Comfortably above the observed runtime at the default budget; a genuine
+    # non-terminating input is caught by the harness's own per-input 5s timeout
+    # long before this job-level cap, so hitting this cap means "budget too
+    # large", not "hang".
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "03_PROTO -> target"
+      - name: Run continuous fuzz
+        env:
+          # Manual dispatch may override the budget/seed; the nightly schedule
+          # uses a large default budget and derives a run-unique seed from the
+          # run number so each night walks a fresh region (logged for repro).
+          RIINA_FUZZ_ITERS: ${{ github.event.inputs.iters || '40000' }}
+          RIINA_FUZZ_SEED: ${{ github.event.inputs.seed || github.run_number }}
+        run: |
+          echo "Continuous fuzz: iters=$RIINA_FUZZ_ITERS seed=$RIINA_FUZZ_SEED"
+          cargo test --release --manifest-path 03_PROTO/Cargo.toml \
+            -p riinac --test fuzz_robustness -- --nocapture
+      - name: Upload crash reproducer (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-reproducer
+          path: /tmp/fuzz_hang.rii
+          if-no-files-found: ignore
