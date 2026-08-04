@@ -3039,6 +3039,83 @@ mod formalized_tests {
     // TSecret re-enters public typing only via T_Declassify with a matching
     // proof (Declassification.v `logical_relation_declassify_proven`,
     // `declassify_requires_public_context`). Negative + positive both ways.
+
+    // ── REQ-27 silent-gap regression: the secrecy scan must see through EVERY
+    //    type container ────────────────────────────────────────────────────
+    //
+    // `ty_secrecy_level` decides whether a value carries a secrecy label, and
+    // `secrecy_at_sink` uses it to reject a secret reaching a print / network /
+    // file sink. It matched a hand-written list of containers and ended in
+    // `_ => None`, so a container nobody listed answered "not secret" and the
+    // sink rule silently let the value through.
+    #[test]
+    fn ty_secrecy_level_sees_through_every_type_container() {
+        use crate::ty_secrecy_level;
+        let secret = || Box::new(Ty::Secret(Box::new(Ty::Int)));
+        let plain = || Box::new(Ty::Int);
+        let cases: Vec<(&str, Ty)> = vec![
+            ("Secret", Ty::Secret(Box::new(Ty::Int))),
+            ("Prod/l", Ty::Prod(secret(), plain())),
+            ("Prod/r", Ty::Prod(plain(), secret())),
+            ("Sum/l", Ty::Sum(secret(), plain())),
+            ("Sum/r", Ty::Sum(plain(), secret())),
+            ("List", Ty::List(secret())),
+            ("Option", Ty::Option(secret())),
+            ("Ref", Ty::Ref(secret(), SecurityLevel::Public)),
+            ("ConstantTime", Ty::ConstantTime(secret())),
+            ("Zeroizing", Ty::Zeroizing(secret())),
+            ("Proof", Ty::Proof(secret())),
+            // Below: the containers that were missing. Each is a real RIINA
+            // type a secret can be placed in, so each was a way to walk a
+            // secret past the sink rule.
+            ("ContentAddressed", Ty::ContentAddressed(secret())),
+            ("Token", Ty::Token(secret())),
+            ("SyariahCompliant", Ty::SyariahCompliant(secret())),
+            ("SmartContract", Ty::SmartContract(secret())),
+            ("Supervisor", Ty::Supervisor(secret())),
+            ("CRDT/state", Ty::CRDT(secret(), plain())),
+            ("CRDT/meta", Ty::CRDT(plain(), secret())),
+            ("Actor/state", Ty::Actor(secret(), plain())),
+            ("Actor/msg", Ty::Actor(plain(), secret())),
+            ("RawPtr", Ty::RawPtr(secret())),
+        ];
+        for (label, ty) in cases {
+            assert_eq!(
+                ty_secrecy_level(&ty),
+                Some(SecurityLevel::Secret),
+                "`{label}` hides a Secret from the secrecy scan, so \
+                 `cetak`/`http_post`/`file_write` would accept it — the sink \
+                 rule is only as deep as this walk"
+            );
+        }
+    }
+
+    #[test]
+    fn ty_secrecy_level_stays_none_on_public_types() {
+        // NEGATIVE CONTROL: a scan that answered `Some(Secret)` for everything
+        // would pass the test above while rejecting every ordinary program.
+        use crate::ty_secrecy_level;
+        let plain = || Box::new(Ty::Int);
+        for (label, ty) in [
+            ("Int", Ty::Int),
+            ("String", Ty::String),
+            ("Prod", Ty::Prod(plain(), plain())),
+            ("List", Ty::List(plain())),
+            ("ContentAddressed", Ty::ContentAddressed(plain())),
+            ("Token", Ty::Token(plain())),
+            ("SyariahCompliant", Ty::SyariahCompliant(plain())),
+            ("CRDT", Ty::CRDT(plain(), plain())),
+            ("Actor", Ty::Actor(plain(), plain())),
+            ("Labeled/Public", Ty::Labeled(plain(), SecurityLevel::Public)),
+        ] {
+            assert_eq!(
+                ty_secrecy_level(&ty),
+                None,
+                "`{label}` carries no secret and must not be flagged"
+            );
+        }
+    }
+
     #[test]
     fn ifc_print_sinks_reject_secret() {
         let ctx = register_builtin_types(&Context::new());

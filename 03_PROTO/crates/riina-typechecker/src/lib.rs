@@ -2539,12 +2539,25 @@ fn secrecy_at_sink(callee: &Expr, arg_ty: &Ty) -> Option<TypeError> {
 /// `None` if every leaf is `Public`/unlabeled.
 ///
 /// `Secret<_>` is the lattice top (`SecurityLevel::Secret`); `Labeled(_, l)`
-/// contributes `l` when `l != Public`. Recurses through the containers a sink
-/// would serialize (products, sums, lists, options, the security/taint wrappers,
-/// refs, constant-time/zeroizing wrappers, proof witnesses). Deliberately does
-/// NOT recurse into `Fn` (serializing a closure renders no captured data), and
-/// `Any` is not treated as secret-bearing — the check is syntactic on the
-/// inferred argument type.
+/// contributes `l` when `l != Public`; `SecureChan(_, l)` contributes its own
+/// channel level. Recurses through EVERY container a sink could serialize:
+/// products, sums, lists, options, the security/taint wrappers, refs,
+/// constant-time/zeroizing wrappers, proof witnesses, raw pointers, and the
+/// JALINAN / blockchain / Syariah containers (`ContentAddressed`, `Actor`,
+/// `CRDT`, `Supervisor`, `SmartContract`, `Token`, `SyariahCompliant`).
+///
+/// Deliberately does NOT recurse into `Fn` (serializing a closure renders the
+/// function value, not its captured data — a secret RESULT is caught at the
+/// call site, where the result type is what reaches the sink) nor into
+/// `Chan`/`Choreography` (session payloads are governed by the session/IFC
+/// rules, not by this scan). `Any` is not treated as secret-bearing — the
+/// check is syntactic on the inferred argument type, which is why
+/// `propagate_secrecy_through_builtin` exists to re-carry labels through
+/// `Any`-typed builtins.
+///
+/// The match is EXHAUSTIVE on purpose: this walk is exactly as deep as the
+/// sink rule, so a missed container is a leak path, and a new `Ty` variant
+/// must fail the build here rather than silently open one.
 fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
     fn join(a: Option<SecurityLevel>, b: Option<SecurityLevel>) -> Option<SecurityLevel> {
         match (a, b) {
@@ -2553,13 +2566,30 @@ fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
             (None, y) => y,
         }
     }
+    // EXHAUSTIVE by construction — no wildcard arm. This walk is the depth of
+    // the sink rule: a container it does not descend into answers "no secret",
+    // and `secrecy_at_sink` then lets the value reach `cetak`/`http_post`/
+    // `file_write`. It previously ended in `_ => None`, so every JALINAN /
+    // blockchain / Syariah container (`ContentAddressed`, `Token`,
+    // `SyariahCompliant`, `SmartContract`, `Supervisor`, `CRDT`, `Actor`) and
+    // `RawPtr` silently laundered a secret past the check. Adding a `Ty`
+    // variant must fail the build here rather than open a new leak path.
     match ty {
         Ty::Secret(inner) => join(Some(SecurityLevel::Secret), ty_secrecy_level(inner)),
         Ty::Labeled(inner, l) => {
             let here = (*l != SecurityLevel::Public).then_some(*l);
             join(here, ty_secrecy_level(inner))
         }
-        Ty::Prod(a, b) | Ty::Sum(a, b) => join(ty_secrecy_level(a), ty_secrecy_level(b)),
+        // A secure channel's own level is part of its secrecy, not just its
+        // payload's.
+        Ty::SecureChan(_, l) => (*l != SecurityLevel::Public).then_some(*l),
+
+        // Two-component containers: a secret in EITHER position is a secret.
+        Ty::Prod(a, b) | Ty::Sum(a, b) | Ty::Actor(a, b) | Ty::CRDT(a, b) => {
+            join(ty_secrecy_level(a), ty_secrecy_level(b))
+        }
+
+        // Single-component containers: secrecy travels with the payload.
         Ty::List(inner)
         | Ty::Option(inner)
         | Ty::Tainted(inner, _)
@@ -2567,8 +2597,47 @@ fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
         | Ty::Ref(inner, _)
         | Ty::ConstantTime(inner)
         | Ty::Zeroizing(inner)
-        | Ty::Proof(inner) => ty_secrecy_level(inner),
-        _ => None,
+        | Ty::Proof(inner)
+        | Ty::RawPtr(inner)
+        | Ty::ContentAddressed(inner)
+        | Ty::Supervisor(inner)
+        | Ty::SmartContract(inner)
+        | Ty::Token(inner)
+        | Ty::SyariahCompliant(inner) => ty_secrecy_level(inner),
+
+        // A function is NOT secret because it can return a secret: printing a
+        // function value renders the closure, it does not evaluate the body, so
+        // no secret is materialised at the sink. The secret is caught at the
+        // call site instead, where the result type is what reaches the sink.
+        // Deliberate, and now explicit rather than a wildcard's side effect.
+        Ty::Fn(_, _, _) => None,
+
+        // `Chan` carries a session type, not a value type — its payload
+        // secrecy is enforced by the session/IFC rules, not by this scan.
+        Ty::Chan(_) | Ty::Choreography(_, _) => None,
+
+        // Ground types and capability/FFI/UI handles hold no payload.
+        Ty::Unit
+        | Ty::Bool
+        | Ty::Int
+        | Ty::IntN { .. }
+        | Ty::BigInt
+        | Ty::Decimal
+        | Ty::Fixed
+        | Ty::FixedBin
+        | Ty::String
+        | Ty::Bytes
+        | Ty::Capability(_)
+        | Ty::CapabilityFull(_)
+        | Ty::Any
+        | Ty::CChar
+        | Ty::CInt
+        | Ty::CVoid
+        | Ty::Color
+        | Ty::Element
+        | Ty::Layout
+        | Ty::UIStyle
+        | Ty::AccessibleText => None,
     }
 }
 
