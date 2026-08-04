@@ -2467,7 +2467,7 @@ tar xf /tmp/wasmtime.tar.xz -C /tmp && cp /tmp/wasmtime-*/wasmtime /usr/local/bi
 Reserve the opt-out for when installation genuinely fails, and say so when you use it.
 
 **Verified baseline at this session's HEAD (all by command, nothing copied):** 03_PROTO
-**2,934 / 0** *with `corpus_c_wasm_differential` genuinely executing* (not skipped); 05_TOOLING
+**2,939 / 0** *with `corpus_c_wasm_differential` genuinely executing* (not skipped); 05_TOOLING
 **304 / 0**; `cargo clippy --all-targets -- -D warnings` **0 on BOTH workspaces**; Coq
 **328/328 `.vo`**, **0 Admitted / 0 Axiom / 0 Abort** (patterns `^\s*Admitted\.`, `^\s*Axiom\s`,
 `^\s*Abort\.` — a naive `^\s*Admitted` grep without the period reports false hits from comment lines
@@ -2476,9 +2476,10 @@ syntactic-sorry, stale Coq warning budget); proof ledgers up to date; corpus `ri
 **64/165 — unchanged vs the pre-session baseline**, so no example regressed (the two
 `08_jalinan` content-hash examples fail on a PRE-EXISTING `Pure`-vs-`Crypto` effect violation,
 i.e. they are among the 101 known-aspirational failures, not fallout from the hash change).
-`riinac verify --full` = **PASS** (`VERIFICATION_MANIFEST.md` regenerated at `9489169c`:
-328 `.vo` in 188s, Coq Admits 0, Coq Axioms 0, Metrics Accuracy OK). The remaining manifest
-WARNs are the un-provisioned smoke lanes (Lean/Isabelle/F*/TLA+/Alloy) — expected, not new.
+`riinac verify --full` = **PASS** (328 `.vo` compiled in 188s, Coq Admits 0, Coq Axioms 0,
+Metrics Accuracy OK) — and it is re-run by the pre-push hook on every push, so every commit
+below was gated on it, not just the one it was first measured at. The remaining manifest WARNs
+are the un-provisioned smoke lanes (Lean/Isabelle/F*/TLA+/Alloy) — expected, not new.
 
 **Correction to the previous snapshot:** it recorded "clippy 0", but that was the narrower
 `cargo clippy -- -D warnings`. `--all-targets` (the form NEXT_SESSION.md STEP 3 prescribes) had
@@ -2514,6 +2515,27 @@ applied as a search strategy, and it kept paying:
    Every arm now leads with a distinct tag and feeds canonical content. **Closures fail CLOSED**:
    `Closure::eq` is `false` even against itself, so no digest could make `sahkan` answer correctly;
    `cincang(closure)` is now an error rather than a digest shared with every closure.
+4. **`riina-typechecker::ty_secrecy_level` — a REQ-27 IFC leak path.** This walk IS the depth of the
+   secret-at-sink rule, and it ended in `_ => None`. Verified by command:
+   `ty_secrecy_level(ContentAddressed(Secret(Int)))` returned `None`, so a secret wrapped in any
+   container the list had never heard of walked straight past `cetak`/`http_post`/`file_write`/
+   `assert_eq`. Missing: `ContentAddressed`, `Token`, `SyariahCompliant`, `SmartContract`,
+   `Supervisor`, `CRDT`, `Actor`, `RawPtr` — i.e. the entire JALINAN/blockchain/Syariah surface,
+   which is exactly the fintech vertical REQ-33 selects — plus `SecureChan`'s own channel level.
+   Now exhaustive, with `Fn` and `Chan`/`Choreography` exclusions turned from a wildcard's side
+   effect into DOCUMENTED decisions. This is the sharpest reminder of the whole sweep: the
+   2026-06-10/06-12 sink rules were real and well-tested, and were defeated by one wildcard.
+5. **`riina-codegen::crdt_merge_values` — merge did not commute.** `_ => a.clone()` meant that for
+   any unlisted variant pair, `merge(a,b) = a` while `merge(b,a) = b`. Two replicas that exchanged
+   the same updates in different orders **diverged permanently and silently** — a violation of the
+   defining CRDT law, while Coq proves `gc_merge_comm`/`_assoc`/`_idem` and `pn_merge_comm`
+   (`domains/CRDTFoundations.v`) and `07_EXAMPLES/08_jalinan/crdt_merge.rii` advertises "Proven:
+   commutative, associative, idempotent". Real joins now exist for the semilattice types
+   (max / OR / lexicographic max / componentwise / Map key-union), idempotence is handled up front
+   so it is total, and everything else FAILS CLOSED — which is symmetric, so the law survives where
+   returning the left operand destroyed it. `List` is deliberately fail-closed: a set-union over an
+   ordered `Vec` is commutative as a set but not as the `Value` returned, and deciding which CRDT
+   `senarai` should be is a language design call, not something to infer in a merge function.
 
 **The method that worked, for the next session to reuse.** Making a walker exhaustive gives a
 *compile-time* tripwire, but that only catches a MISSING variant. It does not catch a
@@ -2561,9 +2583,21 @@ REQ-28 and anything needing a third party or a maintainer-held key are explicitl
    provisions successfully in this container:
    `python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget`, run as the LAST
    commit so `status.repoHead` stays fresh.
-4. **Keep applying the silent-gap method to non-`Expr` walkers.** The content-hash defect was over
-   `Value`, not `Expr` — the class is "any wildcard-terminated structural walk", and the highest-risk
-   instances are the ones computing a SECURITY or INTEGRITY answer. That is where to look next.
+4. **Keep applying the silent-gap method to non-`Expr` walkers.** The class is "any
+   wildcard-terminated structural walk", and the highest-risk instances are the ones computing a
+   SECURITY, INTEGRITY or ALGEBRAIC-LAW answer — that is where all five findings landed once the
+   search moved off `Expr` (`Value` for the hash and the CRDT merge, `Ty` for the IFC scan). The
+   generalisable question is **"what does this function's wildcard ASSERT?"** — `_ => None` on an
+   IFC scan asserts "not secret", `_ => a.clone()` on a merge asserts "these are equal", and both
+   were false. Remaining candidates worth the same treatment: `declassify_proof_matches` and
+   `declass_ok` (the declassification proof check — security-critical, and a wildcard there would
+   assert "this proof is invalid" or worse "valid"), and the `Value::compare` / `crdt` helpers
+   around the numeric tower.
+5. **A language decision this sweep surfaced but did not take:** which CRDT is `senarai` (List)
+   meant to be? It is currently fail-closed under `gabung` because a set-union over an ordered
+   `Vec` is commutative as a set but not as the returned `Value`. G-Set, OR-Set and LWW are all
+   defensible; picking one is an owner call, and the Coq side already has `gs_add_idempotent` to
+   build on.
 
 ### Session Handoff Snapshot (superseded — 2026-08-04, fourteenth session)
 
