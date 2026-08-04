@@ -2465,8 +2465,10 @@ weakening the guard.
 **Verified baseline at 2026-08-04 (all by command, not copied):** Rust 03_PROTO **2,919 / 0**;
 clippy 0; Coq **328/328 `.vo`, 12,638 Qed, 0 Admitted / 0 Axiom / 0 Abort**; `riinac verify --full`
 **PASS**; `audit-docs.sh` 0 discrepancies; ledgers fresh; corpus 64/165 examples pass `riinac check`.
-**CI is green 10/10** (run 30881280679) — the first fully-green run since `a5ee2ce0`, and the first
-where the Coq job demonstrably built on the pinned toolchain rather than an unpinned fallback.
+**CI is green 10/10** (latest: run 30913886863 at `00570fae`, which rebuilt the full corpus WITH
+general recursion in the core on the pinned toolchain; three consecutive fully-green runs). Run
+30881280679 was the first fully-green run since `a5ee2ce0` and the first where the Coq job
+demonstrably built on the pinned toolchain rather than an unpinned fallback.
 
 **THE governing lesson of this session — internalise it before changing anything.** Every defect
 found was a **silent gap**, never a bad design: a non-exhaustive `match` ending in `_ => {}`
