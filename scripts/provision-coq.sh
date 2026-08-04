@@ -88,16 +88,25 @@ verify_pin() {
 
   # rocq-stdlib is a separate package with its own version — check it too,
   # since a mismatched stdlib is exactly the CI/local divergence this fixes.
-  # NOTE: do NOT `exit` from inside the match block — awk still runs END, whose
-  # own `exit` would override the status and make this check always pass. Set a
-  # flag and decide once, in END. (That bug was caught by the negative control
-  # below; keep `--check` honest by re-running those.)
-  local stdlib_ver
-  stdlib_ver="$(opam list --installed 2>/dev/null \
-    | awk '$1=="rocq-stdlib" { print $2; exit }')"
-  [ -n "$stdlib_ver" ] || return 1
-  [ "$stdlib_ver" = "$ROCQ_STDLIB_VERSION" ] || return 1
+  # Query the package DB directly rather than parsing the `opam list` table:
+  # that table's layout varies between opam versions and switch kinds, and it
+  # silently failed to match on CI's local (_opam) switch even though the right
+  # version was installed. `-f installed-version` prints just the version.
+  FOUND_STDLIB="$(opam show -f installed-version rocq-stdlib 2>/dev/null | tr -d '[:space:]')"
+  [ -n "$FOUND_STDLIB" ] || return 1
+  [ "$FOUND_STDLIB" = "$ROCQ_STDLIB_VERSION" ] || return 1
   return 0
+}
+
+# Render everything we actually found, so a failure is diagnosable at a glance.
+# The first version of this script printed only `rocq --version`, which hid the
+# real cause (a stdlib mismatch) behind a line that looked correct.
+found_summary() {
+  local core stdlib
+  core="$(command -v rocq >/dev/null 2>&1 && rocq --version 2>/dev/null | head -1 || echo 'rocq not on PATH')"
+  stdlib="$(opam show -f installed-version rocq-stdlib 2>/dev/null | tr -d '[:space:]')"
+  echo "    rocq:        ${core}"
+  echo "    rocq-stdlib: ${stdlib:-<not installed>}"
 }
 
 if [ "$USE_CURRENT" = "1" ]; then
@@ -114,7 +123,8 @@ if [ "$CHECK_ONLY" -eq 1 ]; then
   fi
   echo -e "${RED}FAIL:${NC} Rocq toolchain does NOT match the pin." >&2
   echo "  expected: rocq-core ${ROCQ_CORE_VERSION} + rocq-stdlib ${ROCQ_STDLIB_VERSION}" >&2
-  echo "  found:    $(command -v rocq >/dev/null 2>&1 && rocq --version 2>/dev/null | head -1 || echo 'rocq not on PATH')" >&2
+  echo "  found:" >&2
+  found_summary >&2
   echo "  fix:      bash scripts/provision-coq.sh" >&2
   exit 1
 fi
@@ -174,6 +184,7 @@ if verify_pin; then
   exit 0
 fi
 
-fail "installation completed but verification did not match the pin.
-  expected: rocq-core ${ROCQ_CORE_VERSION} + rocq-stdlib ${ROCQ_STDLIB_VERSION}
-  found:    $(command -v rocq >/dev/null 2>&1 && rocq --version 2>/dev/null | head -1 || echo 'rocq not on PATH')"
+echo "  expected: rocq-core ${ROCQ_CORE_VERSION} + rocq-stdlib ${ROCQ_STDLIB_VERSION}" >&2
+echo "  found:" >&2
+found_summary >&2
+fail "installation completed but verification did not match the pin (see above)"
