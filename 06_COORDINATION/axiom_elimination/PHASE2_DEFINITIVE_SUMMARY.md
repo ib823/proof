@@ -1,6 +1,6 @@
 # RIINA PHASE 2: CASCADE ADMITS - DEFINITIVE PATCH
 
-**Verification:** 12,630 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2919 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,638 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2919 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 **Date:** 2026-01-25  
 **Target:** NonInterference_v2.v - 3 admits → 0

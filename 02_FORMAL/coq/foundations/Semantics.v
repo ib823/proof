@@ -892,3 +892,116 @@ Proof.
 Qed.
 
 (** End of Semantics.v *)
+
+(** ** Recursion-freedom is preserved by evaluation (REQ-44, Option A)
+
+    [recursion_free] (foundations/Syntax.v) scopes the strong-normalization
+    development to the recursion-free fragment. For that scoping to survive
+    an SN-style induction over evaluation, recursion-freedom must be a
+    CONFIGURATION invariant, not just a term predicate: [ST_DerefLoc] pulls
+    an arbitrary stored value back into the term, so a recursion-free term
+    over a store holding an [EFix] could step to a term containing one.
+
+    The invariant is therefore joint: the term is recursion-free AND every
+    value in the store is. Both step rules that write the store
+    ([ST_RefValue], [ST_AssignLoc]) write values that are subterms of the
+    (recursion-free) term, so the store side is self-sustaining; the read
+    rule ([ST_DerefLoc]) then keeps the term side closed. A recursion-free
+    configuration also never takes an [ST_AppFix] step at all — its
+    hypothesis contains [recursion_free (EFix w)], i.e. [False].
+
+    This is the store invariant identified as the REQ-44 blocker: without
+    it, [step] does not preserve [recursion_free] and the recursion-free
+    hypotheses on the SN lemmas could not be carried through their own
+    inductions. *)
+
+Definition store_recursion_free (st : store) : Prop :=
+  forall l v, store_lookup l st = Some v -> recursion_free v.
+
+Lemma store_recursion_free_nil : store_recursion_free nil.
+Proof.
+  intros l v H. simpl in H. discriminate H.
+Qed.
+
+(** A value found after an update is either the written value or was
+    already present — the only fact the invariant needs about [store_update]
+    (covering both the overwrite and the append case). *)
+Lemma store_lookup_update_inv : forall st l l' v v',
+  store_lookup l' (store_update l v st) = Some v' ->
+  v' = v \/ store_lookup l' st = Some v'.
+Proof.
+  induction st as [| [l0 v0] st IH]; intros l l' v v' H; simpl in H.
+  - destruct (Nat.eqb l' l); inversion H; auto.
+  - destruct (Nat.eqb l l0) eqn:El.
+    + apply Nat.eqb_eq in El; subst l0.
+      simpl in H. destruct (Nat.eqb l' l) eqn:El'.
+      * inversion H; auto.
+      * right. simpl. rewrite El'. exact H.
+    + simpl in H. destruct (Nat.eqb l' l0) eqn:El0.
+      * inversion H; subst. right. simpl. rewrite El0. reflexivity.
+      * destruct (IH _ _ _ _ H) as [Hv | Hlook].
+        -- left; assumption.
+        -- right. simpl. rewrite El0. assumption.
+Qed.
+
+Lemma store_recursion_free_update : forall st l v,
+  store_recursion_free st ->
+  recursion_free v ->
+  store_recursion_free (store_update l v st).
+Proof.
+  intros st l v Hst Hv l' v' Hlook.
+  destruct (store_lookup_update_inv _ _ _ _ _ Hlook) as [-> | Hold].
+  - exact Hv.
+  - exact (Hst _ _ Hold).
+Qed.
+
+(** THE preservation theorem: a step from a recursion-free configuration
+    yields a recursion-free configuration. Stated over projections so the
+    induction needs no [remember] gymnastics and composes directly with the
+    SN development's [(fst (fst cfg))] style. *)
+Lemma step_preserves_recursion_free : forall cfg cfg',
+  step cfg cfg' ->
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
+  recursion_free (fst (fst cfg')) /\ store_recursion_free (snd (fst cfg')).
+Proof.
+  intros cfg cfg' Hstep.
+  induction Hstep; simpl in *; intros Hrf Hst;
+    repeat match goal with H : _ /\ _ |- _ => destruct H end;
+    (* congruence cases: the inner step's IH discharges the stepped part *)
+    try (destruct IHHstep as [He' Hst']; [tauto | assumption |
+         split; [tauto | assumption]]);
+    (* substitution cases (beta, let, case, handle) *)
+    try (split; [apply recursion_free_subst; tauto | assumption]);
+    (* projection / pure-subterm / dead (ST_AppFix carries False) cases *)
+    try (split; [tauto | assumption]).
+  - (* ST_RefValue: allocate a recursion-free value *)
+    split; [exact I | apply store_recursion_free_update; tauto].
+  - (* ST_DerefLoc: the store invariant returns to the term *)
+    split; [eapply Hst; eassumption | assumption].
+  - (* ST_AssignLoc: overwrite with a recursion-free value *)
+    split; [exact I | apply store_recursion_free_update; tauto].
+Qed.
+
+Lemma multi_step_preserves_recursion_free : forall cfg cfg',
+  cfg -->* cfg' ->
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
+  recursion_free (fst (fst cfg')) /\ store_recursion_free (snd (fst cfg')).
+Proof.
+  intros cfg cfg' Hms; induction Hms; intros Hrf Hst.
+  - split; assumption.
+  - destruct (step_preserves_recursion_free _ _ H Hrf Hst) as [Hrf2 Hst2].
+    apply IHHms; assumption.
+Qed.
+
+(** Tuple-shaped corollary for call sites that hold the components. *)
+Lemma step_rf : forall e st ctx e' st' ctx',
+  (e, st, ctx) --> (e', st', ctx') ->
+  recursion_free e ->
+  store_recursion_free st ->
+  recursion_free e' /\ store_recursion_free st'.
+Proof.
+  intros e st ctx e' st' ctx' H.
+  exact (step_preserves_recursion_free _ _ H).
+Qed.

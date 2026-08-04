@@ -1,6 +1,6 @@
 # RIINA Coordination Log
 
-**Verification:** 12,630 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2919 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,638 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2919 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Version: 3.20.0
 ## Last Updated: 2026-02-05 (Session 73: Proof Depth Expansion)
