@@ -2557,17 +2557,26 @@ literal?"), not structural walks, so the wildcard is the correct answer, not a g
 snapshot's framing of "~49 + 27 + 15 wildcard arms to sweep" therefore over-counted the real work —
 the structural walkers were the small minority, and they are now done.
 
-**Do not chase the `VERIFICATION_MANIFEST.md` churn — it is the hooks, not a regression.** The
-committed manifest almost always reads `Mode: fast`, even right after a green `verify --full`. The
-pre-commit hook runs `riinac verify --fast`, which REWRITES the manifest during the commit, so a
-full-mode manifest cannot survive the normal commit path no matter how it is staged; the pre-push
-`verify --full` then rewrites it back, leaving the tree dirty again. That loop is what produced the
-long run of `CHORE: refresh verification-manifest SHA pointer to handoff commit` commits in the
-history — they are churn, not progress. This session tried once, confirmed the commit still landed
-`Mode: fast`, and dropped the commit rather than ship a message that claimed otherwise. The
-authoritative full-mode result is the `verify --full` OUTPUT, quoted in the baseline above; if the
-manifest is ever to be trusted as an artifact, the hook ordering needs fixing first (a small,
-well-scoped Gate-F/tooling task, and the honest fix for that whole run of chore commits).
+**Do not chase the `VERIFICATION_MANIFEST.md` churn — it is the tooling, not a regression, and the
+mechanism is now pinned down.** The committed manifest ALWAYS reads `Mode: fast`, even immediately
+after a green `verify --full`. Cause, located this session: `riinac verify` does not merely write
+the manifest, it **auto-stages it** (`03_PROTO/crates/riinac/src/verify.rs:2180-2188`,
+`git add VERIFICATION_MANIFEST.md`). So the pre-commit hook's `verify --fast` re-stages a fast-mode
+manifest over whatever you staged, on every single commit. **A full-mode manifest cannot be
+committed through the normal path at all** — staging it differently does not help, and neither does
+committing it separately. The pre-push `verify --full` then rewrites it once more, leaving the tree
+dirty and inviting yet another chore commit.
+
+That loop is the origin of the long run of `CHORE: refresh verification-manifest SHA pointer to
+handoff commit` commits in the history — churn, not progress. This session hit it twice; the first
+attempt was DROPPED because its message claimed a full-mode artifact the commit did not contain,
+and the second says so in its own message. **The authoritative full-mode result is the
+`verify --full` OUTPUT** (quoted in the baseline above), never this file.
+
+The honest fix is small and well-scoped (Gate F / tooling): make the auto-stage conditional on the
+run being at least as thorough as the manifest already on disk — i.e. never let a `fast` run
+overwrite a `full` record for the same SHA — or drop the auto-stage entirely and let the manifest
+be committed deliberately. Until then, treat a `Mode: fast` manifest as expected, not as a signal.
 
 **Recommended next actions, in order** (external-audit-gated items remain KIV by owner decision —
 REQ-28 and anything needing a third party or a maintainer-held key are explicitly deferred):
