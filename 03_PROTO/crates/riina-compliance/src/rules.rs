@@ -89,6 +89,12 @@ fn contains_effect(expr: &Expr, target: Effect) -> bool {
         Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             contains_effect(v, target) || contains_effect(b, target)
         }
+        // REQ-44: top-level functions now form a LetRecGroup. Without this arm
+        // the walk stopped at the group (the match ends in `_ => false`), so
+        // compliance silently skipped EVERY top-level function body.
+        Expr::LetRecGroup(bindings, b) => {
+            bindings.iter().any(|(_, _, e)| contains_effect(e, target)) || contains_effect(b, target)
+        }
         Expr::If(c, t, e) | Expr::Case(c, _, t, _, e) => {
             contains_effect(c, target) || contains_effect(t, target) || contains_effect(e, target)
         }
@@ -118,6 +124,12 @@ fn contains_security_op(expr: &Expr) -> bool {
         Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             contains_security_op(v) || contains_security_op(b)
         }
+        // REQ-44: top-level functions now form a LetRecGroup. Without this arm
+        // the walk stopped at the group (the match ends in `_ => false`), so
+        // compliance silently skipped EVERY top-level function body.
+        Expr::LetRecGroup(bindings, b) => {
+            bindings.iter().any(|(_, _, e)| contains_security_op(e)) || contains_security_op(b)
+        }
         Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a) | Expr::Assign(f, a) => {
             contains_security_op(f) || contains_security_op(a)
         }
@@ -144,6 +156,12 @@ fn has_if_or_case(expr: &Expr) -> bool {
         Expr::If(_, _, _) | Expr::Case(_, _, _, _, _) => true,
         Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             has_if_or_case(v) || has_if_or_case(b)
+        }
+        // REQ-44: top-level functions now form a LetRecGroup. Without this arm
+        // the walk stopped at the group (the match ends in `_ => false`), so
+        // compliance silently skipped EVERY top-level function body.
+        Expr::LetRecGroup(bindings, b) => {
+            bindings.iter().any(|(_, _, e)| has_if_or_case(e)) || has_if_or_case(b)
         }
         Expr::Lam(_, _, b)
         | Expr::Fst(b)

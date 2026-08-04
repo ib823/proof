@@ -457,6 +457,22 @@ impl Lower {
                 self.harvest_struct_info(bound);
                 self.harvest_struct_info(cont);
             }
+            // REQ-44: a top-level function GROUP must register every member,
+            // exactly as the single-binding LetRec arm above does. Missing this
+            // silently lost `fn_returns_struct` for grouped functions, so a call
+            // like `biar v = versi_semasa()` no longer knew `v` was a struct and
+            // `v.field` degraded to `Any` (no Fst/Snd projection) — which the C
+            // and WASM backends then rendered differently. This match ends in
+            // `_ => {}`, so the compiler could NOT catch the omission.
+            Expr::LetRecGroup(bindings, cont) => {
+                for (name, _, bound) in bindings {
+                    if let Some(s) = Self::result_struct_name(bound) {
+                        self.fn_returns_struct.entry(name.clone()).or_insert(s);
+                    }
+                    self.harvest_struct_info(bound);
+                }
+                self.harvest_struct_info(cont);
+            }
             Expr::Lam(_, _, b)
             | Expr::Fst(b)
             | Expr::Snd(b)
@@ -512,7 +528,8 @@ impl Lower {
             Expr::Lam(_, _, b)
             | Expr::Return(b)
             | Expr::Let(_, _, _, b)
-            | Expr::LetRec(_, _, _, b) => Self::result_struct_name(b),
+            | Expr::LetRec(_, _, _, b)
+            | Expr::LetRecGroup(_, b) => Self::result_struct_name(b),
             Expr::If(_, t, f) => {
                 Self::result_struct_name(t).or_else(|| Self::result_struct_name(f))
             }
