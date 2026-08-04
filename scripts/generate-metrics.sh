@@ -1190,7 +1190,7 @@ cat > "$OUTPUT_FILE" << EOF
     "filesTotal": $COQ_FILES,
     "filesActive": $COQ_ACTIVE_FILES,
     "domains": $RESEARCH_DOMAINS,
-    "prover": "Rocq 9.2"
+    "prover": "Rocq 9.1.1"
   },
   "lean": {
     "theorems": $LEAN_THEOREMS,
