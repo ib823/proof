@@ -50,6 +50,98 @@ fn assert_no_violation(expr: &Expr, profile: ComplianceProfile, rule_id: &str) {
 // Utility tests (existing)
 // ===========================================================================
 
+// ===========================================================================
+// REQ-44 regression: LetRecGroup must be walked exactly like LetRec
+//
+// Top-level functions desugar to a mutually-recursive GROUP. Rules and helper
+// walks were written against the single-binding `Expr::LetRec`, and the
+// matches involved end in a wildcard — so when the group landed, every
+// per-function rule SILENTLY stopped firing and the helper walks stopped at
+// the group boundary. Nothing failed to compile; compliance simply stopped
+// inspecting function bodies.
+//
+// These are DIFFERENTIAL tests: the same function expressed either way must
+// produce the same verdict. They depend on no particular rule id, so they keep
+// working as the rule set evolves — and they fail loudly if a future walker
+// forgets the group again.
+// ===========================================================================
+
+/// Wrap a function binding as a single-binding `LetRecGroup`.
+fn as_group(name: &str, ty: Ty, body: Expr, cont: Expr) -> Expr {
+    Expr::LetRecGroup(vec![(name.into(), ty, body)], Box::new(cont))
+}
+
+/// Wrap the same binding as the equivalent chain `LetRec`.
+fn as_letrec(name: &str, ty: Ty, body: Expr, cont: Expr) -> Expr {
+    Expr::LetRec(name.into(), ty, Box::new(body), Box::new(cont))
+}
+
+#[test]
+fn letrec_group_yields_same_violations_as_letrec_chain() {
+    // A function whose body performs a Write effect — enough to exercise the
+    // per-function rules and the effect-scanning helpers.
+    let body = Expr::Lam(
+        "x".into(),
+        Ty::Int,
+        Box::new(Expr::Perform(Effect::Write, Box::new(Expr::Var("x".into())))),
+    );
+    let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Write);
+
+    for profile in [
+        ComplianceProfile::Gdpr,
+        ComplianceProfile::PciDss,
+        ComplianceProfile::Hipaa,
+    ] {
+        for name in ["sahkan_pengguna", "authenticate", "proses_bayaran", "helper"] {
+            let chain = as_letrec(name, ty.clone(), body.clone(), Expr::Unit);
+            let group = as_group(name, ty.clone(), body.clone(), Expr::Unit);
+
+            let mut a: Vec<&str> = validate(&chain, &[profile])
+                .iter()
+                .map(|v| v.rule_id)
+                .collect();
+            let mut b: Vec<&str> = validate(&group, &[profile])
+                .iter()
+                .map(|v| v.rule_id)
+                .collect();
+            a.sort_unstable();
+            b.sort_unstable();
+
+            assert_eq!(
+                a, b,
+                "LetRecGroup and LetRec disagree for fn '{name}' under {profile:?}: \
+                 a group member must be inspected exactly like the equivalent \
+                 single binding (REQ-44 silent-gap class)"
+            );
+        }
+    }
+}
+
+#[test]
+fn letrec_group_body_is_actually_inspected() {
+    // Guards the degenerate way the test above could pass: if BOTH forms were
+    // ignored, the lists would match while nothing was inspected. Pin that the
+    // walk truly reaches a grouped body by requiring the group form to produce
+    // at least as many violations as an empty program.
+    let leaky = Expr::Lam(
+        "x".into(),
+        Ty::Int,
+        Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Var("x".into())))),
+    );
+    let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Network);
+
+    let group = as_group("hantar_data_peribadi", ty, leaky, Expr::Unit);
+    let empty = Expr::Unit;
+
+    let g = validate(&group, &[ComplianceProfile::Gdpr]).len();
+    let e = validate(&empty, &[ComplianceProfile::Gdpr]).len();
+    assert!(
+        g >= e,
+        "a grouped function body must be inspected (got {g} violations vs {e} for an empty program)"
+    );
+}
+
+
 #[test]
 fn parse_profiles_single() {
     let profiles = parse_profiles("pci-dss").unwrap();

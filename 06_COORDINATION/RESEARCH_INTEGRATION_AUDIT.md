@@ -1,6 +1,6 @@
 # RESEARCH → CODEBASE INTEGRATION AUDIT
 
-**Verification:** 12,630 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2915 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,630 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2919 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## THE BRUTAL TRUTH
 

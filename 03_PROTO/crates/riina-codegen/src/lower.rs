@@ -2232,6 +2232,83 @@ impl Default for Lower {
 mod tests {
     use super::*;
 
+    // =======================================================================
+    // REQ-44 regression: a LetRecGroup must lower exactly like the equivalent
+    // LetRec chain.
+    //
+    // `harvest_struct_info` records which functions return a struct, keyed off
+    // its `Expr::LetRec` arm. When top-level functions became GROUP members no
+    // `LetRecGroup` arm existed — and that match ends in `_ => {}`, so nothing
+    // failed to compile. Grouped functions silently stopped being registered,
+    // `biar v = f()` lost v's struct identity, `v.field` degraded to `Any`, and
+    // the C and WASM backends then rendered it differently. It shipped to main
+    // and was caught only by the CI differential.
+    //
+    // This is a DIFFERENTIAL test: both spellings must produce identical IR.
+    // It fails if any future AST walker forgets the group again.
+    // =======================================================================
+
+    /// `f() = Point { x: 1, y: 2 }` then `biar v = f(); v.x`
+    fn struct_returning_program(group: bool) -> Expr {
+        let record = Expr::RecordLit(
+            "Point".into(),
+            vec![
+                ("x".into(), Expr::Int(1)),
+                ("y".into(), Expr::Int(2)),
+            ],
+        );
+        // Zero-arg function: the binding value is the body, typed as its return.
+        let fn_ty = Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int));
+        let cont = Expr::Let(
+            "v".into(),
+            None,
+            Box::new(Expr::App(
+                Box::new(Expr::Var("f".into())),
+                Box::new(Expr::Unit),
+            )),
+            Box::new(Expr::FieldAccess(
+                Box::new(Expr::Var("v".into())),
+                "x".into(),
+            )),
+        );
+        if group {
+            Expr::LetRecGroup(vec![("f".into(), fn_ty, record)], Box::new(cont))
+        } else {
+            Expr::LetRec("f".into(), fn_ty, Box::new(record), Box::new(cont))
+        }
+    }
+
+    #[test]
+    fn letrec_group_lowers_identically_to_letrec_chain() {
+        let chain = struct_returning_program(false);
+        let group = struct_returning_program(true);
+
+        let chain_ir = format!("{:?}", Lower::new().compile(&chain).unwrap());
+        let group_ir = format!("{:?}", Lower::new().compile(&group).unwrap());
+
+        assert_eq!(
+            chain_ir, group_ir,
+            "LetRecGroup lowered differently from the equivalent LetRec chain — \
+             a prepass (e.g. harvest_struct_info) is missing its LetRecGroup arm \
+             (REQ-44 silent-gap class)"
+        );
+    }
+
+    #[test]
+    fn grouped_struct_returning_fn_keeps_field_projection() {
+        // Guards the degenerate pass: if BOTH forms lost projections the
+        // differential above would still match. Pin that the group form
+        // genuinely resolves the field rather than degrading to `Any`.
+        let group = struct_returning_program(true);
+        let mut lower = Lower::new();
+        let _ = lower.compile(&group).unwrap();
+        assert!(
+            lower.fn_returns_struct.contains_key("f"),
+            "grouped function 'f' must be registered as struct-returning; \
+             without it `v.x` cannot lower to a projection"
+        );
+    }
+
     #[test]
     fn test_lower_unit() {
         let mut lower = Lower::new();

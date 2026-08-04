@@ -2443,7 +2443,84 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot (last updated 2026-06-12, thirteenth session — loose-end closure + two enhancement lanes: owner-decided public-branch repairs (per-commit range sync, public-tree ledger variant, F* purge, path scrub), REQ-27 Any-typed-builtin audit closing 4 leak vectors incl. secrecy laundering, REQ-30 pipeline-wide fuzz + first coverage measurement; on top of parts 15–20 below)
+### Session Handoff Snapshot — CURRENT (2026-08-04, fourteenth session)
+
+**READ THIS FIRST if you are picking the repo up cold.** The prior snapshot (2026-06-12) is
+retained below for history; where the two disagree, THIS one is current.
+
+**Environment bootstrap (fresh container — the container is ephemeral, nothing below survives it):**
+```bash
+apt-get update && apt-get install -y opam libgmp-dev m4
+bash scripts/provision-coq.sh            # pinned Rocq; single source of truth, CI calls it too
+bash scripts/provision-coq.sh --check    # verify; exits 1 on mismatch
+eval $(opam env --switch=rocq); export COQBIN="$HOME/.opam/rocq/bin/"
+bash 00_SETUP/scripts/install_hooks.sh
+```
+`wasmtime` is NOT installed in the dev container. The C/WASM differentials now **fail** rather
+than self-skip, so local Rust runs need the deliberate opt-out:
+`RIINA_ALLOW_MISSING_BACKEND_TOOLS=1 cargo test --workspace --release`. CI's dedicated
+`differential` job installs the tools and owns that coverage — do not "fix" a local failure by
+weakening the guard.
+
+**Verified baseline at 2026-08-04 (all by command, not copied):** Rust 03_PROTO **2,919 / 0**;
+clippy 0; Coq **328/328 `.vo`, 12,630 Qed, 0 Admitted / 0 Axiom / 0 Abort**; `riinac verify --full`
+**PASS**; `audit-docs.sh` 0 discrepancies; ledgers fresh; corpus 64/165 examples pass `riinac check`.
+**CI is green 10/10** (run 30881280679) — the first fully-green run since `a5ee2ce0`, and the first
+where the Coq job demonstrably built on the pinned toolchain rather than an unpinned fallback.
+
+**THE governing lesson of this session — internalise it before changing anything.** Every defect
+found was a **silent gap**, never a bad design: a non-exhaustive `match` ending in `_ => {}`
+(dropped `fn_returns_struct` for grouped functions → shipped a WASM codegen regression to main);
+an `if let Expr::LetRec(..)` that quietly stopped matching (compliance stopped inspecting every
+top-level function); a CI toolchain pin that failed OPEN to an unpinned install; and a test that
+skipped itself yet reported `ok`, inflating a "2915 passed" figure while executing nothing.
+Local green was repeatedly **not** evidence. Rules that follow from it:
+1. **CI is the gate, not the local suite.** Check the run before claiming green.
+2. **A silently-skipping test is UNVERIFIED, not green.** Guards must fail closed.
+3. **When adding an `Expr` variant, grep for EVERY walker** — `harvest_struct_info`,
+   `result_struct_name`, `free_vars`, `infer_type`, `infer_effect`, the compliance helpers —
+   because wildcard arms mean the compiler will NOT tell you.
+4. **A checker that cannot fail is worthless.** Every guard added this session ships with a
+   NEGATIVE control proving it fails when the bug is reintroduced. Keep that discipline.
+
+**Regression tests now pin the silent-gap class** (all four have verified negative controls):
+`riina-compliance` `letrec_group_yields_same_violations_as_letrec_chain` +
+`letrec_group_body_is_actually_inspected`; `riina-codegen`
+`letrec_group_lowers_identically_to_letrec_chain` + `grouped_struct_returning_fn_keeps_field_projection`.
+These are DIFFERENTIAL: the same function expressed as a `LetRec` and as a one-member
+`LetRecGroup` must behave identically, so they keep working as rules/lowering evolve.
+
+**Work in flight — `claude/riina-proof-continuation-nkh7b7` (commit 39821cc2), DO NOT MERGE AS-IS.**
+Holds the REQ-44 full-core `EFix` integration: the **type-safety half is COMPLETE and compiles**
+(EFix in the core `expr`, `T_Fix` restricted to arrows, `ST_AppFix` as the total unrolling
+`fix w --> w (fix w)`, canonical forms honestly generalised, progress + preservation + effect
+soundness + determinism). It does NOT compile in 3 files (`SN_Closure.v`, `KripkeProperties.v`,
+`TerminationLemmas.v`). See REQ-44 for the precise blocker.
+
+**Recommended next actions, in order (external-audit-gated items are KIV by owner decision —
+REQ-28 and anything requiring a third party or a maintainer-held key are explicitly deferred):**
+1. **REQ-27 compiler-enforcement parity (P0, Gate B).** Highest value: non-interference is proven
+   in Coq but only PARTIALLY enforced by the shipped compiler. This is the proof↔product gap and
+   the first thing any future auditor probes. Ordinary engineering, well scoped.
+2. **Finish the anti-silent-gap sweep.** The test-skip half is done. The remaining half is the
+   ~49 wildcard arms in `riina-typechecker/src/lib.rs`, 27 in `interp.rs`, 15 in `lower.rs`.
+   Do NOT blanket-refactor — most wildcards are legitimate. Target the STRUCTURAL WALKERS, where
+   a missing variant silently stops the walk, and add a differential test per walker.
+3. **The 10-prover architecture decision (owner claims-decision, not a proof).** Of the headline
+   74,473 "proofs", only **12,630 (17%) are machine-checked** — Coq. F* carries 12,010 admits;
+   Verus/Kani/TV are quarantined; Lean's default build elaborates 0 theorems. This is disclosed
+   honestly in `metrics.json`, which is why `audit-docs` passes, but it is the SOLE reason
+   `claimLevels.overall` is `generated`, and it taxes every public claim. Two coherent futures:
+   **concentrate** (retire the 9 from the headline; "one lane, 12,630 Qed, 0 admits" is already a
+   strong claim) or **commit** (mechanize exactly one more lane, realistically Lean). Leaving it
+   as-is is the only bad option. Same decision shape as REQ-44 Option A.
+4. **REQ-44 store invariant (research-grade).** Threading `recursion_free` through the SN/logical
+   relations needs `step_preserves_recursion_free`, which is NOT provable as the tree stands:
+   `ST_DerefLoc` reads an arbitrary value out of the store and no recursion-free store invariant
+   exists. Establishing one means extending `store_wf` and threading it through the whole
+   store/Kripke development. This is the one genuinely capability-shaped problem left.
+
+### Session Handoff Snapshot (superseded — last updated 2026-06-12, thirteenth session — loose-end closure + two enhancement lanes: owner-decided public-branch repairs (per-commit range sync, public-tree ledger variant, F* purge, path scrub), REQ-27 Any-typed-builtin audit closing 4 leak vectors incl. secrecy laundering, REQ-30 pipeline-wide fuzz + first coverage measurement; on top of parts 15–20 below)
 
 **Active gate: C — Standard Library Hardening** (Gate A + Gate B CLOSED; markers above). Gate C's
 File-I/O Coq-model and stdlib-hardening rows are DONE; the gate stays open only on the **external crypto
