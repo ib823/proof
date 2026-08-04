@@ -2579,10 +2579,17 @@ REQ-28 and anything needing a third party or a maintainer-held key are explicitl
    `metrics.json`, which is why `audit-docs` passes, but it is the sole reason `claimLevels.overall`
    is `generated`. Concentrate (retire the 9 from the headline) or commit (mechanize one more lane,
    realistically Lean). Leaving it as-is is the only bad option.
-3. **Clear the stale Coq warning-budget WARN (Gate E, REQ-30)** — now cheap, since a Rocq toolchain
-   provisions successfully in this container:
-   `python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget`, run as the LAST
-   commit so `status.repoHead` stays fresh.
+3. ~~**Clear the stale Coq warning-budget WARN (Gate E, REQ-30)**~~ — **DONE this session.** The
+   reason it had stayed stale for many sessions was not that nobody ran it: running it FAILS the
+   budget (`total warnings 6 > budget 2`), so a refresh could only have been landed by widening the
+   budget to fit the warnings. The 6 turned out to be a single real defect reported three times
+   each — `domains/CRDTFoundations.v:356-357` used `combine_length`/`seq_length`, deprecated in Coq
+   8.20 and renamed to `length_combine`/`length_seq` (the rest of the tree already uses the new
+   names, e.g. `PSI001_OperationalSecurity.v`, `ProbabilisticVerification.v`). Fixed at the source
+   rather than absorbed into a larger budget: **total warnings 0, budget check PASS**, 328/328 `.vo`
+   still green, and `audit-docs.sh` is down from 2 warnings to 1 (only the Lean syntactic-sorry
+   remains). Re-run `python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget`
+   as your LAST commit to keep `status.repoHead` fresh.
 4. **Keep applying the silent-gap method to non-`Expr` walkers.** The class is "any
    wildcard-terminated structural walk", and the highest-risk instances are the ones computing a
    SECURITY, INTEGRITY or ALGEBRAIC-LAW answer — that is where all five findings landed once the

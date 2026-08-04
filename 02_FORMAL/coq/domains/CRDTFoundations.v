@@ -353,8 +353,8 @@ Theorem gc_increment_length : forall gc node,
   length (gc_increment gc node) = length gc.
 Proof.
   intros gc node. unfold gc_increment.
-  rewrite length_map. rewrite combine_length.
-  rewrite seq_length. lia.
+  rewrite length_map. rewrite length_combine.
+  rewrite length_seq. lia.
 Qed.
 
 (** ============================================================================
