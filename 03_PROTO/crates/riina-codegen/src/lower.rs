@@ -505,7 +505,10 @@ impl Lower {
                 self.harvest_struct_info(b);
                 self.harvest_struct_info(c);
             }
-            Expr::ListLit(es) => {
+            Expr::ListLit(es)
+            | Expr::UIDisplay(es)
+            | Expr::UIRow(es)
+            | Expr::UIColumn(es) => {
                 for x in es {
                     self.harvest_struct_info(x);
                 }
@@ -515,7 +518,54 @@ impl Lower {
                     self.harvest_struct_info(x);
                 }
             }
-            _ => {}
+
+            // The arms below were previously swallowed by a `_ => {}`. A
+            // `RecordLit` nested inside a CAHAYA UI block or an actor handler
+            // was therefore never harvested, so its layout stayed unknown and
+            // any `v.field` on it degraded to `Any` — the identical mechanism
+            // that shipped the C/WASM divergence on `compiler/main.rii`, just
+            // reached through a different container. The match is now
+            // EXHAUSTIVE so a new `Expr` variant fails the build here instead
+            // of silently losing struct information. Do not add a `_ =>` arm.
+            Expr::ActorDecl {
+                init_state,
+                handler,
+                ..
+            } => {
+                self.harvest_struct_info(init_state);
+                self.harvest_struct_info(handler);
+            }
+            Expr::Spawn(a, b)
+            | Expr::ActorSend(a, b)
+            | Expr::CRDTMerge(a, b)
+            | Expr::ContentVerify(a, b)
+            | Expr::UIText(a, b)
+            | Expr::UIButton(a, b)
+            | Expr::UIContrastCheck(a, b) => {
+                self.harvest_struct_info(a);
+                self.harvest_struct_info(b);
+            }
+            Expr::ActorRecv(b)
+            | Expr::ContentHash(b)
+            | Expr::ContractDeploy(b)
+            | Expr::ZakatCalculate(b) => self.harvest_struct_info(b),
+            Expr::TokenTransfer { from, to, amount } => {
+                self.harvest_struct_info(from);
+                self.harvest_struct_info(to);
+                self.harvest_struct_info(amount);
+            }
+
+            // Leaves — no sub-expressions to harvest.
+            Expr::Unit
+            | Expr::Bool(_)
+            | Expr::Int(_)
+            | Expr::IntN { .. }
+            | Expr::String(_)
+            | Expr::Var(_)
+            | Expr::Loc(_)
+            | Expr::ChoreographyBlock { .. }
+            | Expr::UIColor(_, _, _)
+            | Expr::UIStyleDecl { .. } => {}
         }
     }
 
@@ -2307,6 +2357,185 @@ mod tests {
             "grouped function 'f' must be registered as struct-returning; \
              without it `v.x` cannot lower to a projection"
         );
+    }
+
+    // =======================================================================
+    // Silent-gap regression: `harvest_struct_info` must reach a `RecordLit`
+    // through EVERY container, not just the ones someone remembered to list.
+    //
+    // Same mechanism as the shipped C/WASM divergence on `compiler/main.rii`,
+    // reached through a different container: an unharvested layout means the
+    // struct's fields are unknown, so `v.field` degrades to `Any` instead of a
+    // real `Fst`/`Snd` projection — and the two backends then render it
+    // differently. The JALINAN/CAHAYA arms below were swallowed by `_ => {}`,
+    // so no test and no compiler check covered them.
+    // =======================================================================
+
+    /// Every container variant, each holding a `RecordLit` as a direct child.
+    fn containers_holding_a_record() -> Vec<(&'static str, Expr)> {
+        let rec = || {
+            Expr::RecordLit(
+                "Titik".into(),
+                vec![("x".into(), Expr::Int(1)), ("y".into(), Expr::Int(2))],
+            )
+        };
+        let b = |e: Expr| Box::new(e);
+        let unit = || Box::new(Expr::Unit);
+        vec![
+            ("UIDisplay", Expr::UIDisplay(vec![Expr::Unit, rec()])),
+            ("UIRow", Expr::UIRow(vec![Expr::Unit, rec()])),
+            ("UIColumn", Expr::UIColumn(vec![Expr::Unit, rec()])),
+            ("UIText/l", Expr::UIText(b(rec()), unit())),
+            ("UIText/r", Expr::UIText(unit(), b(rec()))),
+            ("UIButton/l", Expr::UIButton(b(rec()), unit())),
+            ("UIButton/r", Expr::UIButton(unit(), b(rec()))),
+            ("UIContrastCheck/l", Expr::UIContrastCheck(b(rec()), unit())),
+            ("UIContrastCheck/r", Expr::UIContrastCheck(unit(), b(rec()))),
+            (
+                "ActorDecl/init",
+                Expr::ActorDecl {
+                    name: "A".into(),
+                    state_ty: Ty::Int,
+                    message_ty: Ty::Int,
+                    init_state: b(rec()),
+                    handler: unit(),
+                },
+            ),
+            (
+                "ActorDecl/handler",
+                Expr::ActorDecl {
+                    name: "A".into(),
+                    state_ty: Ty::Int,
+                    message_ty: Ty::Int,
+                    init_state: unit(),
+                    handler: b(rec()),
+                },
+            ),
+            ("Spawn/l", Expr::Spawn(b(rec()), unit())),
+            ("Spawn/r", Expr::Spawn(unit(), b(rec()))),
+            ("ActorSend/l", Expr::ActorSend(b(rec()), unit())),
+            ("ActorSend/r", Expr::ActorSend(unit(), b(rec()))),
+            ("ActorRecv", Expr::ActorRecv(b(rec()))),
+            ("CRDTMerge/l", Expr::CRDTMerge(b(rec()), unit())),
+            ("CRDTMerge/r", Expr::CRDTMerge(unit(), b(rec()))),
+            ("ContentHash", Expr::ContentHash(b(rec()))),
+            ("ContentVerify/l", Expr::ContentVerify(b(rec()), unit())),
+            ("ContentVerify/r", Expr::ContentVerify(unit(), b(rec()))),
+            ("ContractDeploy", Expr::ContractDeploy(b(rec()))),
+            ("ZakatCalculate", Expr::ZakatCalculate(b(rec()))),
+            (
+                "TokenTransfer/from",
+                Expr::TokenTransfer {
+                    from: b(rec()),
+                    to: unit(),
+                    amount: unit(),
+                },
+            ),
+            (
+                "TokenTransfer/to",
+                Expr::TokenTransfer {
+                    from: unit(),
+                    to: b(rec()),
+                    amount: unit(),
+                },
+            ),
+            (
+                "TokenTransfer/amount",
+                Expr::TokenTransfer {
+                    from: unit(),
+                    to: unit(),
+                    amount: b(rec()),
+                },
+            ),
+        ]
+    }
+
+    #[test]
+    fn struct_layouts_are_harvested_through_every_container() {
+        for (label, e) in containers_holding_a_record() {
+            let mut lower = Lower::new();
+            lower.harvest_struct_info(&e);
+            assert!(
+                lower.struct_layouts.contains_key("Titik"),
+                "struct layout was not harvested through `{label}` — the \
+                 struct's fields stay unknown, so `v.field` on it degrades to \
+                 `Any` and the C and WASM backends can diverge (the shipped \
+                 regression class). Every arm of `harvest_struct_info` must \
+                 recurse."
+            );
+        }
+    }
+
+    #[test]
+    fn harvesting_reports_nothing_when_no_struct_is_present() {
+        // NEGATIVE CONTROL: without this, a `harvest_struct_info` that
+        // registered "Titik" unconditionally would pass the test above while
+        // checking nothing.
+        for (label, e) in containers_holding_a_record() {
+            // Same shapes, but with the RecordLit replaced by a plain Int.
+            let stripped = strip_records(&e);
+            let mut lower = Lower::new();
+            lower.harvest_struct_info(&stripped);
+            assert!(
+                lower.struct_layouts.is_empty(),
+                "`{label}` registered a struct layout when the tree contains \
+                 no RecordLit at all"
+            );
+        }
+    }
+
+    /// Replace every `RecordLit` in `e` with `Int(0)`, leaving the shape alone.
+    fn strip_records(e: &Expr) -> Expr {
+        match e {
+            Expr::RecordLit(..) => Expr::Int(0),
+            Expr::UIDisplay(v) => Expr::UIDisplay(v.iter().map(strip_records).collect()),
+            Expr::UIRow(v) => Expr::UIRow(v.iter().map(strip_records).collect()),
+            Expr::UIColumn(v) => Expr::UIColumn(v.iter().map(strip_records).collect()),
+            Expr::UIText(a, b) => {
+                Expr::UIText(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::UIButton(a, b) => {
+                Expr::UIButton(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::UIContrastCheck(a, b) => {
+                Expr::UIContrastCheck(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ActorDecl {
+                name,
+                state_ty,
+                message_ty,
+                init_state,
+                handler,
+            } => Expr::ActorDecl {
+                name: name.clone(),
+                state_ty: state_ty.clone(),
+                message_ty: message_ty.clone(),
+                init_state: Box::new(strip_records(init_state)),
+                handler: Box::new(strip_records(handler)),
+            },
+            Expr::Spawn(a, b) => {
+                Expr::Spawn(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ActorSend(a, b) => {
+                Expr::ActorSend(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ActorRecv(a) => Expr::ActorRecv(Box::new(strip_records(a))),
+            Expr::CRDTMerge(a, b) => {
+                Expr::CRDTMerge(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ContentHash(a) => Expr::ContentHash(Box::new(strip_records(a))),
+            Expr::ContentVerify(a, b) => {
+                Expr::ContentVerify(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ContractDeploy(a) => Expr::ContractDeploy(Box::new(strip_records(a))),
+            Expr::ZakatCalculate(a) => Expr::ZakatCalculate(Box::new(strip_records(a))),
+            Expr::TokenTransfer { from, to, amount } => Expr::TokenTransfer {
+                from: Box::new(strip_records(from)),
+                to: Box::new(strip_records(to)),
+                amount: Box::new(strip_records(amount)),
+            },
+            other => other.clone(),
+        }
     }
 
     #[test]
