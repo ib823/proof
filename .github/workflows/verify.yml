@@ -182,15 +182,26 @@ jobs:
       # and confirm `opam var root` actually points at what you cached.
       - uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: "5.2"
-      # The corpus uses `From Stdlib`, so it requires the Rocq 9.x prover, not
-      # legacy Coq 8.x. If the exact package name/version differs in the opam
-      # repo, pin it here to match the toolchain in CLAUDE.md (Rocq 9.1.1).
-      # On a cache hit this is a fast no-op; on a miss it installs as before.
-      - name: Install Rocq 9.1.1
-        run: |
-          opam install -y rocq-prover.9.1.1 rocq-stdlib.9.1.1 || \
-          opam install -y rocq-prover rocq-stdlib
+          # Matches the documented/local toolchain. This said "5.2" while
+          # CLAUDE.md and every local install used 4.14.2 — CI and local were
+          # not building on the same compiler.
+          ocaml-compiler: "4.14.2"
+      # The corpus uses `From Stdlib`, so it needs the Rocq 9.x prover, not
+      # legacy Coq 8.x. Provisioning goes through scripts/provision-coq.sh so
+      # the pin has exactly ONE definition shared by CI and local development.
+      #
+      # This step previously read:
+      #     opam install -y rocq-prover.9.1.1 rocq-stdlib.9.1.1 || \
+      #     opam install -y rocq-prover rocq-stdlib
+      # Both pinned versions are non-existent (`rocq-prover` publishes only
+      # 9.0.0; `rocq-stdlib` publishes 9.0.0/9.1.0/9.2.0), so the pinned install
+      # ALWAYS failed and the UNPINNED fallback ALWAYS ran — under a job named
+      # "Rocq 9.1.1". The script pins rocq-core.9.1.1 + rocq-stdlib.9.1.0 (the
+      # combination proven to build the active corpus) and fails closed.
+      - name: Provision Rocq (pinned, fail-closed)
+        run: RIINA_COQ_USE_CURRENT_SWITCH=1 bash scripts/provision-coq.sh
+      - name: Verify the toolchain actually matches the pin
+        run: RIINA_COQ_USE_CURRENT_SWITCH=1 bash scripts/provision-coq.sh --check
       - name: make (active _CoqProject set)
         run: opam exec -- make -C 02_FORMAL/coq
 

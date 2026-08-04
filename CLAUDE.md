@@ -56,9 +56,15 @@ These override ALL other instructions on conflict:
 # `rewrite … at N` over large unfolded goals — it cost >2.4 CPU-hours
 # on GF128.v before being replaced by a conversion-based `exact`
 # (2026-06-12 session entry, RIINA_MASTER_PLAN.md Part 11).
-# Fresh container: apt-get update && apt-get install -y opam libgmp-dev,
-# opam init --bare, opam switch create rocq ocaml-base-compiler.4.14.2,
-# opam install rocq-core.9.1.1 rocq-stdlib.9.1.0
+# Fresh container — use the provisioning script, do NOT hand-install.
+# It is the SINGLE source of truth for the pin (CI calls the same script,
+# so the two cannot silently diverge) and it fails closed:
+#   apt-get update && apt-get install -y opam libgmp-dev m4
+#   bash scripts/provision-coq.sh            # install the pinned toolchain
+#   bash scripts/provision-coq.sh --check    # verify it matches the pin
+# Pin: rocq-core.9.1.1 + rocq-stdlib.9.1.0 on ocaml-base-compiler.4.14.2.
+# (The two package versions genuinely differ — rocq-core 9.1.1 ships with
+# rocq-stdlib 9.1.0. There is no rocq-stdlib 9.1.1.)
 eval $(opam env --switch=rocq)
 cd /workspaces/proof/02_FORMAL/coq
 make                              # Build all proofs
