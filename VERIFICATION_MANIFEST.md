@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-04T15:13:42Z
-**Git SHA:** 2a36f501
+**Generated:** 2026-08-04T15:16:17Z
+**Git SHA:** 41d4ee49
 **Mode:** fast
 **Status:** PASS
 

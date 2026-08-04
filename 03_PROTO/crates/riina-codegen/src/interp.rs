@@ -997,7 +997,7 @@ impl Interpreter {
             Expr::CRDTMerge(a_expr, b_expr) => {
                 let a = self.eval_with_env(env, a_expr)?;
                 let b = self.eval_with_env(env, b_expr)?;
-                Ok(crdt_merge_values(&a, &b))
+                crdt_merge_values(&a, &b)
             }
 
             Expr::ContentHash(val_expr) => {
@@ -1676,17 +1676,90 @@ fn fnv1a_hash_value(val: &Value) -> Result<u64> {
 /// - Strings: lexicographic max (LWW-Register)
 /// - Pairs: componentwise merge
 /// - Otherwise: return first argument
-fn crdt_merge_values(a: &Value, b: &Value) -> Value {
+fn crdt_merge_values(a: &Value, b: &Value) -> Result<Value> {
+    // Idempotence, and the reason it comes first: `merge(x, x) = x` holds for
+    // EVERY variant, including ones with no join, so handling it up front keeps
+    // the laws total where they can be.
+    if a == b {
+        return Ok(a.clone());
+    }
     match (a, b) {
-        (Value::Int(x), Value::Int(y)) => Value::Int(std::cmp::max(*x, *y)),
-        (Value::String(x), Value::String(y)) => {
-            Value::String(if x >= y { x.clone() } else { y.clone() })
+        // ── Join-semilattice cases (commutative, associative, idempotent) ──
+        // G-Counter: the join is max. Coq: `gc_merge_comm`/`_assoc`/`_idem`
+        // in domains/CRDTFoundations.v.
+        (Value::Int(x), Value::Int(y)) => Ok(Value::Int(std::cmp::max(*x, *y))),
+        // Same-width sized integers join like `Int`. Mixed widths do not: the
+        // result's type would depend on the operand order, so it falls through
+        // to the un-mergeable arm below rather than silently picking one.
+        (
+            Value::IntN { value: x, bits: xb, signed: xs },
+            Value::IntN { value: y, bits: yb, signed: ys },
+        ) if xb == yb && xs == ys => Ok(Value::IntN {
+            value: std::cmp::max(*x, *y),
+            bits: *xb,
+            signed: *xs,
+        }),
+        (Value::BigInt(x), Value::BigInt(y)) => {
+            Ok(Value::BigInt(std::cmp::max(x, y).clone()))
         }
-        (Value::Pair(a1, a2), Value::Pair(b1, b2)) => Value::Pair(
-            Box::new(crdt_merge_values(a1, b1)),
-            Box::new(crdt_merge_values(a2, b2)),
-        ),
-        _ => a.clone(),
+        (Value::Decimal(x), Value::Decimal(y)) => Ok(Value::Decimal(
+            if x.compare(y) == std::cmp::Ordering::Less { y.clone() } else { x.clone() },
+        )),
+        (Value::Fixed(x), Value::Fixed(y)) => Ok(Value::Fixed(
+            if x.compare(y) == std::cmp::Ordering::Less { y.clone() } else { x.clone() },
+        )),
+        (Value::FixedBin(x), Value::FixedBin(y)) => Ok(Value::FixedBin(
+            if x.compare(y) == std::cmp::Ordering::Less { y.clone() } else { x.clone() },
+        )),
+        // Boolean join is OR (`false <= true`) — an enable-once flag.
+        (Value::Bool(x), Value::Bool(y)) => Ok(Value::Bool(*x || *y)),
+        // LWW-Register: lexicographic max.
+        (Value::String(x), Value::String(y)) => Ok(Value::String(
+            if x >= y { x.clone() } else { y.clone() },
+        )),
+        // Componentwise — a product of semilattices is a semilattice.
+        (Value::Pair(a1, a2), Value::Pair(b1, b2)) => Ok(Value::Pair(
+            Box::new(crdt_merge_values(a1, b1)?),
+            Box::new(crdt_merge_values(a2, b2)?),
+        )),
+        // Map: union of keys, merging pointwise where both sides hold a key.
+        // `BTreeMap` gives a canonical key order, so the result does not depend
+        // on operand order.
+        (Value::Map(x), Value::Map(y)) => {
+            let mut out = x.clone();
+            for (k, vb) in y {
+                match out.get(k) {
+                    Some(va) => {
+                        let merged = crdt_merge_values(va, vb)?;
+                        out.insert(k.clone(), merged);
+                    }
+                    None => {
+                        out.insert(k.clone(), vb.clone());
+                    }
+                }
+            }
+            Ok(Value::Map(out))
+        }
+
+        // ── No lawful join ────────────────────────────────────────────────
+        // Everything else FAILS CLOSED. The previous `_ => a.clone()` returned
+        // the LEFT operand, which is not a merge: `merge(a,b) = a` while
+        // `merge(b,a) = b`, so replicas that exchanged updates in different
+        // orders diverged permanently — silently, and in direct contradiction
+        // of the commutativity theorems Coq proves for the modelled counters.
+        //
+        // `List` is deliberately here rather than being given a union: RIINA's
+        // `List` is an ordered sequence, and a set-union over a Vec would make
+        // the element ORDER depend on which replica merged first — commutative
+        // as a set, not as the `Value` this returns. Choosing a set semantics
+        // is a language design decision (which CRDT is `senarai` meant to be?),
+        // not something to infer here. Equal lists still merge, via the
+        // idempotence shortcut above.
+        _ => Err(Error::InvalidOperation(format!(
+            "gabung: no lawful CRDT merge for {a:?} and {b:?} — a merge must \
+             commute (merge(a,b) = merge(b,a)) or replicas cannot converge, and \
+             there is no order-independent join for this pair"
+        ))),
     }
 }
 
@@ -2908,6 +2981,115 @@ mod tests {
         // rejecting everything.
         let ha2 = interp.content_hash_value(a).expect("hashable");
         assert_eq!(ha, ha2, "the same value must still verify against its hash");
+    }
+
+
+    // =======================================================================
+    // Silent-gap regression: CRDT merge must COMMUTE.
+    //
+    // `crdt_merge_values` ended in `_ => a.clone()`, so any variant pair the
+    // list did not name returned the LEFT operand. That is not a merge — it is
+    // "pick whoever spoke first", and it breaks the defining CRDT law:
+    // merge(a,b) must equal merge(b,a) or replicas do not converge. Coq proves
+    // exactly this for the modelled counters (`gc_merge_comm`, `pn_merge_comm`
+    // in domains/CRDTFoundations.v), and `07_EXAMPLES/08_jalinan/crdt_merge.rii`
+    // advertises "Proven: commutative, associative, idempotent" — so a
+    // non-commutative implementation is a proof-vs-product parity gap.
+    // =======================================================================
+
+    fn crdt_merge_operands() -> Vec<(&'static str, Value)> {
+        use crate::bigint::BigInt;
+        vec![
+            ("Unit", Value::Unit),
+            ("Bool(false)", Value::Bool(false)),
+            ("Bool(true)", Value::Bool(true)),
+            ("Int(5)", Value::Int(5)),
+            ("Int(8)", Value::Int(8)),
+            ("String(a)", Value::String("a".into())),
+            ("String(z)", Value::String("z".into())),
+            ("BigInt(1)", Value::BigInt(BigInt::from_u64(1))),
+            ("BigInt(9)", Value::BigInt(BigInt::from_u64(9))),
+            (
+                "Pair(1,a)",
+                Value::Pair(Box::new(Value::Int(1)), Box::new(Value::String("a".into()))),
+            ),
+            (
+                "Pair(9,z)",
+                Value::Pair(Box::new(Value::Int(9)), Box::new(Value::String("z".into()))),
+            ),
+            ("List[1]", Value::List(vec![Value::Int(1)])),
+            ("ActorRef(1)", Value::ActorRef(1)),
+        ]
+    }
+
+    #[test]
+    fn crdt_merge_is_commutative() {
+        for (la, a) in crdt_merge_operands() {
+            for (lb, b) in crdt_merge_operands() {
+                let ab = crdt_merge_values(&a, &b);
+                let ba = crdt_merge_values(&b, &a);
+                match (ab, ba) {
+                    (Ok(x), Ok(y)) => assert_eq!(
+                        x, y,
+                        "merge({la}, {lb}) != merge({lb}, {la}) — CRDT merge must \
+                         commute or replicas never converge"
+                    ),
+                    // Failing closed is symmetric, and therefore still lawful:
+                    // an un-mergeable pair must be un-mergeable both ways.
+                    (Err(_), Err(_)) => {}
+                    (x, y) => panic!(
+                        "merge({la}, {lb}) and merge({lb}, {la}) disagree on whether \
+                         the pair is mergeable: {x:?} vs {y:?}"
+                    ),
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn crdt_merge_is_idempotent_and_associative_where_defined() {
+        for (la, a) in crdt_merge_operands() {
+            // Idempotence: merge(a, a) = a.
+            assert_eq!(
+                crdt_merge_values(&a, &a).ok(),
+                Some(a.clone()),
+                "merge({la}, {la}) must be {la}"
+            );
+            for (lb, b) in crdt_merge_operands() {
+                for (lc, c) in crdt_merge_operands() {
+                    let left = crdt_merge_values(&a, &b)
+                        .and_then(|ab| crdt_merge_values(&ab, &c));
+                    let right = crdt_merge_values(&b, &c)
+                        .and_then(|bc| crdt_merge_values(&a, &bc));
+                    if let (Ok(x), Ok(y)) = (&left, &right) {
+                        assert_eq!(
+                            x, y,
+                            "merge(merge({la},{lb}),{lc}) != merge({la},merge({lb},{lc}))"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn crdt_merge_still_computes_the_counter_join() {
+        // NEGATIVE CONTROL: a merge that errored on everything would satisfy
+        // the laws above vacuously. Pin the G-Counter behaviour the Coq model
+        // proves and the example advertises.
+        assert_eq!(
+            crdt_merge_values(&Value::Int(5), &Value::Int(8)).unwrap(),
+            Value::Int(8)
+        );
+        assert_eq!(
+            crdt_merge_values(&Value::Int(8), &Value::Int(5)).unwrap(),
+            Value::Int(8)
+        );
+        assert_eq!(
+            crdt_merge_values(&Value::Bool(false), &Value::Bool(true)).unwrap(),
+            Value::Bool(true),
+            "the boolean join is OR: false <= true"
+        );
     }
 
     #[test]
