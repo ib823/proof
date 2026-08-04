@@ -142,6 +142,75 @@ fn letrec_group_body_is_actually_inspected() {
 }
 
 
+// ===========================================================================
+// Silent-gap regression: `pulang` (Expr::Return) must be transparent to the
+// effect/security scans.
+//
+// Same class as the LetRecGroup gap above, one level down. The per-function
+// rules ask "does this body use effect X?" via the `rules.rs` helper walks,
+// and those matches end in `_ => false`. `Expr::Return` had no arm — yet
+// `pulang e` is the ordinary way to write a RIINA function body, so a
+// *correct* effectful function scanned as effect-free and the rules fired
+// spuriously. Differential, so it survives rule-set changes: wrapping a body
+// in `pulang` must not change the verdict.
+// ===========================================================================
+
+/// Sorted rule ids reported for `expr` across every profile.
+fn verdict(expr: &Expr) -> Vec<&'static str> {
+    let mut ids: Vec<&'static str> = validate(
+        expr,
+        &[
+            ComplianceProfile::Gdpr,
+            ComplianceProfile::PciDss,
+            ComplianceProfile::Hipaa,
+            ComplianceProfile::Pdpa,
+            ComplianceProfile::Bnm,
+        ],
+    )
+    .iter()
+    .map(|v| v.rule_id)
+    .collect();
+    ids.sort_unstable();
+    ids
+}
+
+#[test]
+fn pulang_wrapped_body_scans_like_a_bare_body() {
+    // `fungsi <name>(x) { pulang perform <eff> x; }` vs the same body written
+    // without the `pulang`. Both use the effect; both must be judged alike.
+    for effect in [Effect::Crypto, Effect::Write, Effect::Time, Effect::Network] {
+        let inner = Expr::Perform(effect, Box::new(Expr::Var("x".into())));
+        let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), effect);
+
+        for name in ["sahkan_pengguna", "authenticate", "proses_bayaran", "log_audit"] {
+            let bare = as_letrec(
+                name,
+                ty.clone(),
+                Expr::Lam("x".into(), Ty::Int, Box::new(inner.clone())),
+                Expr::Unit,
+            );
+            let returned = as_letrec(
+                name,
+                ty.clone(),
+                Expr::Lam(
+                    "x".into(),
+                    Ty::Int,
+                    Box::new(Expr::Return(Box::new(inner.clone()))),
+                ),
+                Expr::Unit,
+            );
+
+            assert_eq!(
+                verdict(&bare),
+                verdict(&returned),
+                "`pulang` changed the compliance verdict for fn '{name}' with \
+                 effect {effect:?}: a transparent wrapper must not hide the \
+                 body from the effect scan (silent-gap class)"
+            );
+        }
+    }
+}
+
 #[test]
 fn parse_profiles_single() {
     let profiles = parse_profiles("pci-dss").unwrap();
