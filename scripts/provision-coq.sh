@@ -39,6 +39,20 @@
 
 set -euo pipefail
 
+# opam colourises its output when it thinks the terminal supports it — which it
+# does on GitHub Actions runners but NOT in a plain local shell. That difference
+# silently broke the exact-match version compare below: CI saw the escape-wrapped
+# "\033[35m9.1.0\033[0m" instead of "9.1.0" and reported a pin mismatch even
+# though the install was correct. Force colour off, and ALSO strip any residual
+# escapes at the point of comparison (see strip_ansi) — belt and braces, because
+# this failure mode is invisible locally.
+# NOTE: `opam --color=never <subcmd>` breaks `-f` parsing; the env var is the
+# correct lever.
+export OPAMCOLOR=never
+
+# Remove ANSI SGR escapes and surrounding whitespace from a captured value.
+strip_ansi() { sed 's/\x1b\[[0-9;]*m//g' | tr -d '[:space:]'; }
+
 SWITCH="${RIINA_COQ_SWITCH:-rocq}"
 ROCQ_CORE_VERSION="${RIINA_ROCQ_CORE_VERSION:-9.1.1}"
 ROCQ_STDLIB_VERSION="${RIINA_ROCQ_STDLIB_VERSION:-9.1.0}"
@@ -92,7 +106,7 @@ verify_pin() {
   # that table's layout varies between opam versions and switch kinds, and it
   # silently failed to match on CI's local (_opam) switch even though the right
   # version was installed. `-f installed-version` prints just the version.
-  FOUND_STDLIB="$(opam show -f installed-version rocq-stdlib 2>/dev/null | tr -d '[:space:]')"
+  FOUND_STDLIB="$(opam show -f installed-version rocq-stdlib 2>/dev/null | strip_ansi)"
   [ -n "$FOUND_STDLIB" ] || return 1
   [ "$FOUND_STDLIB" = "$ROCQ_STDLIB_VERSION" ] || return 1
   return 0
@@ -104,7 +118,7 @@ verify_pin() {
 found_summary() {
   local core stdlib
   core="$(command -v rocq >/dev/null 2>&1 && rocq --version 2>/dev/null | head -1 || echo 'rocq not on PATH')"
-  stdlib="$(opam show -f installed-version rocq-stdlib 2>/dev/null | tr -d '[:space:]')"
+  stdlib="$(opam show -f installed-version rocq-stdlib 2>/dev/null | strip_ansi)"
   echo "    rocq:        ${core}"
   echo "    rocq-stdlib: ${stdlib:-<not installed>}"
 }
