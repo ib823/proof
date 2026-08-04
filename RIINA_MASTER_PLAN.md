@@ -2443,7 +2443,117 @@ A session entering the codebase MUST:
    advance the Active Gate Marker per the protocol in §Active Gate Marker.
 5. Never skip ahead. Never declare a gate done without re-running its verification commands.
 
-### Session Handoff Snapshot — CURRENT (2026-08-04, fourteenth session)
+### Session Handoff Snapshot — CURRENT (2026-08-04, fifteenth session — anti-silent-gap sweep)
+
+**READ THIS FIRST if you are picking the repo up cold.** Prior snapshots are retained below for
+history; where they disagree, THIS one is current.
+
+**Environment bootstrap (fresh container — ephemeral, nothing below survives it):**
+```bash
+apt-get update && apt-get install -y opam libgmp-dev m4
+bash scripts/provision-coq.sh && bash scripts/provision-coq.sh --check
+eval $(opam env --switch=rocq); export COQBIN="$HOME/.opam/rocq/bin/"
+bash 00_SETUP/scripts/install_hooks.sh
+```
+**`wasmtime` is NOT preinstalled, but it IS installable — do that instead of opting out.** The
+previous snapshot said to run local suites with `RIINA_ALLOW_MISSING_BACKEND_TOOLS=1`. That opt-out
+means the C/WASM differential — the check that caught the last shipped regression — executes
+nothing. GitHub release downloads work through the proxy, so:
+```bash
+curl -sSfL -o /tmp/wasmtime.tar.xz \
+  https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-x86_64-linux.tar.xz
+tar xf /tmp/wasmtime.tar.xz -C /tmp && cp /tmp/wasmtime-*/wasmtime /usr/local/bin/
+```
+Reserve the opt-out for when installation genuinely fails, and say so when you use it.
+
+**Verified baseline at this session's HEAD (all by command, nothing copied):** 03_PROTO
+**2,934 / 0** *with `corpus_c_wasm_differential` genuinely executing* (not skipped); 05_TOOLING
+**304 / 0**; `cargo clippy --all-targets -- -D warnings` **0 on BOTH workspaces**; Coq
+**328/328 `.vo`**, **0 Admitted / 0 Axiom / 0 Abort** (patterns `^\s*Admitted\.`, `^\s*Axiom\s`,
+`^\s*Abort\.` — a naive `^\s*Admitted` grep without the period reports false hits from comment lines
+reading "Axioms: 0"); `audit-docs.sh` exit 0, **0 discrepancies**, the 2 documented WARNs (Lean
+syntactic-sorry, stale Coq warning budget); proof ledgers up to date; corpus `riinac check`
+**64/165 — unchanged vs the pre-session baseline**, so no example regressed (the two
+`08_jalinan` content-hash examples fail on a PRE-EXISTING `Pure`-vs-`Crypto` effect violation,
+i.e. they are among the 101 known-aspirational failures, not fallout from the hash change).
+`riinac verify --full` = **PASS** (`VERIFICATION_MANIFEST.md` regenerated at `9489169c`:
+328 `.vo` in 188s, Coq Admits 0, Coq Axioms 0, Metrics Accuracy OK). The remaining manifest
+WARNs are the un-provisioned smoke lanes (Lean/Isabelle/F*/TLA+/Alloy) — expected, not new.
+
+**Correction to the previous snapshot:** it recorded "clippy 0", but that was the narrower
+`cargo clippy -- -D warnings`. `--all-targets` (the form NEXT_SESSION.md STEP 3 prescribes) had
+**4 pre-existing errors** — confirmed pre-existing by stashing this session's work and re-running
+against untouched main. Fixed here; both workspaces are now clean under `--all-targets`.
+
+**What this session did: recommended action #2 from the previous snapshot — the anti-silent-gap
+sweep.** The previous session's governing lesson was that every defect it found was a *silent gap*
+(a wildcard `match` arm that stops a structural walk without failing the build). That lesson was
+applied as a search strategy, and it kept paying:
+
+1. **`riina-compliance/src/rules.rs` — 5 predicate walkers, all wildcard-terminated.** `Expr::Return`
+   had no arm anywhere. `pulang e` is the ordinary way to write a RIINA function body, so NONE of
+   the five walks descended into a normal function: a correct effectful function scanned as
+   effect-free and drew a spurious BNM-10.50 violation (measured before/after). Replaced with ONE
+   exhaustive `any_child` enumeration that every predicate is built on. `contains_var_matching` and
+   `contains_personal_data_var` were additionally shallow by several levels and now walk fully.
+2. **`riina-codegen/src/lower.rs::harvest_struct_info` — the exact function that shipped the C/WASM
+   divergence.** The `LetRecGroup` arm had been added, but the match still ended in `_ => {}`, so the
+   whole JALINAN/CAHAYA half of `Expr` was still swallowed: a `RecordLit` inside a UI block, actor
+   handler, token transfer etc. was never harvested, its layout stayed unknown, and `v.field`
+   degraded to `Any` — the identical mechanism, one container away, and reachable via the shipped
+   CAHAYA examples. Now exhaustive.
+3. **`riina-codegen/src/interp.rs::fnv1a_feed` — an INTEGRITY defect, not a diagnostic one.** The
+   content hash behind `cincang`/`sahkan` ended in `_ => {}`, so **12 `Value` variants fed nothing
+   into the digest and all hashed identically**. Proven by command: `cincang(BigInt(1))` and
+   `cincang(BigInt(999999999))` returned byte-identical hashes, so `sahkan` verified the wrong
+   value and the content store keyed distinct values to one slot. Affected the money types
+   Decimal/Fixed (`wang`/`perpuluhan` — the REQ-33 fintech vertical), BigInt, Secret, Proof, Sum,
+   Capability, Builtin, BuiltinPartial, Ref, Closure. **Writing the coverage test then exposed a
+   second, older collision the sweep had not predicted: `Unit` and `Bool(false)` hashed identically**
+   (both reduced to "xor 0, multiply") — the untagged primitives had no domain separation at all.
+   Every arm now leads with a distinct tag and feeds canonical content. **Closures fail CLOSED**:
+   `Closure::eq` is `false` even against itself, so no digest could make `sahkan` answer correctly;
+   `cincang(closure)` is now an error rather than a digest shared with every closure.
+
+**The method that worked, for the next session to reuse.** Making a walker exhaustive gives a
+*compile-time* tripwire, but that only catches a MISSING variant. It does not catch a
+listed-but-wrong arm (one that drops its child), which compiles fine and is exactly as silent.
+Both halves need a guard, and each guard was **empirically validated by reintroducing the bug and
+then reverting**:
+  - delete a variant from the walk => build fails (`non-exhaustive patterns: &Expr::Return(_) not covered`);
+  - route it to the no-children arm => the new tests fail, naming the variant.
+Every new test ships with a NEGATIVE control, because a predicate that can only answer `true`
+passes every positive assertion while checking nothing. That discipline is what caught the
+Unit/Bool collision — the *test* found a bug the audit had missed.
+
+**Audited and deliberately left alone (do not "fix" these):** `riina-compliance/validator.rs::walk_inner`
+and `riina-codegen/lower.rs::free_vars` are already exhaustive. `type_check_full` and `type_check`
+have NO top-level wildcard — the ~49 wildcards in `riina-typechecker/src/lib.rs` are inner matches
+on `Ty`, and the interpreter's are on `Value`; both are legitimate. `result_struct_name` and
+`struct_name_of` keep `_ => None` deliberately: they are shape QUERIES ("is this tail a struct
+literal?"), not structural walks, so the wildcard is the correct answer, not a gap. The previous
+snapshot's framing of "~49 + 27 + 15 wildcard arms to sweep" therefore over-counted the real work —
+the structural walkers were the small minority, and they are now done.
+
+**Recommended next actions, in order** (external-audit-gated items remain KIV by owner decision —
+REQ-28 and anything needing a third party or a maintainer-held key are explicitly deferred):
+1. **REQ-27 compiler-enforcement parity (P0, Gate B)** — unchanged and still the highest-value
+   item: non-interference is proven in Coq but only PARTIALLY enforced by the shipped compiler.
+   This is the proof↔product gap and the first thing an auditor probes.
+2. **The 10-prover architecture decision (owner claims-decision, not a proof)** — unchanged. Of the
+   headline 74,481 "proofs", only **12,638 (17%) are machine-checked** (Coq). Disclosed honestly in
+   `metrics.json`, which is why `audit-docs` passes, but it is the sole reason `claimLevels.overall`
+   is `generated`. Concentrate (retire the 9 from the headline) or commit (mechanize one more lane,
+   realistically Lean). Leaving it as-is is the only bad option.
+3. **Clear the stale Coq warning-budget WARN (Gate E, REQ-30)** — now cheap, since a Rocq toolchain
+   provisions successfully in this container:
+   `python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget`, run as the LAST
+   commit so `status.repoHead` stays fresh.
+4. **Keep applying the silent-gap method to non-`Expr` walkers.** The content-hash defect was over
+   `Value`, not `Expr` — the class is "any wildcard-terminated structural walk", and the highest-risk
+   instances are the ones computing a SECURITY or INTEGRITY answer. That is where to look next.
+
+### Session Handoff Snapshot (superseded — 2026-08-04, fourteenth session)
 
 **READ THIS FIRST if you are picking the repo up cold.** The prior snapshot (2026-06-12) is
 retained below for history; where the two disagree, THIS one is current.
