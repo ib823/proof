@@ -83,6 +83,12 @@ PATH="$HOME/.elan/bin:$PATH" lake build RIINA
 # PATH setup (required in background tasks):
 export PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# The C/WASM backend differentials require `cc` + `wasmtime`. If a tool is
+# missing they now FAIL rather than silently self-skip (a silent skip let a
+# real codegen regression reach main on 2026-08-04 while still counting as a
+# pass). In a container without them, opt out DELIBERATELY — the skip is then
+# announced loudly and the run is explicitly NOT verifying those backends:
+#   RIINA_ALLOW_MISSING_BACKEND_TOOLS=1 cargo test --all --manifest-path ...
 cargo test --all --manifest-path /workspaces/proof/03_PROTO/Cargo.toml
 cargo test --all --manifest-path /workspaces/proof/05_TOOLING/Cargo.toml
 cargo clippy -- -D warnings

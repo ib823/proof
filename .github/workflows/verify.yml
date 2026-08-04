@@ -90,6 +90,15 @@ jobs:
         with:
           workspaces: "03_PROTO -> target"
       - name: cargo test --all
+        # The C/WASM backend differentials need `cc` + `wasmtime`, which this
+        # job deliberately does not install — the dedicated `differential` job
+        # below owns that coverage and DOES install them. Those tests now FAIL
+        # rather than silently self-skip (a silent skip is how a real codegen
+        # regression reached main on 2026-08-04 while counting as a pass), so
+        # this job must opt out EXPLICITLY. The opt-out is loud in the log and
+        # is set on exactly one job, so the coverage cannot go quietly missing.
+        env:
+          RIINA_ALLOW_MISSING_BACKEND_TOOLS: "1"
         run: cargo test --all --manifest-path 03_PROTO/Cargo.toml
 
   rust-tooling:

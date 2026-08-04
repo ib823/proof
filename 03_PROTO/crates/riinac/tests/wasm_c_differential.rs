@@ -22,6 +22,47 @@ fn tool_available(tool: &str) -> bool {
         .unwrap_or(false)
 }
 
+/// Guard for tests that need an external backend toolchain (`cc`, `wasmtime`).
+///
+/// Returns `true` when the test may proceed. When a tool is MISSING this
+/// **panics by default** — a test that cannot run must never report `ok`.
+///
+/// This is not hypothetical. On 2026-08-04 a real C/WASM codegen regression
+/// (the REQ-44 `LetRecGroup` landing dropping `fn_returns_struct` for grouped
+/// functions) reached `main` because `corpus_differential` silently skipped
+/// itself in a dev container without `wasmtime` — and still counted toward a
+/// reported "2915 passed / 0 failed". CI caught it; the local suite could not.
+/// A silently-skipping test is UNVERIFIED, not green.
+///
+/// To work in a container that genuinely lacks the tools, opt out DELIBERATELY:
+///     RIINA_ALLOW_MISSING_BACKEND_TOOLS=1 cargo test ...
+/// The skip is then announced loudly on stderr so it cannot be mistaken for a
+/// pass. CI never sets it, so CI can never silently lose this coverage.
+fn require_backend_tools(tools: &[&str]) -> bool {
+    let missing: Vec<&str> = tools
+        .iter()
+        .copied()
+        .filter(|t| !tool_available(t))
+        .collect();
+    if missing.is_empty() {
+        return true;
+    }
+    if std::env::var("RIINA_ALLOW_MISSING_BACKEND_TOOLS").is_ok() {
+        eprintln!(
+            "!!! SKIPPED (tools missing: {}) — coverage NOT exercised; \
+             this run does not verify the C/WASM backends.",
+            missing.join(", ")
+        );
+        return false;
+    }
+    panic!(
+        "required backend tool(s) missing: {}. This test cannot verify anything \
+         without them, so it fails rather than reporting a false pass. Install \
+         them, or set RIINA_ALLOW_MISSING_BACKEND_TOOLS=1 to skip deliberately.",
+        missing.join(", ")
+    );
+}
+
 fn workdir() -> PathBuf {
     let dir = std::env::temp_dir().join("riina_wasm_c_diff");
     fs::create_dir_all(&dir).unwrap();
@@ -90,8 +131,7 @@ fn run_wasm(name: &str, source: &str) -> Vec<u8> {
 }
 
 fn assert_byte_equal(name: &str, source: &str) {
-    if !tool_available("cc") || !tool_available("wasmtime") {
-        eprintln!("skipping {name}: cc/wasmtime not available");
+    if !require_backend_tools(&["cc", "wasmtime"]) {
         return;
     }
     let c = run_c(name, source);
