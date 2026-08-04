@@ -314,7 +314,7 @@ fn mutate(rng: &mut XorShift, seed: &[u8]) -> String {
         match rng.below(3) {
             0 => {
                 let i = rng.below(bytes.len());
-                bytes[i] = (0x20 + rng.below(0x5f) as u8) as u8;
+                bytes[i] = 0x20 + rng.below(0x5f) as u8;
             }
             1 => {
                 let i = rng.below(bytes.len() + 1);

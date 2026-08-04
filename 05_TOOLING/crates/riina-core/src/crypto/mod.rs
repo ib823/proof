@@ -355,21 +355,18 @@ mod tests {
         let key = b"a test key";
         let data = b"a test message";
         let tag = TestHmac::mac(key, data).expect("mac");
-        assert_eq!(
+        assert!(
             TestHmac::verify(key, data, &tag).expect("verify runs"),
-            true,
             "correct tag must verify"
         );
         let mut wrong = tag;
         wrong[0] ^= 1;
-        assert_eq!(
-            TestHmac::verify(key, data, &wrong).expect("verify runs"),
-            false,
+        assert!(
+            !TestHmac::verify(key, data, &wrong).expect("verify runs"),
             "a single flipped bit must fail verification"
         );
-        assert_eq!(
-            TestHmac::verify(key, b"other message", &tag).expect("verify runs"),
-            false,
+        assert!(
+            !TestHmac::verify(key, b"other message", &tag).expect("verify runs"),
             "tag over different data must fail verification"
         );
     }
