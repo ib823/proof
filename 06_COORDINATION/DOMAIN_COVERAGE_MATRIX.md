@@ -1,6 +1,6 @@
 # Research Track → Coq Proof Coverage Matrix
 
-**Verification:** 12,638 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2919 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,638 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2947 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 > Auto-generated: 2026-02-02
 > Method: `grep -c "^Qed\."` on each .v file; `find -name "*.md"` on each research dir
