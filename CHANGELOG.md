@@ -709,7 +709,13 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Claim level explainer (mechanized/compiled/generated)
 - GPG signing permanently configured for deployments
 
-## [Unreleased]
+### Pre-0.3.0 development notes (Sessions 87–88, March 2026)
+
+<!-- Was mis-titled `## [Unreleased]` until 2026-08-05. It sits BELOW the
+     `## [0.3.0] — 2026-03-19` heading and its content is dated 2026-03-16, so
+     this work shipped IN 0.3.0 — it was simply never promoted when that release
+     was cut. Demoted to a subsection of 0.3.0 rather than deleted, so nothing is
+     lost and the grouping stays visible. Content below is byte-identical. -->
 
 ### Added (Session 88 — 2026-03-16 — Linear Types, Multi-Prover Mechanization, WASM Backend)
 - Linear type enforcement: `biar sekali` (affine), `biar paling` (relevant), `biar mesti` (linear) wired through lexer→parser→typechecker; Phase 3 gate PASSED
