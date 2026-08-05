@@ -30,7 +30,16 @@ fn repo_root() -> PathBuf {
         .to_path_buf()
 }
 
-/// `crypto/<Name>.v` entries from `_CoqProject` — the authoritative proof list.
+/// `crypto/<Name>.v` files that are PRIMITIVE-EQUIVALENCE proofs — the ones a
+/// verification-boundary entry must exist for.
+///
+/// Not every `crypto/*.v` is an equivalence proof. `AlgorithmPolicy.v` (REQ-48)
+/// mechanizes an ENFORCEMENT rule (algorithm deprecation), not a claim that a
+/// Coq model matches a Rust primitive, so it has no "modelled/trusted/not
+/// covered" boundary to state. Such files are listed in `NON_EQUIVALENCE`
+/// below and excluded here. A NEW equivalence proof still fails the build
+/// without an entry; adding a non-equivalence proof requires consciously
+/// listing it here, which is itself the reviewed decision.
 ///
 /// Deliberately case-SENSITIVE on `.v`: the Coq build only accepts lowercase,
 /// so a case-insensitive match would "find" files the build itself ignores.
@@ -40,9 +49,19 @@ fn coqproject_crypto_files(coqproject: &str) -> Vec<String> {
         .lines()
         .map(str::trim)
         .filter(|l| l.starts_with("crypto/") && l.ends_with(".v"))
+        .filter(|l| !NON_EQUIVALENCE.contains(l))
         .map(str::to_string)
         .collect()
 }
+
+/// `crypto/*.v` files that are NOT primitive-equivalence proofs, so are exempt
+/// from the boundary manifest. Keep this list SHORT and justified — every entry
+/// is a proof whose boundary the manifest deliberately does not state.
+const NON_EQUIVALENCE: &[&str] = &[
+    // REQ-48: mechanizes the algorithm-deprecation enforcement rule (soundness,
+    // completeness, deprecation-locality), not a Rust-primitive correspondence.
+    "crypto/AlgorithmPolicy.v",
+];
 
 /// All string values for `"key"` occurrences in the manifest, in order.
 fn string_values_for(json: &str, key: &str) -> Vec<String> {

@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **301**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **309**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 
@@ -301,6 +301,19 @@ Total registered builtins: **301**. Grouped by the effect each performs (`kesan`
 | `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` |
 | `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` |
 | `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` |
+
+## Kripto (Crypto)
+
+| Builtin | Type |
+|---|---|
+| `cipher` | `Fn(Teks, Any, Kripto)` |
+| `guna_kripto` | `Fn(Teks, Any, Kripto)` |
+| `hash_dengan` | `Fn(Teks, Any, Kripto)` |
+| `hash_with` | `Fn(Teks, Any, Kripto)` |
+| `pilih_algo` | `Fn(Teks, Any, Kripto)` |
+| `select_algorithm` | `Fn(Teks, Any, Kripto)` |
+| `sifer` | `Fn(Teks, Any, Kripto)` |
+| `use_crypto` | `Fn(Teks, Any, Kripto)` |
 
 ## Rawak (Random)
 

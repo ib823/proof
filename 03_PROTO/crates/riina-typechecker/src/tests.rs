@@ -6262,4 +6262,67 @@ mod gate_b_parity {
         let expr = Expr::Grant(Effect::Random, Box::new(random_call()));
         type_check_full(&mut ctx, &expr).expect("granted random op must typecheck");
     }
+
+    // ── Property 7: Crypto-agility — Coq crypto/AlgorithmPolicy.v `accepts` ──
+    // The Rust check mirrors `accepts pol (CUse a) = (pol a = Current)`.
+
+    fn select(algo: &str) -> Expr {
+        // guna_kripto("<algo>") — the `CUse a` node.
+        Expr::App(
+            Box::new(Expr::Var("guna_kripto".into())),
+            Box::new(Expr::String(algo.into())),
+        )
+    }
+
+    #[test]
+    fn deprecated_primitive_is_rejected() {
+        // A broken algorithm (md5) and a removal-target algorithm (rsa1024)
+        // must both be rejected at the selection site.
+        for algo in ["md5", "sha1", "des", "rc4", "rsa1024"] {
+            let mut ctx = builtins_ctx();
+            match type_check_full(&mut ctx, &select(algo)) {
+                Err(TypeError::DeprecatedAlgorithm { algorithm, .. }) => {
+                    assert_eq!(algorithm, algo, "the rejected name must be reported");
+                }
+                other => panic!("guna_kripto(\"{algo}\") must be a DeprecatedAlgorithm, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn allowed_primitive_is_accepted() {
+        // NEGATIVE CONTROL: a current algorithm must typecheck — the check is
+        // COMPLETE (crypto/AlgorithmPolicy.v `uses_only_current_accepts`), so it
+        // has no false positives and does not simply reject everything.
+        for algo in ["aes256-gcm", "sha3-256", "ml-kem-768", "x25519", "chacha20-poly1305"] {
+            let mut ctx = builtins_ctx();
+            type_check_full(&mut ctx, &select(algo))
+                .unwrap_or_else(|e| panic!("guna_kripto(\"{algo}\") must typecheck, got {e:?}"));
+        }
+    }
+
+    #[test]
+    fn deprecation_is_case_insensitive_and_selection_specific() {
+        // Case-insensitive (MD5 == md5)...
+        let mut ctx = builtins_ctx();
+        assert!(matches!(
+            type_check_full(&mut ctx, &select("MD5")),
+            Err(TypeError::DeprecatedAlgorithm { .. })
+        ));
+        // ...but only at a SELECTION builtin: `md5` as a bare string flowing to
+        // a print sink is not an algorithm selection, so the deprecation rule
+        // does not fire (that string is data, not an algorithm choice).
+        let mut ctx2 = builtins_ctx();
+        let printed = Expr::App(
+            Box::new(Expr::Var("cetak".into())),
+            Box::new(Expr::String("md5".into())),
+        );
+        assert!(
+            !matches!(
+                type_check_full(&mut ctx2, &printed),
+                Err(TypeError::DeprecatedAlgorithm { .. })
+            ),
+            "the deprecation rule must fire only at algorithm-selection sites"
+        );
+    }
 }

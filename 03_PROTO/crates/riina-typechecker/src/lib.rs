@@ -106,6 +106,14 @@ pub enum TypeError {
     ChoreographyError {
         message: String,
     },
+    /// Crypto-agility (REQ-48): a program selects an algorithm the active policy
+    /// marks Deprecated (e.g. a classical primitive past its NIST IR 8547 date).
+    /// Mirrors the Coq `accepts` judgment in crypto/AlgorithmPolicy.v — an
+    /// accepted program uses no deprecated algorithm.
+    DeprecatedAlgorithm {
+        algorithm: String,
+        message: String,
+    },
 }
 
 impl std::fmt::Display for TypeError {
@@ -222,6 +230,9 @@ impl std::fmt::Display for TypeError {
             }
             TypeError::ChoreographyError { message } => {
                 write!(f, "Choreography error: {}", message)
+            }
+            TypeError::DeprecatedAlgorithm { algorithm, message } => {
+                write!(f, "Deprecated crypto algorithm '{}': {}", algorithm, message)
             }
         }
     }
@@ -351,6 +362,10 @@ impl TypeError {
             TypeError::ChoreographyError { .. } => {
                 "Choreography blocks require at least 2 roles and a well-formed protocol".to_string()
             }
+            TypeError::DeprecatedAlgorithm { .. } => {
+                "This algorithm is deprecated by policy; migrate to a current algorithm \
+                 (see docs/MEMORY_SAFETY_ROADMAP.md and the crypto agility policy)".to_string()
+            }
         })
     }
 
@@ -381,6 +396,7 @@ impl TypeError {
             TypeError::ExpectedCRDT(_) => "J0002",
             TypeError::CRDTMismatch { .. } => "J0003",
             TypeError::ChoreographyError { .. } => "J0004",
+            TypeError::DeprecatedAlgorithm { .. } => "K0001",
         }
     }
 
@@ -2424,6 +2440,26 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ),
     );
 
+    // Crypto-agility selection builtins (REQ-48): take an algorithm-name string,
+    // return a crypto handle (`Any`), effect Crypto. The deprecation check fires
+    // at these call sites — the App arm's `deprecated_algorithm_at_selection`,
+    // mirroring `CUse` in crypto/AlgorithmPolicy.v.
+    for nm in [
+        "guna_kripto",
+        "use_crypto",
+        "pilih_algo",
+        "select_algorithm",
+        "cipher",
+        "sifer",
+        "hash_dengan",
+        "hash_with",
+    ] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Crypto),
+        );
+    }
+
     c
 }
 
@@ -2496,6 +2532,88 @@ fn sink_argument_error(arg_ty: Ty, found: Ty) -> TypeError {
 /// a generic `TypeMismatch`. The check is conservative: a secret anywhere in the
 /// sink argument (incl. the URL or CSRF position) is rejected — none of those
 /// should be secret-derived either.
+/// Crypto-agility (REQ-48): the algorithm-deprecation policy.
+///
+/// This is the Rust counterpart of the Coq `accepts` judgment in
+/// `02_FORMAL/coq/crypto/AlgorithmPolicy.v`. That development proves the check
+/// is SOUND (an accepted program uses no deprecated algorithm) and COMPLETE (it
+/// accepts every program that uses only current algorithms, so a rejection is
+/// always a real deprecated use — no false positives), and that deprecating one
+/// algorithm only affects programs that use it. The check below is the
+/// operational realisation of `accepts pol (CUse a)` = `pol a = Current`.
+///
+/// The policy is data, not code: `DEPRECATED` is the classified list. Advancing
+/// a deprecation date is editing this table, exactly as the mechanized
+/// `tighten` lemma models — "P-256 after 2030" is a policy change, and by
+/// `deprecation_is_local` it cannot break a program that does not use P-256.
+pub mod crypto_policy {
+    /// Algorithm names that are deprecated by the active policy. Matched
+    /// case-insensitively against the algorithm string a program selects.
+    ///
+    /// Grounds (NIST IR 8547 / general hygiene): the classical primitives are
+    /// slated for removal by 2035, and the broken ones are already unsafe. This
+    /// list is the migration lever — a language can make selecting one a
+    /// compile-time error, which a library cannot.
+    pub const DEPRECATED: &[&str] = &[
+        // Broken — deprecated unconditionally.
+        "md5", "sha1", "sha-1", "des", "3des", "triple-des", "rc4", "md4",
+        // Classical asymmetric — NIST IR 8547 removal target (2035), migrate to PQC/hybrid.
+        "rsa1024", "rsa-1024", "dsa1024",
+    ];
+
+    /// The mechanized `pol a = Current` check: is this algorithm name currently
+    /// allowed? A name not in `DEPRECATED` is `Current`.
+    #[must_use]
+    pub fn is_current(algorithm: &str) -> bool {
+        let a = algorithm.to_ascii_lowercase();
+        !DEPRECATED.iter().any(|d| a == *d)
+    }
+
+    /// A one-line rationale for a rejected algorithm, for the diagnostic.
+    #[must_use]
+    pub fn deprecation_reason(algorithm: &str) -> &'static str {
+        let a = algorithm.to_ascii_lowercase();
+        match a.as_str() {
+            "md5" | "sha1" | "sha-1" | "md4" => "cryptographically broken (collisions)",
+            "des" | "3des" | "triple-des" => "inadequate key size / sweet32",
+            "rc4" => "biased keystream, prohibited by RFC 7465",
+            _ => "scheduled for removal (NIST IR 8547); migrate to a PQC or hybrid algorithm",
+        }
+    }
+}
+
+/// Crypto-agility sink (REQ-48): a crypto-selection builtin whose string
+/// argument names a deprecated algorithm is rejected. Mirrors the Coq
+/// `accepts pol (CUse a)` rule — the check runs at the algorithm-selection site,
+/// exactly where `CUse` sits in the model. Recognised selection builtins are
+/// the ones that take an algorithm name: `guna_kripto`/`use_crypto`,
+/// `pilih_algo`/`select_algorithm`, `cipher`/`sifer`, `hash_dengan`/`hash_with`.
+fn deprecated_algorithm_at_selection(callee: &Expr, arg: &Expr) -> Option<TypeError> {
+    let Expr::Var(name) = callee else { return None };
+    let is_selection = matches!(
+        name.as_str(),
+        "guna_kripto"
+            | "use_crypto"
+            | "pilih_algo"
+            | "select_algorithm"
+            | "cipher"
+            | "sifer"
+            | "hash_dengan"
+            | "hash_with"
+    );
+    if !is_selection {
+        return None;
+    }
+    let Expr::String(algo) = arg else { return None };
+    if crypto_policy::is_current(algo) {
+        return None;
+    }
+    Some(TypeError::DeprecatedAlgorithm {
+        algorithm: algo.clone(),
+        message: crypto_policy::deprecation_reason(algo).to_string(),
+    })
+}
+
 fn secrecy_at_sink(callee: &Expr, arg_ty: &Ty) -> Option<TypeError> {
     let Expr::Var(name) = callee else { return None };
     let context = match name.as_str() {
@@ -3221,6 +3339,11 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     // Checked before unification so it wins over a generic
                     // TypeMismatch (e.g. Secret vs the concrete file-write arg).
                     if let Some(err) = secrecy_at_sink(e1, &t2) {
+                        return Err(err);
+                    }
+                    // Crypto-agility (REQ-48): reject selecting a deprecated
+                    // algorithm. Coq: crypto/AlgorithmPolicy.v `accepts`.
+                    if let Some(err) = deprecated_algorithm_at_selection(e1, e2) {
                         return Err(err);
                     }
                     if !types_compatible(&arg_ty, &t2) {
@@ -4290,6 +4413,11 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     // IFC (REQ-27): secret/labeled data may not reach a public
                     // print/network/file-write sink without declassification.
                     if let Some(err) = secrecy_at_sink(e1, &t2) {
+                        return Err(err);
+                    }
+                    // Crypto-agility (REQ-48): reject selecting a deprecated
+                    // algorithm. Coq: crypto/AlgorithmPolicy.v `accepts`.
+                    if let Some(err) = deprecated_algorithm_at_selection(e1, e2) {
                         return Err(err);
                     }
                     if !types_compatible(&arg_ty, &t2) {
