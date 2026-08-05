@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-17T23:34:09Z",
-  "repo_head": "3e87755b8a639b0106cdf5cdfae484fcc72b50f7",
+  "generated_utc": "2026-08-05T06:41:51Z",
+  "repo_head": "cf0789853d50f571c8dc5054828c423470e8b169",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 0,
   "provision": {
@@ -9,11 +9,11 @@
     "succeeded": false
   },
   "tools": {
-    "lake": true,
+    "lake": false,
     "isabelle": false,
     "docker": false,
     "isabelle_bin": "",
-    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
 Run: bash scripts/provision-smoke-toolchains.sh
      or: bash scripts/provision-isabelle.sh",
     "java": true,
@@ -23,19 +23,19 @@ Run: bash scripts/provision-smoke-toolchains.sh
     "alloy_path": ""
   },
   "dimension_1": {
-    "status": "PASS",
+    "status": "FAIL",
     "promotion_ready": false,
     "checks": {
       "coq_core": true,
       "coq_theorem_count": 54,
       "lean_core": true,
-      "lean_build": true,
+      "lean_build": false,
       "lean_actionable_sorry": 0,
       "isabelle_core": true,
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
 Run: bash scripts/provision-smoke-toolchains.sh
      or: bash scripts/provision-isabelle.sh"
   },
@@ -45,15 +45,15 @@ Run: bash scripts/provision-smoke-toolchains.sh
     "checks": {
       "files": true,
       "coq_theorem_count": 184,
-      "tla_theorem_count": 75,
+      "tla_theorem_count": 184,
       "alloy_assert_count": 368,
       "tla_static": true,
       "alloy_static": true,
       "tla_exec": false,
       "alloy_exec": false
     },
-    "detail": "files=1 coq_thm=184 tla_thm=75 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=0 tla_mode=static_only alloy_exec=0 alloy_mode=static_only"
+    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=0 tla_mode=static_only alloy_exec=0 alloy_mode=static_only"
   },
-  "overall_foundation": "PASS",
+  "overall_foundation": "FAIL",
   "overall_promotion_ready": false
 }
