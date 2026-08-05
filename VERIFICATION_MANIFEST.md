@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-05T15:31:37Z
-**Git SHA:** 3d4f73df2
+**Generated:** 2026-08-05T22:09:37Z
+**Git SHA:** 1f5501917
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 2985 tests |
+| Rust Tests | PASS | 2997 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 329 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 329 .vo files compiled in 220s |
+| Coq Compilation | PASS | 329 .vo files compiled in 157s |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
 | Coq Explicit Step-Up Assumption | PASS | 0 (target: 0; Parameter val_rel_n_step_up) |
