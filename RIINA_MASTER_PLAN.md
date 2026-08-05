@@ -410,7 +410,7 @@ research source, and detailed description.
 | REQ-47 | **DONE 2026-08-05.** **Per-primitive verification-boundary disclosure (answer to "Verification Theatre").** IACR ePrint 2026/192 (Feb 2026) found **13 vulnerabilities in Cryspen's libcrux/hpke-rs, four of them INSIDE the formally verified specification and proof code**: a wrong ML-KEM decompression constant, a missing inverse NTT, a false serialization proof, and a wrong ML-DSA multiplication specification that rendered axiomatized AVX2 proofs unsound. The paper names the **verification boundary problem** — the interface between machine-checked code and code trusted without proof — and argues that the gap between marketing and engineering reality is a systemic risk to adopters. RIINA v0.4.0 ships **nine Coq⇄Rust formal-equivalence proofs** for crypto primitives and is exposed to exactly this class: a correct proof about a wrong model. RIINA's claim-level discipline (`metrics.json`) is the right instinct but operates PER LANE, not per primitive. Work: for each of the nine, state in one place what is modelled, what is trusted, what is NOT covered (e.g. the AVX2/SIMD path, extraction fidelity, the Coq⇄Rust correspondence method), and pin it with a test that fails if a primitive gains a proof without gaining a boundary statement. This is cheap, is the strongest available answer to a hostile auditor, and de-risks REQ-28 before any money is spent on it | P0 | TODO | Gate C / Gate G |
 | REQ-48 | **DONE 2026-08-05.** **Crypto-agility + PQC migration path (CBOM).** Confirmed timelines: NIST IR 8547 deprecates ~112-bit classical (RSA-2048, ECC P-256) by **2030** and removes them by **2035**; NSA CNSA 2.0 requires quantum-safe for new national-security systems by **January 2027**, full application migration 2030, infrastructure 2035; HQC draft standard ~2026, final ~2027. REQ-37 already tracks the ALGORITHMS (FIPS 206/FN-DSA, HQC, X-Wing hybrid). The untracked gap is the MIGRATION MACHINERY: a cryptographic bill of materials (which primitive is used where, at which parameter set), a typed deprecation path so a classical primitive can be made a compile-time error on a date, and hybrid-by-default. This is the place a LANGUAGE has leverage that a library does not — RIINA can make "still using P-256 in 2031" fail to compile | P1 | TODO | Gate C |
 | REQ-49 | **DONE 2026-08-05.** **Publish a memory-safety roadmap — the CISA deadline has already passed.** CISA/NSA/FBI + AU/CA/NZ/UK "The Case for Memory Safe Roadmaps" urged every software manufacturer to publish a memory-safety roadmap by **1 January 2026** for products in memory-unsafe languages, prioritising network-facing and cryptographic code. This is a TAILWIND, not a threat: RIINA is memory-safe by construction with a mechanized core, and its target buyers are the ones now obliged to produce such roadmaps. Work: publish RIINA's own roadmap (trivially strong), and position the language explicitly as a DESTINATION for others' roadmaps — with the honest caveat that memory safety is necessary, not sufficient, and that RIINA's differentiator is the enforced IFC/effect/CT layer above it | P1 | TODO | Gate G / Gate I |
-| REQ-50 | **Rust→Coq/F* extraction spike (hax / Aeneas) — converts a generated lane into a real one.** The Rust verification ecosystem has matured: `hax` (Cryspen, Rust→F*/Lean/Rocq), Verus, Creusot, Prusti, Aeneas, Flux, VeriFast, Kani. RIINA currently quarantines Verus/Kani as `generated` and its Coq⇄Rust link for crypto is a hand-written correspondence. Extracting `05_TOOLING/crates/riina-core` (or one primitive) into Coq via hax/Aeneas would (a) replace a hand-written correspondence with a mechanical one, (b) directly address REQ-47's verification boundary, and (c) be a candidate answer to the REQ-29 "concentrate vs commit" decision that does NOT require adopting Lean. Scope as a spike on ONE primitive first; report cost honestly before committing | P1 | TODO | Gate D |
+| REQ-50 | **SPIKE EXECUTED 2026-08-05 — verdict: PARTIAL, blocked at the engine boundary by egress policy; see the Part 11 entry for the full cost report and the three unblock options. The frontend half is PROVEN on riina-core.** **Rust→Coq/F* extraction spike (hax / Aeneas) — converts a generated lane into a real one.** The Rust verification ecosystem has matured: `hax` (Cryspen, Rust→F*/Lean/Rocq), Verus, Creusot, Prusti, Aeneas, Flux, VeriFast, Kani. RIINA currently quarantines Verus/Kani as `generated` and its Coq⇄Rust link for crypto is a hand-written correspondence. Extracting `05_TOOLING/crates/riina-core` (or one primitive) into Coq via hax/Aeneas would (a) replace a hand-written correspondence with a mechanical one, (b) directly address REQ-47's verification boundary, and (c) be a candidate answer to the REQ-29 "concentrate vs commit" decision that does NOT require adopting Lean. Scope as a spike on ONE primitive first; report cost honestly before committing | P1 | TODO | Gate D |
 | REQ-51 | **Regulatory profile backlog beyond CRA/DORA.** Absent from the 16 shipped profiles: **NIS2** (transposition due 17 Oct 2024, live in states that met it); **EU AI Act** — note the Digital Omnibus DELAYED the high-risk regime (Annex III → 2 Dec 2027, some obligations → 2 Aug 2028) while **Art. 50 transparency applies from 2 Aug 2026**, so the urgent slice is narrow, not the whole Act; **UK PSTI / EN 18031**; SBOM mandates. Also a REFRESH, not a new profile: Malaysia's **PDPA (Amendment) Act 2024** came fully into force through 2025 (mandatory breach notification to the Commissioner, mandatory DPO appointment, biometric data reclassified as sensitive, penalty ceiling RM 1 m) — RIINA's `Pdpa` profile (18 rules) and `MalaysiaPDPA` Coq domain predate it and must be re-verified against the amended Act. Sequence behind REQ-45/46; none of these has a comparable near-term deadline | P2 | TODO | Gate H |
 | REQ-52 | **Two research-currency items surfaced by the 2026-08-05 survey.** (a) **LLM proof automation for Rocq is now real tooling**, not a Phase-10 aspiration: LLM4Rocq, Strat2Rocq (extracting LLM-discovered lemmas into CoqHammer's library, reported +13.4 % success), PALM/ProofAug proof repair, plus Lean-side LeanDojo/Lean Copilot. Directly applicable to maintaining a 12,638-Qed corpus and to the Phase-10 LLM proof pipeline — evaluate before building anything bespoke. (b) **Choreographic programming has a verified-compiler bar RIINA does not meet**: `Kalas` is a choreographic language with an END-TO-END VERIFIED compiler to CakeML, including verified endpoint projection; `hacc` does certified compilation of choreographies; Choral/HasChor/Chorex cover the mainstream-interop angle; CP 2026 ran at PLDI. RIINA's JALINAN projection is Rust mirroring Coq definitions, NOT a verified compiler — so "deadlock-freedom by projection" should be stated at the level RIINA actually proves it, and Kalas cited as the stronger prior art | P2 | TODO | Phase 10 / Phase 6 |
 
@@ -2670,6 +2670,46 @@ comment records why), which made the promotion a safe no-op while its compare-li
 applied. A fresh empty `## [Unreleased]` was added at the TOP **after** the release — adding it
 before would have re-triggered the duplicate. The tree is now in the shape the script expects, so
 0.5.0 should promote cleanly; re-check before running it anyway.
+
+### REQ-50 SPIKE REPORT — 2026-08-05 (Fable 5): hax/Aeneas Rust→Coq extraction
+
+**Verdict: PARTIAL — the pipeline is proven up to the translation-engine boundary; the engine
+itself is unobtainable under this session's egress policy.** Per the execution spec, a written-up
+blocked spike is the deliverable, and this is it. `claimLevels` untouched (no tool verified new
+content). Wall-clock ≈ 45 min; 3 crates + 2 nightly toolchains installed; nothing repo-tracked
+changed except this report.
+
+**What WORKS (reproduced, not assumed):**
+1. `cargo install cargo-hax` (0.3.7, crates.io — the crates.io hosts ARE allowlisted even though
+   github.com is not). Fails on stable (`rustc_private`); the binary itself carries its pin —
+   `strings ~/.cargo/bin/cargo-hax | grep nightly` → **nightly-2025-11-08**.
+2. `rustup toolchain install nightly-2025-11-08 --profile minimal -c rustc-dev -c llvm-tools`, then
+   `cargo +nightly-2025-11-08 install hax-driver` (the frontend driver; against today's nightly it
+   fails with 56 rustc-private API errors — the pin is load-bearing) and `... install hax-rust-engine`.
+3. The **frontend export runs end-to-end on riina-core**: `cargo hax into -i '-** +riina_core::constant_time::**' coq`
+   type-checks the crate under hax's exporter and emits a 2.3 MB typed-THIR `riina_core-*.haxmeta`.
+   Two friction points, both solved: riina-core's `rust-version = "1.94.1"` MSRV rejects the
+   1.93-based pinned nightly (spike ran on a /tmp copy with only that line relaxed), and the copy
+   needs its workspace-inherited manifest fields concretized + an empty `[workspace]` table.
+
+**What is BLOCKED, precisely:** every hax 0.3.7 backend funnels through the OCaml `hax-engine`
+binary — the Coq/SSProve/EasyCrypt/ProVerif backends directly (`run_engine` dispatch), F* on
+legacy input, and even `hax-rust-engine` shells out to it for THIR import (`ocaml_engine.rs:125`).
+That binary is **not on opam** (package page 404) and its source/releases are **GitHub-only**
+(`github.com` → 403 by egress policy). **Aeneas/Charon are GitHub-only entirely** (not on
+crates.io: both index probes 404). 0.3.7 is the newest published version; no self-contained
+engine exists on crates.io.
+
+**Three unblock options (owner pick):** (a) egress-allow `github.com/cryspen/hax` (or just its
+release assets) for one session and `opam`-build the engine; (b) VENDOR a built `hax-engine`
+binary into `05_TOOLING/tools/` the way Isabelle/F*/TLA2Tools already are — most consistent with
+the repo's existing pattern; (c) run the engine step outside the container: the exact spike
+commands above reproduce in ~15 min on any machine with GitHub access.
+
+**Also recorded per the honesty discipline:** during the spike a relative-path `rm -rf` after a
+failed `cd` deleted the REAL `05_TOOLING/crates/riina-core` working copy. Everything was
+committed, `git checkout --` restored it byte-perfect, and the full 05_TOOLING suite re-verified
+308/0 immediately after. Lesson pinned: spike scratch work uses ABSOLUTE paths, always.
 
 ### EXECUTION PROGRESS — 2026-08-05 (Fable 5): REQ-47, REQ-45, REQ-46 DONE
 
