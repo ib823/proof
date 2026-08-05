@@ -830,6 +830,6 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Effect system soundness proven
 - Zero third-party runtime dependencies
 
-[Unreleased]: https://github.com/ib823/riina/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/ib823/riina/compare/v0.4.0...HEAD
 [0.2.0]: https://github.com/ib823/riina/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ib823/riina/releases/tag/v0.1.0

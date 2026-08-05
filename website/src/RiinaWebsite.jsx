@@ -97,6 +97,7 @@ const RiinaWebsite = () => {
   // Release data (auto-updated by scripts/release.sh)
   const releases = [
     // RELEASES_MARKER
+    { version: '0.4.0', date: '2026-08-05', highlights: ['**`set_kesatuan`/`set_persilangan` perf** (`03_PROTO/crates/riina-codegen/src/builtins/set.rs`):', '**New Coq lane `02_FORMAL/coq/crypto/X25519.v`** (active build 322 → 323 files, 12,531 →', '**Coq ⇄ Rust bridge** `crypto::montgomery::tests::test_x25519_matches_coq_model`: the shipping'] },
     {
       version: '0.3.0',
       date: '2026-03-19',
