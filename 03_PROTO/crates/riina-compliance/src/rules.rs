@@ -26,7 +26,7 @@ pub struct ComplianceRule {
 pub fn rule_count(profile: ComplianceProfile) -> usize {
     match profile {
         ComplianceProfile::PciDss => 56,
-        ComplianceProfile::Pdpa => 18,
+        ComplianceProfile::Pdpa => 20,
         ComplianceProfile::Bnm => 20,
         ComplianceProfile::Hipaa => 33,
         ComplianceProfile::Cmmc => 63,
@@ -43,6 +43,7 @@ pub fn rule_count(profile: ComplianceProfile) -> usize {
         ComplianceProfile::EsgSdg => 30,
         ComplianceProfile::Cra => 15,
         ComplianceProfile::Dora => 14,
+        ComplianceProfile::Nis2 => 13,
     }
 }
 
@@ -69,6 +70,7 @@ pub fn rules_for_profiles(profiles: &[ComplianceProfile]) -> Vec<ComplianceRule>
             ComplianceProfile::EsgSdg => rules.extend(esg_sdg_rules()),
             ComplianceProfile::Cra => rules.extend(cra_rules()),
             ComplianceProfile::Dora => rules.extend(dora_rules()),
+            ComplianceProfile::Nis2 => rules.extend(nis2_rules()),
         }
     }
     rules
@@ -2121,6 +2123,23 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             }),
         },
         // --- New 8 rules ---
+        // --- PDPA (Amendment) Act 2024 (REQ-51 refresh) ---
+        // s.4 (amended): biometric data is now SENSITIVE personal data.
+        sensitive_let_rule(
+            "PDPA-2024-S4-BIO",
+            ComplianceProfile::Pdpa,
+            "Biometric data is sensitive personal data (2024 Amendment) and must be classified",
+            &["biometric", "biometrik", "cap_jari", "fingerprint", "facial_data", "wajah"],
+            Severity::Error,
+        ),
+        // s.12B (new): mandatory breach notification — a breach cannot be
+        // notified if security operations leave no audit trail.
+        audit_trail_rule(
+            "PDPA-2024-S12B",
+            ComplianceProfile::Pdpa,
+            "Security operations on personal data must leave an audit trail (breach-notification readiness, s.12B)",
+            Severity::Error,
+        ),
         sensitive_let_rule(
             "PDPA-S6",
             ComplianceProfile::Pdpa,
@@ -6447,6 +6466,114 @@ fn dora_rules() -> Vec<ComplianceRule> {
             "Hardcoded credentials violate ICT access-management policy",
             &["password", "token", "api_key", "account_secret"],
             Severity::Error,
+        ),
+    ]
+}
+
+
+// ===========================================================================
+// EU NIS2 rules (13) — Directive (EU) 2022/2555, Art. 21(2)
+//
+// SAME HONESTY SCOPE as the CRA/DORA blocks: machine-checkable conditions
+// DERIVED FROM the Art. 21(2) cybersecurity risk-management measures, checked
+// on the AST. Passing them is not NIS2 compliance — governance (Art. 20),
+// incident REPORTING to CSIRTs (Art. 23), and the registration duties are
+// organisational. NIS2 is a DIRECTIVE: member-state transpositions vary; rule
+// ids cite the Art. 21(2) measure they derive from.
+// ===========================================================================
+
+fn nis2_rules() -> Vec<ComplianceRule> {
+    vec![
+        // Art. 21(2)(b): incident handling — detection needs an audit trail.
+        audit_trail_rule(
+            "NIS2-21.2b",
+            ComplianceProfile::Nis2,
+            "Security operations must leave an audit trail for incident handling",
+            Severity::Error,
+        ),
+        // Art. 21(2)(d): supply-chain security — FFI is a third-party boundary.
+        ffi_review_rule(
+            "NIS2-21.2d",
+            ComplianceProfile::Nis2,
+            "FFI crosses the supply-chain boundary and requires review",
+            Severity::Warning,
+        ),
+        // Art. 21(2)(e): secure development & vulnerability handling.
+        debug_code_rule(
+            "NIS2-21.2e",
+            ComplianceProfile::Nis2,
+            "Debug artifacts must not reach production (secure development)",
+            Severity::Warning,
+        ),
+        weak_crypto_rule(
+            "NIS2-21.2e-crypto",
+            ComplianceProfile::Nis2,
+            "Known-weak algorithms are prohibited (secure development)",
+            Severity::Error,
+        ),
+        // Art. 21(2)(g): basic cyber hygiene.
+        insecure_default_rule(
+            "NIS2-21.2g",
+            ComplianceProfile::Nis2,
+            "Security features must not ship disabled (cyber hygiene)",
+            &["encryption_enabled", "tls_enabled", "auth_enabled", "mfa_enabled"],
+            Severity::Error,
+        ),
+        hardcoded_credential_rule(
+            "NIS2-21.2g-cred",
+            ComplianceProfile::Nis2,
+            "Hardcoded credentials violate basic cyber hygiene",
+            &["password", "token", "api_key", "kata_laluan"],
+            Severity::Error,
+        ),
+        // Art. 21(2)(h): cryptography & encryption policies.
+        insecure_network_rule(
+            "NIS2-21.2h-net",
+            ComplianceProfile::Nis2,
+            "Data in transit must use a secure channel (encryption policy)",
+            Severity::Error,
+        ),
+        insecure_url_rule(
+            "NIS2-21.2h-url",
+            ComplianceProfile::Nis2,
+            "Plaintext http:// endpoints are prohibited (encryption policy)",
+            Severity::Error,
+        ),
+        sensitive_let_rule(
+            "NIS2-21.2h-rest",
+            ComplianceProfile::Nis2,
+            "Secrets/credentials at rest must be classified (encryption policy)",
+            &["credential", "private_key", "kata_laluan", "secret_config"],
+            Severity::Error,
+        ),
+        // Art. 21(2)(i): access control — least privilege, no raw sensitive sends.
+        broad_grant_rule(
+            "NIS2-21.2i",
+            ComplianceProfile::Nis2,
+            "Broad capability grants (System) violate access-control policy",
+            Severity::Error,
+        ),
+        sensitive_network_send_rule(
+            "NIS2-21.2i-send",
+            ComplianceProfile::Nis2,
+            "Sensitive values must not be sent raw over the network",
+            &["credential", "token", "kunci", "private_key"],
+            Severity::Error,
+        ),
+        // Art. 21(2)(j): MFA / secured authentication.
+        auth_crypto_rule(
+            "NIS2-21.2j",
+            ComplianceProfile::Nis2,
+            "Authentication must use the Crypto effect (secured authentication)",
+            &["auth", "login", "sahkan_pengguna", "verify_user"],
+            Severity::Error,
+        ),
+        // Art. 21(1): availability of services (proportionate technical measures).
+        unbounded_recursion_rule(
+            "NIS2-21.1",
+            ComplianceProfile::Nis2,
+            "Unbounded recursion is an availability hazard",
+            Severity::Warning,
         ),
     ]
 }

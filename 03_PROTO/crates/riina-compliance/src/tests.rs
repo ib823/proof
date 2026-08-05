@@ -720,6 +720,231 @@ fn dora_profile_parses_and_counts() {
     );
 }
 
+
+// ===========================================================================
+// EU NIS2 rules (REQ-51) — one violation + one ok per rule id.
+// ===========================================================================
+
+#[test]
+fn nis2_21_2b_audit_trail() {
+    assert_violation(
+        &make_let_with_body("x", Expr::Classify(Box::new(Expr::Int(1))), Expr::Unit),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2b",
+    );
+    assert_no_violation(
+        &make_let_with_body(
+            "x",
+            Expr::Classify(Box::new(Expr::Int(1))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("log".into()))),
+        ),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2b",
+    );
+}
+
+#[test]
+fn nis2_21_2d_supply_chain_ffi() {
+    assert_violation(
+        &Expr::FFICall { name: "vendor_lib".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Nis2,
+        "NIS2-21.2d",
+    );
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("internal_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2d",
+    );
+}
+
+#[test]
+fn nis2_21_2e_secure_dev() {
+    assert_violation(&Expr::String("debug: state".into()), ComplianceProfile::Nis2, "NIS2-21.2e");
+    assert_no_violation(&Expr::String("state ok".into()), ComplianceProfile::Nis2, "NIS2-21.2e");
+    assert_violation(&Expr::String("rc4".into()), ComplianceProfile::Nis2, "NIS2-21.2e-crypto");
+    assert_no_violation(&Expr::String("chacha20".into()), ComplianceProfile::Nis2, "NIS2-21.2e-crypto");
+}
+
+#[test]
+fn nis2_21_2g_hygiene() {
+    assert_violation(
+        &make_let("tls_enabled", Expr::Bool(false)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2g",
+    );
+    assert_no_violation(
+        &make_let("tls_enabled", Expr::Bool(true)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2g",
+    );
+    assert_violation(
+        &make_let("api_key", Expr::String("sk-1234".into())),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2g-cred",
+    );
+    assert_no_violation(
+        &make_let("api_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2g-cred",
+    );
+}
+
+#[test]
+fn nis2_21_2h_encryption() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Unit)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2h-net",
+    );
+    assert_no_violation(
+        &Expr::Perform(Effect::NetworkSecure, Box::new(Expr::Unit)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2h-net",
+    );
+    assert_violation(
+        &Expr::String("http://svc.example".into()),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2h-url",
+    );
+    assert_no_violation(
+        &Expr::String("https://svc.example".into()),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2h-url",
+    );
+    assert_violation(
+        &make_let("private_key", Expr::String("pem".into())),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2h-rest",
+    );
+    assert_no_violation(
+        &make_classified_let("private_key", Expr::String("pem".into())),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2h-rest",
+    );
+}
+
+#[test]
+fn nis2_21_2i_access_control() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2i",
+    );
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2i",
+    );
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("private_key".into()))),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2i-send",
+    );
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("metrics".into()))),
+        ComplianceProfile::Nis2,
+        "NIS2-21.2i-send",
+    );
+}
+
+#[test]
+fn nis2_21_2j_auth() {
+    let pure_auth = Expr::LetRec(
+        "verify_user".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+        Box::new(Expr::Unit),
+    );
+    assert_violation(&pure_auth, ComplianceProfile::Nis2, "NIS2-21.2j");
+    let crypto_auth = Expr::LetRec(
+        "verify_user".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Box::new(Expr::Lam(
+            "x".into(),
+            Ty::String,
+            Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))),
+        )),
+        Box::new(Expr::Unit),
+    );
+    assert_no_violation(&crypto_auth, ComplianceProfile::Nis2, "NIS2-21.2j");
+}
+
+#[test]
+fn nis2_21_1_availability() {
+    assert_violation(
+        &Expr::LetRec(
+            "spin".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("spin".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nis2,
+        "NIS2-21.1",
+    );
+    assert_no_violation(&make_let("ok", Expr::Int(1)), ComplianceProfile::Nis2, "NIS2-21.1");
+}
+
+#[test]
+fn nis2_profile_parses_and_counts() {
+    assert_eq!(parse_profiles("nis2").unwrap(), vec![ComplianceProfile::Nis2]);
+    assert_eq!(
+        crate::rules::rule_count(ComplianceProfile::Nis2),
+        crate::rules::rules_for_profiles(&[ComplianceProfile::Nis2]).len(),
+        "rule_count(Nis2) must equal the actual number of built rules"
+    );
+}
+
+// ===========================================================================
+// PDPA (Amendment) Act 2024 refresh (REQ-51)
+// ===========================================================================
+
+#[test]
+fn pdpa_2024_s4_biometric_sensitive() {
+    // Biometric data became SENSITIVE personal data in the 2024 Amendment.
+    assert_violation(
+        &make_let("biometric_template", Expr::String("t".into())),
+        ComplianceProfile::Pdpa,
+        "PDPA-2024-S4-BIO",
+    );
+    assert_violation(
+        &make_let("cap_jari_hash", Expr::String("h".into())),
+        ComplianceProfile::Pdpa,
+        "PDPA-2024-S4-BIO",
+    );
+    assert_no_violation(
+        &make_classified_let("biometric_template", Expr::String("t".into())),
+        ComplianceProfile::Pdpa,
+        "PDPA-2024-S4-BIO",
+    );
+}
+
+#[test]
+fn pdpa_2024_s12b_breach_notification_readiness() {
+    assert_violation(
+        &make_let_with_body("x", Expr::Classify(Box::new(Expr::Int(1))), Expr::Unit),
+        ComplianceProfile::Pdpa,
+        "PDPA-2024-S12B",
+    );
+    assert_no_violation(
+        &make_let_with_body(
+            "x",
+            Expr::Classify(Box::new(Expr::Int(1))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Pdpa,
+        "PDPA-2024-S12B",
+    );
+}
+
+#[test]
+fn pdpa_profile_count_still_matches() {
+    assert_eq!(
+        crate::rules::rule_count(ComplianceProfile::Pdpa),
+        crate::rules::rules_for_profiles(&[ComplianceProfile::Pdpa]).len(),
+        "rule_count(Pdpa) must equal the actual number of built rules after the 2024 refresh"
+    );
+}
+
 #[test]
 fn parse_profiles_single() {
     let profiles = parse_profiles("pci-dss").unwrap();
@@ -745,9 +970,9 @@ fn parse_profiles_unknown() {
 }
 
 #[test]
-fn parse_profiles_all_18() {
-    // 16 original + Cra (REQ-45) + Dora (REQ-46), both 2026-08-05.
-    assert_eq!(ComplianceProfile::ALL.len(), 18);
+fn parse_profiles_all_19() {
+    // 16 original + Cra (REQ-45) + Dora (REQ-46) + Nis2 (REQ-51), all 2026-08-05.
+    assert_eq!(ComplianceProfile::ALL.len(), 19);
 }
 
 #[test]

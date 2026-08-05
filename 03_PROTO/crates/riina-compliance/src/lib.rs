@@ -60,6 +60,8 @@ pub enum ComplianceProfile {
     Cra,
     /// EU Digital Operational Resilience Act (Regulation (EU) 2022/2554)
     Dora,
+    /// EU NIS2 Directive (Directive (EU) 2022/2555)
+    Nis2,
 }
 
 impl ComplianceProfile {
@@ -83,6 +85,7 @@ impl ComplianceProfile {
         Self::EsgSdg,
         Self::Cra,
         Self::Dora,
+        Self::Nis2,
     ];
 
     /// CLI slug (lowercase, hyphenated).
@@ -106,6 +109,7 @@ impl ComplianceProfile {
             Self::EsgSdg => "esg-sdg",
             Self::Cra => "cra",
             Self::Dora => "dora",
+            Self::Nis2 => "nis2",
         }
     }
 
@@ -141,6 +145,10 @@ impl ComplianceProfile {
                  machine-checkable conditions derived from the ICT-risk articles; NOT a \
                  conformity assessment"
             }
+            Self::Nis2 => {
+                "EU NIS2: Directive (EU) 2022/2555 — machine-checkable conditions derived \
+                 from the Art. 21(2) risk-management measures; NOT a conformity assessment"
+            }
         }
     }
 }
@@ -168,6 +176,7 @@ impl FromStr for ComplianceProfile {
             "esg-sdg" => Ok(Self::EsgSdg),
             "cra" => Ok(Self::Cra),
             "dora" => Ok(Self::Dora),
+            "nis2" => Ok(Self::Nis2),
             _ => Err(format!("Unknown compliance profile: '{s}'")),
         }
     }
