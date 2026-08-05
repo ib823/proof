@@ -414,6 +414,19 @@ research source, and detailed description.
 | REQ-50 | **SPIKE EXECUTED 2026-08-05 — verdict: PARTIAL, blocked at the engine boundary by egress policy; see the Part 11 entry for the full cost report and the three unblock options. The frontend half is PROVEN on riina-core.** **Rust→Coq/F* extraction spike (hax / Aeneas) — converts a generated lane into a real one.** The Rust verification ecosystem has matured: `hax` (Cryspen, Rust→F*/Lean/Rocq), Verus, Creusot, Prusti, Aeneas, Flux, VeriFast, Kani. RIINA currently quarantines Verus/Kani as `generated` and its Coq⇄Rust link for crypto is a hand-written correspondence. Extracting `05_TOOLING/crates/riina-core` (or one primitive) into Coq via hax/Aeneas would (a) replace a hand-written correspondence with a mechanical one, (b) directly address REQ-47's verification boundary, and (c) be a candidate answer to the REQ-29 "concentrate vs commit" decision that does NOT require adopting Lean. Scope as a spike on ONE primitive first; report cost honestly before committing | P1 | TODO | Gate D |
 | REQ-51 | **DONE 2026-08-05** (NIS2 profile added; PDPA refreshed for the 2024 Amendment incl. first biometric coverage; AI-Act Art.50 deferred WITH RATIONALE — runtime obligations, not static ones; UK PSTI stays backlog). **Regulatory profile backlog beyond CRA/DORA.** Absent from the 16 shipped profiles: **NIS2** (transposition due 17 Oct 2024, live in states that met it); **EU AI Act** — note the Digital Omnibus DELAYED the high-risk regime (Annex III → 2 Dec 2027, some obligations → 2 Aug 2028) while **Art. 50 transparency applies from 2 Aug 2026**, so the urgent slice is narrow, not the whole Act; **UK PSTI / EN 18031**; SBOM mandates. Also a REFRESH, not a new profile: Malaysia's **PDPA (Amendment) Act 2024** came fully into force through 2025 (mandatory breach notification to the Commissioner, mandatory DPO appointment, biometric data reclassified as sensitive, penalty ceiling RM 1 m) — RIINA's `Pdpa` profile (18 rules) and `MalaysiaPDPA` Coq domain predate it and must be re-verified against the amended Act. Sequence behind REQ-45/46; none of these has a comparable near-term deadline | P2 | TODO | Gate H |
 | REQ-52 | **DONE 2026-08-05** (evaluate-before-build verdict for LLM proving recorded in reports/regulatory_backlog_notes.md; deadlock-freedom claims scoped in 3 docs citing Kalas). **Two research-currency items surfaced by the 2026-08-05 survey.** (a) **LLM proof automation for Rocq is now real tooling**, not a Phase-10 aspiration: LLM4Rocq, Strat2Rocq (extracting LLM-discovered lemmas into CoqHammer's library, reported +13.4 % success), PALM/ProofAug proof repair, plus Lean-side LeanDojo/Lean Copilot. Directly applicable to maintaining a 12,638-Qed corpus and to the Phase-10 LLM proof pipeline — evaluate before building anything bespoke. (b) **Choreographic programming has a verified-compiler bar RIINA does not meet**: `Kalas` is a choreographic language with an END-TO-END VERIFIED compiler to CakeML, including verified endpoint projection; `hacc` does certified compilation of choreographies; Choral/HasChor/Chorex cover the mainstream-interop angle; CP 2026 ran at PLDI. RIINA's JALINAN projection is Rust mirroring Coq definitions, NOT a verified compiler — so "deadlock-freedom by projection" should be stated at the level RIINA actually proves it, and Kalas cited as the stronger prior art | P2 | TODO | Phase 10 / Phase 6 |
+| REQ-53 | **Kernel-attestation gate (Part 12, axis A). DONE 2026-08-06.** `riinac verify --full` now runs `Print Assumptions` on five capstones (type_safety, progress, preservation, well_typed_SN, accepts_uses_only_current) and FAILS on any axiom outside the reviewed whitelist (currently: stdlib funext only) or on a partial attestation (block count must equal capstone count — vacuity guard). Parser has negative controls; live run: 5/5 attested, funext only. The 0-axiom headline is now kernel-attested, not grep-attested | P0 | DONE | Part 12 |
+| REQ-54 | **Executable-semantics conformance (Part 12, axis A).** Coq `Extraction` of the core step/typing functions to OCaml; differential harness fuzzing the Rust interpreter against the extracted reference. Achieves the REQ-50 goal (mechanical Coq⇄Rust link) with NO blocked external tools. First slice: extract, compile, 10 golden terms byte-compared. DONE when the harness runs in CI and a seeded divergence is caught (negative control) | P0 | TODO | Part 12 |
+| REQ-55 | **Corpus 165/165 (Part 12, axis F).** 101 of 165 examples fail `riinac check` — the most visible contradiction of the product claim. Fix the parse/module gaps; track per-example; no example deleted to make the number (that would be metric fraud). DONE when `riinac check` passes 165/165 and the differential corpus grows accordingly | P0 | TODO | Part 12 |
+| REQ-56 | **Maintainer #2 + institutional custody (Part 12, axis E — THE existential risk, outranks every technical item).** Absorbs REQ-36. Deliverables: a second maintainer with full provision-to-push capability demonstrated; a custody decision (foundation/university/escrow); succession-as-code (the session protocol already is — keep it that way). DONE when a session run by the second maintainer lands a gate-green commit | P0 | TODO | Gate J / Part 12 |
+| REQ-57 | **Audit binder v1 (Part 12, axis B).** One command emits the signed evidence bundle: per-profile compliance report + SBOM + CBOM + VEX + verification manifest + CT dossier. Reinforces REQ-31/45/48/32 into ONE artifact. DONE when the bundle regenerates deterministically and `--check` covers it | P1 | TODO | Gate H / Part 12 |
+| REQ-58 | **Reference win (Part 12, axis B).** One payments pilot through PCI-DSS + Syariah per REQ-33. KILL CRITERION: no pilot partner within 12 months ⇒ the vertical choice is re-opened, by owner decision. DONE when a third party runs RIINA in anger and the audit binder is used in a real assessment | P1 | TODO | Gate H |
+| REQ-59 | **Translation-validation-per-build (Part 12, axis A).** De-quarantine the TV lane into a real per-compilation certificate (checker validates lowered IR against source semantics per build). The pragmatic 80% of verified compilation; full verified lowering stays the 1-3yr summit. Claim level flips ONLY when the checker checks real content | P1 | TODO | Part 12 |
+| REQ-60 | **Step-indexed NI over general recursion (Part 12, axis A — the research summit).** Complete the `val_rel_n` seed (properties/AhmedStyleTest.v) into a step-indexed noninterference relation covering EFix. Publishable; multi-quarter; Coq-first per the REQ-44 discipline | P1 | TODO | Phase 2 / Part 12 |
+| REQ-61 | **Calculus unification (Part 12, axis A).** Session types, linearity, capabilities into the ONE core `expr` with the existing metatheory extended — 'one calculus, all properties, one kernel'. Staged; each constructor addition is compile-enforced through the exhaustive walkers (the REQ-44 ripple discipline) | P1 | TODO | Part 12 |
+| REQ-62 | **Proof-carrying binaries (Part 12, axis A/E).** Ship artifacts embedding a receipt (proof-obligation hashes + manifest + signature; ExecutionReceipts.v models this). Requires REQ-31 signing complete. 'Verify my binary yourself' is the demo that ends arguments | P2 | TODO | Part 12 |
+| REQ-63 | **Common Criteria EAL6/7 mapping (Part 12, axis B).** Turn CommonCriteriaEAL7.v into a Protection Profile mapping; formal methods are REQUIRED at that level (seL4 precedent) — RIINA's dossier can cut EAL evaluation cost by an order of magnitude for users. Decision-gated on REQ-58's vertical surviving | P2 | TODO | Gate H |
+| REQ-64 | **Open-spec / standardization decision package (Part 12, axis B/E — owner decision).** Option analysis for: open the spec+calculus+proofs, keep the toolchain commercial ('open proofs, sell the compiler' — resolves the REQ-35 tension); then CRA harmonised-standard profile, ETSI/ISO long-term. Includes the break-a-theorem bounty design. Prepared as a decision package, NOT decided by a session | P2 | DECISION | Gate J |
+| REQ-65 | **AI-native productization (Part 12, axis C).** (a) Position RIINA as the acceptance layer for LLM-written code — the compiler+proofs are the reviewer; (b) demo: agent tool-calling under capability types (AgentToolSecurity.v) = compile-time least privilege for AI actions; (c) LLM proof maintenance per the REQ-52 evaluate-before-build verdict. DONE when the demo exists and the claim is stated at the level proven | P2 | TODO | Phase 10 / Part 12 |
 
 ### Extension Protocol
 
@@ -4124,3 +4137,77 @@ shows" has ~85% of its work unblocked today and is the honest reading of "comple
 *All proofs are preserved at `02_FORMAL/` (coq, lean, isabelle, + 7 extended provers).*
 *Nothing was lost. Everything that matters is here or referenced here.*
 *Last updated: 2026-05-16 (Version 2.3.0 — added Part 11 Production-Readiness Discipline, REQ-21..36)*
+
+---
+
+## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
+
+**Owner directive (2026-08-06):** make RIINA an indisputable, disruptive, unparalleled innovation,
+with future-proofing at the top of the agenda, perfectionism assumed, and new work also
+REINFORCING past work. **Engineering translation of that ideal (the shared ideal, stated so both
+readings are the same thing):**
+
+> Every claim machine-checkable by a hostile third party from a clean clone, with a minimized and
+> fully enumerated TCB, independently replicated, and institutionally redundant.
+
+"Indisputable" is achieved not by asserting supremacy but by being the only system whose every
+assertion ships with its own falsification procedure. Rice's theorem, the spec-validity gap
+(Verification Theatre, ePrint 2026/192), and the non-zero TCB make "unhackable/forever" claims
+incoherent — so this program channels perfectionism into claims-discipline, TCB enumeration,
+replication, and institutional permanence. The GAPS between the owner's wording and the
+engineering wording are themselves plan items: third-party trust (REQ-58/62/63), permanence
+(REQ-56), and product completeness (REQ-55/57).
+
+### The moat (what is defended)
+
+The only artifact where all three coexist: (1) mechanized security metatheory (kernel-attested);
+(2) compiler-enforced parity with that metatheory; (3) compliance legibility — the compiler emits
+regulator-facing evidence. Plus the unique cultural asset: first formally-verified language with a
+Bahasa Melayu surface and the world's only Syariah-compliance type system. Ada/SPARK is the
+closest historical analog and lost on cost+ergonomics+ecosystem — its failure modes are this
+program's checklist of what NOT to repeat.
+
+### The six axes (summary — detail lives in the REQ-53..65 registry rows)
+
+| Axis | Endgame | REQs |
+|---|---|---|
+| A. Proof depth | Kernel-attested claims; executable-semantics conformance; step-indexed NI; unified calculus; TV-per-build; proof-carrying binaries | 53, 54, 59, 60, 61, 62 |
+| B. Compliance compiler | The audit binder as build artifact; one real certification; EAL6/7 mapping; open-spec standardization | 57, 58, 63, 64 |
+| C. AI-native | The language you let AIs write; capability types for agent tooling; LLM proof maintenance (REQ-52 verdict) | 65 |
+| D. Physics/decades | PQC completeness on NIST clocks (REQ-37/48); leakage contracts; WCET types (REQ-39); declared caveats (REQ-40) | existing |
+| E. Trust is social | Maintainer #2 + custody (THE existential risk); external audit (REQ-28); publications; reproducible signed releases (REQ-31); break-a-theorem bounty | 56 + existing |
+| F. Product | Corpus 165/165; ergonomics; performance story; one vertical (REQ-33) | 55 |
+
+### Sequencing (kill-criteria discipline: every item carries a falsifiable exit test)
+
+1. **Now→3mo (integrity+wedge):** REQ-53 (DONE — kernel gate live), REQ-54 first slice, REQ-55,
+   REQ-27 closure, REQ-57 v1, **begin REQ-56 (maintainer #2)**.
+2. **3→12mo (the reference win):** REQ-58 pilot+certification, REQ-28 executed, REQ-59, REQ-31
+   completion, 2 publications (the EFix/store-invariant work and the compliance compiler are
+   publishable), REQ-65 demo.
+3. **1–3yr (summit+standard):** REQ-60, REQ-61, REQ-62, REQ-63, REQ-64.
+4. **3–10yr (decades):** axis D deepening, institutional custody, education pipeline, the
+   language outliving its author.
+
+### Refusals (perfectionism as restraint — standing policy)
+
+Never re-inflate the multi-prover headline (REQ-29 stays retracted). Never claim
+"unhackable/indisputable" in public copy — claim "every claim is machine-checkable; here is the
+command." Never add a compliance profile whose rules cannot each carry a pos+neg test. Never let
+a checker exist that cannot fail.
+
+### Reinforcement register (new work → past work it strengthens)
+
+| New | Reinforces |
+|---|---|
+| REQ-53 kernel gate | The 12,646-Qed / 0-axiom headline (now kernel-attested, not grep-attested); the 2026-08-05 funext disclosure becomes permanent infrastructure |
+| REQ-54 conformance | REQ-27 parity and every "mirrors Coq" claim; the REQ-50 spike goal achieved without blocked tools |
+| REQ-55 corpus | REQ-44 forward-refs, module flattening, every language feature ever shipped |
+| REQ-57 audit binder | REQ-31 SBOM, REQ-45 VEX, REQ-48 CBOM, REQ-32 CT dossier — one artifact |
+| REQ-59 TV-per-build | The quarantined TV lane (real content at last); the C/WASM differential |
+| REQ-60/61 | REQ-44's step-indexed NI note; the session/linear satellite proofs join the core |
+| REQ-62 receipts | ExecutionReceipts.v; REQ-15 signing |
+| REQ-64 open-spec | REQ-35 license decision (resolves the adoption tension: open proofs, sell toolchain) |
+
+*Part 12 added 2026-08-06 (Version 2.4.0). This Part is strategy; execution truth stays in
+Parts 2/3/11 per the Prime Directives.*

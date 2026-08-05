@@ -1052,6 +1052,196 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     results
 }
 
+
+// ---------------------------------------------------------------------------
+// Kernel-level assumption attestation (REQ-53)
+// ---------------------------------------------------------------------------
+
+/// The theorems whose assumption sets are attested by the kernel on every full
+/// verify. Grep counts what RIINA's sources DECLARE; `Print Assumptions` asks
+/// the kernel what a theorem actually DEPENDS ON — including axioms imported
+/// from the standard library, which grep cannot see (that is how the
+/// `functional_extensionality_dep` dependency of the SN development went
+/// undisclosed until 2026-08-05).
+const KERNEL_CAPSTONES: &[(&str, &str)] = &[
+    ("type_system.TypeSafety", "type_safety"),
+    ("type_system.Progress", "progress"),
+    ("type_system.Preservation", "preservation"),
+    ("termination.ReducibilityFull", "well_typed_SN"),
+    ("crypto.AlgorithmPolicy", "accepts_uses_only_current"),
+];
+
+/// Axioms the capstones are ALLOWED to depend on. Additions require the same
+/// deliberate review as a TCB change: each entry is a named, documented
+/// assumption (master plan Part 2, kernel-level assumption audit).
+const ALLOWED_KERNEL_AXIOMS: &[&str] = &[
+    // Rocq stdlib functional extensionality — standard, consistent with the
+    // calculus, used by the SN/logical-relations development (30 files).
+    "FunctionalExtensionality.functional_extensionality_dep",
+];
+
+/// Parse `Print Assumptions` output into (attestation_blocks, axiom_names).
+///
+/// A block is either `Closed under the global context` or an `Axioms:` section
+/// whose entries start at column 0 as `Name :` with the type indented on
+/// following lines. The block count must match the number of capstones queried
+/// — fewer means the scratch file did not get through all of them, and that is
+/// a FAILURE, not a pass (a gate that silently checked nothing would be green).
+fn parse_print_assumptions(output: &str) -> (usize, Vec<String>) {
+    let mut blocks = 0usize;
+    let mut axioms = Vec::new();
+    let mut in_axioms = false;
+    for line in output.lines() {
+        let trimmed = line.trim_end();
+        if trimmed == "Closed under the global context" {
+            blocks += 1;
+            in_axioms = false;
+        } else if trimmed == "Axioms:" {
+            blocks += 1;
+            in_axioms = true;
+        } else if in_axioms {
+            // Axiom names are flush-left; continuation/type lines are indented.
+            if trimmed.starts_with(char::is_whitespace) || trimmed.is_empty() {
+                continue;
+            }
+            // `Name : ...` or `Name :` — take the token before the colon.
+            if let Some(name) = trimmed.split(':').next() {
+                let name = name.trim();
+                if !name.is_empty() {
+                    axioms.push(name.to_string());
+                }
+            }
+        }
+    }
+    (blocks, axioms)
+}
+
+/// Ask the kernel what the capstone theorems depend on, and fail on any axiom
+/// outside the reviewed whitelist. Requires the `.vo` files compile_coq just
+/// produced; runs only in full mode where the prover is mandatory.
+fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
+    let coqc_path = match detect_coqc() {
+        ToolStatus::Found(p) => p,
+        ToolStatus::NotFound(msg) => {
+            return CheckResult {
+                name: "Coq Kernel Assumptions".into(),
+                passed: false,
+                blocking: false,
+                details: format!("SKIPPED ({msg}). Attestation INCOMPLETE"),
+            };
+        }
+    };
+    let rocq = coqc_path.parent().map(|d| d.join("rocq"));
+    let rocq = match rocq {
+        Some(p) if p.exists() => p,
+        _ => coqc_path.clone(),
+    };
+
+    let mut scratch = String::new();
+    for (module, _) in KERNEL_CAPSTONES {
+        scratch.push_str(&format!("From RIINA Require Import {module}.\n"));
+    }
+    for (_, theorem) in KERNEL_CAPSTONES {
+        scratch.push_str(&format!("Print Assumptions {theorem}.\n"));
+    }
+    let tmp = std::env::temp_dir().join("riina_kernel_assumptions_check.v");
+    if let Err(e) = fs::write(&tmp, &scratch) {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!("cannot write scratch file: {e}"),
+        };
+    }
+
+    let output = std::process::Command::new(&rocq)
+        .args([
+            "compile",
+            "-q",
+            "-w",
+            "-deprecated-native-compiler-option",
+            "-native-compiler",
+            "no",
+            "-Q",
+            ".",
+            "RIINA",
+        ])
+        .arg(&tmp)
+        .current_dir(coq_dir)
+        .output();
+
+    let output = match output {
+        Ok(o) => o,
+        Err(e) => {
+            return CheckResult {
+                name: "Coq Kernel Assumptions".into(),
+                passed: false,
+                blocking: true,
+                details: format!("failed to run rocq: {e}"),
+            }
+        }
+    };
+    let text = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    if !output.status.success() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "scratch compile failed: {}",
+                truncate_str(text.trim(), 300)
+            ),
+        };
+    }
+
+    let (blocks, axioms) = parse_print_assumptions(&text);
+    let unexpected: Vec<&String> = axioms
+        .iter()
+        .filter(|a| !ALLOWED_KERNEL_AXIOMS.contains(&a.as_str()))
+        .collect();
+
+    if blocks != KERNEL_CAPSTONES.len() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "attested {blocks}/{} capstones — output did not cover every \
+                 theorem, refusing to report a pass on a partial attestation",
+                KERNEL_CAPSTONES.len()
+            ),
+        };
+    }
+    if !unexpected.is_empty() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "NEW kernel-level axiom(s) outside the reviewed whitelist: {:?} — \
+                 a capstone theorem now depends on an assumption nobody reviewed. \
+                 Either eliminate it or add it to ALLOWED_KERNEL_AXIOMS with a \
+                 Part 2 TCB entry (a deliberate, documented decision)",
+                unexpected
+            ),
+        };
+    }
+    CheckResult {
+        name: "Coq Kernel Assumptions".into(),
+        passed: true,
+        blocking: true,
+        details: format!(
+            "{} capstones attested; axioms within reviewed whitelist ({} allowed: funext)",
+            KERNEL_CAPSTONES.len(),
+            ALLOWED_KERNEL_AXIOMS.len()
+        ),
+    }
+}
+
 /// Verify every `.v` file on disk (excluding `_archive_deprecated/`) is listed
 /// in `_CoqProject`.  Catches drift where a file exists but the build system
 /// (and therefore `verify.rs`) never sees it.
@@ -3240,6 +3430,9 @@ pub fn run(mode: Mode) -> i32 {
         eprintln!("Compiling Coq proofs...");
         results.push(compile_coq(&coq_dir));
 
+        eprintln!("Attesting kernel-level assumptions (Print Assumptions)...");
+        results.push(check_kernel_assumptions(&coq_dir));
+
         eprintln!("Scanning Coq proofs...");
         results.extend(scan_coq(&coq_dir));
 
@@ -3519,6 +3712,46 @@ mod tests {
         assert_eq!(normalize_durations("2947 tests"), "2947 tests");
         // No trailing 's' => not a duration.
         assert_eq!(normalize_durations("in 42 files"), "in 42 files");
+    }
+
+
+    // ── REQ-53: kernel-attestation parser ──────────────────────────────────
+
+    #[test]
+    fn print_assumptions_parser_counts_blocks_and_names() {
+        let out = "Closed under the global context\nAxioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type), True\nClosed under the global context\n";
+        let (blocks, axioms) = parse_print_assumptions(out);
+        assert_eq!(blocks, 3);
+        assert_eq!(
+            axioms,
+            vec!["FunctionalExtensionality.functional_extensionality_dep".to_string()]
+        );
+    }
+
+    #[test]
+    fn print_assumptions_parser_negative_controls() {
+        // Empty output = ZERO blocks — the caller must treat that as failure,
+        // never as "no axioms, pass". This is the vacuity guard.
+        let (blocks, axioms) = parse_print_assumptions("");
+        assert_eq!(blocks, 0);
+        assert!(axioms.is_empty());
+        // Indented type lines are NOT axiom names.
+        let out = "Axioms:\nfoo.bar :\n  forall x, x = x\n  another indented line\n";
+        let (b, a) = parse_print_assumptions(out);
+        assert_eq!(b, 1);
+        assert_eq!(a, vec!["foo.bar".to_string()]);
+        // A NEW axiom is detected as outside the whitelist.
+        assert!(!ALLOWED_KERNEL_AXIOMS.contains(&"evil.new_axiom"));
+    }
+
+    #[test]
+    fn kernel_capstones_cover_the_load_bearing_theorems() {
+        // The gate is only as strong as this list. Pin the current five so a
+        // removal is a conscious edit here, not a silent narrowing.
+        let names: Vec<&str> = KERNEL_CAPSTONES.iter().map(|(_, t)| *t).collect();
+        for required in ["type_safety", "progress", "preservation", "well_typed_SN"] {
+            assert!(names.contains(&required), "{required} missing from KERNEL_CAPSTONES");
+        }
     }
 
     // -- Existing tests (unchanged) --
