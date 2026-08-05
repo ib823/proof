@@ -2620,6 +2620,49 @@ uses as data, because the audit's repo-wide `grep -r` had no `--include`/`--excl
 session's starting commit to diff the two states. A warning nobody can act on trains people to
 ignore warnings.
 
+### v0.4.0 RELEASE + WEBSITE DEPLOY — 2026-08-05 (partially complete; read before touching either)
+
+**The website IS deployed and verified live at https://ib823.github.io/riina/.** It had been stale
+since 2026-03-20 (v0.3.0, commit `2d436b08`) and — far more seriously — it was **overclaiming**:
+`claimLevels` published `lean`/`isabelle`/`smt`/`tlaplus` as **mechanized** and `fstar`/`alloy` as
+**compiled**, i.e. the exact position REQ-29 formally RETRACTED on 2026-06-10 (Path D2). The public
+site carried the pre-retraction claims for ~2 months after the decision. Now serving, confirmed by
+fetching the live JSON rather than trusting the push: version **0.4.0**, qedActive **12,638**,
+rust.tests **2,951**, `overall: generated`, `coq: mechanized`, and **all nine other lanes
+`generated`**. `gh-pages` on `ib823/riina` moved `500913f` → `45a9550`.
+
+**The release is INCOMPLETE in one specific, easily-finished way: the `v0.4.0` tag exists only
+locally.** Managed sessions cannot push it — the git proxy inspects the push payload and returns
+`HTTP/1.1 403 Forbidden` on `POST /…/git-receive-pack` for **tag creation and ref deletion**, while
+permitting branch creates/updates (verified at the HTTP layer, not inferred). `set -e` therefore
+aborted `release.sh` at step 6, so everything after it was skipped.
+
+Done: `[RELEASE] v0.4.0` commit (`a855c939b`) pushed to `origin/main`; annotated tag `v0.4.0` created
+locally on that commit with the CHANGELOG 0.4.0 notes as its message; version bump through VERSION /
+Cargo.toml / Cargo.lock; website release entry; playground WASM rebuilt (869 KB → 1.14 MB, was months
+stale); website deployed manually after confirming all ten public-quality gates pass.
+
+**Remaining, in order — each is a single command once the tag is on origin:**
+1. `git push origin v0.4.0` — the tag object already exists and is correct; nothing to recreate.
+2. Source tarball + `SHA256SUMS` (`release.sh` step 7).
+3. `bash scripts/sync-public.sh`, then `git push riina public:main`.
+4. GitHub Release on `ib823/riina` (needs the `gh` CLI — not installed in the dev container).
+5. `git push origin --delete tmp-probe-delete-me` — a stray branch left on `ib823/proof` by a
+   session probe that confirmed the 403 was tag-specific; deletion is blocked by the same policy.
+
+**`release.sh` has a latent CHANGELOG bug — do not run it blind on the next release.** Its promotion
+step is `sed "s/^## \[Unreleased\]/## [Unreleased]\n\n## [$VERSION] - $TODAY/"`. It assumes the
+version has NOT already been written up. For 0.4.0 both assumptions were false: `[0.4.0] — 2026-06-06`
+was already a released section at the top, and the `## [Unreleased]` heading was misfiled at line 712
+BELOW `## [0.3.0] — 2026-03-19` holding Session 87–88 content dated 2026-03-16. Run as-is it would
+have inserted a SECOND `## [0.4.0]` dated today, mid-file, below 0.3.0, wrapping March content — and
+published those as the release notes. Fixed by demoting that heading to
+`### Pre-0.3.0 development notes (Sessions 87–88, March 2026)` (content byte-identical, an HTML
+comment records why), which made the promotion a safe no-op while its compare-link update still
+applied. A fresh empty `## [Unreleased]` was added at the TOP **after** the release — adding it
+before would have re-triggered the duplicate. The tree is now in the shape the script expects, so
+0.5.0 should promote cleanly; re-check before running it anyway.
+
 **Recommended next actions, in order** (external-audit-gated items remain KIV by owner decision —
 REQ-28 and anything needing a third party or a maintainer-held key are explicitly deferred):
 1. **REQ-27 compiler-enforcement parity (P0, Gate B)** — unchanged and still the highest-value

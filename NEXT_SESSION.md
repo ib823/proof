@@ -88,8 +88,14 @@ Gates A & B are CLOSED. Read Part 11 Gate C rows for what landed. Remaining trac
   (run it as your LAST commit so status.repoHead stays fresh = HEAD or HEAD^);
   coverage ≥80% (needs tarpaulin/llvm-cov); a dependency-free fuzz sweep (cargo-fuzz
   would violate Law 8 — extend the LCG property-test pattern instead).
+Website deploy IS possible in-session (done 2026-08-05) — `ib823/riina` is a SEPARATE repo, so
+attach it (`add_repo` with push access), `git remote add riina https://github.com/ib823/riina.git`,
+then `bash scripts/deploy-website.sh`. It force-pushes `gh-pages`, which is a branch push and
+therefore allowed.
 Cannot do in-session: external crypto audit (REQ-28/Gate G), certifications (Gate H),
-website deploy (needs the `riina` remote), public-branch reconciliation.
+public-branch reconciliation, and **pushing git TAGS or deleting refs** — the proxy returns
+`403 Forbidden` on the `git-receive-pack` POST for those (branch creates/updates are fine), so a
+release's `git push origin vX.Y.Z` must be done by the owner. See Part 11 §v0.4.0 RELEASE.
 
 ## RULES
 - Part 8 protocol. Develop on a managed-session branch; merge to main when green.
