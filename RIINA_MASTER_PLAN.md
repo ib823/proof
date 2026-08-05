@@ -2557,26 +2557,37 @@ literal?"), not structural walks, so the wildcard is the correct answer, not a g
 snapshot's framing of "~49 + 27 + 15 wildcard arms to sweep" therefore over-counted the real work —
 the structural walkers were the small minority, and they are now done.
 
-**Do not chase the `VERIFICATION_MANIFEST.md` churn — it is the tooling, not a regression, and the
-mechanism is now pinned down.** The committed manifest ALWAYS reads `Mode: fast`, even immediately
-after a green `verify --full`. Cause, located this session: `riinac verify` does not merely write
-the manifest, it **auto-stages it** (`03_PROTO/crates/riinac/src/verify.rs:2180-2188`,
-`git add VERIFICATION_MANIFEST.md`). So the pre-commit hook's `verify --fast` re-stages a fast-mode
-manifest over whatever you staged, on every single commit. **A full-mode manifest cannot be
-committed through the normal path at all** — staging it differently does not help, and neither does
-committing it separately. The pre-push `verify --full` then rewrites it once more, leaving the tree
-dirty and inviting yet another chore commit.
+**The `VERIFICATION_MANIFEST.md` churn is FIXED this session — and the committed manifest now
+genuinely reads `Mode: full`, which was previously impossible.**
 
-That loop is the origin of the long run of `CHORE: refresh verification-manifest SHA pointer to
-handoff commit` commits in the history — churn, not progress. This session hit it twice; the first
-attempt was DROPPED because its message claimed a full-mode artifact the commit did not contain,
-and the second says so in its own message. **The authoritative full-mode result is the
-`verify --full` OUTPUT** (quoted in the baseline above), never this file.
+The cause: `riinac verify` did not merely write the manifest, it **auto-staged** it
+(`03_PROTO/crates/riinac/src/verify.rs`, `git add VERIFICATION_MANIFEST.md`) on every run. So the
+pre-commit hook's `verify --fast` re-staged a fast-mode manifest over whatever you staged, inside
+the very commit trying to record a full one — a full-mode manifest could not be committed through
+the normal path AT ALL, and staging it differently or committing it separately did not help. The
+pre-push `verify --full` then rewrote it straight after the push, leaving the tree dirty and
+inviting yet another chore commit that the next commit would silently downgrade. That loop is the
+origin of the long run of `CHORE: refresh verification-manifest SHA pointer to handoff commit`
+commits — churn, not progress. This session hit it twice before fixing it: the first attempt was
+DROPPED because its message claimed a full-mode artifact the commit did not contain.
 
-The honest fix is small and well-scoped (Gate F / tooling): make the auto-stage conditional on the
-run being at least as thorough as the manifest already on disk — i.e. never let a `fast` run
-overwrite a `full` record for the same SHA — or drop the auto-stage entirely and let the manifest
-be committed deliberately. Until then, treat a `Mode: fast` manifest as expected, not as a signal.
+The fix is `manifest_action`, under three rules: (1) a FAILING run always writes — a failure is
+evidence and is never suppressed, whatever mode found it; (2) a weaker run never replaces a
+stronger one (`fast` < `full`); (3) an unchanged verification does not rewrite at all. For (3),
+`Generated:`, `Git SHA:` and build durations (`in <N>s`) are excluded from the comparison because
+they change on every run without the verification changing; everything else — `Status:`, every
+check's PASS/FAIL/WARN, every detail, the `.vo` COUNT — is compared. `git add` runs only when
+something was actually written.
+
+Two lessons worth keeping. **The duration was only found by actually pushing** and watching the
+tree come back dirty, after the first fix had been committed as if complete — the unit tests all
+passed while the real loop was still running. **And over-normalising here would be far worse than
+the churn**: hiding a dropped `.vo` file as "timing jitter" is a silent gap of exactly the kind the
+rest of this session was spent closing, so the duration normaliser ships with a negative control
+proving 328 -> 327 still registers as a real change.
+
+Expected behaviour now: a repeated `verify` is a no-op; a real change (test count, a check
+flipping) still updates and is picked up by the next commit; and the tree is CLEAN after a push.
 
 **Recommended next actions, in order** (external-audit-gated items remain KIV by owner decision —
 REQ-28 and anything needing a third party or a maintainer-held key are explicitly deferred):
