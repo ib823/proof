@@ -16,9 +16,13 @@ Ships the constant-time-hardened, formally-verified crypto work accumulated sinc
 AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519
 ladder), constant-time hardening — incl. a real variable-time leak fixed in Ed25519
 signing — now CI-gated, the set union/intersect O(n·m)→O(n+m) optimization, and the
-CT / audit-readiness tooling (dossier, RFP, host-prep + timing harnesses). Verified:
-0 Admitted/Axiom/Abort, 12,533 Coq Qed across 323 active files, workspaces 294/0 +
-2730/0, clippy clean. Detailed entries (formerly [Unreleased]) follow.
+CT / audit-readiness tooling (dossier, RFP, host-prep + timing harnesses).
+Verified at the tagged release commit `a855c939b` (2026-08-05, all by command):
+**0 Admitted / 0 Axiom / 0 Abort, 12,638 Coq Qed across 328 active files,
+03_PROTO 2,951/0 + 05_TOOLING 304/0, clippy clean** (`--all-targets -D warnings`,
+both workspaces). Detailed entries (formerly [Unreleased]) follow — the per-entry
+Qed counts in them are the corpus size *at the time each change landed* and are
+deliberately left as written.
 
 ### 2026-06-05 — Gate C: set union/intersect O(n·m) → O(n+m)
 
