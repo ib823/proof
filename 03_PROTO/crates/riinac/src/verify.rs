@@ -2124,7 +2124,94 @@ fn git_sha(repo: &Path) -> String {
         .unwrap_or_else(|| "unknown".into())
 }
 
-/// Write VERIFICATION_MANIFEST.md and auto-stage it.
+/// How thorough a run is. A `full` run verifies strictly more than a `fast` one
+/// (it adds the Coq and other proof lanes), so its manifest is stronger evidence.
+fn mode_rank(mode: Mode) -> u8 {
+    match mode {
+        Mode::Fast => 0,
+        Mode::Full => 1,
+    }
+}
+
+/// What `write_manifest` should do with an existing manifest on disk.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ManifestAction {
+    Write,
+    /// A weaker run must not replace a stronger record.
+    SkipWeakerMode,
+    /// Nothing about the verification changed — only the timestamp/SHA would.
+    SkipUnchanged,
+}
+
+/// The `Mode:` recorded in an existing manifest, if it is parseable.
+fn parse_manifest_mode(existing: &str) -> Option<Mode> {
+    existing.lines().find_map(|l| match l.trim() {
+        "**Mode:** fast" => Some(Mode::Fast),
+        "**Mode:** full" => Some(Mode::Full),
+        _ => None,
+    })
+}
+
+/// The manifest minus its volatile header lines.
+///
+/// `Generated:` and `Git SHA:` change on literally every run and carry no
+/// verification content of their own, so they must not by themselves count as
+/// "the manifest changed" — otherwise every single run rewrites the file.
+fn manifest_body(text: &str) -> String {
+    text.lines()
+        .filter(|l| {
+            let t = l.trim_start();
+            !t.starts_with("**Generated:**") && !t.starts_with("**Git SHA:**")
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// Decide whether a new manifest should replace the one already on disk.
+///
+/// This exists because the manifest used to be rewritten AND `git add`-ed on
+/// every single run, which churned endlessly:
+///
+///   * `pre-commit` runs `verify --fast`, so it overwrote and re-staged a
+///     fast-mode manifest on top of a full-mode one — a full-mode manifest
+///     could therefore never be committed through the normal path, no matter
+///     how it was staged; and
+///   * `pre-push` runs `verify --full`, which rewrote the file again straight
+///     after the push, leaving the tree dirty and inviting a "refresh the
+///     manifest" chore commit that the next commit would immediately undo.
+///
+/// Two rules stop it without ever hiding evidence:
+///   1. a FAILING run always writes — a failure is never suppressed;
+///   2. otherwise a weaker run never replaces a stronger one, and an unchanged
+///      verification never rewrites the file at all.
+fn manifest_action(
+    existing: Option<&str>,
+    new_text: &str,
+    new_mode: Mode,
+    new_passed: bool,
+) -> ManifestAction {
+    let Some(existing) = existing else {
+        return ManifestAction::Write;
+    };
+    // Rule 1: never suppress a failure, whatever mode found it.
+    if !new_passed {
+        return ManifestAction::Write;
+    }
+    // Rule 2a: a fast PASS must not erase a full PASS.
+    if let Some(old_mode) = parse_manifest_mode(existing) {
+        if mode_rank(new_mode) < mode_rank(old_mode) {
+            return ManifestAction::SkipWeakerMode;
+        }
+    }
+    // Rule 2b: same findings => leave the file (and the index) alone.
+    if manifest_body(existing) == manifest_body(new_text) {
+        return ManifestAction::SkipUnchanged;
+    }
+    ManifestAction::Write
+}
+
+/// Write VERIFICATION_MANIFEST.md and auto-stage it — unless doing so would
+/// weaken the recorded evidence or merely churn the timestamp.
 fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     let sha = git_sha(repo);
     let now = SystemTime::now()
@@ -2178,12 +2265,26 @@ fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     }
 
     let manifest_path = repo.join("VERIFICATION_MANIFEST.md");
+    let existing = fs::read_to_string(&manifest_path).ok();
+    match manifest_action(existing.as_deref(), &md, mode, all_pass) {
+        ManifestAction::SkipWeakerMode => {
+            eprintln!(
+                "  manifest: kept the existing full-mode record (a {mode_label}-mode \
+                 PASS would weaken it)"
+            );
+            return;
+        }
+        ManifestAction::SkipUnchanged => return,
+        ManifestAction::Write => {}
+    }
+
     if let Err(e) = fs::write(&manifest_path, &md) {
         eprintln!("warning: could not write manifest: {e}");
         return;
     }
 
-    // Auto-stage manifest
+    // Auto-stage only when something was actually written, so a no-op run
+    // leaves a clean index.
     let _ = Command::new("git")
         .args(["add", "VERIFICATION_MANIFEST.md"])
         .current_dir(repo)
@@ -3219,6 +3320,136 @@ pub fn run(mode: Mode) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+    // =======================================================================
+    // Manifest write policy — stops the auto-stage churn.
+    //
+    // The manifest used to be rewritten AND `git add`-ed on EVERY run, which
+    // made two loops. (a) `pre-commit` runs `--fast`, so it re-staged a
+    // fast-mode manifest over a full-mode one — a full-mode manifest could
+    // never be committed through the normal path at all. (b) `pre-push` runs
+    // `--full`, rewriting the file immediately after the push and leaving the
+    // tree dirty, which is what produced the long run of "refresh the
+    // verification manifest" chore commits.
+    // =======================================================================
+
+    fn manifest(mode: &str, rows: &str) -> String {
+        format!(
+            "# RIINA Verification Manifest\n\
+             **Generated:** 2026-01-01T00:00:00Z\n\
+             **Git SHA:** deadbeef\n\
+             **Mode:** {mode}\n\
+             **Status:** PASS\n\n\
+             | Check | Status | Details |\n\
+             |-------|--------|---------|\n{rows}"
+        )
+    }
+
+    const ROWS_FAST: &str = "| Rust Tests | PASS | 10 tests |\n";
+    const ROWS_FULL: &str =
+        "| Rust Tests | PASS | 10 tests |\n| Coq Compilation | PASS | 328 .vo |\n";
+
+    #[test]
+    fn fast_run_never_overwrites_a_full_manifest() {
+        // THE bug: pre-commit's `--fast` clobbering the pre-push `--full`
+        // record, so the committed manifest always read `Mode: fast`.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Fast, true),
+            ManifestAction::SkipWeakerMode
+        );
+    }
+
+    #[test]
+    fn full_run_does_overwrite_a_fast_manifest() {
+        // NEGATIVE CONTROL for the rule above: a policy that skipped every
+        // write would satisfy "no churn" while never recording anything.
+        let existing = manifest("fast", ROWS_FAST);
+        let new = manifest("full", ROWS_FULL);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn identical_verification_does_not_rewrite_the_manifest() {
+        // The post-push half of the churn: `--full` re-running at a new commit
+        // with the same findings must not dirty the tree just to restamp the
+        // timestamp and SHA.
+        let existing = manifest("full", ROWS_FULL);
+        let mut new = manifest("full", ROWS_FULL);
+        new = new.replace("2026-01-01T00:00:00Z", "2026-06-01T12:00:00Z");
+        new = new.replace("deadbeef", "cafef00d");
+        assert_ne!(existing, new, "the fixtures must differ, or this proves nothing");
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::SkipUnchanged
+        );
+    }
+
+    #[test]
+    fn changed_findings_do_rewrite_the_manifest() {
+        // NEGATIVE CONTROL for the rule above: real changes must still land.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest(
+            "full",
+            "| Rust Tests | PASS | 99 tests |\n| Coq Compilation | PASS | 328 .vo |\n",
+        );
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn a_failing_run_always_writes_even_when_weaker() {
+        // A failure is evidence and must never be suppressed by the
+        // mode-ranking rule — otherwise a fast run that FAILS would leave a
+        // stale full-mode PASS on disk.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Fast, false),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn first_ever_run_writes() {
+        let new = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(None, &new, Mode::Fast, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn manifest_mode_round_trips_and_unparseable_is_none() {
+        assert_eq!(parse_manifest_mode(&manifest("fast", ROWS_FAST)), Some(Mode::Fast));
+        assert_eq!(parse_manifest_mode(&manifest("full", ROWS_FULL)), Some(Mode::Full));
+        // An unreadable/legacy manifest must not be treated as `full` — that
+        // would wedge the file permanently against every future write.
+        assert_eq!(parse_manifest_mode("# nothing useful here"), None);
+        assert_eq!(
+            manifest_action(Some("# nothing useful here"), &manifest("fast", ROWS_FAST), Mode::Fast, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn manifest_body_ignores_only_the_volatile_lines() {
+        let a = manifest("full", ROWS_FULL);
+        let b = a
+            .replace("2026-01-01T00:00:00Z", "2099-12-31T23:59:59Z")
+            .replace("deadbeef", "0badcafe");
+        assert_eq!(manifest_body(&a), manifest_body(&b));
+        // ...but the Status line is NOT volatile.
+        let failed = a.replace("**Status:** PASS", "**Status:** FAIL");
+        assert_ne!(manifest_body(&a), manifest_body(&failed));
+    }
 
     // -- Existing tests (unchanged) --
 
