@@ -2152,17 +2152,52 @@ fn parse_manifest_mode(existing: &str) -> Option<Mode> {
     })
 }
 
-/// The manifest minus its volatile header lines.
+/// Replace the digits in `in <N>s` with `N`, e.g. "compiled in 176s" =>
+/// "compiled in Ns".
 ///
-/// `Generated:` and `Git SHA:` change on literally every run and carry no
-/// verification content of their own, so they must not by themselves count as
-/// "the manifest changed" — otherwise every single run rewrites the file.
+/// Wall-clock build durations jitter by a few seconds on every run. They are a
+/// measurement of the machine, not a verification finding, so leaving them in
+/// the comparison would rewrite the manifest on literally every run — which is
+/// half the churn this policy exists to stop. Written by hand rather than with
+/// a regex crate: 03_PROTO carries zero third-party runtime dependencies
+/// (Law 8).
+fn normalize_durations(line: &str) -> String {
+    let b = line.as_bytes();
+    let mut out = String::with_capacity(line.len());
+    let mut i = 0;
+    while i < b.len() {
+        // Look for " in " followed by digits followed by 's'.
+        if b[i..].starts_with(b" in ") {
+            let start = i + 4;
+            let mut j = start;
+            while j < b.len() && b[j].is_ascii_digit() {
+                j += 1;
+            }
+            if j > start && j < b.len() && b[j] == b's' {
+                out.push_str(" in Ns");
+                i = j + 1;
+                continue;
+            }
+        }
+        out.push(b[i] as char);
+        i += 1;
+    }
+    out
+}
+
+/// The manifest minus everything that changes without the verification changing.
+///
+/// `Generated:` and `Git SHA:` change on literally every run, and build
+/// durations jitter, so none of them may count as "the manifest changed" —
+/// otherwise every run rewrites the file. Everything else, including
+/// `**Status:**` and every check's PASS/FAIL/WARN and details, IS compared.
 fn manifest_body(text: &str) -> String {
     text.lines()
         .filter(|l| {
             let t = l.trim_start();
             !t.starts_with("**Generated:**") && !t.starts_with("**Git SHA:**")
         })
+        .map(normalize_durations)
         .collect::<Vec<_>>()
         .join("\n")
 }
@@ -3449,6 +3484,41 @@ mod tests {
         // ...but the Status line is NOT volatile.
         let failed = a.replace("**Status:** PASS", "**Status:** FAIL");
         assert_ne!(manifest_body(&a), manifest_body(&failed));
+    }
+
+
+    #[test]
+    fn build_duration_jitter_does_not_rewrite_the_manifest() {
+        // The residual churn found by pushing: the Coq row embeds a wall-clock
+        // duration, so "compiled in 180s" vs "176s" rewrote the file on every
+        // single run even when every finding was identical.
+        let rows_a = "| Coq Compilation | PASS | 328 .vo files compiled in 180s |\n";
+        let rows_b = "| Coq Compilation | PASS | 328 .vo files compiled in 176s |\n";
+        let existing = manifest("full", rows_a);
+        let new = manifest("full", rows_b);
+        assert_ne!(existing, new, "the fixtures must differ, or this proves nothing");
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::SkipUnchanged
+        );
+    }
+
+    #[test]
+    fn duration_normalisation_does_not_eat_real_numbers() {
+        // NEGATIVE CONTROL: only `in <N>s` is normalised. A changed .vo COUNT
+        // or test count must still register as a real change.
+        let a = manifest("full", "| Coq Compilation | PASS | 328 .vo files compiled in 180s |\n");
+        let b = manifest("full", "| Coq Compilation | PASS | 327 .vo files compiled in 180s |\n");
+        assert_eq!(
+            manifest_action(Some(&a), &b, Mode::Full, true),
+            ManifestAction::Write,
+            "a dropped .vo file must not be mistaken for timing jitter"
+        );
+        assert_eq!(normalize_durations("compiled in 176s"), "compiled in Ns");
+        assert_eq!(normalize_durations("328 .vo files"), "328 .vo files");
+        assert_eq!(normalize_durations("2947 tests"), "2947 tests");
+        // No trailing 's' => not a duration.
+        assert_eq!(normalize_durations("in 42 files"), "in 42 files");
     }
 
     // -- Existing tests (unchanged) --
