@@ -1678,10 +1678,31 @@ impl<'a> Parser<'a> {
             }
             Some(TokenKind::KwDeclassify) => {
                 self.consume(TokenKind::KwDeclassify)?;
+                // Two surface forms, ONE AST node (identical `Expr::Declassify`,
+                // so the mechanized `T_Declassify`/`declass_ok` rule covers both
+                // and no new semantics exists):
+                //   canonical:  `dedah e dengan bukti p`
+                //   call-form:  `dedah(e, p)` — used across the example corpus
+                //               (REQ-55; 15 files were unparseable without it).
+                // The streaming lexer has no backtracking, so the forms are
+                // disambiguated AFTER parsing the operand: `(e, p)` parses as a
+                // Pair, and a Pair operand with no following `dengan` IS the
+                // call-form. A parenthesized canonical operand —
+                // `dedah (sulit x) dengan p` — is unaffected because `dengan`
+                // follows (this exact shape regressed under a lookahead-only
+                // first attempt; see the corpus test on 00_basics/sulit_dedah).
                 let e1 = self.parse_control_flow()?;
+                if matches!(self.peek().map(|t| t.kind.clone()), Some(TokenKind::KwWith)) {
+                    self.consume(TokenKind::KwWith)?;
+                    let e2 = self.parse_control_flow()?;
+                    return Ok(Expr::Declassify(Box::new(e1), Box::new(e2)));
+                }
+                if let Expr::Pair(a, b) = e1 {
+                    return Ok(Expr::Declassify(a, b));
+                }
+                // Neither form: produce the canonical missing-`dengan` error.
                 self.consume(TokenKind::KwWith)?;
-                let e2 = self.parse_control_flow()?;
-                Ok(Expr::Declassify(Box::new(e1), Box::new(e2)))
+                unreachable!("consume(KwWith) above always errors here")
             }
             Some(TokenKind::KwProve) => {
                 self.consume(TokenKind::KwProve)?;

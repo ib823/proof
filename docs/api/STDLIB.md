@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **309**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **311**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 
@@ -352,6 +352,7 @@ Total registered builtins: **309**. Grouped by the effect each performs (`kesan`
 | `masa_sekarang` | `Fn((), Nombor, Masa)` |
 | `masa_sekarang_ms` | `Fn((), Nombor, Masa)` |
 | `masa_tidur` | `Fn(Nombor, (), Masa)` |
+| `masa_unix` | `Fn((), Nombor, Masa)` |
 | `masa_urai` | `Fn((Teks, Teks), Nombor, Masa)` |
 | `time_clock` | `Fn((), Nombor, Masa)` |
 | `time_format` | `Fn((Nombor, Teks), Teks, Masa)` |
@@ -359,4 +360,5 @@ Total registered builtins: **309**. Grouped by the effect each performs (`kesan`
 | `time_now_ms` | `Fn((), Nombor, Masa)` |
 | `time_parse` | `Fn((Teks, Teks), Nombor, Masa)` |
 | `time_sleep` | `Fn(Nombor, (), Masa)` |
+| `time_unix` | `Fn((), Nombor, Masa)` |
 

@@ -1104,6 +1104,27 @@ fn test_error_missing_type_in_inl() {
 }
 
 #[test]
+fn dedah_call_form_parses_to_the_same_ast_as_canonical() {
+    // REQ-55: `dedah(e, p)` and `dedah e dengan p` are ONE AST node — the same
+    // Expr::Declassify — so the mechanized T_Declassify covers both and the
+    // call-form adds surface, not semantics.
+    let call = Parser::new("dedah(x, bukti_x)").parse_expr().unwrap();
+    let canon = Parser::new("dedah x dengan bukti_x").parse_expr().unwrap();
+    assert_eq!(
+        call, canon,
+        "the two dedah surface forms must be indistinguishable downstream"
+    );
+}
+
+#[test]
+fn dedah_call_form_negative_controls() {
+    // Missing comma / unclosed paren still fail loudly — the sugar must not
+    // have made the parser lenient.
+    assert!(Parser::new("dedah(x bukti_x)").parse_expr().is_err());
+    assert!(Parser::new("dedah(x, bukti_x").parse_expr().is_err());
+}
+
+#[test]
 fn test_error_missing_with_in_declassify() {
     // Input: declassify without 'with'
     // Expected: ParseError

@@ -1168,6 +1168,8 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     let unit_to_int = || Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time);
     for (bm, en, ty) in [
         ("masa_sekarang", "time_now", unit_to_int()),
+        // `masa_unix` — alias used by the example corpus (REQ-55): same clock.
+        ("masa_unix", "time_unix", unit_to_int()),
         ("masa_sekarang_ms", "time_now_ms", unit_to_int()),
         ("masa_jam", "time_clock", unit_to_int()),
         (

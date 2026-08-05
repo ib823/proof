@@ -8,6 +8,7 @@ use crate::{Error, Result};
 /// (BM name, EN alias, canonical name)
 pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("masa_sekarang", "time_now", "masa_sekarang"),
+    ("masa_unix", "time_unix", "masa_sekarang"),
     ("masa_sekarang_ms", "time_now_ms", "masa_sekarang_ms"),
     ("masa_format", "time_format", "masa_format"),
     ("masa_urai", "time_parse", "masa_urai"),
@@ -17,7 +18,7 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
 
 pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
     match name {
-        "masa_sekarang" => {
+        "masa_sekarang" | "masa_unix" => {
             // () -> Int (unix timestamp seconds)
             use std::time::{SystemTime, UNIX_EPOCH};
             let secs = SystemTime::now()
