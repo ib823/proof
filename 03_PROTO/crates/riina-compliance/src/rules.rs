@@ -41,6 +41,7 @@ pub fn rule_count(profile: ComplianceProfile) -> usize {
         ComplianceProfile::MasTrm => 20,
         ComplianceProfile::Itar => 12,
         ComplianceProfile::EsgSdg => 30,
+        ComplianceProfile::Cra => 15,
     }
 }
 
@@ -65,6 +66,7 @@ pub fn rules_for_profiles(profiles: &[ComplianceProfile]) -> Vec<ComplianceRule>
             ComplianceProfile::MasTrm => rules.extend(mas_trm_rules()),
             ComplianceProfile::Itar => rules.extend(itar_rules()),
             ComplianceProfile::EsgSdg => rules.extend(esg_sdg_rules()),
+            ComplianceProfile::Cra => rules.extend(cra_rules()),
         }
     }
     rules
@@ -6183,6 +6185,143 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
                 "double_counting_check",
                 "additionality_check",
             ],
+            Severity::Error,
+        ),
+    ]
+}
+
+
+// ===========================================================================
+// EU CRA rules (15) — Regulation (EU) 2024/2847, Annex I
+//
+// HONESTY SCOPE (do not widen in prose elsewhere): these are machine-checkable
+// conditions DERIVED FROM Annex I's essential requirements, checked on the AST.
+// Passing them is NOT CRA conformity — most CRA obligations (risk assessment,
+// technical documentation, CE marking, the Art. 14 reporting duties) are
+// organisational and live outside a compiler. The reporting-process side is
+// documented in SECURITY.md; the SBOM/VEX side in scripts/generate-sbom.sh.
+// Rule ids cite the Annex I part they derive from.
+// ===========================================================================
+
+fn cra_rules() -> Vec<ComplianceRule> {
+    vec![
+        // Part I §(2)(a): products made available with a secure-by-default
+        // configuration.
+        insecure_default_rule(
+            "CRA-I.2a",
+            ComplianceProfile::Cra,
+            "Secure by default: security features must not ship disabled",
+            &["encryption_enabled", "tls_enabled", "auth_enabled", "selamat"],
+            Severity::Error,
+        ),
+        // Part I §(2)(d): protection from unauthorised access by appropriate
+        // control mechanisms (authentication).
+        auth_crypto_rule(
+            "CRA-I.2d",
+            ComplianceProfile::Cra,
+            "Access-control functions must use the Crypto effect",
+            &["auth", "login", "sahkan_pengguna", "verify_user"],
+            Severity::Error,
+        ),
+        // Part I §(2)(e): confidentiality of stored data — encrypt at rest.
+        sensitive_let_rule(
+            "CRA-I.2e",
+            ComplianceProfile::Cra,
+            "Stored secrets/credentials must be classified",
+            &["credential", "private_key", "kata_laluan", "secret_config"],
+            Severity::Error,
+        ),
+        // Part I §(2)(e): confidentiality of transmitted data — secure channel.
+        insecure_network_rule(
+            "CRA-I.2e-net",
+            ComplianceProfile::Cra,
+            "Data in transit must use a secure channel (NetworkSecure)",
+            Severity::Error,
+        ),
+        // Part I §(2)(e): no plaintext transport endpoints.
+        insecure_url_rule(
+            "CRA-I.2e-url",
+            ComplianceProfile::Cra,
+            "Plaintext http:// endpoints are prohibited",
+            Severity::Error,
+        ),
+        // Part I §(2)(f): integrity of data, commands and configuration —
+        // sensitive values must not leave over the network unprotected.
+        sensitive_network_send_rule(
+            "CRA-I.2f",
+            ComplianceProfile::Cra,
+            "Sensitive values must not be sent raw over the network",
+            &["credential", "token", "kunci", "private_key"],
+            Severity::Error,
+        ),
+        // Part I §(2)(g): process only data that is necessary (minimisation) —
+        // raw external input must be sanitised before use.
+        tainted_input_rule(
+            "CRA-I.2g",
+            ComplianceProfile::Cra,
+            "External input must be sanitised before processing",
+            &["user_input", "borang", "form_input", "request_body"],
+            Severity::Error,
+        ),
+        // Part I §(2)(h)+(j): limit attack surfaces / least privilege.
+        broad_grant_rule(
+            "CRA-I.2h",
+            ComplianceProfile::Cra,
+            "Broad capability grants (System) violate attack-surface minimisation",
+            Severity::Error,
+        ),
+        // Part I §(2)(i): resilience against denial-of-service.
+        unbounded_recursion_rule(
+            "CRA-I.2i",
+            ComplianceProfile::Cra,
+            "Unbounded recursion is a availability/DoS hazard",
+            Severity::Warning,
+        ),
+        // Part I §(2)(l): record and monitor relevant internal activity
+        // (security logging).
+        audit_trail_rule(
+            "CRA-I.2l",
+            ComplianceProfile::Cra,
+            "Security operations must leave an audit trail (Write effect)",
+            Severity::Error,
+        ),
+        // Part I §(2)(m)/(c): security updates — update paths must verify
+        // authenticity cryptographically.
+        auth_crypto_rule(
+            "CRA-I.2m",
+            ComplianceProfile::Cra,
+            "Update/download paths must verify signatures (Crypto effect)",
+            &["update", "kemaskini", "upgrade", "firmware"],
+            Severity::Error,
+        ),
+        // Part II §(3): vulnerability handling — no debug code in shipped
+        // products (tested-before-release discipline).
+        debug_code_rule(
+            "CRA-II.3",
+            ComplianceProfile::Cra,
+            "Debug artifacts must not ship in a product placed on the market",
+            Severity::Warning,
+        ),
+        // Part I §(2)(a) baseline: no known-weak cryptography.
+        weak_crypto_rule(
+            "CRA-I.2a-crypto",
+            ComplianceProfile::Cra,
+            "Known-weak algorithms (MD5/SHA1/DES/RC4) are prohibited",
+            Severity::Error,
+        ),
+        // Part I §(2)(d): no hardcoded access credentials.
+        hardcoded_credential_rule(
+            "CRA-I.2d-cred",
+            ComplianceProfile::Cra,
+            "Hardcoded credentials defeat access-control requirements",
+            &["password", "token", "api_key", "kata_laluan"],
+            Severity::Error,
+        ),
+        // Part I §(2)(e): declassification of protected data requires proof.
+        declassify_prove_rule(
+            "CRA-I.2e-declass",
+            ComplianceProfile::Cra,
+            "Declassifying protected data requires an explicit proof",
             Severity::Error,
         ),
     ]

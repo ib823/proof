@@ -1,10 +1,10 @@
 {
-  "generated": "2026-08-05T07:34:07Z",
-  "generatedHuman": "August 05, 2026 at 07:34 UTC",
+  "generated": "2026-08-05T14:19:40Z",
+  "generatedHuman": "August 05, 2026 at 14:19 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "a855c939b",
+    "commit": "9ddbebc24",
     "branch": "main"
   },
   "proofs": {
@@ -148,7 +148,7 @@
     "nonCoqMechanization": {
       "reportFresh": false,
       "overallMechanized": false,
-      "source": "missing_or_stale",
+      "source": "cached_metrics",
       "pending": {
         "lean": "noncoq_report_missing_or_stale",
         "isabelle": "noncoq_report_missing_or_stale",
@@ -196,8 +196,8 @@
   "rust": {
     "tests": 2951,
     "testsVerified": 2951,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 2963,
+    "testsSource": "cached_verified",
     "crates": 19
   },
   "examples": 165,

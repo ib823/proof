@@ -71,6 +71,7 @@ pub struct ComplianceReport {
 /// gives the coverage percentage.
 fn spec_total_rules(profile: ComplianceProfile) -> usize {
     match profile {
+        ComplianceProfile::Cra => 21, // CRA Annex I Part I (13 essential reqs) + Part II (8 vuln-handling reqs)
         ComplianceProfile::PciDss => 78,     // PCI-DSS v4.0 requirements
         ComplianceProfile::Pdpa => 14,       // PDPA 2010 Sections 5-24
         ComplianceProfile::Bnm => 26,        // BNM RMiT policy areas

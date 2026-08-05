@@ -1,0 +1,14 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": { "type": "application", "name": "riina" },
+    "supplier": { "name": "The RIINA Authors" },
+    "properties": [
+      { "name": "riina:vex:policy", "value": "SECURITY.md — EU CRA reporting readiness" },
+      { "name": "riina:vex:sboms", "value": "sbom/riina-proto.cdx.json, sbom/riina-tooling.cdx.json" }
+    ]
+  },
+  "vulnerabilities": []
+}

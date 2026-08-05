@@ -211,6 +211,278 @@ fn pulang_wrapped_body_scans_like_a_bare_body() {
     }
 }
 
+
+// ===========================================================================
+// EU CRA rules (REQ-45) — one violation + one ok per rule id.
+// Scope reminder: these test the CHECKER. Passing them is not CRA conformity.
+// ===========================================================================
+
+#[test]
+fn cra_i_2a_secure_default() {
+    assert_violation(
+        &make_let("encryption_enabled", Expr::Bool(false)),
+        ComplianceProfile::Cra,
+        "CRA-I.2a",
+    );
+    assert_no_violation(
+        &make_let("encryption_enabled", Expr::Bool(true)),
+        ComplianceProfile::Cra,
+        "CRA-I.2a",
+    );
+}
+
+#[test]
+fn cra_i_2d_auth_crypto() {
+    let pure_auth = Expr::LetRec(
+        "verify_user".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+        Box::new(Expr::Unit),
+    );
+    assert_violation(&pure_auth, ComplianceProfile::Cra, "CRA-I.2d");
+    let crypto_auth = Expr::LetRec(
+        "verify_user".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Box::new(Expr::Lam(
+            "x".into(),
+            Ty::String,
+            Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))),
+        )),
+        Box::new(Expr::Unit),
+    );
+    assert_no_violation(&crypto_auth, ComplianceProfile::Cra, "CRA-I.2d");
+}
+
+#[test]
+fn cra_i_2e_stored_secret_classified() {
+    assert_violation(
+        &make_let("private_key", Expr::String("pem".into())),
+        ComplianceProfile::Cra,
+        "CRA-I.2e",
+    );
+    assert_no_violation(
+        &make_classified_let("private_key", Expr::String("pem".into())),
+        ComplianceProfile::Cra,
+        "CRA-I.2e",
+    );
+}
+
+#[test]
+fn cra_i_2e_net_secure_channel() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Unit)),
+        ComplianceProfile::Cra,
+        "CRA-I.2e-net",
+    );
+    assert_no_violation(
+        &Expr::Perform(Effect::NetworkSecure, Box::new(Expr::Unit)),
+        ComplianceProfile::Cra,
+        "CRA-I.2e-net",
+    );
+}
+
+#[test]
+fn cra_i_2e_url_no_plaintext_http() {
+    assert_violation(
+        &Expr::String("http://update.example.com".into()),
+        ComplianceProfile::Cra,
+        "CRA-I.2e-url",
+    );
+    assert_no_violation(
+        &Expr::String("https://update.example.com".into()),
+        ComplianceProfile::Cra,
+        "CRA-I.2e-url",
+    );
+}
+
+#[test]
+fn cra_i_2f_sensitive_send() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("private_key".into()))),
+        ComplianceProfile::Cra,
+        "CRA-I.2f",
+    );
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("telemetry".into()))),
+        ComplianceProfile::Cra,
+        "CRA-I.2f",
+    );
+}
+
+#[test]
+fn cra_i_2g_tainted_input() {
+    assert_violation(
+        &make_let("user_input", Expr::String("raw".into())),
+        ComplianceProfile::Cra,
+        "CRA-I.2g",
+    );
+    assert_no_violation(
+        &make_let(
+            "user_input",
+            Expr::Perform(Effect::Read, Box::new(Expr::Unit)),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2g",
+    );
+}
+
+#[test]
+fn cra_i_2h_broad_grant() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Cra,
+        "CRA-I.2h",
+    );
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Cra,
+        "CRA-I.2h",
+    );
+}
+
+#[test]
+fn cra_i_2i_unbounded_recursion() {
+    assert_violation(
+        &Expr::LetRec(
+            "spin".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("spin".into())),
+                Box::new(Expr::Unit),
+            )),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2i",
+    );
+    assert_no_violation(
+        &make_let("bounded", Expr::Int(1)),
+        ComplianceProfile::Cra,
+        "CRA-I.2i",
+    );
+}
+
+#[test]
+fn cra_i_2l_audit_trail() {
+    assert_violation(
+        &make_let_with_body("x", Expr::Classify(Box::new(Expr::Int(1))), Expr::Unit),
+        ComplianceProfile::Cra,
+        "CRA-I.2l",
+    );
+    assert_no_violation(
+        &make_let_with_body(
+            "x",
+            Expr::Classify(Box::new(Expr::Int(1))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("log".into()))),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2l",
+    );
+}
+
+#[test]
+fn cra_i_2m_update_signature() {
+    let unsigned_update = Expr::LetRec(
+        "kemaskini_firmware".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Unit), Effect::Network),
+        Box::new(Expr::Lam(
+            "x".into(),
+            Ty::String,
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Var("x".into())))),
+        )),
+        Box::new(Expr::Unit),
+    );
+    assert_violation(&unsigned_update, ComplianceProfile::Cra, "CRA-I.2m");
+    let signed_update = Expr::LetRec(
+        "kemaskini_firmware".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Unit), Effect::Crypto),
+        Box::new(Expr::Lam(
+            "x".into(),
+            Ty::String,
+            Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))),
+        )),
+        Box::new(Expr::Unit),
+    );
+    assert_no_violation(&signed_update, ComplianceProfile::Cra, "CRA-I.2m");
+}
+
+#[test]
+fn cra_ii_3_debug_code() {
+    assert_violation(
+        &Expr::String("debug: firmware state".into()),
+        ComplianceProfile::Cra,
+        "CRA-II.3",
+    );
+    assert_no_violation(
+        &Expr::String("firmware updated".into()),
+        ComplianceProfile::Cra,
+        "CRA-II.3",
+    );
+}
+
+#[test]
+fn cra_i_2a_weak_crypto() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::Cra,
+        "CRA-I.2a-crypto",
+    );
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::Cra,
+        "CRA-I.2a-crypto",
+    );
+}
+
+#[test]
+fn cra_i_2d_hardcoded_credential() {
+    assert_violation(
+        &make_let("api_key", Expr::String("sk-live-1234".into())),
+        ComplianceProfile::Cra,
+        "CRA-I.2d-cred",
+    );
+    assert_no_violation(
+        &make_let(
+            "api_key",
+            Expr::Perform(Effect::Read, Box::new(Expr::Unit)),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2d-cred",
+    );
+}
+
+#[test]
+fn cra_i_2e_declassify_needs_proof() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2e-declass",
+    );
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2e-declass",
+    );
+}
+
+#[test]
+fn cra_profile_parses_and_counts() {
+    // The CLI slug round-trips and the declared count matches the built list —
+    // the pin that catches "added a rule, forgot rule_count" (or vice versa).
+    assert_eq!(parse_profiles("cra").unwrap(), vec![ComplianceProfile::Cra]);
+    assert_eq!(
+        crate::rules::rule_count(ComplianceProfile::Cra),
+        crate::rules::rules_for_profiles(&[ComplianceProfile::Cra]).len(),
+        "rule_count(Cra) must equal the actual number of built rules"
+    );
+}
+
 #[test]
 fn parse_profiles_single() {
     let profiles = parse_profiles("pci-dss").unwrap();
@@ -236,8 +508,9 @@ fn parse_profiles_unknown() {
 }
 
 #[test]
-fn parse_profiles_all_16() {
-    assert_eq!(ComplianceProfile::ALL.len(), 16);
+fn parse_profiles_all_17() {
+    // 16 original + Cra (REQ-45, 2026-08-05).
+    assert_eq!(ComplianceProfile::ALL.len(), 17);
 }
 
 #[test]
