@@ -979,7 +979,15 @@ if [ "$QUICK_MODE" != "--quick" ]; then
         if ! echo "$banner_line" | grep -q "${ACTUAL_QED_COMMA} Coq Qed" 2>/dev/null; then
             STALE_BANNERS=$((STALE_BANNERS + 1))
         fi
-    done < <(grep -rlE "^\*\*(Audit Update|Verification):\*\*" "$REPO_ROOT" 2>/dev/null || true)
+    # Restrict to Markdown and skip build/VCS output. Without this the scan
+    # matched COMPILED ARTIFACTS: a test that embeds an example banner string
+    # puts that string into the test binary and its incremental-compile cache
+    # under 03_PROTO/target/, which then counted as 5 "docs with stale
+    # verification banners". A doc audit must look at docs.
+    done < <(grep -rlE "^\*\*(Audit Update|Verification):\*\*" "$REPO_ROOT" \
+        --include='*.md' \
+        --exclude-dir=target --exclude-dir=.git \
+        --exclude-dir=node_modules --exclude-dir=dist 2>/dev/null || true)
 
     if [ "$STALE_BANNERS" -gt 0 ]; then
         echo -e "${YELLOW}[WARN]${NC} $STALE_BANNERS files have stale verification banners"
