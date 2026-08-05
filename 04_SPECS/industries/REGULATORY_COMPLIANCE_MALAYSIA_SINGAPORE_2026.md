@@ -1,6 +1,6 @@
 # REGULATORY COMPLIANCE FRAMEWORKS: MALAYSIA & SINGAPORE (2026)
 
-**Verification:** 12,638 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2947 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,638 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2949 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## COMPREHENSIVE GUIDE FOR RIINA SECURITY-FOCUSED PROGRAMMING LANGUAGE
 
