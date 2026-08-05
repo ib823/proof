@@ -2692,6 +2692,49 @@ even if the REQ rows are not:
 4. **A tailwind worth claiming.** CISA's memory-safe-roadmap deadline (1 Jan 2026) has passed, and
    RIINA's buyers are the ones obliged to produce one.
 
+#### EXECUTION SPEC for REQ-45..52 — what to build, what to prove, when it is DONE
+
+Written so a fresh session can execute without re-deriving anything. Every "DONE when" is a
+COMMAND, per Prime Directive 1 — none of them is satisfied by a document saying so.
+
+**Honesty rule that governs this whole block (read before starting).** A compliance profile is a
+**checker, not a theorem**. Adding `Cra`/`Dora` rules does NOT make RIINA "CRA-compliant" or
+"DORA-compliant", and no metric, README line or website claim may say it does. The honest phrasing
+is "RIINA checks N machine-checkable conditions derived from <regulation>"; the regulation's
+remaining obligations are organisational and out of a compiler's reach. Getting this wrong would be
+precisely the Verification-Theatre failure REQ-47 exists to prevent — committed in the same session
+that adds the defence against it.
+
+| REQ | Capability added to RIINA | Where it lands | Proof / enforcement obligation | DONE when (command) |
+|---|---|---|---|---|
+| **45** CRA | `Cra` compliance profile + vuln-handling process + SBOM→VEX | `riina-compliance/src/{lib,rules}.rs`; `SECURITY.md`; `scripts/generate-sbom.sh` | **No Coq.** Rules only. Each rule needs a pos+neg test, per the Gate B pattern | `rule_count(Cra) > 0`; `cargo test -p riina-compliance` green; `bash scripts/generate-sbom.sh` emits VEX; `audit-docs.sh` 0 discrepancies |
+| **46** DORA | `Dora` profile; re-confirm `PciDss` vs 4.0.1 | same | **No Coq.** Rules only | `rule_count(Dora) > 0` + pos/neg per rule; a written note recording which PCI-DSS 4.0.1 future-dated controls map to existing rules |
+| **47** Verification boundary | Per-primitive boundary record for the 9 Coq⇄Rust equivalence proofs | `05_TOOLING/crates/riina-core/` + a machine-readable manifest | **Structural, and self-enforcing**: a test that FAILS if a primitive gains an equivalence claim without a boundary entry (modelled / trusted / NOT covered / method) | new test in `riina-core` red when an entry is removed, green when restored — validate the tripwire by breaking it, per this session's discipline |
+| **48** Crypto-agility | CBOM + typed deprecation (a primitive can be made a compile-time error by date/policy) | `riina-typechecker` (new `TypeError` variant), `riina-core` registry | **Coq REQUIRED**: the deprecation rule is an enforcement rule, so it needs a mechanized counterpart like every other Gate-B property, plus `gate_b_parity` pos+neg tests | Coq lemma compiles in the active build (`make -C 02_FORMAL/coq`), `gate_b_parity::deprecated_primitive_{is_rejected,allowed_is_accepted}` green |
+| **49** Memory-safety roadmap | Public roadmap doc + honest positioning | `docs/` + website | **No Coq.** Must state memory safety is necessary-not-sufficient and name the real differentiator (enforced IFC/effect/CT above it) | doc exists, `audit-docs.sh` clean, no new claim contradicts `metrics.json` |
+| **50** hax/Aeneas spike | Mechanical Rust→Coq extraction for **ONE** primitive | new lane under `02_FORMAL/` | **This is the point**: replaces a hand-written correspondence with a mechanical one. Report cost HONESTLY before extending — a failed spike that is written up is a success | extracted artifact type-checks in Rocq; a written cost/verdict entry in Part 11; `claimLevels` moved ONLY if a real tool verified real content |
+| **51** Reg backlog | NIS2 / AI-Act Art.50 / PDPA-Amendment-2024 refresh | `riina-compliance` | **No Coq.** Note the AI-Act high-risk regime is DELAYED to Dec 2027 — do not build for it now | profiles/refresh land with pos+neg tests; `Pdpa` re-verified against the amended Act |
+| **52** Research currency | Evaluate LLM4Rocq/Strat2Rocq before building bespoke; re-state JALINAN projection vs Kalas | Part 11 entry + `docs/` | **Claims correction**: JALINAN's projection is Rust mirroring Coq, NOT a verified compiler. Say so | Part 11 records the evaluation verdict; no doc claims verified projection |
+
+**Cross-cutting completion criteria — the whole block is DONE only when all of these hold:**
+```bash
+eval $(opam env --switch=rocq) && make -C 02_FORMAL/coq -j$(nproc)   # 328+/328+ .vo, 0 errors
+RUST_MIN_STACK=16777216 cargo test --all --manifest-path 03_PROTO/Cargo.toml   # 0 failed
+cargo test --all --manifest-path 05_TOOLING/Cargo.toml                          # 0 failed
+cargo clippy --all-targets -- -D warnings        # both workspaces, exit 0
+bash scripts/audit-docs.sh                       # 0 discrepancies
+bash scripts/update-proof-ledger.sh --check      # up to date
+bash scripts/public-quality-gates.sh             # all 10 PASS
+riinac verify --full                             # PASS
+```
+Plus, non-negotiably: **0 Admitted / 0 Axiom / 0 Abort** (patterns with the trailing period), no
+metric decrease, and every new guard ships with a NEGATIVE CONTROL that was validated by
+reintroducing the bug and reverting. A checker that cannot fail is worthless.
+
+**Sequencing.** 47 first (cheapest, largest credibility gain, de-risks REQ-28) → 45 → 46 → 49 →
+48 → 50 → 51 → 52. 45/46/49/51 are rule/doc work and can run in parallel with 47/48/50, which touch
+the compiler and the proof tree.
+
 **THE PRIORITY INVERSION (owner decision — deliberately NOT taken here).** The Active Gate Marker is
 **C — Standard Library Hardening**, and Part 11's own protocol says never skip a gate. But REQ-45
 carries a fixed external date that Gate C does not, and REQ-46 covers the vertical REQ-33 already
