@@ -2589,6 +2589,37 @@ proving 328 -> 327 still registers as a real change.
 Expected behaviour now: a repeated `verify` is a no-op; a real change (test count, a check
 flipping) still updates and is picked up by the next commit; and the tree is CLEAN after a push.
 
+**The doc fan-out churn is FIXED too — and it was hiding a correctness bug, not just noise.**
+`sync-metrics.sh` rewrites a `**Verification:**` banner in a COMPUTED set of docs (Tier 1 plus
+every Tier 2 file carrying one — ~40 files), while the pre-commit hook auto-staged a HARDCODED list
+of five. The other ~35 stayed dirty after every commit where a count moved. Worse: the hook staged
+`metrics.json` but NOT the docs it had just rewritten, so **the commit shipped a metrics.json
+disagreeing with its own doc banners** — a silent violation of CLAUDE.md Forbidden #8.
+`audit-docs.sh` could never catch it, because it inspects the WORKING TREE, where both sides had
+been updated. Confirmed by walking the history: `8b47426d` (an earlier session), `bcba007c` and
+`d6be6ff7` each committed a metrics.json and banners with different Rust-test counts.
+
+Fixed in the tracked hook source `00_SETUP/hooks/pre-commit` (remember `.git/hooks` is NOT tracked
+— re-run `install_hooks.sh` after editing): snapshot the dirty set before and after the sync and
+stage exactly the difference, so there is no hardcoded list to drift; leave a file the developer had
+ALREADY modified unstaged and say so, rather than sweeping an unrelated edit into the commit; then
+fail closed if the staged metrics.json and staged README/CLAUDE banners disagree.
+
+**The durable guard is a TEST, not the hook**: `03_PROTO/crates/riinac/tests/metrics_doc_consistency.rs`.
+A test sees the checked-out tree, so it catches the committed state in CI no matter what a hook
+staged — which is precisely why the bug survived hooks and scripts for so long. It WALKS the docs
+rather than listing them, since a hardcoded list is what caused the bug. Validated on real data: with
+metrics.json at 2951 and the docs still at 2949 it failed and named all 39 stale files.
+
+**A warning you should not wave through.** Adding that test made `audit-docs.sh` report "5 files have
+stale verification banners". The five were not docs — they were the test BINARY and its
+incremental-compile caches under `03_PROTO/target/`, which contain the example banner string the test
+uses as data, because the audit's repo-wide `grep -r` had no `--include`/`--exclude-dir`. Fixed
+(restricted to `*.md`, build and VCS dirs excluded). The lesson generalises: the warning count moving
+1 -> 3 was the only signal, and the fastest way to find the cause was a `git worktree` at the
+session's starting commit to diff the two states. A warning nobody can act on trains people to
+ignore warnings.
+
 **Recommended next actions, in order** (external-audit-gated items remain KIV by owner decision —
 REQ-28 and anything needing a third party or a maintainer-held key are explicitly deferred):
 1. **REQ-27 compiler-enforcement parity (P0, Gate B)** — unchanged and still the highest-value
