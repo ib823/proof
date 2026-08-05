@@ -41,7 +41,16 @@ biar hasil = terima(k);         // Receive result
 
 ## Choreography
 
-Choreographic programming ensures multi-party protocols are deadlock-free by construction.
+Choreographic programming makes multi-party protocols deadlock-free by construction — **at
+the level RIINA proves it**: the deadlock-freedom theorems are mechanized in Coq over the
+session calculus (`ST_020`/`CT_117`: 2-party projection duality ⇒ deadlock-free), and the
+compiler's projection (`riina-typechecker`'s `project_choreography`/`multiparty::project`)
+*mirrors* those Coq definitions. The projection implementation itself is **not** a verified
+compiler — for that stronger bar, see Kalas (a choreographic language with an end-to-end
+verified compiler to CakeML, including verified endpoint projection), which is the state of
+the art RIINA does not yet meet. Per-statement channel-operation checking also does not
+exist yet (RIINA has no session-channel surface operations; the projected local *type* is
+checked, not an operation sequence).
 
 ```riina
 koreografi Pembelian {

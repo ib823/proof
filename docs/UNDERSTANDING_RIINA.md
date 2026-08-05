@@ -134,7 +134,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track X — The Traffic Controller (Concurrency)
 
-**What it proves:** When multiple parts of a program run simultaneously, they cannot interfere with each other in harmful ways. No data races, no deadlocks. Uses session types — mathematical descriptions of communication protocols.
+**What it proves:** When multiple parts of a program run simultaneously, they cannot interfere with each other in harmful ways. No data races, no deadlocks — proven for the session *calculus* mechanized in Coq; the compiler's projection mirrors those definitions but is not itself a verified compiler (see `docs/papers/04_session_types.md` for the precise scope). Uses session types — mathematical descriptions of communication protocols.
 
 ### Track Y — The Standards Bureau (Verified Standard Library)
 
