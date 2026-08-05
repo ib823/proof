@@ -483,6 +483,243 @@ fn cra_profile_parses_and_counts() {
     );
 }
 
+
+// ===========================================================================
+// EU DORA rules (REQ-46) — one violation + one ok per rule id.
+// ===========================================================================
+
+#[test]
+fn dora_9_2_secure_default() {
+    assert_violation(
+        &make_let("mfa_enabled", Expr::Bool(false)),
+        ComplianceProfile::Dora,
+        "DORA-9.2",
+    );
+    assert_no_violation(
+        &make_let("mfa_enabled", Expr::Bool(true)),
+        ComplianceProfile::Dora,
+        "DORA-9.2",
+    );
+}
+
+#[test]
+fn dora_9_3b_auth_crypto() {
+    let pure_auth = Expr::LetRec(
+        "payment_auth".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+        Box::new(Expr::Unit),
+    );
+    assert_violation(&pure_auth, ComplianceProfile::Dora, "DORA-9.3b");
+    let crypto_auth = Expr::LetRec(
+        "payment_auth".into(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Box::new(Expr::Lam(
+            "x".into(),
+            Ty::String,
+            Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))),
+        )),
+        Box::new(Expr::Unit),
+    );
+    assert_no_violation(&crypto_auth, ComplianceProfile::Dora, "DORA-9.3b");
+}
+
+#[test]
+fn dora_9_3c_at_rest() {
+    assert_violation(
+        &make_let("account_secret", Expr::String("s".into())),
+        ComplianceProfile::Dora,
+        "DORA-9.3c",
+    );
+    assert_no_violation(
+        &make_classified_let("account_secret", Expr::String("s".into())),
+        ComplianceProfile::Dora,
+        "DORA-9.3c",
+    );
+}
+
+#[test]
+fn dora_9_3c_in_transit() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Unit)),
+        ComplianceProfile::Dora,
+        "DORA-9.3c-net",
+    );
+    assert_no_violation(
+        &Expr::Perform(Effect::NetworkSecure, Box::new(Expr::Unit)),
+        ComplianceProfile::Dora,
+        "DORA-9.3c-net",
+    );
+}
+
+#[test]
+fn dora_9_3c_url() {
+    assert_violation(
+        &Expr::String("http://api.bank.example".into()),
+        ComplianceProfile::Dora,
+        "DORA-9.3c-url",
+    );
+    assert_no_violation(
+        &Expr::String("https://api.bank.example".into()),
+        ComplianceProfile::Dora,
+        "DORA-9.3c-url",
+    );
+}
+
+#[test]
+fn dora_9_3a_sensitive_send() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("iban".into()))),
+        ComplianceProfile::Dora,
+        "DORA-9.3a",
+    );
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("metrics".into()))),
+        ComplianceProfile::Dora,
+        "DORA-9.3a",
+    );
+}
+
+#[test]
+fn dora_9_4c_broad_grant() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Dora,
+        "DORA-9.4c",
+    );
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Dora,
+        "DORA-9.4c",
+    );
+}
+
+#[test]
+fn dora_9_4c_expiry() {
+    assert_violation(
+        &make_let("session_created", Expr::Int(1_700_000_000)),
+        ComplianceProfile::Dora,
+        "DORA-9.4c-exp",
+    );
+    assert_no_violation(
+        &make_let_with_body(
+            "session_created",
+            Expr::Int(1_700_000_000),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit)),
+        ),
+        ComplianceProfile::Dora,
+        "DORA-9.4c-exp",
+    );
+}
+
+#[test]
+fn dora_9_4d_weak_crypto() {
+    assert_violation(&Expr::String("sha1".into()), ComplianceProfile::Dora, "DORA-9.4d");
+    assert_no_violation(
+        &Expr::String("sha3-256".into()),
+        ComplianceProfile::Dora,
+        "DORA-9.4d",
+    );
+}
+
+#[test]
+fn dora_10_1_audit_trail() {
+    assert_violation(
+        &make_let_with_body("x", Expr::Classify(Box::new(Expr::Int(1))), Expr::Unit),
+        ComplianceProfile::Dora,
+        "DORA-10.1",
+    );
+    assert_no_violation(
+        &make_let_with_body(
+            "x",
+            Expr::Classify(Box::new(Expr::Int(1))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("log".into()))),
+        ),
+        ComplianceProfile::Dora,
+        "DORA-10.1",
+    );
+}
+
+#[test]
+fn dora_9_1_availability() {
+    assert_violation(
+        &Expr::LetRec(
+            "spin".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("spin".into())),
+                Box::new(Expr::Unit),
+            )),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Dora,
+        "DORA-9.1",
+    );
+    assert_no_violation(&make_let("ok", Expr::Int(1)), ComplianceProfile::Dora, "DORA-9.1");
+}
+
+#[test]
+fn dora_28_1_third_party_ffi() {
+    assert_violation(
+        &Expr::FFICall {
+            name: "vendor_payment_gateway".into(),
+            args: vec![],
+            ret_ty: Ty::Unit,
+        },
+        ComplianceProfile::Dora,
+        "DORA-28.1",
+    );
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("internal_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::Dora,
+        "DORA-28.1",
+    );
+}
+
+#[test]
+fn dora_16_1_tainted_input() {
+    assert_violation(
+        &make_let("payment_input", Expr::String("raw".into())),
+        ComplianceProfile::Dora,
+        "DORA-16.1",
+    );
+    assert_no_violation(
+        &make_let(
+            "payment_input",
+            Expr::Perform(Effect::Read, Box::new(Expr::Unit)),
+        ),
+        ComplianceProfile::Dora,
+        "DORA-16.1",
+    );
+}
+
+#[test]
+fn dora_9_4a_hardcoded_credential() {
+    assert_violation(
+        &make_let("account_secret", Expr::String("hunter2".into())),
+        ComplianceProfile::Dora,
+        "DORA-9.4a",
+    );
+    assert_no_violation(
+        &make_let(
+            "account_secret",
+            Expr::Perform(Effect::Read, Box::new(Expr::Unit)),
+        ),
+        ComplianceProfile::Dora,
+        "DORA-9.4a",
+    );
+}
+
+#[test]
+fn dora_profile_parses_and_counts() {
+    assert_eq!(parse_profiles("dora").unwrap(), vec![ComplianceProfile::Dora]);
+    assert_eq!(
+        crate::rules::rule_count(ComplianceProfile::Dora),
+        crate::rules::rules_for_profiles(&[ComplianceProfile::Dora]).len(),
+        "rule_count(Dora) must equal the actual number of built rules"
+    );
+}
+
 #[test]
 fn parse_profiles_single() {
     let profiles = parse_profiles("pci-dss").unwrap();
@@ -508,9 +745,9 @@ fn parse_profiles_unknown() {
 }
 
 #[test]
-fn parse_profiles_all_17() {
-    // 16 original + Cra (REQ-45, 2026-08-05).
-    assert_eq!(ComplianceProfile::ALL.len(), 17);
+fn parse_profiles_all_18() {
+    // 16 original + Cra (REQ-45) + Dora (REQ-46), both 2026-08-05.
+    assert_eq!(ComplianceProfile::ALL.len(), 18);
 }
 
 #[test]

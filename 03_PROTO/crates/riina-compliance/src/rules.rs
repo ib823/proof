@@ -42,6 +42,7 @@ pub fn rule_count(profile: ComplianceProfile) -> usize {
         ComplianceProfile::Itar => 12,
         ComplianceProfile::EsgSdg => 30,
         ComplianceProfile::Cra => 15,
+        ComplianceProfile::Dora => 14,
     }
 }
 
@@ -67,6 +68,7 @@ pub fn rules_for_profiles(profiles: &[ComplianceProfile]) -> Vec<ComplianceRule>
             ComplianceProfile::Itar => rules.extend(itar_rules()),
             ComplianceProfile::EsgSdg => rules.extend(esg_sdg_rules()),
             ComplianceProfile::Cra => rules.extend(cra_rules()),
+            ComplianceProfile::Dora => rules.extend(dora_rules()),
         }
     }
     rules
@@ -6322,6 +6324,128 @@ fn cra_rules() -> Vec<ComplianceRule> {
             "CRA-I.2e-declass",
             ComplianceProfile::Cra,
             "Declassifying protected data requires an explicit proof",
+            Severity::Error,
+        ),
+    ]
+}
+
+
+// ===========================================================================
+// EU DORA rules (14) — Regulation (EU) 2022/2554
+//
+// SAME HONESTY SCOPE as the CRA block above: machine-checkable conditions
+// DERIVED FROM DORA's ICT-risk articles, checked on the AST. Passing them is
+// not DORA compliance — governance, testing programmes (Arts. 24-27), incident
+// REPORTING (Arts. 17-23) and register-of-information duties are
+// organisational. Chosen because REQ-33 selects fintech/payments as RIINA's
+// primary vertical, whose EU deployments DORA has governed since 2025-01-17.
+// Rule ids cite the article they derive from.
+// ===========================================================================
+
+fn dora_rules() -> Vec<ComplianceRule> {
+    vec![
+        // Art. 9(2): protection of ICT systems — security features on by default.
+        insecure_default_rule(
+            "DORA-9.2",
+            ComplianceProfile::Dora,
+            "ICT protection mechanisms must not ship disabled",
+            &["encryption_enabled", "tls_enabled", "auth_enabled", "mfa_enabled"],
+            Severity::Error,
+        ),
+        // Art. 9(3)(b): strong authentication mechanisms.
+        auth_crypto_rule(
+            "DORA-9.3b",
+            ComplianceProfile::Dora,
+            "Financial-system authentication must use the Crypto effect",
+            &["auth", "login", "sahkan_pengguna", "payment_auth"],
+            Severity::Error,
+        ),
+        // Art. 9(3)(c): data protected at rest.
+        sensitive_let_rule(
+            "DORA-9.3c",
+            ComplianceProfile::Dora,
+            "Financial secrets/credentials at rest must be classified",
+            &["credential", "private_key", "account_secret", "kata_laluan"],
+            Severity::Error,
+        ),
+        // Art. 9(3)(c): data protected in transit.
+        insecure_network_rule(
+            "DORA-9.3c-net",
+            ComplianceProfile::Dora,
+            "Financial data in transit must use a secure channel",
+            Severity::Error,
+        ),
+        insecure_url_rule(
+            "DORA-9.3c-url",
+            ComplianceProfile::Dora,
+            "Plaintext http:// endpoints are prohibited in ICT services",
+            Severity::Error,
+        ),
+        // Art. 9(3)(a): integrity — sensitive values never leave raw.
+        sensitive_network_send_rule(
+            "DORA-9.3a",
+            ComplianceProfile::Dora,
+            "Sensitive financial values must not be sent raw over the network",
+            &["credential", "token", "account", "iban"],
+            Severity::Error,
+        ),
+        // Art. 9(4)(c): policies limiting access — least privilege.
+        broad_grant_rule(
+            "DORA-9.4c",
+            ComplianceProfile::Dora,
+            "Broad capability grants (System) violate least-privilege access",
+            Severity::Error,
+        ),
+        // Art. 9(4)(c): temporal access control — keys/sessions must expire.
+        temporal_no_expiry_rule(
+            "DORA-9.4c-exp",
+            ComplianceProfile::Dora,
+            "Keys and sessions must carry an expiry (Time-effect check)",
+            &["key_created", "session_created", "token_created"],
+            Severity::Warning,
+        ),
+        // Art. 9(4)(d): cryptographic controls — no known-weak algorithms.
+        weak_crypto_rule(
+            "DORA-9.4d",
+            ComplianceProfile::Dora,
+            "Known-weak algorithms are prohibited in ICT risk controls",
+            Severity::Error,
+        ),
+        // Art. 10: detection — anomalous-activity logging.
+        audit_trail_rule(
+            "DORA-10.1",
+            ComplianceProfile::Dora,
+            "Security operations must leave an audit trail for detection",
+            Severity::Error,
+        ),
+        // Art. 9(1): availability/resilience of ICT systems.
+        unbounded_recursion_rule(
+            "DORA-9.1",
+            ComplianceProfile::Dora,
+            "Unbounded recursion is an ICT-availability hazard",
+            Severity::Warning,
+        ),
+        // Art. 28: ICT third-party risk — every FFI boundary is third-party ICT.
+        ffi_review_rule(
+            "DORA-28.1",
+            ComplianceProfile::Dora,
+            "FFI crosses the ICT third-party boundary and requires review",
+            Severity::Warning,
+        ),
+        // Art. 16(1): input from external sources sanitised before processing.
+        tainted_input_rule(
+            "DORA-16.1",
+            ComplianceProfile::Dora,
+            "External input must be sanitised before financial processing",
+            &["user_input", "payment_input", "form_input", "request_body"],
+            Severity::Error,
+        ),
+        // Art. 9(4)(a): no hardcoded access credentials in ICT assets.
+        hardcoded_credential_rule(
+            "DORA-9.4a",
+            ComplianceProfile::Dora,
+            "Hardcoded credentials violate ICT access-management policy",
+            &["password", "token", "api_key", "account_secret"],
             Severity::Error,
         ),
     ]

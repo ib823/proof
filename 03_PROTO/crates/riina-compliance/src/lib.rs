@@ -58,6 +58,8 @@ pub enum ComplianceProfile {
     EsgSdg,
     /// EU Cyber Resilience Act (Regulation (EU) 2024/2847)
     Cra,
+    /// EU Digital Operational Resilience Act (Regulation (EU) 2022/2554)
+    Dora,
 }
 
 impl ComplianceProfile {
@@ -80,6 +82,7 @@ impl ComplianceProfile {
         Self::Itar,
         Self::EsgSdg,
         Self::Cra,
+        Self::Dora,
     ];
 
     /// CLI slug (lowercase, hyphenated).
@@ -102,6 +105,7 @@ impl ComplianceProfile {
             Self::Itar => "itar",
             Self::EsgSdg => "esg-sdg",
             Self::Cra => "cra",
+            Self::Dora => "dora",
         }
     }
 
@@ -132,6 +136,11 @@ impl ComplianceProfile {
                 "EU CRA: Cyber Resilience Act (Regulation (EU) 2024/2847) — machine-checkable \
                  conditions derived from Annex I; NOT a conformity assessment"
             }
+            Self::Dora => {
+                "EU DORA: Digital Operational Resilience Act (Regulation (EU) 2022/2554) — \
+                 machine-checkable conditions derived from the ICT-risk articles; NOT a \
+                 conformity assessment"
+            }
         }
     }
 }
@@ -158,6 +167,7 @@ impl FromStr for ComplianceProfile {
             "itar" => Ok(Self::Itar),
             "esg-sdg" => Ok(Self::EsgSdg),
             "cra" => Ok(Self::Cra),
+            "dora" => Ok(Self::Dora),
             _ => Err(format!("Unknown compliance profile: '{s}'")),
         }
     }
