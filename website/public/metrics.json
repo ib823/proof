@@ -1,24 +1,24 @@
 {
-  "generated": "2026-08-06T16:35:13Z",
-  "generatedHuman": "August 06, 2026 at 16:35 UTC",
+  "generated": "2026-08-06T22:02:04Z",
+  "generatedHuman": "August 06, 2026 at 22:02 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "c0bfe7151",
+    "commit": "9dcd20e3a",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 12665,
+    "qedActive": 12678,
     "qedDeprecated": 758,
-    "qedTotal": 13423,
+    "qedTotal": 13436,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 370,
-    "filesActive": 330,
+    "filesTotal": 371,
+    "filesActive": 331,
     "domains": 252,
     "prover": "Rocq 9.1.1"
   },
@@ -93,15 +93,15 @@
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 12405,
-    "assertionsRaw": 12405,
+    "assertions": 12431,
+    "assertionsRaw": 12431,
     "compiledAssertions": 25,
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
     "smokeNote": "assertionsRaw is the corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
     "quarantined": false,
-    "files": 317,
+    "files": 318,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
@@ -127,7 +127,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 10745,
-    "totalProofsAllProvers": 74508,
+    "totalProofsAllProvers": 74547,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -148,7 +148,7 @@
     "nonCoqMechanization": {
       "reportFresh": false,
       "overallMechanized": false,
-      "source": "missing_or_stale",
+      "source": "cached_metrics",
       "pending": {
         "lean": "noncoq_report_missing_or_stale",
         "isabelle": "noncoq_report_missing_or_stale",
@@ -172,7 +172,7 @@
       }
     },
     "coqTiers": {
-      "core": 1814,
+      "core": 1827,
       "domain": 10851,
       "domainTrivial": 1951
     }
@@ -196,8 +196,8 @@
   "rust": {
     "tests": 3002,
     "testsVerified": 3002,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 2998,
+    "testsSource": "cached_verified",
     "crates": 19
   },
   "examples": 165,
