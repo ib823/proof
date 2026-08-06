@@ -3,6 +3,11 @@
 /// Demonstrates: maintaining purity, IO at periphery, functional core
 
 /// Tulen - core logic
+fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan Baca {
+    /// Simulasi pembacaan nombor dari pengguna
+    Ok(42)
+}
+
 fungsi kiira_gaji(
     gaji_asas: Nombor,
     jam_lebih_waktu: Nombor
