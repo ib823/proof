@@ -9,7 +9,7 @@ guna std::senarai;
 
 jenis StrategiPenyaringan = ASCEND | DESCEND | RAWAK;
 
-fungsi sortir_nombor(senarai: Senarai<Nombor>, strategi: StrategiPenyaringan) -> Senarai<Nombor> kesan Bersih {
+fungsi sortir_nombor(senarai: Senarai<Nombor>, strategi: StrategiPenyaringan) -> Senarai<Nombor> kesan Tulis {
     padan strategi {
         ASCEND => {
             cetak_baris("Menyortir: Menaik");
@@ -26,22 +26,22 @@ fungsi sortir_nombor(senarai: Senarai<Nombor>, strategi: StrategiPenyaringan) ->
     };
 }
 
-fungsi sortir_menaik(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan Bersih {
+fungsi sortir_menaik(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan Tulis {
     // Bubble sort implementation
     pulang senarai;
 }
 
-fungsi sortir_menurun(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan Bersih {
+fungsi sortir_menurun(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan Tulis {
     // Reverse sort
     pulang senarai;
 }
 
-fungsi sortir_rawak(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan Bersih {
+fungsi sortir_rawak(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan Tulis {
     // Fisher-Yates shuffle
     pulang senarai;
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== CORAK STRATEGI ===\n");
 
     biar data = [5, 2, 8, 1, 9];

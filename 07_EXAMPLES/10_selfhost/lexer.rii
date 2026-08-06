@@ -7,11 +7,11 @@
 fungsi ialah_huruf(c: Nombor) -> Benar kesan Bersih {
     kalau c >= 65 {
         kalau c <= 90 {
-            benar
+            betul
         } lain {
             kalau c >= 97 {
                 kalau c <= 122 {
-                    benar
+                    betul
                 } lain {
                     salah
                 }
@@ -29,7 +29,7 @@ fungsi ialah_huruf(c: Nombor) -> Benar kesan Bersih {
 fungsi ialah_digit(c: Nombor) -> Benar kesan Bersih {
     kalau c >= 48 {
         kalau c <= 57 {
-            benar
+            betul
         } lain {
             salah
         }
@@ -42,13 +42,13 @@ fungsi ialah_digit(c: Nombor) -> Benar kesan Bersih {
 // Check if character is whitespace
 fungsi ialah_ruang(c: Nombor) -> Benar kesan Bersih {
     kalau c == 32 {
-        benar
+        betul
     } lain {
         kalau c == 10 {
-            benar
+            betul
         } lain {
             kalau c == 9 {
-                benar
+                betul
             } lain {
                 salah
             }
@@ -59,19 +59,19 @@ fungsi ialah_ruang(c: Nombor) -> Benar kesan Bersih {
 // Semak sama ada aksara ialah huruf atau digit
 // Check if character is alphanumeric
 fungsi ialah_huruf_digit(c: Nombor) -> Benar kesan Bersih {
-    kalau ialah_huruf(c) { benar } lain { ialah_digit(c) }
+    kalau ialah_huruf(c) { betul } lain { ialah_digit(c) }
 }
 
 // Semak sama ada aksara ialah simbol operator
 // Check if character is an operator symbol
 fungsi ialah_operator(c: Nombor) -> Benar kesan Bersih {
-    kalau c == 43 { benar }           // +
-    lain kalau c == 45 { benar }      // -
-    lain kalau c == 42 { benar }      // *
-    lain kalau c == 47 { benar }      // /
-    lain kalau c == 61 { benar }      // =
-    lain kalau c == 60 { benar }      // <
-    lain kalau c == 62 { benar }      // >
+    kalau c == 43 { betul }           // +
+    lain kalau c == 45 { betul }      // -
+    lain kalau c == 42 { betul }      // *
+    lain kalau c == 47 { betul }      // /
+    lain kalau c == 61 { betul }      // =
+    lain kalau c == 60 { betul }      // <
+    lain kalau c == 62 { betul }      // >
     lain { salah }
 }
 

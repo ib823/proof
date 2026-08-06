@@ -21,7 +21,7 @@ jenis PenggunaTersahkan = {
 };
 
 /// Safe email constructor
-fungsi cipta_emel(teks: Teks) -> Mungkin<Emel> kesan Bersih {
+fungsi cipta_emel(teks: Teks) -> Mungkin<Emel> kesan Tulis {
     kalau !mengandungi(teks, "@") || !mengandungi(teks, ".") {
         cetak_baris("Ralat: Emel tidak sah");
         pulang Tiada;
@@ -32,7 +32,7 @@ fungsi cipta_emel(teks: Teks) -> Mungkin<Emel> kesan Bersih {
 }
 
 /// Safe age constructor
-fungsi cipta_umur(nombor: Nombor) -> Mungkin<Umur> kesan Bersih {
+fungsi cipta_umur(nombor: Nombor) -> Mungkin<Umur> kesan Tulis {
     kalau nombor < 0 || nombor > 150 {
         cetak_baris("Ralat: Umur tidak sah (0-150)");
         pulang Tiada;
@@ -47,7 +47,7 @@ fungsi cipta_pengguna(
     nama: Teks,
     emel_teks: Teks,
     umur_nombor: Nombor
-) -> Mungkin<PenggunaTersahkan> kesan Bersih {
+) -> Mungkin<PenggunaTersahkan> kesan Tulis {
     biar mungkin_emel = cipta_emel(emel_teks);
     biar mungkin_umur = cipta_umur(umur_nombor);
 
@@ -67,7 +67,7 @@ fungsi cipta_pengguna(
     };
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== PEMBINA PINTAR ===\n");
 
     // Valid user
@@ -92,10 +92,10 @@ awam fungsi utama() -> kesan Bersih {
     };
 }
 
-fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Bersih {
+fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Tulis {
     pulang betul;
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format(s: Teks, arg: T) -> Teks kesan Tulis {
     pulang s;
 }

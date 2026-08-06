@@ -38,7 +38,7 @@ biar ubah data_konsumen: Senarai<DataKonsumen> = [];
 biar ubah preferensi_jual: Senarai<PreferensiBerjual> = [];
 
 /// CCPA Section 1798.100: Right to know
-fungsi hak_tahu_data_apa(id_konsumen: Teks) -> Teks kesan Bersih {
+fungsi hak_tahu_data_apa(id_konsumen: Teks) -> Teks kesan Tulis {
     cetak_baris(format!("Memproses hak tahu untuk {}", id_konsumen));
 
     biar data_dikumpul = [
@@ -59,7 +59,7 @@ fungsi hak_tahu_data_apa(id_konsumen: Teks) -> Teks kesan Bersih {
 }
 
 /// CCPA Section 1798.105: Right to delete
-fungsi hak_penghapusan(id_konsumen: Teks) -> Benar kesan Bersih {
+fungsi hak_penghapusan(id_konsumen: Teks) -> Benar kesan Tulis {
     cetak_baris(format!("Memproses permintaan penghapusan untuk {}", id_konsumen));
 
     biar data_baru = [];
@@ -84,7 +84,7 @@ fungsi hak_penghapusan(id_konsumen: Teks) -> Benar kesan Bersih {
 }
 
 /// CCPA Section 1798.120: Right to opt-out of sale
-fungsi hak_tolak_penjualan(id_konsumen: Teks) -> Benar kesan Bersih {
+fungsi hak_tolak_penjualan(id_konsumen: Teks) -> Benar kesan Tulis {
     cetak_baris(format!("Memproses tolak penjualan data untuk {}", id_konsumen));
 
     biar preferensi = {
@@ -101,7 +101,7 @@ fungsi hak_tolak_penjualan(id_konsumen: Teks) -> Benar kesan Bersih {
 }
 
 /// CCPA Section 1798.140: Do Not Sell my Personal Information
-fungsi cek_jangan_jual_sinyal(id_konsumen: Teks) -> Benar kesan Bersih {
+fungsi cek_jangan_jual_sinyal(id_konsumen: Teks) -> Benar kesan Tulis {
     // Check if consumer has opted out via Global Opt-Out Signal
     untuk preferensi dalam preferensi_jual {
         kalau preferensi.konsumen_id == id_konsumen {
@@ -117,7 +117,7 @@ fungsi cek_jangan_jual_sinyal(id_konsumen: Teks) -> Benar kesan Bersih {
 }
 
 /// CCPA Section 1798.150: Do not discriminate
-fungsi semak_diskriminasi(id_konsumen: Teks) -> Benar kesan Bersih {
+fungsi semak_diskriminasi(id_konsumen: Teks) -> Benar kesan Tulis {
     // Verify: No penalties for exercising CCPA rights
     cetak_baris("Menyemak bahwa hak CCPA tidak menyebabkan diskriminasi");
     cetak_baris("- Harga sama untuk yang keluar vs. tidak");
@@ -128,7 +128,7 @@ fungsi semak_diskriminasi(id_konsumen: Teks) -> Benar kesan Bersih {
 }
 
 /// Authorized agent handling
-fungsi proses_permintaan_agen(id_konsumen: Teks, id_agen: Teks) -> Benar kesan Bersih {
+fungsi proses_permintaan_agen(id_konsumen: Teks, id_agen: Teks) -> Benar kesan Tulis {
     // CCPA: Consumer can use authorized agent
     cetak_baris(format!("Permintaan dari agen {} untuk konsumen {}", id_agen, id_konsumen));
 
@@ -145,7 +145,7 @@ fungsi proses_permintaan_agen(id_konsumen: Teks, id_agen: Teks) -> Benar kesan B
 }
 
 /// California Privacy Rights for Minors (COPPA-like)
-fungsi proteksi_minor(id_konsumen: Teks, umur: Nombor) -> kesan Bersih {
+fungsi proteksi_minor(id_konsumen: Teks, umur: Nombor) -> kesan Tulis {
     kalau umur < 13 {
         cetak_baris("COPPA: Persetujuan orang tua diperlukan untuk data pelajar");
     } lain kalau umur < 16 {
@@ -155,7 +155,7 @@ fungsi proteksi_minor(id_konsumen: Teks, umur: Nombor) -> kesan Bersih {
 }
 
 /// Annual privacy notice requirement
-fungsi kirim_pemberitahuan_privasi_tahunan() -> kesan Bersih {
+fungsi kirim_pemberitahuan_privasi_tahunan() -> kesan Tulis {
     cetak_baris("PEMBERITAHUAN PRIVASI CCPA:");
     cetak_baris("Hak-hak Anda:");
     cetak_baris("1. Hak Tahu: Tahu data apa yang kami kumpulkan");
@@ -166,7 +166,7 @@ fungsi kirim_pemberitahuan_privasi_tahunan() -> kesan Bersih {
 }
 
 /// Data sale transparency
-fungsi laporkan_penjualan_data() -> Teks kesan Bersih {
+fungsi laporkan_penjualan_data() -> Teks kesan Tulis {
     biar laporan = "LAPORAN PENJUALAN DATA:\n";
 
     laporan = laporan + "Kategori Data Dijual:\n";
@@ -187,7 +187,7 @@ fungsi laporkan_penjualan_data() -> Teks kesan Bersih {
     pulang laporan;
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== KEPATUHAN HAK PRIVASI CCPA ===");
 
     biar id_konsumen = "konsumen_12345";
@@ -216,20 +216,20 @@ awam fungsi utama() -> kesan Bersih {
 }
 
 // Helper functions
-fungsi teks::mengandungi(teks: Teks, cari: Teks) -> Benar kesan Bersih {
+fungsi teks::mengandungi(teks: Teks, cari: Teks) -> Benar kesan Tulis {
     pulang betul;
 }
 
-fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
+fungsi format(s: Teks, arg: Teks) -> Teks kesan Tulis {
     pulang s;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }
 
 modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
+    fungsi masa_unix() -> Nombor kesan Tulis {
         pulang 0;
     }
 }

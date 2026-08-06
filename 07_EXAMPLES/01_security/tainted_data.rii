@@ -34,9 +34,9 @@ fungsi tandakan_tercemar_pengguna(nilai: Teks) -> DataTercemar<Teks> kesan Baca 
     }
 }
 
-fungsi tandakan_tercemar_fail(nama_fail: Teks) -> DataTercemar<Teks> kesan Baca {
+fungsi tandakan_tercemar_fail(nama_fail: Teks) -> DataTercemar<Teks> kesan SistemFail {
     /// Tandakan data dari fail sebagai tercemar
-    biar kandungan = baca_fail(nama_fail);
+    biar kandungan = fail_baca(nama_fail);
     DataTercemar {
         nilai: kandungan,
         sumber: Sumber.Fail,

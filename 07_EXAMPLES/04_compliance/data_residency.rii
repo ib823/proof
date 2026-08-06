@@ -44,7 +44,7 @@ biar ubah lokasi_bayaran: Senarai<LokasiBayaran> = [];
 fungsi sahkan_kepatuhan_tempat_tinggal(
     lokasi_penyimpanan: KawasanTempat,
     tempat_tinggal_perlu: KawasanTempat
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     padan (lokasi_penyimpanan, tempat_tinggal_perlu) {
         (EU, EU) => betul,
         (MY, MY) => betul,
@@ -66,7 +66,7 @@ fungsi sahkan_kepatuhan_tempat_tinggal(
 fungsi sahkan_mekanisme_pemindahan_gdpr(
     asal: KawasanTempat,
     destinasi: KawasanTempat
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     kalau asal != EU {
         pulang betul; // Only applies to EU data
     }
@@ -101,7 +101,7 @@ fungsi sahkan_mekanisme_pemindahan_gdpr(
 }
 
 /// PDPA Requirement: Malaysia data localization
-fungsi sahkan_pelokalan_pdpa(lokasi: KawasanTempat) -> Benar kesan Bersih {
+fungsi sahkan_pelokalan_pdpa(lokasi: KawasanTempat) -> Benar kesan Tulis {
     // PDPA requires certain data stored in Malaysia
     kalau lokasi == MY {
         cetak_baris("PDPA: Data disimpan di Malaysia ✓");
@@ -118,7 +118,7 @@ fungsi sahkan_pelokalan_pdpa(lokasi: KawasanTempat) -> Benar kesan Bersih {
 fungsi semak_kedaulatan_data(
     id_subjek: Teks,
     lokasi_bayaran: KawasanTempat
-) -> (Benar, Teks) kesan Bersih {
+) -> (Benar, Teks) kesan Tulis {
     // Find subject's residency requirement
     biar mungkin_subjek = cari_subjek(id_subjek);
 
@@ -149,7 +149,7 @@ fungsi enkripsi_pemindahan_regional(
     asal: KawasanTempat,
     destinasi: KawasanTempat,
     adalah_eu: Benar
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     kalau adalah_eu && destinasi != EU {
         cetak_baris("Enkripsi transit wajib untuk data EU keluar region");
         cetak_baris("Menggunakan: AES-256-GCM + TLS 1.3");
@@ -161,7 +161,7 @@ fungsi enkripsi_pemindahan_regional(
 }
 
 /// Geo-redundancy with compliance
-fungsi rencana_geo_redundansi() -> Senarai<Teks> kesan Bersih {
+fungsi rencana_geo_redundansi() -> Senarai<Teks> kesan Tulis {
     biar rencana = [
         "Data EU: Replika di EU hanya (Jerman + Prancis)",
         "Data MY: Replika di Malaysia + SG untuk backup",
@@ -177,7 +177,7 @@ fungsi catatkan_pergerakan_data(
     asal: KawasanTempat,
     destinasi: KawasanTempat,
     alasan: Teks
-) -> kesan Bersih {
+) -> kesan Tulis {
     cetak_baris(format!(
         "AUDIT: Data {} dipindahkan {} → {} ({})",
         id_subjek,
@@ -191,7 +191,7 @@ fungsi catatkan_pergerakan_data(
 fungsi padamkan_dari_kawasan(
     id_subjek: Teks,
     kawasan: KawasanTempat
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     cetak_baris(format!(
         "Menghapus data {} dari {}",
         id_subjek,
@@ -204,7 +204,7 @@ fungsi padamkan_dari_kawasan(
     pulang betul;
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== PENGUATKUASAAN TEMPAT TINGGAL DATA ===\n");
 
     // Test case 1: EU citizen data
@@ -237,11 +237,11 @@ awam fungsi utama() -> kesan Bersih {
 }
 
 // Helper functions
-fungsi cari_subjek(id: Teks) -> Mungkin<SubjekData> kesan Bersih {
+fungsi cari_subjek(id: Teks) -> Mungkin<SubjekData> kesan Tulis {
     pulang Tiada;
 }
 
-fungsi kawasan_ke_teks(kawasan: KawasanTempat) -> Teks kesan Bersih {
+fungsi kawasan_ke_teks(kawasan: KawasanTempat) -> Teks kesan Tulis {
     padan kawasan {
         EU => "Uni Eropa",
         MY => "Malaysia",
@@ -251,10 +251,10 @@ fungsi kawasan_ke_teks(kawasan: KawasanTempat) -> Teks kesan Bersih {
     };
 }
 
-fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
+fungsi format(s: Teks, arg: Teks) -> Teks kesan Tulis {
     pulang s;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }

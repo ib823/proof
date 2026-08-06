@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-05T23:53:12Z
-**Git SHA:** c0888da4a
+**Generated:** 2026-08-06T13:00:31Z
+**Git SHA:** b00b945d7
 **Mode:** full
 **Status:** PASS
 
@@ -10,8 +10,8 @@
 |-------|--------|---------|
 | Rust Tests | PASS | 3002 tests |
 | Clippy | PASS | 0 warnings |
-| _CoqProject Completeness | PASS | all 329 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 329 .vo files compiled in 164s |
+| _CoqProject Completeness | PASS | all 330 .v files listed in _CoqProject |
+| Coq Compilation | PASS | 330 .vo files compiled in 202s |
 | Coq Kernel Assumptions | PASS | 5 capstones attested; axioms within reviewed whitelist (1 allowed: funext) |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
@@ -30,7 +30,7 @@
 | Verus admit Scan | PASS | 0 admit in 323 files (6395 proof fns) |
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
-| Cross-Prover Validation (10 provers) | PASS | Grand total: 104505 | Coq: 12646 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12282 | Alloy: 11627 | SMT: 12405 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
+| Cross-Prover Validation (10 provers) | PASS | Grand total: 104524 | Coq: 12665 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12282 | Alloy: 11627 | SMT: 12405 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
 | Transpiler Staleness | PASS | all transpiler lanes are generated/non-compiled per metrics; freshness check skipped |
-| Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12646, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
+| Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12665, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
