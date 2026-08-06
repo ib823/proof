@@ -1,56 +1,57 @@
 /// iterator.rii
 /// Iterator pattern for sequential access to collection elements
 /// Demonstrates abstraction of iteration logic
+/// Gaya ungkapan: `dapat_seterusnya` memulangkan (nilai, pengulangi BARU)
 
-modul corak_pengulangi;
-
-guna std::senarai;
-guna std::teks;
-
-jenis Pengulangi = {
+jenis Pengulangi {
     elemen_semasa: Nombor,
     senarai_lengkap: Senarai<Teks>,
-};
+}
 
 fungsi cipta_pengulangi(senarai: Senarai<Teks>) -> Pengulangi kesan Bersih {
-    pulang {
+    Pengulangi {
         elemen_semasa: 0,
         senarai_lengkap: senarai,
-    };
-}
-
-fungsi ada_seterusnya(ubah pengulangi: Pengulangi) -> Benar kesan Bersih {
-    pulang pengulangi.elemen_semasa < panjang(pengulangi.senarai_lengkap);
-}
-
-fungsi dapat_seterusnya(ubah pengulangi: Pengulangi) -> Mungkin<Teks> kesan Bersih {
-    kalau ada_seterusnya(pengulangi) {
-        biar nilai = pengulangi.senarai_lengkap[pengulangi.elemen_semasa];
-        pengulangi.elemen_semasa = pengulangi.elemen_semasa + 1;
-        pulang Ada(nilai);
     }
-
-    pulang Tiada;
 }
 
-awam fungsi utama() -> kesan Bersih {
-    cetak_baris("=== CORAK PENGULANGI ===\n");
+fungsi ada_seterusnya(pengulangi: Pengulangi) -> Benar kesan Bersih {
+    pengulangi.elemen_semasa < senarai_panjang(pengulangi.senarai_lengkap)
+}
+
+/// Pulangkan elemen semasa BERSAMA pengulangi yang sudah maju satu langkah
+fungsi dapat_seterusnya(pengulangi: Pengulangi) -> Mungkin<(Teks, Pengulangi)> kesan Bersih {
+    kalau ada_seterusnya(pengulangi) {
+        biar nilai: Teks = pengulangi.senarai_lengkap[pengulangi.elemen_semasa];
+        biar berikut = Pengulangi {
+            elemen_semasa: pengulangi.elemen_semasa + 1,
+            senarai_lengkap: pengulangi.senarai_lengkap,
+        };
+        Ada((nilai, berikut))
+    } lain {
+        Tiada
+    }
+}
+
+/// Pandu pengulangi sehingga habis (rekursif — tiada mutasi)
+fungsi cetak_semua(pengulangi: Pengulangi) -> Nombor kesan Tulis {
+    padan dapat_seterusnya(pengulangi) {
+        Ada(pasangan) => {
+            cetak("- ");
+            cetak(pertama pasangan);
+            cetak("\n");
+            cetak_semua(kedua pasangan)
+        },
+        Tiada => 0,
+    }
+}
+
+fungsi utama() -> Nombor kesan Tulis {
+    cetak("=== CORAK PENGULANGI ===\n");
 
     biar senarai = ["pertama", "kedua", "ketiga"];
-    biar ubah pengulangi = cipta_pengulangi(senarai);
+    biar pengulangi = cipta_pengulangi(senarai);
+    biar jumlah_dicetak = cetak_semua(pengulangi);
 
-    ulang {
-        padan dapat_seterusnya(pengulangi) {
-            Ada(nilai) => cetak_baris(format!("- {}", nilai)),
-            Tiada => ulang_akhir,
-        };
-    };
-}
-
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
-}
-
-fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
-    pulang s;
 }

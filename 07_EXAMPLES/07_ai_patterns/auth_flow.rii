@@ -35,16 +35,31 @@ jenis HasilPengesahan =
     | TokenTamatTempoh;
 
 /// Hash password with salt — cryptographic effect required
+fungsi jana_rawak_hex(panjang_bait: Nombor) -> Teks kesan Kripto {
+    /// Simulasi penjanaan heks rawak
+    "af03bc9d1e"
+}
+
+fungsi bandingkan_malar(a: Teks, b: Teks) -> Benar kesan MasaTetap {
+    /// Simulasi perbandingan masa-tetap
+    a == b
+}
+
+fungsi sha256(data: Teks) -> Teks kesan Kripto {
+    /// Simulasi hash SHA-256 (primitif kripto sebenar belum dalam stdlib contoh)
+    "hash_" + data
+}
+
 fungsi hash_kata_laluan(kata_laluan: Teks, garam: Teks) -> Rahsia<Teks> kesan Kripto {
     biar dicampur = kata_laluan + ":" + garam;
-    biar hash = Kripto::sha256(dicampur);
-    pulang Rahsia(hash);
+    biar hash = sha256(dicampur);
+    pulang (sulit hash);
 }
 
 /// Generate a cryptographically random token
 fungsi jana_token(panjang_bait: Nombor) -> Rahsia<Teks> kesan Kripto {
-    biar rawak = Kripto::jana_rawak_hex(panjang_bait);
-    pulang Rahsia(rawak);
+    biar rawak = jana_rawak_hex(panjang_bait);
+    pulang (sulit rawak);
 }
 
 /// Authenticate user against stored credentials
@@ -70,9 +85,9 @@ fungsi sahkan_pengguna(
             biar hash_cubaan = hash_kata_laluan(kata_laluan, k.garam);
 
             /// Constant-time comparison of secrets
-            biar sama = Kripto::bandingkan_malar(
-                dedah(hash_cubaan, bukti: "pengesahan_perbandingan"),
-                dedah(k.kata_laluan_hash, bukti: "pengesahan_perbandingan")
+            biar sama = bandingkan_malar(
+                (dedah hash_cubaan dengan bukti hash_cubaan),
+                (dedah k.kata_laluan_hash dengan bukti k.kata_laluan_hash)
             );
 
             kalau sama {
@@ -85,7 +100,7 @@ fungsi sahkan_pengguna(
                     nilai: jana_token(64),
                     tamat_tempoh: Masa::masa_unix() + 604800,
                 };
-                pulang Berjaya(token_akses, token_segar);
+                pulang Berjaya((token_akses, token_segar));
             } lain {
                 pulang KataLaluanSalah;
             }
@@ -94,13 +109,13 @@ fungsi sahkan_pengguna(
 }
 
 /// Validate an access token (check expiry)
-fungsi sahkan_token(token: TokenAkses) -> Hasil<Teks, Teks> kesan Bersih {
+fungsi sahkan_token(token_akses: TokenAkses) -> Hasil<Teks, Teks> kesan Bersih {
     biar sekarang = 0; /// Simulated current time
-    kalau sekarang > token.tamat_tempoh {
+    kalau sekarang > token_akses.tamat_tempoh {
         pulang Ralat("Token tamat tempoh");
     }
     /// Declassify token for internal lookup — auditable
-    biar nilai_token = dedah(token.nilai, bukti: "pengesahan_token_dalaman");
+    biar nilai_token = (dedah token_akses.nilai dengan bukti token_akses.nilai);
     pulang Ok(nilai_token);
 }
 
@@ -127,16 +142,17 @@ fungsi segar_semula_token(
 fungsi log_pengesahan(
     nama_pengguna: Teks,
     berjaya: Benar,
-    token: Mungkin<TokenAkses>
+    token_akses: Mungkin<TokenAkses>
 ) -> kesan Tulis {
     cetak_baris("=== LOG PENGESAHAN ===");
     cetak_baris("Pengguna: " + nama_pengguna);
-    cetak_baris("Status: " + kalau berjaya { "BERJAYA" } lain { "GAGAL" });
+    biar teks_status = kalau berjaya { "BERJAYA" } lain { "GAGAL" };
+    cetak_baris("Status: " + teks_status);
 
     /// Only log token prefix for audit — never full token
-    padan token {
+    padan token_akses {
         Ada(t) => {
-            biar nilai_penuh = dedah(t.nilai, bukti: "audit_log_prefiks_sahaja");
+            biar nilai_penuh = (dedah t.nilai dengan bukti t.nilai);
             biar prefiks = potong(nilai_penuh, 0, 8);
             cetak_baris("Token (prefiks): " + prefiks + "...");
         },
@@ -147,7 +163,7 @@ fungsi log_pengesahan(
 }
 
 /// Helper
-fungsi potong(teks: Teks, mula: Nombor, tamat: Nombor) -> Teks kesan Bersih {
+fungsi potong(teks: Teks, mula: Nombor, hujung: Nombor) -> Teks kesan Bersih {
     pulang teks;
 }
 
@@ -168,7 +184,7 @@ ujian "pengesahan_kata_laluan_betul" {
 
     biar hasil = sahkan_pengguna("ahmad", "kata_laluan_sebenar", kelayakan);
     padan hasil {
-        Berjaya(_, _) => tegaskan(betul),
+        Berjaya((_, _)) => tegaskan(betul),
         _ => tegaskan(salah),
     };
 }

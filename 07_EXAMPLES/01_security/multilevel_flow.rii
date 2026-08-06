@@ -98,7 +98,7 @@ fungsi dedah_jika_sah(
         biar rahsia = padan d.nilai {
             Rahsia(nilai) -> nilai,
         };
-        Ok(dedah(Rahsia(rahsia), bukti: "taraf_sah"))
+        Ok((dedah rahsia dengan bukti rahsia))
     } lain {
         Ralat("Tiada akses")
     }
@@ -125,7 +125,7 @@ fungsi utama() -> Nombor kesan (Tulis, Bersih) {
     cetak("=== Aliran Maklumat Berbilang Aras ===\n");
 
     /// Buat data pada pelbagai taraf
-    biar awam = buat_data_awam("Data awam");
+    biar data_taraf_awam = buat_data_awam("Data awam");
     biar dalaman = buat_data_dalaman("Data dalaman");
     biar rahsia = buat_data_rahsia("Data rahsia");
 
@@ -143,7 +143,7 @@ fungsi utama() -> Nombor kesan (Tulis, Bersih) {
     cetak("\n");
 
     /// Campurkan data
-    biar campuran = campurkan_data_berlevel(awam, dalaman);
+    biar campuran = campurkan_data_berlevel(data_taraf_awam, dalaman);
     cetak("Data dicampurkan pada taraf: X\n");
 
     cetak("Selesai\n");

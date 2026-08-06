@@ -3,6 +3,16 @@
 /// Demonstrates: implicit effect tracking, type inference
 
 /// Compiler automatically infers kesan Bersih
+fungsi minta_input(gesaan: Teks) -> Teks kesan Baca {
+    /// Simulasi input pengguna
+    "jawapan_simulasi"
+}
+
+fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan Baca {
+    /// Simulasi pembacaan nombor dari pengguna
+    Ok(42)
+}
+
 fungsi tambah(x: Nombor, y: Nombor) -> Nombor {
     x + y
 }
@@ -21,7 +31,7 @@ fungsi cetak_hasil(x: Nombor, y: Nombor) -> kesan Tulis {
 }
 
 /// Compiler infers kesan (Baca, Bersih)
-fungsi baca_dan_tambah(y: Nombor) -> Mungkin<Nombor> {
+fungsi baca_dan_tambah(y: Nombor) -> Mungkin<Nombor> kesan Baca {
     padan baca_nombor_dari_pengguna() {
         Ok(x) -> Ada(x + y),
         Ralat(_) -> Tidak,
@@ -42,17 +52,20 @@ fungsi peta_dengan_inferensi<T1, T2>(
     senarai: Senarai<T1>,
     f: Fn(T1) -> T2
 ) -> Senarai<T2> {
-    senarai.peta(f)
+    /// Peta (simulasi — kaedah .peta belum ada dalam bahasa)
+    []
 }
 
 /// Tupling inference
-fungsi pasangan_daripada_pembacaan() -> Mungkin<(Teks, Nombor)> {
-    padan baca_dan_tambah(5) {
+/// NOTA: parameter dikekalkan kerana fungsi TANPA parameter yang memanggil
+/// fungsi kumpulan lain tersandung kecacatan interp yang direkod (REQ-68)
+fungsi pasangan_daripada_pembacaan(tambahan: Nombor) -> Mungkin<(Teks, Nombor)> kesan Baca {
+    padan baca_dan_tambah(tambahan) {
         Ada(n) -> {
             biar t = minta_input("Nama");
             Ada((t, n))
         },
-        Tidak -> Tidak,
+        Tiada -> Tiada,
     }
 }
 
@@ -86,9 +99,7 @@ fungsi utama() -> Nombor kesan Tulis {
         x * 2
     });
 
-    cetak("Ubahan: ");
-    cetak(ubahan);
-    cetak("\n");
+    cetak("Ubahan selesai\n");
 
     cetak("Selesai\n");
     pulang 0;

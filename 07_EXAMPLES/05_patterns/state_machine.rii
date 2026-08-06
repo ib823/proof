@@ -1,18 +1,19 @@
 /// state_machine.rii
 /// State machine pattern for managing object state transitions
 /// Demonstrates finite state machine with validation
+/// Gaya ungkapan: transisi memulangkan pesanan BARU (RIINA tiada mutasi medan)
 
-modul mesin_keadaan;
+jenis KeadaanPesanan =
+    | BELUM_DIPROSES
+    | SEDANG_DIPROSES
+    | LENGKAP
+    | DIBATALKAN;
 
-guna std::teks;
-
-jenis KeadaanPesanan = BELUM_DIPROSES | SEDANG_DIPROSES | LENGKAP | DIBATALKAN;
-
-jenis Pesanan = {
+jenis Pesanan {
     id: Teks,
     keadaan_semasa: KeadaanPesanan,
     nilai: Nombor,
-};
+}
 
 /// Validate state transitions
 fungsi sah_transisi(dari: KeadaanPesanan, ke: KeadaanPesanan) -> Benar kesan Bersih {
@@ -21,35 +22,8 @@ fungsi sah_transisi(dari: KeadaanPesanan, ke: KeadaanPesanan) -> Benar kesan Ber
         (BELUM_DIPROSES, DIBATALKAN) => betul,
         (SEDANG_DIPROSES, LENGKAP) => betul,
         (SEDANG_DIPROSES, DIBATALKAN) => betul,
-        (LENGKAP, _) => salah,  // Final state
-        (DIBATALKAN, _) => salah,  // Final state
         _ => salah,
-    };
-}
-
-fungsi ubah_keadaan(ubah pesanan: Pesanan, keadaan_baru: KeadaanPesanan) -> Benar kesan Bersih {
-    kalau !sah_transisi(pesanan.keadaan_semasa, keadaan_baru) {
-        cetak_baris(format!("Transisi tidak sah: {} -> {}", keadaan_txt(pesanan.keadaan_semasa), keadaan_txt(keadaan_baru)));
-        pulang salah;
     }
-
-    pesanan.keadaan_semasa = keadaan_baru;
-    cetak_baris(format!("Pesanan {} sekarang: {}", pesanan.id, keadaan_txt(keadaan_baru)));
-    pulang betul;
-}
-
-awam fungsi utama() -> kesan Bersih {
-    cetak_baris("=== MESIN KEADAAN ===\n");
-
-    biar ubah pesanan = {
-        id: "ORD-123",
-        keadaan_semasa: BELUM_DIPROSES,
-        nilai: 500,
-    };
-
-    ubah_keadaan(pesanan, SEDANG_DIPROSES);
-    ubah_keadaan(pesanan, LENGKAP);
-    ubah_keadaan(pesanan, DIBATALKAN);  // Invalid transition
 }
 
 fungsi keadaan_txt(keadaan: KeadaanPesanan) -> Teks kesan Bersih {
@@ -58,9 +32,46 @@ fungsi keadaan_txt(keadaan: KeadaanPesanan) -> Teks kesan Bersih {
         SEDANG_DIPROSES => "Sedang Diproses",
         LENGKAP => "Lengkap",
         DIBATALKAN => "Dibatalkan",
-    };
+    }
 }
 
-fungsi format(s: Teks, args: Senarai<Teks>) -> Teks kesan Bersih {
-    pulang s;
+/// Attempt a transition: returns the NEW order state
+/// (unchanged order if the transition is invalid)
+fungsi ubah_keadaan(pesanan: Pesanan, keadaan_baru: KeadaanPesanan) -> Pesanan kesan Tulis {
+    kalau !sah_transisi(pesanan.keadaan_semasa, keadaan_baru) {
+        cetak("Transisi tidak sah: ");
+        cetak(keadaan_txt(pesanan.keadaan_semasa));
+        cetak(" -> ");
+        cetak(keadaan_txt(keadaan_baru));
+        cetak("\n");
+        pulang pesanan;
+    }
+
+    cetak("Pesanan ");
+    cetak(pesanan.id);
+    cetak(" sekarang: ");
+    cetak(keadaan_txt(keadaan_baru));
+    cetak("\n");
+
+    Pesanan {
+        id: pesanan.id,
+        keadaan_semasa: keadaan_baru,
+        nilai: pesanan.nilai,
+    }
+}
+
+fungsi utama() -> Nombor kesan Tulis {
+    cetak("=== MESIN KEADAAN ===\n");
+
+    biar pesanan = Pesanan {
+        id: "ORD-123",
+        keadaan_semasa: BELUM_DIPROSES,
+        nilai: 500,
+    };
+
+    biar p1 = ubah_keadaan(pesanan, SEDANG_DIPROSES);
+    biar p2 = ubah_keadaan(p1, LENGKAP);
+    biar p3 = ubah_keadaan(p2, DIBATALKAN);  /// Transisi tidak sah (LENGKAP muktamad)
+
+    pulang 0;
 }

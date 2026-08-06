@@ -1,60 +1,72 @@
 /// observer.rii
 /// Observer pattern for event-driven updates
 /// Demonstrates publish-subscribe mechanism
+/// Gaya ungkapan: subjek diedarkan secara eksplisit (RIINA tiada mutasi global)
 
-modul corak_pemerhati;
-
-guna std::teks;
-guna std::senarai;
-
-/// Observer callback type
-jenis PemerhatiPerubahan = {
+/// Observer callback record
+jenis PemerhatiPerubahan {
     nama: Teks,
     fungsi_update: Teks,
-};
+}
 
 /// Subject that notifies observers
-jenis SubjekPerubahan = {
+jenis SubjekPerubahan {
     keadaan: Teks,
     pemerhati: Senarai<PemerhatiPerubahan>,
-};
+}
 
-biar ubah subjek: SubjekPerubahan = {
-    keadaan: "awal",
-    pemerhati: [],
-};
-
-fungsi daftarkan_pemerhati(nama: Teks) -> kesan Bersih {
-    biar pemerhati_baru = {
+/// Daftar pemerhati baru: pulangkan SUBJEK BARU dengan senarai dilanjutkan
+fungsi daftarkan_pemerhati(subjek: SubjekPerubahan, nama: Teks) -> SubjekPerubahan kesan Tulis {
+    biar pemerhati_baru = PemerhatiPerubahan {
         nama: nama,
         fungsi_update: "update_" + nama,
     };
 
-    subjek.pemerhati = subjek.pemerhati + [pemerhati_baru];
-    cetak_baris(format!("Pemerhati {} didaftarkan", nama));
-}
+    cetak("Pemerhati ");
+    cetak(nama);
+    cetak(" didaftarkan\n");
 
-fungsi ubah_keadaan(keadaan_baru: Teks) -> kesan Bersih {
-    subjek.keadaan = keadaan_baru;
-    cetak_baris(format!("Keadaan berubah ke: {}", keadaan_baru));
-
-    // Notify all observers
-    untuk pemerhati dalam subjek.pemerhati {
-        cetak_baris(format!("Memaklumi {}: {}", pemerhati.nama, keadaan_baru));
+    SubjekPerubahan {
+        keadaan: subjek.keadaan,
+        pemerhati: subjek.pemerhati + [pemerhati_baru],
     }
 }
 
-awam fungsi utama() -> kesan Bersih {
-    cetak_baris("=== CORAK PEMERHATI ===\n");
+/// Tukar keadaan dan maklumkan semua pemerhati; pulangkan subjek baru
+fungsi ubah_keadaan(subjek: SubjekPerubahan, keadaan_baru: Teks) -> SubjekPerubahan kesan Tulis {
+    cetak("Keadaan berubah ke: ");
+    cetak(keadaan_baru);
+    cetak("\n");
 
-    daftarkan_pemerhati("Logger");
-    daftarkan_pemerhati("AlertingSystem");
-    daftarkan_pemerhati("Dashboard");
+    /// Notify all observers
+    untuk pemerhati dalam subjek.pemerhati {
+        cetak("Memaklumi ");
+        cetak(pemerhati.nama);
+        cetak(": ");
+        cetak(keadaan_baru);
+        cetak("\n");
+    }
 
-    ubah_keadaan("sedang memproses");
-    ubah_keadaan("siap");
+    SubjekPerubahan {
+        keadaan: keadaan_baru,
+        pemerhati: subjek.pemerhati,
+    }
 }
 
-fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
-    pulang s;
+fungsi utama() -> Nombor kesan Tulis {
+    cetak("=== CORAK PEMERHATI ===\n");
+
+    biar subjek_awal = SubjekPerubahan {
+        keadaan: "awal",
+        pemerhati: [],
+    };
+
+    biar s1 = daftarkan_pemerhati(subjek_awal, "Logger");
+    biar s2 = daftarkan_pemerhati(s1, "AlertingSystem");
+    biar s3 = daftarkan_pemerhati(s2, "Dashboard");
+
+    biar s4 = ubah_keadaan(s3, "sedang memproses");
+    biar s5 = ubah_keadaan(s4, "siap");
+
+    pulang 0;
 }

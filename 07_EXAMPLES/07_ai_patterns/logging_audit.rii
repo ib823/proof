@@ -14,7 +14,7 @@ jenis ArasLog =
     | Nyahpepijat
     | Maklumat
     | Amaran
-    | Ralat
+    | RalatLog
     | Kritikal;
 
 /// Structured log entry
@@ -49,7 +49,7 @@ fungsi format_aras(aras: ArasLog) -> Teks kesan Bersih {
         Nyahpepijat => "NYAHPEPIJAT",
         Maklumat => "MAKLUMAT",
         Amaran => "AMARAN",
-        Ralat => "RALAT",
+        RalatLog => "RALAT",
         Kritikal => "KRITIKAL",
     };
 }
@@ -132,7 +132,7 @@ fungsi dedah_dengan_audit(
     ]);
 
     /// Actual declassification with proof
-    pulang dedah(rahsia, bukti: tujuan);
+    pulang (dedah rahsia dengan bukti rahsia);
 }
 
 /// Example: Log user login attempt
@@ -144,14 +144,17 @@ fungsi log_percubaan_log_masuk(
 ) -> kesan Tulis {
     /// SAFE: kata_laluan is Rahsia — it CANNOT be interpolated into log
     /// The compiler would reject: mesej + kata_laluan
+    biar tahap_log = kalau berjaya { Maklumat } lain { Amaran };
+    biar mesej_log = kalau berjaya { "Log masuk berjaya" } lain { "Log masuk gagal" };
+    biar teks_berjaya = kalau berjaya { "ya" } lain { "tidak" };
     log_dengan_rahsia(
-        kalau berjaya { Maklumat } lain { Amaran },
+        tahap_log,
         "pengesahan",
-        kalau berjaya { "Log masuk berjaya" } lain { "Log masuk gagal" },
+        mesej_log,
         [
             ("nama_pengguna", nama_pengguna),
             ("ip", ip_alamat),
-            ("berjaya", kalau berjaya { "ya" } lain { "tidak" }),
+            ("berjaya", teks_berjaya),
         ],
         [
             ("kata_laluan", kata_laluan),
@@ -207,7 +210,7 @@ ujian "redaksi_format_betul" {
 
 ujian "format_aras_log" {
     tegaskan_sama(format_aras(Maklumat), "MAKLUMAT");
-    tegaskan_sama(format_aras(Ralat), "RALAT");
+    tegaskan_sama(format_aras(RalatLog), "RALAT");
     tegaskan_sama(format_aras(Kritikal), "KRITIKAL");
 }
 
