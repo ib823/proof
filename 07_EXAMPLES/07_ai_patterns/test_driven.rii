@@ -157,7 +157,7 @@ fungsi sahkan(
             Ada(mesej) => {
                 ralat = ralat + [mesej];
             },
-            Tiada => {},
+            Tiada => (),
         };
     }
 

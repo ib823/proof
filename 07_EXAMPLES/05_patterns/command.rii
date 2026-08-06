@@ -1,11 +1,7 @@
 /// command.rii
-/// Command pattern with undo/redo capability
+/// Command pattern with undo capability
 /// Demonstrates encapsulating requests as objects
-
-modul corak_arahan;
-
-guna std::teks;
-guna std::senarai;
+/// Gaya ungkapan: keadaan diedarkan secara eksplisit (RIINA tiada mutasi global)
 
 jenis Arahan =
     | TAMBAH(Nombor)
@@ -13,68 +9,57 @@ jenis Arahan =
     | DARAB(Nombor)
     | BAHAGI(Nombor);
 
-jenis RekodArah = {
-    arahan: Arahan,
+jenis RekodArah {
     nilai_lama: Nombor,
     nilai_baru: Nombor,
-};
-
-biar ubah nilai_semasa: Nombor = 0;
-biar ubah sejarah_arahan: Senarai<RekodArah> = [];
-
-fungsi jalankan(arahan: Arahan) -> kesan Bersih {
-    biar nilai_awal = nilai_semasa;
-
-    padan arahan {
-        TAMBAH(n) => nilai_semasa = nilai_semasa + n,
-        TOLAK(n) => nilai_semasa = nilai_semasa - n,
-        DARAB(n) => nilai_semasa = nilai_semasa * n,
-        BAHAGI(n) => kalau n != 0 { nilai_semasa = nilai_semasa / n },
-    };
-
-    biar rekod = {
-        arahan: arahan,
-        nilai_lama: nilai_awal,
-        nilai_baru: nilai_semasa,
-    };
-
-    sejarah_arahan = sejarah_arahan + [rekod];
-    cetak_baris(format!("Arahan dijalankan: {} -> {}", nilai_awal, nilai_semasa));
 }
 
-fungsi buat_semula() -> kesan Bersih {
-    kalau panjang(sejarah_arahan) > 0 {
-        biar indeks_akhir = panjang(sejarah_arahan) - 1;
-        biar rekod_akhir = sejarah_arahan[indeks_akhir];
-
-        nilai_semasa = rekod_akhir.nilai_lama;
-        sejarah_arahan = buang_akhir(sejarah_arahan);
-
-        cetak_baris(format!("Buat semula: {} <- {}", nilai_semasa, rekod_akhir.nilai_baru));
+/// Terjemah satu arahan kepada nilai baru (tulen — tiada kesan)
+fungsi laksana_arahan(nilai: Nombor, arahan: Arahan) -> Nombor kesan Bersih {
+    padan arahan {
+        TAMBAH(n) => nilai + n,
+        TOLAK(n) => nilai - n,
+        DARAB(n) => nilai * n,
+        BAHAGI(n) => kalau n != 0 { nilai / n } lain { nilai },
     }
 }
 
-awam fungsi utama() -> kesan Bersih {
-    cetak_baris("=== CORAK ARAHAN ===\n");
-
-    jalankan(TAMBAH(10));
-    jalankan(DARAB(2));
-    jalankan(TOLAK(5));
-
-    cetak_baris(format!("Nilai akhir: {}", nilai_semasa));
-
-    buat_semula();
-    cetak_baris(format!("Selepas buat semula: {}", nilai_semasa));
+/// Jalankan arahan dan pulangkan rekod (untuk sokongan buat-semula)
+fungsi jalankan(nilai: Nombor, arahan: Arahan) -> RekodArah kesan Tulis {
+    biar nilai_baru = laksana_arahan(nilai, arahan);
+    cetak("Arahan dijalankan: ");
+    cetak(nilai);
+    cetak(" -> ");
+    cetak(nilai_baru);
+    cetak("\n");
+    RekodArah { nilai_lama: nilai, nilai_baru: nilai_baru }
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+/// Buat semula (undo): pulangkan nilai sebelum arahan terakhir
+fungsi buat_semula(rekod: RekodArah) -> Nombor kesan Tulis {
+    cetak("Buat semula: ");
+    cetak(rekod.nilai_lama);
+    cetak(" <- ");
+    cetak(rekod.nilai_baru);
+    cetak("\n");
+    rekod.nilai_lama
+}
+
+fungsi utama() -> Nombor kesan Tulis {
+    cetak("=== CORAK ARAHAN ===\n");
+
+    biar r1 = jalankan(0, TAMBAH(10));
+    biar r2 = jalankan(r1.nilai_baru, DARAB(2));
+    biar r3 = jalankan(r2.nilai_baru, TOLAK(5));
+
+    cetak("Nilai akhir: ");
+    cetak(r3.nilai_baru);
+    cetak("\n");
+
+    biar nilai_undo = buat_semula(r3);
+    cetak("Selepas buat semula: ");
+    cetak(nilai_undo);
+    cetak("\n");
+
     pulang 0;
-}
-
-fungsi buang_akhir(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
-    pulang [];
-}
-
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
-    pulang s;
 }

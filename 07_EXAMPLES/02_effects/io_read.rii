@@ -2,6 +2,41 @@
 /// Operasi membaca input
 /// Demonstrates: Baca effect, input operations, file reading
 
+fungsi buka_fail(nama_fail: Teks) -> Hasil<Teks, Teks> kesan Baca {
+    /// Simulasi pembukaan fail (tiada IO fail sebenar dalam contoh)
+    Ok("pemegang_fail_simulasi")
+}
+
+fungsi baca_baris_dari_fail(fail: Teks) -> Hasil<Teks, Teks> kesan Baca {
+    /// Simulasi pembacaan satu baris dari fail
+    Ok("baris_simulasi")
+}
+
+fungsi ambil_alam_sekitar(nama: Teks) -> Mungkin<Teks> kesan Baca {
+    /// Simulasi pembacaan pembolehubah persekitaran
+    Tiada
+}
+
+fungsi baca_semua_dari_fail(fail: Teks) -> Teks kesan Baca {
+    /// Simulasi pembacaan keseluruhan fail
+    "kandungan_fail_simulasi"
+}
+
+fungsi tutup_fail(fail: Teks) -> Kosong kesan Baca {
+    /// Simulasi penutupan fail
+    ()
+}
+
+fungsi mengandungi_teks(teks: Teks, cari: Teks) -> Benar kesan Bersih {
+    /// Simulasi semakan subteks
+    salah
+}
+
+fungsi tukar_string_ke_nombor(t: Teks) -> Mungkin<Nombor> kesan Bersih {
+    /// Simulasi penukaran teks ke nombor
+    Tiada
+}
+
 fungsi baca_baris_dari_pengguna() -> Teks kesan Baca {
     /// Baca satu baris dari stdin
     baca_garisan()
@@ -9,10 +44,10 @@ fungsi baca_baris_dari_pengguna() -> Teks kesan Baca {
 
 fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan Baca {
     /// Baca nombor dari pengguna
-    biar masukan = baca_garisan();
-    padan tukar_string_ke_nombor(masukan) {
+    biar teks_masuk = baca_garisan();
+    padan tukar_string_ke_nombor(teks_masuk) {
         Ada(n) -> Ok(n),
-        Tidak -> Ralat("Bukan nombor sah"),
+        Tiada -> Ralat("Bukan nombor sah"),
     }
 }
 
@@ -28,25 +63,33 @@ fungsi baca_fail_sepenuhnya(nama_fail: Teks) -> Hasil<Teks, Teks> kesan Baca {
     }
 }
 
+fungsi baca_baris_berulang(
+    fail: Teks,
+    f: Fn(Teks) -> Nombor,
+    jumlah: Nombor,
+    baki: Nombor
+) -> Nombor kesan Baca {
+    /// Baca baris secara rekursif sehingga habis (atau had baki)
+    kalau baki == 0 {
+        pulang jumlah;
+    }
+    padan baca_baris_dari_fail(fail) {
+        Ok(baris_teks) -> {
+            f(baris_teks);
+            baca_baris_berulang(fail, f, jumlah + 1, baki - 1)
+        },
+        Ralat(_) -> jumlah,
+    }
+}
+
 fungsi baca_fail_baris_demi_baris(
     nama_fail: Teks,
     f: Fn(Teks) -> Nombor
 ) -> Hasil<Nombor, Teks> kesan Baca {
-    /// Baca fail baris demi baris
+    /// Baca fail baris demi baris (gaya ungkapan, tanpa mutasi)
     padan buka_fail(nama_fail) {
         Ok(fail) -> {
-            biar ubah jumlah = 0;
-
-            ulang {
-                padan baca_baris_dari_fail(fail) {
-                    Ok(baris) -> {
-                        f(baris);
-                        jumlah = jumlah + 1;
-                    },
-                    Ralat(_) -> putus,
-                }
-            }
-
+            biar jumlah = baca_baris_berulang(fail, f, 0, 3);
             tutup_fail(fail);
             Ok(jumlah)
         },
@@ -58,7 +101,7 @@ fungsi baca_alam_sekitar(nama_pembolehubah: Teks) -> Mungkin<Teks> kesan Baca {
     /// Baca pembolehubah alam sekitar
     padan ambil_alam_sekitar(nama_pembolehubah) {
         Ada(nilai) -> Ada(nilai),
-        Tidak -> Tidak,
+        Tiada -> Tiada,
     }
 }
 
@@ -75,7 +118,7 @@ fungsi baca_json_dari_fail(nama_fail: Teks) -> Hasil<Teks, Teks> kesan Baca {
     padan baca_fail_sepenuhnya(nama_fail) {
         Ok(kandungan) -> {
             /// Validasi JSON mudah
-            kalau kandungan.ada("{") {
+            kalau mengandungi_teks(kandungan, "{") {
                 Ok(kandungan)
             } lain {
                 Ralat("JSON tidak sah")
@@ -100,10 +143,10 @@ fungsi minta_input_nombor(
     /// Minta input nombor dengan gesaan
     cetak(gesaan);
     cetak(": ");
-    biar masukan = baca_garisan();
-    padan tukar_string_ke_nombor(masukan) {
+    biar teks_masuk = baca_garisan();
+    padan tukar_string_ke_nombor(teks_masuk) {
         Ada(n) -> Ok(n),
-        Tidak -> Ralat("Input bukan nombor sah"),
+        Tiada -> Ralat("Input bukan nombor sah"),
     }
 }
 
@@ -135,7 +178,7 @@ fungsi utama() -> Nombor kesan (Tulis, Baca) {
         Ada(path) -> {
             cetak("PATH dijumpai\n");
         },
-        Tidak -> {
+        Tiada -> {
             cetak("PATH tidak dijumpai\n");
         },
     }

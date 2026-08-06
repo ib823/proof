@@ -63,12 +63,12 @@ fungsi dapat(kunci: Teks) -> Mungkin<Nilai> kesan Bersih {
         kalau entry.kunci == kunci {
             // Check expiration
             padan entry.masa_tamat {
-                Ada(tamat) => {
-                    kalau Masa::masa_unix() > tamat {
+                Ada(masa_luput) => {
+                    kalau Masa::masa_unix() > masa_luput {
                         pulang Tiada;
                     }
                 },
-                Tiada => {},
+                Tiada => (),
             }
 
             pulang Ada(entry.nilai);
@@ -103,12 +103,12 @@ fungsi ada(kunci: Teks) -> Benar kesan Bersih {
     untuk entry dalam simpanan {
         kalau entry.kunci == kunci {
             padan entry.masa_tamat {
-                Ada(tamat) => {
-                    kalau Masa::masa_unix() > tamat {
+                Ada(masa_luput) => {
+                    kalau Masa::masa_unix() > masa_luput {
                         pulang salah;
                     }
                 },
-                Tiada => {},
+                Tiada => (),
             }
 
             pulang betul;
@@ -165,7 +165,7 @@ fungsi dapat_semua_kunci() -> Senarai<Teks> kesan Bersih {
     untuk entry dalam simpanan {
         // Skip expired entries
         biar expired = padan entry.masa_tamat {
-            Ada(tamat) => masa_sekarang > tamat,
+            Ada(masa_luput) => masa_sekarang > masa_luput,
             Tiada => salah,
         };
 
@@ -184,7 +184,7 @@ fungsi buang_yang_tamat() -> kesan Bersih {
 
     untuk entry dalam simpanan {
         biar expired = padan entry.masa_tamat {
-            Ada(tamat) => masa_sekarang > tamat,
+            Ada(masa_luput) => masa_sekarang > masa_luput,
             Tiada => salah,
         };
 

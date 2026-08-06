@@ -131,7 +131,7 @@ fungsi log_catatan(
     biar hasil = coba SistemFail::tambah_fail(konfigurasi.nama_fail, teks_format + "\n");
 
     padan hasil {
-        Berjaya(_) => {},
+        Berjaya(_) => (),
         Kegagalan(ralat) => {
             cetak_ralat(format!("Gagal menulis log: {}", ralat));
         },

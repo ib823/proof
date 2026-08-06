@@ -208,7 +208,7 @@ fungsi dapat_status_giliran() -> (Nombor, Nombor, Nombor) kesan Bersih {
             MENUNGGU => menunggu = menunggu + 1,
             MEMPROSES => memproses = memproses + 1,
             BERJAYA => berjaya = berjaya + 1,
-            _ => {},
+            _ => (),
         };
     }
 

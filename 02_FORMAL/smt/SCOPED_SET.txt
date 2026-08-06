@@ -10,3 +10,4 @@
 # Grow this set with effect-join/policy algebra files; each addition must
 # state its expected verdict here (that IS the claim being made).
 02_FORMAL/smt/RIINA/Active/SecurityLatticeVerification.smt2 25
+02_FORMAL/smt/RIINA/Active/EffectJoinVerification.smt2 12

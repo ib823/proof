@@ -4,7 +4,7 @@
 
 fungsi dedah_dengan_tujuan(
     s: Rahsia<Teks>,
-    bukti: Teks
+    sebab_bukti: Teks
 ) -> Teks kesan Bersih {
     /// Dedah (declassify) nilai rahsia dengan bukti
     /// Declassify secret value with proof

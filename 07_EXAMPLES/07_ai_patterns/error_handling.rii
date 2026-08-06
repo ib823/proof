@@ -21,8 +21,8 @@ jenis RalatAplikasi =
 fungsi format_ralat(ralat: RalatAplikasi) -> Teks kesan Bersih {
     padan ralat {
         RalatRangkaian(mesej) => "Ralat rangkaian: " + mesej,
-        RalatPenghuraian(mesej, baris) => "Ralat huraian pada baris " + ke_teks(baris) + ": " + mesej,
-        RalatPengesahan(senarai_ralat) => "Ralat pengesahan: " + gabung(senarai_ralat, ", "),
+        RalatPenghuraian(mesej, nombor_baris) => "Ralat huraian pada baris " + ke_teks(nombor_baris) + ": " + mesej,
+        RalatPengesahan(senarai_ralat) => "Ralat pengesahan: " + gabung_teks(senarai_ralat, ", "),
         TidakDijumpai(sumber) => "Tidak dijumpai: " + sumber,
         TidakDibenarkan => "Akses ditolak",
     };
@@ -89,26 +89,18 @@ fungsi sahkan_borang(
     umur_teks: Teks,
     emel: Teks
 ) -> Hasil<Teks, RalatAplikasi> kesan Bersih {
-    biar ubah ralat_senarai: Senarai<Teks> = [];
+    /// Kumpul ralat secara ungkapan (tiada mutasi — setiap semakan
+    /// menghasilkan senarai, kemudian digabungkan)
+    biar ralat_nama = kalau nama == "" { ["Nama diperlukan"] } lain { [] };
 
-    kalau nama == "" {
-        ralat_senarai = ralat_senarai + ["Nama diperlukan"];
-    }
-
-    padan ke_nombor(umur_teks) {
-        Tiada => {
-            ralat_senarai = ralat_senarai + ["Umur mesti nombor"];
-        },
-        Ada(umur) => {
-            kalau umur < 0 || umur > 150 {
-                ralat_senarai = ralat_senarai + ["Umur tidak sah"];
-            }
-        },
+    biar ralat_umur = padan ke_nombor(umur_teks) {
+        Tiada => ["Umur mesti nombor"],
+        Ada(umur) => kalau umur < 0 || umur > 150 { ["Umur tidak sah"] } lain { [] },
     };
 
-    kalau !mengandungi(emel, "@") {
-        ralat_senarai = ralat_senarai + ["Emel tidak sah"];
-    }
+    biar ralat_emel = kalau !mengandungi(emel, "@") { ["Emel tidak sah"] } lain { [] };
+
+    biar ralat_senarai = ralat_nama + ralat_umur + ralat_emel;
 
     kalau panjang_senarai(ralat_senarai) > 0 {
         pulang Ralat(RalatPengesahan(ralat_senarai));
@@ -153,7 +145,7 @@ fungsi proses_data(mentah: Teks) -> Hasil<Nombor, RalatAplikasi> kesan Bersih {
 /// Helpers
 fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
 fungsi ke_nombor(t: Teks) -> Mungkin<Nombor> kesan Bersih { pulang Tiada; }
-fungsi gabung(s: Senarai<Teks>, pemisah: Teks) -> Teks kesan Bersih { pulang ""; }
+fungsi gabung_teks(s: Senarai<Teks>, pemisah: Teks) -> Teks kesan Bersih { pulang ""; }
 fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Bersih { pulang betul; }
 fungsi panjang_senarai(s: Senarai<Teks>) -> Nombor kesan Bersih { pulang 0; }
 fungsi muat_fail(laluan: Teks) -> Hasil<Teks, Teks> kesan Bersih { pulang Ralat("tiada"); }
@@ -161,7 +153,10 @@ fungsi muat_env(nama: Teks) -> Hasil<Teks, Teks> kesan Bersih { pulang Ralat("ti
 
 ujian "bahagi_sifar_pulang_ralat" {
     biar hasil = bahagi(10, 0);
-    tegaskan(hasil.ralat?());
+    padan hasil {
+        Ralat(_) => tegaskan(betul),
+        Ok(_) => tegaskan(salah),
+    };
 }
 
 ujian "bahagi_sah_pulang_ok" {

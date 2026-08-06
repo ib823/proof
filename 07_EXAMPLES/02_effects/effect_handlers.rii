@@ -90,12 +90,12 @@ fungsi jalankan_dengan_konteks(
 }
 
 fungsi pilin_kesan(
-    pilihan: Benar,
+    pilih_tulis: Benar,
     f_tulis: Fn() -> Nombor,
     f_baca: Fn() -> Nombor
 ) -> Nombor kesan (Tulis, Baca) {
     /// Pilih kesan berdasarkan keadaan
-    kalau pilihan {
+    kalau pilih_tulis {
         f_tulis()
     } lain {
         f_baca()
