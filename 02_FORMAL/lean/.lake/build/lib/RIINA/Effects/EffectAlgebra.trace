@@ -1,5 +1,0 @@
-{"log":
- [{"message":
-   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Effects/EffectAlgebra.lean -R ./././. -o ././.lake/build/lib/RIINA/Effects/EffectAlgebra.olean -i ././.lake/build/lib/RIINA/Effects/EffectAlgebra.ilean -c ././.lake/build/ir/RIINA/Effects/EffectAlgebra.c --json",
-   "level": "trace"}],
- "depHash": "6304065458313442062"}

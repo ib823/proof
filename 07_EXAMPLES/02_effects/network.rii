@@ -68,7 +68,7 @@ fungsi unduh_fail(
     /// Unduh fail dari URL
     padan hantar_permintaan_get(url) {
         Ok(kandungan) -> {
-            padan tulis_ke_fail(nama_fail_tujuan, kandungan) {
+            padan fail_tulis((nama_fail_tujuan, kandungan)) {
                 Ok(_) -> Ok(0),
                 Ralat(e) -> Ralat("Tulis gagal"),
             }

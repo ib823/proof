@@ -1,5 +1,0 @@
-{"log":
- [{"message":
-   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Domains/CrossBorderRemittance.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/CrossBorderRemittance.olean -i ././.lake/build/lib/RIINA/Domains/CrossBorderRemittance.ilean -c ././.lake/build/ir/RIINA/Domains/CrossBorderRemittance.c --json",
-   "level": "trace"}],
- "depHash": "11735836322696781225"}

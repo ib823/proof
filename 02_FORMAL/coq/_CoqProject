@@ -5,6 +5,7 @@
 # Foundations
 foundations/Syntax.v
 foundations/Semantics.v
+foundations/StepFn.v
 foundations/Typing.v
 foundations/SizedInt.v
 foundations/BigIntModel.v

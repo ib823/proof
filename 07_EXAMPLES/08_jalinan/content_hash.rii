@@ -1,10 +1,13 @@
 // content_hash.rii — Content-Addressed Values
-// Every value can be hashed for tamper evidence
+// Every value can be hashed for tamper evidence.
+// cincang() carries the Kripto effect, so the function declares it.
 
-biar data = "Maklumat penting";
-biar hash1 = cincang(data);
-biar hash2 = cincang(data);
+fungsi utama() -> Benar kesan Kripto {
+    biar data = "Maklumat penting";
+    biar hash1 = cincang(data);
+    biar hash2 = cincang(data);
 
-// Same input → same hash (deterministic)
-// Modified data → different hash (tamper-evident)
-hash1
+    // Same input → same hash (deterministic); sahkan re-hashes the data and
+    // compares against hash1. Modified data → different hash (tamper-evident).
+    sahkan(hash1, data)
+}

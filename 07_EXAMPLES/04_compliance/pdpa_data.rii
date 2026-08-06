@@ -51,7 +51,7 @@ biar ubah rekod_persetujuan: Senarai<Persetujuan> = [];
 fungsi semak_dasar_sah(
     kategori: KategoriData,
     tujuan: Tujuan
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     padan (kategori, tujuan) {
         // Sensitive data: only specific purposes allowed
         (Data_Sensitif, PERKHIDMATAN_KONTRAK) => salah,
@@ -79,7 +79,7 @@ fungsi daftar_persetujuan(
     kategori_data: KategoriData,
     tujuan: Tujuan,
     tempoh_bulan: Nombor
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     // Check if lawful basis exists
     kalau !semak_dasar_sah(kategori_data, tujuan) {
         cetak_baris("Pemprosesan data tidak sesuai PDPA");
@@ -102,7 +102,7 @@ fungsi daftar_persetujuan(
 }
 
 /// Withdraw consent
-fungsi tarik_balik_persetujuan(pengguna_id: Teks, kategori_data: KategoriData) -> kesan Bersih {
+fungsi tarik_balik_persetujuan(pengguna_id: Teks, kategori_data: KategoriData) -> kesan Tulis {
     biar rekod_baru = [];
 
     untuk persetujuan dalam rekod_persetujuan {
@@ -121,7 +121,7 @@ fungsi semak_tempoh_penyimpanan(
     data: Teks,
     kategori: KategoriData,
     masa_dirakam: Nombor
-) -> (Benar, Nombor) kesan Bersih {
+) -> (Benar, Nombor) kesan Tulis {
     biar polisi = kari_polisi(kategori);
 
     biar masa_kini = Masa::masa_unix();
@@ -136,7 +136,7 @@ fungsi semak_tempoh_penyimpanan(
 }
 
 /// Get retention policy for data category
-fungsi kari_polisi(kategori: KategoriData) -> PolisiPenyimpanan kesan Bersih {
+fungsi kari_polisi(kategori: KategoriData) -> PolisiPenyimpanan kesan Tulis {
     padan kategori {
         Data_Peribadi_Asas => {
             {
@@ -200,7 +200,7 @@ fungsi proses_permintaan_akses_data(pengguna_id: Teks) -> (Benar, Teks) kesan Si
 fungsi semak_meminimalkan_data(
     kategori_data: KategoriData,
     data_yang_dikumpul: Senarai<Teks>
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     // Only collect data necessary for stated purpose
     biar jumlah_data = panjang(data_yang_dikumpul);
 
@@ -238,16 +238,16 @@ awam fungsi utama() -> kesan (Bersih | SistemFail) {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }
 
-fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
+fungsi format(s: Teks, arg: Teks) -> Teks kesan Tulis {
     pulang s;
 }
 
 modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
+    fungsi masa_unix() -> Nombor kesan Tulis {
         pulang 0;
     }
 }

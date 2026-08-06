@@ -8,13 +8,13 @@ fungsi tambah(x: Nombor, y: Nombor) -> Nombor {
 }
 
 /// Compiler automatically infers kesan Tulis
-fungsi cetak_nombor(x: Nombor) {
+fungsi cetak_nombor(x: Nombor) -> kesan Tulis {
     cetak(x);
     cetak("\n");
 }
 
 /// Compiler automatically infers kesan (Tulis, Bersih)
-fungsi cetak_hasil(x: Nombor, y: Nombor) {
+fungsi cetak_hasil(x: Nombor, y: Nombor) -> kesan Tulis {
     cetak("Hasil: ");
     cetak(x + y);
     cetak("\n");
@@ -57,7 +57,7 @@ fungsi pasangan_daripada_pembacaan() -> Mungkin<(Teks, Nombor)> {
 }
 
 /// Conditional inference
-fungsi bersyarat_berbeza(keadaan: Benar) {
+fungsi bersyarat_berbeza(keadaan: Benar) -> kesan Tulis {
     kalau keadaan {
         cetak("Benar\n");
     } lain {
@@ -65,7 +65,7 @@ fungsi bersyarat_berbeza(keadaan: Benar) {
     }
 }
 
-fungsi utama() -> Nombor {
+fungsi utama() -> Nombor kesan Tulis {
     cetak("=== Penyimpulan Jenis Kesan ===\n");
 
     /// Penyimpulan bersih

@@ -199,7 +199,7 @@ fungsi hitung_penarikan_persetujuan() -> Nombor kesan Bersih {
     pulang jumlah;
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== PENGURUSAN PERSETUJUAN GDPR ===");
 
     // Record consent

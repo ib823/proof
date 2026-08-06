@@ -1,24 +1,24 @@
 {
-  "generated": "2026-08-06T11:52:57Z",
-  "generatedHuman": "August 06, 2026 at 11:52 UTC",
+  "generated": "2026-08-06T12:52:55Z",
+  "generatedHuman": "August 06, 2026 at 12:52 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "5ccd75af0",
+    "commit": "c3437c119",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 12646,
+    "qedActive": 12665,
     "qedDeprecated": 758,
-    "qedTotal": 13404,
+    "qedTotal": 13423,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 369,
-    "filesActive": 329,
+    "filesTotal": 370,
+    "filesActive": 330,
     "domains": 252,
     "prover": "Rocq 9.1.1"
   },
@@ -127,7 +127,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 10745,
-    "totalProofsAllProvers": 74489,
+    "totalProofsAllProvers": 74508,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -148,7 +148,7 @@
     "nonCoqMechanization": {
       "reportFresh": false,
       "overallMechanized": false,
-      "source": "missing_or_stale",
+      "source": "cached_metrics",
       "pending": {
         "lean": "noncoq_report_missing_or_stale",
         "isabelle": "noncoq_report_missing_or_stale",
@@ -172,7 +172,7 @@
       }
     },
     "coqTiers": {
-      "core": 1795,
+      "core": 1814,
       "domain": 10851,
       "domainTrivial": 1951
     }
@@ -196,8 +196,8 @@
   "rust": {
     "tests": 3002,
     "testsVerified": 3002,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 2998,
+    "testsSource": "cached_verified",
     "crates": 19
   },
   "examples": 165,

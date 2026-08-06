@@ -45,7 +45,7 @@ fungsi catat_transaksi(
     ke: Teks,
     pengguna: Teks,
     persetujuan: Teks
-) -> CatatanTransaksi kesan Bersih {
+) -> CatatanTransaksi kesan Tulis {
     biar id_transaksi = genera_id_transaksi();
 
     // Get hash of previous record for integrity chain
@@ -75,7 +75,7 @@ fungsi catat_transaksi(
 }
 
 /// Verify audit trail integrity (SOX 802)
-fungsi sahkan_integriti_jejak() -> Benar kesan Bersih {
+fungsi sahkan_integriti_jejak() -> Benar kesan Tulis {
     kalau panjang(log_transaksi) == 0 {
         pulang betul;
     }
@@ -102,7 +102,7 @@ fungsi rekod_perubahan_data(
     nilai_baru: Teks,
     pengguna: Teks,
     alasan: Teks
-) -> kesan Bersih {
+) -> kesan Tulis {
     biar perubahan = {
         masa_perubahan: Masa::masa_unix(),
         lapangan: lapangan,
@@ -123,7 +123,7 @@ fungsi rekod_perubahan_data(
 }
 
 /// SOX 404: Access control verification
-fungsi semak_kawalan_akses(pengguna: Teks, tindakan: Teks) -> Benar kesan Bersih {
+fungsi semak_kawalan_akses(pengguna: Teks, tindakan: Teks) -> Benar kesan Tulis {
     // Verify: Only authorized users can modify financial data
     biar pengguna_berwenang = ["kewangan_1", "kewangan_2", "auditor"];
 
@@ -139,7 +139,7 @@ fungsi semak_kawalan_akses(pengguna: Teks, tindakan: Teks) -> Benar kesan Bersih
 }
 
 /// SOX 404: Segregation of duties verification
-fungsi semak_pemisahan_tugas(pengguna1: Teks, pengguna2: Teks) -> Benar kesan Bersih {
+fungsi semak_pemisahan_tugas(pengguna1: Teks, pengguna2: Teks) -> Benar kesan Tulis {
     // Ensure same person can't perform incompatible duties
     // Example: Can't be both approver and executor
 
@@ -154,7 +154,7 @@ fungsi semak_pemisahan_tugas(pengguna1: Teks, pengguna2: Teks) -> Benar kesan Be
 }
 
 /// Generate audit report
-fungsi jana_laporan_audit(dari_masa: Nombor, hingga_masa: Nombor) -> Teks kesan Bersih {
+fungsi jana_laporan_audit(dari_masa: Nombor, hingga_masa: Nombor) -> Teks kesan Tulis {
     biar catatan_dalam_julat = [];
 
     untuk catatan dalam log_transaksi {
@@ -184,7 +184,7 @@ fungsi jana_laporan_audit(dari_masa: Nombor, hingga_masa: Nombor) -> Teks kesan 
 }
 
 /// Retention policy for audit logs (7 years minimum)
-fungsi semak_retensi_log() -> Benar kesan Bersih {
+fungsi semak_retensi_log() -> Benar kesan Tulis {
     biar tarikh_cutoff = Masa::masa_unix() - (7 * 365 * 86400);
 
     biar log_baru = [];
@@ -212,7 +212,7 @@ fungsi proses_transaksi_kewangan(
     amaun: Nombor,
     pemohon: Teks,
     penyetuju: Teks
-) -> Benar kesan Bersih {
+) -> Benar kesan Tulis {
     cetak_baris(format!("Memproses transaksi {} senilai {}", jenis, amaun));
 
     // Check approver is different from requester
@@ -237,7 +237,7 @@ fungsi proses_transaksi_kewangan(
     pulang betul;
 }
 
-awam fungsi utama() -> kesan Bersih {
+awam fungsi utama() -> kesan Tulis {
     cetak_baris("=== AUDIT TRAIL SOX ===");
 
     // Process sample transactions
@@ -256,31 +256,31 @@ awam fungsi utama() -> kesan Bersih {
 }
 
 // Helper functions
-fungsi genera_id_transaksi() -> Teks kesan Bersih {
+fungsi genera_id_transaksi() -> Teks kesan Tulis {
     pulang "TXN-" + teks::daripada_nombor(Masa::masa_unix());
 }
 
-fungsi hitung_hash_catatan(catatan: CatatanTransaksi) -> Teks kesan Bersih {
+fungsi hitung_hash_catatan(catatan: CatatanTransaksi) -> Teks kesan Tulis {
     // Simplified hash - real implementation uses SHA256
     pulang "hash_" + catatan.id_transaksi;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }
 
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
+fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Tulis {
     pulang s;
 }
 
 modul teks {
-    fungsi daripada_nombor(n: Nombor) -> Teks kesan Bersih {
+    fungsi daripada_nombor(n: Nombor) -> Teks kesan Tulis {
         pulang "";
     }
 }
 
 modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
+    fungsi masa_unix() -> Nombor kesan Tulis {
         pulang 0;
     }
 }

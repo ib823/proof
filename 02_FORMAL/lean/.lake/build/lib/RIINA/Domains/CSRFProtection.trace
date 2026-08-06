@@ -1,5 +1,0 @@
-{"log":
- [{"message":
-   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Domains/CSRFProtection.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/CSRFProtection.olean -i ././.lake/build/lib/RIINA/Domains/CSRFProtection.ilean -c ././.lake/build/ir/RIINA/Domains/CSRFProtection.c --json",
-   "level": "trace"}],
- "depHash": "4975816476310351900"}

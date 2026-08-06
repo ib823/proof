@@ -1,5 +1,0 @@
-{"log":
- [{"message":
-   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Properties/NonInterference.lean -R ./././. -o ././.lake/build/lib/RIINA/Properties/NonInterference.olean -i ././.lake/build/lib/RIINA/Properties/NonInterference.ilean -c ././.lake/build/ir/RIINA/Properties/NonInterference.c --json",
-   "level": "trace"}],
- "depHash": "12410085485338676932"}

@@ -1,5 +1,0 @@
-{"log":
- [{"message":
-   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Domains/MobileOS/SystemArchitecture.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/MobileOS/SystemArchitecture.olean -i ././.lake/build/lib/RIINA/Domains/MobileOS/SystemArchitecture.ilean -c ././.lake/build/ir/RIINA/Domains/MobileOS/SystemArchitecture.c --json",
-   "level": "trace"}],
- "depHash": "3885593887713487337"}
