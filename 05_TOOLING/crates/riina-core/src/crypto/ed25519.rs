@@ -318,11 +318,10 @@ impl EdwardsPoint {
         let x_bytes = x.to_bytes();
         let computed_sign = x_bytes[0] & 1;
 
-        let x = if computed_sign != x_sign {
-            x.negate()
-        } else {
-            x
-        };
+        // Branchless sign adjust (REQ-43 L-3): select x.negate() iff the
+        // computed sign bit differs from the requested one. Public decode path,
+        // but kept branchless to honor the module-wide constant-time claim.
+        let x = FieldElement::conditional_select(&x, &x.negate(), computed_sign ^ x_sign);
 
         // RFC 8032 §5.1.3 step 3: if x = 0 and the sign bit x_0 = 1, the encoding
         // is non-canonical (there is no "negative zero" to request); decoding MUST
@@ -411,12 +410,10 @@ fn sqrt_ratio_i(u: &FieldElement, v: &FieldElement) -> (FieldElement, u8) {
     // sqrt(-1) mod p = 2^((p-1)/4) mod p
     let sqrt_minus_one = get_sqrt_minus_one();
 
-    // If vx² == -u, multiply x by sqrt(-1)
-    let x_corrected = if correct_neg == 1 {
-        x * sqrt_minus_one
-    } else {
-        x
-    };
+    // If vxÂ² == -u, multiply x by sqrt(-1). Branchless select (REQ-43 L-3):
+    // the previous `if correct_neg == 1` branched in the public point-decode
+    // path, contradicting the module-wide constant-time claim.
+    let x_corrected = FieldElement::conditional_select(&x, &(x * sqrt_minus_one), correct_neg as u8);
 
     let is_valid = correct | correct_neg;
 
@@ -522,8 +519,14 @@ impl Scalar {
     /// The scalar is reduced modulo L.
     #[must_use]
     pub fn from_bytes_mod_order(bytes: &[u8; 32]) -> Self {
-        // For now, just copy (proper reduction would clamp to < L)
-        Self { bytes: *bytes }
+        // REQ-43 L-1: actually reduce mod L (the name promised it; the body was
+        // a raw copy guarded only by the fact that every caller pre-validated
+        // s < L or passed a clamped scalar). Zero-extend to 64 bytes and reuse
+        // the Barrett wide-reduction so a non-canonical 32-byte input can no
+        // longer produce an out-of-range Scalar.
+        let mut wide = [0u8; 64];
+        wide[..32].copy_from_slice(bytes);
+        reduce_scalar_wide(&wide)
     }
 
     /// Create a scalar from 64 bytes (used in signing)

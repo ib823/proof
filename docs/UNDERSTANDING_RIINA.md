@@ -126,7 +126,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track V — The Termination Office
 
-**What it proves:** Every RIINA program that should terminate, does terminate. No infinite loops unless explicitly intended. Uses sized types and strong normalization — mathematical techniques that guarantee programs finish.
+**What it proves:** Strong normalization for the **recursion-free core** — those programs always finish. Programs using general recursion (`fungsi`/`fix`) are Turing-complete and *can* loop by design; for them the guarantee is **type safety** (they never crash or get stuck — progress + preservation, mechanized for `fix`), not termination. Structurally-decreasing recursion is covered by **sized types**. Techniques: reducibility/strong-normalization + sized types.
 
 ### Track W — The Memory Authority
 
@@ -134,7 +134,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track X — The Traffic Controller (Concurrency)
 
-**What it proves:** When multiple parts of a program run simultaneously, they cannot interfere with each other in harmful ways. No data races, no deadlocks. Uses session types — mathematical descriptions of communication protocols.
+**What it proves:** When multiple parts of a program run simultaneously, they cannot interfere with each other in harmful ways. No data races, no deadlocks — proven for the session *calculus* mechanized in Coq; the compiler's projection mirrors those definitions but is not itself a verified compiler (see `docs/papers/04_session_types.md` for the precise scope). Uses session types — mathematical descriptions of communication protocols.
 
 ### Track Y — The Standards Bureau (Verified Standard Library)
 

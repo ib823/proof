@@ -10,6 +10,16 @@
     KEY THEOREM: well_typed_SN
       If e has type T, then e is strongly normalizing.
 
+    SCOPE (REQ-44, Option A — 2026-06-14). This SN result is for the
+    RECURSION-FREE core calculus (foundations/Syntax.v has no primitive
+    recursion). The implementation's general recursion (`fungsi`/`fix`,
+    desugared to `LetRec`) is Turing-complete and INTENTIONALLY not strongly
+    normalizing — its guarantee is type safety (progress + preservation,
+    mechanized for `fix` in foundations/RecursionSafety.v), NOT termination.
+    Structurally-decreasing recursion is separately covered by sized types
+    (domains/V001_TerminationGuarantees.v). SN is therefore an honestly-scoped
+    fragment property, not a whole-language claim.
+
     This unlocks:
     - SN_app: applications of SN functions to SN arguments are SN
     - TFn step-up in NonInterference_v2.v
@@ -341,6 +351,7 @@ Fixpoint subst_env (ρ : subst_rho) (e : expr) : expr :=
   | EClassify e => EClassify (subst_env ρ e)
   | EDeclassify e p => EDeclassify (subst_env ρ e) (subst_env ρ p)
   | EProve e => EProve (subst_env ρ e)
+  | EFix e => EFix (subst_env ρ e)
   | ERequire eff e => ERequire eff (subst_env ρ e)
   | EGrant eff e => EGrant eff (subst_env ρ e)
   end.
@@ -437,11 +448,60 @@ Proof.
   - f_equal. apply IHe. exact Hfree.
   - f_equal. apply IHe. exact Hfree.
   - f_equal. apply IHe. exact Hfree.
+  - (* EFix *) f_equal. apply IHe. exact Hfree.
 Qed.
 
 (** Closed environment: every binding is a closed expression *)
 Definition closed_rho (ρ : subst_rho) : Prop :=
   forall y, closed_expr (ρ y).
+
+(** ** Recursion-freedom for substitution environments (REQ-44, Option A)
+
+    The fundamental theorem is scoped to the recursion-free fragment, and its
+    induction pushes environment values under binders — so the environment
+    must be recursion-free too. [id_rho] trivially is, which is all the
+    closed-program theorems need. *)
+
+Definition rho_recursion_free (ρ : subst_rho) : Prop :=
+  forall y, recursion_free (ρ y).
+
+Lemma id_rho_recursion_free : rho_recursion_free id_rho.
+Proof. intros y. exact I. Qed.
+
+Lemma extend_rho_recursion_free : forall ρ x v,
+  rho_recursion_free ρ ->
+  recursion_free v ->
+  rho_recursion_free (extend_rho ρ x v).
+Proof.
+  intros ρ x v Hρ Hv y. unfold extend_rho.
+  destruct (String.eqb y x); [exact Hv | apply Hρ].
+Qed.
+
+Lemma subst_env_recursion_free : forall e ρ,
+  recursion_free e ->
+  rho_recursion_free ρ ->
+  recursion_free (subst_env ρ e).
+Proof.
+  unfold rho_recursion_free.
+  induction e; intros ρ Hrf Hrho; simpl in *;
+    repeat match goal with H : _ /\ _ |- _ => destruct H end;
+    try contradiction;
+    repeat split;
+    first
+      [ exact I
+      | apply Hrho
+      | solve [apply IHe; auto]
+      | solve [apply IHe1; auto]
+      | solve [apply IHe2; auto]
+      | solve [apply IHe3; auto]
+      | solve [apply IHe;
+               [assumption | apply extend_rho_recursion_free; [auto | exact I]]]
+      | solve [apply IHe2;
+               [assumption | apply extend_rho_recursion_free; [auto | exact I]]]
+      | solve [apply IHe3;
+               [assumption | apply extend_rho_recursion_free; [auto | exact I]]]
+      ].
+Qed.
 
 (** ========================================================================
     HELPER LEMMAS FOR SUBSTITUTION COMMUTATION
@@ -543,6 +603,8 @@ Proof.
   - (* EDeclassify *)
     f_equal; [apply IHe1 | apply IHe2]; exact Hext.
   - (* EProve *)
+    f_equal. apply IHe. exact Hext.
+  - (* EFix *)
     f_equal. apply IHe. exact Hext.
   - (* ERequire *)
     f_equal. apply IHe. exact Hext.
@@ -786,6 +848,8 @@ Proof.
     + apply IHe2. exact Hcond.
   - (* EProve *)
     simpl. f_equal. apply IHe. exact Hcond.
+  - (* EFix *)
+    simpl. f_equal. apply IHe. exact Hcond.
   - (* ERequire *)
     simpl. f_equal. apply IHe. exact Hcond.
   - (* EGrant *)
@@ -1005,6 +1069,18 @@ Hypothesis lambda_body_SN : forall x (T : ty) body v st ctx,
 Hypothesis store_values_are_values : forall loc val st,
   store_lookup loc st = Some val -> value val.
 
+(* REQ-44 (Option A): SCOPE HYPOTHESIS — this SN development covers the
+   RECURSION-FREE fragment. Scoping the TERMS alone is not enough:
+   [ST_DerefLoc] can pull any stored value back into the term, and [SN_expr]
+   quantifies over ALL stores, so the stores evaluation may touch must be
+   recursion-free as well. Entered as a Section Hypothesis, it becomes an
+   explicit premise of [well_typed_SN]/[SN_app] when the Section closes: the
+   theorems are honestly conditional on evaluating over recursion-free
+   stores. [step_preserves_recursion_free] (foundations/Semantics.v) shows
+   the joint term/store invariant is self-sustaining, so this is a discipline
+   on the INITIAL store, not a hidden axiom about evaluation. *)
+Hypothesis stores_recursion_free : forall st, store_recursion_free st.
+
 (** ========================================================================
     SECTION 10: FUNDAMENTAL THEOREM (AXIOMATIZED)
     ======================================================================== *)
@@ -1032,15 +1108,21 @@ Hypothesis store_values_are_values : forall loc val st,
     - Variable: lookup in env_reducible gives SN value
     - Compound expressions: use IH to get SN components, then construct SN
 *)
-Lemma fundamental_reducibility : forall Γ Σ pc e T ε ρ,
+Lemma fundamental_reducibility : forall Γ Σ pc e T ε,
   has_type Γ Σ pc e T ε ->
+  (* REQ-44 (Option A): the theorem is scoped to recursion-free terms over
+     recursion-free environments. The T_Fix case below is dead under this
+     hypothesis — which is exactly the honest statement: general recursion is
+     type-safe but NOT strongly normalizing. *)
+  recursion_free e ->
+  forall ρ,
+  rho_recursion_free ρ ->
   env_reducible Γ ρ ->
   Reducible T (subst_env ρ e).
 Proof.
-  intros Γ Σ pc e T ε ρ Hty.
-  revert ρ.  (* KEY: Move ρ back to goal for properly quantified IHs *)
+  intros Γ Σ pc e T ε Hty.
   unfold Reducible.
-  induction Hty; intros ρ Henv; simpl.
+  induction Hty; intros Hrf ρ Hrho Henv; simpl in Hrf; simpl.
   (* Base value cases - all are values, hence SN *)
   - (* T_Unit *) apply value_SN. constructor.
   - (* T_Bool *) apply value_SN. constructor.
@@ -1055,12 +1137,15 @@ Proof.
   - (* T_Lam - lambdas are values *)
     apply value_SN. constructor.
   - (* T_App - use SN_app_family with family premise *)
-    (* IHHty1 : forall ρ, env_reducible Γ ρ -> SN_expr (subst_env ρ e1) *)
-    (* IHHty2 : forall ρ, env_reducible Γ ρ -> SN_expr (subst_env ρ e2) *)
     intros st ctx.
+    destruct Hrf as [Hrf1 Hrf2].
     apply SN_Closure.SN_app_family.
-    + intros st' ctx'. apply IHHty1. assumption.
-    + intros st' ctx'. apply IHHty2. assumption.
+    + (* recursion_free (subst_env ρ e1) — REQ-44 scope *)
+      apply subst_env_recursion_free; assumption.
+    + (* store_recursion_free st — the Section scope hypothesis *)
+      apply stores_recursion_free.
+    + intros st' ctx'. apply IHHty1; assumption.
+    + intros st' ctx'. apply IHHty2; assumption.
     + (* family_lambda_SN: use the lambda_body_SN axiom *)
       unfold SN_Closure.family_lambda_SN.
       intros e1' Hreach.
@@ -1072,110 +1157,125 @@ Proof.
       * apply value_SN. exact Hval.
   - (* T_Pair - use SN_pair *)
     intros st ctx.
+    destruct Hrf as [Hrf1 Hrf2].
     apply SN_Closure.SN_pair.
-    + intros st' ctx'. apply IHHty1. assumption.
-    + intros st' ctx'. apply IHHty2. assumption.
+    + intros st' ctx'. apply IHHty1; assumption.
+    + intros st' ctx'. apply IHHty2; assumption.
   - (* T_Fst - use SN_fst *)
     intros st ctx.
     apply SN_Closure.SN_fst.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Snd - use SN_snd *)
     intros st ctx.
     apply SN_Closure.SN_snd.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Inl - use SN_inl *)
     intros st ctx.
     apply SN_Closure.SN_inl.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Inr - use SN_inr *)
     intros st ctx.
     apply SN_Closure.SN_inr.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Case - use SN_case with quantified IHs for branches *)
     intros st ctx.
+    destruct Hrf as [Hrf0 [Hrf1 Hrf2]].
     apply SN_Closure.SN_case.
-    + apply IHHty1. assumption.  (* SN of discriminee *)
-    + intros v st' ctx' Hv.  (* Inl branch *)
-      (* IHHty2 : forall ρ', env_reducible ((x1, T1) :: Γ) ρ' -> SN_expr (subst_env ρ' e1) *)
-      (* Use commutation: subst[x1 := v] (subst_env (extend_rho ρ x1 (EVar x1)) e1) = subst_env (extend_rho ρ x1 v) e1 *)
+    + apply subst_env_recursion_free; assumption.
+    + apply stores_recursion_free.
+    + apply IHHty1; assumption.  (* SN of discriminee *)
+    + intros v st' ctx' Hv Hrfv.  (* Inl branch — rf-restricted (REQ-44) *)
       rewrite subst_subst_env_commute; [|apply (env_reducible_closed Γ ρ); assumption].
-      specialize (IHHty2 (extend_rho ρ x1 v)).
-      apply IHHty2.
-      apply env_reducible_cons; [assumption | assumption |].
-      unfold Reducible. apply value_SN. assumption.
-    + intros v st' ctx' Hv.  (* Inr branch *)
+      apply (IHHty2 Hrf1 (extend_rho ρ x1 v)).
+      * apply extend_rho_recursion_free; assumption.
+      * apply env_reducible_cons; [assumption | assumption |].
+        unfold Reducible. apply value_SN. assumption.
+    + intros v st' ctx' Hv Hrfv.  (* Inr branch — rf-restricted (REQ-44) *)
       rewrite subst_subst_env_commute; [|apply (env_reducible_closed Γ ρ); assumption].
-      specialize (IHHty3 (extend_rho ρ x2 v)).
-      apply IHHty3.
-      apply env_reducible_cons; [assumption | assumption |].
-      unfold Reducible. apply value_SN. assumption.
+      apply (IHHty3 Hrf2 (extend_rho ρ x2 v)).
+      * apply extend_rho_recursion_free; assumption.
+      * apply env_reducible_cons; [assumption | assumption |].
+        unfold Reducible. apply value_SN. assumption.
   - (* T_If - use SN_if *)
     intros st ctx.
+    destruct Hrf as [Hrf1 [Hrf2 Hrf3]].
     apply SN_Closure.SN_if.
-    + apply IHHty1. assumption.
-    + intros st' ctx'. apply IHHty2. assumption.
-    + intros st' ctx'. apply IHHty3. assumption.
+    + apply IHHty1; assumption.
+    + intros st' ctx'. apply IHHty2; assumption.
+    + intros st' ctx'. apply IHHty3; assumption.
   - (* T_Let - use SN_let with quantified IH for body *)
     intros st ctx.
+    destruct Hrf as [Hrf1 Hrf2].
     apply SN_Closure.SN_let.
-    + apply IHHty1. assumption.
-    + intros v st' ctx' Hv.
+    + apply subst_env_recursion_free; assumption.
+    + apply stores_recursion_free.
+    + apply IHHty1; assumption.
+    + intros v st' ctx' Hv Hrfv.  (* rf-restricted body premise (REQ-44) *)
       rewrite subst_subst_env_commute; [|apply (env_reducible_closed Γ ρ); assumption].
-      specialize (IHHty2 (extend_rho ρ x v)).
-      apply IHHty2.
-      apply env_reducible_cons; [assumption | assumption |].
-      unfold Reducible. apply value_SN. assumption.
+      apply (IHHty2 Hrf2 (extend_rho ρ x v)).
+      * apply extend_rho_recursion_free; assumption.
+      * apply env_reducible_cons; [assumption | assumption |].
+        unfold Reducible. apply value_SN. assumption.
   - (* T_Perform - use SN_perform *)
     intros st ctx.
     apply SN_perform.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Handle - use SN_handle *)
     intros st ctx.
+    destruct Hrf as [Hrf1 Hrf2].
     apply SN_Closure.SN_handle.
-    + apply IHHty1. assumption.
-    + intros v st' ctx' Hv.
+    + apply subst_env_recursion_free; assumption.
+    + apply stores_recursion_free.
+    + apply IHHty1; assumption.
+    + intros v st' ctx' Hv Hrfv.  (* rf-restricted handler premise (REQ-44) *)
       rewrite subst_subst_env_commute; [|apply (env_reducible_closed Γ ρ); assumption].
-      specialize (IHHty2 (extend_rho ρ x v)).
-      apply IHHty2.
-      apply env_reducible_cons; [assumption | assumption |].
-      unfold Reducible. apply value_SN. assumption.
+      apply (IHHty2 Hrf2 (extend_rho ρ x v)).
+      * apply extend_rho_recursion_free; assumption.
+      * apply env_reducible_cons; [assumption | assumption |].
+        unfold Reducible. apply value_SN. assumption.
   - (* T_Ref - use SN_ref *)
     intros st ctx.
     apply SN_Closure.SN_ref.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Deref - use SN_deref *)
     intros st ctx.
     apply SN_Closure.SN_deref.
-    + apply IHHty. assumption.
+    + apply IHHty; assumption.
     + (* Store well-formedness: values in store are values *)
       intros loc val st' Hlook.
       exact (store_values_are_values loc val st' Hlook).
   - (* T_Assign - use SN_assign *)
     intros st ctx.
+    destruct Hrf as [Hrf1 Hrf2].
     apply SN_Closure.SN_assign.
-    + intros st' ctx'. apply IHHty1. assumption.
-    + intros st' ctx'. apply IHHty2. assumption.
+    + intros st' ctx'. apply IHHty1; assumption.
+    + intros st' ctx'. apply IHHty2; assumption.
   - (* T_Classify - use SN_classify *)
     intros st ctx.
     apply SN_classify.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Declassify - use SN_declassify *)
     intros st ctx.
+    destruct Hrf as [Hrf1 Hrf2].
     apply SN_declassify.
-    + apply IHHty1. assumption.
-    + intros st' ctx'. apply IHHty2. assumption.
+    + apply IHHty1; assumption.
+    + intros st' ctx'. apply IHHty2; assumption.
   - (* T_Prove - use SN_prove *)
     intros st ctx.
     apply SN_prove.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
+  - (* T_Fix — DEAD under the REQ-44 scope: recursion_free (EFix e) is False.
+       This is the case that would otherwise demand SN of a general fixpoint,
+       which is exactly what Option A honestly does not claim. *)
+    destruct Hrf.
   - (* T_Require - use SN_require *)
     intros st ctx.
     apply SN_require.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
   - (* T_Grant - use SN_grant *)
     intros st ctx.
     apply SN_grant.
-    apply IHHty. assumption.
+    apply IHHty; assumption.
 Qed. (* All cases proven - using justified axioms for lambda_body_SN and store_values_are_values *)
 
 (** ========================================================================
@@ -1184,14 +1284,20 @@ Qed. (* All cases proven - using justified axioms for lambda_body_SN and store_v
 
 (** Well-typed closed terms are SN - THIS IS THE KEY THEOREM *)
 Theorem well_typed_SN : forall Σ pc e T ε,
+  (* REQ-44 (Option A): the recursion-free hypothesis is LOAD-BEARING.
+     The tripwire (core_is_recursion_free) fired when EFix entered the core,
+     exactly as designed: this theorem is now scoped, not total. *)
+  recursion_free e ->
   has_type nil Σ pc e T ε ->
   SN_expr e.
 Proof.
-  intros Σ pc e T ε Hty.
+  intros Σ pc e T ε Hrf Hty.
   assert (Hred: Reducible T e).
   { replace e with (subst_env id_rho e) by apply subst_env_id.
     apply fundamental_reducibility with (Γ := nil) (Σ := Σ) (pc := pc) (ε := ε).
     - exact Hty.
+    - exact Hrf.
+    - apply id_rho_recursion_free.
     - apply env_reducible_nil.
   }
   apply CR1 with (T := T).
@@ -1200,18 +1306,54 @@ Qed.
 
 (** SN_app: The key theorem for NonInterference_v2.v *)
 Theorem SN_app : forall f a T1 T2 eff Σ pc,
+  recursion_free f ->
+  recursion_free a ->
   has_type nil Σ pc f (TFn T1 T2 eff) EffectPure ->
   has_type nil Σ pc a T1 EffectPure ->
   SN_expr (EApp f a).
 Proof.
-  intros f a T1 T2 eff Σ pc Htyf Htya.
-  (* Both f and a are well-typed at closed type, hence SN by well_typed_SN *)
-  (* For EApp f a, we use typing: if f : T1 -> T2 and a : T1, then (f a) : T2 *)
-  (* Apply T_App to get typing for (EApp f a), then use well_typed_SN *)
+  intros f a T1 T2 eff Σ pc Hrff Hrfa Htyf Htya.
   assert (Hty_app: has_type nil Σ pc (EApp f a) T2 (effect_join eff (effect_join EffectPure EffectPure))).
   { apply T_App with (T1 := T1) (ε1 := EffectPure) (ε2 := EffectPure); assumption. }
   apply well_typed_SN with (Σ := Σ) (pc := pc) (T := T2) (ε := effect_join eff (effect_join EffectPure EffectPure)).
-  exact Hty_app.
+  - simpl. split; assumption.
+  - exact Hty_app.
+Qed.
+
+(** ------------------------------------------------------------------------
+    THE SN SCOPE, MACHINE-CHECKED — TRIPWIRE FIRED (REQ-44, Option A)
+    ------------------------------------------------------------------------
+
+    History, because it is the point. When this section was first written the
+    core calculus had NO recursion constructor: [recursion_free] held of every
+    term, the scoped theorem below was provably equivalent to the unscoped
+    [well_typed_SN], and a deliberate tripwire ([core_is_recursion_free] in
+    foundations/Syntax.v) guaranteed that adding a [fix] constructor would
+    BREAK THE BUILD rather than silently falsify an exported theorem.
+
+    [EFix] is now a core constructor. The tripwire fired, exactly as designed:
+
+      1. [core_is_recursion_free] is FALSE and has been deleted — as its own
+         comment instructed, the fix was to thread [recursion_free] through
+         the SN development, not to weaken the tripwire.
+      2. [well_typed_SN] itself now carries the recursion-free hypothesis;
+         the fundamental theorem's T_Fix case is dead under it. The scope is
+         no longer a forward-looking restatement — it is LOAD-BEARING.
+      3. The corollary that discharged the scope for every term
+         ([recursion_free_scope_currently_total]) is GONE: that equivalence
+         is precisely what adding recursion destroys. Its disappearance is
+         the machine-checked record of the claims change.
+
+    The alias below keeps the documented name stable for external reference:
+    the scoped statement predicted here as "the one that survives unchanged"
+    is now simply THE theorem. *)
+
+Theorem well_typed_SN_recursion_free : forall Σ pc e T ε,
+  recursion_free e ->
+  has_type nil Σ pc e T ε ->
+  SN_expr e.
+Proof.
+  exact well_typed_SN.
 Qed.
 
 (** ========================================================================

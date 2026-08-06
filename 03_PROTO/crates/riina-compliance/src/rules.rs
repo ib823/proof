@@ -26,7 +26,7 @@ pub struct ComplianceRule {
 pub fn rule_count(profile: ComplianceProfile) -> usize {
     match profile {
         ComplianceProfile::PciDss => 56,
-        ComplianceProfile::Pdpa => 18,
+        ComplianceProfile::Pdpa => 20,
         ComplianceProfile::Bnm => 20,
         ComplianceProfile::Hipaa => 33,
         ComplianceProfile::Cmmc => 63,
@@ -41,6 +41,9 @@ pub fn rule_count(profile: ComplianceProfile) -> usize {
         ComplianceProfile::MasTrm => 20,
         ComplianceProfile::Itar => 12,
         ComplianceProfile::EsgSdg => 30,
+        ComplianceProfile::Cra => 15,
+        ComplianceProfile::Dora => 14,
+        ComplianceProfile::Nis2 => 13,
     }
 }
 
@@ -65,6 +68,9 @@ pub fn rules_for_profiles(profiles: &[ComplianceProfile]) -> Vec<ComplianceRule>
             ComplianceProfile::MasTrm => rules.extend(mas_trm_rules()),
             ComplianceProfile::Itar => rules.extend(itar_rules()),
             ComplianceProfile::EsgSdg => rules.extend(esg_sdg_rules()),
+            ComplianceProfile::Cra => rules.extend(cra_rules()),
+            ComplianceProfile::Dora => rules.extend(dora_rules()),
+            ComplianceProfile::Nis2 => rules.extend(nis2_rules()),
         }
     }
     rules
@@ -80,34 +86,105 @@ fn name_matches(name: &str, keywords: &[String]) -> bool {
     keywords.iter().any(|k| lower.contains(k.as_str()))
 }
 
+/// Apply `f` to each DIRECT sub-expression of `expr`, short-circuiting on the
+/// first `true`.
+///
+/// This is the single structural walk behind every `contains_*` / `has_*`
+/// predicate below, and it is deliberately **EXHAUSTIVE — no wildcard arm**.
+/// That is the whole point: every predicate in this file used to carry its own
+/// hand-written match ending in `_ => false`, so a variant nobody remembered to
+/// list did not fail the build, it silently truncated the walk and the rule
+/// stopped seeing the code it was written to police. `Expr::Return` was exactly
+/// that — `pulang e` is the ordinary way to write a RIINA function body, and
+/// none of the five walks descended through it, so an effectful function
+/// scanned as effect-free (see the `pulang_wrapped_body_scans_like_a_bare_body`
+/// and `every_expr_variant_is_walked_*` regressions).
+///
+/// With the enumeration centralised here, adding an `Expr` variant fails to
+/// compile in ONE place instead of silently degrading every predicate. Do not
+/// add a `_ =>` arm to this match.
+fn any_child(expr: &Expr, f: &mut dyn FnMut(&Expr) -> bool) -> bool {
+    match expr {
+        // Leaves — no sub-expressions.
+        Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::IntN { .. }
+        | Expr::String(_)
+        | Expr::Var(_)
+        | Expr::Loc(_)
+        | Expr::ChoreographyBlock { .. }
+        | Expr::UIColor(_, _, _)
+        | Expr::UIStyleDecl { .. } => false,
+
+        // One sub-expression.
+        Expr::Lam(_, _, e)
+        | Expr::Fst(e)
+        | Expr::Snd(e)
+        | Expr::Inl(e, _)
+        | Expr::Inr(e, _)
+        | Expr::Return(e)
+        | Expr::Perform(_, e)
+        | Expr::Ref(e, _)
+        | Expr::Deref(e)
+        | Expr::Classify(e)
+        | Expr::Prove(e)
+        | Expr::Require(_, e)
+        | Expr::Grant(_, e)
+        | Expr::FieldAccess(e, _)
+        | Expr::ActorRecv(e)
+        | Expr::ContentHash(e)
+        | Expr::ContractDeploy(e)
+        | Expr::ZakatCalculate(e) => f(e),
+
+        // Two sub-expressions.
+        Expr::App(a, b)
+        | Expr::Pair(a, b)
+        | Expr::Let(_, _, a, b)
+        | Expr::LetRec(_, _, a, b)
+        | Expr::Handle(a, _, b)
+        | Expr::Assign(a, b)
+        | Expr::Declassify(a, b)
+        | Expr::BinOp(_, a, b)
+        | Expr::Spawn(a, b)
+        | Expr::ActorSend(a, b)
+        | Expr::CRDTMerge(a, b)
+        | Expr::ContentVerify(a, b)
+        | Expr::UIText(a, b)
+        | Expr::UIButton(a, b)
+        | Expr::UIContrastCheck(a, b) => f(a) || f(b),
+
+        // Three sub-expressions.
+        Expr::If(a, b, c) | Expr::Case(a, _, b, _, c) => f(a) || f(b) || f(c),
+        Expr::TokenTransfer { from, to, amount } => f(from) || f(to) || f(amount),
+        Expr::ActorDecl {
+            init_state,
+            handler,
+            ..
+        } => f(init_state) || f(handler),
+
+        // REQ-44: top-level functions form a mutually-recursive GROUP. Every
+        // group member is a function body — miss this arm and compliance stops
+        // inspecting every top-level function in the program.
+        Expr::LetRecGroup(bindings, cont) => {
+            bindings.iter().any(|(_, _, e)| f(e)) || f(cont)
+        }
+
+        // Sequences of sub-expressions.
+        Expr::ListLit(items)
+        | Expr::UIDisplay(items)
+        | Expr::UIRow(items)
+        | Expr::UIColumn(items) => items.iter().any(f),
+        Expr::RecordLit(_, fields) => fields.iter().any(|(_, e)| f(e)),
+        Expr::FFICall { args, .. } => args.iter().any(f),
+    }
+}
+
 /// Check if an expression tree contains a Perform with the given effect.
 fn contains_effect(expr: &Expr, target: Effect) -> bool {
     match expr {
         Expr::Perform(eff, _) if *eff == target => true,
-        Expr::Lam(_, _, body) => contains_effect(body, target),
-        Expr::App(f, a) => contains_effect(f, target) || contains_effect(a, target),
-        Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
-            contains_effect(v, target) || contains_effect(b, target)
-        }
-        Expr::If(c, t, e) | Expr::Case(c, _, t, _, e) => {
-            contains_effect(c, target) || contains_effect(t, target) || contains_effect(e, target)
-        }
-        Expr::Perform(_, inner) => contains_effect(inner, target),
-        Expr::BinOp(_, l, r) | Expr::Pair(l, r) | Expr::Assign(l, r) | Expr::Declassify(l, r) => {
-            contains_effect(l, target) || contains_effect(r, target)
-        }
-        Expr::Classify(e)
-        | Expr::Fst(e)
-        | Expr::Snd(e)
-        | Expr::Deref(e)
-        | Expr::Ref(e, _)
-        | Expr::Inl(e, _)
-        | Expr::Inr(e, _)
-        | Expr::Prove(e)
-        | Expr::Require(_, e)
-        | Expr::Grant(_, e) => contains_effect(e, target),
-        Expr::FFICall { args, .. } => args.iter().any(|a| contains_effect(a, target)),
-        _ => false,
+        _ => any_child(expr, &mut |c| contains_effect(c, target)),
     }
 }
 
@@ -115,26 +192,7 @@ fn contains_effect(expr: &Expr, target: Effect) -> bool {
 fn contains_security_op(expr: &Expr) -> bool {
     match expr {
         Expr::Classify(_) | Expr::Declassify(_, _) | Expr::Grant(_, _) => true,
-        Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
-            contains_security_op(v) || contains_security_op(b)
-        }
-        Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a) | Expr::Assign(f, a) => {
-            contains_security_op(f) || contains_security_op(a)
-        }
-        Expr::If(c, t, e) | Expr::Case(c, _, t, _, e) => {
-            contains_security_op(c) || contains_security_op(t) || contains_security_op(e)
-        }
-        Expr::Lam(_, _, b)
-        | Expr::Fst(b)
-        | Expr::Snd(b)
-        | Expr::Inl(b, _)
-        | Expr::Inr(b, _)
-        | Expr::Ref(b, _)
-        | Expr::Deref(b)
-        | Expr::Perform(_, b)
-        | Expr::Prove(b)
-        | Expr::Require(_, b) => contains_security_op(b),
-        _ => false,
+        _ => any_child(expr, &mut contains_security_op),
     }
 }
 
@@ -142,27 +200,7 @@ fn contains_security_op(expr: &Expr) -> bool {
 fn has_if_or_case(expr: &Expr) -> bool {
     match expr {
         Expr::If(_, _, _) | Expr::Case(_, _, _, _, _) => true,
-        Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
-            has_if_or_case(v) || has_if_or_case(b)
-        }
-        Expr::Lam(_, _, b)
-        | Expr::Fst(b)
-        | Expr::Snd(b)
-        | Expr::Perform(_, b)
-        | Expr::Classify(b)
-        | Expr::Prove(b)
-        | Expr::Deref(b)
-        | Expr::Ref(b, _)
-        | Expr::Inl(b, _)
-        | Expr::Inr(b, _)
-        | Expr::Require(_, b)
-        | Expr::Grant(_, b) => has_if_or_case(b),
-        Expr::App(f, a)
-        | Expr::Pair(f, a)
-        | Expr::BinOp(_, f, a)
-        | Expr::Assign(f, a)
-        | Expr::Declassify(f, a) => has_if_or_case(f) || has_if_or_case(a),
-        _ => false,
+        _ => any_child(expr, &mut has_if_or_case),
     }
 }
 
@@ -170,13 +208,7 @@ fn has_if_or_case(expr: &Expr) -> bool {
 fn contains_var_matching(expr: &Expr, keywords: &[String]) -> bool {
     match expr {
         Expr::Var(name) => name_matches(name, keywords),
-        Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a) => {
-            contains_var_matching(f, keywords) || contains_var_matching(a, keywords)
-        }
-        Expr::Fst(e) | Expr::Snd(e) | Expr::Classify(e) | Expr::Perform(_, e) | Expr::Deref(e) => {
-            contains_var_matching(e, keywords)
-        }
-        _ => false,
+        _ => any_child(expr, &mut |c| contains_var_matching(c, keywords)),
     }
 }
 
@@ -2091,6 +2123,23 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             }),
         },
         // --- New 8 rules ---
+        // --- PDPA (Amendment) Act 2024 (REQ-51 refresh) ---
+        // s.4 (amended): biometric data is now SENSITIVE personal data.
+        sensitive_let_rule(
+            "PDPA-2024-S4-BIO",
+            ComplianceProfile::Pdpa,
+            "Biometric data is sensitive personal data (2024 Amendment) and must be classified",
+            &["biometric", "biometrik", "cap_jari", "fingerprint", "facial_data", "wajah"],
+            Severity::Error,
+        ),
+        // s.12B (new): mandatory breach notification — a breach cannot be
+        // notified if security operations leave no audit trail.
+        audit_trail_rule(
+            "PDPA-2024-S12B",
+            ComplianceProfile::Pdpa,
+            "Security operations on personal data must leave an audit trail (breach-notification readiness, s.12B)",
+            Severity::Error,
+        ),
         sensitive_let_rule(
             "PDPA-S6",
             ComplianceProfile::Pdpa,
@@ -2226,10 +2275,7 @@ fn contains_personal_data_var(expr: &Expr) -> bool {
                 || lower.contains("nama")
                 || lower.contains("ic_number")
         }
-        Expr::App(f, a) => contains_personal_data_var(f) || contains_personal_data_var(a),
-        Expr::Pair(l, r) => contains_personal_data_var(l) || contains_personal_data_var(r),
-        Expr::Fst(e) | Expr::Snd(e) | Expr::Classify(e) => contains_personal_data_var(e),
-        _ => false,
+        _ => any_child(expr, &mut contains_personal_data_var),
     }
 }
 
@@ -6163,4 +6209,710 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             Severity::Error,
         ),
     ]
+}
+
+
+// ===========================================================================
+// EU CRA rules (15) — Regulation (EU) 2024/2847, Annex I
+//
+// HONESTY SCOPE (do not widen in prose elsewhere): these are machine-checkable
+// conditions DERIVED FROM Annex I's essential requirements, checked on the AST.
+// Passing them is NOT CRA conformity — most CRA obligations (risk assessment,
+// technical documentation, CE marking, the Art. 14 reporting duties) are
+// organisational and live outside a compiler. The reporting-process side is
+// documented in SECURITY.md; the SBOM/VEX side in scripts/generate-sbom.sh.
+// Rule ids cite the Annex I part they derive from.
+// ===========================================================================
+
+fn cra_rules() -> Vec<ComplianceRule> {
+    vec![
+        // Part I §(2)(a): products made available with a secure-by-default
+        // configuration.
+        insecure_default_rule(
+            "CRA-I.2a",
+            ComplianceProfile::Cra,
+            "Secure by default: security features must not ship disabled",
+            &["encryption_enabled", "tls_enabled", "auth_enabled", "selamat"],
+            Severity::Error,
+        ),
+        // Part I §(2)(d): protection from unauthorised access by appropriate
+        // control mechanisms (authentication).
+        auth_crypto_rule(
+            "CRA-I.2d",
+            ComplianceProfile::Cra,
+            "Access-control functions must use the Crypto effect",
+            &["auth", "login", "sahkan_pengguna", "verify_user"],
+            Severity::Error,
+        ),
+        // Part I §(2)(e): confidentiality of stored data — encrypt at rest.
+        sensitive_let_rule(
+            "CRA-I.2e",
+            ComplianceProfile::Cra,
+            "Stored secrets/credentials must be classified",
+            &["credential", "private_key", "kata_laluan", "secret_config"],
+            Severity::Error,
+        ),
+        // Part I §(2)(e): confidentiality of transmitted data — secure channel.
+        insecure_network_rule(
+            "CRA-I.2e-net",
+            ComplianceProfile::Cra,
+            "Data in transit must use a secure channel (NetworkSecure)",
+            Severity::Error,
+        ),
+        // Part I §(2)(e): no plaintext transport endpoints.
+        insecure_url_rule(
+            "CRA-I.2e-url",
+            ComplianceProfile::Cra,
+            "Plaintext http:// endpoints are prohibited",
+            Severity::Error,
+        ),
+        // Part I §(2)(f): integrity of data, commands and configuration —
+        // sensitive values must not leave over the network unprotected.
+        sensitive_network_send_rule(
+            "CRA-I.2f",
+            ComplianceProfile::Cra,
+            "Sensitive values must not be sent raw over the network",
+            &["credential", "token", "kunci", "private_key"],
+            Severity::Error,
+        ),
+        // Part I §(2)(g): process only data that is necessary (minimisation) —
+        // raw external input must be sanitised before use.
+        tainted_input_rule(
+            "CRA-I.2g",
+            ComplianceProfile::Cra,
+            "External input must be sanitised before processing",
+            &["user_input", "borang", "form_input", "request_body"],
+            Severity::Error,
+        ),
+        // Part I §(2)(h)+(j): limit attack surfaces / least privilege.
+        broad_grant_rule(
+            "CRA-I.2h",
+            ComplianceProfile::Cra,
+            "Broad capability grants (System) violate attack-surface minimisation",
+            Severity::Error,
+        ),
+        // Part I §(2)(i): resilience against denial-of-service.
+        unbounded_recursion_rule(
+            "CRA-I.2i",
+            ComplianceProfile::Cra,
+            "Unbounded recursion is a availability/DoS hazard",
+            Severity::Warning,
+        ),
+        // Part I §(2)(l): record and monitor relevant internal activity
+        // (security logging).
+        audit_trail_rule(
+            "CRA-I.2l",
+            ComplianceProfile::Cra,
+            "Security operations must leave an audit trail (Write effect)",
+            Severity::Error,
+        ),
+        // Part I §(2)(m)/(c): security updates — update paths must verify
+        // authenticity cryptographically.
+        auth_crypto_rule(
+            "CRA-I.2m",
+            ComplianceProfile::Cra,
+            "Update/download paths must verify signatures (Crypto effect)",
+            &["update", "kemaskini", "upgrade", "firmware"],
+            Severity::Error,
+        ),
+        // Part II §(3): vulnerability handling — no debug code in shipped
+        // products (tested-before-release discipline).
+        debug_code_rule(
+            "CRA-II.3",
+            ComplianceProfile::Cra,
+            "Debug artifacts must not ship in a product placed on the market",
+            Severity::Warning,
+        ),
+        // Part I §(2)(a) baseline: no known-weak cryptography.
+        weak_crypto_rule(
+            "CRA-I.2a-crypto",
+            ComplianceProfile::Cra,
+            "Known-weak algorithms (MD5/SHA1/DES/RC4) are prohibited",
+            Severity::Error,
+        ),
+        // Part I §(2)(d): no hardcoded access credentials.
+        hardcoded_credential_rule(
+            "CRA-I.2d-cred",
+            ComplianceProfile::Cra,
+            "Hardcoded credentials defeat access-control requirements",
+            &["password", "token", "api_key", "kata_laluan"],
+            Severity::Error,
+        ),
+        // Part I §(2)(e): declassification of protected data requires proof.
+        declassify_prove_rule(
+            "CRA-I.2e-declass",
+            ComplianceProfile::Cra,
+            "Declassifying protected data requires an explicit proof",
+            Severity::Error,
+        ),
+    ]
+}
+
+
+// ===========================================================================
+// EU DORA rules (14) — Regulation (EU) 2022/2554
+//
+// SAME HONESTY SCOPE as the CRA block above: machine-checkable conditions
+// DERIVED FROM DORA's ICT-risk articles, checked on the AST. Passing them is
+// not DORA compliance — governance, testing programmes (Arts. 24-27), incident
+// REPORTING (Arts. 17-23) and register-of-information duties are
+// organisational. Chosen because REQ-33 selects fintech/payments as RIINA's
+// primary vertical, whose EU deployments DORA has governed since 2025-01-17.
+// Rule ids cite the article they derive from.
+// ===========================================================================
+
+fn dora_rules() -> Vec<ComplianceRule> {
+    vec![
+        // Art. 9(2): protection of ICT systems — security features on by default.
+        insecure_default_rule(
+            "DORA-9.2",
+            ComplianceProfile::Dora,
+            "ICT protection mechanisms must not ship disabled",
+            &["encryption_enabled", "tls_enabled", "auth_enabled", "mfa_enabled"],
+            Severity::Error,
+        ),
+        // Art. 9(3)(b): strong authentication mechanisms.
+        auth_crypto_rule(
+            "DORA-9.3b",
+            ComplianceProfile::Dora,
+            "Financial-system authentication must use the Crypto effect",
+            &["auth", "login", "sahkan_pengguna", "payment_auth"],
+            Severity::Error,
+        ),
+        // Art. 9(3)(c): data protected at rest.
+        sensitive_let_rule(
+            "DORA-9.3c",
+            ComplianceProfile::Dora,
+            "Financial secrets/credentials at rest must be classified",
+            &["credential", "private_key", "account_secret", "kata_laluan"],
+            Severity::Error,
+        ),
+        // Art. 9(3)(c): data protected in transit.
+        insecure_network_rule(
+            "DORA-9.3c-net",
+            ComplianceProfile::Dora,
+            "Financial data in transit must use a secure channel",
+            Severity::Error,
+        ),
+        insecure_url_rule(
+            "DORA-9.3c-url",
+            ComplianceProfile::Dora,
+            "Plaintext http:// endpoints are prohibited in ICT services",
+            Severity::Error,
+        ),
+        // Art. 9(3)(a): integrity — sensitive values never leave raw.
+        sensitive_network_send_rule(
+            "DORA-9.3a",
+            ComplianceProfile::Dora,
+            "Sensitive financial values must not be sent raw over the network",
+            &["credential", "token", "account", "iban"],
+            Severity::Error,
+        ),
+        // Art. 9(4)(c): policies limiting access — least privilege.
+        broad_grant_rule(
+            "DORA-9.4c",
+            ComplianceProfile::Dora,
+            "Broad capability grants (System) violate least-privilege access",
+            Severity::Error,
+        ),
+        // Art. 9(4)(c): temporal access control — keys/sessions must expire.
+        temporal_no_expiry_rule(
+            "DORA-9.4c-exp",
+            ComplianceProfile::Dora,
+            "Keys and sessions must carry an expiry (Time-effect check)",
+            &["key_created", "session_created", "token_created"],
+            Severity::Warning,
+        ),
+        // Art. 9(4)(d): cryptographic controls — no known-weak algorithms.
+        weak_crypto_rule(
+            "DORA-9.4d",
+            ComplianceProfile::Dora,
+            "Known-weak algorithms are prohibited in ICT risk controls",
+            Severity::Error,
+        ),
+        // Art. 10: detection — anomalous-activity logging.
+        audit_trail_rule(
+            "DORA-10.1",
+            ComplianceProfile::Dora,
+            "Security operations must leave an audit trail for detection",
+            Severity::Error,
+        ),
+        // Art. 9(1): availability/resilience of ICT systems.
+        unbounded_recursion_rule(
+            "DORA-9.1",
+            ComplianceProfile::Dora,
+            "Unbounded recursion is an ICT-availability hazard",
+            Severity::Warning,
+        ),
+        // Art. 28: ICT third-party risk — every FFI boundary is third-party ICT.
+        ffi_review_rule(
+            "DORA-28.1",
+            ComplianceProfile::Dora,
+            "FFI crosses the ICT third-party boundary and requires review",
+            Severity::Warning,
+        ),
+        // Art. 16(1): input from external sources sanitised before processing.
+        tainted_input_rule(
+            "DORA-16.1",
+            ComplianceProfile::Dora,
+            "External input must be sanitised before financial processing",
+            &["user_input", "payment_input", "form_input", "request_body"],
+            Severity::Error,
+        ),
+        // Art. 9(4)(a): no hardcoded access credentials in ICT assets.
+        hardcoded_credential_rule(
+            "DORA-9.4a",
+            ComplianceProfile::Dora,
+            "Hardcoded credentials violate ICT access-management policy",
+            &["password", "token", "api_key", "account_secret"],
+            Severity::Error,
+        ),
+    ]
+}
+
+
+// ===========================================================================
+// EU NIS2 rules (13) — Directive (EU) 2022/2555, Art. 21(2)
+//
+// SAME HONESTY SCOPE as the CRA/DORA blocks: machine-checkable conditions
+// DERIVED FROM the Art. 21(2) cybersecurity risk-management measures, checked
+// on the AST. Passing them is not NIS2 compliance — governance (Art. 20),
+// incident REPORTING to CSIRTs (Art. 23), and the registration duties are
+// organisational. NIS2 is a DIRECTIVE: member-state transpositions vary; rule
+// ids cite the Art. 21(2) measure they derive from.
+// ===========================================================================
+
+fn nis2_rules() -> Vec<ComplianceRule> {
+    vec![
+        // Art. 21(2)(b): incident handling — detection needs an audit trail.
+        audit_trail_rule(
+            "NIS2-21.2b",
+            ComplianceProfile::Nis2,
+            "Security operations must leave an audit trail for incident handling",
+            Severity::Error,
+        ),
+        // Art. 21(2)(d): supply-chain security — FFI is a third-party boundary.
+        ffi_review_rule(
+            "NIS2-21.2d",
+            ComplianceProfile::Nis2,
+            "FFI crosses the supply-chain boundary and requires review",
+            Severity::Warning,
+        ),
+        // Art. 21(2)(e): secure development & vulnerability handling.
+        debug_code_rule(
+            "NIS2-21.2e",
+            ComplianceProfile::Nis2,
+            "Debug artifacts must not reach production (secure development)",
+            Severity::Warning,
+        ),
+        weak_crypto_rule(
+            "NIS2-21.2e-crypto",
+            ComplianceProfile::Nis2,
+            "Known-weak algorithms are prohibited (secure development)",
+            Severity::Error,
+        ),
+        // Art. 21(2)(g): basic cyber hygiene.
+        insecure_default_rule(
+            "NIS2-21.2g",
+            ComplianceProfile::Nis2,
+            "Security features must not ship disabled (cyber hygiene)",
+            &["encryption_enabled", "tls_enabled", "auth_enabled", "mfa_enabled"],
+            Severity::Error,
+        ),
+        hardcoded_credential_rule(
+            "NIS2-21.2g-cred",
+            ComplianceProfile::Nis2,
+            "Hardcoded credentials violate basic cyber hygiene",
+            &["password", "token", "api_key", "kata_laluan"],
+            Severity::Error,
+        ),
+        // Art. 21(2)(h): cryptography & encryption policies.
+        insecure_network_rule(
+            "NIS2-21.2h-net",
+            ComplianceProfile::Nis2,
+            "Data in transit must use a secure channel (encryption policy)",
+            Severity::Error,
+        ),
+        insecure_url_rule(
+            "NIS2-21.2h-url",
+            ComplianceProfile::Nis2,
+            "Plaintext http:// endpoints are prohibited (encryption policy)",
+            Severity::Error,
+        ),
+        sensitive_let_rule(
+            "NIS2-21.2h-rest",
+            ComplianceProfile::Nis2,
+            "Secrets/credentials at rest must be classified (encryption policy)",
+            &["credential", "private_key", "kata_laluan", "secret_config"],
+            Severity::Error,
+        ),
+        // Art. 21(2)(i): access control — least privilege, no raw sensitive sends.
+        broad_grant_rule(
+            "NIS2-21.2i",
+            ComplianceProfile::Nis2,
+            "Broad capability grants (System) violate access-control policy",
+            Severity::Error,
+        ),
+        sensitive_network_send_rule(
+            "NIS2-21.2i-send",
+            ComplianceProfile::Nis2,
+            "Sensitive values must not be sent raw over the network",
+            &["credential", "token", "kunci", "private_key"],
+            Severity::Error,
+        ),
+        // Art. 21(2)(j): MFA / secured authentication.
+        auth_crypto_rule(
+            "NIS2-21.2j",
+            ComplianceProfile::Nis2,
+            "Authentication must use the Crypto effect (secured authentication)",
+            &["auth", "login", "sahkan_pengguna", "verify_user"],
+            Severity::Error,
+        ),
+        // Art. 21(1): availability of services (proportionate technical measures).
+        unbounded_recursion_rule(
+            "NIS2-21.1",
+            ComplianceProfile::Nis2,
+            "Unbounded recursion is an availability hazard",
+            Severity::Warning,
+        ),
+    ]
+}
+
+// ===========================================================================
+// Structural-walk regressions (silent-gap class)
+//
+// `any_child` is exhaustive, so a NEW `Expr` variant breaks the build rather
+// than silently truncating every predicate. That catches omissions; it does
+// NOT catch a listed-but-wrong arm — an arm that drops a child still compiles
+// and still silently stops the walk.
+//
+// These tests close that half: for every container variant, a marker planted
+// as a direct child must be found through it. Each predicate also gets a
+// negative control, because a predicate that can only answer `true` would
+// pass every positive assertion while checking nothing.
+// ===========================================================================
+
+#[cfg(test)]
+mod walker_tests {
+    use super::*;
+    use riina_types::{BinOp as Op, SecurityLevel, SessionType, Ty};
+
+    fn ty() -> Ty {
+        Ty::Int
+    }
+
+    /// One entry per `Expr` variant that has sub-expressions: a label and a
+    /// builder that plants `m` as a DIRECT child of that variant.
+    fn wrappers(m: Expr) -> Vec<(&'static str, Expr)> {
+        let b = |e: Expr| Box::new(e);
+        let unit = || Box::new(Expr::Unit);
+        vec![
+            ("Lam", Expr::Lam("x".into(), ty(), b(m.clone()))),
+            ("App/fn", Expr::App(b(m.clone()), unit())),
+            ("App/arg", Expr::App(unit(), b(m.clone()))),
+            ("Pair/l", Expr::Pair(b(m.clone()), unit())),
+            ("Pair/r", Expr::Pair(unit(), b(m.clone()))),
+            ("Fst", Expr::Fst(b(m.clone()))),
+            ("Snd", Expr::Snd(b(m.clone()))),
+            ("Inl", Expr::Inl(b(m.clone()), ty())),
+            ("Inr", Expr::Inr(b(m.clone()), ty())),
+            (
+                "Case/scrutinee",
+                Expr::Case(b(m.clone()), "x".into(), unit(), "y".into(), unit()),
+            ),
+            (
+                "Case/left",
+                Expr::Case(unit(), "x".into(), b(m.clone()), "y".into(), unit()),
+            ),
+            (
+                "Case/right",
+                Expr::Case(unit(), "x".into(), unit(), "y".into(), b(m.clone())),
+            ),
+            ("If/cond", Expr::If(b(m.clone()), unit(), unit())),
+            ("If/then", Expr::If(unit(), b(m.clone()), unit())),
+            ("If/else", Expr::If(unit(), unit(), b(m.clone()))),
+            ("Let/value", Expr::Let("x".into(), None, b(m.clone()), unit())),
+            ("Let/body", Expr::Let("x".into(), None, unit(), b(m.clone()))),
+            // `pulang e` — the ordinary RIINA function body. This is the arm
+            // whose absence made a correct effectful function scan as pure.
+            ("Return", Expr::Return(b(m.clone()))),
+            ("Perform", Expr::Perform(Effect::Read, b(m.clone()))),
+            ("Handle/body", Expr::Handle(b(m.clone()), "x".into(), unit())),
+            (
+                "Handle/handler",
+                Expr::Handle(unit(), "x".into(), b(m.clone())),
+            ),
+            ("Ref", Expr::Ref(b(m.clone()), SecurityLevel::Public)),
+            ("Deref", Expr::Deref(b(m.clone()))),
+            ("Assign/lhs", Expr::Assign(b(m.clone()), unit())),
+            ("Assign/rhs", Expr::Assign(unit(), b(m.clone()))),
+            ("Classify", Expr::Classify(b(m.clone()))),
+            ("Declassify/value", Expr::Declassify(b(m.clone()), unit())),
+            ("Declassify/proof", Expr::Declassify(unit(), b(m.clone()))),
+            ("Prove", Expr::Prove(b(m.clone()))),
+            ("Require", Expr::Require(Effect::Read, b(m.clone()))),
+            ("Grant", Expr::Grant(Effect::Read, b(m.clone()))),
+            (
+                "LetRec/value",
+                Expr::LetRec("f".into(), ty(), b(m.clone()), unit()),
+            ),
+            (
+                "LetRec/body",
+                Expr::LetRec("f".into(), ty(), unit(), b(m.clone())),
+            ),
+            (
+                "LetRecGroup/member",
+                Expr::LetRecGroup(vec![("f".into(), ty(), m.clone())], unit()),
+            ),
+            (
+                "LetRecGroup/cont",
+                Expr::LetRecGroup(vec![("f".into(), ty(), Expr::Unit)], b(m.clone())),
+            ),
+            ("BinOp/l", Expr::BinOp(Op::Add, b(m.clone()), unit())),
+            ("BinOp/r", Expr::BinOp(Op::Add, unit(), b(m.clone()))),
+            ("ListLit", Expr::ListLit(vec![Expr::Unit, m.clone()])),
+            (
+                "RecordLit",
+                Expr::RecordLit("R".into(), vec![("f".into(), m.clone())]),
+            ),
+            ("FieldAccess", Expr::FieldAccess(b(m.clone()), "f".into())),
+            (
+                "FFICall",
+                Expr::FFICall {
+                    name: "ffi".into(),
+                    args: vec![Expr::Unit, m.clone()],
+                    ret_ty: ty(),
+                },
+            ),
+            (
+                "ActorDecl/init",
+                Expr::ActorDecl {
+                    name: "A".into(),
+                    state_ty: ty(),
+                    message_ty: ty(),
+                    init_state: b(m.clone()),
+                    handler: unit(),
+                },
+            ),
+            (
+                "ActorDecl/handler",
+                Expr::ActorDecl {
+                    name: "A".into(),
+                    state_ty: ty(),
+                    message_ty: ty(),
+                    init_state: unit(),
+                    handler: b(m.clone()),
+                },
+            ),
+            ("Spawn/l", Expr::Spawn(b(m.clone()), unit())),
+            ("Spawn/r", Expr::Spawn(unit(), b(m.clone()))),
+            ("ActorSend/l", Expr::ActorSend(b(m.clone()), unit())),
+            ("ActorSend/r", Expr::ActorSend(unit(), b(m.clone()))),
+            ("ActorRecv", Expr::ActorRecv(b(m.clone()))),
+            ("CRDTMerge/l", Expr::CRDTMerge(b(m.clone()), unit())),
+            ("CRDTMerge/r", Expr::CRDTMerge(unit(), b(m.clone()))),
+            ("ContentHash", Expr::ContentHash(b(m.clone()))),
+            ("ContentVerify/l", Expr::ContentVerify(b(m.clone()), unit())),
+            ("ContentVerify/r", Expr::ContentVerify(unit(), b(m.clone()))),
+            ("ContractDeploy", Expr::ContractDeploy(b(m.clone()))),
+            (
+                "TokenTransfer/from",
+                Expr::TokenTransfer {
+                    from: b(m.clone()),
+                    to: unit(),
+                    amount: unit(),
+                },
+            ),
+            (
+                "TokenTransfer/to",
+                Expr::TokenTransfer {
+                    from: unit(),
+                    to: b(m.clone()),
+                    amount: unit(),
+                },
+            ),
+            (
+                "TokenTransfer/amount",
+                Expr::TokenTransfer {
+                    from: unit(),
+                    to: unit(),
+                    amount: b(m.clone()),
+                },
+            ),
+            ("ZakatCalculate", Expr::ZakatCalculate(b(m.clone()))),
+            ("UIDisplay", Expr::UIDisplay(vec![Expr::Unit, m.clone()])),
+            ("UIRow", Expr::UIRow(vec![Expr::Unit, m.clone()])),
+            ("UIColumn", Expr::UIColumn(vec![Expr::Unit, m.clone()])),
+            ("UIText/l", Expr::UIText(b(m.clone()), unit())),
+            ("UIText/r", Expr::UIText(unit(), b(m.clone()))),
+            ("UIButton/l", Expr::UIButton(b(m.clone()), unit())),
+            ("UIButton/r", Expr::UIButton(unit(), b(m.clone()))),
+            (
+                "UIContrastCheck/l",
+                Expr::UIContrastCheck(b(m.clone()), unit()),
+            ),
+            ("UIContrastCheck/r", Expr::UIContrastCheck(unit(), b(m))),
+        ]
+    }
+
+    /// Assert `pred` finds `marker` through EVERY container variant, and that
+    /// it stays `false` on the leaf that carries no marker (the negative
+    /// control — without it a always-`true` predicate would pass).
+    fn assert_sees_through(what: &str, marker: Expr, pred: impl Fn(&Expr) -> bool) {
+        assert!(
+            pred(&marker),
+            "{what}: the marker itself must be detected — the test is \
+             meaningless otherwise"
+        );
+        assert!(
+            !pred(&Expr::Unit),
+            "{what}: NEGATIVE CONTROL FAILED — the predicate reports a hit on \
+             a bare `Unit`, so it cannot distinguish anything"
+        );
+        for (label, wrapped) in wrappers(marker) {
+            assert!(
+                pred(&wrapped),
+                "{what}: the walk does not descend through `{label}` — a \
+                 marker planted directly inside it was missed. Every arm of \
+                 `any_child` must recurse; an arm that drops its child \
+                 silently disables this predicate for that variant."
+            );
+        }
+    }
+
+    #[test]
+    fn every_expr_variant_is_walked_for_effects() {
+        assert_sees_through(
+            "contains_effect",
+            Expr::Perform(Effect::Crypto, Box::new(Expr::Unit)),
+            |e| contains_effect(e, Effect::Crypto),
+        );
+    }
+
+    #[test]
+    fn every_expr_variant_is_walked_for_security_ops() {
+        assert_sees_through(
+            "contains_security_op",
+            Expr::Classify(Box::new(Expr::Unit)),
+            contains_security_op,
+        );
+    }
+
+    #[test]
+    fn every_expr_variant_is_walked_for_branching() {
+        assert_sees_through(
+            "has_if_or_case",
+            Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Unit),
+                Box::new(Expr::Unit),
+            ),
+            has_if_or_case,
+        );
+    }
+
+    #[test]
+    fn every_expr_variant_is_walked_for_matching_vars() {
+        let kw = to_owned_keywords(&["rahsia"]);
+        assert_sees_through("contains_var_matching", Expr::Var("rahsia".into()), |e| {
+            contains_var_matching(e, &kw)
+        });
+    }
+
+    #[test]
+    fn every_expr_variant_is_walked_for_personal_data_vars() {
+        assert_sees_through(
+            "contains_personal_data_var",
+            Expr::Var("nama_pengguna".into()),
+            contains_personal_data_var,
+        );
+    }
+
+    /// The predicates must not fire on unrelated content — a second negative
+    /// control, distinguishing "walks everywhere" from "returns true for any
+    /// non-trivial tree".
+    ///
+    /// Some wrappers ARE the construct a given predicate looks for (an `If`
+    /// wrapper is itself a branch), so each predicate skips the labels it is
+    /// legitimately expected to match on.
+    fn assert_quiet_on_unrelated(what: &str, skip: &[&str], pred: impl Fn(&Expr) -> bool) {
+        for (label, e) in wrappers(Expr::Var("tidak_berkaitan".into())) {
+            if skip.iter().any(|s| label.starts_with(s)) {
+                continue;
+            }
+            assert!(
+                !pred(&e),
+                "{what} fired on `{label}`, which contains nothing it should match"
+            );
+        }
+    }
+
+    #[test]
+    fn walkers_stay_false_on_unrelated_trees() {
+        let kw = to_owned_keywords(&["rahsia"]);
+        // `Perform` here carries Effect::Read, so it is not a Crypto hit.
+        assert_quiet_on_unrelated("contains_effect", &[], |e| {
+            contains_effect(e, Effect::Crypto)
+        });
+        assert_quiet_on_unrelated(
+            "contains_security_op",
+            &["Classify", "Declassify", "Grant"],
+            contains_security_op,
+        );
+        assert_quiet_on_unrelated("has_if_or_case", &["If", "Case"], has_if_or_case);
+        assert_quiet_on_unrelated("contains_var_matching", &[], |e| {
+            contains_var_matching(e, &kw)
+        });
+        assert_quiet_on_unrelated(
+            "contains_personal_data_var",
+            &[],
+            contains_personal_data_var,
+        );
+    }
+
+    /// `contains_effect` must discriminate BETWEEN effects, not merely detect
+    /// that some `Perform` exists.
+    #[test]
+    fn contains_effect_discriminates_between_effects() {
+        let e = Expr::Return(Box::new(Expr::Perform(
+            Effect::Crypto,
+            Box::new(Expr::Unit),
+        )));
+        assert!(contains_effect(&e, Effect::Crypto));
+        assert!(!contains_effect(&e, Effect::Network));
+    }
+
+    /// A `ChoreographyBlock` carries no value sub-expressions; the walk must
+    /// terminate there rather than being given a bogus child.
+    #[test]
+    fn leaf_variants_have_no_children() {
+        for leaf in [
+            Expr::Unit,
+            Expr::Bool(true),
+            Expr::Int(1),
+            Expr::IntN {
+                value: 1,
+                bits: 8,
+                signed: false,
+            },
+            Expr::String("s".into()),
+            Expr::Var("v".into()),
+            Expr::Loc(0),
+            Expr::ChoreographyBlock {
+                name: "P".into(),
+                roles: vec!["A".into(), "B".into()],
+                protocol: SessionType::End,
+            },
+            Expr::UIColor(1, 2, 3),
+            Expr::UIStyleDecl {
+                padding: None,
+                font_size: None,
+            },
+        ] {
+            assert!(
+                !any_child(&leaf, &mut |_| true),
+                "{leaf:?} was reported to have a sub-expression"
+            );
+        }
+    }
 }

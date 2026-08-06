@@ -8,6 +8,17 @@ channels with compile-time protocol verification. We prove deadlock freedom,
 protocol fidelity, and communication safety for choreography-projected
 actor systems, mechanized in Coq.
 
+**Scope of the claim (2026-08-05, REQ-52).** The theorems below are about the
+*session calculus* mechanized in Coq (`ChoreographyTypes.v`,
+`ChoreographyProjection.v`). The projection the shipped compiler performs is a
+Rust implementation written to mirror those Coq definitions — it is **not** a
+verified compiler, and no theorem connects the Rust projection's output to the
+Coq calculus. The stronger bar exists in the literature: Kalas (Pohjola et al.,
+ITP 2022) is a choreographic language with an end-to-end *verified* compiler to
+CakeML, including verified endpoint projection; hacc does certified
+choreography compilation. RIINA's claim is therefore "mechanized calculus +
+mirroring implementation", not "verified compilation".
+
 ## Key Results
 
 - **Theorem: Deadlock Freedom** — Well-typed choreographies projected to

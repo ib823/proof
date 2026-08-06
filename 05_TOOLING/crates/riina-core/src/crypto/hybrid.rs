@@ -76,7 +76,7 @@ pub const HYBRID_KEM_CIPHERTEXT_SIZE: usize = X25519_PUBLIC_KEY_SIZE + ML_KEM_CI
 pub const HYBRID_KEM_SHARED_SECRET_SIZE: usize = 32;
 
 /// Domain separation context for hybrid KEM
-const HYBRID_KEM_CONTEXT: &[u8] = b"RIINA-HYBRID-KEM-X25519-ML-KEM-768-v1";
+const HYBRID_KEM_CONTEXT: &[u8] = b"RIINA-HYBRID-KEM-X25519-ML-KEM-768-v2";
 
 /// Hybrid key encapsulation combining X25519 and ML-KEM-768
 pub struct HybridKem {
@@ -157,7 +157,19 @@ impl HybridKem {
         combined_ikm[..X25519_SHARED_SECRET_SIZE].copy_from_slice(&x25519_ss);
         combined_ikm[X25519_SHARED_SECRET_SIZE..].copy_from_slice(&ml_kem_ss);
 
-        let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, HYBRID_KEM_CONTEXT);
+        // X-Wing-style transcript binding (REQ-37): bind the X25519 ciphertext
+        // (ephemeral pk) and the recipient's static X25519 pk into the KDF
+        // context. X25519-as-KEM is malleable, so without committing to the
+        // X25519 transcript the hybrid's IND-CCA argument does not close
+        // (cf. draft-connolly-cfrg-xwing-kem, which hashes ct_X || pk_X into the
+        // combiner). HKDF `info` is the binding site; must match encapsulate.
+        let mut info = [0u8; { HYBRID_KEM_CONTEXT.len() + 2 * X25519_PUBLIC_KEY_SIZE }];
+        info[..HYBRID_KEM_CONTEXT.len()].copy_from_slice(HYBRID_KEM_CONTEXT);
+        let p = HYBRID_KEM_CONTEXT.len();
+        info[p..p + X25519_PUBLIC_KEY_SIZE].copy_from_slice(&ephemeral_x25519);
+        info[p + X25519_PUBLIC_KEY_SIZE..].copy_from_slice(self.x25519.public_key());
+
+        let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, &info);
 
         // Zeroize intermediate values
         combined_ikm.zeroize();
@@ -217,7 +229,16 @@ pub fn hybrid_kem_encapsulate(
     combined_ikm[..X25519_SHARED_SECRET_SIZE].copy_from_slice(&x25519_ss);
     combined_ikm[X25519_SHARED_SECRET_SIZE..].copy_from_slice(&ml_kem_ss);
 
-    let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, HYBRID_KEM_CONTEXT);
+    // X-Wing-style transcript binding (REQ-37): bind ct_X25519 (ephemeral pk)
+    // and pk_X25519 (recipient static pk) into the KDF context, matching
+    // decapsulate. See draft-connolly-cfrg-xwing-kem.
+    let mut info = [0u8; { HYBRID_KEM_CONTEXT.len() + 2 * X25519_PUBLIC_KEY_SIZE }];
+    info[..HYBRID_KEM_CONTEXT.len()].copy_from_slice(HYBRID_KEM_CONTEXT);
+    let p = HYBRID_KEM_CONTEXT.len();
+    info[p..p + X25519_PUBLIC_KEY_SIZE].copy_from_slice(ephemeral.public_key());
+    info[p + X25519_PUBLIC_KEY_SIZE..].copy_from_slice(&x25519_pk);
+
+    let shared_secret = HkdfSha256::derive_key(&[], &combined_ikm, &info);
 
     // Zeroize intermediate values
     combined_ikm.zeroize();
@@ -332,12 +353,29 @@ pub struct HybridVerifyingKey {
 }
 
 impl HybridVerifyingKey {
-    /// Create from bytes
+    /// Create from bytes, validating both component public keys (REQ-42a —
+    /// previously accepted ANY bytes despite the documented contract).
+    ///
+    /// The Ed25519 component must be a canonical, on-curve point (strict
+    /// RFC 8032 §5.1.3 decoding). The ML-DSA-65 component has no structural
+    /// invariant beyond its length under FIPS 204 (every byte pattern decodes
+    /// to a valid (ρ, t1)), which the fixed-size array already enforces — it
+    /// is still routed through its own `from_bytes` so any future component
+    /// validation is picked up here automatically.
     ///
     /// # Errors
-    /// Returns error if validation fails.
+    /// Returns an error if either component public key fails validation.
     pub fn from_bytes(bytes: &[u8; HYBRID_SIG_PUBLIC_KEY_SIZE]) -> CryptoResult<Self> {
-        // TODO: Validate both public keys
+        let ed25519_pk: [u8; ED25519_PUBLIC_KEY_SIZE] = bytes[..ED25519_PUBLIC_KEY_SIZE]
+            .try_into()
+            .map_err(|_| CryptoError::InvalidKeyLength)?;
+        let _ = Ed25519VerifyingKey::from_bytes(&ed25519_pk)?;
+
+        let ml_dsa_pk: [u8; ML_DSA_PUBLIC_KEY_SIZE] = bytes[ED25519_PUBLIC_KEY_SIZE..]
+            .try_into()
+            .map_err(|_| CryptoError::InvalidKeyLength)?;
+        let _ = MlDsa65VerifyingKey::from_bytes(&ml_dsa_pk)?;
+
         Ok(Self { bytes: *bytes })
     }
 
@@ -415,6 +453,36 @@ mod tests {
         assert_eq!(HYBRID_KEM_SECRET_KEY_SIZE, 32 + 2400);
         assert_eq!(HYBRID_KEM_CIPHERTEXT_SIZE, 32 + 1088);
         assert_eq!(HYBRID_KEM_SHARED_SECRET_SIZE, 32);
+    }
+
+    #[test]
+    fn test_hybrid_verifying_key_rejects_invalid_ed25519_component() {
+        // REQ-42a regression: from_bytes previously accepted ANY bytes.
+        // An all-0xFF Ed25519 component encodes y >= p — non-canonical,
+        // rejected by strict RFC 8032 decoding — so construction must fail.
+        let mut bytes = [0u8; HYBRID_SIG_PUBLIC_KEY_SIZE];
+        for b in bytes.iter_mut().take(ED25519_PUBLIC_KEY_SIZE) {
+            *b = 0xFF;
+        }
+        assert!(
+            HybridVerifyingKey::from_bytes(&bytes).is_err(),
+            "off-curve/non-canonical Ed25519 component must be rejected at construction"
+        );
+    }
+
+    #[test]
+    fn test_hybrid_verifying_key_roundtrips_and_verifies() {
+        // A genuinely generated hybrid public key must still construct, and
+        // a signature made by the signing key must verify through the
+        // reconstructed verifying key (validation is not over-strict).
+        let random = [42u8; 64];
+        let sk = HybridSigningKey::generate(&random).expect("generate hybrid signing key");
+        let pk_bytes = sk.public_key();
+        let vk = HybridVerifyingKey::from_bytes(&pk_bytes)
+            .expect("valid generated public key must construct");
+        let msg = b"REQ-42a roundtrip";
+        let sig = sk.sign(msg).expect("sign");
+        vk.verify(msg, &sig).expect("signature must verify via reconstructed key");
     }
 
     #[test]

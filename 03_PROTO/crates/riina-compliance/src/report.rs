@@ -71,8 +71,11 @@ pub struct ComplianceReport {
 /// gives the coverage percentage.
 fn spec_total_rules(profile: ComplianceProfile) -> usize {
     match profile {
+        ComplianceProfile::Cra => 21,
+        ComplianceProfile::Dora => 22,
+        ComplianceProfile::Nis2 => 10, // NIS2 Art. 21(2)(a)-(j) measure areas // DORA Arts. 5-16 (ICT risk mgmt) + 17-23 (incidents) + 28-30 (third-party) policy areas // CRA Annex I Part I (13 essential reqs) + Part II (8 vuln-handling reqs)
         ComplianceProfile::PciDss => 78,     // PCI-DSS v4.0 requirements
-        ComplianceProfile::Pdpa => 14,       // PDPA 2010 Sections 5-24
+        ComplianceProfile::Pdpa => 16,       // PDPA 2010 Sections 5-24 + 2024 Amendment (s.12A DPO, s.12B breach notification, biometric-as-sensitive)
         ComplianceProfile::Bnm => 26,        // BNM RMiT policy areas
         ComplianceProfile::Hipaa => 54,      // HIPAA Security Rule safeguards
         ComplianceProfile::Cmmc => 110,      // CMMC Level 2 practices
@@ -569,6 +572,6 @@ mod tests {
             &[],
         );
         assert_eq!(report.profiles.len(), 3);
-        assert_eq!(report.total_rules_checked, 56 + 18 + 20); // 94 total
+        assert_eq!(report.total_rules_checked, 56 + 20 + 20); // 96 total (Pdpa 18 -> 20, 2024 Amendment refresh REQ-51)
     }
 }

@@ -1052,6 +1052,196 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     results
 }
 
+
+// ---------------------------------------------------------------------------
+// Kernel-level assumption attestation (REQ-53)
+// ---------------------------------------------------------------------------
+
+/// The theorems whose assumption sets are attested by the kernel on every full
+/// verify. Grep counts what RIINA's sources DECLARE; `Print Assumptions` asks
+/// the kernel what a theorem actually DEPENDS ON — including axioms imported
+/// from the standard library, which grep cannot see (that is how the
+/// `functional_extensionality_dep` dependency of the SN development went
+/// undisclosed until 2026-08-05).
+const KERNEL_CAPSTONES: &[(&str, &str)] = &[
+    ("type_system.TypeSafety", "type_safety"),
+    ("type_system.Progress", "progress"),
+    ("type_system.Preservation", "preservation"),
+    ("termination.ReducibilityFull", "well_typed_SN"),
+    ("crypto.AlgorithmPolicy", "accepts_uses_only_current"),
+];
+
+/// Axioms the capstones are ALLOWED to depend on. Additions require the same
+/// deliberate review as a TCB change: each entry is a named, documented
+/// assumption (master plan Part 2, kernel-level assumption audit).
+const ALLOWED_KERNEL_AXIOMS: &[&str] = &[
+    // Rocq stdlib functional extensionality — standard, consistent with the
+    // calculus, used by the SN/logical-relations development (30 files).
+    "FunctionalExtensionality.functional_extensionality_dep",
+];
+
+/// Parse `Print Assumptions` output into (attestation_blocks, axiom_names).
+///
+/// A block is either `Closed under the global context` or an `Axioms:` section
+/// whose entries start at column 0 as `Name :` with the type indented on
+/// following lines. The block count must match the number of capstones queried
+/// — fewer means the scratch file did not get through all of them, and that is
+/// a FAILURE, not a pass (a gate that silently checked nothing would be green).
+fn parse_print_assumptions(output: &str) -> (usize, Vec<String>) {
+    let mut blocks = 0usize;
+    let mut axioms = Vec::new();
+    let mut in_axioms = false;
+    for line in output.lines() {
+        let trimmed = line.trim_end();
+        if trimmed == "Closed under the global context" {
+            blocks += 1;
+            in_axioms = false;
+        } else if trimmed == "Axioms:" {
+            blocks += 1;
+            in_axioms = true;
+        } else if in_axioms {
+            // Axiom names are flush-left; continuation/type lines are indented.
+            if trimmed.starts_with(char::is_whitespace) || trimmed.is_empty() {
+                continue;
+            }
+            // `Name : ...` or `Name :` — take the token before the colon.
+            if let Some(name) = trimmed.split(':').next() {
+                let name = name.trim();
+                if !name.is_empty() {
+                    axioms.push(name.to_string());
+                }
+            }
+        }
+    }
+    (blocks, axioms)
+}
+
+/// Ask the kernel what the capstone theorems depend on, and fail on any axiom
+/// outside the reviewed whitelist. Requires the `.vo` files compile_coq just
+/// produced; runs only in full mode where the prover is mandatory.
+fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
+    let coqc_path = match detect_coqc() {
+        ToolStatus::Found(p) => p,
+        ToolStatus::NotFound(msg) => {
+            return CheckResult {
+                name: "Coq Kernel Assumptions".into(),
+                passed: false,
+                blocking: false,
+                details: format!("SKIPPED ({msg}). Attestation INCOMPLETE"),
+            };
+        }
+    };
+    let rocq = coqc_path.parent().map(|d| d.join("rocq"));
+    let rocq = match rocq {
+        Some(p) if p.exists() => p,
+        _ => coqc_path.clone(),
+    };
+
+    let mut scratch = String::new();
+    for (module, _) in KERNEL_CAPSTONES {
+        scratch.push_str(&format!("From RIINA Require Import {module}.\n"));
+    }
+    for (_, theorem) in KERNEL_CAPSTONES {
+        scratch.push_str(&format!("Print Assumptions {theorem}.\n"));
+    }
+    let tmp = std::env::temp_dir().join("riina_kernel_assumptions_check.v");
+    if let Err(e) = fs::write(&tmp, &scratch) {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!("cannot write scratch file: {e}"),
+        };
+    }
+
+    let output = std::process::Command::new(&rocq)
+        .args([
+            "compile",
+            "-q",
+            "-w",
+            "-deprecated-native-compiler-option",
+            "-native-compiler",
+            "no",
+            "-Q",
+            ".",
+            "RIINA",
+        ])
+        .arg(&tmp)
+        .current_dir(coq_dir)
+        .output();
+
+    let output = match output {
+        Ok(o) => o,
+        Err(e) => {
+            return CheckResult {
+                name: "Coq Kernel Assumptions".into(),
+                passed: false,
+                blocking: true,
+                details: format!("failed to run rocq: {e}"),
+            }
+        }
+    };
+    let text = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    if !output.status.success() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "scratch compile failed: {}",
+                truncate_str(text.trim(), 300)
+            ),
+        };
+    }
+
+    let (blocks, axioms) = parse_print_assumptions(&text);
+    let unexpected: Vec<&String> = axioms
+        .iter()
+        .filter(|a| !ALLOWED_KERNEL_AXIOMS.contains(&a.as_str()))
+        .collect();
+
+    if blocks != KERNEL_CAPSTONES.len() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "attested {blocks}/{} capstones — output did not cover every \
+                 theorem, refusing to report a pass on a partial attestation",
+                KERNEL_CAPSTONES.len()
+            ),
+        };
+    }
+    if !unexpected.is_empty() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "NEW kernel-level axiom(s) outside the reviewed whitelist: {:?} — \
+                 a capstone theorem now depends on an assumption nobody reviewed. \
+                 Either eliminate it or add it to ALLOWED_KERNEL_AXIOMS with a \
+                 Part 2 TCB entry (a deliberate, documented decision)",
+                unexpected
+            ),
+        };
+    }
+    CheckResult {
+        name: "Coq Kernel Assumptions".into(),
+        passed: true,
+        blocking: true,
+        details: format!(
+            "{} capstones attested; axioms within reviewed whitelist ({} allowed: funext)",
+            KERNEL_CAPSTONES.len(),
+            ALLOWED_KERNEL_AXIOMS.len()
+        ),
+    }
+}
+
 /// Verify every `.v` file on disk (excluding `_archive_deprecated/`) is listed
 /// in `_CoqProject`.  Catches drift where a file exists but the build system
 /// (and therefore `verify.rs`) never sees it.
@@ -2124,7 +2314,129 @@ fn git_sha(repo: &Path) -> String {
         .unwrap_or_else(|| "unknown".into())
 }
 
-/// Write VERIFICATION_MANIFEST.md and auto-stage it.
+/// How thorough a run is. A `full` run verifies strictly more than a `fast` one
+/// (it adds the Coq and other proof lanes), so its manifest is stronger evidence.
+fn mode_rank(mode: Mode) -> u8 {
+    match mode {
+        Mode::Fast => 0,
+        Mode::Full => 1,
+    }
+}
+
+/// What `write_manifest` should do with an existing manifest on disk.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ManifestAction {
+    Write,
+    /// A weaker run must not replace a stronger record.
+    SkipWeakerMode,
+    /// Nothing about the verification changed — only the timestamp/SHA would.
+    SkipUnchanged,
+}
+
+/// The `Mode:` recorded in an existing manifest, if it is parseable.
+fn parse_manifest_mode(existing: &str) -> Option<Mode> {
+    existing.lines().find_map(|l| match l.trim() {
+        "**Mode:** fast" => Some(Mode::Fast),
+        "**Mode:** full" => Some(Mode::Full),
+        _ => None,
+    })
+}
+
+/// Replace the digits in `in <N>s` with `N`, e.g. "compiled in 176s" =>
+/// "compiled in Ns".
+///
+/// Wall-clock build durations jitter by a few seconds on every run. They are a
+/// measurement of the machine, not a verification finding, so leaving them in
+/// the comparison would rewrite the manifest on literally every run — which is
+/// half the churn this policy exists to stop. Written by hand rather than with
+/// a regex crate: 03_PROTO carries zero third-party runtime dependencies
+/// (Law 8).
+fn normalize_durations(line: &str) -> String {
+    let b = line.as_bytes();
+    let mut out = String::with_capacity(line.len());
+    let mut i = 0;
+    while i < b.len() {
+        // Look for " in " followed by digits followed by 's'.
+        if b[i..].starts_with(b" in ") {
+            let start = i + 4;
+            let mut j = start;
+            while j < b.len() && b[j].is_ascii_digit() {
+                j += 1;
+            }
+            if j > start && j < b.len() && b[j] == b's' {
+                out.push_str(" in Ns");
+                i = j + 1;
+                continue;
+            }
+        }
+        out.push(b[i] as char);
+        i += 1;
+    }
+    out
+}
+
+/// The manifest minus everything that changes without the verification changing.
+///
+/// `Generated:` and `Git SHA:` change on literally every run, and build
+/// durations jitter, so none of them may count as "the manifest changed" —
+/// otherwise every run rewrites the file. Everything else, including
+/// `**Status:**` and every check's PASS/FAIL/WARN and details, IS compared.
+fn manifest_body(text: &str) -> String {
+    text.lines()
+        .filter(|l| {
+            let t = l.trim_start();
+            !t.starts_with("**Generated:**") && !t.starts_with("**Git SHA:**")
+        })
+        .map(normalize_durations)
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// Decide whether a new manifest should replace the one already on disk.
+///
+/// This exists because the manifest used to be rewritten AND `git add`-ed on
+/// every single run, which churned endlessly:
+///
+///   * `pre-commit` runs `verify --fast`, so it overwrote and re-staged a
+///     fast-mode manifest on top of a full-mode one — a full-mode manifest
+///     could therefore never be committed through the normal path, no matter
+///     how it was staged; and
+///   * `pre-push` runs `verify --full`, which rewrote the file again straight
+///     after the push, leaving the tree dirty and inviting a "refresh the
+///     manifest" chore commit that the next commit would immediately undo.
+///
+/// Two rules stop it without ever hiding evidence:
+///   1. a FAILING run always writes — a failure is never suppressed;
+///   2. otherwise a weaker run never replaces a stronger one, and an unchanged
+///      verification never rewrites the file at all.
+fn manifest_action(
+    existing: Option<&str>,
+    new_text: &str,
+    new_mode: Mode,
+    new_passed: bool,
+) -> ManifestAction {
+    let Some(existing) = existing else {
+        return ManifestAction::Write;
+    };
+    // Rule 1: never suppress a failure, whatever mode found it.
+    if !new_passed {
+        return ManifestAction::Write;
+    }
+    // Rule 2a: a fast PASS must not erase a full PASS.
+    if let Some(old_mode) = parse_manifest_mode(existing) {
+        if mode_rank(new_mode) < mode_rank(old_mode) {
+            return ManifestAction::SkipWeakerMode;
+        }
+    }
+    // Rule 2b: same findings => leave the file (and the index) alone.
+    if manifest_body(existing) == manifest_body(new_text) {
+        return ManifestAction::SkipUnchanged;
+    }
+    ManifestAction::Write
+}
+
+/// Write VERIFICATION_MANIFEST.md and auto-stage it — unless doing so would
+/// weaken the recorded evidence or merely churn the timestamp.
 fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     let sha = git_sha(repo);
     let now = SystemTime::now()
@@ -2178,12 +2490,26 @@ fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     }
 
     let manifest_path = repo.join("VERIFICATION_MANIFEST.md");
+    let existing = fs::read_to_string(&manifest_path).ok();
+    match manifest_action(existing.as_deref(), &md, mode, all_pass) {
+        ManifestAction::SkipWeakerMode => {
+            eprintln!(
+                "  manifest: kept the existing full-mode record (a {mode_label}-mode \
+                 PASS would weaken it)"
+            );
+            return;
+        }
+        ManifestAction::SkipUnchanged => return,
+        ManifestAction::Write => {}
+    }
+
     if let Err(e) = fs::write(&manifest_path, &md) {
         eprintln!("warning: could not write manifest: {e}");
         return;
     }
 
-    // Auto-stage manifest
+    // Auto-stage only when something was actually written, so a no-op run
+    // leaves a clean index.
     let _ = Command::new("git")
         .args(["add", "VERIFICATION_MANIFEST.md"])
         .current_dir(repo)
@@ -3104,6 +3430,9 @@ pub fn run(mode: Mode) -> i32 {
         eprintln!("Compiling Coq proofs...");
         results.push(compile_coq(&coq_dir));
 
+        eprintln!("Attesting kernel-level assumptions (Print Assumptions)...");
+        results.push(check_kernel_assumptions(&coq_dir));
+
         eprintln!("Scanning Coq proofs...");
         results.extend(scan_coq(&coq_dir));
 
@@ -3219,6 +3548,211 @@ pub fn run(mode: Mode) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+    // =======================================================================
+    // Manifest write policy — stops the auto-stage churn.
+    //
+    // The manifest used to be rewritten AND `git add`-ed on EVERY run, which
+    // made two loops. (a) `pre-commit` runs `--fast`, so it re-staged a
+    // fast-mode manifest over a full-mode one — a full-mode manifest could
+    // never be committed through the normal path at all. (b) `pre-push` runs
+    // `--full`, rewriting the file immediately after the push and leaving the
+    // tree dirty, which is what produced the long run of "refresh the
+    // verification manifest" chore commits.
+    // =======================================================================
+
+    fn manifest(mode: &str, rows: &str) -> String {
+        format!(
+            "# RIINA Verification Manifest\n\
+             **Generated:** 2026-01-01T00:00:00Z\n\
+             **Git SHA:** deadbeef\n\
+             **Mode:** {mode}\n\
+             **Status:** PASS\n\n\
+             | Check | Status | Details |\n\
+             |-------|--------|---------|\n{rows}"
+        )
+    }
+
+    const ROWS_FAST: &str = "| Rust Tests | PASS | 10 tests |\n";
+    const ROWS_FULL: &str =
+        "| Rust Tests | PASS | 10 tests |\n| Coq Compilation | PASS | 328 .vo |\n";
+
+    #[test]
+    fn fast_run_never_overwrites_a_full_manifest() {
+        // THE bug: pre-commit's `--fast` clobbering the pre-push `--full`
+        // record, so the committed manifest always read `Mode: fast`.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Fast, true),
+            ManifestAction::SkipWeakerMode
+        );
+    }
+
+    #[test]
+    fn full_run_does_overwrite_a_fast_manifest() {
+        // NEGATIVE CONTROL for the rule above: a policy that skipped every
+        // write would satisfy "no churn" while never recording anything.
+        let existing = manifest("fast", ROWS_FAST);
+        let new = manifest("full", ROWS_FULL);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn identical_verification_does_not_rewrite_the_manifest() {
+        // The post-push half of the churn: `--full` re-running at a new commit
+        // with the same findings must not dirty the tree just to restamp the
+        // timestamp and SHA.
+        let existing = manifest("full", ROWS_FULL);
+        let mut new = manifest("full", ROWS_FULL);
+        new = new.replace("2026-01-01T00:00:00Z", "2026-06-01T12:00:00Z");
+        new = new.replace("deadbeef", "cafef00d");
+        assert_ne!(existing, new, "the fixtures must differ, or this proves nothing");
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::SkipUnchanged
+        );
+    }
+
+    #[test]
+    fn changed_findings_do_rewrite_the_manifest() {
+        // NEGATIVE CONTROL for the rule above: real changes must still land.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest(
+            "full",
+            "| Rust Tests | PASS | 99 tests |\n| Coq Compilation | PASS | 328 .vo |\n",
+        );
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn a_failing_run_always_writes_even_when_weaker() {
+        // A failure is evidence and must never be suppressed by the
+        // mode-ranking rule — otherwise a fast run that FAILS would leave a
+        // stale full-mode PASS on disk.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Fast, false),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn first_ever_run_writes() {
+        let new = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(None, &new, Mode::Fast, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn manifest_mode_round_trips_and_unparseable_is_none() {
+        assert_eq!(parse_manifest_mode(&manifest("fast", ROWS_FAST)), Some(Mode::Fast));
+        assert_eq!(parse_manifest_mode(&manifest("full", ROWS_FULL)), Some(Mode::Full));
+        // An unreadable/legacy manifest must not be treated as `full` — that
+        // would wedge the file permanently against every future write.
+        assert_eq!(parse_manifest_mode("# nothing useful here"), None);
+        assert_eq!(
+            manifest_action(Some("# nothing useful here"), &manifest("fast", ROWS_FAST), Mode::Fast, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn manifest_body_ignores_only_the_volatile_lines() {
+        let a = manifest("full", ROWS_FULL);
+        let b = a
+            .replace("2026-01-01T00:00:00Z", "2099-12-31T23:59:59Z")
+            .replace("deadbeef", "0badcafe");
+        assert_eq!(manifest_body(&a), manifest_body(&b));
+        // ...but the Status line is NOT volatile.
+        let failed = a.replace("**Status:** PASS", "**Status:** FAIL");
+        assert_ne!(manifest_body(&a), manifest_body(&failed));
+    }
+
+
+    #[test]
+    fn build_duration_jitter_does_not_rewrite_the_manifest() {
+        // The residual churn found by pushing: the Coq row embeds a wall-clock
+        // duration, so "compiled in 180s" vs "176s" rewrote the file on every
+        // single run even when every finding was identical.
+        let rows_a = "| Coq Compilation | PASS | 328 .vo files compiled in 180s |\n";
+        let rows_b = "| Coq Compilation | PASS | 328 .vo files compiled in 176s |\n";
+        let existing = manifest("full", rows_a);
+        let new = manifest("full", rows_b);
+        assert_ne!(existing, new, "the fixtures must differ, or this proves nothing");
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, true),
+            ManifestAction::SkipUnchanged
+        );
+    }
+
+    #[test]
+    fn duration_normalisation_does_not_eat_real_numbers() {
+        // NEGATIVE CONTROL: only `in <N>s` is normalised. A changed .vo COUNT
+        // or test count must still register as a real change.
+        let a = manifest("full", "| Coq Compilation | PASS | 328 .vo files compiled in 180s |\n");
+        let b = manifest("full", "| Coq Compilation | PASS | 327 .vo files compiled in 180s |\n");
+        assert_eq!(
+            manifest_action(Some(&a), &b, Mode::Full, true),
+            ManifestAction::Write,
+            "a dropped .vo file must not be mistaken for timing jitter"
+        );
+        assert_eq!(normalize_durations("compiled in 176s"), "compiled in Ns");
+        assert_eq!(normalize_durations("328 .vo files"), "328 .vo files");
+        assert_eq!(normalize_durations("2947 tests"), "2947 tests");
+        // No trailing 's' => not a duration.
+        assert_eq!(normalize_durations("in 42 files"), "in 42 files");
+    }
+
+
+    // ── REQ-53: kernel-attestation parser ──────────────────────────────────
+
+    #[test]
+    fn print_assumptions_parser_counts_blocks_and_names() {
+        let out = "Closed under the global context\nAxioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type), True\nClosed under the global context\n";
+        let (blocks, axioms) = parse_print_assumptions(out);
+        assert_eq!(blocks, 3);
+        assert_eq!(
+            axioms,
+            vec!["FunctionalExtensionality.functional_extensionality_dep".to_string()]
+        );
+    }
+
+    #[test]
+    fn print_assumptions_parser_negative_controls() {
+        // Empty output = ZERO blocks — the caller must treat that as failure,
+        // never as "no axioms, pass". This is the vacuity guard.
+        let (blocks, axioms) = parse_print_assumptions("");
+        assert_eq!(blocks, 0);
+        assert!(axioms.is_empty());
+        // Indented type lines are NOT axiom names.
+        let out = "Axioms:\nfoo.bar :\n  forall x, x = x\n  another indented line\n";
+        let (b, a) = parse_print_assumptions(out);
+        assert_eq!(b, 1);
+        assert_eq!(a, vec!["foo.bar".to_string()]);
+        // A NEW axiom is detected as outside the whitelist.
+        assert!(!ALLOWED_KERNEL_AXIOMS.contains(&"evil.new_axiom"));
+    }
+
+    #[test]
+    fn kernel_capstones_cover_the_load_bearing_theorems() {
+        // The gate is only as strong as this list. Pin the current five so a
+        // removal is a conscious edit here, not a silent narrowing.
+        let names: Vec<&str> = KERNEL_CAPSTONES.iter().map(|(_, t)| *t).collect();
+        for required in ["type_safety", "progress", "preservation", "well_typed_SN"] {
+            assert!(names.contains(&required), "{required} missing from KERNEL_CAPSTONES");
+        }
+    }
 
     // -- Existing tests (unchanged) --
 

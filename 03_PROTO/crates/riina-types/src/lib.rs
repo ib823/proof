@@ -747,24 +747,25 @@ pub struct Program {
 
 /// Desugar a single function decl into a LetRec binding.
 #[allow(clippy::boxed_local)]
-fn desugar_function(
-    name: Ident,
+/// Build the (lambda, function-type) pair for a top-level function decl.
+/// A zero-parameter function yields its body directly (a non-lambda binding)
+/// and its declared return type.
+fn build_lambda(
     params: Vec<(Ident, Ty)>,
     return_ty: Ty,
     effect: Effect,
     body: Box<Expr>,
-    continuation: Box<Expr>,
-) -> Expr {
+) -> (Expr, Ty) {
     let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
         Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
     });
     let fn_ty = params
         .iter()
         .rev()
-        .fold(return_ty.clone(), |ret, (_, param_ty)| {
+        .fold(return_ty, |ret, (_, param_ty)| {
             Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
         });
-    Expr::LetRec(name, fn_ty, Box::new(lam), continuation)
+    (lam, fn_ty)
 }
 
 /// Desugar an extern block into Let bindings for each extern decl.
@@ -813,26 +814,19 @@ impl Program {
             return Expr::Unit;
         }
 
-        // Build from the end: last decl is the program body
-        let last = decls.pop().unwrap();
-        let body = match last {
-            TopLevelDecl::Expr(e) => *e,
-            TopLevelDecl::Binding { name, value } => {
-                Expr::Let(name, None, value, Box::new(Expr::Unit))
+        // A trailing top-level EXPRESSION is the program body; everything else
+        // (including the trailing function — usually `utama`) is a binding, so
+        // all top-level functions land in the mutually-recursive group built by
+        // `wrap_decls` (REQ-44 forward references). A trailing binding/function
+        // leaves the body as Unit — the functions are still bound and checked,
+        // and the interpreter invokes `utama` by name.
+        let body = if matches!(decls.last(), Some(TopLevelDecl::Expr(_))) {
+            match decls.pop() {
+                Some(TopLevelDecl::Expr(e)) => *e,
+                _ => Expr::Unit,
             }
-            TopLevelDecl::Function {
-                name,
-                params,
-                return_ty,
-                effect,
-                body,
-                ..
-            } => desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit)),
-            TopLevelDecl::ExternBlock { decls: edecls, .. } => {
-                desugar_extern_block(edecls, Expr::Unit)
-            }
-            // Test blocks are skipped during desugaring (run by riinac test)
-            TopLevelDecl::Test { .. } => Expr::Unit,
+        } else {
+            Expr::Unit
         };
 
         Self::wrap_decls(decls, body)
@@ -849,20 +843,24 @@ impl Program {
     /// Wrap a body expression with a chain of Let/LetRec bindings from declarations.
     fn wrap_decls(decls: Vec<TopLevelDecl>, body: Expr) -> Expr {
         let mut result = body;
-        // Wrap remaining decls from back to front
+        // Consecutive top-level function decls form ONE mutually-recursive group
+        // (all names in scope in every body + the continuation) so forward
+        // references / mutual recursion work (REQ-44). Non-function decls flush
+        // the pending group and wrap as before, preserving backward-ref scoping
+        // (a function can still see an earlier top-level `biar` binding).
+        // Iterating back-to-front, we accumulate functions in `pending` (reversed)
+        // and flush on any non-function decl or at the end.
+        let mut pending: Vec<(Ident, Ty, Expr)> = Vec::new();
+        let flush = |pending: &mut Vec<(Ident, Ty, Expr)>, result: Expr| -> Expr {
+            if pending.is_empty() {
+                result
+            } else {
+                pending.reverse(); // restore source order
+                Expr::LetRecGroup(std::mem::take(pending), Box::new(result))
+            }
+        };
         for decl in decls.into_iter().rev() {
-            result = match decl {
-                TopLevelDecl::Expr(e) => {
-                    // Actor declarations bind the actor name for subsequent spawn
-                    let bind_name = match e.as_ref() {
-                        Expr::ActorDecl { name, .. } => name.clone(),
-                        _ => "_".to_string(),
-                    };
-                    Expr::Let(bind_name, None, e, Box::new(result))
-                }
-                TopLevelDecl::Binding { name, value } => {
-                    Expr::Let(name, None, value, Box::new(result))
-                }
+            match decl {
                 TopLevelDecl::Function {
                     name,
                     params,
@@ -870,15 +868,32 @@ impl Program {
                     effect,
                     body,
                     ..
-                } => desugar_function(name, params, return_ty, effect, body, Box::new(result)),
-                TopLevelDecl::ExternBlock { decls: edecls, .. } => {
-                    desugar_extern_block(edecls, result)
+                } => {
+                    let (lam, fn_ty) = build_lambda(params, return_ty, effect, body);
+                    pending.push((name, fn_ty, lam));
                 }
-                // Test blocks are skipped during desugaring
-                TopLevelDecl::Test { .. } => result,
-            };
+                TopLevelDecl::Expr(e) => {
+                    result = flush(&mut pending, result);
+                    let bind_name = match e.as_ref() {
+                        Expr::ActorDecl { name, .. } => name.clone(),
+                        _ => "_".to_string(),
+                    };
+                    result = Expr::Let(bind_name, None, e, Box::new(result));
+                }
+                TopLevelDecl::Binding { name, value } => {
+                    result = flush(&mut pending, result);
+                    result = Expr::Let(name, None, value, Box::new(result));
+                }
+                TopLevelDecl::ExternBlock { decls: edecls, .. } => {
+                    result = flush(&mut pending, result);
+                    result = desugar_extern_block(edecls, result);
+                }
+                TopLevelDecl::Test { .. } => {
+                    result = flush(&mut pending, result);
+                }
+            }
         }
-        result
+        flush(&mut pending, result)
     }
 }
 
@@ -970,6 +985,13 @@ pub enum Expr {
     // Recursive binding
     /// let rec f : T = e1 in e2
     LetRec(Ident, Ty, Box<Expr>, Box<Expr>),
+    /// Mutually-recursive binding GROUP: `let rec f1:T1=e1 and ... and fn:Tn=en in cont`.
+    /// All group names are in scope in every bound expression AND the continuation,
+    /// so top-level functions can forward-reference / mutually recurse (REQ-44).
+    /// Each entry is (name, declared type, bound lambda). Mechanized-sound: the
+    /// recursion rule is proven type-safe in `foundations/RecursionSafety.v` (`fix`);
+    /// `let rec f = lam` = `let f = fix(λf.lam)`, generalized to a group here.
+    LetRecGroup(Vec<(Ident, Ty, Expr)>, Box<Expr>),
 
     // Binary operations
     /// e1 op e2

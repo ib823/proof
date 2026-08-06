@@ -21,8 +21,17 @@
 //! This is a stable-Rust, dependency-free harness (a hand-rolled XorShift PRNG,
 //! matching the repo's existing differential tests), so it runs under the pinned
 //! 1.94.1 toolchain in plain `cargo test` / CI — unlike `cargo-fuzz`/libFuzzer,
-//! which require nightly. The full continuous-fuzz + coverage-gated + OSS-Fuzz
-//! program remains the larger REQ-30 goal; this is the in-tree first line.
+//! which require nightly.
+//!
+//! **Continuous fuzz (REQ-30).** The randomized passes take their iteration
+//! budget from `RIINA_FUZZ_ITERS` (default 2000 — the fast per-PR/local figure)
+//! and a per-run seed offset from `RIINA_FUZZ_SEED` (default 0 — the fixed,
+//! reproducible sequence). The scheduled workflow
+//! `.github/workflows/fuzz-continuous.yml` runs this suite nightly with a large
+//! budget and a run-unique seed (logged for reproduction), so fuzzing is
+//! continuous rather than only per-PR at a fixed depth. Coverage-gated
+//! (`frontend-coverage`, >=80%) is already wired; OSS-Fuzz remains the larger
+//! REQ-30 goal.
 //!
 //! It found and fixed two real denial-of-service bugs in the parser:
 //!   1. Stack overflow (SIGABRT) on deeply nested input (`((((…`) — the
@@ -58,6 +67,57 @@ impl XorShift {
     }
     fn below(&mut self, n: usize) -> usize {
         (self.next() % n as u64) as usize
+    }
+}
+
+/// Iteration budget for the randomized fuzz passes (REQ-30 continuous fuzz).
+///
+/// Defaults to 2000 — the fast figure for the per-PR CI job and local
+/// `cargo test`. The scheduled continuous-fuzz workflow
+/// (`.github/workflows/fuzz-continuous.yml`) raises it via `RIINA_FUZZ_ITERS`
+/// so an overnight run explores far more inputs than a pull-request run.
+/// The harness-sanity gate (`fuzz_mutation_actually_reaches_deeper_stages`)
+/// deliberately does NOT use this — it asserts exact stable counts and stays
+/// pinned at its fixed budget.
+fn fuzz_iters() -> usize {
+    std::env::var("RIINA_FUZZ_ITERS")
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .filter(|&n| n > 0)
+        .unwrap_or(2000)
+}
+
+/// Per-run seed offset for the randomized passes. Defaults to 0 (the fixed,
+/// reproducible per-PR sequence). The scheduled job sets `RIINA_FUZZ_SEED` to a
+/// run-unique value so each night walks a FRESH region of the input space
+/// rather than re-checking the identical deterministic stream. The effective
+/// seed is logged (see `announce_fuzz_config`), so any crash a scheduled run
+/// finds is reproducible by re-exporting the same `RIINA_FUZZ_SEED` +
+/// `RIINA_FUZZ_ITERS`.
+fn fuzz_seed(base: u64) -> u64 {
+    let off = std::env::var("RIINA_FUZZ_SEED")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+        .unwrap_or(0);
+    // Golden-ratio mix so a small integer offset (e.g. a CI run number) still
+    // moves the whole 64-bit seed, not just its low bits.
+    base ^ off.wrapping_mul(0x9E37_79B9_7F4A_7C15)
+}
+
+/// Record the effective budget/seed for a pass, but only when a scaling env var
+/// is present — keeps ordinary `cargo test` output quiet while making every
+/// scheduled continuous-fuzz run self-documenting for reproduction.
+fn announce_fuzz_config(test: &str, base_seed: u64) {
+    let iters = std::env::var("RIINA_FUZZ_ITERS").ok();
+    let seed = std::env::var("RIINA_FUZZ_SEED").ok();
+    if iters.is_some() || seed.is_some() {
+        eprintln!(
+            "[fuzz] {test}: iters={} seed_base={:#018x} seed_off={} -> seed={:#018x}",
+            fuzz_iters(),
+            base_seed,
+            seed.as_deref().unwrap_or("0"),
+            fuzz_seed(base_seed),
+        );
     }
 }
 
@@ -254,7 +314,7 @@ fn mutate(rng: &mut XorShift, seed: &[u8]) -> String {
         match rng.below(3) {
             0 => {
                 let i = rng.below(bytes.len());
-                bytes[i] = (0x20 + rng.below(0x5f) as u8) as u8;
+                bytes[i] = 0x20 + rng.below(0x5f) as u8;
             }
             1 => {
                 let i = rng.below(bytes.len() + 1);
@@ -271,8 +331,10 @@ fn mutate(rng: &mut XorShift, seed: &[u8]) -> String {
 
 #[test]
 fn fuzz_random_ascii_no_panic() {
-    let mut rng = XorShift(0x1234_5678_9ABC_DEF0);
-    for _ in 0..2000 {
+    let base = 0x1234_5678_9ABC_DEF0;
+    announce_fuzz_config("fuzz_random_ascii_no_panic", base);
+    let mut rng = XorShift(fuzz_seed(base));
+    for _ in 0..fuzz_iters() {
         let len = rng.below(256);
         assert_no_panic(&gen_random_ascii(&mut rng, len));
     }
@@ -280,8 +342,10 @@ fn fuzz_random_ascii_no_panic() {
 
 #[test]
 fn fuzz_token_salad_no_panic() {
-    let mut rng = XorShift(0xCAFE_BABE_F00D_1357);
-    for _ in 0..2000 {
+    let base = 0xCAFE_BABE_F00D_1357;
+    announce_fuzz_config("fuzz_token_salad_no_panic", base);
+    let mut rng = XorShift(fuzz_seed(base));
+    for _ in 0..fuzz_iters() {
         let n = rng.below(120);
         assert_no_panic(&gen_token_salad(&mut rng, n));
     }
@@ -302,8 +366,10 @@ fn fuzz_corpus_mutation_no_panic() {
         .unwrap_or_default();
     assert!(!seeds.is_empty(), "expected seed corpus in {}", dir.display());
 
-    let mut rng = XorShift(0x0BAD_C0DE_DEAD_BEEF);
-    for _ in 0..2000 {
+    let base = 0x0BAD_C0DE_DEAD_BEEF;
+    announce_fuzz_config("fuzz_corpus_mutation_no_panic", base);
+    let mut rng = XorShift(fuzz_seed(base));
+    for _ in 0..fuzz_iters() {
         let seed = &seeds[rng.below(seeds.len())];
         assert_no_panic(&mutate(&mut rng, seed));
     }

@@ -1,0 +1,140 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": { "type": "application", "name": "riina-crypto" },
+    "properties": [
+      { "name": "riina:cbom:policy", "value": "NIST IR 8547; mirrors crypto_policy::DEPRECATED" },
+      { "name": "riina:cbom:gate", "value": "02_FORMAL/coq/crypto/AlgorithmPolicy.v (accepts)" }
+    ]
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "name": "aes",
+      "bom-ref": "crypto/aes",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/aes.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "ed25519",
+      "bom-ref": "crypto/ed25519",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/ed25519.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "field25519",
+      "bom-ref": "crypto/field25519",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/field25519.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "gcm",
+      "bom-ref": "crypto/gcm",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/gcm.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "ghash",
+      "bom-ref": "crypto/ghash",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/ghash.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "hkdf",
+      "bom-ref": "crypto/hkdf",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/hkdf.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "hmac",
+      "bom-ref": "crypto/hmac",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/hmac.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "hybrid",
+      "bom-ref": "crypto/hybrid",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/hybrid.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "keccak",
+      "bom-ref": "crypto/keccak",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/keccak.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "ml_dsa",
+      "bom-ref": "crypto/ml_dsa",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/ml_dsa.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "ml_kem",
+      "bom-ref": "crypto/ml_kem",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/ml_kem.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "montgomery",
+      "bom-ref": "crypto/montgomery",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/montgomery.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "sha2",
+      "bom-ref": "crypto/sha2",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/sha2.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "x25519",
+      "bom-ref": "crypto/x25519",
+      "properties": [
+        { "name": "riina:crypto:source", "value": "05_TOOLING/crates/riina-core/src/crypto/x25519.rs" },
+        { "name": "riina:crypto:status", "value": "current" }
+      ]
+    }
+  ]
+}

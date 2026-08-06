@@ -62,6 +62,30 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
             walk_inner(b, rules, out);
         }
 
+        Expr::LetRecGroup(bindings, cont) => {
+            // REQ-44: many rules are written as `if let Expr::LetRec(name, ..)`
+            // to fire once per named function. Top-level functions are now
+            // GROUP members, so those rules would silently never fire again.
+            // Re-present each member as the equivalent single-binding LetRec so
+            // every existing per-function rule keeps working unchanged — and so
+            // future rules can keep being written against LetRec.
+            for (name, ty, e) in bindings {
+                let as_letrec = Expr::LetRec(
+                    name.clone(),
+                    ty.clone(),
+                    Box::new(e.clone()),
+                    Box::new(Expr::Unit),
+                );
+                for rule in rules.iter() {
+                    if let Some(v) = (rule.check)(&as_letrec) {
+                        out.push(v);
+                    }
+                }
+                walk_inner(e, rules, out);
+            }
+            walk_inner(cont, rules, out);
+        }
+
         Expr::If(c, t, e) | Expr::Case(c, _, t, _, e) => {
             walk_inner(c, rules, out);
             walk_inner(t, rules, out);

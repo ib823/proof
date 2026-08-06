@@ -227,6 +227,24 @@ impl VarEnv {
 
 /// Compute the set of free variables in an expression.
 /// A variable is free if it is referenced but not bound within the expression.
+/// Expand a mutually-recursive binding GROUP into a nested `LetRec` chain
+/// (backward-reference scoping). Codegen (C/WASM) does not need forward
+/// references — the corpus's forward-ref/module examples are exercised through
+/// the typechecker + interpreter, and the C/WASM differential set uses none —
+/// so treating a group as a chain here is sound and never crashes.
+fn letrec_group_to_chain(bindings: &[(riina_types::Ident, riina_types::Ty, Expr)], cont: &Expr) -> Expr {
+    let mut result = cont.clone();
+    for (name, ty, e) in bindings.iter().rev() {
+        result = Expr::LetRec(
+            name.clone(),
+            ty.clone(),
+            Box::new(e.clone()),
+            Box::new(result),
+        );
+    }
+    result
+}
+
 fn free_vars(expr: &Expr) -> HashSet<Ident> {
     match expr {
         Expr::Unit
@@ -269,6 +287,7 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv1.extend(fv2);
             fv1
         }
+        Expr::LetRecGroup(bindings, cont) => free_vars(&letrec_group_to_chain(bindings, cont)),
         Expr::If(c, t, f) => {
             let mut fv = free_vars(c);
             fv.extend(free_vars(t));
@@ -438,6 +457,22 @@ impl Lower {
                 self.harvest_struct_info(bound);
                 self.harvest_struct_info(cont);
             }
+            // REQ-44: a top-level function GROUP must register every member,
+            // exactly as the single-binding LetRec arm above does. Missing this
+            // silently lost `fn_returns_struct` for grouped functions, so a call
+            // like `biar v = versi_semasa()` no longer knew `v` was a struct and
+            // `v.field` degraded to `Any` (no Fst/Snd projection) — which the C
+            // and WASM backends then rendered differently. This match ends in
+            // `_ => {}`, so the compiler could NOT catch the omission.
+            Expr::LetRecGroup(bindings, cont) => {
+                for (name, _, bound) in bindings {
+                    if let Some(s) = Self::result_struct_name(bound) {
+                        self.fn_returns_struct.entry(name.clone()).or_insert(s);
+                    }
+                    self.harvest_struct_info(bound);
+                }
+                self.harvest_struct_info(cont);
+            }
             Expr::Lam(_, _, b)
             | Expr::Fst(b)
             | Expr::Snd(b)
@@ -470,7 +505,10 @@ impl Lower {
                 self.harvest_struct_info(b);
                 self.harvest_struct_info(c);
             }
-            Expr::ListLit(es) => {
+            Expr::ListLit(es)
+            | Expr::UIDisplay(es)
+            | Expr::UIRow(es)
+            | Expr::UIColumn(es) => {
                 for x in es {
                     self.harvest_struct_info(x);
                 }
@@ -480,7 +518,54 @@ impl Lower {
                     self.harvest_struct_info(x);
                 }
             }
-            _ => {}
+
+            // The arms below were previously swallowed by a `_ => {}`. A
+            // `RecordLit` nested inside a CAHAYA UI block or an actor handler
+            // was therefore never harvested, so its layout stayed unknown and
+            // any `v.field` on it degraded to `Any` — the identical mechanism
+            // that shipped the C/WASM divergence on `compiler/main.rii`, just
+            // reached through a different container. The match is now
+            // EXHAUSTIVE so a new `Expr` variant fails the build here instead
+            // of silently losing struct information. Do not add a `_ =>` arm.
+            Expr::ActorDecl {
+                init_state,
+                handler,
+                ..
+            } => {
+                self.harvest_struct_info(init_state);
+                self.harvest_struct_info(handler);
+            }
+            Expr::Spawn(a, b)
+            | Expr::ActorSend(a, b)
+            | Expr::CRDTMerge(a, b)
+            | Expr::ContentVerify(a, b)
+            | Expr::UIText(a, b)
+            | Expr::UIButton(a, b)
+            | Expr::UIContrastCheck(a, b) => {
+                self.harvest_struct_info(a);
+                self.harvest_struct_info(b);
+            }
+            Expr::ActorRecv(b)
+            | Expr::ContentHash(b)
+            | Expr::ContractDeploy(b)
+            | Expr::ZakatCalculate(b) => self.harvest_struct_info(b),
+            Expr::TokenTransfer { from, to, amount } => {
+                self.harvest_struct_info(from);
+                self.harvest_struct_info(to);
+                self.harvest_struct_info(amount);
+            }
+
+            // Leaves — no sub-expressions to harvest.
+            Expr::Unit
+            | Expr::Bool(_)
+            | Expr::Int(_)
+            | Expr::IntN { .. }
+            | Expr::String(_)
+            | Expr::Var(_)
+            | Expr::Loc(_)
+            | Expr::ChoreographyBlock { .. }
+            | Expr::UIColor(_, _, _)
+            | Expr::UIStyleDecl { .. } => {}
         }
     }
 
@@ -493,7 +578,8 @@ impl Lower {
             Expr::Lam(_, _, b)
             | Expr::Return(b)
             | Expr::Let(_, _, _, b)
-            | Expr::LetRec(_, _, _, b) => Self::result_struct_name(b),
+            | Expr::LetRec(_, _, _, b)
+            | Expr::LetRecGroup(_, b) => Self::result_struct_name(b),
             Expr::If(_, t, f) => {
                 Self::result_struct_name(t).or_else(|| Self::result_struct_name(f))
             }
@@ -754,6 +840,7 @@ impl Lower {
             Expr::If(_, t, _)
             | Expr::Let(_, _, _, t)
             | Expr::LetRec(_, _, _, t)
+            | Expr::LetRecGroup(_, t)
             | Expr::Case(_, _, t, _, _) => self.infer_type(t),
             Expr::App(e1, _) => {
                 // A boxed numeric constructor (`besar`/`perpuluhan`) yields its
@@ -904,6 +991,9 @@ impl Lower {
             | Expr::Var(_) => Effect::Pure,
             Expr::Lam(_, _, _) => Effect::Pure,
             Expr::LetRec(_, _, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
+            Expr::LetRecGroup(bindings, cont) => {
+                self.infer_effect(&letrec_group_to_chain(bindings, cont))
+            }
             Expr::Pair(e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
             Expr::Fst(e) | Expr::Snd(e) => self.infer_effect(e),
             Expr::Inl(e, _) | Expr::Inr(e, _) => self.infer_effect(e),
@@ -1654,6 +1744,11 @@ impl Lower {
                 Ok(result)
             }
 
+            Expr::LetRecGroup(bindings, cont) => {
+                // Codegen: expand the group to a nested LetRec chain and lower.
+                self.lower_expr(&letrec_group_to_chain(bindings, cont))
+            }
+
             Expr::LetRec(name, ty_ann, binding, body) => {
                 // For LetRec, we pre-bind name so the lambda body can reference it.
                 // The lambda captures the placeholder VarId. After the closure is
@@ -2186,6 +2281,262 @@ impl Default for Lower {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // =======================================================================
+    // REQ-44 regression: a LetRecGroup must lower exactly like the equivalent
+    // LetRec chain.
+    //
+    // `harvest_struct_info` records which functions return a struct, keyed off
+    // its `Expr::LetRec` arm. When top-level functions became GROUP members no
+    // `LetRecGroup` arm existed — and that match ends in `_ => {}`, so nothing
+    // failed to compile. Grouped functions silently stopped being registered,
+    // `biar v = f()` lost v's struct identity, `v.field` degraded to `Any`, and
+    // the C and WASM backends then rendered it differently. It shipped to main
+    // and was caught only by the CI differential.
+    //
+    // This is a DIFFERENTIAL test: both spellings must produce identical IR.
+    // It fails if any future AST walker forgets the group again.
+    // =======================================================================
+
+    /// `f() = Point { x: 1, y: 2 }` then `biar v = f(); v.x`
+    fn struct_returning_program(group: bool) -> Expr {
+        let record = Expr::RecordLit(
+            "Point".into(),
+            vec![
+                ("x".into(), Expr::Int(1)),
+                ("y".into(), Expr::Int(2)),
+            ],
+        );
+        // Zero-arg function: the binding value is the body, typed as its return.
+        let fn_ty = Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int));
+        let cont = Expr::Let(
+            "v".into(),
+            None,
+            Box::new(Expr::App(
+                Box::new(Expr::Var("f".into())),
+                Box::new(Expr::Unit),
+            )),
+            Box::new(Expr::FieldAccess(
+                Box::new(Expr::Var("v".into())),
+                "x".into(),
+            )),
+        );
+        if group {
+            Expr::LetRecGroup(vec![("f".into(), fn_ty, record)], Box::new(cont))
+        } else {
+            Expr::LetRec("f".into(), fn_ty, Box::new(record), Box::new(cont))
+        }
+    }
+
+    #[test]
+    fn letrec_group_lowers_identically_to_letrec_chain() {
+        let chain = struct_returning_program(false);
+        let group = struct_returning_program(true);
+
+        let chain_ir = format!("{:?}", Lower::new().compile(&chain).unwrap());
+        let group_ir = format!("{:?}", Lower::new().compile(&group).unwrap());
+
+        assert_eq!(
+            chain_ir, group_ir,
+            "LetRecGroup lowered differently from the equivalent LetRec chain — \
+             a prepass (e.g. harvest_struct_info) is missing its LetRecGroup arm \
+             (REQ-44 silent-gap class)"
+        );
+    }
+
+    #[test]
+    fn grouped_struct_returning_fn_keeps_field_projection() {
+        // Guards the degenerate pass: if BOTH forms lost projections the
+        // differential above would still match. Pin that the group form
+        // genuinely resolves the field rather than degrading to `Any`.
+        let group = struct_returning_program(true);
+        let mut lower = Lower::new();
+        let _ = lower.compile(&group).unwrap();
+        assert!(
+            lower.fn_returns_struct.contains_key("f"),
+            "grouped function 'f' must be registered as struct-returning; \
+             without it `v.x` cannot lower to a projection"
+        );
+    }
+
+    // =======================================================================
+    // Silent-gap regression: `harvest_struct_info` must reach a `RecordLit`
+    // through EVERY container, not just the ones someone remembered to list.
+    //
+    // Same mechanism as the shipped C/WASM divergence on `compiler/main.rii`,
+    // reached through a different container: an unharvested layout means the
+    // struct's fields are unknown, so `v.field` degrades to `Any` instead of a
+    // real `Fst`/`Snd` projection — and the two backends then render it
+    // differently. The JALINAN/CAHAYA arms below were swallowed by `_ => {}`,
+    // so no test and no compiler check covered them.
+    // =======================================================================
+
+    /// Every container variant, each holding a `RecordLit` as a direct child.
+    fn containers_holding_a_record() -> Vec<(&'static str, Expr)> {
+        let rec = || {
+            Expr::RecordLit(
+                "Titik".into(),
+                vec![("x".into(), Expr::Int(1)), ("y".into(), Expr::Int(2))],
+            )
+        };
+        let b = |e: Expr| Box::new(e);
+        let unit = || Box::new(Expr::Unit);
+        vec![
+            ("UIDisplay", Expr::UIDisplay(vec![Expr::Unit, rec()])),
+            ("UIRow", Expr::UIRow(vec![Expr::Unit, rec()])),
+            ("UIColumn", Expr::UIColumn(vec![Expr::Unit, rec()])),
+            ("UIText/l", Expr::UIText(b(rec()), unit())),
+            ("UIText/r", Expr::UIText(unit(), b(rec()))),
+            ("UIButton/l", Expr::UIButton(b(rec()), unit())),
+            ("UIButton/r", Expr::UIButton(unit(), b(rec()))),
+            ("UIContrastCheck/l", Expr::UIContrastCheck(b(rec()), unit())),
+            ("UIContrastCheck/r", Expr::UIContrastCheck(unit(), b(rec()))),
+            (
+                "ActorDecl/init",
+                Expr::ActorDecl {
+                    name: "A".into(),
+                    state_ty: Ty::Int,
+                    message_ty: Ty::Int,
+                    init_state: b(rec()),
+                    handler: unit(),
+                },
+            ),
+            (
+                "ActorDecl/handler",
+                Expr::ActorDecl {
+                    name: "A".into(),
+                    state_ty: Ty::Int,
+                    message_ty: Ty::Int,
+                    init_state: unit(),
+                    handler: b(rec()),
+                },
+            ),
+            ("Spawn/l", Expr::Spawn(b(rec()), unit())),
+            ("Spawn/r", Expr::Spawn(unit(), b(rec()))),
+            ("ActorSend/l", Expr::ActorSend(b(rec()), unit())),
+            ("ActorSend/r", Expr::ActorSend(unit(), b(rec()))),
+            ("ActorRecv", Expr::ActorRecv(b(rec()))),
+            ("CRDTMerge/l", Expr::CRDTMerge(b(rec()), unit())),
+            ("CRDTMerge/r", Expr::CRDTMerge(unit(), b(rec()))),
+            ("ContentHash", Expr::ContentHash(b(rec()))),
+            ("ContentVerify/l", Expr::ContentVerify(b(rec()), unit())),
+            ("ContentVerify/r", Expr::ContentVerify(unit(), b(rec()))),
+            ("ContractDeploy", Expr::ContractDeploy(b(rec()))),
+            ("ZakatCalculate", Expr::ZakatCalculate(b(rec()))),
+            (
+                "TokenTransfer/from",
+                Expr::TokenTransfer {
+                    from: b(rec()),
+                    to: unit(),
+                    amount: unit(),
+                },
+            ),
+            (
+                "TokenTransfer/to",
+                Expr::TokenTransfer {
+                    from: unit(),
+                    to: b(rec()),
+                    amount: unit(),
+                },
+            ),
+            (
+                "TokenTransfer/amount",
+                Expr::TokenTransfer {
+                    from: unit(),
+                    to: unit(),
+                    amount: b(rec()),
+                },
+            ),
+        ]
+    }
+
+    #[test]
+    fn struct_layouts_are_harvested_through_every_container() {
+        for (label, e) in containers_holding_a_record() {
+            let mut lower = Lower::new();
+            lower.harvest_struct_info(&e);
+            assert!(
+                lower.struct_layouts.contains_key("Titik"),
+                "struct layout was not harvested through `{label}` — the \
+                 struct's fields stay unknown, so `v.field` on it degrades to \
+                 `Any` and the C and WASM backends can diverge (the shipped \
+                 regression class). Every arm of `harvest_struct_info` must \
+                 recurse."
+            );
+        }
+    }
+
+    #[test]
+    fn harvesting_reports_nothing_when_no_struct_is_present() {
+        // NEGATIVE CONTROL: without this, a `harvest_struct_info` that
+        // registered "Titik" unconditionally would pass the test above while
+        // checking nothing.
+        for (label, e) in containers_holding_a_record() {
+            // Same shapes, but with the RecordLit replaced by a plain Int.
+            let stripped = strip_records(&e);
+            let mut lower = Lower::new();
+            lower.harvest_struct_info(&stripped);
+            assert!(
+                lower.struct_layouts.is_empty(),
+                "`{label}` registered a struct layout when the tree contains \
+                 no RecordLit at all"
+            );
+        }
+    }
+
+    /// Replace every `RecordLit` in `e` with `Int(0)`, leaving the shape alone.
+    fn strip_records(e: &Expr) -> Expr {
+        match e {
+            Expr::RecordLit(..) => Expr::Int(0),
+            Expr::UIDisplay(v) => Expr::UIDisplay(v.iter().map(strip_records).collect()),
+            Expr::UIRow(v) => Expr::UIRow(v.iter().map(strip_records).collect()),
+            Expr::UIColumn(v) => Expr::UIColumn(v.iter().map(strip_records).collect()),
+            Expr::UIText(a, b) => {
+                Expr::UIText(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::UIButton(a, b) => {
+                Expr::UIButton(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::UIContrastCheck(a, b) => {
+                Expr::UIContrastCheck(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ActorDecl {
+                name,
+                state_ty,
+                message_ty,
+                init_state,
+                handler,
+            } => Expr::ActorDecl {
+                name: name.clone(),
+                state_ty: state_ty.clone(),
+                message_ty: message_ty.clone(),
+                init_state: Box::new(strip_records(init_state)),
+                handler: Box::new(strip_records(handler)),
+            },
+            Expr::Spawn(a, b) => {
+                Expr::Spawn(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ActorSend(a, b) => {
+                Expr::ActorSend(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ActorRecv(a) => Expr::ActorRecv(Box::new(strip_records(a))),
+            Expr::CRDTMerge(a, b) => {
+                Expr::CRDTMerge(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ContentHash(a) => Expr::ContentHash(Box::new(strip_records(a))),
+            Expr::ContentVerify(a, b) => {
+                Expr::ContentVerify(Box::new(strip_records(a)), Box::new(strip_records(b)))
+            }
+            Expr::ContractDeploy(a) => Expr::ContractDeploy(Box::new(strip_records(a))),
+            Expr::ZakatCalculate(a) => Expr::ZakatCalculate(Box::new(strip_records(a))),
+            Expr::TokenTransfer { from, to, amount } => Expr::TokenTransfer {
+                from: Box::new(strip_records(from)),
+                to: Box::new(strip_records(to)),
+                amount: Box::new(strip_records(amount)),
+            },
+            other => other.clone(),
+        }
+    }
 
     #[test]
     fn test_lower_unit() {

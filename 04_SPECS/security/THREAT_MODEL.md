@@ -176,6 +176,53 @@ subject of the deepest assurance in the repo (9 Coq formal-equivalence proofs + 
 REQ-32 explicitly requires this section to cover the **DMP/prefetcher class (GoFetch, 2024)** and the
 **transient-execution families (Downfall, Inception)**, per `01_RESEARCH/29_REFRESH_2026H1/`.
 
+### 6.0 Formal CT-scope: the leakage-contract framing (Guarnieri et al., S&P 2021) — REQ-39
+
+The subsections below are easier to reason about — and RIINA's claims easier to
+falsify — when the constant-time promise is stated as a **hardware-software
+leakage contract** in the sense of Guarnieri, Köpf, Reineke & Vila,
+*Hardware-Software Contracts for Secure Speculation* (IEEE S&P 2021). This is
+RIINA's **official CT-scope statement**; §§6.1–6.4 are its consequences.
+
+- **The contract RIINA targets is `ct` (constant-time observer) under
+  sequential execution — `[[·]]^seq_ct`.** Under this contract the microarchitectural
+  attacker observes, per executed instruction, only the **program-counter trace
+  (control flow)** and the **addresses of memory loads/stores** — never the
+  *values* at those addresses, and never operand-dependent instruction latency.
+  A program is contract-satisfying iff any two executions that agree on public
+  (non-secret) inputs produce **identical `ct` traces**.
+
+- **RIINA discharges the SOFTWARE side of that contract.** The CT discipline
+  (`masa_tetap`/`ct`, the `riina-core` primitives) is exactly the set of
+  source-level obligations that make the `ct` trace secret-independent: no
+  secret-dependent branch (equal pc-trace), no secret-dependent memory index
+  (equal address-trace), branchless selects and operand-independent primitives
+  (no secret-dependent latency). §6.4's structural-CT gate (ctgrind
+  secret-poisoning) and the dudect timing probe are the *evidence* that the
+  shipped primitives meet this obligation; the Coq CT lanes model it.
+
+- **Every residual in §§6.2–6.3a is one thing: the DEPLOYED HARDWARE HONORS A
+  STRONGER CONTRACT THAN `[[·]]^seq_ct`.** The contract framing makes each leak a
+  precise *contract mismatch*, not a vague "CT isn't enough":
+  - **DMP / GoFetch (§6.2)** — the CPU's true contract leaks a **value-dependent
+    address** (the prefetcher dereferences data that looks like a pointer), i.e.
+    it reveals loaded *values*, which `ct` explicitly excludes. Contract violated
+    on the hardware side.
+  - **Transient execution — Spectre/Downfall/Inception (§6.3), SLAP/FLOP
+    (§6.3a)** — the CPU's true contract is **speculative** (`[[·]]^spec_ct` /
+    predictor-specific variants such as `ct-pht`, `ct-stl`), which exposes the
+    trace of *mispredicted* transient paths that `[[·]]^seq_ct` never contains.
+
+- **Why this is honest, not a dodge.** A portable source-level compiler can only
+  discharge the software half of a contract; it **cannot unilaterally guarantee
+  the hardware half**. When the platform provides `[[·]]^seq_ct` (e.g. DMP
+  disabled via **DIT**/the DMP MSR; the vendor microcode + OS mitigations that
+  restore a sequential-`ct` contract), RIINA's proofs and CT evidence carry the
+  end-to-end guarantee. When it does not, the gap is a **named hardware/OS
+  obligation** (§§6.2–6.3a residuals, tracked in §7 OR-5/OR-6/OR-6a), not a
+  silent hole. RIINA's contribution is to make the software side *provably*
+  contract-satisfying so those deploy-time controls are meaningful.
+
 ### 6.1 What RIINA controls and what it does not
 
 RIINA's CT discipline (`masa_tetap`/`ct`, and the `riina-core` primitives) targets the **classical
@@ -209,10 +256,25 @@ hardware, not sufficient** — and RIINA states so rather than over-claiming.
   responsibility.
 - **Residual:** **High, platform-level — accepted & disclosed (§7 OR-6).**
 
+### 6.3a SLAP & FLOP — Apple M-series load predictors (2025; REQ-37)
+
+- **Threat.** Disclosed Jan 2025 on Apple M-series: **SLAP** abuses the **Load
+  Address Predictor** (speculate a load's *address*) and **FLOP** the **Load Value
+  Predictor** (speculate a load's *value*); both open a Spectre-class transient
+  window that computes on mispredicted data and leaks across boundaries (e.g.
+  Safari process isolation). They are a sibling pair and are **distinct from the
+  DMP/GoFetch prefetcher** (§6.2) — predictor-driven, not prefetcher-driven.
+- **RIINA's position.** Same as the rest of §6: source-level constant-time covers
+  instruction-timing and secret-branch/secret-memory channels; it does **NOT**
+  defeat predictor-driven transient execution on affected microarchitectures.
+  Mitigation is deploy-time (vendor microcode/OS controls; not co-locating secrets
+  with attacker-controlled JS). A portable compiler cannot close it from source.
+- **Residual:** **High, platform-level — accepted & disclosed (§7 OR-6a).**
+
 ### 6.4 What *is* verifiable today (so the section isn't all caveats)
 
 - **Structural CT** (`scripts/ct-structural-check.sh`, ctgrind secret-poisoning) is a **CI gate**:
-  AES, `ct_eq`, X25519, Ed25519 are structurally CT-clean (0 memcheck errors), after *real fixes,
+  AES, `ct_eq`, X25519, Ed25519, **and ML-KEM-768 decapsulation** (added 2026-06-13, REQ-43) are structurally CT-clean (0 memcheck errors; 5/5 primitives), after *real fixes,
   zero suppressions* (the `overflow-checks` change above; `black_box` barriers on selects LLVM had
   lowered to `js`; a genuine variable-time `while carry>0` loop in `ed25519::scalar_mul` fixed to a
   fixed trip count).
@@ -253,6 +315,7 @@ Every Medium-or-higher residual from the tables above, consolidated so nothing h
 | **OR-4** | `riina-wasm` FFI dereferences caller-supplied `(ptr,len)` | Medium | Playground shim, outside compiler TCB; documented contract. Could add a length/sanity guard. |
 | **OR-5** | DMP/GoFetch leak on affected HW despite source-level CT | High (HW-specific) | **Accepted & disclosed** — requires DIT/DMP-disable at deploy time; a portable compiler cannot set it. |
 | **OR-6** | Transient-execution (Downfall/Inception) leaks at the platform level | High (platform) | **Accepted & disclosed** — CPU-microcode + OS-mitigation territory. |
+| **OR-6a** | SLAP/FLOP load-predictor transient leaks on Apple M-series (2025) | High (platform) | **Accepted & disclosed** (§6.3a) — predictor-driven; deploy-time vendor/OS controls, not a source-level fix. |
 | **OR-7** | Verification-claim authenticity rests on self-run scripts, not third-party attestation | Medium | Gate F signed/attested releases; the external audit (REQ-28) independently re-derives. |
 | **OR-8** | Bus factor = 1 (REQ-36) weakens non-repudiation & continuity | Medium | Gate J: recruit ≥2 maintainers. Owner decision. |
 | **OR-9** | External compiler/crypto audit not yet performed (REQ-28/Gate G) | — (process) | **OPEN, owner-gated** — the pre-audit dossier is ready; engagement is a budget decision. |
@@ -268,7 +331,13 @@ Every Medium-or-higher residual from the tables above, consolidated so nothing h
    whole defense.
 3. **The compiler is batch, single-tenant.** RIINA does not (today) run untrusted code in the same
    address space as secrets, which bounds the transient-execution exposure to the compile process.
-4. **Non-goals:** RIINA does not claim to defeat physical attacks, fault injection, power/EM analysis
+4. **Hardware root of trust is assumed, not provided (REQ-37).** RIINA's secure-boot / attestation
+   story (REQ-31 SBOM + reproducible build) and this threat model assume a trustworthy silicon
+   **root of trust** below the software — the named industry anchors are **Caliptra** (OCP/CHIPS-Alliance
+   datacenter RoT) and **OpenTitan** (lowRISC discrete RoT). RIINA is a language + verified stdlib; the
+   RoT is *out of the language boundary* — its measured-boot/attestation/key-storage guarantees are
+   the hardware layer RIINA's software attestation chains to, not something RIINA implements.
+5. **Non-goals:** RIINA does not claim to defeat physical attacks, fault injection, power/EM analysis
    (Collide+Power), or a malicious host OS. These are out of the language/compiler's reach.
 
 ---

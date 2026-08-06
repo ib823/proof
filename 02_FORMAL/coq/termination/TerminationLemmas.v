@@ -337,6 +337,11 @@ Qed.
 Lemma exp_rel_step1_app_typed : forall Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε',
   has_type nil Σ' Public f (TFn T1 T2 ε) ε' ->
   has_type nil Σ' Public f' (TFn T1 T2 ε) ε' ->
+  (* REQ-44 scope: with general recursion a function VALUE can also be a fix,
+     whose application unrolls rather than beta-reduces and need not
+     terminate. This lemma's conclusion promises termination, so it holds on
+     the recursion-free fragment — stated as an explicit hypothesis. *)
+  recursion_free f -> recursion_free f' ->
   value f -> value f' -> value a -> value a' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
@@ -351,9 +356,13 @@ Lemma exp_rel_step1_app_typed : forall Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε'
     store_rel_0 Σ'' st1' st2'.
 Proof.
   intros Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε'
-         Hty Hty' Hvalf Hvalf' Hvala Hvala' Hstore Hext Hterm1 Hterm2.
-  destruct (canonical_fn f T1 T2 ε ε' Σ' Hty Hvalf) as [x [body Heq]].
-  destruct (canonical_fn f' T1 T2 ε ε' Σ' Hty' Hvalf') as [x' [body' Heq']].
+         Hty Hty' Hrf Hrf' Hvalf Hvalf' Hvala Hvala' Hstore Hext Hterm1 Hterm2.
+  destruct (canonical_fn f T1 T2 ε ε' Σ' Hty Hvalf)
+    as [[x [body Heq]] | [w Heqf]];
+    [ | subst f; simpl in Hrf; destruct Hrf ].
+  destruct (canonical_fn f' T1 T2 ε ε' Σ' Hty' Hvalf')
+    as [[x' [body' Heq']] | [w' Heqf']];
+    [ | subst f'; simpl in Hrf'; destruct Hrf' ].
   subst f f'.
   specialize (Hterm1 x body eq_refl) as [r1 [st1' [ctx1' [Hmulti1 Hvalr1]]]].
   specialize (Hterm2 x' body' eq_refl) as [r2 [st2' [ctx2' [Hmulti2 Hvalr2]]]].

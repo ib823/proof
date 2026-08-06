@@ -2,7 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:cargo/riina-arena@0.3.0",
+      "bom-ref": "pkg:cargo/riina-arena@0.4.0",
       "licenses": [
         {
           "license": {
@@ -17,13 +17,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-arena@0.3.0",
+      "purl": "pkg:cargo/riina-arena@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-codegen@0.3.0",
+      "bom-ref": "pkg:cargo/riina-codegen@0.4.0",
       "licenses": [
         {
           "license": {
@@ -38,13 +38,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-codegen@0.3.0",
+      "purl": "pkg:cargo/riina-codegen@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-compliance@0.3.0",
+      "bom-ref": "pkg:cargo/riina-compliance@0.4.0",
       "licenses": [
         {
           "license": {
@@ -59,13 +59,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-compliance@0.3.0",
+      "purl": "pkg:cargo/riina-compliance@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-doc@0.3.0",
+      "bom-ref": "pkg:cargo/riina-doc@0.4.0",
       "licenses": [
         {
           "license": {
@@ -80,13 +80,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-doc@0.3.0",
+      "purl": "pkg:cargo/riina-doc@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-fmt@0.3.0",
+      "bom-ref": "pkg:cargo/riina-fmt@0.4.0",
       "licenses": [
         {
           "license": {
@@ -101,13 +101,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-fmt@0.3.0",
+      "purl": "pkg:cargo/riina-fmt@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-lexer@0.3.0",
+      "bom-ref": "pkg:cargo/riina-lexer@0.4.0",
       "licenses": [
         {
           "license": {
@@ -122,13 +122,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-lexer@0.3.0",
+      "purl": "pkg:cargo/riina-lexer@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-lsp@0.3.0",
+      "bom-ref": "pkg:cargo/riina-lsp@0.4.0",
       "licenses": [
         {
           "license": {
@@ -143,13 +143,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-lsp@0.3.0",
+      "purl": "pkg:cargo/riina-lsp@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-os@0.3.0",
+      "bom-ref": "pkg:cargo/riina-os@0.4.0",
       "licenses": [
         {
           "license": {
@@ -164,13 +164,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-os@0.3.0",
+      "purl": "pkg:cargo/riina-os@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-parser@0.3.0",
+      "bom-ref": "pkg:cargo/riina-parser@0.4.0",
       "licenses": [
         {
           "license": {
@@ -185,13 +185,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-parser@0.3.0",
+      "purl": "pkg:cargo/riina-parser@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-pkg@0.3.0",
+      "bom-ref": "pkg:cargo/riina-pkg@0.4.0",
       "licenses": [
         {
           "license": {
@@ -206,13 +206,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-pkg@0.3.0",
+      "purl": "pkg:cargo/riina-pkg@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-receipt@0.3.0",
+      "bom-ref": "pkg:cargo/riina-receipt@0.4.0",
       "licenses": [
         {
           "license": {
@@ -227,13 +227,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-receipt@0.3.0",
+      "purl": "pkg:cargo/riina-receipt@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-runtime@0.3.0",
+      "bom-ref": "pkg:cargo/riina-runtime@0.4.0",
       "licenses": [
         {
           "license": {
@@ -248,13 +248,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-runtime@0.3.0",
+      "purl": "pkg:cargo/riina-runtime@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-span@0.3.0",
+      "bom-ref": "pkg:cargo/riina-span@0.4.0",
       "licenses": [
         {
           "license": {
@@ -269,13 +269,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-span@0.3.0",
+      "purl": "pkg:cargo/riina-span@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-symbols@0.3.0",
+      "bom-ref": "pkg:cargo/riina-symbols@0.4.0",
       "licenses": [
         {
           "license": {
@@ -290,13 +290,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-symbols@0.3.0",
+      "purl": "pkg:cargo/riina-symbols@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-typechecker@0.3.0",
+      "bom-ref": "pkg:cargo/riina-typechecker@0.4.0",
       "licenses": [
         {
           "license": {
@@ -311,13 +311,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-typechecker@0.3.0",
+      "purl": "pkg:cargo/riina-typechecker@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-types@0.3.0",
+      "bom-ref": "pkg:cargo/riina-types@0.4.0",
       "licenses": [
         {
           "license": {
@@ -332,13 +332,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-types@0.3.0",
+      "purl": "pkg:cargo/riina-types@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-ui@0.3.0",
+      "bom-ref": "pkg:cargo/riina-ui@0.4.0",
       "licenses": [
         {
           "license": {
@@ -353,13 +353,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-ui@0.3.0",
+      "purl": "pkg:cargo/riina-ui@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-wasm@0.3.0",
+      "bom-ref": "pkg:cargo/riina-wasm@0.4.0",
       "licenses": [
         {
           "license": {
@@ -374,13 +374,13 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riina-wasm@0.3.0",
+      "purl": "pkg:cargo/riina-wasm@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riinac@0.3.0",
+      "bom-ref": "pkg:cargo/riinac@0.4.0",
       "licenses": [
         {
           "license": {
@@ -395,10 +395,10 @@
           "value": "workspace"
         }
       ],
-      "purl": "pkg:cargo/riinac@0.3.0",
+      "purl": "pkg:cargo/riinac@0.4.0",
       "scope": "required",
       "type": "library",
-      "version": "0.3.0"
+      "version": "0.4.0"
     }
   ],
   "metadata": {

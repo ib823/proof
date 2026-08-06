@@ -323,12 +323,15 @@ impl Interpreter {
     }
 
     /// Hash a runtime value into the content-addressed store.
-    #[must_use]
-    pub fn content_hash_value(&mut self, value: Value) -> Value {
+    ///
+    /// Fails for a closure, which has no content hash — see `fnv1a_feed`.
+    pub fn content_hash_value(&mut self, value: Value) -> Result<Value> {
         if value.is_hash() {
-            return value;
+            return Ok(value);
         }
-        encode_hash_value(self.store_content_addressed_value(value))
+        Ok(encode_hash_value(
+            self.store_content_addressed_value(value)?,
+        ))
     }
 
     /// Look up a stored value by its raw content hash.
@@ -345,24 +348,24 @@ impl Interpreter {
             .and_then(|hash| self.content_store.get(&hash))
     }
 
-    fn store_content_addressed_value(&mut self, value: Value) -> u64 {
+    fn store_content_addressed_value(&mut self, value: Value) -> Result<u64> {
         match value {
             Value::List(items) => {
                 let leaf_hashes = items
                     .iter()
                     .cloned()
                     .map(|item| self.store_content_addressed_value(item))
-                    .collect::<Vec<_>>();
+                    .collect::<Result<Vec<_>>>()?;
                 let root_hash = merkle_root_hash(&leaf_hashes);
                 self.content_store
                     .entry(root_hash)
                     .or_insert_with(|| Value::List(items));
-                root_hash
+                Ok(root_hash)
             }
             other => {
-                let hash = fnv1a_hash_value(&other);
+                let hash = fnv1a_hash_value(&other)?;
                 self.content_store.entry(hash).or_insert(other);
-                hash
+                Ok(hash)
             }
         }
     }
@@ -688,6 +691,47 @@ impl Interpreter {
                 }
             }
 
+            // E_LetRecGroup: mutually-recursive binding group (REQ-44 forward
+            // references). Each lambda member becomes a closure whose body
+            // re-establishes the whole lambda group — the generalized single-
+            // binding re-bind fixpoint trick — so every function sees all its
+            // siblings. Recursion soundness is mechanized in
+            // foundations/RecursionSafety.v. Non-lambda (zero-arg) members are
+            // evaluated once in the lambda-populated env (they are NOT re-run on
+            // each call, so a zero-arg `utama` body is not re-executed when a
+            // helper lambda is invoked).
+            Expr::LetRecGroup(bindings, body) => {
+                let lambda_bindings: Vec<(riina_types::Ident, riina_types::Ty, Expr)> = bindings
+                    .iter()
+                    .filter(|(_, _, e)| matches!(e, Expr::Lam(_, _, _)))
+                    .cloned()
+                    .collect();
+                let mut new_env = env.clone();
+                for (name, _ty, e) in bindings {
+                    if let Expr::Lam(param, param_ty, lam_body) = e {
+                        let rec_body =
+                            Expr::LetRecGroup(lambda_bindings.clone(), lam_body.clone());
+                        let closure = Value::Closure(Closure {
+                            env: env.clone(),
+                            param: param.clone(),
+                            param_ty: param_ty.clone(),
+                            body: Rc::new(rec_body),
+                        });
+                        new_env = new_env.extend(name.clone(), closure);
+                    }
+                }
+                for (name, _ty, e) in bindings {
+                    if !matches!(e, Expr::Lam(_, _, _)) {
+                        let val = match self.eval_with_env(&new_env, e) {
+                            Err(Error::Return(v)) => *v,
+                            other => other?,
+                        };
+                        new_env = new_env.extend(name.clone(), val);
+                    }
+                }
+                self.eval_with_env(&new_env, body)
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // EFFECTS (E_Perform, E_Handle)
             // ═══════════════════════════════════════════════════════════════
@@ -953,12 +997,12 @@ impl Interpreter {
             Expr::CRDTMerge(a_expr, b_expr) => {
                 let a = self.eval_with_env(env, a_expr)?;
                 let b = self.eval_with_env(env, b_expr)?;
-                Ok(crdt_merge_values(&a, &b))
+                crdt_merge_values(&a, &b)
             }
 
             Expr::ContentHash(val_expr) => {
                 let val = self.eval_with_env(env, val_expr)?;
-                Ok(self.content_hash_value(val))
+                self.content_hash_value(val)
             }
 
             Expr::ContentVerify(expected_hash_expr, val_expr) => {
@@ -967,7 +1011,7 @@ impl Interpreter {
                 let actual_hash = if val.is_hash() {
                     val
                 } else {
-                    self.content_hash_value(val)
+                    self.content_hash_value(val)?
                 };
                 Ok(Value::Bool(expected_hash == actual_hash))
             }
@@ -1358,14 +1402,21 @@ fn eval_fixedbin_binop(op: BinOp, l: &Value, r: &Value) -> Option<Result<Value>>
 }
 
 /// FNV-1a hash: feed bytes from a Value into the running hash state.
-fn fnv1a_feed(hash: &mut u64, val: &Value) {
+fn fnv1a_feed(hash: &mut u64, val: &Value) -> Result<()> {
     const FNV_PRIME: u64 = 1_099_511_628_211;
     match val {
+        // Every arm below leads with a DISTINCT domain-separation tag. Without
+        // one, `Unit` and `Bool(false)` both reduced to "xor 0, multiply" and
+        // produced the SAME digest, and an `Int` could collide with the
+        // `String` whose bytes matched its little-endian encoding. Tags are
+        // what make the digest identify the value's TYPE as well as its bytes.
         Value::Unit => {
-            *hash ^= 0x00;
+            *hash ^= 0x20;
             *hash = hash.wrapping_mul(FNV_PRIME);
         }
         Value::Int(n) => {
+            *hash ^= 0x22;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             let mut n = *n;
             for _ in 0..8 {
                 *hash ^= n & 0xff;
@@ -1380,6 +1431,8 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
         } => {
             // Feed the value bytes like `Int`, then the width/signedness so
             // distinct sized types (e.g. `42u8` vs `42u16`) hash distinctly.
+            *hash ^= 0x23;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             let mut n = *value;
             for _ in 0..8 {
                 *hash ^= n & 0xff;
@@ -1392,12 +1445,16 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
             *hash = hash.wrapping_mul(FNV_PRIME);
         }
         Value::String(s) => {
+            *hash ^= 0x24;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             for b in s.bytes() {
                 *hash ^= u64::from(b);
                 *hash = hash.wrapping_mul(FNV_PRIME);
             }
         }
         Value::Bool(b) => {
+            *hash ^= 0x21;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             *hash ^= if *b { 1 } else { 0 };
             *hash = hash.wrapping_mul(FNV_PRIME);
         }
@@ -1405,18 +1462,22 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
             // Tag bytes distinguish pairs from concatenated components
             *hash ^= 0x01;
             *hash = hash.wrapping_mul(FNV_PRIME);
-            fnv1a_feed(hash, a);
+            fnv1a_feed(hash, a)?;
             *hash ^= 0x02;
             *hash = hash.wrapping_mul(FNV_PRIME);
-            fnv1a_feed(hash, b);
+            fnv1a_feed(hash, b)?;
         }
         Value::Hash(bytes) => {
+            *hash ^= 0x25;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             for &b in bytes {
                 *hash ^= u64::from(b);
                 *hash = hash.wrapping_mul(FNV_PRIME);
             }
         }
         Value::Color(r, g, b) => {
+            *hash ^= 0x26;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             for &component in &[*r, *g, *b] {
                 *hash ^= u64::from(component);
                 *hash = hash.wrapping_mul(FNV_PRIME);
@@ -1426,7 +1487,7 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
             *hash ^= 0x03;
             *hash = hash.wrapping_mul(FNV_PRIME);
             for item in items {
-                fnv1a_feed(hash, item);
+                fnv1a_feed(hash, item)?;
                 *hash ^= 0x04;
                 *hash = hash.wrapping_mul(FNV_PRIME);
             }
@@ -1441,10 +1502,12 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
                 }
                 *hash ^= 0x06;
                 *hash = hash.wrapping_mul(FNV_PRIME);
-                fnv1a_feed(hash, value);
+                fnv1a_feed(hash, value)?;
             }
         }
         Value::ActorRef(id) => {
+            *hash ^= 0x27;
+            *hash = hash.wrapping_mul(FNV_PRIME);
             for byte in id.to_le_bytes() {
                 *hash ^= u64::from(byte);
                 *hash = hash.wrapping_mul(FNV_PRIME);
@@ -1453,20 +1516,159 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
         Value::CRDTState(value, metadata) => {
             *hash ^= 0x07;
             *hash = hash.wrapping_mul(FNV_PRIME);
-            fnv1a_feed(hash, value);
+            fnv1a_feed(hash, value)?;
             *hash ^= 0x08;
             *hash = hash.wrapping_mul(FNV_PRIME);
-            fnv1a_feed(hash, metadata);
+            fnv1a_feed(hash, metadata)?;
         }
-        _ => {}
+
+        // ── Everything below was previously swallowed by `_ => {}` ──────────
+        //
+        // A variant that fed NOTHING into the hash left the state untouched,
+        // so every such value hashed to the SAME digest. Measured before this
+        // fix: `cincang(BigInt(1))` and `cincang(BigInt(999999999))` produced
+        // byte-identical hashes. Since `sahkan` (ContentVerify) decides by
+        // comparing digests, it reported a match for a value that was not the
+        // one hashed — a content-addressing integrity defect, not a cosmetic
+        // gap. It hit the money types (`wang`/`perpuluhan` => Decimal/Fixed),
+        // arbitrary-precision integers, secrets, and sum injections.
+        //
+        // Each arm now feeds a DISTINCT domain-separation tag plus the value's
+        // full canonical content. The match is EXHAUSTIVE — no wildcard — so a
+        // new `Value` variant fails the build here instead of silently joining
+        // the collision class.
+        Value::BigInt(n) => {
+            *hash ^= 0x09;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            // The canonical decimal rendering determines the value exactly
+            // (sign included), so it is a lossless hash input.
+            for b in n.to_decimal_string().bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::Decimal(d) => {
+            *hash ^= 0x0a;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            // `to_string_repr` preserves trailing zeros, so it encodes the
+            // scale as well as the numeric value — `1.50` and `1.5` are
+            // different Decimals and hash differently, as they must.
+            for b in d.to_string_repr().bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::Fixed(f) => {
+            *hash ^= 0x0b;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            for b in f.to_string_repr().bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+            *hash ^= u64::from(f.scale());
+            *hash = hash.wrapping_mul(FNV_PRIME);
+        }
+        Value::FixedBin(f) => {
+            *hash ^= 0x0c;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            let mut raw = f.raw().cast_unsigned();
+            for _ in 0..8 {
+                *hash ^= raw & 0xff;
+                *hash = hash.wrapping_mul(FNV_PRIME);
+                raw >>= 8;
+            }
+            *hash ^= u64::from(f.frac_bits());
+            *hash = hash.wrapping_mul(FNV_PRIME);
+        }
+        Value::Sum(sum) => {
+            // The injection side is content: `inl x` must not hash as `inr x`.
+            let (tag, inner) = match sum {
+                Sum::Left(v) => (0x0d, v),
+                Sum::Right(v) => (0x0e, v),
+            };
+            *hash ^= tag;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, inner)?;
+        }
+        Value::Secret(inner) => {
+            *hash ^= 0x0f;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, inner)?;
+        }
+        Value::Proof(inner) => {
+            *hash ^= 0x10;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, inner)?;
+        }
+        Value::Capability(effect) => {
+            *hash ^= 0x11;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            for b in format!("{effect:?}").bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::Builtin(name) => {
+            *hash ^= 0x12;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            for b in name.bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::BuiltinPartial(name, applied) => {
+            *hash ^= 0x13;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            for b in name.bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+            *hash ^= 0x14;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, applied)?;
+        }
+        Value::Ref(cell) => {
+            // A reference is identified by its location, which is exactly what
+            // `RefCell::eq` compares. The security level rides along so refs to
+            // the same slot at different levels stay distinguishable.
+            *hash ^= 0x15;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            let mut loc = u64::from(cell.location.0);
+            for _ in 0..8 {
+                *hash ^= loc & 0xff;
+                *hash = hash.wrapping_mul(FNV_PRIME);
+                loc >>= 8;
+            }
+            for b in format!("{:?}", cell.level).bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+
+        // A closure is the one value that genuinely CANNOT be content-
+        // addressed here: `Closure`'s own `PartialEq` is `false` even against
+        // itself, so no digest could make `sahkan` answer correctly — a hash
+        // that compared equal would contradict the value's own equality. It
+        // previously fed nothing, so every closure hashed alike and `sahkan`
+        // happily "verified" a different function. Failing closed is the
+        // honest answer: a check that cannot verify must not report success.
+        Value::Closure(_) => {
+            return Err(Error::InvalidOperation(
+                "cincang/sahkan: a closure has no content hash — closures are \
+                 compared by identity, not structure, so hashing one could \
+                 only produce a digest that verifies the wrong function"
+                    .to_string(),
+            ))
+        }
     }
+    Ok(())
 }
 
 /// Compute FNV-1a hash of a Value, returning the u64 digest.
-fn fnv1a_hash_value(val: &Value) -> u64 {
+fn fnv1a_hash_value(val: &Value) -> Result<u64> {
     let mut hash = fnv1a_hash_bytes(&[]);
-    fnv1a_feed(&mut hash, val);
-    hash
+    fnv1a_feed(&mut hash, val)?;
+    Ok(hash)
 }
 
 /// CRDT merge: recursively merge two Values.
@@ -1474,17 +1676,90 @@ fn fnv1a_hash_value(val: &Value) -> u64 {
 /// - Strings: lexicographic max (LWW-Register)
 /// - Pairs: componentwise merge
 /// - Otherwise: return first argument
-fn crdt_merge_values(a: &Value, b: &Value) -> Value {
+fn crdt_merge_values(a: &Value, b: &Value) -> Result<Value> {
+    // Idempotence, and the reason it comes first: `merge(x, x) = x` holds for
+    // EVERY variant, including ones with no join, so handling it up front keeps
+    // the laws total where they can be.
+    if a == b {
+        return Ok(a.clone());
+    }
     match (a, b) {
-        (Value::Int(x), Value::Int(y)) => Value::Int(std::cmp::max(*x, *y)),
-        (Value::String(x), Value::String(y)) => {
-            Value::String(if x >= y { x.clone() } else { y.clone() })
+        // ── Join-semilattice cases (commutative, associative, idempotent) ──
+        // G-Counter: the join is max. Coq: `gc_merge_comm`/`_assoc`/`_idem`
+        // in domains/CRDTFoundations.v.
+        (Value::Int(x), Value::Int(y)) => Ok(Value::Int(std::cmp::max(*x, *y))),
+        // Same-width sized integers join like `Int`. Mixed widths do not: the
+        // result's type would depend on the operand order, so it falls through
+        // to the un-mergeable arm below rather than silently picking one.
+        (
+            Value::IntN { value: x, bits: xb, signed: xs },
+            Value::IntN { value: y, bits: yb, signed: ys },
+        ) if xb == yb && xs == ys => Ok(Value::IntN {
+            value: std::cmp::max(*x, *y),
+            bits: *xb,
+            signed: *xs,
+        }),
+        (Value::BigInt(x), Value::BigInt(y)) => {
+            Ok(Value::BigInt(std::cmp::max(x, y).clone()))
         }
-        (Value::Pair(a1, a2), Value::Pair(b1, b2)) => Value::Pair(
-            Box::new(crdt_merge_values(a1, b1)),
-            Box::new(crdt_merge_values(a2, b2)),
-        ),
-        _ => a.clone(),
+        (Value::Decimal(x), Value::Decimal(y)) => Ok(Value::Decimal(
+            if x.compare(y) == std::cmp::Ordering::Less { y.clone() } else { x.clone() },
+        )),
+        (Value::Fixed(x), Value::Fixed(y)) => Ok(Value::Fixed(
+            if x.compare(y) == std::cmp::Ordering::Less { y.clone() } else { x.clone() },
+        )),
+        (Value::FixedBin(x), Value::FixedBin(y)) => Ok(Value::FixedBin(
+            if x.compare(y) == std::cmp::Ordering::Less { y.clone() } else { x.clone() },
+        )),
+        // Boolean join is OR (`false <= true`) — an enable-once flag.
+        (Value::Bool(x), Value::Bool(y)) => Ok(Value::Bool(*x || *y)),
+        // LWW-Register: lexicographic max.
+        (Value::String(x), Value::String(y)) => Ok(Value::String(
+            if x >= y { x.clone() } else { y.clone() },
+        )),
+        // Componentwise — a product of semilattices is a semilattice.
+        (Value::Pair(a1, a2), Value::Pair(b1, b2)) => Ok(Value::Pair(
+            Box::new(crdt_merge_values(a1, b1)?),
+            Box::new(crdt_merge_values(a2, b2)?),
+        )),
+        // Map: union of keys, merging pointwise where both sides hold a key.
+        // `BTreeMap` gives a canonical key order, so the result does not depend
+        // on operand order.
+        (Value::Map(x), Value::Map(y)) => {
+            let mut out = x.clone();
+            for (k, vb) in y {
+                match out.get(k) {
+                    Some(va) => {
+                        let merged = crdt_merge_values(va, vb)?;
+                        out.insert(k.clone(), merged);
+                    }
+                    None => {
+                        out.insert(k.clone(), vb.clone());
+                    }
+                }
+            }
+            Ok(Value::Map(out))
+        }
+
+        // ── No lawful join ────────────────────────────────────────────────
+        // Everything else FAILS CLOSED. The previous `_ => a.clone()` returned
+        // the LEFT operand, which is not a merge: `merge(a,b) = a` while
+        // `merge(b,a) = b`, so replicas that exchanged updates in different
+        // orders diverged permanently — silently, and in direct contradiction
+        // of the commutativity theorems Coq proves for the modelled counters.
+        //
+        // `List` is deliberately here rather than being given a union: RIINA's
+        // `List` is an ordered sequence, and a set-union over a Vec would make
+        // the element ORDER depend on which replica merged first — commutative
+        // as a set, not as the `Value` this returns. Choosing a set semantics
+        // is a language design decision (which CRDT is `senarai` meant to be?),
+        // not something to infer here. Equal lists still merge, via the
+        // idempotence shortcut above.
+        _ => Err(Error::InvalidOperation(format!(
+            "gabung: no lawful CRDT merge for {a:?} and {b:?} — a merge must \
+             commute (merge(a,b) = merge(b,a)) or replicas cannot converge, and \
+             there is no order-independent join for this pair"
+        ))),
     }
 }
 
@@ -2540,6 +2815,283 @@ mod tests {
         assert_eq!(interp.eval(&expr), Ok(Value::Int(0)));
     }
 
+
+    // =======================================================================
+    // Silent-gap regression: content hashing must cover EVERY Value variant.
+    //
+    // `fnv1a_feed` ended in `_ => {}`, so 12 variants fed NOTHING into the
+    // hash and therefore all hashed to the same digest. Measured before the
+    // fix: `cincang(BigInt(1))` and `cincang(BigInt(999999999))` returned
+    // byte-identical hashes. `sahkan` decides by comparing digests, so it
+    // reported a match for a value that was not the one hashed — an integrity
+    // defect in the content-addressed store, reaching the money types
+    // (`wang`/`perpuluhan`), big integers, secrets and sum injections.
+    // =======================================================================
+
+    /// Representative values covering every hashable `Value` variant, plus
+    /// near-miss pairs that must not collide.
+    fn distinct_hashable_values() -> Vec<(&'static str, Value)> {
+        use crate::bigint::BigInt;
+        use crate::decimal::Decimal;
+        use crate::fixed::Fixed;
+        use crate::fixed_bin::FixedBin;
+        vec![
+            ("Unit", Value::Unit),
+            ("Bool(true)", Value::Bool(true)),
+            ("Bool(false)", Value::Bool(false)),
+            ("Int(1)", Value::Int(1)),
+            ("Int(2)", Value::Int(2)),
+            (
+                "IntN(1u8)",
+                Value::IntN { value: 1, bits: 8, signed: false },
+            ),
+            (
+                "IntN(1u16)",
+                Value::IntN { value: 1, bits: 16, signed: false },
+            ),
+            ("String(a)", Value::String("a".into())),
+            ("String(b)", Value::String("b".into())),
+            ("BigInt(1)", Value::BigInt(BigInt::from_u64(1))),
+            ("BigInt(999999999)", Value::BigInt(BigInt::from_u64(999_999_999))),
+            (
+                "Decimal(1.5)",
+                Value::Decimal(Decimal::new(BigInt::from_u64(15), 1)),
+            ),
+            (
+                "Decimal(1.50)",
+                Value::Decimal(Decimal::new(BigInt::from_u64(150), 2)),
+            ),
+            (
+                "Fixed(1.5)",
+                Value::Fixed(Fixed::new(BigInt::from_u64(15), 1)),
+            ),
+            (
+                "Fixed(2.5)",
+                Value::Fixed(Fixed::new(BigInt::from_u64(25), 1)),
+            ),
+            (
+                "FixedBin(1.5)",
+                Value::FixedBin(FixedBin::parse("1.5", 8).expect("parse")),
+            ),
+            (
+                "FixedBin(2.5)",
+                Value::FixedBin(FixedBin::parse("2.5", 8).expect("parse")),
+            ),
+            ("Pair(1,2)", Value::Pair(Box::new(Value::Int(1)), Box::new(Value::Int(2)))),
+            ("Sum::Left(1)", Value::Sum(Sum::Left(Box::new(Value::Int(1))))),
+            ("Sum::Right(1)", Value::Sum(Sum::Right(Box::new(Value::Int(1))))),
+            ("Secret(1)", Value::Secret(Box::new(Value::Int(1)))),
+            ("Secret(2)", Value::Secret(Box::new(Value::Int(2)))),
+            ("Proof(1)", Value::Proof(Box::new(Value::Int(1)))),
+            ("Capability(Read)", Value::Capability(riina_types::Effect::Read)),
+            ("Capability(Write)", Value::Capability(riina_types::Effect::Write)),
+            ("Builtin(cetak)", Value::Builtin("cetak".into())),
+            ("Builtin(cetakln)", Value::Builtin("cetakln".into())),
+            (
+                "BuiltinPartial(f,1)",
+                Value::BuiltinPartial("f".into(), Box::new(Value::Int(1))),
+            ),
+            (
+                "BuiltinPartial(f,2)",
+                Value::BuiltinPartial("f".into(), Box::new(Value::Int(2))),
+            ),
+            ("List[1]", Value::List(vec![Value::Int(1)])),
+            ("List[1,2]", Value::List(vec![Value::Int(1), Value::Int(2)])),
+            ("ActorRef(1)", Value::ActorRef(1)),
+            ("ActorRef(2)", Value::ActorRef(2)),
+            ("Hash([1])", Value::Hash(vec![1])),
+            ("Color(1,2,3)", Value::Color(1, 2, 3)),
+            (
+                "CRDTState(1,2)",
+                Value::CRDTState(Box::new(Value::Int(1)), Box::new(Value::Int(2))),
+            ),
+        ]
+    }
+
+    #[test]
+    fn content_hash_distinguishes_every_value_variant() {
+        let mut seen: std::collections::HashMap<u64, &str> = std::collections::HashMap::new();
+        for (label, value) in distinct_hashable_values() {
+            let h = fnv1a_hash_value(&value)
+                .unwrap_or_else(|e| panic!("{label} must be hashable, got {e:?}"));
+            if let Some(prev) = seen.insert(h, label) {
+                panic!(
+                    "CONTENT-HASH COLLISION: `{label}` and `{prev}` hash to the \
+                     same digest {h:#x}. `sahkan` compares digests, so it would \
+                     report a match for the wrong value."
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn content_hash_is_deterministic_per_value() {
+        // NEGATIVE CONTROL for the test above: without this, a hash that mixed
+        // in a counter would make every digest distinct and pass trivially
+        // while being useless for content addressing.
+        for (label, value) in distinct_hashable_values() {
+            let a = fnv1a_hash_value(&value).expect("hashable");
+            let b = fnv1a_hash_value(&value.clone()).expect("hashable");
+            assert_eq!(a, b, "`{label}` hashed differently on two runs");
+        }
+    }
+
+    #[test]
+    fn closure_content_hash_fails_closed() {
+        // A closure cannot be content-addressed: `Closure`'s own PartialEq is
+        // `false` even against itself, so any digest would let `sahkan` verify
+        // a function that is not equal to the one hashed. Previously closures
+        // fed nothing and every closure hashed alike; now it is a hard error.
+        let mut interp = Interpreter::new();
+        let closure = interp
+            .eval(&Expr::Lam(
+                "x".into(),
+                Ty::Int,
+                Box::new(Expr::Var("x".into())),
+            ))
+            .expect("lambda evaluates to a closure");
+        assert!(
+            matches!(closure, Value::Closure(_)),
+            "expected a closure, got {closure:?}"
+        );
+        assert!(
+            fnv1a_hash_value(&closure).is_err(),
+            "hashing a closure must fail closed rather than return a digest \
+             that would verify the wrong function"
+        );
+        assert!(
+            interp.content_hash_value(closure).is_err(),
+            "cincang(closure) must surface the error, not swallow it"
+        );
+    }
+
+    #[test]
+    fn sahkan_rejects_a_different_value_of_the_same_variant() {
+        // End-to-end: the defect was that `sahkan(cincang(a), b)` answered
+        // `true` for distinct a, b. Pin it through the evaluator for the
+        // variants that were silently colliding.
+        use crate::bigint::BigInt;
+        let mut interp = Interpreter::new();
+        let a = Value::BigInt(BigInt::from_u64(1));
+        let b = Value::BigInt(BigInt::from_u64(999_999_999));
+        let ha = interp.content_hash_value(a.clone()).expect("hashable");
+        let hb = interp.content_hash_value(b.clone()).expect("hashable");
+        assert_ne!(ha, hb, "two different BigInts must not share a content hash");
+        // ...and the matching value still verifies, so the check is not merely
+        // rejecting everything.
+        let ha2 = interp.content_hash_value(a).expect("hashable");
+        assert_eq!(ha, ha2, "the same value must still verify against its hash");
+    }
+
+
+    // =======================================================================
+    // Silent-gap regression: CRDT merge must COMMUTE.
+    //
+    // `crdt_merge_values` ended in `_ => a.clone()`, so any variant pair the
+    // list did not name returned the LEFT operand. That is not a merge — it is
+    // "pick whoever spoke first", and it breaks the defining CRDT law:
+    // merge(a,b) must equal merge(b,a) or replicas do not converge. Coq proves
+    // exactly this for the modelled counters (`gc_merge_comm`, `pn_merge_comm`
+    // in domains/CRDTFoundations.v), and `07_EXAMPLES/08_jalinan/crdt_merge.rii`
+    // advertises "Proven: commutative, associative, idempotent" — so a
+    // non-commutative implementation is a proof-vs-product parity gap.
+    // =======================================================================
+
+    fn crdt_merge_operands() -> Vec<(&'static str, Value)> {
+        use crate::bigint::BigInt;
+        vec![
+            ("Unit", Value::Unit),
+            ("Bool(false)", Value::Bool(false)),
+            ("Bool(true)", Value::Bool(true)),
+            ("Int(5)", Value::Int(5)),
+            ("Int(8)", Value::Int(8)),
+            ("String(a)", Value::String("a".into())),
+            ("String(z)", Value::String("z".into())),
+            ("BigInt(1)", Value::BigInt(BigInt::from_u64(1))),
+            ("BigInt(9)", Value::BigInt(BigInt::from_u64(9))),
+            (
+                "Pair(1,a)",
+                Value::Pair(Box::new(Value::Int(1)), Box::new(Value::String("a".into()))),
+            ),
+            (
+                "Pair(9,z)",
+                Value::Pair(Box::new(Value::Int(9)), Box::new(Value::String("z".into()))),
+            ),
+            ("List[1]", Value::List(vec![Value::Int(1)])),
+            ("ActorRef(1)", Value::ActorRef(1)),
+        ]
+    }
+
+    #[test]
+    fn crdt_merge_is_commutative() {
+        for (la, a) in crdt_merge_operands() {
+            for (lb, b) in crdt_merge_operands() {
+                let ab = crdt_merge_values(&a, &b);
+                let ba = crdt_merge_values(&b, &a);
+                match (ab, ba) {
+                    (Ok(x), Ok(y)) => assert_eq!(
+                        x, y,
+                        "merge({la}, {lb}) != merge({lb}, {la}) — CRDT merge must \
+                         commute or replicas never converge"
+                    ),
+                    // Failing closed is symmetric, and therefore still lawful:
+                    // an un-mergeable pair must be un-mergeable both ways.
+                    (Err(_), Err(_)) => {}
+                    (x, y) => panic!(
+                        "merge({la}, {lb}) and merge({lb}, {la}) disagree on whether \
+                         the pair is mergeable: {x:?} vs {y:?}"
+                    ),
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn crdt_merge_is_idempotent_and_associative_where_defined() {
+        for (la, a) in crdt_merge_operands() {
+            // Idempotence: merge(a, a) = a.
+            assert_eq!(
+                crdt_merge_values(&a, &a).ok(),
+                Some(a.clone()),
+                "merge({la}, {la}) must be {la}"
+            );
+            for (lb, b) in crdt_merge_operands() {
+                for (lc, c) in crdt_merge_operands() {
+                    let left = crdt_merge_values(&a, &b)
+                        .and_then(|ab| crdt_merge_values(&ab, &c));
+                    let right = crdt_merge_values(&b, &c)
+                        .and_then(|bc| crdt_merge_values(&a, &bc));
+                    if let (Ok(x), Ok(y)) = (&left, &right) {
+                        assert_eq!(
+                            x, y,
+                            "merge(merge({la},{lb}),{lc}) != merge({la},merge({lb},{lc}))"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn crdt_merge_still_computes_the_counter_join() {
+        // NEGATIVE CONTROL: a merge that errored on everything would satisfy
+        // the laws above vacuously. Pin the G-Counter behaviour the Coq model
+        // proves and the example advertises.
+        assert_eq!(
+            crdt_merge_values(&Value::Int(5), &Value::Int(8)).unwrap(),
+            Value::Int(8)
+        );
+        assert_eq!(
+            crdt_merge_values(&Value::Int(8), &Value::Int(5)).unwrap(),
+            Value::Int(8)
+        );
+        assert_eq!(
+            crdt_merge_values(&Value::Bool(false), &Value::Bool(true)).unwrap(),
+            Value::Bool(true),
+            "the boolean join is OR: false <= true"
+        );
+    }
+
     #[test]
     fn test_eval_content_hash() {
         let mut interp = Interpreter::new();
@@ -2730,7 +3282,7 @@ mod tests {
     fn test_content_store_roundtrip_scalar() {
         let mut interp = Interpreter::new();
         let original = Value::String("amanah".into());
-        let hash_value = interp.content_hash_value(original.clone());
+        let hash_value = interp.content_hash_value(original.clone()).unwrap();
         assert_eq!(interp.content_lookup_hash(&hash_value), Some(&original));
     }
 
@@ -2738,7 +3290,7 @@ mod tests {
     fn test_content_lookup_raw_hash_roundtrip() {
         let mut interp = Interpreter::new();
         let original = Value::Int(99);
-        let hash_value = interp.content_hash_value(original.clone());
+        let hash_value = interp.content_hash_value(original.clone()).unwrap();
         let hash = decode_hash_value(&hash_value).unwrap();
         assert_eq!(interp.content_lookup(hash), Some(&original));
     }
@@ -2753,11 +3305,11 @@ mod tests {
     fn test_content_hash_list_merkle_root_matches_helper() {
         let mut interp = Interpreter::new();
         let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
-        let hash_value = interp.content_hash_value(list.clone());
+        let hash_value = interp.content_hash_value(list.clone()).unwrap();
         let hash = decode_hash_value(&hash_value).unwrap();
         let leaves = [Value::Int(1), Value::Int(2), Value::Int(3)]
             .into_iter()
-            .map(|value| fnv1a_hash_value(&value))
+            .map(|value| fnv1a_hash_value(&value).unwrap())
             .collect::<Vec<_>>();
         assert_eq!(hash, merkle_root_hash(&leaves));
         assert_eq!(interp.content_lookup(hash), Some(&list));
@@ -2767,12 +3319,12 @@ mod tests {
     fn test_content_hash_list_merkle_root_uses_leaf_hash_concatenation() {
         let mut interp = Interpreter::new();
         let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
-        let hash_value = interp.content_hash_value(list);
+        let hash_value = interp.content_hash_value(list).unwrap();
         let hash = decode_hash_value(&hash_value).unwrap();
         let leaf_hashes = [
-            fnv1a_hash_value(&Value::Int(1)),
-            fnv1a_hash_value(&Value::Int(2)),
-            fnv1a_hash_value(&Value::Int(3)),
+            fnv1a_hash_value(&Value::Int(1)).unwrap(),
+            fnv1a_hash_value(&Value::Int(2)).unwrap(),
+            fnv1a_hash_value(&Value::Int(3)).unwrap(),
         ];
         let mut expected_bytes = Vec::new();
         for leaf_hash in leaf_hashes {
@@ -2811,13 +3363,13 @@ mod tests {
     fn test_content_hash_list_stores_each_leaf() {
         let mut interp = Interpreter::new();
         let list = Value::List(vec![Value::Int(7), Value::String("nur".into())]);
-        let root_hash = decode_hash_value(&interp.content_hash_value(list.clone())).unwrap();
+        let root_hash = decode_hash_value(&interp.content_hash_value(list.clone()).unwrap()).unwrap();
         assert_eq!(
-            interp.content_lookup(fnv1a_hash_value(&Value::Int(7))),
+            interp.content_lookup(fnv1a_hash_value(&Value::Int(7)).unwrap()),
             Some(&Value::Int(7))
         );
         assert_eq!(
-            interp.content_lookup(fnv1a_hash_value(&Value::String("nur".into()))),
+            interp.content_lookup(fnv1a_hash_value(&Value::String("nur".into())).unwrap()),
             Some(&Value::String("nur".into()))
         );
         assert_eq!(interp.content_lookup(root_hash), Some(&list));
@@ -2830,11 +3382,11 @@ mod tests {
             Value::Int(1),
             Value::List(vec![Value::Int(2), Value::Int(3)]),
         ]);
-        let root_hash = decode_hash_value(&interp.content_hash_value(nested.clone())).unwrap();
+        let root_hash = decode_hash_value(&interp.content_hash_value(nested.clone()).unwrap()).unwrap();
         let inner = Value::List(vec![Value::Int(2), Value::Int(3)]);
         let inner_hash = merkle_root_hash(&[
-            fnv1a_hash_value(&Value::Int(2)),
-            fnv1a_hash_value(&Value::Int(3)),
+            fnv1a_hash_value(&Value::Int(2)).unwrap(),
+            fnv1a_hash_value(&Value::Int(3)).unwrap(),
         ]);
         assert_eq!(interp.content_lookup(inner_hash), Some(&inner));
         assert_eq!(interp.content_lookup(root_hash), Some(&nested));
@@ -2844,7 +3396,7 @@ mod tests {
     fn test_content_hash_empty_list_uses_empty_merkle_root() {
         let mut interp = Interpreter::new();
         let empty = Value::List(Vec::new());
-        let hash_value = interp.content_hash_value(empty.clone());
+        let hash_value = interp.content_hash_value(empty.clone()).unwrap();
         let hash = decode_hash_value(&hash_value).unwrap();
         assert_eq!(hash, merkle_root_hash(&[]));
         assert_eq!(interp.content_lookup(hash), Some(&empty));

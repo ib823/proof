@@ -106,6 +106,14 @@ pub enum TypeError {
     ChoreographyError {
         message: String,
     },
+    /// Crypto-agility (REQ-48): a program selects an algorithm the active policy
+    /// marks Deprecated (e.g. a classical primitive past its NIST IR 8547 date).
+    /// Mirrors the Coq `accepts` judgment in crypto/AlgorithmPolicy.v — an
+    /// accepted program uses no deprecated algorithm.
+    DeprecatedAlgorithm {
+        algorithm: String,
+        message: String,
+    },
 }
 
 impl std::fmt::Display for TypeError {
@@ -222,6 +230,9 @@ impl std::fmt::Display for TypeError {
             }
             TypeError::ChoreographyError { message } => {
                 write!(f, "Choreography error: {}", message)
+            }
+            TypeError::DeprecatedAlgorithm { algorithm, message } => {
+                write!(f, "Deprecated crypto algorithm '{}': {}", algorithm, message)
             }
         }
     }
@@ -351,6 +362,10 @@ impl TypeError {
             TypeError::ChoreographyError { .. } => {
                 "Choreography blocks require at least 2 roles and a well-formed protocol".to_string()
             }
+            TypeError::DeprecatedAlgorithm { .. } => {
+                "This algorithm is deprecated by policy; migrate to a current algorithm \
+                 (see docs/MEMORY_SAFETY_ROADMAP.md and the crypto agility policy)".to_string()
+            }
         })
     }
 
@@ -381,6 +396,7 @@ impl TypeError {
             TypeError::ExpectedCRDT(_) => "J0002",
             TypeError::CRDTMismatch { .. } => "J0003",
             TypeError::ChoreographyError { .. } => "J0004",
+            TypeError::DeprecatedAlgorithm { .. } => "K0001",
         }
     }
 
@@ -1152,6 +1168,8 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     let unit_to_int = || Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time);
     for (bm, en, ty) in [
         ("masa_sekarang", "time_now", unit_to_int()),
+        // `masa_unix` — alias used by the example corpus (REQ-55): same clock.
+        ("masa_unix", "time_unix", unit_to_int()),
         ("masa_sekarang_ms", "time_now_ms", unit_to_int()),
         ("masa_jam", "time_clock", unit_to_int()),
         (
@@ -2424,6 +2442,26 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ),
     );
 
+    // Crypto-agility selection builtins (REQ-48): take an algorithm-name string,
+    // return a crypto handle (`Any`), effect Crypto. The deprecation check fires
+    // at these call sites — the App arm's `deprecated_algorithm_at_selection`,
+    // mirroring `CUse` in crypto/AlgorithmPolicy.v.
+    for nm in [
+        "guna_kripto",
+        "use_crypto",
+        "pilih_algo",
+        "select_algorithm",
+        "cipher",
+        "sifer",
+        "hash_dengan",
+        "hash_with",
+    ] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Crypto),
+        );
+    }
+
     c
 }
 
@@ -2496,6 +2534,88 @@ fn sink_argument_error(arg_ty: Ty, found: Ty) -> TypeError {
 /// a generic `TypeMismatch`. The check is conservative: a secret anywhere in the
 /// sink argument (incl. the URL or CSRF position) is rejected — none of those
 /// should be secret-derived either.
+/// Crypto-agility (REQ-48): the algorithm-deprecation policy.
+///
+/// This is the Rust counterpart of the Coq `accepts` judgment in
+/// `02_FORMAL/coq/crypto/AlgorithmPolicy.v`. That development proves the check
+/// is SOUND (an accepted program uses no deprecated algorithm) and COMPLETE (it
+/// accepts every program that uses only current algorithms, so a rejection is
+/// always a real deprecated use — no false positives), and that deprecating one
+/// algorithm only affects programs that use it. The check below is the
+/// operational realisation of `accepts pol (CUse a)` = `pol a = Current`.
+///
+/// The policy is data, not code: `DEPRECATED` is the classified list. Advancing
+/// a deprecation date is editing this table, exactly as the mechanized
+/// `tighten` lemma models — "P-256 after 2030" is a policy change, and by
+/// `deprecation_is_local` it cannot break a program that does not use P-256.
+pub mod crypto_policy {
+    /// Algorithm names that are deprecated by the active policy. Matched
+    /// case-insensitively against the algorithm string a program selects.
+    ///
+    /// Grounds (NIST IR 8547 / general hygiene): the classical primitives are
+    /// slated for removal by 2035, and the broken ones are already unsafe. This
+    /// list is the migration lever — a language can make selecting one a
+    /// compile-time error, which a library cannot.
+    pub const DEPRECATED: &[&str] = &[
+        // Broken — deprecated unconditionally.
+        "md5", "sha1", "sha-1", "des", "3des", "triple-des", "rc4", "md4",
+        // Classical asymmetric — NIST IR 8547 removal target (2035), migrate to PQC/hybrid.
+        "rsa1024", "rsa-1024", "dsa1024",
+    ];
+
+    /// The mechanized `pol a = Current` check: is this algorithm name currently
+    /// allowed? A name not in `DEPRECATED` is `Current`.
+    #[must_use]
+    pub fn is_current(algorithm: &str) -> bool {
+        let a = algorithm.to_ascii_lowercase();
+        !DEPRECATED.iter().any(|d| a == *d)
+    }
+
+    /// A one-line rationale for a rejected algorithm, for the diagnostic.
+    #[must_use]
+    pub fn deprecation_reason(algorithm: &str) -> &'static str {
+        let a = algorithm.to_ascii_lowercase();
+        match a.as_str() {
+            "md5" | "sha1" | "sha-1" | "md4" => "cryptographically broken (collisions)",
+            "des" | "3des" | "triple-des" => "inadequate key size / sweet32",
+            "rc4" => "biased keystream, prohibited by RFC 7465",
+            _ => "scheduled for removal (NIST IR 8547); migrate to a PQC or hybrid algorithm",
+        }
+    }
+}
+
+/// Crypto-agility sink (REQ-48): a crypto-selection builtin whose string
+/// argument names a deprecated algorithm is rejected. Mirrors the Coq
+/// `accepts pol (CUse a)` rule — the check runs at the algorithm-selection site,
+/// exactly where `CUse` sits in the model. Recognised selection builtins are
+/// the ones that take an algorithm name: `guna_kripto`/`use_crypto`,
+/// `pilih_algo`/`select_algorithm`, `cipher`/`sifer`, `hash_dengan`/`hash_with`.
+fn deprecated_algorithm_at_selection(callee: &Expr, arg: &Expr) -> Option<TypeError> {
+    let Expr::Var(name) = callee else { return None };
+    let is_selection = matches!(
+        name.as_str(),
+        "guna_kripto"
+            | "use_crypto"
+            | "pilih_algo"
+            | "select_algorithm"
+            | "cipher"
+            | "sifer"
+            | "hash_dengan"
+            | "hash_with"
+    );
+    if !is_selection {
+        return None;
+    }
+    let Expr::String(algo) = arg else { return None };
+    if crypto_policy::is_current(algo) {
+        return None;
+    }
+    Some(TypeError::DeprecatedAlgorithm {
+        algorithm: algo.clone(),
+        message: crypto_policy::deprecation_reason(algo).to_string(),
+    })
+}
+
 fn secrecy_at_sink(callee: &Expr, arg_ty: &Ty) -> Option<TypeError> {
     let Expr::Var(name) = callee else { return None };
     let context = match name.as_str() {
@@ -2539,12 +2659,25 @@ fn secrecy_at_sink(callee: &Expr, arg_ty: &Ty) -> Option<TypeError> {
 /// `None` if every leaf is `Public`/unlabeled.
 ///
 /// `Secret<_>` is the lattice top (`SecurityLevel::Secret`); `Labeled(_, l)`
-/// contributes `l` when `l != Public`. Recurses through the containers a sink
-/// would serialize (products, sums, lists, options, the security/taint wrappers,
-/// refs, constant-time/zeroizing wrappers, proof witnesses). Deliberately does
-/// NOT recurse into `Fn` (serializing a closure renders no captured data), and
-/// `Any` is not treated as secret-bearing — the check is syntactic on the
-/// inferred argument type.
+/// contributes `l` when `l != Public`; `SecureChan(_, l)` contributes its own
+/// channel level. Recurses through EVERY container a sink could serialize:
+/// products, sums, lists, options, the security/taint wrappers, refs,
+/// constant-time/zeroizing wrappers, proof witnesses, raw pointers, and the
+/// JALINAN / blockchain / Syariah containers (`ContentAddressed`, `Actor`,
+/// `CRDT`, `Supervisor`, `SmartContract`, `Token`, `SyariahCompliant`).
+///
+/// Deliberately does NOT recurse into `Fn` (serializing a closure renders the
+/// function value, not its captured data — a secret RESULT is caught at the
+/// call site, where the result type is what reaches the sink) nor into
+/// `Chan`/`Choreography` (session payloads are governed by the session/IFC
+/// rules, not by this scan). `Any` is not treated as secret-bearing — the
+/// check is syntactic on the inferred argument type, which is why
+/// `propagate_secrecy_through_builtin` exists to re-carry labels through
+/// `Any`-typed builtins.
+///
+/// The match is EXHAUSTIVE on purpose: this walk is exactly as deep as the
+/// sink rule, so a missed container is a leak path, and a new `Ty` variant
+/// must fail the build here rather than silently open one.
 fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
     fn join(a: Option<SecurityLevel>, b: Option<SecurityLevel>) -> Option<SecurityLevel> {
         match (a, b) {
@@ -2553,13 +2686,30 @@ fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
             (None, y) => y,
         }
     }
+    // EXHAUSTIVE by construction — no wildcard arm. This walk is the depth of
+    // the sink rule: a container it does not descend into answers "no secret",
+    // and `secrecy_at_sink` then lets the value reach `cetak`/`http_post`/
+    // `file_write`. It previously ended in `_ => None`, so every JALINAN /
+    // blockchain / Syariah container (`ContentAddressed`, `Token`,
+    // `SyariahCompliant`, `SmartContract`, `Supervisor`, `CRDT`, `Actor`) and
+    // `RawPtr` silently laundered a secret past the check. Adding a `Ty`
+    // variant must fail the build here rather than open a new leak path.
     match ty {
         Ty::Secret(inner) => join(Some(SecurityLevel::Secret), ty_secrecy_level(inner)),
         Ty::Labeled(inner, l) => {
             let here = (*l != SecurityLevel::Public).then_some(*l);
             join(here, ty_secrecy_level(inner))
         }
-        Ty::Prod(a, b) | Ty::Sum(a, b) => join(ty_secrecy_level(a), ty_secrecy_level(b)),
+        // A secure channel's own level is part of its secrecy, not just its
+        // payload's.
+        Ty::SecureChan(_, l) => (*l != SecurityLevel::Public).then_some(*l),
+
+        // Two-component containers: a secret in EITHER position is a secret.
+        Ty::Prod(a, b) | Ty::Sum(a, b) | Ty::Actor(a, b) | Ty::CRDT(a, b) => {
+            join(ty_secrecy_level(a), ty_secrecy_level(b))
+        }
+
+        // Single-component containers: secrecy travels with the payload.
         Ty::List(inner)
         | Ty::Option(inner)
         | Ty::Tainted(inner, _)
@@ -2567,8 +2717,47 @@ fn ty_secrecy_level(ty: &Ty) -> Option<SecurityLevel> {
         | Ty::Ref(inner, _)
         | Ty::ConstantTime(inner)
         | Ty::Zeroizing(inner)
-        | Ty::Proof(inner) => ty_secrecy_level(inner),
-        _ => None,
+        | Ty::Proof(inner)
+        | Ty::RawPtr(inner)
+        | Ty::ContentAddressed(inner)
+        | Ty::Supervisor(inner)
+        | Ty::SmartContract(inner)
+        | Ty::Token(inner)
+        | Ty::SyariahCompliant(inner) => ty_secrecy_level(inner),
+
+        // A function is NOT secret because it can return a secret: printing a
+        // function value renders the closure, it does not evaluate the body, so
+        // no secret is materialised at the sink. The secret is caught at the
+        // call site instead, where the result type is what reaches the sink.
+        // Deliberate, and now explicit rather than a wildcard's side effect.
+        Ty::Fn(_, _, _) => None,
+
+        // `Chan` carries a session type, not a value type — its payload
+        // secrecy is enforced by the session/IFC rules, not by this scan.
+        Ty::Chan(_) | Ty::Choreography(_, _) => None,
+
+        // Ground types and capability/FFI/UI handles hold no payload.
+        Ty::Unit
+        | Ty::Bool
+        | Ty::Int
+        | Ty::IntN { .. }
+        | Ty::BigInt
+        | Ty::Decimal
+        | Ty::Fixed
+        | Ty::FixedBin
+        | Ty::String
+        | Ty::Bytes
+        | Ty::Capability(_)
+        | Ty::CapabilityFull(_)
+        | Ty::Any
+        | Ty::CChar
+        | Ty::CInt
+        | Ty::CVoid
+        | Ty::Color
+        | Ty::Element
+        | Ty::Layout
+        | Ty::UIStyle
+        | Ty::AccessibleText => None,
     }
 }
 
@@ -3154,6 +3343,11 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     if let Some(err) = secrecy_at_sink(e1, &t2) {
                         return Err(err);
                     }
+                    // Crypto-agility (REQ-48): reject selecting a deprecated
+                    // algorithm. Coq: crypto/AlgorithmPolicy.v `accepts`.
+                    if let Some(err) = deprecated_algorithm_at_selection(e1, e2) {
+                        return Err(err);
+                    }
                     if !types_compatible(&arg_ty, &t2) {
                         return Err(sink_argument_error(*arg_ty, t2));
                     }
@@ -3438,6 +3632,39 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let mut ctx_rec_mut2 = ctx_rec;
             let (t2, eff2) = type_check_full(&mut ctx_rec_mut2, e2)?;
             Ok((t2, eff1.join(eff2)))
+        }
+
+        // Mutually-recursive group (REQ-44 forward references): all group names
+        // are in scope in every body AND the continuation. Grant every declared
+        // effect (over-granting only admits MORE programs — the body-effect <=
+        // declared discipline is enforced separately in validate_top_level_decls,
+        // so this never falsely rejects). Recursion soundness is mechanized in
+        // foundations/RecursionSafety.v.
+        Expr::LetRecGroup(bindings, cont) => {
+            let mut ctx_rec = ctx.clone();
+            for (name, ty_ann, _) in bindings {
+                ctx_rec = ctx_rec.extend_gamma(name.clone(), ty_ann.clone());
+            }
+            for (_, ty_ann, _) in bindings {
+                if let Ty::Fn(_, _, fn_eff) = ty_ann {
+                    ctx_rec = ctx_rec.with_grant(*fn_eff);
+                }
+            }
+            let mut eff = Effect::Pure;
+            for (_, ty_ann, e1) in bindings {
+                let mut c = ctx_rec.clone();
+                let (t1, eff1) = type_check_full(&mut c, e1)?;
+                if !types_compatible(ty_ann, &t1) {
+                    return Err(TypeError::AnnotationMismatch {
+                        expected: ty_ann.clone(),
+                        found: t1,
+                    });
+                }
+                eff = eff.join(eff1);
+            }
+            let mut c2 = ctx_rec;
+            let (t2, eff2) = type_check_full(&mut c2, cont)?;
+            Ok((t2, eff.join(eff2)))
         }
 
         // ════════════════════════════════════════════════════════════════════
@@ -4190,6 +4417,11 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     if let Some(err) = secrecy_at_sink(e1, &t2) {
                         return Err(err);
                     }
+                    // Crypto-agility (REQ-48): reject selecting a deprecated
+                    // algorithm. Coq: crypto/AlgorithmPolicy.v `accepts`.
+                    if let Some(err) = deprecated_algorithm_at_selection(e1, e2) {
+                        return Err(err);
+                    }
                     if !types_compatible(&arg_ty, &t2) {
                         return Err(sink_argument_error(*arg_ty, t2));
                     }
@@ -4342,6 +4574,27 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             }
             let (t2, eff2) = type_check(&ctx_rec, e2)?;
             Ok((t2, eff1.join(eff2)))
+        }
+
+        // Mutually-recursive group (REQ-44) — plain checker path.
+        Expr::LetRecGroup(bindings, cont) => {
+            let mut ctx_rec = ctx.clone();
+            for (name, ty_ann, _) in bindings {
+                ctx_rec = ctx_rec.extend(name.clone(), ty_ann.clone());
+            }
+            let mut eff = Effect::Pure;
+            for (_, ty_ann, e1) in bindings {
+                let (t1, eff1) = type_check(&ctx_rec, e1)?;
+                if !types_compatible(ty_ann, &t1) {
+                    return Err(TypeError::AnnotationMismatch {
+                        expected: ty_ann.clone(),
+                        found: t1,
+                    });
+                }
+                eff = eff.join(eff1);
+            }
+            let (t2, eff2) = type_check(&ctx_rec, cont)?;
+            Ok((t2, eff.join(eff2)))
         }
 
         // UNVERIFIED: Effects (Pending formalization in Typing.v)

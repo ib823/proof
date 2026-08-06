@@ -131,6 +131,8 @@ Proof.
     destruct IHe.
     + left. constructor. assumption.
     + right. intro H. inversion H; subst. contradiction.
+  - (* EFix — always a value (recursive-function thunk) *)
+    left. constructor.
 Qed.
 
 (* ================================================================= *)
@@ -225,6 +227,18 @@ Proof.
     repeat (try (change (effect_join EffPure EffPure) with EffPure in |- *));
     try discriminate;
     try congruence;
+    (* ST_AppFix (REQ-44): unrolling [fix w] to [w (fix w)] preserves typing.
+       Invert the T_Fix premise, then rebuild the nested application. *)
+    try solve [
+      match goal with
+      | [ H : has_type _ _ _ (EFix _) _ _ |- _ ] => inversion H; subst
+      end;
+      eexists; split; [apply store_ty_extends_refl|];
+      split; [eassumption|];
+      refine (T_App _ _ _ _ _ _ _ EffPure EffPure EffPure _ _);
+      [ refine (T_App _ _ _ _ _ _ _ EffPure EffPure EffPure _ _); eassumption
+      | eassumption ]
+    ];
     (* Phase 0: Value reduction — store unchanged, result directly typed *)
     try solve [eexists; split; [apply store_ty_extends_refl|];
                split; [eassumption|]; eassumption];

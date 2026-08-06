@@ -56,6 +56,12 @@ pub enum ComplianceProfile {
     Itar,
     /// ESG/SDG (Environmental, Social, Governance / UN Sustainable Development Goals)
     EsgSdg,
+    /// EU Cyber Resilience Act (Regulation (EU) 2024/2847)
+    Cra,
+    /// EU Digital Operational Resilience Act (Regulation (EU) 2022/2554)
+    Dora,
+    /// EU NIS2 Directive (Directive (EU) 2022/2555)
+    Nis2,
 }
 
 impl ComplianceProfile {
@@ -77,6 +83,9 @@ impl ComplianceProfile {
         Self::MasTrm,
         Self::Itar,
         Self::EsgSdg,
+        Self::Cra,
+        Self::Dora,
+        Self::Nis2,
     ];
 
     /// CLI slug (lowercase, hyphenated).
@@ -98,6 +107,9 @@ impl ComplianceProfile {
             Self::MasTrm => "mas-trm",
             Self::Itar => "itar",
             Self::EsgSdg => "esg-sdg",
+            Self::Cra => "cra",
+            Self::Dora => "dora",
+            Self::Nis2 => "nis2",
         }
     }
 
@@ -124,6 +136,19 @@ impl ComplianceProfile {
             Self::EsgSdg => {
                 "ESG/SDG: Environmental, Social, Governance / UN Sustainable Development Goals"
             }
+            Self::Cra => {
+                "EU CRA: Cyber Resilience Act (Regulation (EU) 2024/2847) — machine-checkable \
+                 conditions derived from Annex I; NOT a conformity assessment"
+            }
+            Self::Dora => {
+                "EU DORA: Digital Operational Resilience Act (Regulation (EU) 2022/2554) — \
+                 machine-checkable conditions derived from the ICT-risk articles; NOT a \
+                 conformity assessment"
+            }
+            Self::Nis2 => {
+                "EU NIS2: Directive (EU) 2022/2555 — machine-checkable conditions derived \
+                 from the Art. 21(2) risk-management measures; NOT a conformity assessment"
+            }
         }
     }
 }
@@ -149,6 +174,9 @@ impl FromStr for ComplianceProfile {
             "mas-trm" => Ok(Self::MasTrm),
             "itar" => Ok(Self::Itar),
             "esg-sdg" => Ok(Self::EsgSdg),
+            "cra" => Ok(Self::Cra),
+            "dora" => Ok(Self::Dora),
+            "nis2" => Ok(Self::Nis2),
             _ => Err(format!("Unknown compliance profile: '{s}'")),
         }
     }

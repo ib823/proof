@@ -1,0 +1,87 @@
+{
+  "_comment": "REQ-47 verification-boundary manifest. One entry per Coq⇄Rust formal-equivalence proof. Enforced by tests/verification_boundary.rs: a primitive listed in 02_FORMAL/coq/_CoqProject's crypto section without an entry here FAILS the build. Prompted by 'Verification Theatre' (IACR ePrint 2026/192): four of thirteen vulnerabilities in a peer verified library lived INSIDE the verified spec/proof code, so the boundary between what is machine-checked and what is trusted must be stated per primitive, not per lane.",
+  "schema_version": 1,
+  "global": {
+    "method": "Each Coq file is a HAND-TRANSCRIBED model of the named Rust source, checked inside Coq by symbolic theorems and/or vm_compute known-answer tests. There is NO mechanical extraction or translation between the Rust and the Coq (that is REQ-50's spike). The equivalence claim is therefore: 'the Coq model provably has property P, and the model was written to mirror the Rust line-by-line' — the mirroring itself is reviewed, not machine-checked.",
+    "trusted": [
+      "The Coq⇄Rust correspondence: hand transcription, cross-checked by shared known-answer vectors on both sides (Coq vm_compute Examples; Rust tests/kat_audit.rs), never mechanically derived",
+      "The Rocq 9.1.1 kernel and its vm_compute evaluator",
+      "The Rust compiler (rustc 1.94.1) faithfully compiling the scalar source that was modelled",
+      "Selection of known-answer vectors (FIPS/RFC-published, independently transcribed)"
+    ],
+    "not_covered": [
+      "Constant-time / side-channel behaviour — all nine proofs are FUNCTIONAL only; CT is handled separately (ct_verify pass, CI timing harnesses) and is out of these proofs' scope",
+      "Zeroization of secret intermediates",
+      "Randomness generation and nonce management",
+      "Protocol-level composition (full AES-GCM beyond GHASH, full ML-KEM encaps/decaps beyond the NTT, TLS/handshake use of X25519)",
+      "Ed25519, HMAC, HKDF, ChaCha20-Poly1305, ML-DSA: implemented and KAT-tested in riina-core but have NO Coq equivalence proof at all",
+      "Rust integer/memory semantics beyond what the shared KATs exercise"
+    ],
+    "strength_note": "SIMD/AVX2: riina-core is scalar-only Rust (verified by grep: no core::arch/simd), so unlike the libcrux finding there is no axiomatized vectorized path hiding behind these proofs."
+  },
+  "primitives": [
+    {
+      "primitive": "GHASH GF(2^128) bit-serial multiplication",
+      "coq_file": "02_FORMAL/coq/crypto/GF128.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/ghash.rs",
+      "proof_strength": "symbolic+kat",
+      "modelled": "The bit-serial gf128_mul algorithm (SP 800-38D): shift/reduce iteration with closure-in-GF(2^128) lemmas (shiftr1_in128, mulx_in128, gf_iter_in128, gf_mul_in128) plus vm_compute vectors."
+    },
+    {
+      "primitive": "GHASH full fold (Horner accumulation)",
+      "coq_file": "02_FORMAL/coq/crypto/GHASH.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/ghash.rs",
+      "proof_strength": "symbolic+kat",
+      "modelled": "The GHASH accumulator over message blocks as a Horner scheme (ghash_cons, ghash_horner_two, mul_pow_ghash_step), anchored to Ghash::update_block."
+    },
+    {
+      "primitive": "AES GF(2^8) field arithmetic and S-box",
+      "coq_file": "02_FORMAL/coq/crypto/AESField.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/aes.rs",
+      "proof_strength": "symbolic+kat",
+      "modelled": "xtime/gf_mul, field inversion correctness (gf_inv_correct), S-box construction equivalence and two-sided S-box/InvS-box inversion (sbox_eq_construction, sbox_inv_sbox_id, inv_sbox_sbox_id) — symbolic, not table-lookup KATs."
+    },
+    {
+      "primitive": "AES-256 full block cipher (key schedule + 14 rounds)",
+      "coq_file": "02_FORMAL/coq/crypto/AES.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/aes.rs",
+      "proof_strength": "kat_only",
+      "modelled": "Executable model of the full cipher; validated by vm_compute against FIPS-197 encrypt/decrypt vectors (aes256_encrypt_fips197, aes256_decrypt_fips197). No symbolic round-level theorem: the cipher-level claim rests on the vectors plus AESField.v's symbolic base."
+    },
+    {
+      "primitive": "SHA-256 compression and message schedule",
+      "coq_file": "02_FORMAL/coq/crypto/SHA256.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/sha2.rs",
+      "proof_strength": "kat_only",
+      "modelled": "Executable model of FIPS 180-4 SHA-256; validated by vm_compute on the standard 'abc' and empty-string digests (sha256_abc, sha256_empty). No symbolic theorems."
+    },
+    {
+      "primitive": "Keccak-f[1600] permutation / SHA3-256",
+      "coq_file": "02_FORMAL/coq/crypto/Keccak.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/keccak.rs",
+      "proof_strength": "kat_only",
+      "modelled": "Executable model of FIPS 202 Keccak-f[1600] and SHA3-256 sponge; validated by vm_compute on the empty and 'abc' digests (sha3_256_empty, sha3_256_abc). No symbolic theorems."
+    },
+    {
+      "primitive": "Curve25519 field GF(2^255-19) arithmetic",
+      "coq_file": "02_FORMAL/coq/crypto/Field25519.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/field25519.rs",
+      "proof_strength": "symbolic+kat",
+      "modelled": "Limb-level add/sub/mul with reduction, proven correct modulo 2^255-19 against mathematical field semantics (add_correct, sub_correct_mod, mul_reduce_eq, mul_correct_mod)."
+    },
+    {
+      "primitive": "ML-KEM (Kyber) NTT / negacyclic convolution",
+      "coq_file": "02_FORMAL/coq/crypto/NTT.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/ml_kem.rs",
+      "proof_strength": "symbolic+kat",
+      "modelled": "The FIPS 203 arithmetic core at exact integer semantics: NTT-domain multiplication realizes negacyclic polynomial convolution (ntt_mul_one, ntt_mul_1plusX_squared, ntt_mul_negacyclic_wrap) plus concrete-polynomial vm_compute checks."
+    },
+    {
+      "primitive": "X25519 Montgomery ladder",
+      "coq_file": "02_FORMAL/coq/crypto/X25519.v",
+      "rust_file": "05_TOOLING/crates/riina-core/src/crypto/montgomery.rs",
+      "proof_strength": "kat_only",
+      "modelled": "Executable model of the RFC 7748 ladder over Field25519.v's proven field; validated by vm_compute on RFC 7748 §5.2 vector 1 and the base-point vector (x25519_rfc7748_vector1, x25519_rfc7748_basepoint). Ladder-level scalar-multiplication correctness is NOT symbolically proven."
+    }
+  ]
+}

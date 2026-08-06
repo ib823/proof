@@ -1616,6 +1616,10 @@ Qed.
 
 Lemma exp_rel_step1_app_store : forall n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx,
   n > 0 ->
+  (* REQ-44 scope: the conclusion asserts BOTH functions are lambdas and that
+     the first step is beta. A recursive-function value ([EFix w]) is applied
+     by unrolling instead, so this holds on the recursion-free fragment. *)
+  recursion_free f1 -> recursion_free f2 ->
   val_rel_le n Σ (TFn T1 T2 eff) f1 f2 ->
   val_rel_le n Σ T1 a1 a2 ->
   has_type nil Σ Public f1 (TFn T1 T2 eff) EffectPure ->
@@ -1625,7 +1629,7 @@ Lemma exp_rel_step1_app_store : forall n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx,
     multi_step (EApp f1 a1, st1, ctx) (subst[x1 := a1] body1, st1, ctx) /\
     multi_step (EApp f2 a2, st2, ctx) (subst[x2 := a2] body2, st2, ctx).
 Proof.
-  intros n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx Hn Hfrel Harel Htyf1 Htyf2.
+  intros n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx Hn Hrf1 Hrf2 Hfrel Harel Htyf1 Htyf2.
   eapply exp_rel_step1_app_kripke; eauto.
 Qed.
 

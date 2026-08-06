@@ -85,18 +85,80 @@ if [ "$SKIP_AUDIT" -eq 0 ]; then
 
     if [ "$PROOF_CHANGED" -eq 1 ]; then
         echo "[0/3] Proof/test files changed — regenerating metrics..."
+
+        # `sync-metrics.sh` rewrites a `**Verification:**` banner in a COMPUTED
+        # set of docs (Tier 1 + every Tier 2 file carrying a banner — ~40 files).
+        # This used to auto-stage a hardcoded list of five, so the rest stayed
+        # unstaged and the COMMIT shipped a metrics.json disagreeing with its own
+        # doc banners — a silent violation of CLAUDE.md Forbidden #8, invisible to
+        # audit-docs.sh because that runs on the WORKING TREE, where both sides
+        # had been updated. Verified in history: 8b47426d, bcba007c, d6be6ff7 each
+        # committed metrics.json and banners with different Rust-test counts.
+        #
+        # Fix: snapshot the dirty set before and after, and stage exactly what the
+        # sync itself touched. No hardcoded list to drift, and a file the developer
+        # had already modified is NOT swept into the commit.
+        PRE_DIRTY="$(git -C "$REPO_ROOT" diff --name-only 2>/dev/null || true)"
+        PRE_HASHES="$(git -C "$REPO_ROOT" diff --name-only 2>/dev/null \
+            | while IFS= read -r f; do
+                  [ -f "$REPO_ROOT/$f" ] && echo "$f $(git hash-object "$REPO_ROOT/$f" 2>/dev/null)"
+              done || true)"
+
         if [ -f "${REPO_ROOT}/scripts/generate-metrics.sh" ]; then
             bash "${REPO_ROOT}/scripts/generate-metrics.sh" --fast 2>/dev/null || true
         fi
         if [ -f "${REPO_ROOT}/scripts/sync-metrics.sh" ]; then
             bash "${REPO_ROOT}/scripts/sync-metrics.sh" 2>/dev/null || true
         fi
-        # Auto-stage updated metrics files so audit-docs sees fresh data
-        git add "${REPO_ROOT}/website/public/metrics.json" 2>/dev/null || true
-        git add "${REPO_ROOT}/CLAUDE.md" "${REPO_ROOT}/README.md" \
-                "${REPO_ROOT}/PROGRESS.md" "${REPO_ROOT}/CONTRIBUTING.md" \
-                "${REPO_ROOT}/llms.txt" 2>/dev/null || true
-        echo "      Metrics regenerated and staged"
+
+        POST_DIRTY="$(git -C "$REPO_ROOT" diff --name-only 2>/dev/null || true)"
+
+        # Files the sync newly dirtied => stage them.
+        STAGED_COUNT=0
+        while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            git -C "$REPO_ROOT" add -- "$f" 2>/dev/null || true
+            STAGED_COUNT=$((STAGED_COUNT + 1))
+        done < <(comm -13 <(printf '%s\n' "$PRE_DIRTY" | sort -u) \
+                         <(printf '%s\n' "$POST_DIRTY" | sort -u))
+
+        # Files that were ALREADY dirty and were then changed by the sync: not
+        # staged, because that would sweep an unrelated edit into this commit.
+        # Say so out loud rather than leaving a silent inconsistency.
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            f="${line%% *}"; old="${line#* }"
+            [ -f "$REPO_ROOT/$f" ] || continue
+            new="$(git hash-object "$REPO_ROOT/$f" 2>/dev/null || true)"
+            if [ -n "$new" ] && [ "$new" != "$old" ]; then
+                echo "      NOTE: $f had local edits AND a banner update — left unstaged, stage it yourself"
+            fi
+        done <<< "$PRE_HASHES"
+
+        echo "      Metrics regenerated; ${STAGED_COUNT} file(s) staged"
+
+        # Fail closed: the staged metrics.json and the staged doc banners must
+        # agree. A checker that cannot fail is worthless, and this is the exact
+        # inconsistency the hardcoded list used to ship.
+        STAGED_TESTS="$(git -C "$REPO_ROOT" show :website/public/metrics.json 2>/dev/null \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['rust']['tests'])" 2>/dev/null || true)"
+        if [ -n "$STAGED_TESTS" ]; then
+            for doc in README.md CLAUDE.md; do
+                DOC_TESTS="$(git -C "$REPO_ROOT" show ":${doc}" 2>/dev/null \
+                    | grep -oE '\| [0-9]+ Rust tests' | head -1 | grep -oE '[0-9]+' || true)"
+                if [ -n "$DOC_TESTS" ] && [ "$DOC_TESTS" != "$STAGED_TESTS" ]; then
+                    echo ""
+                    echo "================================================================"
+                    echo "  BLOCKED: staged metrics.json and ${doc} disagree"
+                    echo "    metrics.json: ${STAGED_TESTS} Rust tests"
+                    echo "    ${doc}: ${DOC_TESTS} Rust tests"
+                    echo ""
+                    echo "  Run: bash scripts/sync-metrics.sh && git add -u"
+                    echo "================================================================"
+                    exit 1
+                fi
+            done
+        fi
     fi
 fi
 

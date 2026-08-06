@@ -119,11 +119,15 @@ Qed.
 (** Helper: When e1 is a value, SN_app follows from SN(e2) *)
 Lemma SN_app_value_left_aux : forall v cfg,
   value v ->
+  (* REQ-44 scope: SN is a RECURSION-FREE result. A recursive function value
+     [EFix w] unrolls forever under application, so the conclusion genuinely
+     fails for it; the hypothesis discharges that case. *)
+  recursion_free v ->
   SN cfg ->
   (forall x body v' st' ctx', value v' -> SN (subst[x := v'] body, st', ctx')) ->
   SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg).
 Proof.
-  intros v cfg Hv Hsn2 Hbeta.
+  intros v cfg Hv Hrf Hsn2 Hbeta.
   induction Hsn2 as [[[e2 st] ctx] Hacc2 IH2].
   simpl. constructor.
   intros [[e' st'] ctx'] Hstep.
@@ -136,16 +140,19 @@ Proof.
   - (* ST_App2: value v, e2 --> e2' *)
     apply (IH2 (e2', st', ctx')).
     unfold step_inv. simpl. assumption.
+  - (* ST_AppFix: excluded by recursion-freedom *)
+    simpl in Hrf. contradiction.
 Qed.
 
 Lemma SN_app_value_left : forall v e2 st ctx,
   value v ->
+  recursion_free v ->
   SN (e2, st, ctx) ->
   (forall x body v' st' ctx', value v' -> SN (subst[x := v'] body, st', ctx')) ->
   SN (EApp v e2, st, ctx).
 Proof.
-  intros v e2 st ctx Hv Hsn2 Hbeta.
-  exact (SN_app_value_left_aux v (e2, st, ctx) Hv Hsn2 Hbeta).
+  intros v e2 st ctx Hv Hrf Hsn2 Hbeta.
+  exact (SN_app_value_left_aux v (e2, st, ctx) Hv Hrf Hsn2 Hbeta).
 Qed.
 
 (** Main lemma with store-polymorphic e2 premise *)
@@ -153,27 +160,41 @@ Lemma SN_app_aux : forall cfg e2,
   SN cfg ->
   (forall st ctx, SN (e2, st, ctx)) ->
   (forall x body v st' ctx', value v -> SN (subst[x := v] body, st', ctx')) ->
+  (* REQ-44 scope: recursion-freedom is a CONFIGURATION invariant — the store
+     hypothesis is what lets it survive the induction (ST_DerefLoc can pull a
+     stored value back into the term; see step_preserves_recursion_free). *)
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
   SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg).
 Proof.
-  intros cfg e2 Hsn1 Hsn2 Hbeta.
+  intros cfg e2 Hsn1 Hsn2 Hbeta Hrf Hst.
+  (* Hrf/Hst depend on cfg, so induction generalizes them into the motive:
+     IH1 demands them for the STEPPED configuration, which is exactly where
+     step_rf discharges them. *)
   induction Hsn1 as [[[e1 st] ctx] Hacc1 IH1].
-  simpl. constructor.
+  simpl in *. constructor.
   intros [[e' st'] ctx'] Hstep.
   unfold step_inv in Hstep. simpl in Hstep.
   inversion Hstep; subst.
   - (* ST_AppAbs: e1 = ELam x T body, beta reduction *)
     apply Hbeta. exact H0.
-  - (* ST_App1: e1 --> e1' *)
+  - (* ST_App1: e1 --> e1' — re-establish the invariant for the IH *)
+    destruct (step_rf _ _ _ _ _ _ H0 Hrf Hst) as [Hrf' Hst'].
     apply (IH1 (e1', st', ctx')).
-    unfold step_inv. simpl. exact H0.
+    + unfold step_inv. simpl. exact H0.
+    + exact Hrf'.
+    + exact Hst'.
   - (* ST_App2: value e1, e2 --> e2' *)
-    (* Get SN for e2' from SN for e2 using SN_step *)
     assert (Hsn2': SN (e2', st', ctx')).
     { eapply SN_step; [apply Hsn2 | exact H7]. }
-    apply SN_app_value_left; [exact H1 | exact Hsn2' | exact Hbeta].
+    apply SN_app_value_left; [exact H1 | exact Hrf | exact Hsn2' | exact Hbeta].
+  - (* ST_AppFix: dead — the function is recursion-free, so it is not a fix *)
+    simpl in Hrf. destruct Hrf.
 Qed.
 
 Lemma SN_app : forall e1 e2 st ctx,
+  recursion_free e1 ->
+  store_recursion_free st ->
   (forall st' ctx', SN (e1, st', ctx')) ->
   (forall st' ctx', SN (e2, st', ctx')) ->
   (* Beta reduction premise: for any substitution of a value into a body, result is SN *)
@@ -182,8 +203,8 @@ Lemma SN_app : forall e1 e2 st ctx,
     SN (subst[x := v] body, st', ctx')) ->
   SN (EApp e1 e2, st, ctx).
 Proof.
-  intros e1 e2 st ctx Hsn1 Hsn2 Hbeta.
-  exact (SN_app_aux (e1, st, ctx) e2 (Hsn1 st ctx) Hsn2 Hbeta).
+  intros e1 e2 st ctx Hrf Hst Hsn1 Hsn2 Hbeta.
+  exact (SN_app_aux (e1, st, ctx) e2 (Hsn1 st ctx) Hsn2 Hbeta Hrf Hst).
 Qed.
 
 (** ========================================================================
@@ -207,11 +228,12 @@ Definition direct_lambda_SN (e1 : expr) : Prop :=
 (** Helper: SN_app for values *)
 Lemma SN_app_value_left_direct_aux : forall f cfg,
   value f ->
+  recursion_free f ->
   SN cfg ->
   direct_lambda_SN f ->
   SN (EApp f (fst (fst cfg)), snd (fst cfg), snd cfg).
 Proof.
-  intros f cfg Hv Hsn2 Hbeta.
+  intros f cfg Hv Hrf Hsn2 Hbeta.
   induction Hsn2 as [[[e2 st] ctx] Hacc2 IH2].
   simpl. constructor.
   intros [[e' st'] ctx'] Hstep.
@@ -225,16 +247,19 @@ Proof.
   - (* ST_App2: value f, e2 --> e2' *)
     apply (IH2 (e2', st', ctx')).
     unfold step_inv. simpl. assumption.
+  - (* ST_AppFix: dead — f is recursion-free, so it is not a fix *)
+    destruct Hrf.
 Qed.
 
 Lemma SN_app_value_left_direct : forall f e2 st ctx,
   value f ->
+  recursion_free f ->
   SN (e2, st, ctx) ->
   direct_lambda_SN f ->
   SN (EApp f e2, st, ctx).
 Proof.
-  intros f e2 st ctx Hv Hsn2 Hbeta.
-  exact (SN_app_value_left_direct_aux f (e2, st, ctx) Hv Hsn2 Hbeta).
+  intros f e2 st ctx Hv Hrf Hsn2 Hbeta.
+  exact (SN_app_value_left_direct_aux f (e2, st, ctx) Hv Hrf Hsn2 Hbeta).
 Qed.
 
 (** NOTE: The direct_lambda_SN approach (SN_app_direct_aux, SN_app_direct_aux2)
@@ -275,11 +300,12 @@ Qed.
 (** Helper for value case with family *)
 Lemma SN_app_value_left_family_aux : forall f cfg,
   value f ->
+  recursion_free f ->
   SN cfg ->
   direct_lambda_SN f ->
   SN (EApp f (fst (fst cfg)), snd (fst cfg), snd cfg).
 Proof.
-  intros f cfg Hv Hsn2 Hbeta.
+  intros f cfg Hv Hrf Hsn2 Hbeta.
   induction Hsn2 as [[[e2 st] ctx] Hacc2 IH2].
   simpl. constructor.
   intros [[e' st'] ctx'] Hstep.
@@ -292,6 +318,8 @@ Proof.
   - (* ST_App2 *)
     apply (IH2 (e2', st', ctx')).
     unfold step_inv. simpl. assumption.
+  - (* ST_AppFix: dead — f is recursion-free, so it is not a fix *)
+    simpl in Hrf. destruct Hrf.
 Qed.
 
 (** Main auxiliary with family *)
@@ -299,9 +327,11 @@ Lemma SN_app_family_aux : forall cfg e2,
   SN cfg ->
   (forall st ctx, SN (e2, st, ctx)) ->
   family_lambda_SN (fst (fst cfg)) ->
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
   SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg).
 Proof.
-  intros cfg e2 Hsn1 Hsn2 Hfam.
+  intros cfg e2 Hsn1 Hsn2 Hfam Hrf Hst.
   induction Hsn1 as [[[e1 st] ctx] Hacc1 IH1].
   simpl in *. constructor.
   intros [[e' st'] ctx'] Hstep.
@@ -311,29 +341,38 @@ Proof.
   inversion Hstep; subst.
   - (* ST_AppAbs: e1 = ELam x T body *)
     eapply Hbeta; [reflexivity | assumption].
-  - (* ST_App1: e1 --> e1' *)
+  - (* ST_App1: e1 --> e1' — re-establish both the family and the invariant *)
+    destruct (step_rf _ _ _ _ _ _ H0 Hrf Hst) as [Hrf' Hst'].
     apply (IH1 (e1', st', ctx')).
     + unfold step_inv. simpl. exact H0.
     + (* family_lambda_SN e1' *)
       eapply family_lambda_SN_step; eassumption.
+    + exact Hrf'.
+    + exact Hst'.
   - (* ST_App2: value e1, e2 --> e2' *)
     assert (Hsn2': SN (e2', st', ctx')).
     { eapply SN_step; [apply Hsn2 | exact H7]. }
-    exact (SN_app_value_left_family_aux e1 (e2', st', ctx') H1 Hsn2' Hbeta).
+    exact (SN_app_value_left_family_aux e1 (e2', st', ctx') H1 Hrf Hsn2' Hbeta).
+  - (* ST_AppFix: dead — the function is recursion-free, so it is not a fix *)
+    simpl in Hrf. destruct Hrf.
 Qed.
 
 (** Main theorem: SN_app with family premise *)
 Lemma SN_app_family : forall e1 e2 st ctx,
+  recursion_free e1 ->
+  store_recursion_free st ->
   (forall st' ctx', SN (e1, st', ctx')) ->
   (forall st' ctx', SN (e2, st', ctx')) ->
   family_lambda_SN e1 ->
   SN (EApp e1 e2, st, ctx).
 Proof.
-  intros e1 e2 st ctx Hsn1 Hsn2 Hfam.
+  intros e1 e2 st ctx Hrf Hst Hsn1 Hsn2 Hfam.
   apply SN_app_family_aux with (cfg := (e1, st, ctx)).
   - apply Hsn1.
   - exact Hsn2.
   - exact Hfam.
+  - exact Hrf.
+  - exact Hst.
 Qed.
 
 (** ========================================================================
@@ -472,29 +511,43 @@ Proof. intros. exact (SN_inr_aux (e, st, ctx) T H). Qed.
     SECTION 7: SN CLOSURE FOR CASE
     ======================================================================== *)
 
+(* REQ-44 scope: the branch premises are rf-RESTRICTED — a branch whose
+   variable is substituted with a recursive-function value can genuinely
+   diverge, so its SN cannot be demanded. The scrutinee's recursion-freedom
+   (threaded through the induction with the store invariant) is what
+   guarantees the value reaching a branch is itself recursion-free. *)
 Lemma SN_case_aux : forall cfg x1 e1 x2 e2,
   SN cfg ->
-  (forall v st' ctx', value v -> SN (subst[x1 := v] e1, st', ctx')) ->
-  (forall v st' ctx', value v -> SN (subst[x2 := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x1 := v] e1, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x2 := v] e2, st', ctx')) ->
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
   SN (ECase (fst (fst cfg)) x1 e1 x2 e2, snd (fst cfg), snd cfg).
 Proof.
-  intros cfg x1 e1 x2 e2 Hsn Hinl Hinr.
-  induction Hsn as [[[e st] ctx] Hacc IH]. simpl. constructor.
+  intros cfg x1 e1 x2 e2 Hsn Hinl Hinr Hrf Hst.
+  induction Hsn as [[[e st] ctx] Hacc IH]. simpl in *. constructor.
   intros [[e' st'] ctx'] Hstep. unfold step_inv in Hstep. simpl in Hstep.
   inversion Hstep; subst.
-  { (* ST_CaseInl *) apply Hinl. assumption. }
-  { (* ST_CaseInr *) apply Hinr. assumption. }
+  { (* ST_CaseInl — the value is a subterm of the recursion-free scrutinee *)
+    simpl in Hrf. apply Hinl; assumption. }
+  { (* ST_CaseInr *)
+    simpl in Hrf. apply Hinr; assumption. }
   { (* ST_CaseStep *)
+    destruct (step_rf _ _ _ _ _ _ ltac:(eassumption) Hrf Hst) as [Hrf' Hst'].
     apply (IH (e'0, st', ctx')).
-    unfold step_inv. simpl. assumption. }
+    - unfold step_inv. simpl. assumption.
+    - exact Hrf'.
+    - exact Hst'. }
 Qed.
 
 Lemma SN_case : forall e x1 e1 x2 e2 st ctx,
+  recursion_free e ->
+  store_recursion_free st ->
   SN (e, st, ctx) ->
-  (forall v st' ctx', value v -> SN (subst[x1 := v] e1, st', ctx')) ->
-  (forall v st' ctx', value v -> SN (subst[x2 := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x1 := v] e1, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x2 := v] e2, st', ctx')) ->
   SN (ECase e x1 e1 x2 e2, st, ctx).
-Proof. intros. exact (SN_case_aux (e, st, ctx) x1 e1 x2 e2 H H0 H1). Qed.
+Proof. intros. exact (SN_case_aux (e, st, ctx) x1 e1 x2 e2 H1 H2 H3 H H0). Qed.
 
 (** ========================================================================
     SECTION 8: SN CLOSURE FOR IF
@@ -527,25 +580,35 @@ Proof. intros. exact (SN_if_aux (e1, st, ctx) e2 e3 H H0 H1). Qed.
     SECTION 9: SN CLOSURE FOR LET
     ======================================================================== *)
 
+(* REQ-44 scope: rf-restricted body premise; see SN_case_aux. *)
 Lemma SN_let_aux : forall cfg x e2,
   SN cfg ->
-  (forall v st' ctx', value v -> SN (subst[x := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x := v] e2, st', ctx')) ->
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
   SN (ELet x (fst (fst cfg)) e2, snd (fst cfg), snd cfg).
 Proof.
-  intros cfg x e2 Hsn Hbody.
-  induction Hsn as [[[e1 st] ctx] Hacc IH]. simpl. constructor.
+  intros cfg x e2 Hsn Hbody Hrf Hst.
+  induction Hsn as [[[e1 st] ctx] Hacc IH]. simpl in *. constructor.
   intros [[e' st'] ctx'] Hstep. unfold step_inv in Hstep. simpl in Hstep.
   inversion Hstep; subst.
-  { (* ST_LetValue *) apply Hbody. assumption. }
+  { (* ST_LetValue — the bound value IS the recursion-free e1 *)
+    apply Hbody; assumption. }
   { (* ST_LetStep *)
-    apply (IH (e1', st', ctx')). unfold step_inv. simpl. assumption. }
+    destruct (step_rf _ _ _ _ _ _ ltac:(eassumption) Hrf Hst) as [Hrf' Hst'].
+    apply (IH (e1', st', ctx')).
+    - unfold step_inv. simpl. assumption.
+    - exact Hrf'.
+    - exact Hst'. }
 Qed.
 
 Lemma SN_let : forall x e1 e2 st ctx,
+  recursion_free e1 ->
+  store_recursion_free st ->
   SN (e1, st, ctx) ->
-  (forall v st' ctx', value v -> SN (subst[x := v] e2, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x := v] e2, st', ctx')) ->
   SN (ELet x e1 e2, st, ctx).
-Proof. intros. exact (SN_let_aux (e1, st, ctx) x e2 H H0). Qed.
+Proof. intros. exact (SN_let_aux (e1, st, ctx) x e2 H1 H2 H H0). Qed.
 
 (** ========================================================================
     SECTION 10: SN CLOSURE FOR REFERENCES
@@ -715,25 +778,35 @@ Qed.
     SECTION 11: SN CLOSURE FOR HANDLE
     ======================================================================== *)
 
+(* REQ-44 scope: rf-restricted handler premise; see SN_case_aux. *)
 Lemma SN_handle_aux : forall cfg x h,
   SN cfg ->
-  (forall v st' ctx', value v -> SN (subst[x := v] h, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x := v] h, st', ctx')) ->
+  recursion_free (fst (fst cfg)) ->
+  store_recursion_free (snd (fst cfg)) ->
   SN (EHandle (fst (fst cfg)) x h, snd (fst cfg), snd cfg).
 Proof.
-  intros cfg x h Hsn Hhandler.
-  induction Hsn as [[[e st] ctx] Hacc IH]. simpl. constructor.
+  intros cfg x h Hsn Hhandler Hrf Hst.
+  induction Hsn as [[[e st] ctx] Hacc IH]. simpl in *. constructor.
   intros [[e' st'] ctx'] Hstep. unfold step_inv in Hstep. simpl in Hstep.
   inversion Hstep; subst.
   { (* ST_HandleStep *)
-    apply (IH (e'0, st', ctx')). unfold step_inv. simpl. assumption. }
-  { (* ST_HandleValue *) apply Hhandler. assumption. }
+    destruct (step_rf _ _ _ _ _ _ ltac:(eassumption) Hrf Hst) as [Hrf' Hst'].
+    apply (IH (e'0, st', ctx')).
+    - unfold step_inv. simpl. assumption.
+    - exact Hrf'.
+    - exact Hst'. }
+  { (* ST_HandleValue — the handled value IS the recursion-free e *)
+    apply Hhandler; assumption. }
 Qed.
 
 Lemma SN_handle : forall e x h st ctx,
+  recursion_free e ->
+  store_recursion_free st ->
   SN (e, st, ctx) ->
-  (forall v st' ctx', value v -> SN (subst[x := v] h, st', ctx')) ->
+  (forall v st' ctx', value v -> recursion_free v -> SN (subst[x := v] h, st', ctx')) ->
   SN (EHandle e x h, st, ctx).
-Proof. intros. exact (SN_handle_aux (e, st, ctx) x h H H0). Qed.
+Proof. intros. exact (SN_handle_aux (e, st, ctx) x h H1 H2 H H0). Qed.
 
 (** ========================================================================
     SECTION 12: SUMMARY

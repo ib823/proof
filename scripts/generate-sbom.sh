@@ -47,7 +47,54 @@ emit() {
     rm -f "$tmp" 2>/dev/null || true
 }
 
+# ── VEX (REQ-45 / EU CRA readiness) ─────────────────────────────────────────
+# A CycloneDX VEX document recording the exploitability status of published
+# vulnerabilities against RIINA components. An empty `vulnerabilities` array is
+# deliberate and meaningful: it is the machine-readable statement "no known
+# exploited vulnerabilities affect these components", which is the input the
+# CRA Art. 14 24-hour clock consumes. Deterministic (no timestamps) so `--check`
+# and git diffs stay quiet unless the CONTENT changes; the version field is the
+# count of affected entries + 1, so any future entry bumps it.
+gen_vex() {
+    cat <<'VEXEOF'
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": { "type": "application", "name": "riina" },
+    "supplier": { "name": "The RIINA Authors" },
+    "properties": [
+      { "name": "riina:vex:policy", "value": "SECURITY.md — EU CRA reporting readiness" },
+      { "name": "riina:vex:sboms", "value": "sbom/riina-proto.cdx.json, sbom/riina-tooling.cdx.json" }
+    ]
+  },
+  "vulnerabilities": []
+}
+VEXEOF
+}
+
+emit_vex() {
+    local outfile="sbom/riina.vex.cdx.json"
+    local tmp
+    tmp="$(mktemp)"
+    gen_vex > "$tmp"
+    if [ "$CHECK" -eq 1 ]; then
+        if ! diff -q "$tmp" "$ROOT/$outfile" >/dev/null 2>&1; then
+            echo "[STALE] $outfile differs from a fresh generation — run: bash scripts/generate-sbom.sh"
+            rm -f "$tmp"
+            return 1
+        fi
+        echo "[OK] $outfile up to date"
+    else
+        mv "$tmp" "$ROOT/$outfile"
+        echo "[WROTE] $outfile"
+    fi
+    rm -f "$tmp" 2>/dev/null || true
+}
+
 rc=0
 emit "$ROOT/03_PROTO/Cargo.toml"   "riinac"        "sbom/riina-proto.cdx.json"   || rc=1
 emit "$ROOT/05_TOOLING/Cargo.toml" "riina-tooling" "sbom/riina-tooling.cdx.json" || rc=1
+emit_vex || rc=1
 exit $rc

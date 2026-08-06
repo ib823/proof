@@ -24,14 +24,24 @@ Paranoid-Absolute Verification). metrics.json is the ONLY source of truth for co
 
 ## STEP 2 — PROVISION (nothing is pre-installed in a fresh container)
 - Rust 1.94.1 — pinned by rust-toolchain.toml; `cargo --version`.
-- Rocq 9.2 (PRIMARY, required) via opam:
-    sudo apt-get update && sudo apt-get install -y opam libgmp-dev   # libgmp-dev = zarith dep
-    opam init --bare -y && opam switch create rocq --packages=ocaml-system.4.14.1 -y
-    eval $(opam env --switch=rocq) && opam install rocq-core rocq-stdlib -y --assume-depexts
-  NOTE: Rocq 9.2 ships the `rocq` binary (NOT `coqc`; `coqc` was removed). The
-  Makefile is rocq-9.x-native (`$(COQBIN)rocq compile`) and `riinac verify`
-  detects `rocq` (fixed this session). `rocq compile` runs with only COQBIN+PATH
-  set (no full opam env needed) — that is what the pre-push hook relies on.
+- Rocq (PRIMARY, required) — do NOT hand-install; the script IS the pin, and CI
+  calls the same one so the two cannot silently diverge:
+    apt-get update && apt-get install -y opam libgmp-dev m4
+    bash scripts/provision-coq.sh            # ~15 min (builds the OCaml compiler)
+    bash scripts/provision-coq.sh --check    # exits 1 on mismatch
+    eval $(opam env --switch=rocq); export COQBIN="$HOME/.opam/rocq/bin/"
+  Pin: rocq-core.9.1.1 + rocq-stdlib.9.1.0 on ocaml-base-compiler.4.14.2.
+  Rocq 9.x ships the `rocq` binary (NOT `coqc`); the Makefile is rocq-native
+  (`$(COQBIN)rocq compile`) and `riinac verify` detects `rocq`. `rocq compile`
+  runs with only COQBIN+PATH set — that is what the pre-push hook relies on.
+- `wasmtime` (needed by the C/WASM differential) — NOT preinstalled, but it does
+  install; GitHub release downloads work through the proxy:
+    curl -sSfL -o /tmp/wasmtime.tar.xz https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-x86_64-linux.tar.xz
+    tar xf /tmp/wasmtime.tar.xz -C /tmp && cp /tmp/wasmtime-*/wasmtime /usr/local/bin/
+  INSTALL IT rather than setting RIINA_ALLOW_MISSING_BACKEND_TOOLS=1. That opt-out
+  makes `corpus_c_wasm_differential` execute NOTHING — and that differential is the
+  check that caught the last regression to reach main. Use the opt-out only if the
+  install genuinely fails, and say so when you do.
 - Smoke/executable lanes (optional, unlock Gate D1): `bash scripts/provision-smoke-toolchains.sh`
   provisions F* 2025.12.15, TLA2Tools 1.7.4, Alloy 6.2.0, Isabelle — all verified
   this session (F* 3 lemmas / TLA 5 / Alloy 6 / Isabelle RIINA_CORE build pass).
@@ -47,9 +57,16 @@ Paranoid-Absolute Verification). metrics.json is the ONLY source of truth for co
    (2 expected WARNs: Lean syntactic-sorry; Coq warning-status stale — see T4c)
 - `bash scripts/update-proof-ledger.sh --check`   → up to date
 - `RUST_MIN_STACK=16777216 cargo test --all --manifest-path 03_PROTO/Cargo.toml`
+  (RUST_MIN_STACK is required — without it `test_bigint_factorial_via_letrec`
+  overflows the stack when riina-codegen is tested on its own)
 - `cargo test --all --manifest-path 05_TOOLING/Cargo.toml`
-- `cargo clippy --all-targets -- -D warnings` (both workspaces) → clean
+- `cargo clippy --all-targets -- -D warnings` (both workspaces) → clean.
+  Note `--all-targets`: the narrower `cargo clippy -- -D warnings` in CLAUDE.md
+  does not lint test targets and has read "clean" while this form did not.
 - `eval $(opam env --switch=rocq) && make -C 02_FORMAL/coq -j$(nproc)` → green
+- Counting admits: use `^\s*Admitted\.`, `^\s*Axiom\s`, `^\s*Abort\.` (with the
+  period). Dropping it matches comment lines reading "Axioms: 0" and invents
+  hits that are not there.
 - Confirm metrics.json counts via grep, never by copying docs. Honest claim state:
   Coq = mechanized; the other 9 lanes = generated/smoke (not independent verification).
 
@@ -71,8 +88,14 @@ Gates A & B are CLOSED. Read Part 11 Gate C rows for what landed. Remaining trac
   (run it as your LAST commit so status.repoHead stays fresh = HEAD or HEAD^);
   coverage ≥80% (needs tarpaulin/llvm-cov); a dependency-free fuzz sweep (cargo-fuzz
   would violate Law 8 — extend the LCG property-test pattern instead).
+Website deploy IS possible in-session (done 2026-08-05) — `ib823/riina` is a SEPARATE repo, so
+attach it (`add_repo` with push access), `git remote add riina https://github.com/ib823/riina.git`,
+then `bash scripts/deploy-website.sh`. It force-pushes `gh-pages`, which is a branch push and
+therefore allowed.
 Cannot do in-session: external crypto audit (REQ-28/Gate G), certifications (Gate H),
-website deploy (needs the `riina` remote), public-branch reconciliation.
+public-branch reconciliation, and **pushing git TAGS or deleting refs** — the proxy returns
+`403 Forbidden` on the `git-receive-pack` POST for those (branch creates/updates are fine), so a
+release's `git push origin vX.Y.Z` must be done by the owner. See Part 11 §v0.4.0 RELEASE.
 
 ## RULES
 - Part 8 protocol. Develop on a managed-session branch; merge to main when green.

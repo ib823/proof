@@ -41,7 +41,7 @@ jobs:
     runs-on: [self-hosted, ct-metal]
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.84.0
+      - uses: dtolnay/rust-toolchain@1.94.1
       - name: Certify (grades the host, then measures; fails if INDICATIVE-unclean or a primitive flags)
         env:
           CT_CORE: ${{ github.event.inputs.core }}

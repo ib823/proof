@@ -295,6 +295,20 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
                 callable: body_summary.callable,
             }
         }
+        Expr::LetRecGroup(bindings, body) => {
+            // Capability summary of a mutually-recursive group equals that of the
+            // equivalent nested LetRec chain — reuse the LetRec logic (REQ-44).
+            let mut chain = (**body).clone();
+            for (name, ty, value) in bindings.iter().rev() {
+                chain = Expr::LetRec(
+                    name.clone(),
+                    ty.clone(),
+                    Box::new(value.clone()),
+                    Box::new(chain),
+                );
+            }
+            summarize_expr(&chain, env)
+        }
         Expr::FFICall { .. } => ExprSummary::default(),
         Expr::ActorDecl { .. }
         | Expr::ChoreographyBlock { .. }
@@ -449,8 +463,13 @@ fn validate_capabilities(program: &Program) -> Result<(), TypeError> {
 }
 
 fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
+    // Pass 1 (REQ-44 forward references): pre-collect EVERY top-level function
+    // signature, extern decl, and actor name so a body can reference a callable
+    // defined later in the file (the natural top-down style + modules). Recursion
+    // soundness is mechanized in `foundations/RecursionSafety.v`; the effect ≤
+    // declared discipline and return-type compatibility are still enforced
+    // per-body in pass 2, so pre-binding signatures never falsely accepts.
     let mut ctx = builtin_typing_context();
-
     for decl in &program.decls {
         match decl {
             TopLevelDecl::Function {
@@ -458,11 +477,47 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 params,
                 return_ty,
                 effect,
-                effect_set,
-                body,
+                ..
             } => {
                 let fn_ty = declared_function_type(params, return_ty, *effect);
-                let mut body_ctx = ctx.extend_gamma(name.clone(), fn_ty.clone());
+                ctx = ctx.extend_gamma(name.clone(), fn_ty);
+            }
+            TopLevelDecl::ExternBlock { decls, .. } => {
+                for d in decls {
+                    let fn_ty = declared_function_type(&d.params, &d.ret_ty, d.effect);
+                    ctx = ctx.extend_gamma(d.name.clone(), fn_ty);
+                }
+            }
+            TopLevelDecl::Expr(e) => {
+                if let Expr::ActorDecl {
+                    name,
+                    state_ty,
+                    message_ty,
+                    ..
+                } = e.as_ref()
+                {
+                    let actor_ty =
+                        Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone()));
+                    ctx = ctx.extend_gamma(name.clone(), actor_ty);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    // Pass 2: check each body/binding with all signatures already in scope.
+    for decl in &program.decls {
+        match decl {
+            TopLevelDecl::Function {
+                params,
+                return_ty,
+                effect,
+                effect_set,
+                body,
+                ..
+            } => {
+                // Signature already bound in pass 1 (forward refs); just add params.
+                let mut body_ctx = ctx.clone();
                 for (param_name, param_ty) in params {
                     body_ctx = body_ctx.extend_gamma(param_name.clone(), param_ty.clone());
                 }
@@ -489,8 +544,7 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                         found: body_eff,
                     });
                 }
-
-                ctx = ctx.extend_gamma(name.clone(), fn_ty);
+                // Signature already in ctx from pass 1.
             }
             TopLevelDecl::Binding { name, value } => {
                 let mut binding_ctx = ctx.clone();
@@ -558,6 +612,29 @@ mod tests {
     fn parse_program(source: &str) -> Program {
         let mut parser = Parser::new(source);
         parser.parse_program().expect("program should parse")
+    }
+
+    #[test]
+    fn check_program_allows_forward_reference() {
+        // REQ-44: a function may call one defined LATER in the file (utama calls
+        // bantu; bantu is declared after). Single-pass checking rejected this.
+        let src = "fungsi utama() -> Nombor kesan Bersih { biar x = bantu(5); x }\n                   fungsi bantu(n: Nombor) -> Nombor kesan Bersih { pulang n + 1; }";
+        assert!(check_program(&parse_program(src)).is_ok(), "forward reference must typecheck");
+    }
+
+    #[test]
+    fn check_program_allows_mutual_recursion() {
+        // REQ-44: genap/ganjil are mutually recursive; each references the other.
+        let src = "fungsi genap(n: Nombor) -> Benar kesan Bersih { kalau n == 0 { betul } lain { ganjil(n - 1) } }\n                   fungsi ganjil(n: Nombor) -> Benar kesan Bersih { kalau n == 0 { salah } lain { genap(n - 1) } }\n                   fungsi utama() -> Benar kesan Bersih { genap(10) }";
+        assert!(check_program(&parse_program(src)).is_ok(), "mutual recursion must typecheck");
+    }
+
+    #[test]
+    fn check_program_still_rejects_undefined_name() {
+        // Forward references must NOT weaken scoping: a genuinely-undefined name
+        // is still rejected.
+        let src = "fungsi utama() -> Nombor kesan Bersih { tiada_fungsi_sebegini(1) }";
+        assert!(check_program(&parse_program(src)).is_err(), "undefined name must still be rejected");
     }
 
     #[test]

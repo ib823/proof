@@ -394,6 +394,15 @@ Inductive expr : Type :=
   | EClassify   : expr -> expr               (* classify e *)
   | EDeclassify : expr -> expr -> expr       (* declassify e with proof *)
   | EProve      : expr -> expr               (* prove e *)
+
+  (* General recursion (REQ-44 full-core integration).
+     [EFix e] is the fixpoint of a self-map: when [e] is a lambda it unrolls by
+     substituting the whole [EFix e] for the recursive variable. This mirrors
+     [tm_fix] / [T_Fix] / [ST_FixAbs] already mechanized in
+     foundations/RecursionSafety.v, which is the rule the Rust implementation
+     uses ([LetRec f = lam in cont] desugars to [let f = fix (lam f. lam) in cont]).
+     It is TYPE-SAFE but INTENTIONALLY NOT normalizing — see [recursion_free]. *)
+  | EFix        : expr -> expr               (* fix e *)
   
   (* Capabilities *)
   | ERequire : effect -> expr -> expr        (* require ε in e *)
@@ -415,7 +424,14 @@ Inductive value : expr -> Prop :=
   | VInl    : forall v T, value v -> value (EInl v T)
   | VInr    : forall v T, value v -> value (EInr v T)
   | VClassify : forall v, value v -> value (EClassify v)
-  | VProve  : forall v, value v -> value (EProve v).
+  | VProve  : forall v, value v -> value (EProve v)
+  (* A recursive function is a VALUE (REQ-44) — a thunk. Its operand is not
+     evaluated until the fix is APPLIED (ST_AppFix unrolls [fix w] to
+     [w (fix w)]), so no [EFix] congruence rule is needed. Being a value is
+     what lets the effect system's value-restricted substitution lemma apply,
+     and T_Fix types the operand at EffectPure so nothing effectful is
+     silently deferred. *)
+  | VFix    : forall e, value (EFix e).
 
 (** ** Well-Formedness *)
 
@@ -507,11 +523,96 @@ Fixpoint subst (x : ident) (v : expr) (e : expr) : expr :=
   | EClassify e1 => EClassify (subst x v e1)
   | EDeclassify e1 e2 => EDeclassify (subst x v e1) (subst x v e2)
   | EProve e1 => EProve (subst x v e1)
+  | EFix e1 => EFix (subst x v e1)
   | ERequire eff e1 => ERequire eff (subst x v e1)
   | EGrant eff e1 => EGrant eff (subst x v e1)
   end.
 
 Notation "'subst[' x := v ']' e" := (subst x v e) (at level 20).
+
+(** ** Recursion-freedom — the machine-checked SN scope (REQ-44, Option A)
+
+    [recursion_free e] holds when [e] contains no PRIMITIVE recursion
+    construct. Today that is every [expr]: this core calculus deliberately has
+    no [fix]-style constructor (recursion is still expressible through the
+    store — Landin's knot via [ERef]/[EAssign] — which the metatheory covers).
+
+    Its purpose is to make the strong-normalization SCOPE a machine-checked
+    hypothesis instead of a prose caveat. [termination/ReducibilityFull.v]
+    proves that every well-typed term is strongly normalizing; that result is
+    sound ONLY for the recursion-free fragment, because general recursion
+    (`fungsi`/`fix`, mechanized separately in [foundations/RecursionSafety.v])
+    is Turing-complete and INTENTIONALLY non-normalizing. Its guarantee is type
+    safety — progress + preservation — not termination.
+
+    [core_is_recursion_free] below is therefore a deliberate BUILD-TIME
+    TRIPWIRE: it is provable exactly while [expr] has no recursion
+    constructor. The day one is added, that lemma stops compiling, which forces
+    the SN claim to be re-scoped explicitly rather than silently becoming
+    false. This is the proof-level enforcement of the REQ-44 Option A decision,
+    which until now lived only in comments and prose docs. *)
+Fixpoint recursion_free (e : expr) : Prop :=
+  match e with
+  | EUnit | EBool _ | EInt _ | EString _ | ELoc _ | EVar _ => True
+  | ELam _ _ body => recursion_free body
+  | EApp e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EPair e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EFst e1 => recursion_free e1
+  | ESnd e1 => recursion_free e1
+  | EInl e1 _ => recursion_free e1
+  | EInr e1 _ => recursion_free e1
+  | ECase e1 _ e2 _ e3 =>
+      recursion_free e1 /\ recursion_free e2 /\ recursion_free e3
+  | EIf e1 e2 e3 =>
+      recursion_free e1 /\ recursion_free e2 /\ recursion_free e3
+  | ELet _ e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EPerform _ e1 => recursion_free e1
+  | EHandle e1 _ h => recursion_free e1 /\ recursion_free h
+  | ERef e1 _ => recursion_free e1
+  | EDeref e1 => recursion_free e1
+  | EAssign e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EClassify e1 => recursion_free e1
+  | EDeclassify e1 e2 => recursion_free e1 /\ recursion_free e2
+  | EProve e1 => recursion_free e1
+  (* THE exclusion: general recursion is exactly what the SN development
+     cannot cover, since [EFix] of a diverging self-map does not normalize. *)
+  | EFix _ => False
+  | ERequire _ e1 => recursion_free e1
+  | EGrant _ e1 => recursion_free e1
+  end.
+
+(** The tripwire that guarded this predicate has now FIRED, as designed:
+    [core_is_recursion_free : forall e, recursion_free e] was provable exactly
+    while the core had no recursion constructor. [EFix] is now a core
+    constructor, so that lemma is FALSE ([recursion_free (EFix e)] is [False])
+    and has been REMOVED rather than weakened — precisely as its own comment
+    instructed. [recursion_free] is consequently a real, non-vacuous
+    restriction, and it is threaded as an explicit hypothesis through the
+    strong-normalization development (see [termination/ReducibilityFull.v]).
+
+    A recursion-containing term is NOT unsafe — it is type-safe by
+    progress+preservation ([type_system/], and for [fix] specifically
+    [foundations/RecursionSafety.v]). It is merely not strongly normalizing,
+    which is the honest REQ-44 Option A scope. *)
+
+(** [EFix] is the ONLY thing [recursion_free] rules out. *)
+Lemma recursion_free_EFix_absurd : forall e, ~ recursion_free (EFix e).
+Proof. intros e H. exact H. Qed.
+
+(** Substitution of a recursion-free value into a recursion-free term stays
+    recursion-free — the closure property the SN development needs now that
+    [recursion_free] is a genuine restriction. *)
+Lemma recursion_free_subst : forall x v e,
+  recursion_free v -> recursion_free e -> recursion_free (subst x v e).
+Proof.
+  intros x v e Hv.
+  induction e; intro He; simpl in *; auto;
+    (* binder cases: the [if String.eqb ...] guards *)
+    repeat (match goal with
+            | [ |- context[String.eqb ?a ?b] ] => destruct (String.eqb a b)
+            end);
+    simpl in *; try tauto.
+Qed.
 
 (** ** Security Lattice Properties *)
 
@@ -761,6 +862,8 @@ Proof.
     destruct IHe as [Hv | Hn].
     + left. constructor. assumption.
     + right. intro H. inversion H; subst. apply Hn. assumption.
+  - (* EFix — always a value (recursive-function thunk) *)
+    left. constructor.
 Defined.
 
 (** Substitution with a different variable from the binding does not affect that variable. *)
@@ -811,6 +914,7 @@ Proof.
   - constructor; eauto.
   - constructor; eauto.
   - constructor; eauto.
+  - (* VFix *) constructor.
 Qed.
 
 Lemma declass_ok_subst : forall x v e1 e2,
@@ -831,7 +935,7 @@ Lemma value_not_stuck : forall e,
              (exists v1 v2, e = EPair v1 v2) \/
              (exists v T, e = EInl v T) \/ (exists v T, e = EInr v T) \/
              (exists l, e = ELoc l) \/ (exists v, e = EClassify v) \/
-             (exists v, e = EProve v).
+             (exists v, e = EProve v) \/ (exists v, e = EFix v).
 Proof.
   intros e Hv.
   inversion Hv; subst.
@@ -845,7 +949,9 @@ Proof.
   - right. right. right. right. right. right. left. exists v, T. reflexivity.
   - right. right. right. right. right. right. right. left. exists v, T. reflexivity.
   - right. right. right. right. right. right. right. right. right. left. exists v. reflexivity.
-  - right. right. right. right. right. right. right. right. right. right. exists v. reflexivity.
+  - right. right. right. right. right. right. right. right. right. right. left. exists v. reflexivity.
+  - (* VFix — a recursive function value *)
+    right. right. right. right. right. right. right. right. right. right. right. eexists. reflexivity.
 Qed.
 
 (** Note: A lemma about substitution into values requires either:

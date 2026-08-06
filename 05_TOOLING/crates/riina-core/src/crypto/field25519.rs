@@ -380,9 +380,47 @@ impl FieldElement {
     #[inline]
     #[must_use]
     pub fn square(self) -> Self {
-        // For now, just use multiplication
-        // TODO: Implement dedicated squaring for ~20% speedup
-        self * self
+        // Dedicated squaring (REQ-42c): off-diagonal products a[i]*a[j] (i<j)
+        // appear twice in a*a, so compute each once and double — ~halves the
+        // limb multiplications vs the generic `Mul`. Reduction/carry are
+        // byte-identical to `Mul`, and the loops have fixed trip counts (no
+        // data-dependent branch), so the constant-time property is preserved.
+        // Pinned byte-equal to `self * self` over a random sweep by
+        // `tests::square_matches_mul_over_sweep`.
+        let a = self.limbs;
+        let mut c = [0i128; 10];
+
+        for i in 0..5 {
+            // Diagonal term a[i]^2.
+            c[2 * i] += i128::from(a[i]) * i128::from(a[i]);
+            // Off-diagonal terms a[i]*a[j], j>i, counted twice.
+            for j in (i + 1)..5 {
+                c[i + j] += 2 * (i128::from(a[i]) * i128::from(a[j]));
+            }
+        }
+
+        // Identical reduction to `Mul`: fold the top 5 limbs (*2^255 ≡ *19).
+        for i in 0..5 {
+            c[i] += c[i + 5] * 19;
+        }
+
+        let mut carry: i128 = 0;
+        for i in 0..5 {
+            c[i] += carry;
+            carry = c[i] >> 51;
+            c[i] &= 0x7ffffffffffff;
+        }
+        c[0] += carry * 19;
+
+        let limbs = [
+            c[0] as i64,
+            c[1] as i64,
+            c[2] as i64,
+            c[3] as i64,
+            c[4] as i64,
+        ];
+
+        Self { limbs }.weak_reduce().weak_reduce()
     }
 
     /// Compute the multiplicative inverse: a^(-1) (mod p).
@@ -588,6 +626,37 @@ mod tests {
     /// This confirms the *full* Rust `Mul` (including carry propagation, which
     /// preserves the value mod p) on concrete vectors, one of which exercises the
     /// reduction.
+    #[test]
+    fn square_matches_mul_over_sweep() {
+        // REQ-42c: dedicated `square()` must be byte-identical to `self * self`
+        // across a wide input sweep (XorShift PRNG over full 32-byte field
+        // elements, reduced via from_bytes). Guards the optimization.
+        let mut state: u64 = 0x9E37_79B9_7F4A_7C15;
+        let mut next = || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        for _ in 0..5000 {
+            let mut bytes = [0u8; 32];
+            for chunk in bytes.chunks_mut(8) {
+                let r = next().to_le_bytes();
+                chunk.copy_from_slice(&r[..chunk.len()]);
+            }
+            let a = FieldElement::from_bytes(&bytes);
+            assert_eq!(
+                a.square().to_bytes(),
+                (a * a).to_bytes(),
+                "square != mul for bytes {bytes:?}"
+            );
+        }
+        // Boundary elements.
+        for fe in [FieldElement::ZERO, FieldElement::ONE] {
+            assert_eq!(fe.square().to_bytes(), (fe * fe).to_bytes());
+        }
+    }
+
     #[test]
     fn test_mul_matches_coq_model() {
         // (p-1)^2 ≡ 1 (mod p).

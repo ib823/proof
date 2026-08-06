@@ -1104,6 +1104,27 @@ fn test_error_missing_type_in_inl() {
 }
 
 #[test]
+fn dedah_call_form_parses_to_the_same_ast_as_canonical() {
+    // REQ-55: `dedah(e, p)` and `dedah e dengan p` are ONE AST node — the same
+    // Expr::Declassify — so the mechanized T_Declassify covers both and the
+    // call-form adds surface, not semantics.
+    let call = Parser::new("dedah(x, bukti_x)").parse_expr().unwrap();
+    let canon = Parser::new("dedah x dengan bukti_x").parse_expr().unwrap();
+    assert_eq!(
+        call, canon,
+        "the two dedah surface forms must be indistinguishable downstream"
+    );
+}
+
+#[test]
+fn dedah_call_form_negative_controls() {
+    // Missing comma / unclosed paren still fail loudly — the sugar must not
+    // have made the parser lenient.
+    assert!(Parser::new("dedah(x bukti_x)").parse_expr().is_err());
+    assert!(Parser::new("dedah(x, bukti_x").parse_expr().is_err());
+}
+
+#[test]
 fn test_error_missing_with_in_declassify() {
     // Input: declassify without 'with'
     // Expected: ParseError
@@ -1526,23 +1547,27 @@ fn test_parse_program_desugar() {
     let prog = p.parse_program().unwrap();
     assert_eq!(prog.decls.len(), 2);
     let desugared = prog.desugar();
-    // Should be LetRec("f", ..., Lam("x", Int, Var("x")), App(Var("f"), Int(42)))
+    // Top-level functions now form a mutually-recursive GROUP (REQ-44 forward
+    // references), so a single function `f` desugars to
+    // LetRecGroup([("f", .., Lam("x", Int, Var "x"))], App(Var "f", Int 42)).
     match desugared {
-        Expr::LetRec(name, _ty, lam, body) => {
+        Expr::LetRecGroup(bindings, body) => {
+            assert_eq!(bindings.len(), 1);
+            let (name, _ty, lam) = &bindings[0];
             assert_eq!(name, "f");
-            match *lam {
+            match lam {
                 Expr::Lam(p, ty, _) => {
                     assert_eq!(p, "x");
-                    assert_eq!(ty, Ty::Int);
+                    assert_eq!(*ty, Ty::Int);
                 }
                 other => panic!("Expected Lam, got {:?}", other),
             }
-            match *body {
+            match body.as_ref() {
                 Expr::App(_, _) => {}
                 other => panic!("Expected App, got {:?}", other),
             }
         }
-        other => panic!("Expected LetRec, got {:?}", other),
+        other => panic!("Expected LetRecGroup, got {:?}", other),
     }
 }
 
@@ -4094,4 +4119,48 @@ fn test_lowercase_ident_still_var() {
     // Lowercase identifiers are NOT constructors.
     let mut p = Parser::new("bulatan");
     assert_eq!(p.parse_expr().unwrap(), Expr::Var("bulatan".to_string()));
+}
+
+#[test]
+fn test_prefix_not_binds_call() {
+    // REQ (examples parse-gap): `!f(x)` is `Deref(f(x))` and `bukan f(x)` is
+    // `If(f(x), false, true)` — the prefix operand must include the postfix
+    // call, not stop before `(x)` (which raised "Unexpected token: LParen").
+    let mut p = Parser::new("!ada_fail(nama)");
+    match p.parse_expr().expect("!f(x) must parse") {
+        Expr::Deref(inner) => assert!(matches!(*inner, Expr::App(_, _)), "operand is the call"),
+        other => panic!("expected Deref(App), got {other:?}"),
+    }
+
+    let mut p = Parser::new("bukan ada_fail(nama)");
+    match p.parse_expr().expect("bukan f(x) must parse") {
+        Expr::If(cond, _, _) => assert!(matches!(*cond, Expr::App(_, _)), "condition is the call"),
+        other => panic!("expected If(App, ..), got {other:?}"),
+    }
+
+    // Inside `kalau`, the original failing shape.
+    let mut p = Parser::new("kalau !ada_fail(nama) { 1 } lain { 0 }");
+    assert!(p.parse_expr().is_ok(), "kalau !f(x) {{..}} must parse");
+}
+
+#[test]
+fn test_modul_block_flattens_functions_to_prefixed_top_level() {
+    // `modul M { fungsi f(...) }` must flatten to a top-level `M_f` function so
+    // the existing `M::f` -> `M_f` qualified-call resolution finds the user
+    // definition (previously the module body was skipped/dropped entirely).
+    let src = "modul teks { fungsi pecah(s: Teks, d: Teks) -> Senarai<Teks> kesan Bersih { pulang []; } }\nfungsi utama() -> Nombor kesan Bersih { 0 }";
+    let prog = Parser::new(src).parse_program().expect("module program must parse");
+    let names: Vec<&str> = prog
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            TopLevelDecl::Function { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        names.contains(&"teks_pecah"),
+        "module function must flatten to teks_pecah; got {names:?}"
+    );
+    assert!(names.contains(&"utama"), "main must still be present; got {names:?}");
 }

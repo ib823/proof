@@ -161,18 +161,44 @@ fn cond_sub_q(a: i16) -> i16 {
     (diff & !mask) | (a & mask)
 }
 
-/// Normalize coefficient to positive representative in [0, q)
+/// Multiply-shift magic for `floor(n / q)` at shift `FDIV_Q_SHIFT`:
+/// `m = ceil(2^40 / 3329)`. The pair `(m, 40)` yields exactly `floor(n/q)` for
+/// every `n` in the input domain used here, with `m * n < 2^63` (no overflow) —
+/// both facts proven exhaustively by
+/// `tests::fdiv_q_matches_division_over_full_domain`. (`s=32` with `ceil` is
+/// NOT exact — it rounds up at e.g. n=812275 — which is why the shift is 40.)
+const FDIV_Q_M: u64 = 330_282_857;
+const FDIV_Q_SHIFT: u32 = 40;
+/// Upper bound of inputs `fdiv_q` is exercised on: covers the d=10/d=4/d=1
+/// compress numerators and the `to_positive` shifted value.
+#[cfg(test)]
+const FDIV_Q_DOMAIN: u32 = ((params::Q as u32 - 1) << 11) + params::Q32;
+
+/// `floor(n / q)` in constant time (multiply-shift, no `div`).
 ///
-/// This handles negative values from barrett_reduce by adding q if needed.
+/// REQ-43 H-1 (KyberSlash class): the previous `/ params::Q32` on secret-derived
+/// data lowered to a variable-latency hardware `div` on targets that do not
+/// strength-reduce a `/const` (debug builds; 32-bit ARM; RISC-V without M),
+/// leaking the decapsulated message via timing. The multiply-shift is constant
+/// time on every target.
+#[inline]
+fn fdiv_q(n: u32) -> u32 {
+    ((u64::from(n) * FDIV_Q_M) >> FDIV_Q_SHIFT) as u32
+}
+
+/// Normalize coefficient to positive representative in [0, q), constant time.
+///
+/// REQ-43 H-1: the previous `a % (params::Q as i16)` lowered to a secret-
+/// dependent `div`/`rem` on the decaps `compress` path. `a` is an `i16`; adding
+/// the residue-preserving constant `16*q` (= 53264 > 32768) makes it strictly
+/// positive and `< 2^17` regardless of sign, then a single multiply-shift
+/// `floor(x/q)` gives the quotient. Equivalent to `rem_euclid(q)` over the
+/// entire `i16` domain — proven by
+/// `tests::to_positive_matches_rem_euclid_over_full_i16`.
 #[inline]
 fn to_positive(a: i16) -> u16 {
-    let mut r = a % (params::Q as i16);
-    // Branchless "add q iff negative" (same mask trick as cond_sub_q). The
-    // previous `if r < 0` branched on the sign of a secret-derived coefficient
-    // (this feeds `compress`, which runs on m'-derived polys during decaps).
-    // `r >> 15` is -1 when r < 0 and 0 otherwise.
-    r += (r >> 15) & (params::Q as i16);
-    r as u16
+    let x = (i32::from(a) + 16 * params::Q_I32) as u32; // in [20496, 86031], < 2^17
+    (x - fdiv_q(x) * params::Q32) as u16
 }
 
 /// Montgomery reduction: given a * R mod q, compute a mod q
@@ -453,7 +479,7 @@ impl Poly {
                         // Normalize to [0, q) range to avoid overflow
                         let c = to_positive(self.coeffs[4 * i + j]) as u32;
                         // Compress: round((c << 10) / q)
-                        t[j] = (((c << 10) + params::Q32 / 2) / params::Q32) as u16 & 0x3FF;
+                        t[j] = (fdiv_q((c << 10) + params::Q32 / 2) as u16) & 0x3FF;
                     }
                     // Pack 4 10-bit values into 5 bytes
                     bytes[5 * i] = t[0] as u8;
@@ -473,8 +499,8 @@ impl Poly {
                     let c1 = to_positive(self.coeffs[2 * i + 1]) as u32;
 
                     // Compress: round((c << 4) / q)
-                    let t0 = (((c0 << 4) + params::Q32 / 2) / params::Q32) as u8 & 0x0F;
-                    let t1 = (((c1 << 4) + params::Q32 / 2) / params::Q32) as u8 & 0x0F;
+                    let t0 = (fdiv_q((c0 << 4) + params::Q32 / 2) as u8) & 0x0F;
+                    let t1 = (fdiv_q((c1 << 4) + params::Q32 / 2) as u8) & 0x0F;
 
                     bytes[i] = t0 | (t1 << 4);
                 }
@@ -552,7 +578,7 @@ impl Poly {
                 // the previous `if c < 0` branched on the sign of a secret message
                 // coefficient during decaps decryption. `c >> 15` is -1 iff c < 0.
                 let c_abs = u32::from((c + ((c >> 15) & params::Q as i16)) as u16);
-                let bit = (((c_abs << 1) + params::Q32 / 2) / params::Q32) & 1;
+                let bit = fdiv_q((c_abs << 1) + params::Q32 / 2) & 1;
                 msg[i] |= (bit as u8) << j;
             }
         }
@@ -1519,6 +1545,26 @@ mod tests {
                 "Encode/decode 12 failed at {}",
                 i
             );
+        }
+    }
+
+    #[test]
+    fn fdiv_q_matches_division_over_full_domain() {
+        // REQ-43 H-1: the constant-time multiply-shift must equal floor(n/q)
+        // for every input the compress/encode/to_positive paths can produce.
+        for n in 0..=FDIV_Q_DOMAIN {
+            assert_eq!(fdiv_q(n), n / params::Q32, "fdiv_q mismatch at n={n}");
+        }
+    }
+
+    #[test]
+    fn to_positive_matches_rem_euclid_over_full_i16() {
+        // REQ-43 H-1: constant-time to_positive must equal rem_euclid(q) over
+        // the ENTIRE i16 domain (no reliance on a bounded-input precondition).
+        for a in i16::MIN..=i16::MAX {
+            let expected = i32::from(a).rem_euclid(params::Q_I32) as u16;
+            assert_eq!(to_positive(a), expected, "to_positive mismatch at a={a}");
+            assert!(to_positive(a) < params::Q, "to_positive out of range at a={a}");
         }
     }
 

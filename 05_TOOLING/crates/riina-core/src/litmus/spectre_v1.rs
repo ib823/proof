@@ -153,7 +153,24 @@ mod tests {
         let result = bounds_checked_access(&array, 1000);
         assert_eq!(result, None);
 
-        // TODO: Add cache timing measurement to verify no leak
-        // For now, we rely on the masking implementation above
+        // REQ-42d: cache-timing measurement is intentionally NOT a portable unit
+        // test â it cannot deterministically observe microarchitectural leakage
+        // and would be flaky in CI. What IS deterministically verifiable is the
+        // STRUCTURAL mitigation: the bounds mask must reject every out-of-bounds
+        // index (return None, never a speculative/masked OOB byte). Sweep it.
+        // Actual leak *timing* verification lives in the dudect/ctgrind harnesses
+        // (examples/dudect_ct.rs, examples/ctgrind_ct.rs) and, for transient
+        // execution proper, in deploy-time CPU/OS controls (THREAT_MODEL section 6).
+        for oob in [array.len(), array.len() + 1, 1000usize, usize::MAX] {
+            assert_eq!(
+                bounds_checked_access(&array, oob),
+                None,
+                "OOB index {oob} must be rejected by the bounds mask, not speculated"
+            );
+        }
+        // In-bounds accesses still return the real element (mask is identity).
+        for i in 0..array.len() {
+            assert_eq!(bounds_checked_access(&array, i), Some(array[i]));
+        }
     }
 }
