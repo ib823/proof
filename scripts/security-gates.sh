@@ -105,6 +105,13 @@ else
   for rel in "${!changed_files[@]}"; do
     case "$rel" in
       *.v|*.lean|*.thy|*.fst|*.tla|*.als|*.smt2|*.rs.verus) continue ;;
+      # The AI-training corpus contains vulnerable→safe TRAINING PAIRS whose
+      # vulnerable_code fields deliberately embed example hardcoded credentials
+      # (e.g. an OWASP A09 entry assigning an obviously-fake admin credential
+      # to a constant). Verified synthetic 2026-08-06: every pattern hit sits
+      # inside a "vulnerable_code" JSON field. Path-scoped to *.jsonl in this
+      # one directory so the gate still fails on secrets anywhere else.
+      07_EXAMPLES/08_ai_training/*.jsonl) continue ;;
     esac
 
     abs="$REPO_ROOT/$rel"
