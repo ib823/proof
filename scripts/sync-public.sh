@@ -316,6 +316,25 @@ if [ "${1:-}" = "--reconcile" ]; then
     xargs -0 git checkout main -- < "$SYNC_LIST"
     rm -f "$SYNC_LIST"
 
+    # Prune: delete public-tracked files that main does not track. Years of
+    # partial squashes left ~1,100 stale files on public (temp scratch dirs,
+    # .lake build artifacts, proofs main archived) — riina CI's metrics-parity
+    # job caught the drift on 2026-08-06 (public scanned 12,862 Qed / 117 Lean
+    # sorry vs main's published claims). A file tracked on public but not on
+    # main cannot be a curated internal exclusion (internals exist ON main and
+    # are excluded FROM public), so anything in this set is stale by
+    # construction. Deletions are listed for the record.
+    PRUNE_LIST="$(mktemp)"
+    comm -23 <(git ls-tree -r --name-only HEAD | sort) \
+             <(git ls-tree -r --name-only main | sort) > "$PRUNE_LIST"
+    if [ -s "$PRUNE_LIST" ]; then
+        echo "    Pruning $(wc -l < "$PRUNE_LIST") public-tracked files absent from main:"
+        sed 's/^/      - /' "$PRUNE_LIST" | head -20
+        [ "$(wc -l < "$PRUNE_LIST")" -gt 20 ] && echo "      … (full list in the commit diff)"
+        tr '\n' '\0' < "$PRUNE_LIST" | xargs -0 git rm -q --ignore-unmatch --
+    fi
+    rm -f "$PRUNE_LIST"
+
     # Enforce the internal lists against files already tracked on public.
     strip_internals
 

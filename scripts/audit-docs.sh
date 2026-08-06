@@ -404,6 +404,10 @@ fi
 
 # Try CLAUDE.md banner first (sync-metrics.sh writes it), then fall back to master plan
 METRICS_SOURCE=""
+# Initialize before the conditional: on the public tree CLAUDE.md is
+# internal-excluded, and under `set -u` an unassigned DOC_QED aborted the
+# whole audit ("DOC_QED: unbound variable" — caught by riina CI 2026-08-06).
+DOC_QED="0"
 if [ -f "$REPO_ROOT/CLAUDE.md" ]; then
     DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/CLAUDE.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
     if [ "$DOC_QED" != "0" ]; then
