@@ -437,7 +437,14 @@ fi
 DOC_SESSION=$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md" 2>/dev/null || echo "0")
 
 LABEL="${METRICS_SOURCE:-CLAUDE.md}"
-check_value "Qed proofs ($LABEL)" "$ACTUAL_QED" "$DOC_QED" "$LABEL" || true
+if [ -z "$METRICS_SOURCE" ] && [ ! -f "$REPO_ROOT/CLAUDE.md" ] && [ ! -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    # Public tree: both orientation docs are internal-excluded by design, so
+    # there is no doc-side Qed figure to compare. metrics.json is the public
+    # source of truth and its own parity check runs below.
+    echo -e "${GREEN}[OK]${NC} Qed doc check skipped: no orientation doc on this tree (metrics.json is authoritative)"
+else
+    check_value "Qed proofs ($LABEL)" "$ACTUAL_QED" "$DOC_QED" "$LABEL" || true
+fi
 
 # Lean/Isabelle: only check if documented value is non-zero (thin CLAUDE.md may omit)
 if [ "$DOC_LEAN" != "0" ]; then
@@ -873,7 +880,12 @@ DOC_PARAMETER="0"
 if [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
     DOC_PARAMETER=$(grep -oP '\| Parameter \(active build\) \| \K\d+' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 || echo "0")
 fi
-if [ "$DOC_PARAMETER" = "0" ]; then
+if [ ! -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    # Public tree: the master plan is internal-excluded, so the pinned row is
+    # not available to compare. The Parameter inventory remains public via the
+    # PROOF_STATUS.md/AXIOMS.md ledgers, which are checked for freshness.
+    echo -e "${GREEN}[OK]${NC} Parameter pin check skipped: master plan not on this tree (ledgers carry the inventory)"
+elif [ "$DOC_PARAMETER" = "0" ]; then
     if [ "$QUICK_MODE" != "--quick" ]; then
         echo -e "${RED}[ERROR]${NC} master plan Part 2 missing 'Parameter (active build)' row (REQ-23)"
     fi
