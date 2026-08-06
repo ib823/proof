@@ -1,0 +1,11 @@
+Lane RETIRED 2026-08-06 (owner decision, RIINA_MASTER_PLAN.md REQ-67h).
+
+This F* tree is a machine-generated port carrying 11,935 admits; re-proving
+it is not a realistic path and the cryptography claim it gestured at is
+carried instead by the nine Coq⇄Rust formal-equivalence proofs and the
+REQ-47 per-primitive verification boundary
+(05_TOOLING/crates/riina-core/verification_boundary.json).
+
+The files stay in-tree for the record. generate-metrics.sh reads this marker
+and sets claimLevels.fstar = "retired"; the claim-integrity gate ranks
+"retired" below every other level so this lane can never overclaim.
