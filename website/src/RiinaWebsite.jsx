@@ -975,6 +975,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</CopyableCode>
               { icon: '\u26A1', name: 'Energy / Utilities', regs: 'NERC CIP, IEC 62443', desc: 'Critical infrastructure protection with proven access boundaries. Control system integrity verified by construction.' },
               { icon: '\u2605', name: 'Islamic Finance', regs: 'AAOIFI, IFSB, BNM RMiT', desc: 'Syariah compliance proven at compile time. No riba, gharar, or maysir possible in type-checked code.' },
               { icon: '\u26D3', name: 'Blockchain / DeFi', regs: 'Smart Contract Security', desc: 'Reentrancy-free by construction. Value conservation proven. Linear state prevents double-spend.' },
+              { icon: '\u2691', name: 'EU Digital Regulation', regs: 'CRA, DORA, NIS2, GDPR', desc: 'Machine-checkable conditions derived from EU regulations, checked at compile time — plus SBOM, CBOM and VEX emitted as build artifacts. A checker, not a conformity assessment.' },
             ].map((ind, i) => (
               <div key={i} className="industry-card">
                 <div className="industry-card__icon">{ind.icon}</div>
@@ -986,7 +987,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</CopyableCode>
           </div>
 
           <p style={{color:'var(--text-muted)',fontSize:14,textAlign:'center',marginBottom:48}}>
-            + 7 more compliance profiles: Telecom, Government, Transportation, Manufacturing, Retail, Education, Legal
+            19 compliance profiles, 606 machine-checkable rules — each rule ships with a violating and a passing test. Checked conditions derived from the named frameworks; passing a profile is evidence toward, never a substitute for, a formal assessment.
           </p>
 
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate</h2>
