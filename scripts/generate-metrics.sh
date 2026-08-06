@@ -623,6 +623,14 @@ TV_QUARANTINED=false
 [ -f "$ROOT_DIR/02_FORMAL/kani/.STUB_QUARANTINED" ] && KANI_QUARANTINED=true
 [ -f "$ROOT_DIR/02_FORMAL/tv/.STUB_QUARANTINED" ] && TV_QUARANTINED=true
 
+# REQ-67 retirements: a `.RETIRED` marker in a lane root (rationale inside)
+# pins that lane's claim level to "retired" — an owner decision recorded in
+# the tree itself, so the flip is reproducible from any checkout.
+ISABELLE_RETIRED=false
+FSTAR_RETIRED=false
+[ -f "$ROOT_DIR/02_FORMAL/isabelle/.RETIRED" ] && ISABELLE_RETIRED=true
+[ -f "$ROOT_DIR/02_FORMAL/fstar/.RETIRED" ] && FSTAR_RETIRED=true
+
 ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
 FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
 TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
@@ -1132,9 +1140,14 @@ fi
 [ "$CLAIM_KANI" = "compiled" ] && [ "$KANI_MECHANIZED_READY" = true ] && CLAIM_KANI="mechanized"
 [ "$CLAIM_TV" = "compiled" ] && [ "$TV_MECHANIZED_READY" = true ] && CLAIM_TV="mechanized"
 
+# REQ-67 retirements override everything: retired is an owner decision, not a
+# rung on the generated→mechanized ladder, and it can never overclaim.
+[ "$ISABELLE_RETIRED" = true ] && CLAIM_ISABELLE="retired" && ISABELLE_COMPILED=false
+[ "$FSTAR_RETIRED" = true ] && CLAIM_FSTAR="retired" && FSTAR_COMPILED=false
+
 ALL_NONCOQ_COMPILED=true
 for level in "$CLAIM_LEAN" "$CLAIM_ISABELLE" "$CLAIM_FSTAR" "$CLAIM_TLAPLUS" "$CLAIM_ALLOY" "$CLAIM_SMT" "$CLAIM_VERUS" "$CLAIM_KANI" "$CLAIM_TV"; do
-  if [ "$level" = "generated" ]; then
+  if [ "$level" = "generated" ] || [ "$level" = "retired" ]; then
     ALL_NONCOQ_COMPILED=false
     break
   fi
@@ -1348,7 +1361,7 @@ cat > "$OUTPUT_FILE" << EOF
     }
   },
   "claimLevels": {
-    "legend": ["generated", "compiled", "mechanized", "independently_audited"],
+    "legend": ["retired", "generated", "compiled", "mechanized", "independently_audited"],
     "overall": "$OVERALL_CLAIM",
     "independentlyAudited": $INDEPENDENTLY_AUDITED,
     "coq": "$CLAIM_COQ",

@@ -1,0 +1,11 @@
+Lane RETIRED 2026-08-06 (owner decision, RIINA_MASTER_PLAN.md REQ-67g).
+
+This Isabelle/HOL tree is a machine-generated port of the Coq sources. It was
+never independently re-verified (0 theories compiled) and is retired rather
+than left presenting a 12,931-lemma figure at claim level "generated": Lean 4
+is the designated independence witness for the core metatheory (REQ-67b), and
+a second redundant port adds no claim value.
+
+The files stay in-tree for the record. generate-metrics.sh reads this marker
+and sets claimLevels.isabelle = "retired"; the claim-integrity gate ranks
+"retired" below every other level so this lane can never overclaim.

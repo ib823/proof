@@ -265,11 +265,13 @@ repo_root = sys.argv[5] if len(sys.argv) > 5 else ""
 d = json.load(open(metrics_path))
 q = d.get("quality", {})
 cl = d.get("claimLevels", {})
-allowed = {"generated", "compiled", "mechanized", "independently_audited"}
+# "retired" (REQ-67): an owner-decided lane retirement — ranked with
+# "generated" at 0 so a retired lane can never overclaim its quality max.
+allowed = {"retired", "generated", "compiled", "mechanized", "independently_audited"}
 keys = ["overall", "coq", "lean", "isabelle", "fstar", "tlaplus", "alloy", "smt", "verus", "kani", "tv"]
 bad_levels = sum(1 for k in keys if cl.get(k, "generated") not in allowed)
 
-rank = {"generated": 0, "compiled": 1, "mechanized": 2, "independently_audited": 3}
+rank = {"retired": 0, "generated": 0, "compiled": 1, "mechanized": 2, "independently_audited": 3}
 
 def norm(level):
     return level if level in rank else "generated"

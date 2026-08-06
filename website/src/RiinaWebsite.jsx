@@ -512,7 +512,7 @@ function Home({ go, metrics }) {
             <MonoLabel style={{ marginBottom: 18 }}>Scope of the claim</MonoLabel>
             <h2 className="serif-h2" style={{ marginBottom: 16, fontSize: 'clamp(29px, 3.2vw, 40px)' }}>We will tell you what is not proven, too.</h2>
             <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.7, color: '#4a453d' }}>
-              The repository carries ten prover lanes. One is mechanized. The other nine are generated from the Coq sources and have not been independently re-verified &mdash; so we grade them publicly and never count them toward the headline figure.
+              The repository carries ten prover lanes. One is mechanized. Two &mdash; Isabelle/HOL and F* &mdash; have been retired by owner decision rather than left presenting generated figures. The rest are generated from the Coq sources and have not been independently re-verified &mdash; so we grade every lane publicly and never count any of them toward the headline figure.
             </p>
           </div>
           <div style={{ borderTop: '1px solid #14120f' }}>
@@ -524,6 +524,7 @@ function Home({ go, metrics }) {
             {[
               ['Lean 4', metrics.lean?.theorems, metrics.claimLevels?.lean],
               ['Isabelle/HOL', metrics.isabelle?.lemmas, metrics.claimLevels?.isabelle],
+              ['F*', metrics.fstar?.lemmas, metrics.claimLevels?.fstar],
             ].map(([name, count, level]) => (
               <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '15px 0', borderBottom: '1px solid #e6e1d6' }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: '#6b6559' }}>{name}</span>
@@ -532,7 +533,7 @@ function Home({ go, metrics }) {
               </div>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '15px 0', borderBottom: '1px solid #e6e1d6' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: '#6b6559', lineHeight: 1.5 }}>Z3/CVC5 &middot; TLA+ &middot; F* &middot; Alloy &middot; Verus &middot; Kani &middot; TV</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: '#6b6559', lineHeight: 1.5 }}>Z3/CVC5 &middot; TLA+ &middot; Alloy &middot; Verus &middot; Kani &middot; TV</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #c9c3b4', color: '#6b6559', padding: '3px 8px', whiteSpace: 'nowrap' }}>generated</span>
             </div>
             <div style={{ padding: '15px 0', fontSize: 13.5, lineHeight: 1.6, color: '#6b6559' }}>
@@ -833,10 +834,10 @@ function Architecture({ metrics }) {
   const lanes = [
     { prover: metrics.coq?.prover || 'Coq / Rocq 9.1.1', count: `${fmt(metrics.proofs?.qedActive || 0)} Qed`, level: metrics.claimLevels?.coq || 'mechanized', role: 'Primary proof engine' },
     { prover: 'Lean 4', count: `${fmt(metrics.lean?.theorems || 0)} decl`, level: metrics.claimLevels?.lean || 'generated', role: 'Generated port' },
-    { prover: 'Isabelle/HOL', count: `${fmt(metrics.isabelle?.lemmas || 0)} lemmas`, level: metrics.claimLevels?.isabelle || 'generated', role: 'Generated port' },
+    { prover: 'Isabelle/HOL', count: `${fmt(metrics.isabelle?.lemmas || 0)} lemmas`, level: metrics.claimLevels?.isabelle || 'generated', role: 'Retired (owner decision, 2026-08-06)' },
     { prover: 'Z3 / CVC5', count: `${fmt(metrics.smt?.assertions || 0)} asserts`, level: metrics.claimLevels?.smt || 'generated', role: 'SMT lane' },
     { prover: 'TLA+', count: `${fmt(metrics.tlaplus?.theorems || 0)} theorems`, level: metrics.claimLevels?.tlaplus || 'generated', role: 'Model-checking lane' },
-    { prover: 'F*', count: `${fmt(metrics.fstar?.lemmas || 0)} lemmas`, level: metrics.claimLevels?.fstar || 'generated', role: 'Dependent-types lane' },
+    { prover: 'F*', count: `${fmt(metrics.fstar?.lemmas || 0)} lemmas`, level: metrics.claimLevels?.fstar || 'generated', role: 'Retired (owner decision, 2026-08-06)' },
     { prover: 'Alloy 6', count: `${fmt(metrics.alloy?.assertions || 0)} asserts`, level: metrics.claimLevels?.alloy || 'generated', role: 'Relational-logic lane' },
     { prover: 'Verus', count: 'quarantined', level: metrics.claimLevels?.verus || 'generated', role: 'Rust verification lane' },
     { prover: 'Kani', count: 'quarantined', level: metrics.claimLevels?.kani || 'generated', role: 'Bounded model checking' },
