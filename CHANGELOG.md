@@ -1,11 +1,13 @@
 # Changelog
 
-**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2910 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,646 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3002 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
 
 ## [0.4.0] — 2026-06-06
 
@@ -14,9 +16,13 @@ Ships the constant-time-hardened, formally-verified crypto work accumulated sinc
 AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519
 ladder), constant-time hardening — incl. a real variable-time leak fixed in Ed25519
 signing — now CI-gated, the set union/intersect O(n·m)→O(n+m) optimization, and the
-CT / audit-readiness tooling (dossier, RFP, host-prep + timing harnesses). Verified:
-0 Admitted/Axiom/Abort, 12,533 Coq Qed across 323 active files, workspaces 294/0 +
-2730/0, clippy clean. Detailed entries (formerly [Unreleased]) follow.
+CT / audit-readiness tooling (dossier, RFP, host-prep + timing harnesses).
+Verified at the tagged release commit `a855c939b` (2026-08-05, all by command):
+**0 Admitted / 0 Axiom / 0 Abort, 12,638 Coq Qed across 328 active files,
+03_PROTO 2,951/0 + 05_TOOLING 304/0, clippy clean** (`--all-targets -D warnings`,
+both workspaces). Detailed entries (formerly [Unreleased]) follow — the per-entry
+Qed counts in them are the corpus size *at the time each change landed* and are
+deliberately left as written.
 
 ### 2026-06-05 — Gate C: set union/intersect O(n·m) → O(n+m)
 
@@ -709,7 +715,13 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Claim level explainer (mechanized/compiled/generated)
 - GPG signing permanently configured for deployments
 
-## [Unreleased]
+### Pre-0.3.0 development notes (Sessions 87–88, March 2026)
+
+<!-- Was mis-titled `## [Unreleased]` until 2026-08-05. It sits BELOW the
+     `## [0.3.0] — 2026-03-19` heading and its content is dated 2026-03-16, so
+     this work shipped IN 0.3.0 — it was simply never promoted when that release
+     was cut. Demoted to a subsection of 0.3.0 rather than deleted, so nothing is
+     lost and the grouping stays visible. Content below is byte-identical. -->
 
 ### Added (Session 88 — 2026-03-16 — Linear Types, Multi-Prover Mechanization, WASM Backend)
 - Linear type enforcement: `biar sekali` (affine), `biar paling` (relevant), `biar mesti` (linear) wired through lexer→parser→typechecker; Phase 3 gate PASSED
@@ -764,7 +776,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,613 Qed proofs
+- Active Coq build now at 12,646 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)
@@ -824,6 +836,6 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Effect system soundness proven
 - Zero third-party runtime dependencies
 
-[Unreleased]: https://github.com/ib823/riina/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/ib823/riina/compare/v0.4.0...HEAD
 [0.2.0]: https://github.com/ib823/riina/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ib823/riina/releases/tag/v0.1.0

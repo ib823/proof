@@ -1,6 +1,6 @@
 # RIINA Cross-Cutting Specifications
 
-**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2910 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,646 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3002 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 This directory contains cross-cutting concerns that span multiple industries and domains.
 

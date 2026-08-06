@@ -368,7 +368,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 | S | Hardware contracts (CPU side-channel models) | 1 file (560 lines) | Proven |
 | T | Hermetic build (binary bootstrap verification) | 1 file (502 lines) | Proven |
 | U | Runtime guardian (verified micro-hypervisor) | 1 file (604 lines) | Proven |
-| V | Termination guarantees (strong normalization) | 6 files (3K lines) | Proven |
+| V | Termination guarantees (strong normalization — recursion-free core; general recursion is type-safe but not normalizing, REQ-44) | 6 files (3K lines) | Proven (scoped) |
 | W | Verified memory (separation logic) | 1 file (739 lines) | Proven |
 | X | Concurrency (session types, data-race freedom) | 1 file (750 lines) | Proven |
 | Y | Verified standard library | 1 file (780 lines) | Proven |
@@ -392,7 +392,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,613 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 2910 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,646 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3002 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 | Area | Status |
 |------|--------|
