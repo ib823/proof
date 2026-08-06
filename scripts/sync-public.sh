@@ -329,8 +329,12 @@ if [ "${1:-}" = "--reconcile" ]; then
              <(git ls-tree -r --name-only main | sort) > "$PRUNE_LIST"
     if [ -s "$PRUNE_LIST" ]; then
         echo "    Pruning $(wc -l < "$PRUNE_LIST") public-tracked files absent from main:"
-        sed 's/^/      - /' "$PRUNE_LIST" | head -20
-        [ "$(wc -l < "$PRUNE_LIST")" -gt 20 ] && echo "      … (full list in the commit diff)"
+        # head reads the FILE (not a pipe from sed): under `set -o pipefail`,
+        # `sed | head` dies of SIGPIPE (exit 141) when head closes early.
+        head -20 "$PRUNE_LIST" | sed 's/^/      - /'
+        if [ "$(wc -l < "$PRUNE_LIST")" -gt 20 ]; then
+            echo "      … (full list in the commit diff)"
+        fi
         tr '\n' '\0' < "$PRUNE_LIST" | xargs -0 git rm -q --ignore-unmatch --
     fi
     rm -f "$PRUNE_LIST"
