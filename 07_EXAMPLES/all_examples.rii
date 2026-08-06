@@ -140,8 +140,8 @@ fungsi hari_dalam_minggu(d: Nombor) -> Teks kesan Bersih {
 
 fungsi contoh_pasangan() -> Nombor kesan Bersih {
     biar pasangan = (42, "jawapan");
-    biar pertama = fst pasangan;
-    pertama
+    biar elem_pertama = fst pasangan;
+    elem_pertama
 }
 
 fungsi tukar(p: (Nombor, Nombor)) -> (Nombor, Nombor) kesan Bersih {
@@ -394,7 +394,7 @@ fungsi contoh_tegaskan() -> Nombor kesan Bersih {
 /// ──────────────────────────────────────────────────────────────────────────────
 
 fungsi contoh_matematik() -> Nombor kesan Bersih {
-    biar a = mutlak(-5);
+    biar a = mutlak(0 - 5);
     biar b = minimum(3, 7);
     biar c = maksimum(3, 7);
     biar d = kuasa(2, 10);

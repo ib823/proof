@@ -8704,7 +8704,7 @@ fungsi agregat_kesihatan(senarai_hasil: Senarai<HasilSemakan>) -> KeadaanKesihat
         padan hasil.keadaan {
             SAKIT => ada_sakit = betul,
             AMARAN => ada_amaran = betul,
-            _ => {},
+            _ => (),
         };
     }
 
@@ -8796,7 +8796,7 @@ fungsi semak_semua_perkhidmatan(konfigur_senarai: Senarai<KonfigurPerkhidmatan>)
                     jana_amaran(konfigur.nama, rekod_lama.keadaan_semasa, hasil.keadaan);
                 }
             },
-            Tiada => {},
+            Tiada => (),
         };
 
         kemaskini_rekod(hasil);
@@ -8832,7 +8832,7 @@ fungsi dapat_status_papan_pemuka() -> (KeadaanKesihatan, Nombor, Nombor) kesan B
                     keadaan_keseluruhan = AMARAN;
                 }
             },
-            _ => {},
+            _ => (),
         };
     }
 
@@ -8970,7 +8970,7 @@ fungsi dapat(kunci: Teks) -> Mungkin<Nilai> kesan Bersih {
                         pulang Tiada;
                     }
                 },
-                Tiada => {},
+                Tiada => (),
             }
 
             pulang Ada(entry.nilai);
@@ -9010,7 +9010,7 @@ fungsi ada(kunci: Teks) -> Benar kesan Bersih {
                         pulang salah;
                     }
                 },
-                Tiada => {},
+                Tiada => (),
             }
 
             pulang betul;
@@ -9311,7 +9311,7 @@ fungsi log_catatan(
     biar hasil = coba SistemFail::tambah_fail(konfigurasi.nama_fail, teks_format + "\n");
 
     padan hasil {
-        Berjaya(_) => {},
+        Berjaya(_) => (),
         Kegagalan(ralat) => {
             cetak_ralat(format!("Gagal menulis log: {}", ralat));
         },
@@ -9936,7 +9936,7 @@ fungsi dapat_status_giliran() -> (Nombor, Nombor, Nombor) kesan Bersih {
             MENUNGGU => menunggu = menunggu + 1,
             MEMPROSES => memproses = memproses + 1,
             BERJAYA => berjaya = berjaya + 1,
-            _ => {},
+            _ => (),
         };
     }
 
@@ -11525,7 +11525,7 @@ fungsi berikan_akses_ibu_bapa(
                 pulang betul;
             }
         },
-        Tiada => {},
+        Tiada => (),
     };
 
     cetak_baris("DITOLAK: Hubungan orang tua tidak dapat disahkan");

@@ -105,18 +105,18 @@ fungsi cipta_sesi(
 /// Validate session token
 fungsi sahkan_sesi(token_id: Teks) -> Mungkin<Sesi> kesan Bersih {
     untuk rekod dalam stor_sesi {
-        untuk sesi dalam rekod.senarai_sesi {
-            kalau sesi.token_id == token_id {
+        untuk sesi_aktif dalam rekod.senarai_sesi {
+            kalau sesi_aktif.token_id == token_id {
                 // Check if expired
-                kalau Masa::masa_unix() > sesi.masa_tamat {
+                kalau Masa::masa_unix() > sesi_aktif.masa_tamat {
                     pulang Tiada;
                 }
 
-                kalau !sesi.aktif {
+                kalau !sesi_aktif.aktif {
                     pulang Tiada;
                 }
 
-                pulang Ada(sesi);
+                pulang Ada(sesi_aktif);
             }
         }
     }
@@ -125,8 +125,8 @@ fungsi sahkan_sesi(token_id: Teks) -> Mungkin<Sesi> kesan Bersih {
 }
 
 /// Check if session has required scope
-fungsi ada_skop(sesi: Sesi, skop_perlu: Teks) -> Benar kesan Bersih {
-    untuk skop dalam sesi.skop {
+fungsi ada_skop(sesi_aktif: Sesi, skop_perlu: Teks) -> Benar kesan Bersih {
+    untuk skop dalam sesi_aktif.skop {
         kalau skop == skop_perlu {
             pulang betul;
         }
@@ -141,27 +141,27 @@ fungsi segar_sesi(token_id: Teks, tambah_saat: Nombor) -> Benar kesan Bersih {
         biar senarai_baru = [];
         biar didapati = salah;
 
-        untuk sesi dalam rekod.senarai_sesi {
-            kalau sesi.token_id == token_id {
+        untuk sesi_aktif dalam rekod.senarai_sesi {
+            kalau sesi_aktif.token_id == token_id {
                 didapati = betul;
 
-                kalau Masa::masa_unix() < sesi.masa_tamat {
+                kalau Masa::masa_unix() < sesi_aktif.masa_tamat {
                     biar sesi_segar = {
-                        token_id: sesi.token_id,
-                        pengguna_id: sesi.pengguna_id,
-                        skop: sesi.skop,
-                        masa_cipta: sesi.masa_cipta,
-                        masa_tamat: sesi.masa_tamat + tambah_saat,
-                        alamat_ip: sesi.alamat_ip,
-                        agen_pengguna: sesi.agen_pengguna,
-                        aktif: sesi.aktif,
+                        token_id: sesi_aktif.token_id,
+                        pengguna_id: sesi_aktif.pengguna_id,
+                        skop: sesi_aktif.skop,
+                        masa_cipta: sesi_aktif.masa_cipta,
+                        masa_tamat: sesi_aktif.masa_tamat + tambah_saat,
+                        alamat_ip: sesi_aktif.alamat_ip,
+                        agen_pengguna: sesi_aktif.agen_pengguna,
+                        aktif: sesi_aktif.aktif,
                     };
                     senarai_baru = senarai_baru + [sesi_segar];
                 } lain {
-                    senarai_baru = senarai_baru + [sesi];
+                    senarai_baru = senarai_baru + [sesi_aktif];
                 }
             } lain {
-                senarai_baru = senarai_baru + [sesi];
+                senarai_baru = senarai_baru + [sesi_aktif];
             }
         }
 
@@ -179,9 +179,9 @@ fungsi tamatkan_sesi(token_id: Teks) -> Benar kesan Bersih {
     untuk rekod dalam stor_sesi {
         biar senarai_baru = [];
 
-        untuk sesi dalam rekod.senarai_sesi {
-            kalau sesi.token_id != token_id {
-                senarai_baru = senarai_baru + [sesi];
+        untuk sesi_aktif dalam rekod.senarai_sesi {
+            kalau sesi_aktif.token_id != token_id {
+                senarai_baru = senarai_baru + [sesi_aktif];
             }
         }
 
@@ -214,9 +214,9 @@ fungsi bersih_sesi_tamat() -> kesan Bersih {
     untuk rekod dalam stor_sesi {
         biar senarai_sah = [];
 
-        untuk sesi dalam rekod.senarai_sesi {
-            kalau masa_sekarang <= sesi.masa_tamat && sesi.aktif {
-                senarai_sah = senarai_sah + [sesi];
+        untuk sesi_aktif dalam rekod.senarai_sesi {
+            kalau masa_sekarang <= sesi_aktif.masa_tamat && sesi_aktif.aktif {
+                senarai_sah = senarai_sah + [sesi_aktif];
             }
         }
 
@@ -237,9 +237,9 @@ fungsi dapat_sesi_aktif(pengguna_id: Teks) -> Senarai<Sesi> kesan Bersih {
         kalau rekod.pengguna_id == pengguna_id {
             biar senarai_aktif = [];
 
-            untuk sesi dalam rekod.senarai_sesi {
-                kalau sesi.aktif && masa_sekarang <= sesi.masa_tamat {
-                    senarai_aktif = senarai_aktif + [sesi];
+            untuk sesi_aktif dalam rekod.senarai_sesi {
+                kalau sesi_aktif.aktif && masa_sekarang <= sesi_aktif.masa_tamat {
+                    senarai_aktif = senarai_aktif + [sesi_aktif];
                 }
             }
 
@@ -259,9 +259,9 @@ awam fungsi uruskan_permintaan_dilindungi(
     biar mungkin_sesi = sahkan_sesi(token_id);
 
     padan mungkin_sesi {
-        Ada(sesi) => {
-            kalau ada_skop(sesi, skop_perlu) {
-                cetak_baris(format!("Permintaan dari {} dibenarkan", sesi.pengguna_id));
+        Ada(sesi_sah) => {
+            kalau ada_skop(sesi_sah, skop_perlu) {
+                cetak_baris(format!("Permintaan dari {} dibenarkan", sesi_sah.pengguna_id));
                 pulang Ada("{\"berjaya\":true}");
             } lain {
                 cetak_baris("Skop tidak mencukupi");

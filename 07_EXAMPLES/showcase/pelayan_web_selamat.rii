@@ -46,15 +46,15 @@ fungsi laluankan(mentah: Teks) -> Mungkin<LaluanSelamat> kesan Bersih {
         pulang Tiada;
     }
     // Normalize slashes
-    biar bersih = ganti(mentah, "//", "/");
-    pulang Ada(LaluanSelamat { laluan: bersih });
+    biar teks_bersih = ganti(mentah, "//", "/");
+    pulang Ada(LaluanSelamat { laluan: teks_bersih });
 }
 
 /// Sanitize for SQL — parameterize, never interpolate
 fungsi sqlkan(mentah: Teks) -> TeksSqlSelamat kesan Bersih {
     // Escape single quotes for safety
-    biar bersih = ganti(mentah, "'", "''");
-    pulang TeksSqlSelamat { nilai: bersih };
+    biar teks_bersih = ganti(mentah, "'", "''");
+    pulang TeksSqlSelamat { nilai: teks_bersih };
 }
 
 /// Encode for HTML — prevent XSS

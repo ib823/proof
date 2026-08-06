@@ -101,15 +101,23 @@ fungsi campuran_data(
     }
 }
 
+fungsi hasilkan_kunci_acak() -> Teks kesan Kripto {
+    /// Simulasi penjanaan kunci rawak (lihat crypto_ops.rii)
+    "kunci_simulasi_32_bait"
+}
+
+fungsi aes_enkripsi_simulasi(data: Teks, kunci: Teks) -> Teks kesan Kripto {
+    /// Simulasi enkripsi AES-256 — data sebenar akan melalui primitif kripto
+    "AES256[" + data + "]"
+}
+
 fungsi enkripsi_dengan_aras(
     data: DataBerlabel<Teks>
-) -> Hasil<DataBerlabel<Rahsia<Teks>>, Teks> kesan (Kripto, MasaTetap) {
+) -> Hasil<DataBerlabel<Teks>, Teks> kesan Kripto {
     /// Enkripsi data, aras tetap sama
     /// Encrypt data, level stays same
-    biar kunci = Rahsia(hasilkan_kunci_acak());
-    biar terenkripsi = Rahsia(
-        aes_enkripsi(data.nilai, selamatkan(kunci))
-    );
+    biar kunci = hasilkan_kunci_acak();
+    biar terenkripsi = aes_enkripsi_simulasi(data.nilai, kunci);
 
     Ok(DataBerlabel {
         nilai: terenkripsi,
@@ -122,7 +130,7 @@ fungsi utama() -> Nombor kesan Tulis {
     cetak("=== Hierarki Aras Keselamatan ===\n");
 
     /// Buat data pada pelbagai aras
-    biar awam = DataBerlabel {
+    biar data_awam = DataBerlabel {
         nilai: "Maklumat awam",
         aras: ArasKeselamatan.Awam,
         pemilik: "sistem",

@@ -82,7 +82,7 @@ fungsi berikan_akses_ibu_bapa(
                 pulang betul;
             }
         },
-        Tiada => {},
+        Tiada => (),
     };
 
     cetak_baris("DITOLAK: Hubungan orang tua tidak dapat disahkan");

@@ -96,7 +96,7 @@ fungsi muat_konfigurasi() -> Hasil<KonfigurasiAplikasi, RalatKonfigurasi> kesan 
     biar pelabuhan = hurai_pelabuhan(pelabuhan_teks);
     padan pelabuhan {
         Ralat(e) => pulang Ralat(e),
-        Ok(_) => {},
+        Ok(_) => (),
     };
 
     /// Database config — mixed security levels
@@ -109,19 +109,19 @@ fungsi muat_konfigurasi() -> Hasil<KonfigurasiAplikasi, RalatKonfigurasi> kesan 
     biar db_kata_laluan = baca_rahsia_env("DB_KATA_LALUAN");
     padan db_kata_laluan {
         Ralat(e) => pulang Ralat(e),
-        Ok(_) => {},
+        Ok(_) => (),
     };
 
     biar api_kunci = baca_rahsia_env("API_KUNCI");
     padan api_kunci {
         Ralat(e) => pulang Ralat(e),
-        Ok(_) => {},
+        Ok(_) => (),
     };
 
     biar api_rahsia = baca_rahsia_env("API_RAHSIA");
     padan api_rahsia {
         Ralat(e) => pulang Ralat(e),
-        Ok(_) => {},
+        Ok(_) => (),
     };
 
     biar db_pelabuhan = hurai_pelabuhan(db_pelabuhan_teks);
