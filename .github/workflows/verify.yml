@@ -163,6 +163,19 @@ jobs:
       - name: scripts/generate-sbom.sh --check
         run: bash scripts/generate-sbom.sh --check
 
+  smt-scoped:
+    name: SMT scoped set (REQ-67a)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install z3
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq z3
+      # Thin wrapper over the repo's own gate: runs Z3 on exactly the files
+      # in 02_FORMAL/smt/SCOPED_SET.txt against their recorded verdicts.
+      # The generated SMT corpus carries no claim and is not run.
+      - name: scripts/verify-smt.sh
+        run: bash scripts/verify-smt.sh
+
   docs-audit:
     name: Docs / metrics parity (audit-docs.sh)
     runs-on: ubuntu-latest

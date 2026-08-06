@@ -1,0 +1,12 @@
+# REQ-67a — the SMT lane's SCOPED SET: the files that are actually verified
+# by running Z3, with the exact expected verdict per file. Everything not
+# listed here is generated corpus and carries NO verification claim.
+#
+# Format: <path relative to repo root> <expected number of `unsat` results>
+# verify-smt.sh runs Z3 on each file and fails unless the output is EXACTLY
+# the expected count of `unsat` lines — any `sat`, `unknown`, error, or a
+# count mismatch is a gate failure (a checker that cannot fail is worthless).
+#
+# Grow this set with effect-join/policy algebra files; each addition must
+# state its expected verdict here (that IS the claim being made).
+02_FORMAL/smt/RIINA/Active/SecurityLatticeVerification.smt2 25
