@@ -35,5 +35,10 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/riina/sw.js').catch(() => {});
+      }
+    </script>
   </body>
 </html>

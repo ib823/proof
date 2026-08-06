@@ -550,7 +550,7 @@ function Home({ go, metrics }) {
             {[
               ['Evidence ledger', 'Browse the corpus by theorem family, with the file path and the command that re-checks it.', 'evidence'],
               ['Playground', 'Write RIINA in the browser and watch the checker accept or refuse it. Nothing to install.', 'playground'],
-              ['Install', 'Build from source, run in Docker or Nix.', 'docs'],
+              ['Install', 'Build from source, run in Docker or Nix, or take the portable installer.', 'docs'],
             ].map(([t, d, p]) => (
               <button key={t} onClick={() => go(p)} className="hov-border-ink" style={{ textAlign: 'left', background: '#fffdf8', border: '1px solid #d8d3c7', padding: '26px 24px 28px', cursor: 'pointer', color: '#14120f' }}>
                 <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, marginBottom: 8 }}>{t}</div>
@@ -1014,7 +1014,7 @@ function Docs({ go, metrics }) {
         <MonoLabel style={{ marginBottom: 18 }}>Documentation &middot; v{metrics.version}</MonoLabel>
         <h1 className="serif-h1" style={{ marginBottom: 16, fontSize: 'clamp(36px, 4.6vw, 58px)', maxWidth: 900 }}>Install it, build it, break it.</h1>
         <p style={{ margin: 0, fontSize: 'clamp(15.5px, 1.2vw, 17px)', lineHeight: 1.65, color: '#3a352d', maxWidth: 700 }}>
-          Three routes in, the complete CLI surface, and the contribution rules we hold ourselves to.
+          Four routes in, the complete CLI surface, and the contribution rules we hold ourselves to.
         </p>
       </div>
 
@@ -1029,12 +1029,14 @@ function Docs({ go, metrics }) {
         {tab === 'install' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'clamp(28px, 4vw, 52px)', alignItems: 'start' }}>
             <div>
-              <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 'clamp(24px, 2.4vw, 30px)' }}>Three routes in</h2>
+              <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 'clamp(24px, 2.4vw, 30px)' }}>Four routes in</h2>
               <DarkCode pad="clamp(18px, 2vw, 24px)" style={{ marginBottom: 26 }}>
                 <Dim>{'# From source\n'}</Dim>
                 {'git clone https://github.com/ib823/riina.git\ncd riina/03_PROTO && cargo build --release\n\n'}
                 <Dim>{'# Docker\n'}</Dim>
                 {'docker build -t riina .\ndocker run --rm riina check myfile.rii\n\n'}
+                <Dim>{'# Portable installer\n'}</Dim>
+                {'curl -sSf https://ib823.github.io/riina/install.sh | bash\n\n'}
                 <Dim>{'# Nix\n'}</Dim>
                 {'nix run github:ib823/riina'}
               </DarkCode>
@@ -1111,6 +1113,9 @@ function Docs({ go, metrics }) {
 
         {tab === 'releases' && (
           <div style={{ maxWidth: 900 }}>
+            <DarkCode pad="18px 22px" style={{ marginBottom: 30 }}>
+              <Prompt />{'curl -sSf https://ib823.github.io/riina/install.sh | bash'}
+            </DarkCode>
             {RELEASES.map(r => (
               <div key={r.version} style={{ borderTop: '1px solid #14120f', padding: '22px 0 26px' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 14 }}>
