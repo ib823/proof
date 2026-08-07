@@ -2859,6 +2859,46 @@ Option (ii) is the recommendation, because REQ-47 is cheap and the CRA work reus
 built for REQ-31 — but the gate protocol reserves this to the owner, so the marker is UNCHANGED
 pending that call.
 
+### SESSION CONCLUSION — 2026-08-06/07 (Fable 5): REQ-54 S2, REQ-55 90/165, backend-parity fixes, full deploy chain green
+
+**All landed on `main`, content-synced to `public` and the `riina` mirror, website deployed; every
+claim below verified by command before commit.** What a new session needs to know, in order:
+
+**Landed.** (1) **REQ-54 S2** — `foundations/TypeCheckFn.v`: executable `type_check_fn` over all 27
+`has_type` rules + `type_check_fn_sound` (Qed) + 10 vm_compute goldens incl. three negative
+controls. Corpus 331/331 .vo, **12,678 Qed, 0 Admitted/Axiom/Abort**. Remaining: S3 extraction, S4
+golden byte-compare vs the Rust interp, S5 CI fuzz differential. (2) **REQ-55 three batches, corpus
+70 → 90/165, zero regressions at every step** — full layer maps, keyword-collision table, and the
+no-mutation rewrite pattern all recorded in the REQ-55 row. (3) **REQ-67** — EffectJoin SMT lane
+grown (2 files / 37 properties, all UNSAT); `escape_json` newline bug fixed in
+check-noncoq-mechanized.sh (a malformed report had silently degraded metrics to missing_or_stale —
+now reportFresh=true/strict_report). (4) **Backend parity (REQ-68 cluster)** — WASM `cetak`-of-Bool
+fixed (was dereferencing the bool as a string pointer; CI caught it, local wasmtime crash had been a
+silent skip); the corpus differential now treats one-backend-runs/other-fails as a DIVERGENCE, and
+that tightened gate surfaced four tracked entries in KNOWN_DIVERGENT (C: padan enum-payload
+arithmetic + record loads; WASM: closures in records). (5) **REQ-68 registered** — zero-param
+functions desugar to eagerly-evaluated non-lambda group members invisible to siblings; `f()` does
+not apply (honest call `f(())`); `ujian`/`jenis` decls split the LetRecGroup.
+
+**Verified end state.** CI green on both repos at head (proof runs 152–154 success incl. the
+differential; riina runs 8–9 success; mid-outage failures superseded — the 2026-08-06 GitHub
+Actions/Pages major outage is RESOLVED). Live site serves 12,678 Qed + isabelle/fstar retired.
+3,002/0 Rust tests both-backends-exercised; 308/0 tooling; clippy 0; all ten public-quality gates
+PASS.
+
+**Next session, in priority order.** (a) REQ-55 next batches: the deep-regeneration files
+(nist_framework, key_value_store, session_manager, random, secure_channel, time_effect,
+actor_simple, all_examples, data_pipeline) need full state-passing regenerations using the
+now-standard pattern; the Comma/Semi/Arrow/Gt/LParen parse classes remain undiagnosed; the
+REQ-66-gated set (ewallet_pci, declassify, auth_flow, logging_audit, classify, secret_basic,
+hipaa_health…) flips only when REQ-66 lands. (b) **REQ-68 unit-lambda desugar** (fix plan in the
+row; regression shapes t21/t22 described there) — also unblocks the four KNOWN_DIVERGENT entries'
+investigation. (c) **REQ-66 value-level declassification, Coq-first** (dedicated session; its
+payoff set is now 7+ examples). (d) REQ-67: flip `claimLevels.smt` from a fresh checker report,
+then the Lean core-spine capstone. **Process lesson recorded:** never run two `riinac verify`
+chains concurrently — a racing pair shared the cargo target dir and stamped a false-FAIL manifest
+(fixed in 949616d87); pushes are serialized from now on.
+
 **Recommended next actions, in order** (external-audit-gated items remain KIV by owner decision —
 REQ-28 and anything needing a third party or a maintainer-held key are explicitly deferred):
 1. **REQ-27 compiler-enforcement parity (P0, Gate B)** — unchanged and still the highest-value
