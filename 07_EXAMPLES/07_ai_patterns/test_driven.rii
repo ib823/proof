@@ -18,6 +18,11 @@ jenis Tindanan<T> = {
 };
 
 /// Constructor
+/// Helper stubs (di atas supaya kumpulan fungsi pertama nampak mereka)
+fungsi panjang_teks(t: Teks) -> Nombor kesan Bersih { pulang 0; }
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+fungsi potong(s: Senarai<T>, mula: Nombor, hujung: Nombor) -> Senarai<T> kesan Bersih { pulang []; }
+
 fungsi tindanan_baru() -> Tindanan<Nombor> kesan Bersih {
     pulang { elemen: [] };
 }
@@ -48,7 +53,7 @@ fungsi intip(tindanan: Tindanan<Nombor>) -> Mungkin<Nombor> kesan Bersih {
 }
 
 /// Check if stack is empty
-fungsi kosong?(tindanan: Tindanan<Nombor>) -> Benar kesan Bersih {
+fungsi adalah_kosong(tindanan: Tindanan<Nombor>) -> Benar kesan Bersih {
     pulang panjang(tindanan.elemen) == 0;
 }
 
@@ -60,14 +65,14 @@ fungsi saiz(tindanan: Tindanan<Nombor>) -> Nombor kesan Bersih {
 /// TESTS FIRST — written before implementation
 ujian "tindanan_baru_kosong" {
     biar t = tindanan_baru();
-    tegaskan(kosong?(t));
+    tegaskan(adalah_kosong(t));
     tegaskan_sama(saiz(t), 0);
 }
 
 ujian "tolak_masuk_satu_elemen" {
     biar t = tindanan_baru()
         |> fungsi(s: Tindanan<Nombor>) -> Tindanan<Nombor> { tolak_masuk(s, 42) };
-    tegaskan(!kosong?(t));
+    tegaskan(!adalah_kosong(t));
     tegaskan_sama(saiz(t), 1);
 }
 
@@ -116,52 +121,58 @@ jenis PeraturanPengesahan = Fn(Teks) -> Mungkin<Teks>;
 
 /// Build validation rules
 fungsi peraturan_min_panjang(min: Nombor) -> PeraturanPengesahan kesan Bersih {
-    pulang fungsi(nilai: Teks) -> Mungkin<Teks> {
+    fungsi(nilai: Teks) -> Mungkin<Teks> {
         kalau panjang_teks(nilai) < min {
             Ada("Minimum " + ke_teks(min) + " aksara")
         } lain {
             Tiada
         }
-    };
+    }
 }
 
 fungsi peraturan_maks_panjang(maks: Nombor) -> PeraturanPengesahan kesan Bersih {
-    pulang fungsi(nilai: Teks) -> Mungkin<Teks> {
+    fungsi(nilai: Teks) -> Mungkin<Teks> {
         kalau panjang_teks(nilai) > maks {
             Ada("Maksimum " + ke_teks(maks) + " aksara")
         } lain {
             Tiada
         }
-    };
+    }
 }
 
 fungsi peraturan_bukan_kosong() -> PeraturanPengesahan kesan Bersih {
-    pulang fungsi(nilai: Teks) -> Mungkin<Teks> {
+    fungsi(nilai: Teks) -> Mungkin<Teks> {
         kalau nilai == "" {
             Ada("Tidak boleh kosong")
         } lain {
             Tiada
         }
-    };
+    }
 }
 
-/// Run all rules and collect errors
-fungsi sahkan(
+/// Run all rules and collect errors (rekursif — tiada mutasi)
+fungsi kumpul_ralat(
+    nilai: Teks,
+    peraturan: Senarai<PeraturanPengesahan>,
+    idx: Nombor
+) -> Senarai<Teks> kesan Bersih {
+    kalau idx >= senarai_panjang(peraturan) {
+        pulang [];
+    }
+    biar p: PeraturanPengesahan = peraturan[idx];
+    biar baki = kumpul_ralat(nilai, peraturan, idx + 1);
+    padan p(nilai) {
+        Ada(mesej) => [mesej] + baki,
+        Tiada => baki,
+    }
+}
+
+fungsi sahkan_nilai(
     nilai: Teks,
     peraturan: Senarai<PeraturanPengesahan>
 ) -> Hasil<Teks, Senarai<Teks>> kesan Bersih {
-    biar ubah ralat: Senarai<Teks> = [];
-
-    untuk p dalam peraturan {
-        padan p(nilai) {
-            Ada(mesej) => {
-                ralat = ralat + [mesej];
-            },
-            Tiada => (),
-        };
-    }
-
-    kalau panjang(ralat) > 0 {
+    biar ralat = kumpul_ralat(nilai, peraturan, 0);
+    kalau senarai_panjang(ralat) > 0 {
         pulang Ralat(ralat);
     }
     pulang Ok(nilai);
@@ -174,20 +185,29 @@ ujian "sahkan_nilai_sah" {
         peraturan_min_panjang(3),
         peraturan_maks_panjang(50),
     ];
-    biar hasil = sahkan("Ahmad", peraturan);
-    tegaskan(hasil.ok?());
+    biar hasil = sahkan_nilai("Ahmad", peraturan);
+    padan hasil {
+        Ok(_) => tegaskan(betul),
+        Ralat(_) => tegaskan(salah),
+    };
 }
 
 ujian "sahkan_kosong_gagal" {
     biar peraturan = [peraturan_bukan_kosong()];
-    biar hasil = sahkan("", peraturan);
-    tegaskan(hasil.ralat?());
+    biar hasil = sahkan_nilai("", peraturan);
+    padan hasil {
+        Ok(_) => tegaskan(salah),
+        Ralat(_) => tegaskan(betul),
+    };
 }
 
 ujian "sahkan_terlalu_pendek_gagal" {
     biar peraturan = [peraturan_min_panjang(5)];
-    biar hasil = sahkan("ab", peraturan);
-    tegaskan(hasil.ralat?());
+    biar hasil = sahkan_nilai("ab", peraturan);
+    padan hasil {
+        Ok(_) => tegaskan(salah),
+        Ralat(_) => tegaskan(betul),
+    };
 }
 
 ujian "sahkan_kumpul_semua_ralat" {
@@ -195,7 +215,7 @@ ujian "sahkan_kumpul_semua_ralat" {
         peraturan_bukan_kosong(),
         peraturan_min_panjang(3),
     ];
-    biar hasil = sahkan("", peraturan);
+    biar hasil = sahkan_nilai("", peraturan);
     padan hasil {
         Ralat(senarai) => {
             /// Empty string fails both bukan_kosong and min_panjang
@@ -271,6 +291,3 @@ ujian "kalkulator_mula_sifar" {
 
 /// Helpers
 fungsi panjang(s: Senarai<T>) -> Nombor kesan Bersih { pulang 0; }
-fungsi panjang_teks(t: Teks) -> Nombor kesan Bersih { pulang 0; }
-fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
-fungsi potong(s: Senarai<T>, mula: Nombor, tamat: Nombor) -> Senarai<T> kesan Bersih { pulang []; }

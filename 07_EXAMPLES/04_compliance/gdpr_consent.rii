@@ -43,7 +43,7 @@ fungsi rekod_persetujuan_jelas(
     pengguna_id: Teks,
     teks_persetujuan: Teks,
     dasar: DasarSah
-) -> Benar kesan Bersih {
+) -> Benar kesan (Tulis, Masa) {
     // GDPR Article 7: Proof of consent required
     kalau dasar != PERSETUJUAN && dasar != KONTRAK {
         cetak_baris("Dasar sah: tidak memerlukan persetujuan eksplisit");
@@ -54,7 +54,7 @@ fungsi rekod_persetujuan_jelas(
         pengguna_id: pengguna_id,
         dasar_sah: dasar,
         persetujuan_teks: teks_persetujuan,
-        tarikh_persetujuan: Masa::masa_unix(),
+        tarikh_persetujuan: masa_unix(()),
         versih_dasar: "GDPR-2024-01",
         boleh_ditarik_balik: betul,
         metod_penyampaian: "form_digital",
@@ -66,27 +66,28 @@ fungsi rekod_persetujuan_jelas(
 }
 
 /// Withdraw consent (right to withdraw)
-fungsi tarik_balik_persetujuan(pengguna_id: Teks) -> Benar kesan Bersih {
-    // GDPR Article 7: Right to withdraw consent
-    biar rekod_baru = [];
-    biar didapati = salah;
-
-    untuk rekod dalam rekod_persetujuan {
-        kalau rekod.pengguna_id == pengguna_id {
-            didapati = betul;
-            cetak_baris(format!("Persetujuan ditarik balik untuk {}", pengguna_id));
-            // Don't add to new list - effectively deleted
-        } lain {
-            rekod_baru = rekod_baru + [rekod];
-        }
+fungsi buang_persetujuan(senarai: Senarai<RekodPersetujuan>, pengguna_id: Teks, idx: Nombor) -> Senarai<RekodPersetujuan> kesan Bersih {
+    /// GDPR Article 17: erasure BUILDS A NEW LIST (gaya ungkapan, tiada mutasi)
+    kalau idx >= senarai_panjang(senarai) {
+        pulang [];
     }
+    biar rekod: RekodPersetujuan = senarai[idx];
+    biar baki = buang_persetujuan(senarai, pengguna_id, idx + 1);
+    kalau rekod.pengguna_id == pengguna_id {
+        baki
+    } lain {
+        [rekod] + baki
+    }
+}
 
-    rekod_persetujuan = rekod_baru;
-    pulang didapati;
+fungsi tarik_balik_persetujuan(senarai: Senarai<RekodPersetujuan>, pengguna_id: Teks) -> Senarai<RekodPersetujuan> kesan Tulis {
+    // GDPR Article 7: Right to withdraw consent — returns the NEW record list
+    cetak_baris("Persetujuan ditarik balik untuk " + pengguna_id);
+    buang_persetujuan(senarai, pengguna_id, 0)
 }
 
 /// Right to access personal data
-fungsi hak_akses_data(pengguna_id: Teks) -> Senarai<Teks> kesan Bersih {
+fungsi hak_akses_data(pengguna_id: Teks) -> Senarai<Teks> kesan Tulis {
     // GDPR Article 15: Right to access
     biar data_pengguna = [];
 
@@ -97,7 +98,7 @@ fungsi hak_akses_data(pengguna_id: Teks) -> Senarai<Teks> kesan Bersih {
 }
 
 /// Right to erasure (right to be forgotten)
-fungsi hak_penghapusan(pengguna_id: Teks) -> Benar kesan Bersih {
+fungsi hak_penghapusan(pengguna_id: Teks) -> Benar kesan Tulis {
     // GDPR Article 17: Right to erasure
     cetak_baris(format!("Memproses hak untuk dilupakan: {}", pengguna_id));
 
@@ -122,7 +123,7 @@ fungsi hak_penghapusan(pengguna_id: Teks) -> Benar kesan Bersih {
 }
 
 /// Data portability right
-fungsi hak_portabiliti_data(pengguna_id: Teks) -> Teks kesan Bersih {
+fungsi hak_portabiliti_data(pengguna_id: Teks) -> Teks kesan Tulis {
     // GDPR Article 20: Right to data portability
     cetak_baris(format!("Mengeksport data dalam format terstruktur untuk {}", pengguna_id));
 
@@ -132,7 +133,7 @@ fungsi hak_portabiliti_data(pengguna_id: Teks) -> Teks kesan Bersih {
 }
 
 /// Right to object to processing
-fungsi hak_keberatan(pengguna_id: Teks, tujuan: Teks) -> Benar kesan Bersih {
+fungsi hak_keberatan(pengguna_id: Teks, tujuan: Teks) -> Benar kesan Tulis {
     // GDPR Article 21: Right to object
     cetak_baris(format!("Keberatan terhadap pemrosesan untuk tujuan: {}", tujuan));
 
@@ -145,43 +146,28 @@ fungsi hak_keberatan(pengguna_id: Teks, tujuan: Teks) -> Benar kesan Bersih {
 }
 
 /// Data Protection Impact Assessment (DPIA)
-fungsi jalankan_penilaian_dampak(jenis_pemrosesan: Teks) -> (Benar, Senarai<Teks>) kesan Bersih {
+fungsi jalankan_penilaian_dampak(jenis_pemrosesan: Teks) -> (Benar, Senarai<Teks>) kesan Tulis {
     // GDPR Article 35: DPIA required for high-risk processing
-    cetak_baris(format!("Menjalankan DPIA untuk: {}", jenis_pemrosesan));
+    cetak_baris("Menjalankan DPIA untuk: " + jenis_pemrosesan);
 
-    biar risiko = [];
-
-    padan jenis_pemrosesan {
-        "profiling_otomatis" => {
-            risiko = risiko + ["Risiko: Keputusan otomatis yang signifikan"];
-            risiko = risiko + ["Pengurangan risiko: Intervensi manusia diperlukan"];
-        },
-        "pemantauan_lokasi" => {
-            risiko = risiko + ["Risiko: Privasi lokasi dilanggar"];
-            risiko = risiko + ["Pengurangan risiko: Transparansi penuh"];
-        },
-        "data_sensitif" => {
-            risiko = risiko + ["Risiko: Data ras, agama, dll."];
-            risiko = risiko + ["Pengurangan risiko: Enkripsi dan kontrol akses"];
-        },
-        _ => {
-            risiko = risiko + ["Risiko minimal"];
-        },
+    biar risiko = padan jenis_pemrosesan {
+        "profiling_otomatis" => ["Risiko: Keputusan otomatis yang signifikan",
+                                 "Pengurangan risiko: Intervensi manusia diperlukan"],
+        "pemantauan_lokasi" => ["Risiko: Privasi lokasi dilanggar",
+                                "Pengurangan risiko: Transparansi penuh"],
+        "data_sensitif" => ["Risiko: Data ras, agama, dll.",
+                            "Pengurangan risiko: Enkripsi dan kontrol akses"],
+        _ => ["Risiko minimal"],
     };
 
-    kalau panjang(risiko) > 2 {
-        cetak_baris("DPIA: Risiko tinggi, persetujuan otoritas diperlukan");
-        pulang (salah, risiko);
-    }
-
-    cetak_baris("DPIA: Risiko dapat diminimalkan");
-    pulang (betul, risiko);
+    biar aman = senarai_panjang(risiko) <= 2;
+    (aman, risiko)
 }
 
 /// Breach notification (72 hours)
-fungsi pemberitahuan_pelanggaran(jenis_data: Teks, jumlah_terdampak: Nombor) -> kesan Bersih {
+fungsi pemberitahuan_pelanggaran(jenis_data: Teks, jumlah_terdampak: Nombor) -> kesan (Tulis, Masa) {
     // GDPR Article 33, 34: Notify within 72 hours
-    biar tarikh_pelanggaran = Masa::masa_unix();
+    biar tarikh_pelanggaran = masa_unix(());
     biar batas_notifikasi = tarikh_pelanggaran + (72 * 3600);
 
     cetak_baris(format!("Pelanggaran: {} orang terdampak oleh {}", jumlah_terdampak, jenis_data));
@@ -199,7 +185,7 @@ fungsi hitung_penarikan_persetujuan() -> Nombor kesan Bersih {
     pulang jumlah;
 }
 
-awam fungsi utama() -> kesan Tulis {
+awam fungsi utama() -> kesan (Tulis, Masa) {
     cetak_baris("=== PENGURUSAN PERSETUJUAN GDPR ===");
 
     // Record consent
@@ -227,8 +213,4 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
-}
+

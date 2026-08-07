@@ -113,7 +113,7 @@ fungsi batalkan(
 
 /// ─── Query functions (pure) ─────────────────────────────────────────
 
-fungsi terminal?(keadaan: KeadaanPembayaran) -> Benar kesan Bersih {
+fungsi adalah_terminal(keadaan: KeadaanPembayaran) -> Benar kesan Bersih {
     padan keadaan {
         Selesai(_, _, _) => betul,
         Ditolak(_, _) => betul,
@@ -167,7 +167,10 @@ ujian "peralihan_sah_menunggu_ke_ditolak" {
     biar info = { id: "PAY-001", jumlah: 100, mata_wang: "MYR", pembayar: "Ahmad", cap_masa: 0 };
     biar keadaan = Menunggu(info);
     biar hasil = tolak(keadaan, "Baki tidak mencukupi");
-    tegaskan(hasil.ok?());
+    padan hasil {
+        Ok(_) => tegaskan(betul),
+        Ralat(_) => tegaskan(salah),
+    };
 
     padan hasil.buka() {
         Ditolak(_, sebab) => tegaskan_sama(sebab, "Baki tidak mencukupi"),
@@ -179,12 +182,15 @@ ujian "peralihan_tidak_sah_selesai_ke_dibatalkan" {
     biar info = { id: "PAY-002", jumlah: 200, mata_wang: "MYR", pembayar: "Siti", cap_masa: 0 };
     biar keadaan = Selesai(info, "AUTH-200", 99999);
     biar hasil = batalkan(keadaan, "Mahu batal");
-    tegaskan(hasil.ralat?());
+    padan hasil {
+        Ok(_) => tegaskan(salah),
+        Ralat(_) => tegaskan(betul),
+    };
 }
 
 ujian "keadaan_terminal_betul" {
     biar info = { id: "PAY-003", jumlah: 50, mata_wang: "MYR", pembayar: "Ali", cap_masa: 0 };
-    tegaskan(terminal?(Selesai(info, "A", 1)));
-    tegaskan(terminal?(Ditolak(info, "sebab")));
-    tegaskan(!terminal?(Menunggu(info)));
+    tegaskan(adalah_terminal(Selesai(info, "A", 1)));
+    tegaskan(adalah_terminal(Ditolak(info, "sebab")));
+    tegaskan(!adalah_terminal(Menunggu(info)));
 }

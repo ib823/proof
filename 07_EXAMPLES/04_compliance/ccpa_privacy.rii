@@ -59,28 +59,26 @@ fungsi hak_tahu_data_apa(id_konsumen: Teks) -> Teks kesan Tulis {
 }
 
 /// CCPA Section 1798.105: Right to delete
-fungsi hak_penghapusan(id_konsumen: Teks) -> Benar kesan Tulis {
-    cetak_baris(format!("Memproses permintaan penghapusan untuk {}", id_konsumen));
-
-    biar data_baru = [];
-    biar dihapus = salah;
-
-    untuk konsumen dalam data_konsumen {
-        kalau konsumen.id_konsumen != id_konsumen {
-            data_baru = data_baru + [konsumen];
-        } lain {
-            dihapus = betul;
-            cetak_baris("Data konsumen dihapus dari sistem utama");
-        }
+fungsi buang_konsumen(senarai: Senarai<DataKonsumen>, id_konsumen: Teks, idx: Nombor) -> Senarai<DataKonsumen> kesan Bersih {
+    /// CCPA deletion BUILDS A NEW LIST (gaya ungkapan, tiada mutasi)
+    kalau idx >= senarai_panjang(senarai) {
+        pulang [];
     }
-
-    data_konsumen = data_baru;
-
-    kalau dihapus {
-        cetak_baris("Pemberitahuan: Vendor pihak ketiga diminta untuk menghapus");
+    biar konsumen: DataKonsumen = senarai[idx];
+    biar baki = buang_konsumen(senarai, id_konsumen, idx + 1);
+    kalau konsumen.id_konsumen == id_konsumen {
+        baki
+    } lain {
+        [konsumen] + baki
     }
+}
 
-    pulang dihapus;
+fungsi hak_penghapusan(senarai: Senarai<DataKonsumen>, id_konsumen: Teks) -> Senarai<DataKonsumen> kesan Tulis {
+    cetak_baris("Memproses permintaan penghapusan untuk " + id_konsumen);
+    biar data_baru = buang_konsumen(senarai, id_konsumen, 0);
+    cetak_baris("Data konsumen dihapus dari sistem utama");
+    cetak_baris("Pemberitahuan: Vendor pihak ketiga diminta untuk menghapus");
+    data_baru
 }
 
 /// CCPA Section 1798.120: Right to opt-out of sale

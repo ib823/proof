@@ -6157,6 +6157,22 @@ impl WasmBackend {
                         code.push(Op::Call as u8);
                         wasm_encode::encode_uleb128(0, code);
                         code.push(Op::Drop as u8);
+                    } else if matches!(ctx.var_to_ty.get(arg), Some(Ty::Bool)) {
+                        // Bool: write "betul"/"salah", byte-identical to the C
+                        // backend's riina_format. Without this arm a bool fell
+                        // into the string-pointer branch below, dereferencing
+                        // the 0/1 VALUE as a length-prefixed string address —
+                        // out-of-bounds on wasmtime (found by the corpus
+                        // differential when security_levels.rii first printed
+                        // a bool through both backends).
+                        Self::emit_local_get(arg, ctx.var_map, code);
+                        code.push(Op::I32WrapI64 as u8);
+                        code.push(Op::If as u8);
+                        code.push(0x40);
+                        wasm_write_bytes(code, b"betul");
+                        code.push(Op::Else as u8);
+                        wasm_write_bytes(code, b"salah");
+                        code.push(Op::End as u8);
                     } else {
                         // String pointer (len-prefixed in data section):
                         // Layout: [len:u32][bytes...]. fd_write needs an iovec
