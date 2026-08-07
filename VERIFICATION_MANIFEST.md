@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-07T00:31:50Z
-**Git SHA:** c745cba28
+**Generated:** 2026-08-07T01:13:43Z
+**Git SHA:** 2f05a9579
 **Mode:** full
 **Status:** PASS
 
@@ -31,6 +31,6 @@
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
 | Cross-Prover Validation (10 provers) | PASS | Grand total: 104563 | Coq: 12678 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12282 | Alloy: 11627 | SMT: 12431 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
-| Transpiler Staleness | WARN | 1 prover(s) may be stale: F* — run `python3 scripts/generate-full-stack.py` (checked: F*; skipped generated/non-compiled: Lean, Isabelle, TLA+, Alloy, SMT, Verus, Kani, TV) |
+| Transpiler Staleness | WARN | 2 prover(s) may be stale: F*, SMT — run `python3 scripts/generate-full-stack.py` (checked: F*, SMT; skipped generated/non-compiled: Lean, Isabelle, TLA+, Alloy, Verus, Kani, TV) |
 | Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12678, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
