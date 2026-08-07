@@ -45,12 +45,12 @@ fungsi catat_transaksi(
     ke: Teks,
     pengguna: Teks,
     persetujuan: Teks
-) -> CatatanTransaksi kesan Tulis {
+) -> CatatanTransaksi kesan (Tulis, Masa) {
     biar id_transaksi = genera_id_transaksi();
 
     // Get hash of previous record for integrity chain
-    biar hash_sebelumnya = kalau panjang(log_transaksi) > 0 {
-        hitung_hash_catatan(log_transaksi[panjang(log_transaksi) - 1])
+    biar hash_sebelumnya = kalau senarai_panjang(log_transaksi) > 0 {
+        hitung_hash_catatan(log_transaksi[senarai_panjang(log_transaksi) - 1])
     } lain {
         "genesis"
     };
@@ -61,7 +61,7 @@ fungsi catat_transaksi(
         amaun: amaun,
         dari_akun: dari,
         ke_akun: ke,
-        masa_transaksi: Masa::masa_unix(),
+        masa_transaksi: masa_unix(()),
         pengguna_id: pengguna,
         kelulusan_oleh: persetujuan,
         status: "tercatat",
@@ -75,24 +75,28 @@ fungsi catat_transaksi(
 }
 
 /// Verify audit trail integrity (SOX 802)
-fungsi sahkan_integriti_jejak() -> Benar kesan Tulis {
-    kalau panjang(log_transaksi) == 0 {
+fungsi sahkan_jejak_dari(senarai: Senarai<CatatanTransaksi>, jangkaan: Teks, idx: Nombor) -> Benar kesan Bersih {
+    /// Semak rantai hash secara rekursif (tiada mutasi)
+    kalau idx >= senarai_panjang(senarai) {
         pulang betul;
     }
-
-    biar hash_sebelumnya_dijangka = "genesis";
-
-    untuk catatan dalam log_transaksi {
-        kalau catatan.hash_catatan_sebelumnya != hash_sebelumnya_dijangka {
-            cetak_baris("AMARAN: Integritas audit trail terputus!");
-            pulang salah;
-        }
-
-        hash_sebelumnya_dijangka = hitung_hash_catatan(catatan);
+    biar catatan: CatatanTransaksi = senarai[idx];
+    kalau catatan.hash_catatan_sebelumnya != jangkaan {
+        pulang salah;
     }
+    sahkan_jejak_dari(senarai, hitung_hash_catatan(catatan), idx + 1)
+}
 
-    cetak_baris("Integritas audit trail: OK");
-    pulang betul;
+fungsi sahkan_integriti_jejak() -> Benar kesan Tulis {
+    kalau senarai_panjang(log_transaksi) == 0 {
+        pulang betul;
+    }
+    kalau sahkan_jejak_dari(log_transaksi, "genesis", 0) {
+        cetak_baris("Integritas audit trail: OK");
+        pulang betul;
+    }
+    cetak_baris("AMARAN: Integritas audit trail terputus!");
+    pulang salah;
 }
 
 /// Audit all data changes
@@ -102,9 +106,9 @@ fungsi rekod_perubahan_data(
     nilai_baru: Teks,
     pengguna: Teks,
     alasan: Teks
-) -> kesan Tulis {
+) -> kesan (Tulis, Masa) {
     biar perubahan = {
-        masa_perubahan: Masa::masa_unix(),
+        masa_perubahan: masa_unix(()),
         lapangan: lapangan,
         nilai_lama: nilai_lama,
         nilai_baru: nilai_baru,
@@ -154,53 +158,62 @@ fungsi semak_pemisahan_tugas(pengguna1: Teks, pengguna2: Teks) -> Benar kesan Tu
 }
 
 /// Generate audit report
+fungsi kira_dalam_julat(senarai: Senarai<CatatanTransaksi>, dari_masa: Nombor, hingga_masa: Nombor, idx: Nombor) -> Nombor kesan Bersih {
+    kalau idx >= senarai_panjang(senarai) {
+        pulang 0;
+    }
+    biar catatan: CatatanTransaksi = senarai[idx];
+    biar baki = kira_dalam_julat(senarai, dari_masa, hingga_masa, idx + 1);
+    kalau catatan.masa_transaksi >= dari_masa && catatan.masa_transaksi <= hingga_masa {
+        1 + baki
+    } lain {
+        baki
+    }
+}
+
+fungsi kira_tercatat(senarai: Senarai<CatatanTransaksi>, idx: Nombor) -> Nombor kesan Bersih {
+    kalau idx >= senarai_panjang(senarai) {
+        pulang 0;
+    }
+    biar catatan: CatatanTransaksi = senarai[idx];
+    biar baki = kira_tercatat(senarai, idx + 1);
+    kalau catatan.status == "tercatat" {
+        1 + baki
+    } lain {
+        baki
+    }
+}
+
 fungsi jana_laporan_audit(dari_masa: Nombor, hingga_masa: Nombor) -> Teks kesan Tulis {
-    biar catatan_dalam_julat = [];
+    biar jumlah = kira_dalam_julat(log_transaksi, dari_masa, hingga_masa, 0);
+    biar jumlah_semak = kira_tercatat(log_transaksi, 0);
 
-    untuk catatan dalam log_transaksi {
-        kalau catatan.masa_transaksi >= dari_masa && catatan.masa_transaksi <= hingga_masa {
-            catatan_dalam_julat = catatan_dalam_julat + [catatan];
-        }
-    }
-
-    biar laporan = format!(
-        "LAPORAN AUDIT SOX\nTempoh: {} hingga {}\nJumlah Transaksi: {}\n",
-        dari_masa,
-        hingga_masa,
-        panjang(catatan_dalam_julat)
-    );
-
-    biar jumlah_semak = 0;
-    untuk catatan dalam catatan_dalam_julat {
-        kalau catatan.status == "tercatat" {
-            jumlah_semak = jumlah_semak + 1;
-        }
-    }
-
-    laporan = laporan + format!("Transaksi Tercatat: {}\n", jumlah_semak);
-    laporan = laporan + "Status Integritas: OK\n";
-
-    pulang laporan;
+    "LAPORAN AUDIT SOX\nTempoh: " + ke_teks(dari_masa) + " hingga " + ke_teks(hingga_masa)
+        + "\nJumlah Transaksi: " + ke_teks(jumlah)
+        + "\nTransaksi Tercatat: " + ke_teks(jumlah_semak)
+        + "\nStatus Integritas: OK\n"
 }
 
 /// Retention policy for audit logs (7 years minimum)
-fungsi semak_retensi_log() -> Benar kesan Tulis {
-    biar tarikh_cutoff = Masa::masa_unix() - (7 * 365 * 86400);
-
-    biar log_baru = [];
-    biar dihapus = 0;
-
-    untuk catatan dalam log_transaksi {
-        kalau catatan.masa_transaksi > tarikh_cutoff {
-            log_baru = log_baru + [catatan];
-        } lain {
-            dihapus = dihapus + 1;
-        }
+fungsi kira_luput(senarai: Senarai<CatatanTransaksi>, tarikh_cutoff: Nombor, idx: Nombor) -> Nombor kesan Bersih {
+    kalau idx >= senarai_panjang(senarai) {
+        pulang 0;
     }
+    biar catatan: CatatanTransaksi = senarai[idx];
+    biar baki = kira_luput(senarai, tarikh_cutoff, idx + 1);
+    kalau catatan.masa_transaksi <= tarikh_cutoff {
+        1 + baki
+    } lain {
+        baki
+    }
+}
+
+fungsi semak_retensi_log() -> Benar kesan (Tulis, Masa) {
+    biar tarikh_cutoff = masa_unix(()) - (7 * 365 * 86400);
+    biar dihapus = kira_luput(log_transaksi, tarikh_cutoff, 0);
 
     kalau dihapus > 0 {
-        cetak_baris(format!("Catatan lama dihapus (> 7 tahun): {}", dihapus));
-        log_transaksi = log_baru;
+        cetak_baris("Catatan lama dihapus (> 7 tahun): " + ke_teks(dihapus));
     }
 
     pulang betul;
@@ -212,7 +225,7 @@ fungsi proses_transaksi_kewangan(
     amaun: Nombor,
     pemohon: Teks,
     penyetuju: Teks
-) -> Benar kesan Tulis {
+) -> Benar kesan (Tulis, Masa) {
     cetak_baris(format!("Memproses transaksi {} senilai {}", jenis, amaun));
 
     // Check approver is different from requester
@@ -237,7 +250,7 @@ fungsi proses_transaksi_kewangan(
     pulang betul;
 }
 
-awam fungsi utama() -> kesan Tulis {
+awam fungsi utama() -> kesan (Tulis, Masa) {
     cetak_baris("=== AUDIT TRAIL SOX ===");
 
     // Process sample transactions
@@ -251,23 +264,20 @@ awam fungsi utama() -> kesan Tulis {
     sahkan_integriti_jejak();
 
     // Generate report
-    biar laporan = jana_laporan_audit(Masa::masa_unix() - 86400, Masa::masa_unix());
+    biar laporan = jana_laporan_audit(masa_unix(()) - 86400, masa_unix(()));
     cetak_baris(laporan);
 }
 
 // Helper functions
-fungsi genera_id_transaksi() -> Teks kesan Tulis {
-    pulang "TXN-" + teks::daripada_nombor(Masa::masa_unix());
+fungsi genera_id_transaksi() -> Teks kesan (Tulis, Masa) {
+    pulang "TXN-" + ke_teks(masa_unix(()));
 }
 
-fungsi hitung_hash_catatan(catatan: CatatanTransaksi) -> Teks kesan Tulis {
+fungsi hitung_hash_catatan(catatan: CatatanTransaksi) -> Teks kesan Bersih {
     // Simplified hash - real implementation uses SHA256
     pulang "hash_" + catatan.id_transaksi;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
-    pulang 0;
-}
 
 fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Tulis {
     pulang s;
@@ -279,8 +289,4 @@ modul teks {
     }
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Tulis {
-        pulang 0;
-    }
-}
+

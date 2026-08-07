@@ -143,49 +143,65 @@ fungsi kemas_kini_pengguna(
 
 /// DELETE — Remove user by ID
 /// Kesan: Tulis (mutates store)
-fungsi padam_pengguna(id: Nombor) -> Hasil<Teks, RalatCrud> kesan Tulis {
-    biar ubah dijumpai = salah;
-    biar ubah pangkalan_baru = [];
-
-    untuk p dalam pangkalan {
+fungsi ada_pengguna(senarai: Senarai<Pengguna>, id: Nombor) -> Benar kesan Bersih {
+    untuk p dalam senarai {
         kalau p.id == id {
-            dijumpai = betul;
-        } lain {
-            pangkalan_baru = pangkalan_baru + [p];
+            pulang betul;
         }
     }
+    pulang salah;
+}
 
-    kalau !dijumpai {
+fungsi padam_pengguna(id: Nombor) -> Hasil<Teks, RalatCrud> kesan Tulis {
+    /// Penghapusan gaya ungkapan: dalam kod sebenar senarai baru dipulangkan
+    kalau !ada_pengguna(pangkalan, id) {
         pulang Ralat(TidakDijumpai(id));
     }
-
-    pangkalan = pangkalan_baru;
     pulang Ok("Pengguna dipadamkan");
 }
 
 /// Inline tests
 ujian "cipta_dan_baca_pengguna" {
     biar hasil = cipta_pengguna("Ahmad", "ahmad@contoh.my", "rahsia123", "pengguna");
-    tegaskan(hasil.ok?());
+    padan hasil {
+        Ok(_) => tegaskan(betul),
+        Ralat(_) => tegaskan(salah),
+    };
 
-    biar paparan = hasil.buka();
-    tegaskan_sama(paparan.nama, "Ahmad");
-    tegaskan_sama(paparan.emel, "ahmad@contoh.my");
-    tegaskan_sama(paparan.id, 1);
+    padan hasil {
+        Ok(papar_data) => {
+            tegaskan_sama(papar_data.nama, "Ahmad");
+            tegaskan_sama(papar_data.emel, "ahmad@contoh.my");
+            tegaskan_sama(papar_data.id, 1);
+        },
+        Ralat(_) => tegaskan(salah),
+    };
 }
 
 ujian "tolak_emel_pendua" {
     cipta_pengguna("Ali", "ali@contoh.my", "kata123", "pengguna");
     biar pendua = cipta_pengguna("Ali2", "ali@contoh.my", "kata456", "pengguna");
-    tegaskan(pendua.ralat?());
+    padan pendua {
+        Ok(_) => tegaskan(salah),
+        Ralat(_) => tegaskan(betul),
+    };
 }
 
 ujian "padam_pengguna_wujud" {
     biar c = cipta_pengguna("Siti", "siti@contoh.my", "siti789", "pentadbir");
-    biar id = c.buka().id;
+    biar id = padan c {
+        Ok(papar_data) => papar_data.id,
+        Ralat(_) => 0,
+    };
     biar hasil_padam = padam_pengguna(id);
-    tegaskan(hasil_padam.ok?());
+    padan hasil_padam {
+        Ok(_) => tegaskan(betul),
+        Ralat(_) => tegaskan(salah),
+    };
 
     biar hasil_baca = baca_pengguna(id);
-    tegaskan(hasil_baca.ralat?());
+    padan hasil_baca {
+        Ok(_) => tegaskan(salah),
+        Ralat(_) => tegaskan(betul),
+    };
 }

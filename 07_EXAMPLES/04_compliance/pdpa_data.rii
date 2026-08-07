@@ -79,7 +79,7 @@ fungsi daftar_persetujuan(
     kategori_data: KategoriData,
     tujuan: Tujuan,
     tempoh_bulan: Nombor
-) -> Benar kesan Tulis {
+) -> Benar kesan (Tulis, Masa) {
     // Check if lawful basis exists
     kalau !semak_dasar_sah(kategori_data, tujuan) {
         cetak_baris("Pemprosesan data tidak sesuai PDPA");
@@ -90,7 +90,7 @@ fungsi daftar_persetujuan(
         pengguna_id: pengguna_id,
         kategori_data: kategori_data,
         tujuan: tujuan,
-        tarikh_persetujuan: Masa::masa_unix(),
+        tarikh_persetujuan: masa_unix(()),
         tempoh_kesahan: tempoh_bulan * 30 * 24 * 3600,
         boleh_ditarik_balik: betul,
     };
@@ -102,18 +102,43 @@ fungsi daftar_persetujuan(
 }
 
 /// Withdraw consent
-fungsi tarik_balik_persetujuan(pengguna_id: Teks, kategori_data: KategoriData) -> kesan Tulis {
-    biar rekod_baru = [];
-
-    untuk persetujuan dalam rekod_persetujuan {
-        kalau persetujuan.pengguna_id != pengguna_id || persetujuan.kategori_data != kategori_data {
-            rekod_baru = rekod_baru + [persetujuan];
-        } lain {
-            cetak_baris(format!("Persetujuan ditarik balik untuk {}", pengguna_id));
-        }
+fungsi sama_kategori(a: KategoriData, b: KategoriData) -> Benar kesan Bersih {
+    padan (a, b) {
+        (Data_Peribadi_Asas, Data_Peribadi_Asas) => betul,
+        (Data_Sensitif, Data_Sensitif) => betul,
+        (Data_Kewangan, Data_Kewangan) => betul,
+        (Data_Keselamatan, Data_Keselamatan) => betul,
+        (Data_Navigasi, Data_Navigasi) => betul,
+        _ => salah,
     }
+}
 
-    rekod_persetujuan = rekod_baru;
+fungsi buang_persetujuan_pdpa(
+    senarai: Senarai<RekodPersetujuan>,
+    pengguna_id: Teks,
+    kategori_data: KategoriData,
+    idx: Nombor
+) -> Senarai<RekodPersetujuan> kesan Bersih {
+    /// Penarikan balik MEMBINA SENARAI BARU (gaya ungkapan, tiada mutasi)
+    kalau idx >= senarai_panjang(senarai) {
+        pulang [];
+    }
+    biar persetujuan: RekodPersetujuan = senarai[idx];
+    biar baki = buang_persetujuan_pdpa(senarai, pengguna_id, kategori_data, idx + 1);
+    kalau persetujuan.pengguna_id == pengguna_id && sama_kategori(persetujuan.kategori_data, kategori_data) {
+        baki
+    } lain {
+        [persetujuan] + baki
+    }
+}
+
+fungsi tarik_balik_persetujuan(
+    senarai: Senarai<RekodPersetujuan>,
+    pengguna_id: Teks,
+    kategori_data: KategoriData
+) -> Senarai<RekodPersetujuan> kesan Tulis {
+    cetak_baris("Persetujuan ditarik balik untuk " + pengguna_id);
+    buang_persetujuan_pdpa(senarai, pengguna_id, kategori_data, 0)
 }
 
 /// Check if data retention period exceeded
@@ -121,10 +146,10 @@ fungsi semak_tempoh_penyimpanan(
     data: Teks,
     kategori: KategoriData,
     masa_dirakam: Nombor
-) -> (Benar, Nombor) kesan Tulis {
+) -> (Benar, Nombor) kesan (Tulis, Masa) {
     biar polisi = kari_polisi(kategori);
 
-    biar masa_kini = Masa::masa_unix();
+    biar masa_kini = masa_unix(());
     biar umur_data = masa_kini - masa_dirakam;
 
     kalau umur_data > polisi.tempoh_maksimal {
@@ -182,14 +207,14 @@ fungsi kari_polisi(kategori: KategoriData) -> PolisiPenyimpanan kesan Tulis {
 }
 
 /// Data subject access request (DSAR)
-fungsi proses_permintaan_akses_data(pengguna_id: Teks) -> (Benar, Teks) kesan SistemFail {
+fungsi proses_permintaan_akses_data(pengguna_id: Teks) -> (Benar, Teks) kesan (SistemFail, Masa) {
     cetak_baris(format!("Memproses DSAR untuk {}", pengguna_id));
 
     // Retrieve all personal data for subject
     biar data_perihal_subjek = "";  // Aggregated records
 
     // Must respond within 30 days
-    biar tarikh_akhir = Masa::masa_unix() + (30 * 86400);
+    biar tarikh_akhir = masa_unix(()) + (30 * 86400);
 
     cetak_baris(format!("Permintaan mesti dijawab sebelum {}", tarikh_akhir));
 
@@ -202,7 +227,7 @@ fungsi semak_meminimalkan_data(
     data_yang_dikumpul: Senarai<Teks>
 ) -> Benar kesan Tulis {
     // Only collect data necessary for stated purpose
-    biar jumlah_data = panjang(data_yang_dikumpul);
+    biar jumlah_data = senarai_panjang(data_yang_dikumpul);
 
     padan kategori_data {
         Data_Peribadi_Asas => {
@@ -222,14 +247,14 @@ fungsi semak_meminimalkan_data(
 }
 
 /// Main compliance checker
-awam fungsi utama() -> kesan (Bersih | SistemFail) {
+awam fungsi utama() -> kesan (Tulis, SistemFail, Masa) {
     cetak_baris("=== PEMERIKSAAN PEMATUHAN PDPA ===");
 
     // Register consent for service provision
     daftar_persetujuan("pengguna123", Data_Peribadi_Asas, PERKHIDMATAN_KONTRAK, 12);
 
     // Check retention compliance
-    biar (sah, masa_tersisa) = semak_tempoh_penyimpanan("data_sensitif", Data_Sensitif, Masa::masa_unix());
+    biar (sah, masa_tersisa) = semak_tempoh_penyimpanan("data_sensitif", Data_Sensitif, masa_unix(()));
     cetak_baris(format!("Kepatuhan penyimpanan: {}", kalau sah { "OK" } lain { "LAMPAU TEMPOH" }));
 
     // Process data access request
@@ -246,8 +271,4 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Tulis {
     pulang s;
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Tulis {
-        pulang 0;
-    }
-}
+
