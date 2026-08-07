@@ -304,10 +304,22 @@ def report_head_matches_or_compatible(report_head, paths):
         return False
     if report_head == repo_head or (repo_parent_head and report_head == repo_parent_head):
         return True
-    if not git_ok("merge-base", "--is-ancestor", report_head, repo_head):
+    # Compatibility = the sensitive paths are content-identical between the
+    # report's commit and HEAD. A two-dot diff compares the two trees
+    # directly, so this also works when HEAD is on the PUBLIC branch (a
+    # disjoint reconcile history whose blobs mirror main) — the previous
+    # merge-base ancestor requirement made a main-stamped report unusable
+    # there, wrongly failing claim integrity after the SMT flip (2026-08-07).
+    if not git_ok("cat-file", "-e", f"{report_head}^{{commit}}"):
         return False
-    diff = git_stdout("diff", "--name-only", f"{report_head}..{repo_head}", "--", *paths)
-    return not diff.strip()
+    diff = git_stdout("diff", "--name-only", report_head, repo_head, "--", *paths)
+    # Markdown files under the sensitive directories are documentation
+    # (worker completion reports etc.) — the checker's verdicts never read
+    # them, and several are internal-excluded from the public tree, which
+    # would otherwise make a main-stamped report permanently incompatible
+    # with the public branch. Code/config/marker changes still invalidate.
+    changed = [p for p in diff.strip().splitlines() if p and not p.endswith(".md")]
+    return not changed
 
 quality_max = {
     "coq": "mechanized" if q.get("coqCompiled") is True else "generated",
