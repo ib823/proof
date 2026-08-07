@@ -65,7 +65,11 @@ INTERNAL_PATHS=(
     "scripts/run-gemini-hostile-review.sh"
     "reports/dim1_dim9_promotion_status.json"
     "reports/heavy_closure_status.json"
-    "reports/noncoq_mechanized_status.json"
+    # reports/noncoq_mechanized_status.json is now PUBLISHED: it is the
+    # claim-integrity evidence for non-Coq lane levels (the public gate
+    # requires it the moment any lane claims above "generated" — the SMT
+    # lane flipped to mechanized 2026-08-07). Its absolute paths are
+    # relativized by escape_json in check-noncoq-mechanized.sh.
     "diagnostics/"
 
     # --- Coq internal strategy/delegation files ---

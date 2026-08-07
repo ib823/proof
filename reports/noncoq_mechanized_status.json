@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-08-07T01:25:40Z",
-  "repo_head": "34494aabb22859f16e06241c23852231042593e6",
+  "generated_utc": "2026-08-07T01:53:11Z",
+  "repo_head": "92e7df8781bcbdd4737568f32124638b7ae68f77",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -8,12 +8,12 @@
     "isabelle": false,
     "docker": false,
     "isabelle_bin": "",
-    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh",
+    "isabelle_local_error": "ERROR: pinned local Isabelle not found at ./05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh",
     "java": true,
     "z3": true,
     "fstar": false,
     "fstar_bin": "",
-    "fstar_local_error": "ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh",
+    "fstar_local_error": "ERROR: pinned local F* not found at ./05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh",
     "verus": false,
     "kani": false,
     "tla2tools_jar": false,
@@ -43,7 +43,7 @@
       "smoke_compiled_theories": 0,
       "smoke_compiled_lemmas": 0,
       "mechanized_ready": false,
-      "pending": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh)"
+      "pending": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at ./05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh)"
     },
     "fstar": {
       "full_exec_ok": false,
@@ -55,7 +55,7 @@
       "smoke_declared_lemmas": 3,
       "smoke_compiled_lemmas": 0,
       "mechanized_ready": false,
-      "pending": "require full Active+Domains F* compilation with zero generated placeholders (local F* enforcement: ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh)"
+      "pending": "require full Active+Domains F* compilation with zero generated placeholders (local F* enforcement: ERROR: pinned local F* not found at ./05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh)"
     },
     "tlaplus": {
       "full_exec_ok": false,

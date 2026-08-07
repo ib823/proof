@@ -72,8 +72,11 @@ escape_json() {
   # Backslash, quote, tab — then join lines with a literal \n. A raw
   # newline in a JSON string is invalid; a multi-line Isabelle-missing
   # error produced a malformed report that generate-metrics silently
-  # treated as missing_or_stale (2026-08-07).
-  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' \
+  # treated as missing_or_stale (2026-08-07). Container-absolute repo
+  # paths are relativized so the report is publishable to the public
+  # tree (it is the claim-integrity evidence for non-Coq lane levels).
+  printf '%s' "$1" | sed "s|$REPO_ROOT|.|g" \
+    | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' \
     | awk 'NR>1{printf "\\n"} {printf "%s", $0}'
 }
 
