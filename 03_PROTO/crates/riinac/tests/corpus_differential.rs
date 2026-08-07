@@ -43,7 +43,23 @@ use std::process::Command;
 /// differential test tolerates these (so it tracks them without failing) but
 /// fails on any *new* divergence. **Empty as of 2026-06-03** — all 32
 /// dual-backend examples are byte-equal.
-const KNOWN_DIVERGENT: &[&str] = &[];
+/// 2026-08-07: four asymmetric RUNTIME divergences surfaced the moment the
+/// differential learned to treat one-side-runs/one-side-fails as a
+/// divergence instead of a silent skip (the bool-print bug hid behind that
+/// skip). All four run CORRECTLY on the reference interpreter; the native
+/// backends have feature gaps their REQ-55 example rewrites now exercise:
+///   - builder/command/state_machine: C runtime aborts ("le/mul on non-int",
+///     "load on non-ref") — C lowering of padan enum-payload arithmetic and
+///     record field loads through sum values.
+///   - test_driven: C runs; WASM translation error — closures stored in
+///     records (validator combinators).
+/// Tracked as backend-parity work in the REQ-68 cluster (master plan).
+const KNOWN_DIVERGENT: &[&str] = &[
+    "05_patterns/builder.rii",
+    "05_patterns/command.rii",
+    "05_patterns/state_machine.rii",
+    "07_ai_patterns/test_driven.rii",
+];
 
 fn tool_available(tool: &str) -> bool {
     Command::new(tool)
@@ -116,53 +132,93 @@ fn collect_examples(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
-/// Build+run via the C backend; `None` if any step fails (parse/typecheck/cc/run).
-fn run_c(work: &Path, stem: &str, src: &Path) -> Option<Vec<u8>> {
-    let c = work.join(format!("{stem}.c"));
-    let bin = work.join(format!("{stem}_c"));
-    let emit = Command::new(env!("CARGO_BIN_EXE_riinac"))
-        .args(["emit-c", &src.to_string_lossy()])
-        .output()
-        .ok()?;
-    if !emit.status.success() {
-        return None;
-    }
-    fs::write(&c, &emit.stdout).ok()?;
-    let cc = Command::new("cc")
-        .args(["-o", &bin.to_string_lossy(), &c.to_string_lossy(), "-lm"])
-        .output()
-        .ok()?;
-    if !cc.status.success() {
-        return None;
-    }
-    let run = Command::new(&bin).output().ok()?;
-    if !run.status.success() {
-        return None;
-    }
-    Some(run.stdout)
+/// Outcome of one backend attempt. Distinguishing a BUILD failure (the
+/// example is simply outside this backend's supported surface — out of
+/// differential scope) from a RUNTIME failure matters: if BOTH backends
+/// build but only one runs, that asymmetry IS a divergence, not a skip.
+/// The 2026-08-07 bool-print bug hid locally behind exactly this gap —
+/// wasmtime crashed (skip) while CI's wasmtime produced wrong bytes
+/// (failure), so the local suite stayed green while CI went red.
+enum BackendOutcome {
+    NoBuild,
+    RunFail(String),
+    Ran(Vec<u8>),
 }
 
-/// Build+run via the WASM backend; `None` if any step fails.
-fn run_wasm(work: &Path, stem: &str, src: &Path) -> Option<Vec<u8>> {
+
+impl BackendOutcome {
+    /// Unwrap a successful run's bytes; panics with `msg` otherwise (used by
+    /// the pinned single-example tests below).
+    fn expect(self, msg: &str) -> Vec<u8> {
+        match self {
+            BackendOutcome::Ran(bytes) => bytes,
+            BackendOutcome::NoBuild => panic!("{msg}: backend build failed"),
+            BackendOutcome::RunFail(e) => panic!("{msg}: runtime failure: {e}"),
+        }
+    }
+}
+
+/// Build+run via the C backend.
+fn run_c(work: &Path, stem: &str, src: &Path) -> BackendOutcome {
+    let c = work.join(format!("{stem}.c"));
+    let bin = work.join(format!("{stem}_c"));
+    let Ok(emit) = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["emit-c", &src.to_string_lossy()])
+        .output()
+    else {
+        return BackendOutcome::NoBuild;
+    };
+    if !emit.status.success() {
+        return BackendOutcome::NoBuild;
+    }
+    if fs::write(&c, &emit.stdout).is_err() {
+        return BackendOutcome::NoBuild;
+    }
+    let Ok(cc) = Command::new("cc")
+        .args(["-o", &bin.to_string_lossy(), &c.to_string_lossy(), "-lm"])
+        .output()
+    else {
+        return BackendOutcome::NoBuild;
+    };
+    if !cc.status.success() {
+        return BackendOutcome::NoBuild;
+    }
+    let Ok(run) = Command::new(&bin).output() else {
+        return BackendOutcome::RunFail("spawn failed".to_string());
+    };
+    if !run.status.success() {
+        return BackendOutcome::RunFail(String::from_utf8_lossy(&run.stderr).chars().take(120).collect());
+    }
+    BackendOutcome::Ran(run.stdout)
+}
+
+/// Build+run via the WASM backend.
+fn run_wasm(work: &Path, stem: &str, src: &Path) -> BackendOutcome {
     // Copy into the work dir so the emitted `<stem>.wasm` lands there.
     let rii = work.join(format!("{stem}.rii"));
-    fs::copy(src, &rii).ok()?;
+    if fs::copy(src, &rii).is_err() {
+        return BackendOutcome::NoBuild;
+    }
     let wasm = work.join(format!("{stem}.wasm"));
-    let build = Command::new(env!("CARGO_BIN_EXE_riinac"))
+    let Ok(build) = Command::new(env!("CARGO_BIN_EXE_riinac"))
         .args(["build", "--target", "wasm32", &rii.to_string_lossy()])
         .output()
-        .ok()?;
+    else {
+        return BackendOutcome::NoBuild;
+    };
     if !build.status.success() {
-        return None;
+        return BackendOutcome::NoBuild;
     }
-    let run = Command::new("wasmtime")
+    let Ok(run) = Command::new("wasmtime")
         .args(["run", &wasm.to_string_lossy()])
         .output()
-        .ok()?;
+    else {
+        return BackendOutcome::RunFail("spawn failed".to_string());
+    };
     if !run.status.success() {
-        return None;
+        return BackendOutcome::RunFail(String::from_utf8_lossy(&run.stderr).chars().take(120).collect());
     }
-    Some(run.stdout)
+    BackendOutcome::Ran(run.stdout)
 }
 
 #[test]
@@ -191,8 +247,32 @@ fn corpus_c_wasm_differential() {
             .to_string_lossy()
             .replace('\\', "/");
         let stem = format!("ex{i}");
-        let (Some(c), Some(w)) = (run_c(&work, &stem, ex), run_wasm(&work, &stem, ex)) else {
-            continue; // not runnable in both backends — out of differential scope
+        let (c, w) = match (run_c(&work, &stem, ex), run_wasm(&work, &stem, ex)) {
+            (BackendOutcome::Ran(c), BackendOutcome::Ran(w)) => (c, w),
+            // Either backend declining to BUILD puts the example out of
+            // differential scope (unsupported surface) — a legitimate skip.
+            (BackendOutcome::NoBuild, _) | (_, BackendOutcome::NoBuild) => continue,
+            // Both backends BUILT and both fail at RUNTIME: a shared
+            // feature gap (e.g. higher-order calls), not a C-vs-WASM
+            // divergence — out of differential scope like NoBuild.
+            (BackendOutcome::RunFail(_), BackendOutcome::RunFail(_)) => continue,
+            // Both backends BUILT but exactly ONE fails at RUNTIME: that
+            // asymmetry IS a divergence and must fail loudly.
+            (c_out, w_out) => {
+                if !KNOWN_DIVERGENT.contains(&rel.as_str()) {
+                    let describe = |o: &BackendOutcome| match o {
+                        BackendOutcome::Ran(_) => "ran".to_string(),
+                        BackendOutcome::RunFail(e) => format!("RUNTIME FAILURE: {e}"),
+                        BackendOutcome::NoBuild => unreachable!(),
+                    };
+                    new_divergences.push(format!(
+                        "{rel}: C {} | WASM {}",
+                        describe(&c_out),
+                        describe(&w_out)
+                    ));
+                }
+                continue;
+            }
         };
         both_ran += 1;
         let known = KNOWN_DIVERGENT.contains(&rel.as_str());

@@ -1,17 +1,17 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-06T23:29:29Z
-**Git SHA:** 0b33f5bd9
+**Generated:** 2026-08-07T00:15:05Z
+**Git SHA:** 15cfee19a
 **Mode:** full
-**Status:** PASS
+**Status:** FAIL
 
 > Scope: Rust + primary proof lane (Coq). Fails closed if the Coq toolchain is absent.
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3002 tests |
+| Rust Tests | FAIL | FAILED (0 tests parsed) |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 166s |
+| Coq Compilation | PASS | 331 .vo files compiled in 182s |
 | Coq Kernel Assumptions | PASS | 5 capstones attested; axioms within reviewed whitelist (1 allowed: funext) |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
