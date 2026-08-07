@@ -69,7 +69,12 @@ case "$ISABELLE_BUILD_TIMEOUT_SEC" in
 esac
 
 escape_json() {
-  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+  # Backslash, quote, tab — then join lines with a literal \n. A raw
+  # newline in a JSON string is invalid; a multi-line Isabelle-missing
+  # error produced a malformed report that generate-metrics silently
+  # treated as missing_or_stale (2026-08-07).
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' \
+    | awk 'NR>1{printf "\\n"} {printf "%s", $0}'
 }
 
 bool_json() {

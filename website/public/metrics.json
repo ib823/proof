@@ -1,10 +1,10 @@
 {
-  "generated": "2026-08-07T00:18:11Z",
-  "generatedHuman": "August 07, 2026 at 00:18 UTC",
+  "generated": "2026-08-07T00:58:39Z",
+  "generatedHuman": "August 07, 2026 at 00:58 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "15cfee19a",
+    "commit": "95696af1d",
     "branch": "main"
   },
   "proofs": {
@@ -140,35 +140,35 @@
     "fstarStatus": "retired",
     "tlaplusStatus": "generated",
     "alloyStatus": "generated",
-    "smtStatus": "generated",
+    "smtStatus": "mechanized",
     "verusStatus": "generated",
     "kaniStatus": "generated",
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": false,
+      "reportFresh": true,
       "overallMechanized": false,
-      "source": "cached_metrics",
+      "source": "strict_report",
       "pending": {
-        "lean": "noncoq_report_missing_or_stale",
-        "isabelle": "noncoq_report_missing_or_stale",
-        "fstar": "noncoq_report_missing_or_stale",
-        "tlaplus": "noncoq_report_missing_or_stale",
-        "alloy": "noncoq_report_missing_or_stale",
-        "smt": "noncoq_report_missing_or_stale",
-        "verus": "noncoq_report_missing_or_stale",
-        "kani": "noncoq_report_missing_or_stale",
-        "tv": "noncoq_report_missing_or_stale"
+        "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
+        "isabelle": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-isabelle.sh)",
+        "fstar": "require full Active+Domains F* compilation with zero generated placeholders (local F* enforcement: ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-fstar.sh)",
+        "tlaplus": "require full-lane executable SANY checks across TLA corpus",
+        "alloy": "require full-lane executable command checks across Alloy corpus",
+        "smt": "none",
+        "verus": "require full-lane Verus checks and zero generated placeholders",
+        "kani": "require full-lane Kani checks and zero generated placeholders",
+        "tv": "require full-lane TV checks and zero generated placeholders"
       },
       "backlog": {
         "leanSorry": 0,
         "leanAxioms": 0,
         "isabelleSorry": 0,
-        "fstarGeneratedFiles": 0,
+        "fstarGeneratedFiles": 7,
         "smtGeneratedFiles": 0,
-        "verusGeneratedFiles": 0,
-        "kaniGeneratedFiles": 0,
-        "tvGeneratedFiles": 0
+        "verusGeneratedFiles": 10,
+        "kaniGeneratedFiles": 1,
+        "tvGeneratedFiles": 7
       }
     },
     "coqTiers": {
@@ -187,7 +187,7 @@
     "fstar": "retired",
     "tlaplus": "generated",
     "alloy": "generated",
-    "smt": "generated",
+    "smt": "mechanized",
     "verus": "generated",
     "kani": "generated",
     "tv": "generated",
@@ -196,8 +196,8 @@
   "rust": {
     "tests": 3002,
     "testsVerified": 3002,
-    "testsEstimated": 2998,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 19
   },
   "examples": 165,
