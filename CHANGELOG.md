@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 2026-08-08 — Gate C: networking — real TCP gated by the verified RFC 793 state machine
+
+### Added (Gate C / Standard Library Hardening — Networking)
+- **`riina_os::net`** (`03_PROTO/crates/riina-os/src/net.rs`): 1:1 Rust port of the
+  predicate core of `02_FORMAL/coq/domains/VerifiedNetwork.v` — the RFC 793
+  `TCPState`/`TCPEvent`/`valid_transition` table and the TLS 1.3 acceptance policy
+  (`is_strong_cipher`, no-downgrade). The enforcing `TcpConnection` can only move along
+  edges the Coq theorem NET_001_11 (`tcp_state_machine_correct`) proves valid; tests
+  cover the full (state × event) space exhaustively and mirror NET_001_03/08/11.
+- **`jaring_*` network builtins** (`03_PROTO/crates/riina-codegen/src/builtins/net.rs`):
+  `jaring_sambung`/`net_connect`, `jaring_hantar`/`net_send`, `jaring_terima`/`net_recv`,
+  `jaring_tutup`/`net_close` perform **real** TCP I/O over `std::net` sockets with the
+  verified state machine enforced on top — send/recv require ESTABLISHED, close walks the
+  verified active-close path to CLOSED, and a send after close is rejected by the model
+  (`not established`), not by hoping the OS notices. `tls_dasar_ok`/`tls_policy_ok` is the
+  pure TLS acceptance policy (TLS 1.3 × strong AEAD suite only; unknown strings fail
+  closed). TLS record-layer cryptography is NOT implemented (no dep-free TLS stack in
+  03_PROTO — Law 8); no builtin claims to encrypt traffic. Interpreter-only: not
+  registered in codegen, so the C/WASM backends fail closed rather than miscompile.
+  Typechecker registers all five pairs (`Effect::Network`; the policy check is `Pure`) —
+  `docs/api/STDLIB.md` regenerated (311 → 321 registered builtins).
+- Also: fixed a latent `clippy::doc_lazy_continuation` failure in
+  `riinac/tests/corpus_differential.rs` (doc-comment formatting) that broke
+  `cargo clippy --all-targets -- -D warnings` on the baseline tree.
+
 ## [0.4.0] — 2026-06-06
 
 Ships the constant-time-hardened, formally-verified crypto work accumulated since

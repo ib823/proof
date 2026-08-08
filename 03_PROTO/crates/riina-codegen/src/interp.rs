@@ -3915,6 +3915,47 @@ mod tests {
         assert_eq!(run_src(src), Value::String("data".to_string()));
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // NETWORK (jaring_*) — real TCP gated by the verified state machine
+    // ═══════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_net_connect_send_recv_through_interpreter() {
+        // A loopback echo peer; the surface program connects with real TCP,
+        // sends, and reads its own bytes back — every socket op gated by the
+        // riina-os verified RFC 793 machine.
+        use std::io::{Read as _, Write as _};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            if let Ok((mut sock, _)) = listener.accept() {
+                let mut buf = [0u8; 64];
+                if let Ok(n) = sock.read(&mut buf) {
+                    let _ = sock.write_all(&buf[..n]);
+                }
+            }
+        });
+        let src = format!(
+            "biar c = jaring_sambung(\"{addr}\"); \
+             biar n = jaring_hantar(c, \"salam\"); \
+             jaring_terima(c, 16)"
+        );
+        assert_eq!(run_src(&src), Value::String("salam".to_string()));
+    }
+
+    #[test]
+    fn test_tls_policy_through_interpreter() {
+        // NET_001_03: a TLS 1.2 downgrade is rejected; 1.3 + strong AEAD passes.
+        assert_eq!(
+            run_src("tls_dasar_ok(\"1.3\", \"TLS_AES_128_GCM_SHA256\")"),
+            Value::Bool(true)
+        );
+        assert_eq!(
+            run_src("tls_dasar_ok(\"1.2\", \"TLS_AES_128_GCM_SHA256\")"),
+            Value::Bool(false)
+        );
+    }
+
     // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──
 
     fn iu(value: u64, bits: u8) -> Value {

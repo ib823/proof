@@ -930,6 +930,55 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Write),
         );
     }
+    // Network builtins (real TCP gated by the verified RFC 793 state machine
+    // in riina-os `net`). `jaring_sambung` takes "host:port" and returns a
+    // connection id; `jaring_hantar` a `(conn, data)` pair returning the byte
+    // count; `jaring_terima` a `(conn, max_bytes)` pair returning the data;
+    // `jaring_tutup` a connection id. All carry the Network effect.
+    for nm in ["jaring_sambung", "net_connect"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Network),
+        );
+    }
+    for nm in ["jaring_hantar", "net_send"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Int),
+                Effect::Network,
+            ),
+        );
+    }
+    for nm in ["jaring_terima", "net_recv"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
+                Box::new(Ty::String),
+                Effect::Network,
+            ),
+        );
+    }
+    for nm in ["jaring_tutup", "net_close"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
+        );
+    }
+    // Pure TLS acceptance policy (Coq NET_001_03 no-downgrade + NET_001_08
+    // cipher strength): `(version, cipher_suite) -> Bool`, no I/O.
+    for nm in ["tls_dasar_ok", "tls_policy_ok"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::Pure,
+            ),
+        );
+    }
     c = c.extend(
         "ke_bool".to_string(),
         Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
