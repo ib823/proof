@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3021 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-08 — Gate C: rendering parity, `pelaku` rename, verified listener close
+
+### Fixed (Gate C / REQ-68 backend parity — signed sized-int rendering)
+- **`ke_teks` of a signed sized int rendered the masked bit pattern on both compiled
+  backends** (`253` where the interpreter — the reference — prints `-3`). C: the
+  `riina_builtin_ke_teks` INT branch ignored the `int_signed_bits` tag the rest of the
+  C runtime maintains (the sibling `riina_format` already honored it). WASM: the i64
+  cell carries no runtime tag, so `emit_ke_teks` now takes the call site's static type
+  (`Ty::IntN{signed}`), sign-extends, and renders `-` + magnitude — i64::MIN handled
+  via the unsigned magnitude loops. All three backends now agree, including at
+  i64::MIN/i16::MIN/zero. New corpus example `00_basics/nombor_bertanda.rii` held
+  byte-equal by `corpus_c_wasm_differential`; +1 lexer guard test.
+### Changed (Gate C — actor keyword corrected: `pelakon` → `pelaku`, hard rename)
+- **The BM actor keyword is now `pelaku`** (doer/agent — the correct translation);
+  `pelakon` (a stage/film actor — a mistranslation) is no longer a keyword and lexes
+  as a plain identifier (owner decision 2026-08-08, hard mode, no deprecated alias).
+  One lexer line is the language surface; sweep covered parser tests, the fuzz keyword
+  list, 6 Jalinan examples, docs (README/AGENTS/JALINAN_GUIDE/BIJAK_SPEC/session-types
+  paper/2 Jalinan specs), llms.txt, the AI training corpus, and the website source.
+  Historical CHANGELOG entries deliberately left as written. Zero Coq impact.
+  Guard test: `pelaku`/`actor` → KwActor, `pelakon` → Identifier.
+### Added (Gate C — verified listener close, Coq model first)
+- **`VerifiedNetwork.v`: LISTEN --Close--> CLOSED edge** (RFC 793 p.22
+  close-from-LISTEN) added to `valid_transition`; full 331-file Coq build re-verified
+  green (Rocq 9.1.1). Ported 1:1 to `riina_os::net` (exhaustive state×event tests
+  still pass unchanged — they derive from the table). New builtin
+  **`jaring_tutup_dengar`/`net_close_listener`**: closes a listener along the verified
+  edge, drops the real socket; a closed listener rejects accept/local-addr with
+  "not listening" and double close is rejected by the model (no Close edge out of
+  CLOSED). STDLIB.md regenerated (327 → 329 registered builtins).
 
 ### 2026-08-08 — Gate C: 64-bit WASM — plain `Nombor` div/mod/order now unsigned (u64-correct ≥ 2^63)
 

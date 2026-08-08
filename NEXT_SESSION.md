@@ -83,14 +83,10 @@ Remaining tractable (verify each before starting — do not trust this list):
   4 known-divergent examples (builder/command/state_machine: C aborts on padan
   enum-payload arithmetic + record loads through sums; test_driven: WASM closures in
   records) — each fix moves an example back to byte-equal.
-- Gate C (owner-approved rename, not yet executed): actor keyword `pelakon` → `pelaku`
-  (wrong translation — pelakon is a stage actor; pelaku is the doer/agent). Surface is
-  ONE lexer line (`"actor" | "pelakon"` → KwActor, lexer.rs:655); sweep = ~7 parser-test
-  sources, 1 fuzz keyword list, 6 Jalinan examples, docs (README/AGENTS/JALINAN_GUIDE/
-  BIJAK_SPEC/session-types paper/2 specs), website JSX + rebuilt wasm. ZERO Coq impact.
-  Decide hard-rename vs deprecated-alias with the owner (recommendation: hard rename;
-  do NOT rewrite historical CHANGELOG entries). Owner must also add the REQ to
-  RIINA_MASTER_PLAN.md (private tree — not reachable from the public repo).
+- Gate C rename EXECUTED 2026-08-08 (owner-approved, hard mode): actor keyword is
+  `pelaku` / `actor`; `pelakon` (wrong translation — a stage actor) is now a parse
+  error. Historical CHANGELOG entries deliberately NOT rewritten. Verify with
+  `grep -rn pelakon` (expect: CHANGELOG history + this line only).
 - Gate C (small Coq-first item): VerifiedNetwork.v has no LISTEN→CLOSED edge, so no
   listener-close builtin exists (documented in builtins/net.rs). RFC 793 permits close
   from LISTEN: add the edge + re-prove, then the builtin.

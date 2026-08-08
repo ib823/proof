@@ -26,8 +26,10 @@
 //!     half: a real bound `TcpListener` held in the verified LISTEN state
 //!     (CLOSED→LISTEN), and accept replays the verified passive path
 //!     LISTEN→SYN_RECEIVED→ESTABLISHED for each accepted connection, which
-//!     then behaves exactly like a connected one. There is no listener-close
-//!     builtin — the Coq table has no LISTEN→CLOSED edge (see [`Listener`]).
+//!     then behaves exactly like a connected one. `jaring_tutup_dengar`
+//!     closes a listener along the verified LISTEN→CLOSED edge (RFC 793
+//!     close-from-LISTEN, added to `VerifiedNetwork.v` first — model, then
+//!     runtime).
 //!   * `tls_dasar_ok` is the **pure** TLS acceptance policy (NET_001_03
 //!     no-downgrade + NET_001_08 cipher strength): real policy, no handshake.
 //!     TLS record-layer cryptography is NOT implemented — there is no
@@ -54,6 +56,7 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("jaring_dengar", "net_listen", "jaring_dengar"),
     ("jaring_alamat", "net_local_addr", "jaring_alamat"),
     ("jaring_terima_sambungan", "net_accept", "jaring_terima_sambungan"),
+    ("jaring_tutup_dengar", "net_close_listener", "jaring_tutup_dengar"),
     ("tls_dasar_ok", "tls_policy_ok", "tls_dasar_ok"),
 ];
 
@@ -66,14 +69,12 @@ struct Conn {
 }
 
 /// One tracked listener: the enforcing machine held in LISTEN plus the real
-/// bound socket. There is deliberately NO listener-close builtin: the Coq
-/// `valid_transition` table has no LISTEN→CLOSED edge, so a verified close
-/// path for listeners does not exist — adding one belongs in the Coq model
-/// first, not here (Prime Directive 2: the model governs, we do not invent
-/// edges). Listeners live until the interpreter thread ends.
+/// bound socket. `jaring_tutup_dengar` closes it along the verified
+/// LISTEN→CLOSED edge (RFC 793 p.22 close-from-LISTEN; added to
+/// `VerifiedNetwork.v` 2026-08-08 — the model first, then the runtime).
 struct Listener {
     machine: TcpConnection,
-    socket: TcpListener,
+    socket: Option<TcpListener>,
 }
 
 #[derive(Default)]
@@ -244,7 +245,13 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 let st = &mut *n.borrow_mut();
                 let id = st.next_id;
                 st.next_id += 1;
-                st.listeners.insert(id, Listener { machine, socket });
+                st.listeners.insert(
+                    id,
+                    Listener {
+                        machine,
+                        socket: Some(socket),
+                    },
+                );
                 Value::Int(id)
             })
         }
@@ -260,6 +267,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .ok_or_else(|| err("jaring: unknown listener"))?;
                 let addr = l
                     .socket
+                    .as_ref()
+                    .ok_or_else(|| err("jaring: not listening"))?
                     .local_addr()
                     .map_err(|e| err(format!("jaring: alamat: {e}")))?;
                 Ok(Value::String(addr.to_string()))
@@ -287,6 +296,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 }
                 Ok((
                     l.socket
+                        .as_ref()
+                        .ok_or_else(|| err("jaring: not listening"))?
                         .try_clone()
                         .map_err(|e| err(format!("jaring: terima_sambungan: {e}")))?,
                     l.machine.clone(),
@@ -315,6 +326,27 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 );
                 Value::Int(id)
             })
+        }
+        // Close a listener: LISTEN --Close--> CLOSED (the verified RFC 793
+        // close-from-LISTEN edge), then drop the real socket. The entry stays
+        // registered so a later accept fails with "not listening" from the
+        // CLOSED machine. Returns `true`; a second close is rejected by the
+        // model (no Close edge out of CLOSED).
+        "jaring_tutup_dengar" => {
+            let id = as_int(arg, name)?;
+            NET.with(|n| -> Result<Value> {
+                let st = &mut *n.borrow_mut();
+                let l = st
+                    .listeners
+                    .get_mut(&id)
+                    .ok_or_else(|| err("jaring: unknown listener"))?;
+                l.machine
+                    .on_event(TcpEvent::Close)
+                    .map_err(|_| err("jaring: not listening"))?;
+                debug_assert_eq!(l.machine.state(), TcpState::Closed);
+                drop(l.socket.take());
+                Ok(Value::Bool(true))
+            })?
         }
         // Pure TLS acceptance policy: `(version, cipher_suite) -> Bool`.
         // True exactly for TLS 1.3 with one of the three strong AEAD suites
@@ -540,6 +572,30 @@ mod tests {
         };
         let res = apply("jaring_terima_sambungan", &Value::Int(cid));
         assert!(matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("unknown listener")));
+    }
+
+    /// Listener close walks the verified LISTEN→CLOSED edge: a closed
+    /// listener rejects accept and local-addr with "not listening", and a
+    /// second close is rejected by the model (no Close edge out of CLOSED).
+    #[test]
+    fn listener_close_then_accept_is_rejected() {
+        let Some(Value::Int(lid)) = apply("jaring_dengar", &s("127.0.0.1:0")).unwrap() else {
+            panic!("listen failed")
+        };
+        assert_eq!(
+            apply("jaring_tutup_dengar", &Value::Int(lid)).unwrap(),
+            Some(Value::Bool(true))
+        );
+        let res = apply("jaring_terima_sambungan", &Value::Int(lid));
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("not listening")),
+            "accept on a closed listener must be rejected, got {res:?}"
+        );
+        let res = apply("jaring_tutup_dengar", &Value::Int(lid));
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("not listening")),
+            "double listener close must be rejected, got {res:?}"
+        );
     }
 
     #[test]

@@ -62,6 +62,7 @@ pub fn valid_transition(from: TcpState, event: TcpEvent, to: TcpState) -> bool {
         (S::Closed, E::PassiveOpen, S::Listen)
             | (S::Closed, E::ActiveOpen, S::SynSent)
             | (S::Listen, E::SynReceived, S::SynReceived)
+            | (S::Listen, E::Close, S::Closed)
             | (S::SynSent, E::SynAckReceived, S::Established)
             | (S::SynReceived, E::AckReceived, S::Established)
             | (S::Established, E::FinReceived, S::CloseWait)
@@ -88,6 +89,7 @@ pub fn next_state(from: TcpState, event: TcpEvent) -> Option<TcpState> {
         (S::Closed, E::PassiveOpen) => S::Listen,
         (S::Closed, E::ActiveOpen) => S::SynSent,
         (S::Listen, E::SynReceived) => S::SynReceived,
+        (S::Listen, E::Close) => S::Closed,
         (S::SynSent, E::SynAckReceived) => S::Established,
         (S::SynReceived, E::AckReceived) => S::Established,
         (S::Established, E::FinReceived) => S::CloseWait,
@@ -294,6 +296,17 @@ mod tests {
         assert_eq!(c.on_event(E::AckReceived), Ok(S::FinWait2));
         assert_eq!(c.on_event(E::FinReceived), Ok(S::TimeWait));
         assert_eq!(c.on_event(E::Timeout), Ok(S::Closed));
+    }
+
+    /// The passive lifecycle: CLOSED → LISTEN (PassiveOpen) → CLOSED (Close,
+    /// the RFC 793 p.22 close-from-LISTEN edge). A second Close is rejected —
+    /// CLOSED has no Close edge.
+    #[test]
+    fn listener_lifecycle_close_from_listen() {
+        let mut l = TcpConnection::new();
+        assert_eq!(l.on_event(E::PassiveOpen), Ok(S::Listen));
+        assert_eq!(l.on_event(E::Close), Ok(S::Closed));
+        assert!(l.on_event(E::Close).is_err(), "double close must be rejected");
     }
 
     /// Data transfer is only meaningful in ESTABLISHED; a CLOSED connection

@@ -296,7 +296,7 @@ fungsi nombor_genap_gandakan(senarai: Senarai<Nombor>) -> Senarai<Nombor> kesan 
 
 **Q: Create an actor that counts messages.**
 ```riina
-pelakon Pembilang {
+pelaku Pembilang {
     keadaan: Nombor
 
     kendalikan Tambah(n: Nombor) {

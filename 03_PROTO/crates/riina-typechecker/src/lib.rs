@@ -989,6 +989,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Network),
         );
     }
+    for nm in ["jaring_tutup_dengar", "net_close_listener"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
+        );
+    }
     // Pure TLS acceptance policy (Coq NET_001_03 no-downgrade + NET_001_08
     // cipher strength): `(version, cipher_suite) -> Bool`, no I/O.
     for nm in ["tls_dasar_ok", "tls_policy_ok"] {

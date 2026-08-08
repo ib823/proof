@@ -86,7 +86,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
 | Formal proof corpus in repo | Yes — 12,613 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
 | Multi-prover work | Coq mechanized; 9 other lanes are generated/smoke-only (not independent verification) | No | No | No |
-| Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
+| Session-typed actors | Yes (JALINAN: pelaku, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
 ---
@@ -392,7 +392,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3021 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 | Area | Status |
 |------|--------|

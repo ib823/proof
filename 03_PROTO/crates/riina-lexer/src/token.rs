@@ -151,7 +151,7 @@ pub enum TokenKind {
 
     // JALINAN Phase 6 keywords
     KwChoreography, // koreografi / choreography — global multiparty protocol
-    KwActor,        // pelakon / actor — computation unit with local state
+    KwActor,        // pelaku / actor — computation unit with local state
     KwRole,         // peranan / role — participant in choreography
     KwState,        // keadaan / state — actor-local mutable state
     KwSupervisor,   // penyelia / supervisor — fault tolerance manager

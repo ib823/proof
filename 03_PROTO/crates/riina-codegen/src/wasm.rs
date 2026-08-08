@@ -5159,11 +5159,18 @@ impl WasmBackend {
 
     /// `ke_teks(int)` → a heap string `[len:u32][ascii digits]`; leaves the
     /// pointer on the stack. Two passes: count digits, alloc, write digits.
-    fn emit_ke_teks(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
+    /// `signed_bits` is the static width of a *signed* sized-int argument
+    /// (`Ty::IntN{signed}`) — the i64 cell carries no runtime tag (unlike the
+    /// C backend's `int_signed_bits`), so signedness must come from the call
+    /// site's type. `Some(b)`: sign-extend from `b`, render `-` + magnitude
+    /// for negatives (the interpreter is the reference: `ke_teks(0i8 - 3i8)`
+    /// is "-3", not the masked "253"). `None`: unsigned u64 render, unchanged.
+    fn emit_ke_teks(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>, signed_bits: Option<u8>) {
         let v = ctx.itoa_v;
         let wp = ctx.itoa_p;
         let rp = ctx.scratch;
         let cnt = ctx.scratch + 1;
+        let neg = ctx.scratch + 2;
         let get = |c: &mut Vec<u8>, l: u32| {
             c.push(Op::LocalGet as u8);
             wasm_encode::encode_uleb128(l as u64, c);
@@ -5172,10 +5179,41 @@ impl WasmBackend {
             c.push(Op::LocalSet as u8);
             wasm_encode::encode_uleb128(l as u64, c);
         };
-        // Pass 1: count digits (always >= 1). v = arg; cnt = 0.
-        Self::emit_local_get(arg, ctx.var_map, code);
-        set(code, v);
-        wasm_i32c(code, 0);
+        // Load |value| into v; for the signed case set the `neg` i32 flag first.
+        // Negating i64::MIN wraps to itself, but the magnitude loops below use
+        // UNSIGNED div/rem, which read that bit pattern as 2^63 — exactly the
+        // magnitude "-9223372036854775808" needs.
+        let load_magnitude = |c: &mut Vec<u8>| {
+            Self::emit_local_get(arg, ctx.var_map, c);
+            if let Some(b) = signed_bits {
+                emit_sext_i64(b, c);
+                set(c, v);
+                get(c, neg);
+                c.push(Op::If as u8);
+                c.push(0x40);
+                wasm_i64c(c, 0);
+                get(c, v);
+                c.push(Op::I64Sub as u8);
+                set(c, v);
+                c.push(Op::End as u8);
+            } else {
+                set(c, v);
+            }
+        };
+        if let Some(b) = signed_bits {
+            // neg = (sext(arg) < 0)
+            Self::emit_local_get(arg, ctx.var_map, code);
+            emit_sext_i64(b, code);
+            wasm_i64c(code, 0);
+            code.push(Op::I64LtS as u8);
+            set(code, neg);
+        } else {
+            wasm_i32c(code, 0);
+            set(code, neg);
+        }
+        // Pass 1: count chars — digits (always >= 1) plus one for '-' if neg.
+        load_magnitude(code);
+        get(code, neg);
         set(code, cnt);
         code.push(Op::Loop as u8);
         code.push(0x40);
@@ -5211,9 +5249,9 @@ impl WasmBackend {
         code.push(Op::I32Store as u8);
         code.push(0x02);
         code.push(0x00);
-        // Pass 2: write digits backward into [rp+4, rp+4+cnt). v = arg; wp = rp+4+cnt.
-        Self::emit_local_get(arg, ctx.var_map, code);
-        set(code, v);
+        // Pass 2: write digits backward into (rp+4+neg-1, rp+4+cnt); the digit
+        // count is cnt-neg, so the loop's final wp is rp+4+neg. v = |arg|.
+        load_magnitude(code);
         get(code, rp);
         wasm_i32c(code, 4);
         code.push(Op::I32Add as u8);
@@ -5245,6 +5283,19 @@ impl WasmBackend {
         code.push(Op::I32Eqz as u8);
         code.push(Op::BrIf as u8);
         wasm_encode::encode_uleb128(0, code);
+        code.push(Op::End as u8);
+        // If negative, the sign char lands just before the digits, at rp+4
+        // (= final wp - 1).
+        get(code, neg);
+        code.push(Op::If as u8);
+        code.push(0x40);
+        get(code, rp);
+        wasm_i32c(code, 4);
+        code.push(Op::I32Add as u8);
+        wasm_i32c(code, 45); // '-'
+        code.push(Op::I32Store8 as u8);
+        code.push(0x00);
+        code.push(0x00);
         code.push(Op::End as u8);
         // result = rp, lifted into the i64 value cell
         get(code, rp);
@@ -6258,9 +6309,16 @@ impl WasmBackend {
                     wasm_i64c(code, 0);
                 } else if name == "ke_teks" || name == "nombor_ke_teks" {
                     match ctx.var_to_ty.get(arg) {
+                        Some(Ty::IntN {
+                            bits,
+                            signed: true,
+                        }) => {
+                            // Signed sized int → signed decimal heap string.
+                            Self::emit_ke_teks(arg, ctx, code, Some(*bits));
+                        }
                         Some(Ty::Int | Ty::CInt | Ty::IntN { .. }) => {
-                            // Int (or sized int) → heap string.
-                            Self::emit_ke_teks(arg, ctx, code);
+                            // Int (or unsigned sized int) → heap string.
+                            Self::emit_ke_teks(arg, ctx, code, None);
                         }
                         Some(Ty::BigInt) => {
                             // BigInt → decimal heap string via bi_to_str.

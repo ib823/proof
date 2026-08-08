@@ -46,7 +46,7 @@ theorem counts as "verified theorems."
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
 - Rust: 2,898 proto tests + 294 tooling tests = 3,192 (all passing), 19 proto +
   4 tooling crates, 0 external runtime deps (proto). This part is solid.
-- Examples: 166 .rii files, of which 61 currently pass `riinac check` (all 26 of
+- Examples: 167 .rii files, of which 61 currently pass `riinac check` (all 26 of
   `00_basics/`); the shipped parser accepts a narrower grammar than some examples
   assume — see `07_EXAMPLES/README.md`.
 
@@ -81,7 +81,7 @@ fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
 }
 
 // Actors (JALINAN Phase 6)
-pelakon Pembilang {
+pelaku Pembilang {
     keadaan: Nombor
     kendalikan Tambah(n) {
         n + 1
@@ -119,7 +119,7 @@ kesan (effect), bersih (pure), laku (perform), kendali (handle)
 sekali (linear), paling (affine), mesti (relevant)
 
 ### JALINAN (Distributed Computing)
-pelakon (actor), lahir (spawn), hantar (send), terima (recv),
+pelaku (actor), lahir (spawn), hantar (send), terima (recv),
 koreografi (choreography), peranan (role), keadaan (state),
 penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)
 

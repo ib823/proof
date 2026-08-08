@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **327**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **329**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 
@@ -310,8 +310,10 @@ Total registered builtins: **327**. Grouped by the effect each performs (`kesan`
 | `jaring_terima` | `Fn((Nombor, Nombor), Teks, Rangkaian)` |
 | `jaring_terima_sambungan` | `Fn(Nombor, Nombor, Rangkaian)` |
 | `jaring_tutup` | `Fn(Nombor, Benar, Rangkaian)` |
+| `jaring_tutup_dengar` | `Fn(Nombor, Benar, Rangkaian)` |
 | `net_accept` | `Fn(Nombor, Nombor, Rangkaian)` |
 | `net_close` | `Fn(Nombor, Benar, Rangkaian)` |
+| `net_close_listener` | `Fn(Nombor, Benar, Rangkaian)` |
 | `net_connect` | `Fn(Teks, Nombor, Rangkaian)` |
 | `net_listen` | `Fn(Teks, Nombor, Rangkaian)` |
 | `net_local_addr` | `Fn(Nombor, Teks, Rangkaian)` |

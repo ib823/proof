@@ -2004,7 +2004,13 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("        case RIINA_TAG_UNIT: return riina_string(\"()\");");
         self.writeln("        case RIINA_TAG_BOOL: return riina_string(arg->data.bool_val ? \"betul\" : \"salah\");");
         self.writeln("        case RIINA_TAG_INT:");
-        self.writeln("            snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)arg->data.int_val);");
+        // A signed sized int renders as its signed value (the interpreter is the
+        // reference: `ke_teks(0i8 - 3i8)` is "-3", not the masked "253"). Same
+        // tag-driven branch as riina_format — this one had been left unsigned-only.
+        self.writeln("            if (arg->int_signed_bits)");
+        self.writeln("                snprintf(buf, sizeof(buf), \"%lld\", (long long)riina_sext(arg->data.int_val, arg->int_signed_bits));");
+        self.writeln("            else");
+        self.writeln("                snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)arg->data.int_val);");
         self.writeln("            return riina_string(buf);");
         self.writeln("        case RIINA_TAG_STRING: return arg;");
         self.writeln("        case RIINA_TAG_BIGINT: return riina_string(riina_bigint_to_str(arg));");
