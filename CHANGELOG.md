@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3019 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3021 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-08 — Gate C: 64-bit WASM — plain `Nombor` div/mod/order now unsigned (u64-correct ≥ 2^63)
+
+### Fixed (Gate C / Standard Library Hardening — numeric tower, WASM backend)
+- **WASM `Nombor` operations ≥ 2^63 were silently wrong** (`03_PROTO/crates/riina-codegen/src/wasm.rs`):
+  the W1 i64-value-cell landing removed the old clean ">= 2^32" compile error, but the
+  generic BinOp arm still emitted the SIGNED ops (`i64.div_s`/`i64.rem_s`/`i64.lt_s`/…),
+  so a value ≥ 2^63 read as negative: `18000000000000000000 > 1` compiled to *false* and
+  div/mod produced wrapped-signed junk while the interpreter (`Value::Int(u64)`) and the
+  C backend (`uint64_t`) agreed on the u64 answers. Found by a ≥ 2^63 three-backend
+  differential this session. Plain `Ty::Int` (and unsigned `IntN`) now lower to the
+  UNSIGNED i64 ops (`i64.div_u`/`i64.rem_u`/`i64.lt_u`/`i64.gt_u`/`i64.le_u`/`i64.ge_u` —
+  the four unsigned comparison opcodes 0x54/0x56/0x58/0x5A added to `wasm_encode::Op`);
+  signed `IntN` keeps the signed ops with the existing sub-64 sign-extension. New corpus
+  example `07_EXAMPLES/00_basics/nombor_64bit.rii` (boundary 2^63, u64::MAX, div/mod/order)
+  is byte-equal across interp/C/WASM and is held so by `corpus_c_wasm_differential`
+  (verified green with wasmtime 27.0.0 this session); +2 opcode-level tests.
+  This closes the "true 64-bit WASM" Gate C item: the numeric tower's plain-int surface
+  is now u64-correct end-to-end on all three backends (owner-approved refactor,
+  supersedes the previously-chosen bounded ">= 2^32 error" path — which W1 had already
+  replaced with the i64 cell, minus this signedness gap).
 
 ### 2026-08-08 — Gate C: networking — real TCP gated by the verified RFC 793 state machine
 

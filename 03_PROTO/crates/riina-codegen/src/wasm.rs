@@ -5720,6 +5720,22 @@ impl WasmBackend {
                 let rext = needs_signed_operands
                     .then(|| signed_sub64_width(ctx.var_to_ty.get(rhs)))
                     .flatten();
+                // Signedness of the division/comparison itself. Plain `Nombor`
+                // (`Ty::Int`) is a u64 at runtime (interpreter `Value::Int(u64)`,
+                // C backend `uint64_t`), so it takes the UNSIGNED i64 ops — with
+                // `I64DivS`/`I64LtS` a value >= 2^63 read as negative and
+                // div/mod/order silently diverged from the other two backends
+                // (found by a >= 2^63 differential, 2026-08-08). Signed sized
+                // ints (`IntN{signed}`) keep the signed ops; their sub-64
+                // operands are sign-extended above. Unsigned-vs-signed mixes
+                // cannot reach here (the typechecker rejects them).
+                let signed_ints = matches!(
+                    ctx.var_to_ty.get(lhs),
+                    Some(Ty::IntN { signed: true, .. })
+                ) || matches!(
+                    ctx.var_to_ty.get(rhs),
+                    Some(Ty::IntN { signed: true, .. })
+                );
                 Self::emit_local_get(lhs, ctx.var_map, code);
                 if let Some(b) = lext {
                     emit_sext_i64(b, code);
@@ -5732,8 +5748,16 @@ impl WasmBackend {
                     BinOp::Add => code.push(Op::I64Add as u8),
                     BinOp::Sub => code.push(Op::I64Sub as u8),
                     BinOp::Mul => code.push(Op::I64Mul as u8),
-                    BinOp::Div => code.push(Op::I64DivS as u8),
-                    BinOp::Mod => code.push(Op::I64RemS as u8),
+                    BinOp::Div => code.push(if signed_ints {
+                        Op::I64DivS
+                    } else {
+                        Op::I64DivU
+                    } as u8),
+                    BinOp::Mod => code.push(if signed_ints {
+                        Op::I64RemS
+                    } else {
+                        Op::I64RemU
+                    } as u8),
                     BinOp::And => code.push(Op::I64And as u8),
                     BinOp::Or => code.push(Op::I64Or as u8),
                     // Comparisons yield an i32 (0/1); lift back into the i64 cell.
@@ -5746,19 +5770,19 @@ impl WasmBackend {
                         code.push(Op::I64ExtendI32U as u8);
                     }
                     BinOp::Lt => {
-                        code.push(Op::I64LtS as u8);
+                        code.push(if signed_ints { Op::I64LtS } else { Op::I64LtU } as u8);
                         code.push(Op::I64ExtendI32U as u8);
                     }
                     BinOp::Gt => {
-                        code.push(Op::I64GtS as u8);
+                        code.push(if signed_ints { Op::I64GtS } else { Op::I64GtU } as u8);
                         code.push(Op::I64ExtendI32U as u8);
                     }
                     BinOp::Le => {
-                        code.push(Op::I64LeS as u8);
+                        code.push(if signed_ints { Op::I64LeS } else { Op::I64LeU } as u8);
                         code.push(Op::I64ExtendI32U as u8);
                     }
                     BinOp::Ge => {
-                        code.push(Op::I64GeS as u8);
+                        code.push(if signed_ints { Op::I64GeS } else { Op::I64GeU } as u8);
                         code.push(Op::I64ExtendI32U as u8);
                     }
                 }
@@ -6896,6 +6920,78 @@ mod tests {
             !out.primary.windows(4).any(|w| w == U8_MASK_SEQ),
             "plain Int arithmetic must not be width-masked"
         );
+    }
+
+    #[test]
+    fn plain_int_div_mod_compare_are_unsigned() {
+        // Plain `Nombor` (`Ty::Int`) is a u64 at runtime (interpreter
+        // `Value::Int(u64)`, C `uint64_t`), so the WASM backend must emit the
+        // UNSIGNED i64 division/remainder/order ops. With the signed forms a
+        // value >= 2^63 read as negative: `18000000000000000000 > 1` compiled
+        // to false and div/mod produced wrapped-signed junk while interp and C
+        // agreed on the u64 answers (found 2026-08-08 by a >= 2^63
+        // differential; the i64-cell landing had kept the old signed ops).
+        let (v0, v1, v2) = (VarId::new(0), VarId::new(1), VarId::new(2));
+        // NB: asserting the *absence* of the signed opcode byte is not possible
+        // at this level — e.g. 0x7F (i64.div_s) is also the `i32` ValType byte
+        // all over the type section. The semantic guard is the corpus example
+        // `00_basics/nombor_64bit.rii`, which the C/WASM differential holds
+        // byte-equal (a signed op regression makes its output diverge).
+        for (op, want) in [
+            (BinOp::Div, Op::I64DivU),
+            (BinOp::Mod, Op::I64RemU),
+            (BinOp::Lt, Op::I64LtU),
+            (BinOp::Gt, Op::I64GtU),
+            (BinOp::Le, Op::I64LeU),
+            (BinOp::Ge, Op::I64GeU),
+        ] {
+            let program = make_program(
+                vec![
+                    ann(Instruction::Const(Constant::Int(18_000_000_000_000_000_000)), v0),
+                    ann(Instruction::Const(Constant::Int(3)), v1),
+                    ann(Instruction::BinOp(op, v0, v1), v2),
+                ],
+                v2,
+            );
+            let out = WasmBackend::new(Target::Wasm32).emit(&program).unwrap();
+            assert!(
+                out.primary.contains(&(want as u8)),
+                "plain Int {op:?} must lower to the unsigned op"
+            );
+        }
+    }
+
+    #[test]
+    fn signed_i64_div_and_compare_stay_signed() {
+        // A signed 64-bit sized int keeps the signed ops (no extension needed
+        // at full width) — the unsigned fix must not flip these.
+        let (v0, v1, v2) = (VarId::new(0), VarId::new(1), VarId::new(2));
+        let i64s = riina_types::Ty::IntN {
+            bits: 64,
+            signed: true,
+        };
+        let mk = |instr, result, ty| AnnotatedInstr {
+            instr,
+            result,
+            ty,
+            effect: riina_types::Effect::Pure,
+            security: riina_types::SecurityLevel::Public,
+        };
+        for (op, want) in [(BinOp::Div, Op::I64DivS), (BinOp::Lt, Op::I64LtS)] {
+            let program = make_program(
+                vec![
+                    mk(Instruction::Const(Constant::Int(200)), v0, i64s.clone()),
+                    mk(Instruction::Const(Constant::Int(2)), v1, i64s.clone()),
+                    mk(Instruction::BinOp(op, v0, v1), v2, i64s.clone()),
+                ],
+                v2,
+            );
+            let out = WasmBackend::new(Target::Wasm32).emit(&program).unwrap();
+            assert!(
+                out.primary.contains(&(want as u8)),
+                "signed i64 {op:?} must keep the signed op"
+            );
+        }
     }
 
     #[test]
