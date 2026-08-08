@@ -33,6 +33,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Also: fixed a latent `clippy::doc_lazy_continuation` failure in
   `riinac/tests/corpus_differential.rs` (doc-comment formatting) that broke
   `cargo clippy --all-targets -- -D warnings` on the baseline tree.
+- **Passive open (server side)**: `jaring_dengar`/`net_listen` (real bound
+  `TcpListener` held in the verified LISTEN state), `jaring_alamat`/`net_local_addr`
+  (ephemeral-port discovery), `jaring_terima_sambungan`/`net_accept` (blocking accept
+  that replays the verified passive path LISTEN→SYN_RECEIVED→ESTABLISHED; the accepted
+  connection then uses the same send/recv/close gates as an active one). Deliberately
+  NO listener-close builtin: the Coq `valid_transition` table has no LISTEN→CLOSED
+  edge, and the model governs — adding that edge belongs in `VerifiedNetwork.v` first.
+  STDLIB.md 321 → 327 registered builtins.
 
 ## [0.4.0] — 2026-06-06
 

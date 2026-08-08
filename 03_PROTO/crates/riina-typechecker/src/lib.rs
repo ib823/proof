@@ -967,6 +967,28 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
         );
     }
+    // Passive open: `jaring_dengar` binds "host:port" and returns a listener
+    // id; `jaring_alamat` reports its actual local address (ephemeral-port
+    // discovery); `jaring_terima_sambungan` blocks for one connection and
+    // returns a connection id usable with hantar/terima/tutup.
+    for nm in ["jaring_dengar", "net_listen"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Network),
+        );
+    }
+    for nm in ["jaring_alamat", "net_local_addr"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Network),
+        );
+    }
+    for nm in ["jaring_terima_sambungan", "net_accept"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Network),
+        );
+    }
     // Pure TLS acceptance policy (Coq NET_001_03 no-downgrade + NET_001_08
     // cipher strength): `(version, cipher_suite) -> Bool`, no I/O.
     for nm in ["tls_dasar_ok", "tls_policy_ok"] {

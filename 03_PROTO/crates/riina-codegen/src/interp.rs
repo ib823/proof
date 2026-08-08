@@ -3944,6 +3944,47 @@ mod tests {
     }
 
     #[test]
+    fn test_net_listen_accept_through_interpreter() {
+        // Surface-syntax server: listen on an ephemeral port, a Rust client
+        // thread connects and sends, the program accepts and echoes the data
+        // back — the passive-open path (LISTEN→SYN_RECEIVED→ESTABLISHED)
+        // exercised end-to-end through Var→Builtin→apply_builtin.
+        use std::io::{Read as _, Write as _};
+        use std::sync::mpsc;
+        // The program cannot pass its ephemeral port out before running, so
+        // bind the listener via the builtin layer first, then run the accept
+        // half as surface syntax against the known listener id.
+        let Some(crate::value::Value::Int(lid)) = crate::builtins::net::apply(
+            "jaring_dengar",
+            &crate::value::Value::String("127.0.0.1:0".to_string()),
+        )
+        .unwrap() else {
+            panic!("listen failed")
+        };
+        let Some(crate::value::Value::String(addr)) =
+            crate::builtins::net::apply("jaring_alamat", &crate::value::Value::Int(lid)).unwrap()
+        else {
+            panic!("local_addr failed")
+        };
+        let (tx, rx) = mpsc::channel();
+        std::thread::spawn(move || {
+            let mut sock = std::net::TcpStream::connect(addr).unwrap();
+            sock.write_all(b"tanya").unwrap();
+            let mut buf = [0u8; 16];
+            let n = sock.read(&mut buf).unwrap();
+            tx.send(String::from_utf8_lossy(&buf[..n]).into_owned()).unwrap();
+        });
+        let src = format!(
+            "biar c = jaring_terima_sambungan({lid}); \
+             biar d = jaring_terima(c, 16); \
+             biar n = jaring_hantar(c, d); \
+             d"
+        );
+        assert_eq!(run_src(&src), Value::String("tanya".to_string()));
+        assert_eq!(rx.recv().unwrap(), "tanya");
+    }
+
+    #[test]
     fn test_tls_policy_through_interpreter() {
         // NET_001_03: a TLS 1.2 downgrade is rejected; 1.3 + strong AEAD passes.
         assert_eq!(

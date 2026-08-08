@@ -22,6 +22,12 @@
 //!     FIN_WAIT_1→FIN_WAIT_2→TIME_WAIT→CLOSED as the OS completes the
 //!     FIN/ACK exchange. The machine's event ordering mirrors, but does not
 //!     observe, the kernel's packet exchange.
+//!   * `jaring_dengar`/`jaring_terima_sambungan` are the **passive-open**
+//!     half: a real bound `TcpListener` held in the verified LISTEN state
+//!     (CLOSED→LISTEN), and accept replays the verified passive path
+//!     LISTEN→SYN_RECEIVED→ESTABLISHED for each accepted connection, which
+//!     then behaves exactly like a connected one. There is no listener-close
+//!     builtin — the Coq table has no LISTEN→CLOSED edge (see [`Listener`]).
 //!   * `tls_dasar_ok` is the **pure** TLS acceptance policy (NET_001_03
 //!     no-downgrade + NET_001_08 cipher strength): real policy, no handshake.
 //!     TLS record-layer cryptography is NOT implemented — there is no
@@ -37,7 +43,7 @@ use riina_os::net::{tls_policy_accepts, CipherSuite, TcpConnection, TcpEvent, Tc
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{Read, Write};
-use std::net::TcpStream;
+use std::net::{TcpListener, TcpStream};
 
 /// (BM name, EN name, canonical key).
 pub static BUILTINS: &[(&str, &str, &str)] = &[
@@ -45,6 +51,9 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("jaring_hantar", "net_send", "jaring_hantar"),
     ("jaring_terima", "net_recv", "jaring_terima"),
     ("jaring_tutup", "net_close", "jaring_tutup"),
+    ("jaring_dengar", "net_listen", "jaring_dengar"),
+    ("jaring_alamat", "net_local_addr", "jaring_alamat"),
+    ("jaring_terima_sambungan", "net_accept", "jaring_terima_sambungan"),
     ("tls_dasar_ok", "tls_policy_ok", "tls_dasar_ok"),
 ];
 
@@ -56,10 +65,22 @@ struct Conn {
     stream: Option<TcpStream>,
 }
 
+/// One tracked listener: the enforcing machine held in LISTEN plus the real
+/// bound socket. There is deliberately NO listener-close builtin: the Coq
+/// `valid_transition` table has no LISTEN→CLOSED edge, so a verified close
+/// path for listeners does not exist — adding one belongs in the Coq model
+/// first, not here (Prime Directive 2: the model governs, we do not invent
+/// edges). Listeners live until the interpreter thread ends.
+struct Listener {
+    machine: TcpConnection,
+    socket: TcpListener,
+}
+
 #[derive(Default)]
 struct NetState {
     next_id: u64,
     conns: HashMap<u64, Conn>,
+    listeners: HashMap<u64, Listener>,
 }
 
 thread_local! {
@@ -207,6 +228,93 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 debug_assert_eq!(conn.machine.state(), TcpState::Closed);
                 Ok(Value::Bool(true))
             })?
+        }
+        // Bind a real listener on "host:port" ("127.0.0.1:0" for an ephemeral
+        // port), driving the verified machine CLOSED→LISTEN (PassiveOpen).
+        // Returns the listener id. On bind failure nothing is registered.
+        "jaring_dengar" => {
+            let addr = as_str(arg, name)?;
+            let mut machine = TcpConnection::new();
+            machine
+                .on_event(TcpEvent::PassiveOpen)
+                .map_err(|_| err("jaring: internal state error"))?;
+            let socket = TcpListener::bind(&addr)
+                .map_err(|e| err(format!("jaring: dengar {addr}: {e}")))?;
+            NET.with(|n| {
+                let st = &mut *n.borrow_mut();
+                let id = st.next_id;
+                st.next_id += 1;
+                st.listeners.insert(id, Listener { machine, socket });
+                Value::Int(id)
+            })
+        }
+        // The listener's actual local address ("127.0.0.1:41234") — the way a
+        // program learns which ephemeral port a `jaring_dengar("...:0")` got.
+        "jaring_alamat" => {
+            let id = as_int(arg, name)?;
+            NET.with(|n| -> Result<Value> {
+                let st = &*n.borrow();
+                let l = st
+                    .listeners
+                    .get(&id)
+                    .ok_or_else(|| err("jaring: unknown listener"))?;
+                let addr = l
+                    .socket
+                    .local_addr()
+                    .map_err(|e| err(format!("jaring: alamat: {e}")))?;
+                Ok(Value::String(addr.to_string()))
+            })?
+        }
+        // Accept one connection (blocking), gated on the listener's machine
+        // being LISTEN. The accepted connection replays the verified passive
+        // path — LISTEN --SynReceived--> SYN_RECEIVED --AckReceived-->
+        // ESTABLISHED (the OS already performed the actual SYN/ACK exchange)
+        // — and is then indistinguishable from a connected one: same table,
+        // same send/recv/close gates. Returns the new connection id.
+        "jaring_terima_sambungan" => {
+            let id = as_int(arg, name)?;
+            // Accept OUTSIDE the RefCell borrow: accept blocks, and a builtin
+            // re-entered from another interpreter frame must not deadlock on
+            // the thread-local. Clone the socket handle first.
+            let (socket, listen_machine) = NET.with(|n| -> Result<_> {
+                let st = &*n.borrow();
+                let l = st
+                    .listeners
+                    .get(&id)
+                    .ok_or_else(|| err("jaring: unknown listener"))?;
+                if l.machine.state() != TcpState::Listen {
+                    return Err(err("jaring: not listening"));
+                }
+                Ok((
+                    l.socket
+                        .try_clone()
+                        .map_err(|e| err(format!("jaring: terima_sambungan: {e}")))?,
+                    l.machine.clone(),
+                ))
+            })?;
+            let (stream, _peer) = socket
+                .accept()
+                .map_err(|e| err(format!("jaring: terima_sambungan: {e}")))?;
+            let mut machine = listen_machine;
+            for ev in [TcpEvent::SynReceived, TcpEvent::AckReceived] {
+                machine
+                    .on_event(ev)
+                    .map_err(|_| err("jaring: internal state error"))?;
+            }
+            debug_assert_eq!(machine.state(), TcpState::Established);
+            NET.with(|n| {
+                let st = &mut *n.borrow_mut();
+                let id = st.next_id;
+                st.next_id += 1;
+                st.conns.insert(
+                    id,
+                    Conn {
+                        machine,
+                        stream: Some(stream),
+                    },
+                );
+                Value::Int(id)
+            })
         }
         // Pure TLS acceptance policy: `(version, cipher_suite) -> Bool`.
         // True exactly for TLS 1.3 with one of the three strong AEAD suites
@@ -384,5 +492,63 @@ mod tests {
     #[test]
     fn unknown_name_returns_none() {
         assert_eq!(apply("not_a_net_builtin", &Value::Unit).unwrap(), None);
+    }
+
+    /// Passive open end-to-end: listen on an ephemeral port, a client thread
+    /// connects and sends, accept yields an ESTABLISHED connection whose
+    /// recv/send work through the same verified gates as an active one.
+    #[test]
+    fn listen_accept_recv_send_roundtrip() {
+        let Some(Value::Int(lid)) = apply("jaring_dengar", &s("127.0.0.1:0")).unwrap() else {
+            panic!("listen failed")
+        };
+        let Some(Value::String(addr)) = apply("jaring_alamat", &Value::Int(lid)).unwrap() else {
+            panic!("local_addr failed")
+        };
+        let client = std::thread::spawn(move || {
+            let mut sock = std::net::TcpStream::connect(addr).unwrap();
+            sock.write_all(b"hai").unwrap();
+            let mut buf = [0u8; 16];
+            let n = sock.read(&mut buf).unwrap();
+            String::from_utf8_lossy(&buf[..n]).into_owned()
+        });
+        let Some(Value::Int(cid)) = apply("jaring_terima_sambungan", &Value::Int(lid)).unwrap()
+        else {
+            panic!("accept failed")
+        };
+        assert_eq!(
+            apply("jaring_terima", &pair(Value::Int(cid), Value::Int(16))).unwrap(),
+            Some(Value::String("hai".to_string()))
+        );
+        apply("jaring_hantar", &pair(Value::Int(cid), s("ok"))).unwrap();
+        assert_eq!(client.join().unwrap(), "ok");
+        // The accepted connection closes through the same verified path.
+        assert_eq!(
+            apply("jaring_tutup", &Value::Int(cid)).unwrap(),
+            Some(Value::Bool(true))
+        );
+    }
+
+    #[test]
+    fn accept_on_unknown_or_connection_id_is_an_error() {
+        let res = apply("jaring_terima_sambungan", &Value::Int(999_999));
+        assert!(matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("unknown listener")));
+        // A connection id is not a listener id.
+        let addr = spawn_echo();
+        let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect failed")
+        };
+        let res = apply("jaring_terima_sambungan", &Value::Int(cid));
+        assert!(matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("unknown listener")));
+    }
+
+    #[test]
+    fn bind_failure_registers_nothing() {
+        let before = NET.with(|n| n.borrow().listeners.len());
+        // An unroutable bind address must fail.
+        let res = apply("jaring_dengar", &s("256.0.0.1:0"));
+        assert!(res.is_err(), "bind to an invalid address must error");
+        let after = NET.with(|n| n.borrow().listeners.len());
+        assert_eq!(before, after, "failed bind must not register a listener");
     }
 }
