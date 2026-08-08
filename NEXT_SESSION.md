@@ -71,23 +71,46 @@ Paranoid-Absolute Verification). metrics.json is the ONLY source of truth for co
   Coq = mechanized; the other 9 lanes = generated/smoke (not independent verification).
 
 ## STEP 4 — ASSESS & EXECUTE (active gate: C — Standard Library Hardening)
-Gates A & B are CLOSED. Read Part 11 Gate C rows for what landed. Remaining tractable:
-- Gate C: networking (real TCP/TLS + Coq network model); strings NFC/confusables
-  (UAX#15/UTS#39); numeric tower BigInt/decimal/fixed-point; true 64-bit WASM
-  (i32→i64 mixed-rep refactor — the owner previously chose the bounded ">=2^32
-  error" path; CONFIRM before the full refactor); wiring the new `VirtualFs`
-  (riina-os/src/vfs.rs) into the surface `file_*` builtins (needs path→inode→uid).
-  Set `set_kesatuan`/`persilangan` are ~O(n^2) (benchmark finding, reports/stdlib_bench.md);
-  a faster impl needs `Value: Eq+Hash` (Closure blocks it) — a larger refactor.
-- Gate D1 (smoke lanes provisioned): grow F* (≥50)/TLA(≥5)/Alloy(≥10)/Isabelle(≥20);
+Gates A & B are CLOSED. Read Part 11 Gate C rows for what landed. 2026-08-08 session
+(PR ib823/proof#55) closed: networking client+server (`jaring_*` gated by the verified
+RFC 793 machine, riina-os/src/net.rs 1:1 port of VerifiedNetwork.v predicates) and the
+64-bit WASM item (plain-Int div/mod/order were SIGNED on wasm32 — silently wrong >= 2^63;
+now unsigned, guarded by 00_basics/nombor_64bit.rii in the C/WASM differential). Earlier
+sessions had already landed NFC/confusables, the numeric tower, set perf, and `vfs_*`.
+Remaining tractable (verify each before starting — do not trust this list):
+- Gate C / REQ-68 backend parity: signed sized-int RENDERING diverges (interp prints
+  `-3`, C AND WASM print the masked `253` — compiled backends agree with each other);
+  4 known-divergent examples (builder/command/state_machine: C aborts on padan
+  enum-payload arithmetic + record loads through sums; test_driven: WASM closures in
+  records) — each fix moves an example back to byte-equal.
+- Gate C (owner-approved rename, not yet executed): actor keyword `pelakon` → `pelaku`
+  (wrong translation — pelakon is a stage actor; pelaku is the doer/agent). Surface is
+  ONE lexer line (`"actor" | "pelakon"` → KwActor, lexer.rs:655); sweep = ~7 parser-test
+  sources, 1 fuzz keyword list, 6 Jalinan examples, docs (README/AGENTS/JALINAN_GUIDE/
+  BIJAK_SPEC/session-types paper/2 specs), website JSX + rebuilt wasm. ZERO Coq impact.
+  Decide hard-rename vs deprecated-alias with the owner (recommendation: hard rename;
+  do NOT rewrite historical CHANGELOG entries). Owner must also add the REQ to
+  RIINA_MASTER_PLAN.md (private tree — not reachable from the public repo).
+- Gate C (small Coq-first item): VerifiedNetwork.v has no LISTEN→CLOSED edge, so no
+  listener-close builtin exists (documented in builtins/net.rs). RFC 793 permits close
+  from LISTEN: add the edge + re-prove, then the builtin.
+- Gate C (owner decisions, do not pre-decide): `file_*` through VirtualFs (semantic
+  change; additive `vfs_*` was the prior deliberate choice); TLS record crypto (needs
+  a dep-free stack in 03_PROTO — riina-core crypto lives in 05_TOOLING; Law 8).
+- Gate D1 (smoke lanes): grow F* (≥50)/TLA(≥5)/Alloy(≥10)/Isabelle(≥20);
   provision Lean + improve elaboration (T2a — Phase-10 LLM prerequisite); install z3
   for SMT-checking a Coq IFC theorem (T2f). Only flip a claimLevels entry when a real
   tool verifies real content; never count a stub as a proof.
-- Gate E: refresh the Coq warning budget (clears the stale WARN, advances REQ-30):
-  `python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget`
-  (run it as your LAST commit so status.repoHead stays fresh = HEAD or HEAD^);
+- Gate E: warning budget refreshed 2026-08-08 (0 warnings vs budget 2) — re-run
+  `python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget` as the
+  LAST commit of any session that touches Coq (keeps status.repoHead = HEAD or HEAD^);
   coverage ≥80% (needs tarpaulin/llvm-cov); a dependency-free fuzz sweep (cargo-fuzz
   would violate Law 8 — extend the LCG property-test pattern instead).
+- Metrics regeneration TRAP (hit 2026-08-08): `generate-metrics.sh` in this container
+  silently DOWNGRADES canonical fields the public tree cannot re-derive (SMT
+  "mechanized" → "generated" without z3; qedDeprecated 758 → 0 — no deprecated tree
+  here; nonCoqMechanization report → missing_or_stale). Restore canonical values and
+  patch ONLY what the session actually re-verified (rust.tests, examples, stamp).
 Website deploy IS possible in-session (done 2026-08-05) — `ib823/riina` is a SEPARATE repo, so
 attach it (`add_repo` with push access), `git remote add riina https://github.com/ib823/riina.git`,
 then `bash scripts/deploy-website.sh`. It force-pushes `gh-pages`, which is a branch push and
