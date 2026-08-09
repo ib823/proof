@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-08T23:49:29Z
-**Git SHA:** cd984f3b
+**Generated:** 2026-08-09T03:37:39Z
+**Git SHA:** 020769a
 **Mode:** full
 **Status:** PASS
 
@@ -11,7 +11,7 @@
 | Rust Tests | PASS | 3024 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 165s |
+| Coq Compilation | PASS | 331 .vo files compiled in 231s |
 | Coq Kernel Assumptions | PASS | 5 capstones attested; axioms within reviewed whitelist (1 allowed: funext) |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
@@ -31,6 +31,6 @@
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
 | Cross-Prover Validation (10 provers) | PASS | Grand total: 104563 | Coq: 12678 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12282 | Alloy: 11627 | SMT: 12431 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
-| Transpiler Staleness | WARN | 2 prover(s) may be stale: F*, SMT — run `python3 scripts/generate-full-stack.py` (checked: F*, SMT; skipped generated/non-compiled: Lean, Isabelle, TLA+, Alloy, Verus, Kani, TV) |
+| Transpiler Staleness | PASS | all checked prover files up-to-date with Coq sources (checked: F*, SMT; skipped generated/non-compiled: Lean, Isabelle, TLA+, Alloy, Verus, Kani, TV) |
 | Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12678, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
