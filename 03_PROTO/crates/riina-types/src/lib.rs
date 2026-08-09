@@ -1016,7 +1016,7 @@ pub enum Expr {
     },
 
     // ── JALINAN Phase 6 expressions ────────────────────────────────────
-    /// Actor declaration: pelakon Name { keadaan: StateType, kendalikan msg { ... } }
+    /// Actor declaration: pelaku Name { keadaan: StateType, kendalikan msg { ... } }
     ActorDecl {
         name: Ident,
         state_ty: Ty,

@@ -112,6 +112,16 @@ else
       # inside a "vulnerable_code" JSON field. Path-scoped to *.jsonl in this
       # one directory so the gate still fails on secrets anywhere else.
       07_EXAMPLES/08_ai_training/*.jsonl) continue ;;
+      # Tier-3 archival research surveys quote Haskell DataKinds type-family
+      # equations over promoted security-lattice constructors (Join/CanFlow of
+      # the promoted Secret level, whose tick-quote syntax the regex reads as
+      # a value assignment). Verified 2026-08-08: every hit in the four
+      # RESEARCH_A18 files is such an equation — lattice levels, not
+      # credentials. Scoped to Markdown under the archival tree (excluded from
+      # the public mirror and all other audits); any non-doc file there still
+      # gets the full scan. NB: describe, never quote, the matching text here —
+      # this file is inside its own scan.
+      01_RESEARCH/*.md|01_RESEARCH/*/*.md|01_RESEARCH/*/*/*.md) continue ;;
     esac
 
     abs="$REPO_ROOT/$rel"

@@ -52,8 +52,8 @@ that teaches formal verification concepts through hands-on coding in Bahasa Mela
 - Resource management without garbage collection
 - File handles, network connections as linear resources
 
-### 9. Pelakon — Actors (JALINAN)
-- `pelakon` (actor) with `keadaan` (state)
+### 9. Pelaku — Actors (JALINAN)
+- `pelaku` (actor) with `keadaan` (state)
 - `lahir` (spawn), `hantar` (send), `terima` (receive)
 - `koreografi` (choreography) for multi-party protocols
 - `penyelia` (supervisor) for fault tolerance

@@ -20,7 +20,7 @@
 | F* / TLA+ / Alloy / SMT | 1 active smoke artifact each; rest are generated corpora (`metrics.json` is authoritative) |
 | Total proofs | See `website/public/metrics.json` (single source of truth) |
 | Rust tests | 2,898 proto + 294 tooling = 3,192 (19 proto crates, 4 tooling crates; re-derived 2026-06-11) |
-| Examples | 165 .rii files |
+| Examples | 167 .rii files |
 | Claims | Coq mechanized; Lean active-lane audit-grep mechanized (per-file elaboration gaps still exist outside default `lake build RIINA` target); Isabelle/F*/TLA+/Alloy/SMT smoke-mechanized; Verus/Kani/TV generated |
 
 **Active gaps a new session must NOT forget:**
@@ -49,14 +49,14 @@ Gate A (Truth-up & House Cleaning) CLOSED 2026-06-01 — all REQ-21..26 DONE.
 
 - **Phase 0-4**: DONE (clean codebase, deep proofs, prover closure, compiler enforcement, end-to-end)
 - **Phase 5**: ~95% (artifact signing done, compliance 500+ rules, HTTP pkg client, trademark asserted)
-- **Phase J1**: PASSED (session-typed actors: pelakon/lahir/hantar/terima end-to-end)
+- **Phase J1**: PASSED (session-typed actors: pelaku/lahir/hantar/terima end-to-end)
 
 ## Phase 6 Status (Current Focus)
 
 ### JALINAN (Distributed Computing)
 - **J1 Session Types + Actors**: PASSED
   - 9 keywords, 5 Ty variants, 7 Expr variants in AST
-  - Parser: koreografi/pelakon/lahir/hantar/terima blocks
+  - Parser: koreografi/pelaku/lahir/hantar/terima blocks
   - Session type checker (56 tests), C codegen with pthread actor runtime
   - Interpreter with synchronous message processing
   - riina-runtime crate (mailbox, supervisor, session channels)

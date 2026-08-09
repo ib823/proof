@@ -135,6 +135,22 @@ mod tests {
     }
 
     #[test]
+    fn test_actor_keyword_is_pelaku_not_pelakon() {
+        // `pelaku` (doer/agent) is the correct BM word for the actor-model
+        // unit; `pelakon` (a stage/film actor) was a mistranslation and was
+        // hard-renamed 2026-08-08 (owner decision) — it must lex as a plain
+        // identifier, never as KwActor.
+        let mut lexer = Lexer::new("pelaku actor pelakon");
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwActor);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwActor);
+        match lexer.next_token().unwrap().kind {
+            TokenKind::Identifier(s) => assert_eq!(s, "pelakon"),
+            other => panic!("'pelakon' must now be a plain identifier, got {other:?}"),
+        }
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
     fn test_blockchain_keywords() {
         let input = "smart_contract token consensus";
         let mut lexer = Lexer::new(input);

@@ -1,6 +1,6 @@
 # RIINA ARCHITECTURE CORRECTED
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3002 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Version 1.0.0 — Proper Framing of Language vs Applications
 

@@ -1,8 +1,8 @@
 // multi_actor.rii — Multiple Actors Communicating
 // Demonstrates actor spawn, message passing, state queries
 
-pelakon Penambah { keadaan: Nombor kendalikan Tambah(n) { n + 10 } }
-pelakon Pengganda { keadaan: Nombor kendalikan Ganda(n) { n * 2 } }
+pelaku Penambah { keadaan: Nombor kendalikan Tambah(n) { n + 10 } }
+pelaku Pengganda { keadaan: Nombor kendalikan Ganda(n) { n * 2 } }
 
 biar a = lahir Penambah(0);
 biar b = lahir Pengganda(0);

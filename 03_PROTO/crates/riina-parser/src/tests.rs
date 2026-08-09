@@ -2566,7 +2566,7 @@ fn test_parse_choreography_error_missing_brace() {
 
 #[test]
 fn test_parse_actor_basic() {
-    let source = "pelakon MyActor { keadaan: Nombor kendalikan Msg(p) { p } }";
+    let source = "pelaku MyActor { keadaan: Nombor kendalikan Msg(p) { p } }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2592,7 +2592,7 @@ fn test_parse_actor_basic() {
 #[test]
 fn test_parse_actor_multi_handler() {
     let source =
-        "pelakon MyActor { keadaan: Benar kendalikan MsgA(a) { a } kendalikan MsgB(b) { b } }";
+        "pelaku MyActor { keadaan: Benar kendalikan MsgA(a) { a } kendalikan MsgB(b) { b } }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2609,7 +2609,7 @@ fn test_parse_actor_multi_handler() {
 
 #[test]
 fn test_parse_actor_with_state_type() {
-    let source = "pelakon Counter { keadaan: Nombor kendalikan Inc(x) { x } }";
+    let source = "pelaku Counter { keadaan: Nombor kendalikan Inc(x) { x } }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2625,7 +2625,7 @@ fn test_parse_actor_with_state_type() {
 
 #[test]
 fn test_parse_actor_handler_body() {
-    let source = "pelakon Echo { keadaan: Unit kendalikan Ping(m) { 42 } }";
+    let source = "pelaku Echo { keadaan: Unit kendalikan Ping(m) { 42 } }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2645,7 +2645,7 @@ fn test_parse_actor_handler_body() {
 
 #[test]
 fn test_parse_actor_error_missing_keadaan() {
-    let source = "pelakon MyActor { kendalikan Msg(p) { p } }";
+    let source = "pelaku MyActor { kendalikan Msg(p) { p } }";
     let mut p = Parser::new(source);
     let result = p.parse_program();
     assert!(result.is_err(), "Expected error when keadaan is missing");
@@ -2653,7 +2653,7 @@ fn test_parse_actor_error_missing_keadaan() {
 
 #[test]
 fn test_parse_actor_error_missing_brace() {
-    let source = "pelakon MyActor { keadaan: Nombor kendalikan Msg(p) { p }";
+    let source = "pelaku MyActor { keadaan: Nombor kendalikan Msg(p) { p }";
     let mut p = Parser::new(source);
     let result = p.parse_program();
     assert!(
@@ -2717,11 +2717,11 @@ fn test_parse_spawn_error_missing_paren() {
 
 #[test]
 fn test_parse_actor_send_basic() {
-    let mut p = Parser::new("hantar(pelaku, mesej)");
+    let mut p = Parser::new("hantar(sasaran, mesej)");
     let expr = p.parse_expr().unwrap();
     match expr {
         Expr::ActorSend(a, m) => {
-            assert_eq!(*a, Expr::Var("pelaku".to_string()));
+            assert_eq!(*a, Expr::Var("sasaran".to_string()));
             assert_eq!(*m, Expr::Var("mesej".to_string()));
         }
         other => panic!("Expected ActorSend, got {:?}", other),
@@ -2756,7 +2756,7 @@ fn test_parse_actor_send_with_string() {
 
 #[test]
 fn test_parse_actor_send_error_missing_comma() {
-    let mut p = Parser::new("hantar(pelaku mesej)");
+    let mut p = Parser::new("hantar(sasaran mesej)");
     let result = p.parse_expr();
     assert!(result.is_err(), "Expected error when comma is missing");
 }
@@ -2767,11 +2767,11 @@ fn test_parse_actor_send_error_missing_comma() {
 
 #[test]
 fn test_parse_actor_recv_basic() {
-    let mut p = Parser::new("terima(pelaku)");
+    let mut p = Parser::new("terima(sasaran)");
     let expr = p.parse_expr().unwrap();
     match expr {
         Expr::ActorRecv(a) => {
-            assert_eq!(*a, Expr::Var("pelaku".to_string()));
+            assert_eq!(*a, Expr::Var("sasaran".to_string()));
         }
         other => panic!("Expected ActorRecv, got {:?}", other),
     }
@@ -3078,7 +3078,7 @@ fn test_parse_jalinan_choreography_program() {
 
 #[test]
 fn test_parse_jalinan_bm_keywords_spawn() {
-    let mut p = Parser::new("lahir Pelakon(0)");
+    let mut p = Parser::new("lahir Pelaku(0)");
     let expr = p.parse_expr().unwrap();
     assert!(matches!(expr, Expr::Spawn(_, _)));
 }

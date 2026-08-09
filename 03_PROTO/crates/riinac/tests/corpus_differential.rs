@@ -53,6 +53,7 @@ use std::process::Command;
 ///     record field loads through sum values.
 ///   - test_driven: C runs; WASM translation error — closures stored in
 ///     records (validator combinators).
+///
 /// Tracked as backend-parity work in the REQ-68 cluster (master plan).
 const KNOWN_DIVERGENT: &[&str] = &[
     "05_patterns/builder.rii",

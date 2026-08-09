@@ -175,12 +175,16 @@ Record TCPConnection : Type := mkTCPConn {
   tcp_integrity_mac : option MAC;
 }.
 
-(* Valid TCP state transitions - RFC 793 compliant *)
+(* Valid TCP state transitions - RFC 793 compliant.
+   LISTEN --Close--> CLOSED is RFC 793 p.22 ("CLOSE call: delete TCB, enter
+   CLOSED state" from LISTEN) — added 2026-08-08 so the runtime can close a
+   listener along a verified edge (riina-os net / jaring_tutup_dengar). *)
 Definition valid_transition (from : TCPState) (event : TCPEvent) (to : TCPState) : Prop :=
   match from, event, to with
   | CLOSED, PassiveOpen, LISTEN => True
   | CLOSED, ActiveOpen, SYN_SENT => True
   | LISTEN, SynReceived, SYN_RECEIVED => True
+  | LISTEN, Close, CLOSED => True
   | SYN_SENT, SynAckReceived, ESTABLISHED => True
   | SYN_RECEIVED, AckReceived, ESTABLISHED => True
   | ESTABLISHED, FinReceived, CLOSE_WAIT => True

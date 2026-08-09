@@ -1,23 +1,23 @@
 {
-  "generated": "2026-08-07T02:09:00Z",
-  "generatedHuman": "August 07, 2026 at 02:09 UTC",
+  "generated": "2026-08-08T23:27:30Z",
+  "generatedHuman": "August 08, 2026 at 23:27 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "1ab7ed616",
-    "branch": "main"
+    "commit": "a1f2e24e",
+    "branch": "claude/continue-solution-4gn31y"
   },
   "proofs": {
     "qedActive": 12678,
-    "qedDeprecated": 758,
-    "qedTotal": 13436,
+    "qedDeprecated": 0,
+    "qedTotal": 12678,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 371,
+    "filesTotal": 331,
     "filesActive": 331,
     "domains": 252,
     "prover": "Rocq 9.1.1"
@@ -146,9 +146,9 @@
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": true,
+      "reportFresh": false,
       "overallMechanized": false,
-      "source": "strict_report",
+      "source": "cached_metrics",
       "pending": {
         "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
         "isabelle": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at ./05_TOOLING/tools/isabelle/current/bin/isabelle. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-isabelle.sh)",
@@ -194,13 +194,13 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3002,
-    "testsVerified": 3002,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 3024,
+    "testsVerified": 3024,
+    "testsEstimated": 3020,
+    "testsSource": "cached_verified",
     "crates": 19
   },
-  "examples": 165,
+  "examples": 167,
   "status": {
     "build": "passing",
     "grade": "A",

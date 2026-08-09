@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **311**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **329**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 
@@ -219,6 +219,8 @@ Total registered builtins: **311**. Grouped by the effect each performs (`kesan`
 | `teks_sub` | `Fn(Any, Any)` |
 | `teks_ulang` | `Fn(Any, Any)` |
 | `titik_tetap` | `Fn((Teks, Nombor), Wang)` |
+| `tls_dasar_ok` | `Fn((Teks, Teks), Benar)` |
+| `tls_policy_ok` | `Fn((Teks, Teks), Benar)` |
 | `to_bool` | `Fn(Any, Benar)` |
 | `to_string` | `Fn(Any, Teks)` |
 | `validate_length` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` |
@@ -301,6 +303,22 @@ Total registered builtins: **311**. Grouped by the effect each performs (`kesan`
 | `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` |
 | `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` |
 | `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` |
+| `jaring_alamat` | `Fn(Nombor, Teks, Rangkaian)` |
+| `jaring_dengar` | `Fn(Teks, Nombor, Rangkaian)` |
+| `jaring_hantar` | `Fn((Nombor, Teks), Nombor, Rangkaian)` |
+| `jaring_sambung` | `Fn(Teks, Nombor, Rangkaian)` |
+| `jaring_terima` | `Fn((Nombor, Nombor), Teks, Rangkaian)` |
+| `jaring_terima_sambungan` | `Fn(Nombor, Nombor, Rangkaian)` |
+| `jaring_tutup` | `Fn(Nombor, Benar, Rangkaian)` |
+| `jaring_tutup_dengar` | `Fn(Nombor, Benar, Rangkaian)` |
+| `net_accept` | `Fn(Nombor, Nombor, Rangkaian)` |
+| `net_close` | `Fn(Nombor, Benar, Rangkaian)` |
+| `net_close_listener` | `Fn(Nombor, Benar, Rangkaian)` |
+| `net_connect` | `Fn(Teks, Nombor, Rangkaian)` |
+| `net_listen` | `Fn(Teks, Nombor, Rangkaian)` |
+| `net_local_addr` | `Fn(Nombor, Teks, Rangkaian)` |
+| `net_recv` | `Fn((Nombor, Nombor), Teks, Rangkaian)` |
+| `net_send` | `Fn((Nombor, Teks), Nombor, Rangkaian)` |
 
 ## Kripto (Crypto)
 

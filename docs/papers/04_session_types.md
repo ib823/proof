@@ -34,7 +34,7 @@ mirroring implementation", not "verified compilation".
 
 ## Actor Model
 
-- `pelakon` — actor declaration with typed state
+- `pelaku` — actor declaration with typed state
 - `hantar` / `terima` — typed send/receive
 - `lahir` — spawn with initial state
 - `koreografi` — global interaction protocol

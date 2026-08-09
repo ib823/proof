@@ -652,7 +652,7 @@ impl<'a> Lexer<'a> {
 
             // JALINAN Phase 6 (English | Bahasa Melayu)
             "choreography" | "koreografi" => TokenKind::KwChoreography,
-            "actor" | "pelakon" => TokenKind::KwActor,
+            "actor" | "pelaku" => TokenKind::KwActor,
             "role" | "peranan" => TokenKind::KwRole,
             "state" | "keadaan" => TokenKind::KwState,
             "supervisor" | "penyelia" => TokenKind::KwSupervisor,

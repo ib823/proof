@@ -423,7 +423,7 @@ koreografi Perolehan {
 // STEP 2: Implement each role (replaces frontend + backend)
 // ══════════════════════════════════════════════════════════
 
-pelakon PelaksanaPemohon melaksana Perolehan::Pemohon {
+pelaku PelaksanaPemohon melaksana Perolehan::Pemohon {
   // Actor implementing Requester role
   // Type system PROVES this implementation matches the choreography
 
@@ -465,7 +465,7 @@ pelakon PelaksanaPemohon melaksana Perolehan::Pemohon {
 
 struktur Permohonan : CRDT + KandunganAlamat {
   id: Id,
-  pemohon: IdPelakon,
+  pemohon: IdPelaku,
   butiran: ButiranPerolehan,
   status: StatusPermohonan,
   sejarah: MerkleDAG<PerubahanStatus>,  // Full history is structural
@@ -549,8 +549,8 @@ koreografi NamaProtokol {
 **Enhancement 2: Actor Primitives**
 
 ```riina
-// New keyword: pelakon (actor)
-pelakon NamaPelakon {
+// New keyword: pelaku (actor)
+pelaku NamaPelaku {
   keadaan { ... }                    // Private state
   kendalikan mesej(T) { ... }        // Message handler
   penyelia: Strategi                 // Supervision strategy
@@ -559,7 +559,7 @@ pelakon NamaPelakon {
 // Built-in supervision strategies
 penyelia NamaPenyelia: PenyeliaSemula {
   strategi: mulakan_semula(3, 60.saat)  // Restart max 3 times in 60s
-  anak: [Pelakon1, Pelakon2]
+  anak: [Pelaku1, Pelaku2]
 }
 ```
 
@@ -763,7 +763,7 @@ None of the six pillars are new. JALINAN's contribution is the *synthesis*:
 |------------|---------|-----------------|
 | Jalinan | Weave/Interconnection | Architecture name |
 | Koreografi | Choreography | Global interaction protocol |
-| Pelakon | Actor | Computation unit |
+| Pelaku | Actor | Computation unit |
 | Keupayaan | Capability | Authority token |
 | Sesi | Session | Communication channel |
 | Keadaan | State | Actor-local data |

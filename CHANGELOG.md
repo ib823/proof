@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3002 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,91 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-08 — Gate C: rendering parity, `pelaku` rename, verified listener close
+
+### Fixed (Gate C / REQ-68 backend parity — signed sized-int rendering)
+- **`ke_teks` of a signed sized int rendered the masked bit pattern on both compiled
+  backends** (`253` where the interpreter — the reference — prints `-3`). C: the
+  `riina_builtin_ke_teks` INT branch ignored the `int_signed_bits` tag the rest of the
+  C runtime maintains (the sibling `riina_format` already honored it). WASM: the i64
+  cell carries no runtime tag, so `emit_ke_teks` now takes the call site's static type
+  (`Ty::IntN{signed}`), sign-extends, and renders `-` + magnitude — i64::MIN handled
+  via the unsigned magnitude loops. All three backends now agree, including at
+  i64::MIN/i16::MIN/zero. New corpus example `00_basics/nombor_bertanda.rii` held
+  byte-equal by `corpus_c_wasm_differential`; +1 lexer guard test.
+### Changed (Gate C — actor keyword corrected: `pelakon` → `pelaku`, hard rename)
+- **The BM actor keyword is now `pelaku`** (doer/agent — the correct translation);
+  `pelakon` (a stage/film actor — a mistranslation) is no longer a keyword and lexes
+  as a plain identifier (owner decision 2026-08-08, hard mode, no deprecated alias).
+  One lexer line is the language surface; sweep covered parser tests, the fuzz keyword
+  list, 6 Jalinan examples, docs (README/AGENTS/JALINAN_GUIDE/BIJAK_SPEC/session-types
+  paper/2 Jalinan specs), llms.txt, the AI training corpus, and the website source.
+  Historical CHANGELOG entries deliberately left as written. Zero Coq impact.
+  Guard test: `pelaku`/`actor` → KwActor, `pelakon` → Identifier.
+### Added (Gate C — verified listener close, Coq model first)
+- **`VerifiedNetwork.v`: LISTEN --Close--> CLOSED edge** (RFC 793 p.22
+  close-from-LISTEN) added to `valid_transition`; full 331-file Coq build re-verified
+  green (Rocq 9.1.1). Ported 1:1 to `riina_os::net` (exhaustive state×event tests
+  still pass unchanged — they derive from the table). New builtin
+  **`jaring_tutup_dengar`/`net_close_listener`**: closes a listener along the verified
+  edge, drops the real socket; a closed listener rejects accept/local-addr with
+  "not listening" and double close is rejected by the model (no Close edge out of
+  CLOSED). STDLIB.md regenerated (327 → 329 registered builtins).
+
+### 2026-08-08 — Gate C: 64-bit WASM — plain `Nombor` div/mod/order now unsigned (u64-correct ≥ 2^63)
+
+### Fixed (Gate C / Standard Library Hardening — numeric tower, WASM backend)
+- **WASM `Nombor` operations ≥ 2^63 were silently wrong** (`03_PROTO/crates/riina-codegen/src/wasm.rs`):
+  the W1 i64-value-cell landing removed the old clean ">= 2^32" compile error, but the
+  generic BinOp arm still emitted the SIGNED ops (`i64.div_s`/`i64.rem_s`/`i64.lt_s`/…),
+  so a value ≥ 2^63 read as negative: `18000000000000000000 > 1` compiled to *false* and
+  div/mod produced wrapped-signed junk while the interpreter (`Value::Int(u64)`) and the
+  C backend (`uint64_t`) agreed on the u64 answers. Found by a ≥ 2^63 three-backend
+  differential this session. Plain `Ty::Int` (and unsigned `IntN`) now lower to the
+  UNSIGNED i64 ops (`i64.div_u`/`i64.rem_u`/`i64.lt_u`/`i64.gt_u`/`i64.le_u`/`i64.ge_u` —
+  the four unsigned comparison opcodes 0x54/0x56/0x58/0x5A added to `wasm_encode::Op`);
+  signed `IntN` keeps the signed ops with the existing sub-64 sign-extension. New corpus
+  example `07_EXAMPLES/00_basics/nombor_64bit.rii` (boundary 2^63, u64::MAX, div/mod/order)
+  is byte-equal across interp/C/WASM and is held so by `corpus_c_wasm_differential`
+  (verified green with wasmtime 27.0.0 this session); +2 opcode-level tests.
+  This closes the "true 64-bit WASM" Gate C item: the numeric tower's plain-int surface
+  is now u64-correct end-to-end on all three backends (owner-approved refactor,
+  supersedes the previously-chosen bounded ">= 2^32 error" path — which W1 had already
+  replaced with the i64 cell, minus this signedness gap).
+
+### 2026-08-08 — Gate C: networking — real TCP gated by the verified RFC 793 state machine
+
+### Added (Gate C / Standard Library Hardening — Networking)
+- **`riina_os::net`** (`03_PROTO/crates/riina-os/src/net.rs`): 1:1 Rust port of the
+  predicate core of `02_FORMAL/coq/domains/VerifiedNetwork.v` — the RFC 793
+  `TCPState`/`TCPEvent`/`valid_transition` table and the TLS 1.3 acceptance policy
+  (`is_strong_cipher`, no-downgrade). The enforcing `TcpConnection` can only move along
+  edges the Coq theorem NET_001_11 (`tcp_state_machine_correct`) proves valid; tests
+  cover the full (state × event) space exhaustively and mirror NET_001_03/08/11.
+- **`jaring_*` network builtins** (`03_PROTO/crates/riina-codegen/src/builtins/net.rs`):
+  `jaring_sambung`/`net_connect`, `jaring_hantar`/`net_send`, `jaring_terima`/`net_recv`,
+  `jaring_tutup`/`net_close` perform **real** TCP I/O over `std::net` sockets with the
+  verified state machine enforced on top — send/recv require ESTABLISHED, close walks the
+  verified active-close path to CLOSED, and a send after close is rejected by the model
+  (`not established`), not by hoping the OS notices. `tls_dasar_ok`/`tls_policy_ok` is the
+  pure TLS acceptance policy (TLS 1.3 × strong AEAD suite only; unknown strings fail
+  closed). TLS record-layer cryptography is NOT implemented (no dep-free TLS stack in
+  03_PROTO — Law 8); no builtin claims to encrypt traffic. Interpreter-only: not
+  registered in codegen, so the C/WASM backends fail closed rather than miscompile.
+  Typechecker registers all five pairs (`Effect::Network`; the policy check is `Pure`) —
+  `docs/api/STDLIB.md` regenerated (311 → 321 registered builtins).
+- Also: fixed a latent `clippy::doc_lazy_continuation` failure in
+  `riinac/tests/corpus_differential.rs` (doc-comment formatting) that broke
+  `cargo clippy --all-targets -- -D warnings` on the baseline tree.
+- **Passive open (server side)**: `jaring_dengar`/`net_listen` (real bound
+  `TcpListener` held in the verified LISTEN state), `jaring_alamat`/`net_local_addr`
+  (ephemeral-port discovery), `jaring_terima_sambungan`/`net_accept` (blocking accept
+  that replays the verified passive path LISTEN→SYN_RECEIVED→ESTABLISHED; the accepted
+  connection then uses the same send/recv/close gates as an active one). Deliberately
+  NO listener-close builtin: the Coq `valid_transition` table has no LISTEN→CLOSED
+  edge, and the model governs — adding that edge belongs in `VerifiedNetwork.v` first.
+  STDLIB.md 321 → 327 registered builtins.
 
 ## [0.4.0] — 2026-06-06
 
