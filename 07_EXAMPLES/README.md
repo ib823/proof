@@ -6,9 +6,14 @@ This directory contains 147 `.rii` example files across 18 category directories.
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **47 of the 147 examples pass
-`riinac check`** end-to-end (and all 20 of `00_basics/`), and closing the
-remaining gap is active work (`RIINA_MASTER_PLAN.md` Gate B). The parser is
+of the examples assume. As of this writing, **92 of the 167 examples pass
+`riinac check`** end-to-end (re-measured 2026-08-09; and all of `00_basics/`), and closing the
+remaining gap is active work (`RIINA_MASTER_PLAN.md` Gate B).
+
+Separately, passing `riinac check` does **not** imply the example can be
+compiled: every `jaring_*`/`fail_*`/`vfs_*`/`json_*`/`masa_*` and security
+builtin is **interpreter-only**, so `riinac build` on a program using them
+fails closed with `unbound variable` (master plan REQ-70). The parser is
 being extended incrementally; the forms below are **now accepted** but some
 example files stack several advanced constructs and need all of them supported
 before they pass.
