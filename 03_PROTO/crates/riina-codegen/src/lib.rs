@@ -100,6 +100,20 @@ pub use emit::{emit_c, CEmitter};
 pub use interp::Interpreter;
 pub use ir::{BasicBlock, Function, Instruction, Program};
 pub use lower::Lower;
+
+/// Does the compiled-backend pipeline (C / WASM) implement this builtin?
+///
+/// `false` means **interpreter-only**: the typechecker accepts the call and
+/// `riinac run` executes it, but `riinac build` / `emit-c` / `--target wasm*`
+/// fail closed with `unbound variable: <name>` — lowering never binds it. The
+/// gap is invisible in a type signature, which is why `docs/api/STDLIB.md`
+/// renders a Backend column generated from this function (master plan REQ-70).
+///
+/// Accepts either surface spelling (Bahasa Melayu or English), e.g. both
+/// `gabung_teks` and `concat`.
+pub fn codegen_supports_builtin(name: &str) -> bool {
+    lower::builtin_canonical(name).is_some()
+}
 pub use value::Value;
 
 /// Result type for code generation operations

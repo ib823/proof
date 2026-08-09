@@ -67,7 +67,15 @@ use riina_types::{BinOp, Effect, Expr, Ident, SecurityLevel, Ty};
 use std::collections::{HashMap, HashSet};
 
 /// Map a source name to its canonical builtin name, if it is a known builtin.
-fn builtin_canonical(name: &str) -> Option<&'static str> {
+///
+/// This function IS the compiled-backend boundary. A builtin the typechecker
+/// accepts but that this returns `None` for is **interpreter-only**: lowering
+/// leaves it as an unbound variable, so `riinac build`/`emit-c`/`--target wasm*`
+/// fail closed with `unbound variable: <name>` rather than miscompiling. That
+/// distinction is invisible in a signature, so `docs/api/STDLIB.md` renders it
+/// as a per-builtin Backend column, generated from this very function via
+/// [`codegen_supports_builtin`] (master plan REQ-70).
+pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // I/O
     match name {
         "cetak" | "print" => return Some("cetak"),
