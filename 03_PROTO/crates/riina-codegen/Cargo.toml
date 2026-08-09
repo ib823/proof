@@ -24,6 +24,7 @@ riina-types.workspace = true
 riina-runtime = { path = "../riina-runtime" }
 # Verified VirtualFs access-control model (exposed via the vfs_* builtins)
 riina-os = { path = "../riina-os" }
+riina-tls = { path = "../riina-tls" }
 
 # No external dependencies (Law 8: Zero third-party deps)
 # All code generation is hand-written for maximum auditability

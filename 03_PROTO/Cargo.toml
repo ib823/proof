@@ -23,6 +23,7 @@ members = [
     "crates/riina-receipt",
     "crates/riina-ui",
     "crates/riina-os",
+    "crates/riina-tls",
     "crates/riinac",
 ]
 
