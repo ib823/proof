@@ -425,7 +425,7 @@ research source, and detailed description.
 | REQ-61 | **Calculus unification (Part 12, axis A).** Session types, linearity, capabilities into the ONE core `expr` with the existing metatheory extended — 'one calculus, all properties, one kernel'. Staged; each constructor addition is compile-enforced through the exhaustive walkers (the REQ-44 ripple discipline) | P1 | TODO | Part 12 |
 | REQ-62 | **Proof-carrying binaries (Part 12, axis A/E).** Ship artifacts embedding a receipt (proof-obligation hashes + manifest + signature; ExecutionReceipts.v models this). Requires REQ-31 signing complete. 'Verify my binary yourself' is the demo that ends arguments | P2 | TODO | Part 12 |
 | REQ-63 | **Common Criteria EAL6/7 mapping (Part 12, axis B).** Turn CommonCriteriaEAL7.v into a Protection Profile mapping; formal methods are REQUIRED at that level (seL4 precedent) — RIINA's dossier can cut EAL evaluation cost by an order of magnitude for users. Decision-gated on REQ-58's vertical surviving | P2 | TODO | Gate H |
-| REQ-64 | **Open-spec / standardization decision package (Part 12, axis B/E — owner decision).** Option analysis for: open the spec+calculus+proofs, keep the toolchain commercial ('open proofs, sell the compiler' — resolves the REQ-35 tension); then CRA harmonised-standard profile, ETSI/ISO long-term. Includes the break-a-theorem bounty design. Prepared as a decision package, NOT decided by a session | P2 | DECISION | Gate J |
+| REQ-64 | **Open-spec / standardization decision package (Part 12, axis B/E — owner decision).** Option analysis for: open the spec+calculus+proofs, keep the toolchain commercial ('open proofs, sell the compiler' — resolves the REQ-35 tension); then CRA harmonised-standard profile, ETSI/ISO long-term. Includes the break-a-theorem bounty design. Prepared as a decision package, NOT decided by a session. **PACKAGE READY 2026-08-09** — see Part 11 §"REQ-64 DECISION PACKAGE". Decision remains the owner's | P2 | PACKAGE READY (decision = owner) | Gate J |
 | REQ-65 | **AI-native productization (Part 12, axis C).** (a) Position RIINA as the acceptance layer for LLM-written code — the compiler+proofs are the reviewer; (b) demo: agent tool-calling under capability types (AgentToolSecurity.v) = compile-time least privilege for AI actions; (c) LLM proof maintenance per the REQ-52 evaluate-before-build verdict. DONE when the demo exists and the claim is stated at the level proven | P2 | TODO | Phase 10 / Part 12 |
 | REQ-66 | **Value-level declassification rule (owner decision 2026-08-06: Option B, Coq-first).** Found during the REQ-55 example repairs: `declass_ok` (properties/Declassification.v) is SYNTACTIC — `dedah e dengan bukti p` accepts only a literal `sulit v` operand, so a VARIABLE holding a secret cannot be declassified (`biar kad = sulit …; dedah kad dengan bukti kad` → "Invalid declassification: Secret expression must be EClassify(v)"); real programs pass secrets in variables and parameters, so declassification is unusable outside literal demos (ewallet_pci.rii is the concrete blocked example). Owner explicitly REJECTED compiler-only relaxation (would widen the Coq⇄Rust parity gap — same reasoning as the REQ-44 sequencing discipline). Work, Coq-first: (a) design a sound value-level `declass_ok` (permit an operand whose VALUE is known classified — e.g. a typing-based rule over `TSecret` operands with a correlated proof term); (b) prove it in Declassification.v under the no-Admitted rule, preserving `logical_relation_declassify_proven`/`declassify_requires_public_context` or their honest generalizations; (c) update the REQ-54 executable guard in foundations/StepFn.v (the `expr_beq`-based `ST_DeclassifyValue` check) IN THE SAME increment so the executable semantics stays in lockstep with the relation — `step_fn_sound` will not compile otherwise, which is the tripwire working as designed; (d) THEN mirror in the Rust typechecker (`declass_ok` in riina-typechecker) with positive AND negative e2e tests; (e) corpus sweep — ewallet_pci.rii passing is the payoff gate; no surface-syntax change (both `dedah` forms, incl. the REQ-55 call-form sugar, unchanged). Dedicated session | P1 | TODO | Phase 2 / Gate C |
 | REQ-67 | **Multi-prover honest-mechanization program (owner approved 2026-08-06, incl. both retirements).** Goal: every non-Coq lane either MECHANIZED AT AN HONESTLY-STATED SCOPE (prover passes in CI, 0 sorry/admit/axiom at that scope, claim level flipped only by `generate-metrics.sh` from fresh checker output) or RETIRED visibly — no lane left in the generated middle. REQ-29's retraction stands: no transpiler tricks, no axiom-backed compiles. Per-lane targets and DONE-whens: **(a) SMT (first, cheapest)** — redefine the lane as the Z3-VERIFIED set (today: 25 security-lattice properties in `SecurityLatticeVerification`), grow it with effect-join/policy algebra, retire the ~12,380 generated asserts from the headline; DONE when `z3` runs in CI on the scoped set and `claimLevels.smt` flips from the fresh report. **(b) Lean 4 (the credibility jewel)** — an INDEPENDENT hand-written re-proof of the core metatheory spine (Progress, Preservation, TypeSafety, Declassification), NOT the generated port; satisfies the maturity pillar's "≥1 independently re-proven theorem"; DONE per capstone when `lake build` elaborates it with 0 sorry/axiom in CI. **(c) TLA+** — one real spec where model checking beats Coq (JALINAN choreography deadlock-freedom, TLC-checked in CI); retire the generated corpus number. **(d) Alloy** — bounded capability/access-control model, same pattern. **(e) Verus/Kani** — REDIRECTED to verify the Rust implementation (which Coq does not cover): Kani harnesses on lexer/parser invariants, Verus on riina-core primitives; toolchain spike first (both fight the 1.94.1 pin as cargo-fuzz did). **(f) TV** — carried by REQ-59. **(g) Isabelle: RETIRED** (owner decision 2026-08-06 — Lean is the independence witness; a second redundant port adds no claim value). **(h) F*: RETIRED** (owner decision 2026-08-06 — 11,935 admits unsalvageable; the crypto story is carried by the nine Coq⇄Rust equivalences + the REQ-47 boundary). Retirement mechanics: `.RETIRED` marker in the lane root (rationale inside), `claimLevels.<lane>` = "retired" (legend extended; claim-integrity gate ranks retired at 0 so it can never overclaim), corpora stay in-tree for the record, website renders the badge from metrics as always. Sequencing: SMT → Lean capstone 1 → TLA+/Alloy → Verus/Kani spike; F*/Isabelle retirements EXECUTED 2026-08-06 (this session, verified by gates: metrics flip from the `.RETIRED` markers, all ten public-quality gates pass, claim-integrity ranks retired at 0). **SMT first step EXECUTED same session: z3 4.8.12 installed in-container via apt and the scoped set re-verified BY COMMAND — 25/25 unsat on `02_FORMAL/smt/RIINA/Active/SecurityLatticeVerification.smt2`, matching the 2026-06-01 record.** **SMT gate LANDED same session:** `scripts/verify-smt.sh` verifies exactly the files in `02_FORMAL/smt/SCOPED_SET.txt` against recorded verdicts (never self-skips — missing z3 is a FAILURE); validated by positive run (25/25 unsat, z3 4.8.12) and TWO negative controls (corrupted expected count FAILS; satisfiable check injected before `(exit)` FAILS — first control attempt exposed that content after `(exit)` is dead to Z3, and the gate is truncation-safe both directions); CI thin-wrapper job `smt-scoped` added to verify.yml. **Scoped set GROWN 2026-08-06 (same session): `EffectJoinVerification.smt2` — 12 properties of the 17-level effect-join algebra (Pure identity ×2, upper bounds ×2, commutativity, associativity, idempotence, LEAST-upper-bound, monotonicity, level-soundness, purity-preservation — the law that makes `kesan Bersih` compose — and closure), all UNSAT under z3 4.8.12; scoped set now 2 files / 37 properties.** **`claimLevels.smt` FLIPPED TO MECHANIZED 2026-08-07** — automatically, from the fresh strict checker report (the REQ-67a design working as intended): once the `escape_json` fix made the noncoq report valid JSON at the current head, `generate-metrics.sh` read the report's smt lane (mechanized_ready via the verify-smt scoped-set gate, 2 files / 37 properties UNSAT) and flipped the published level; the claim-integrity gate verifies it against the same report. Publishing consequence handled in the same increment: the report is now INCLUDED in the public tree (exclusion removed in sync-public.sh) because the public-side claim gate requires the evidence file the moment any lane claims above generated — its container-absolute paths are relativized by escape_json so it is publishable. Next SMT increments: policy-acceptance algebra (AlgorithmPolicy mirror) | P1 | IN PROGRESS (retirements + SMT flip done) | Gate D / Part 12 |
@@ -2782,6 +2782,102 @@ plus a PDPA-2024 refresh (18 → 20 rules, first biometric coverage); Coq **+8 Q
 memory-safety roadmap, and three claims-scoping corrections landed. The remaining pre-survey
 P0s are unchanged: REQ-27 parity, REQ-28 external audit (owner-deferred), REQ-36 bus factor,
 and the 10-prover architecture decision.
+
+### REQ-64 DECISION PACKAGE — 2026-08-09 (Fable 5): open-spec / standardization / bounty
+
+**Prepared for the owner; nothing here is decided.** Three licensing postures, the regulatory
+paths each unlocks, the bounty design, and the interactions with decisions already taken
+(REQ-29 D2 retract, REQ-33 fintech, REQ-35 proprietary, REQ-56 custody).
+
+**The tension being resolved.** REQ-35 (2026-06-10) kept everything proprietary, with the
+recorded consequence that the whole governance pillar (Gate I/J: external maintainers, RFC
+process, community) is "N/A while proprietary" — pinned at L1. Meanwhile the product claim is
+*verifiability*: a proprietary proof corpus asks the market to trust claims nobody outside can
+check, which is the same shape of overclaim REQ-29 D2 retracted at the prover level. REQ-64
+asks whether there is a posture that keeps the commercial position AND makes the claims
+independently checkable.
+
+**Option A — status quo (everything proprietary).**
+*Keeps:* maximal commercial optionality; no competitor sight of the calculus.
+*Costs:* governance stays L1 forever; the bounty is impossible (nothing to attack); no
+standardization path (standards bodies require open specifications); university custody and
+maintainer recruiting (REQ-56) stay hard; the fintech pitch rests on "trust our internal
+gates". *Note:* the public mirror already exposes the proof TREES read-only, so option A's
+secrecy is thinner than it looks — what is withheld is the license to use, not the content.
+
+**Option B — "open proofs, sell the compiler" (the middle path the REQ row names).**
+Open: the language specification (04_SPECS language subset), the core calculus, and
+`02_FORMAL/` (Coq corpus + the executable-semantics work) under an open license — Apache-2.0
+for machine-checkable artifacts (patent grant matters here), CC-BY-4.0 for spec prose.
+Closed: `03_PROTO`/`05_TOOLING` (compiler, backends, tooling, certification artifacts) remain
+proprietary + commercial. *Unlocks:* anyone can re-run `make -C 02_FORMAL/coq` and verify
+every theorem — the credibility claim becomes checkable by the customer's own auditor (the
+strongest possible answer to Gate G's "external audit" at zero audit cost); the bounty becomes
+meaningful; ISO/ETSI paths open (they standardize specifications, not products); university
+custody (REQ-56 option b) becomes natural; recruiting maintainer #2 widens from "people who
+will sign an NDA" to the formal-methods community. *Risks + mitigations:* a competitor can
+implement a rival compiler against the open calculus — but they must re-do the enforcement
+parity work (Gate B), the crypto equivalences, and the certification evidence, which IS the
+moat; trademark "RIINA" so conformance claims require the mark; the existing main→public
+mirror flow already implements exactly this split operationally (the public tree contains the
+proofs; option B is largely "attach a license to what is already visible").
+*Cost:* one-way door — an open license cannot be recalled (though future versions can change
+terms); requires a one-time IP review that nothing in 02_FORMAL embeds toolchain secrets
+(the C/WASM emitters live in 03_PROTO; a sweep found no backend code under 02_FORMAL).
+
+**Option C — full open (open-core or entirely FOSS).**
+*Unlocks:* maximum adoption and community; simplest governance.
+*Costs:* forfeits compiler licensing revenue before any reference win exists (REQ-58 pilot
+still open); the certification-evidence business (audit binders, profiles) becomes the only
+monetization; premature given the plan's own sequencing (reference win first).
+
+**Regulatory paths (they gate on B or C, and REQ-33's fintech choice makes them concrete).**
+- **EU CRA (Regulation (EU) 2024/2847):** in force 10 Dec 2024; vulnerability-reporting
+  obligations apply from **11 Sep 2026** (imminent); full essential-requirements application
+  11 Dec 2027. RIINA's evidence bundle (REQ-57 binder: SBOM/CBOM/VEX/verification manifest)
+  maps directly onto CRA Annex I + technical-documentation duties — a "CRA profile" like the
+  REQ-46 DORA profile is the natural next compliance artifact, and is valuable under ANY
+  option (the compiler is a product with digital elements when placed on the EU market; and
+  RIINA-built products inherit evidence from the toolchain). Harmonised standards are being
+  drafted under CEN/CENELEC JTC 13 — tracking those drafts and mapping RIINA gates to them
+  is cheap now, influential later.
+- **ETSI / ISO (long-term):** language standardization (ISO/IEC JTC 1/SC 22) requires an open
+  specification (option B prerequisite) and realistically a reference win + second
+  implementation interest; treat as a 1–3 yr horizon per Part 12. The nearer-term credible
+  move is a conformance-profile document (what "RIINA-verified" means, mapped to the kernel
+  attestation + gates) published with the open spec.
+
+**Break-a-theorem bounty (design; requires option B to be meaningful).**
+Scope tiers by claim value: **T1** — the five kernel-attested capstones (type_safety,
+progress, preservation, well_typed_SN, accepts_uses_only_current): demonstrate any
+counterexample program or a proof of ⊥ from the stated axioms (whitelist: stdlib funext
+only). **T2** — the nine Coq⇄Rust crypto equivalences: any input where the Rust primitive
+diverges from the Coq model within the REQ-47 stated boundary. **T3** — enforcement parity:
+any program `riinac` accepts that violates a Gate-B-verified property at runtime on a
+supported backend. Judging = reproduce-by-command in a pinned container (the REQ-56 runbook
+provisioning steps ARE the judge environment); payout only for the first verified report per
+defect; disclosure through `SECURITY.md`; infrastructure attacks out of scope. Tier payouts
+are an owner budget call; the design principle is that T1 > T2 > T3 by an order of magnitude
+each, because that is the order of claim damage. A paid T1 break would be devastating — which
+is exactly why offering it is the strongest honesty signal available, and why the wager is
+safe only to the degree the kernel attestation (REQ-53) is trusted; the bounty and the
+attestation reinforce each other.
+
+**Interactions.** REQ-56 custody: option B makes university custody viable and foundation
+custody simpler (assign the open artifacts, license the closed ones); decide custody AFTER
+this. REQ-29: D2 retraction + option B compose into the honest story "one mechanized lane,
+and you can check it yourself". REQ-35: option B supersedes it partially (proprietary
+*toolchain* stands; the blanket "remain proprietary" would be amended); Gate I/J items move
+from "N/A while proprietary" to open for the spec/proofs half.
+
+**Sequencing recommendation (analysis, not decision):** (1) CRA profile now — needed under
+every option, Sep-2026 reporting duty makes it timely; (2) option B decision after the
+REQ-58 pilot conversation starts (a pilot partner's auditor asking "can we verify this?" is
+the forcing function); (3) bounty launches with option B's license attaching; (4) ISO/ETSI
+only after a reference win. Deciding B now vs later trades commercial optionality against
+credibility compounding — the package's one observation is that option B's core content is
+already publicly visible read-only, so the incremental exposure is small while the
+credibility gain is the difference between "trust us" and "check it yourself".
 
 ### External-currency survey — 2026-08-05 (adds REQ-45..52) + a PRIORITY INVERSION for the owner
 
