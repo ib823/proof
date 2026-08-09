@@ -90,9 +90,11 @@ Remaining tractable (verify each before starting — do not trust this list):
 - Gate C (small Coq-first item): VerifiedNetwork.v has no LISTEN→CLOSED edge, so no
   listener-close builtin exists (documented in builtins/net.rs). RFC 793 permits close
   from LISTEN: add the edge + re-prove, then the builtin.
-- Gate C (owner decisions, do not pre-decide): `file_*` through VirtualFs (semantic
-  change; additive `vfs_*` was the prior deliberate choice); TLS record crypto (needs
-  a dep-free stack in 03_PROTO — riina-core crypto lives in 05_TOOLING; Law 8).
+- Gate C `file_*`→VirtualFs EXECUTED 2026-08-09 (owner-approved): `fail_*`/`file_*_safe`
+  now gate real host I/O on the verified can_read/can_write predicates under the shared
+  `vfs_jadi_pengguna` identity (see builtins/fail.rs header for the honesty scope).
+- Gate C (owner-approved 2026-08-09, NOT yet started): TLS record crypto port — needs a
+  dep-free stack in 03_PROTO; riina-core crypto lives in 05_TOOLING (Law 8 both ways).
 - Gate D1 (smoke lanes): grow F* (≥50)/TLA(≥5)/Alloy(≥10)/Isabelle(≥20);
   provision Lean + improve elaboration (T2a — Phase-10 LLM prerequisite); install z3
   for SMT-checking a Coq IFC theorem (T2f). Only flip a claimLevels entry when a real

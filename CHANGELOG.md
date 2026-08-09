@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3028 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-09 — Gate C: host-FS `fail_*`/`file_*_safe` gated by the verified access-control model
+
+### Changed (Gate C / Standard Library Hardening — owner-approved semantic change)
+- **`fail_*` and `file_*_safe` builtins now enforce the verified `VerifiedFileSystem.v`
+  predicates on the real host filesystem** (the "wire VirtualFs into the surface `file_*`
+  builtins" item; path→inode→uid). A thread-local metadata mirror maps each host path to a
+  verified `riina_os::vfs::Inode` on first touch — owned by the current access context's uid
+  (the one `vfs_jadi_pengguna` switches; ONE access-control world shared with `vfs_*`), mode
+  0644 as `vfs_tulis` creates. Reads gate on `can_read`, writes/appends/deletes on
+  `can_write`; delete clears the mapping so a re-created file belongs to its re-creator.
+  The denied operation never touches the host FS. Honesty scope in the module header: the
+  I/O is real, the enforcement models THIS RUN's operations (the host's own uid model is
+  not portably visible); `fail_ada`/`fail_senarai` are metadata queries with no Coq
+  predicate — ungated; quotas remain a `vfs_*`-world concern. Single-identity programs
+  (i.e. every program not calling the interpreter-only `vfs_jadi_pengguna`) behave exactly
+  as before, so C/WASM parity is preserved by construction (backends fail closed on
+  `vfs_*`). +4 gate tests (cross-uid write/append/delete denied + read allowed + no host
+  side effect on denial; delete-transfers-ownership; safe-twin shares the gate) and an
+  interpreter end-to-end denial test.
 
 ### 2026-08-08 — Gate C: rendering parity, `pelaku` rename, verified listener close
 
