@@ -1,7 +1,7 @@
 // actor_counter.rii — JALINAN End-to-End Demo
 // Actor-based counter: define, spawn, send, receive
 
-pelakon Pembilang {
+pelaku Pembilang {
     keadaan: Nombor
     kendalikan Tambah(n) {
         n + 1

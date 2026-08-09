@@ -340,7 +340,7 @@ RIINA's compiler doesn't just reject bad code — it can actively guide generati
 
 ```riina
 // AI starts with a skeleton — typed holes marked with ?
-pelakon PelaksanaPemohon melaksana Perolehan::Pemohon {
+pelaku PelaksanaPemohon melaksana Perolehan::Pemohon {
   keadaan {
     permohonan: ?KeadaanJenis   // Compiler knows: must be CRDT
     bajet: ?KeupayaanJenis      // Compiler knows: must be Capability<Budget, _>

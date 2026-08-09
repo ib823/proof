@@ -138,7 +138,7 @@ const KW = [
     { bm: 'sulit', en: 'classify' }, { bm: 'dedah', en: 'declassify' }, { bm: 'bukti', en: 'proof' },
     { bm: 'masa_tetap', en: 'const-time' }, { bm: 'kesan', en: 'effect' }, { bm: 'sekali', en: 'linear' }, { bm: 'selamat', en: 'safe' } ] },
   { title: 'Distributed (JALINAN)', items: [
-    { bm: 'pelakon', en: 'actor' }, { bm: 'lahir', en: 'spawn' }, { bm: 'hantar', en: 'send' }, { bm: 'terima', en: 'recv' },
+    { bm: 'pelaku', en: 'actor' }, { bm: 'lahir', en: 'spawn' }, { bm: 'hantar', en: 'send' }, { bm: 'terima', en: 'recv' },
     { bm: 'koreografi', en: 'choreography' }, { bm: 'peranan', en: 'role' }, { bm: 'keadaan', en: 'state' },
     { bm: 'gabung', en: 'merge' }, { bm: 'cincang', en: 'hash' } ] },
 ];
@@ -261,7 +261,7 @@ const RELEASES = [
     { text: '12,638 Qed across 328 active files at the tagged commit — 0 Admitted, 0 axioms' },
     { text: 'Set union/intersect O(n·m) → O(n+m) with a fast-path-equals-naive guard' } ] },
   { version: 'v0.3.0', date: '19 Mar 2026', items: [
-    { text: 'JALINAN session-typed actors end-to-end: pelakon, lahir, hantar, terima' },
+    { text: 'JALINAN session-typed actors end-to-end: pelaku, lahir, hantar, terima' },
     { text: 'Choreography types (koreografi, peranan) with role projection' },
     { text: '11,905 Qed across 301 active files at release — 0 Admitted, 0 axioms' },
     { text: 'riina-runtime crate; pthread-based actor runtime in the C backend' } ] },

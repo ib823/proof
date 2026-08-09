@@ -3455,7 +3455,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parse: pelakon Name { keadaan: Type kendalikan Msg(param) { body } ... }
+    /// Parse: pelaku Name { keadaan: Type kendalikan Msg(param) { body } ... }
     fn parse_actor_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
         self.consume(TokenKind::KwActor)?;
         let name = self.parse_ident()?;

@@ -12,6 +12,7 @@ pub(crate) mod json;
 pub(crate) mod keselamatan;
 pub(crate) mod masa;
 pub(crate) mod matematik;
+pub(crate) mod net;
 pub(crate) mod penukaran;
 pub(crate) mod peta;
 pub(crate) mod senarai;
@@ -203,6 +204,12 @@ pub fn register_builtins(env: &Env) -> Env {
 
     // Virtual-filesystem builtins (verified access-control via riina-os VFS).
     for (bm, en, canonical) in vfs::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
+    // Network builtins (real TCP gated by the verified RFC 793 state machine).
+    for (bm, en, canonical) in net::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
@@ -564,6 +571,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 
     // Virtual filesystem (verified access-control)
     if let Some(result) = vfs::apply(name, &arg)? {
+        return Ok(result);
+    }
+
+    // Network (real TCP gated by the verified state machine)
+    if let Some(result) = net::apply(name, &arg)? {
         return Ok(result);
     }
 

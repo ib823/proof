@@ -15,7 +15,7 @@ JALINAN (Jaringan Autonomi, Logik Integrasi, Notari, Aktor, Nod) is RIINA's dist
 ### Define an Actor
 
 ```riina
-pelakon Pembilang {
+pelaku Pembilang {
     keadaan: Nombor
     kendalikan Tambah(n) {
         n + keadaan
@@ -23,7 +23,7 @@ pelakon Pembilang {
 }
 ```
 
-- `pelakon` — declares an actor type
+- `pelaku` — declares an actor type
 - `keadaan` — actor's internal state
 - `kendalikan` — message handler
 

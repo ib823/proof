@@ -1,7 +1,7 @@
 // supervisor.rii — Actor Supervision
 // Fault tolerance: supervisor restarts crashed actors
 
-pelakon Pekerja { keadaan: Nombor kendalikan Tugas(n) { n * 2 } }
+pelaku Pekerja { keadaan: Nombor kendalikan Tugas(n) { n * 2 } }
 
 // Spawn workers under supervision
 biar pekerja1 = lahir Pekerja(0);

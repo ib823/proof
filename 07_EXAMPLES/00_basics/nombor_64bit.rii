@@ -1,0 +1,24 @@
+// Nombor 64-bit penuh — semantik u64 merentas ketiga-tiga backend.
+//
+// Nilai >= 2^63 mesti berkelakuan sebagai integer TANPA TANDA (u64): susunan,
+// bahagi dan baki menggunakan operasi unsigned. Regresi op bertanda (i64.div_s
+// / i64.lt_s dalam backend WASM) membuat output ini menyimpang daripada
+// backend C — differential C/WASM mengawalnya kekal byte-sama.
+
+biar besar = 18000000000000000000;
+biar satu = 1;
+
+kalau besar > satu { cetak("besar-lebih") } lain { cetak("tanda-salah") };
+kalau satu < besar { cetak("susunan-betul") } lain { cetak("susunan-salah") };
+
+cetak(ke_teks(besar / 3));
+cetak(ke_teks(besar % 3));
+cetak(ke_teks(besar / 7));
+cetak(ke_teks(besar % 7));
+
+// Sempadan 2^63 dan 2^64-1.
+biar sempadan = 9223372036854775808;
+biar maks = 18446744073709551615;
+kalau sempadan > 9223372036854775807 { cetak("sempadan-betul") } lain { cetak("sempadan-salah") };
+kalau maks > sempadan { cetak("maks-betul") } lain { cetak("maks-salah") };
+cetak(ke_teks(maks % 1000000007))

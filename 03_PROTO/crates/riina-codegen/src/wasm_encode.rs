@@ -86,9 +86,13 @@ pub enum Op {
     I64Eq = 0x51,
     I64Ne = 0x52,
     I64LtS = 0x53,
+    I64LtU = 0x54,
     I64GtS = 0x55,
+    I64GtU = 0x56,
     I64LeS = 0x57,
+    I64LeU = 0x58,
     I64GeS = 0x59,
+    I64GeU = 0x5A,
     I32Add = 0x6A,
     I32Sub = 0x6B,
     I32Mul = 0x6C,
@@ -794,9 +798,13 @@ mod tests {
         assert_eq!(Op::I64Eq as u8, 0x51);
         assert_eq!(Op::I64Ne as u8, 0x52);
         assert_eq!(Op::I64LtS as u8, 0x53);
+        assert_eq!(Op::I64LtU as u8, 0x54);
         assert_eq!(Op::I64GtS as u8, 0x55);
+        assert_eq!(Op::I64GtU as u8, 0x56);
         assert_eq!(Op::I64LeS as u8, 0x57);
+        assert_eq!(Op::I64LeU as u8, 0x58);
         assert_eq!(Op::I64GeS as u8, 0x59);
+        assert_eq!(Op::I64GeU as u8, 0x5A);
         // i64 arithmetic / bitwise (Add/Sub/Mul/DivS already pinned by use):
         assert_eq!(Op::I64DivU as u8, 0x80);
         assert_eq!(Op::I64RemS as u8, 0x81);

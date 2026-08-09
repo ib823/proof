@@ -275,7 +275,7 @@ fn interp_no_crash(input: &str) {
 /// just random bytes.
 const VOCAB: &[&str] = &[
     "fungsi", "biar", "pulang", "kalau", "kalau_tidak", "padan", "kesan", "Bersih", "Tulis",
-    "Nombor", "Teks", "Benar", "sulit", "dedah", "dengan", "bukti", "pelakon", "hantar", "terima",
+    "Nombor", "Teks", "Benar", "sulit", "dedah", "dengan", "bukti", "pelaku", "hantar", "terima",
     "(", ")", "{", "}", "[", "]", "<", ">", ",", ";", ":", "->", "=>", "=", "==", "+", "-", "*",
     "/", "%", "&&", "||", "!", ".", "::", "\"s\"", "42", "0xFF", "x", "utama", "_", "\n", " ",
 ];

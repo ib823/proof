@@ -2,7 +2,7 @@
 // Three independent actor nodes, each maintaining local state.
 // Messages are sent concurrently; final sum aggregates all nodes.
 
-pelakon Nod {
+pelaku Nod {
     keadaan: Nombor
     kendalikan Tambah(n) {
         n + keadaan

@@ -1,0 +1,25 @@
+// Nombor bersaiz BERTANDA — paparan mesti bertanda merentas ketiga-tiga backend.
+//
+// Pentafsir ialah rujukan: ke_teks(0i8 - 3i8) ialah "-3", BUKAN corak bit
+// bertopeng "253". Regresi paparan (ke_teks tanpa tanda dalam backend C/WASM)
+// membuat output ini menyimpang — differential C/WASM mengawalnya byte-sama.
+
+biar a = 0i8 - 7i8;
+biar b = 2i8;
+cetak(ke_teks(a / b));
+cetak(ke_teks(a % b));
+kalau a < b { cetak("banding-ok") } lain { cetak("banding-salah") };
+
+biar c = 0i64 - 9000000000i64;
+cetak(ke_teks(c / 4i64));
+
+// Sempadan: i64 minimum, sifar, i8 maksimum, i16 minimum.
+biar min64 = 0i64 - 9223372036854775807i64 - 1i64;
+cetak(ke_teks(min64));
+cetak(ke_teks(0i8 - 0i8));
+cetak(ke_teks(127i8));
+cetak(ke_teks(0i16 - 32768i16 + 0i16));
+
+// Tanpa tanda kekal tanpa tanda.
+biar e = 250u8;
+cetak(ke_teks(e / 7u8))

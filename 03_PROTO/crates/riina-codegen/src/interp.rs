@@ -3915,6 +3915,88 @@ mod tests {
         assert_eq!(run_src(src), Value::String("data".to_string()));
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // NETWORK (jaring_*) — real TCP gated by the verified state machine
+    // ═══════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_net_connect_send_recv_through_interpreter() {
+        // A loopback echo peer; the surface program connects with real TCP,
+        // sends, and reads its own bytes back — every socket op gated by the
+        // riina-os verified RFC 793 machine.
+        use std::io::{Read as _, Write as _};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            if let Ok((mut sock, _)) = listener.accept() {
+                let mut buf = [0u8; 64];
+                if let Ok(n) = sock.read(&mut buf) {
+                    let _ = sock.write_all(&buf[..n]);
+                }
+            }
+        });
+        let src = format!(
+            "biar c = jaring_sambung(\"{addr}\"); \
+             biar n = jaring_hantar(c, \"salam\"); \
+             jaring_terima(c, 16)"
+        );
+        assert_eq!(run_src(&src), Value::String("salam".to_string()));
+    }
+
+    #[test]
+    fn test_net_listen_accept_through_interpreter() {
+        // Surface-syntax server: listen on an ephemeral port, a Rust client
+        // thread connects and sends, the program accepts and echoes the data
+        // back — the passive-open path (LISTEN→SYN_RECEIVED→ESTABLISHED)
+        // exercised end-to-end through Var→Builtin→apply_builtin.
+        use std::io::{Read as _, Write as _};
+        use std::sync::mpsc;
+        // The program cannot pass its ephemeral port out before running, so
+        // bind the listener via the builtin layer first, then run the accept
+        // half as surface syntax against the known listener id.
+        let Some(crate::value::Value::Int(lid)) = crate::builtins::net::apply(
+            "jaring_dengar",
+            &crate::value::Value::String("127.0.0.1:0".to_string()),
+        )
+        .unwrap() else {
+            panic!("listen failed")
+        };
+        let Some(crate::value::Value::String(addr)) =
+            crate::builtins::net::apply("jaring_alamat", &crate::value::Value::Int(lid)).unwrap()
+        else {
+            panic!("local_addr failed")
+        };
+        let (tx, rx) = mpsc::channel();
+        std::thread::spawn(move || {
+            let mut sock = std::net::TcpStream::connect(addr).unwrap();
+            sock.write_all(b"tanya").unwrap();
+            let mut buf = [0u8; 16];
+            let n = sock.read(&mut buf).unwrap();
+            tx.send(String::from_utf8_lossy(&buf[..n]).into_owned()).unwrap();
+        });
+        let src = format!(
+            "biar c = jaring_terima_sambungan({lid}); \
+             biar d = jaring_terima(c, 16); \
+             biar n = jaring_hantar(c, d); \
+             d"
+        );
+        assert_eq!(run_src(&src), Value::String("tanya".to_string()));
+        assert_eq!(rx.recv().unwrap(), "tanya");
+    }
+
+    #[test]
+    fn test_tls_policy_through_interpreter() {
+        // NET_001_03: a TLS 1.2 downgrade is rejected; 1.3 + strong AEAD passes.
+        assert_eq!(
+            run_src("tls_dasar_ok(\"1.3\", \"TLS_AES_128_GCM_SHA256\")"),
+            Value::Bool(true)
+        );
+        assert_eq!(
+            run_src("tls_dasar_ok(\"1.2\", \"TLS_AES_128_GCM_SHA256\")"),
+            Value::Bool(false)
+        );
+    }
+
     // ── Numeric tower: width-aware evaluation (end-to-end source → value) ──
 
     fn iu(value: u64, bits: u8) -> Value {
