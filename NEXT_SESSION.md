@@ -72,7 +72,7 @@ Paranoid-Absolute Verification). metrics.json is the ONLY source of truth for co
 
 ## STEP 4 — ASSESS & EXECUTE (active gate: C — Standard Library Hardening)
 Gates A & B are CLOSED. Read Part 11 Gate C rows for what landed. 2026-08-08 session
-(PR ib823/proof#55) closed: networking client+server (`jaring_*` gated by the verified
+(PR #55/#56) closed: networking client+server (`jaring_*` gated by the verified
 RFC 793 machine, riina-os/src/net.rs 1:1 port of VerifiedNetwork.v predicates) and the
 64-bit WASM item (plain-Int div/mod/order were SIGNED on wasm32 — silently wrong >= 2^63;
 now unsigned, guarded by 00_basics/nombor_64bit.rii in the C/WASM differential). Earlier
