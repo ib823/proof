@@ -737,12 +737,32 @@ pub struct SpannedDecl {
     pub name_span: Option<Span>,
 }
 
+/// One `guna <name>;` import of a sibling `.rii` file (REQ-71).
+///
+/// Only a SINGLE-segment path is a file import. A multi-segment path such as
+/// `guna std::teks;` names the builtin namespace, carries no file, and is not
+/// recorded here — that keeps every pre-module-system example working.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Import {
+    /// The module name, which is also its file stem (`kira` ⇒ `kira.rii`).
+    pub module: Ident,
+    /// Span of the module name, for diagnostics.
+    pub span: Span,
+}
+
 /// A complete .rii file
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Program {
     pub decls: Vec<TopLevelDecl>,
     /// Parallel span info for each decl (same length as `decls`).
     pub spans: Vec<SpannedDecl>,
+    /// Sibling modules imported with `guna <name>;`, in source order (REQ-71).
+    /// Empty for a single-file program, which is why `new`/`with_spans` still
+    /// build a valid `Program` without mentioning it.
+    pub imports: Vec<Import>,
+    /// Top-level names declared `awam` (public). Everything else is
+    /// module-private and may not be named from another module (REQ-71).
+    pub public_names: Vec<Ident>,
 }
 
 /// Desugar a single function decl into a LetRec binding.
@@ -794,13 +814,36 @@ impl Program {
         Self {
             spans: Vec::new(),
             decls,
+            imports: Vec::new(),
+            public_names: Vec::new(),
         }
     }
 
     /// Create a Program with span info.
     #[must_use]
     pub fn with_spans(decls: Vec<TopLevelDecl>, spans: Vec<SpannedDecl>) -> Self {
-        Self { decls, spans }
+        Self {
+            decls,
+            spans,
+            imports: Vec::new(),
+            public_names: Vec::new(),
+        }
+    }
+
+    /// Create a Program carrying module metadata (REQ-71 module system).
+    #[must_use]
+    pub fn with_modules(
+        decls: Vec<TopLevelDecl>,
+        spans: Vec<SpannedDecl>,
+        imports: Vec<Import>,
+        public_names: Vec<Ident>,
+    ) -> Self {
+        Self {
+            decls,
+            spans,
+            imports,
+            public_names,
+        }
     }
 
     /// Desugar a program into a single expression.

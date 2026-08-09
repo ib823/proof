@@ -395,9 +395,42 @@ fn main() {
         (src, name, Some(path))
     };
 
-    // 1. Parse program (top-level declarations)
+    // 1. Parse program (top-level declarations).
+    //
+    // When the input is a real file we go through the module resolver
+    // (REQ-71), which parses this file AND everything it reaches via
+    // `guna <name>;`, then links them into one Program. A file with no
+    // single-segment `guna` resolves to exactly the same Program the
+    // single-file path produced, so this is transparent for existing programs.
+    // `--stdin` has no directory to resolve against and stays single-file.
     let mut parser = Parser::new(&source);
-    let program = match parser.parse_program() {
+    let parsed = match &input_path {
+        Some(path) => match riina_parser::modules::resolve_program(path, &source) {
+            Ok(p) => Ok(p),
+            Err(re) => {
+                // A parse failure in the ROOT file is reported with its span by
+                // re-parsing here; module-level errors print the linker message.
+                if matches!(re.kind, riina_parser::modules::ResolveErrorKind::Parse { .. })
+                    && re.path == *path
+                {
+                    parser.parse_program()
+                } else {
+                    if opts.json {
+                        println!(
+                            r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"M0001","message":"{}","file":"{}","line":0,"column":0,"fix_hint":"Check the guna imports","rule":null,"related":[]}}]}}"#,
+                            json_escape(&re.to_string()),
+                            json_escape(&re.path.display().to_string())
+                        );
+                    } else {
+                        eprintln!("error: {re}");
+                    }
+                    process::exit(1);
+                }
+            }
+        },
+        None => parser.parse_program(),
+    };
+    let program = match parsed {
         Ok(p) => p,
         Err(e) => {
             if opts.json {

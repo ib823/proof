@@ -183,7 +183,56 @@ fungsi utama() -> Unit kesan Sistem {
 }
 ```
 
-## 8. Where to go next
+## 8. Splitting a program across files (~1 minute)
+
+`guna <name>;` imports the sibling file `<name>.rii`. Create `kira.rii`:
+
+```riina
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+awam fungsi dua_kali(x: Nombor) -> Nombor kesan Bersih { tambah(x, x) }
+
+// No `awam` — private to this file.
+fungsi pembantu(x: Nombor) -> Nombor kesan Bersih { x * 99 }
+```
+
+and `main.rii` beside it:
+
+```riina
+guna kira;
+
+fungsi utama() -> Nombor kesan Tulis {
+    biar a = kira::tambah(3, 4);
+    cetakln(ke_teks(kira::dua_kali(a)));   // 14
+    0
+}
+```
+
+```bash
+riinac run   main.rii    # 14
+riinac build --run main.rii   # compiles both files into one binary, prints 14
+```
+
+`awam` is what makes a name importable. Calling `kira::pembantu(2)` from
+`main.rii` is rejected:
+
+```
+error: `kira::pembantu` is private to module `kira` (referenced from `main`)
+  note: mark it `awam fungsi pembantu` to export it
+```
+
+Import cycles, cross-module name collisions, and naming a module you did not
+import are all errors too, each naming the problem rather than failing later or
+silently picking a definition.
+
+Two things to know:
+
+- **`guna std::teks;` is not a file import.** A multi-segment path names the
+  builtin namespace; builtins are always available and need no `std/` directory.
+- **There is no `.rii` standard library yet**, and imports resolve only within
+  the importing file's directory — no search path or package dependencies.
+  (Master plan REQ-71 remainder / REQ-72.)
+
+## 9. Where to go next
 
 - **[Writing Secure RIINA](WRITING_SECURE_RIINA.md)** — the security features
   in depth, each labeled with what is enforced today.

@@ -111,6 +111,44 @@ Awam (Public) ⊑ Dalaman (Internal) ⊑ Sesi (Session) ⊑ Pengguna (User) ⊑ 
 
 Information can flow up (from Public to Secret) but not down. Declassification requires explicit proof.
 
+## Modules — multi-file programs
+
+`guna <name>;` imports the sibling file `<name>.rii`. Multi-file programs
+check, run, and compile (native and wasm32).
+
+```riina
+// kira.rii
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+fungsi pembantu_persendirian(x: Nombor) -> Nombor kesan Bersih { x * 2 }  // no `awam` = private
+```
+
+```riina
+// main.rii
+guna kira;
+fungsi utama() -> Nombor kesan Tulis {
+    cetakln(ke_teks(kira::tambah(3, 4)));   // qualified call
+    0
+}
+```
+
+Rules, each enforced with a real error (not a silent fallback):
+
+| Rule | Behaviour |
+|---|---|
+| Visibility | Only `awam` names cross a module boundary. Referencing a private one errors and tells you to add `awam`. |
+| Direct imports | You may only name modules you `guna` yourself; a transitively-loaded module is not silently in scope. |
+| Cycles | `a` → `b` → `a` reports the chain, it does not hang or overflow. |
+| Collisions | Two modules producing the same linked name is an error, never silent shadowing. |
+| Module bodies | Only the root file may have top-level code; an imported module must be declarations only. |
+
+**`guna std::teks;` is different** — a *multi-segment* path names the builtin
+namespace, not a file. It is not an import and needs no `std/` directory. Use
+single-segment `guna kira;` for your own files.
+
+Not yet available: there is no `.rii` standard library to import, and modules
+resolve only within the importing file's directory (no search path or package
+dependencies yet — master plan REQ-71 remainder, REQ-72).
+
 ## Standard Library Modules
 
 **Counts and the Backend column below are command-derived (2026-08-09) from the
