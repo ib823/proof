@@ -241,9 +241,24 @@ jobs:
       # `corpus_differential` test actually runs (it auto-skips otherwise),
       # asserting byte-for-byte identical stdout from the C and WASM backends
       # across the dual-backend example corpus.
-      - name: Install wasmtime
+      # PINNED, deliberately. The unversioned `wasmtime.dev/install.sh` broke
+      # upstream 2026-08-09: it resolved the latest version to a literal `{`
+      # and fetched `.../download/{/wasmtime-{-x86_64-linux.tar.xz`, so
+      # wasmtime never installed and the differential job died at
+      # `wasmtime --version` (exit 127) — an infrastructure failure wearing a
+      # code-regression's clothes. Every other toolchain here is pinned (Rocq
+      # by provision-coq.sh, Rust by rust-toolchain.toml); this one now is
+      # too, to the version NEXT_SESSION.md and the maintainer runbook already
+      # name. The differential's verdict is known to be version-independent
+      # (recorded identical under wasmtime 27.0.0 and 45.0.0), so pinning
+      # costs no coverage.
+      - name: Install wasmtime (pinned v27.0.0)
         run: |
-          curl https://wasmtime.dev/install.sh -sSf | bash
+          curl -sSfL -o /tmp/wasmtime.tar.xz \
+            https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-x86_64-linux.tar.xz
+          tar xf /tmp/wasmtime.tar.xz -C /tmp
+          mkdir -p "$HOME/.wasmtime/bin"
+          cp /tmp/wasmtime-v27.0.0-x86_64-linux/wasmtime "$HOME/.wasmtime/bin/"
           echo "$HOME/.wasmtime/bin" >> "$GITHUB_PATH"
       - name: Toolchain present (cc + wasmtime)
         run: cc --version && wasmtime --version

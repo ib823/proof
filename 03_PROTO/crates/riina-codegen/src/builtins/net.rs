@@ -32,9 +32,17 @@
 //!     runtime).
 //!   * `tls_dasar_ok` is the **pure** TLS acceptance policy (NET_001_03
 //!     no-downgrade + NET_001_08 cipher strength): real policy, no handshake.
-//!     TLS record-layer cryptography is NOT implemented — there is no
-//!     dep-free TLS stack in 03_PROTO (Law 8), so no builtin claims to
-//!     encrypt traffic.
+//!   * `jaring_tls_kunci`/`jaring_tls_hantar`/`jaring_tls_terima` perform
+//!     **REAL** TLS 1.3 record protection (`riina-tls` on the proven
+//!     `riina-core` AES-256-GCM + HKDF): traffic really is AEAD-sealed, and
+//!     tamper/replay/wrong-key all fail authentication. Two honest limits,
+//!     both stated in `riina-tls`'s header: (a) the instantiation is
+//!     AES-256-GCM under an HKDF-SHA256 schedule, which is self-consistent
+//!     RIINA↔RIINA but NOT the IANA `TLS_AES_256_GCM_SHA384` wire suite, so
+//!     it does not interoperate with OpenSSL et al; (b) there is NO handshake
+//!     yet — the traffic secret is supplied by the caller (X25519 key
+//!     exchange + transcript is increment 2). So: real record crypto, not yet
+//!     a complete TLS stack.
 //!
 //! Interpreter-only: not registered in codegen's `builtin_canonical`, so the
 //! C/WASM backends fail closed (unbound `jaring_*`) rather than miscompiling.
@@ -42,6 +50,7 @@
 use crate::value::Value;
 use crate::{Error, Result};
 use riina_os::net::{tls_policy_accepts, CipherSuite, TcpConnection, TcpEvent, TcpState, TlsVersion};
+use riina_tls::RecordKeys;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -58,6 +67,9 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("jaring_terima_sambungan", "net_accept", "jaring_terima_sambungan"),
     ("jaring_tutup_dengar", "net_close_listener", "jaring_tutup_dengar"),
     ("tls_dasar_ok", "tls_policy_ok", "tls_dasar_ok"),
+    ("jaring_tls_kunci", "net_tls_keys", "jaring_tls_kunci"),
+    ("jaring_tls_hantar", "net_tls_send", "jaring_tls_hantar"),
+    ("jaring_tls_terima", "net_tls_recv", "jaring_tls_terima"),
 ];
 
 /// One tracked connection: the enforcing verified state machine plus the real
@@ -66,6 +78,10 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
 struct Conn {
     machine: TcpConnection,
     stream: Option<TcpStream>,
+    /// Record-protection state, present once `jaring_tls_kunci` installs a
+    /// traffic secret: (keys, send seq, recv seq). RFC 8446 keeps a separate
+    /// sequence per direction, both starting at 0 and incrementing per record.
+    tls: Option<(RecordKeys, u64, u64)>,
 }
 
 /// One tracked listener: the enforcing machine held in LISTEN plus the real
@@ -139,6 +155,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     Conn {
                         machine,
                         stream: Some(stream),
+                        tls: None,
                     },
                 );
                 Value::Int(id)
@@ -322,6 +339,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     Conn {
                         machine,
                         stream: Some(stream),
+                        tls: None,
                     },
                 );
                 Value::Int(id)
@@ -346,6 +364,114 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 debug_assert_eq!(l.machine.state(), TcpState::Closed);
                 drop(l.socket.take());
                 Ok(Value::Bool(true))
+            })?
+        }
+        // Install TLS 1.3 record-protection keys on a connection from a
+        // caller-supplied traffic secret: `(conn, secret)`. RFC 8446 §7.3
+        // derives key+iv from the secret; both direction sequences start at 0.
+        // The secret is the handshake's output — increment 2 will derive it
+        // from a real X25519 exchange instead of the caller.
+        "jaring_tls_kunci" => {
+            let Value::Pair(_, _) = arg else {
+                return Ok(Some(Value::BuiltinPartial(
+                    name.to_string(),
+                    Box::new(arg.clone()),
+                )));
+            };
+            let (id, secret) = as_pair_int_str(arg, name)?;
+            let keys = RecordKeys::derive(secret.as_bytes())
+                .map_err(|_| err("jaring_tls: bad traffic secret"))?;
+            NET.with(|n| -> Result<Value> {
+                let st = &mut *n.borrow_mut();
+                let conn = st
+                    .conns
+                    .get_mut(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                if conn.machine.state() != TcpState::Established {
+                    return Err(err("jaring: not established"));
+                }
+                conn.tls = Some((keys, 0, 0));
+                Ok(Value::Bool(true))
+            })?
+        }
+        // Send an AEAD-sealed record: length-prefixed (4-byte big-endian) so
+        // the peer can frame it, then `ciphertext || tag`. Gated on
+        // ESTABLISHED *and* on keys being installed. Returns plaintext length.
+        "jaring_tls_hantar" => {
+            let Value::Pair(_, _) = arg else {
+                return Ok(Some(Value::BuiltinPartial(
+                    name.to_string(),
+                    Box::new(arg.clone()),
+                )));
+            };
+            let (id, data) = as_pair_int_str(arg, name)?;
+            NET.with(|n| -> Result<Value> {
+                let st = &mut *n.borrow_mut();
+                let conn = st
+                    .conns
+                    .get_mut(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                if conn.machine.state() != TcpState::Established {
+                    return Err(err("jaring: not established"));
+                }
+                let (keys, send_seq, _) = conn
+                    .tls
+                    .as_mut()
+                    .ok_or_else(|| err("jaring_tls: no keys installed"))?;
+                let sealed = keys
+                    .protect(*send_seq, &[], data.as_bytes())
+                    .map_err(|_| err("jaring_tls: seal failed"))?;
+                *send_seq += 1;
+                let stream = conn
+                    .stream
+                    .as_mut()
+                    .ok_or_else(|| err("jaring: not established"))?;
+                let len = u32::try_from(sealed.len())
+                    .map_err(|_| err("jaring_tls: record too large"))?;
+                stream
+                    .write_all(&len.to_be_bytes())
+                    .and_then(|()| stream.write_all(&sealed))
+                    .map_err(|e| err(format!("jaring_tls: hantar: {e}")))?;
+                Ok(Value::Int(data.len() as u64))
+            })?
+        }
+        // Receive and open one AEAD record (reads the 4-byte length prefix,
+        // then exactly that many bytes). A tampered, replayed or reordered
+        // record fails authentication and is rejected — the sequence number is
+        // bound into the nonce.
+        "jaring_tls_terima" => {
+            let id = as_int(arg, name)?;
+            NET.with(|n| -> Result<Value> {
+                let st = &mut *n.borrow_mut();
+                let conn = st
+                    .conns
+                    .get_mut(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                if conn.machine.state() != TcpState::Established {
+                    return Err(err("jaring: not established"));
+                }
+                let (keys, _, recv_seq) = conn
+                    .tls
+                    .as_mut()
+                    .ok_or_else(|| err("jaring_tls: no keys installed"))?;
+                let stream = conn
+                    .stream
+                    .as_mut()
+                    .ok_or_else(|| err("jaring: not established"))?;
+                let mut len_buf = [0u8; 4];
+                stream
+                    .read_exact(&mut len_buf)
+                    .map_err(|e| err(format!("jaring_tls: terima: {e}")))?;
+                let len = u32::from_be_bytes(len_buf) as usize;
+                let mut sealed = vec![0u8; len];
+                stream
+                    .read_exact(&mut sealed)
+                    .map_err(|e| err(format!("jaring_tls: terima: {e}")))?;
+                let plain = keys
+                    .unprotect(*recv_seq, &[], &sealed)
+                    .map_err(|_| err("jaring_tls: record authentication failed"))?;
+                *recv_seq += 1;
+                Ok(Value::String(String::from_utf8_lossy(&plain).into_owned()))
             })?
         }
         // Pure TLS acceptance policy: `(version, cipher_suite) -> Bool`.
@@ -519,6 +645,97 @@ mod tests {
         assert!(!ok("1.0", "TLS_AES_256_GCM_SHA384"));
         assert!(!ok("1.3", "TLS_RSA_WITH_RC4_128_SHA"), "weak/unknown suite fails closed");
         assert!(!ok("bogus", "TLS_AES_128_GCM_SHA256"));
+    }
+
+    /// End-to-end REAL encryption over the verified sockets: two RIINA peers
+    /// (this thread = client, a spawned thread = server) share a traffic
+    /// secret, and the bytes ON THE WIRE are AEAD ciphertext, not plaintext.
+    #[test]
+    fn tls_records_are_really_encrypted_end_to_end() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        const SECRET: &str = "a-32-byte-traffic-secret-abcdefg";
+        const MSG: &str = "rahsia atas talian";
+        // Server: accept, capture the raw wire bytes, then open the record.
+        let server = std::thread::spawn(move || {
+            let (mut sock, _) = listener.accept().unwrap();
+            let mut len_buf = [0u8; 4];
+            sock.read_exact(&mut len_buf).unwrap();
+            let len = u32::from_be_bytes(len_buf) as usize;
+            let mut sealed = vec![0u8; len];
+            sock.read_exact(&mut sealed).unwrap();
+            let keys = RecordKeys::derive(SECRET.as_bytes()).unwrap();
+            let opened = keys.unprotect(0, &[], &sealed).unwrap();
+            (sealed, String::from_utf8(opened).unwrap())
+        });
+        let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect failed")
+        };
+        assert_eq!(
+            apply("jaring_tls_kunci", &pair(Value::Int(cid), s(SECRET))).unwrap(),
+            Some(Value::Bool(true))
+        );
+        apply("jaring_tls_hantar", &pair(Value::Int(cid), s(MSG))).unwrap();
+        let (wire, opened) = server.join().unwrap();
+        // The peer recovered the plaintext…
+        assert_eq!(opened, MSG);
+        // …and what actually crossed the wire was NOT the plaintext.
+        assert!(
+            !wire.windows(MSG.len()).any(|w| w == MSG.as_bytes()),
+            "plaintext must not appear on the wire"
+        );
+        assert_eq!(wire.len(), MSG.len() + 16, "ciphertext + one GCM tag");
+        apply("jaring_tutup", &Value::Int(cid)).unwrap();
+    }
+
+    /// A tampered record is rejected by authentication, not silently accepted.
+    #[test]
+    fn tls_tampered_record_is_rejected() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        const SECRET: &str = "another-32-byte-traffic-secret!!";
+        // Server seals a record, flips one bit, and sends it.
+        std::thread::spawn(move || {
+            let (mut sock, _) = listener.accept().unwrap();
+            let keys = RecordKeys::derive(SECRET.as_bytes()).unwrap();
+            let mut sealed = keys.protect(0, &[], b"tampered payload").unwrap();
+            sealed[0] ^= 0x01;
+            let len = u32::try_from(sealed.len()).unwrap();
+            sock.write_all(&len.to_be_bytes()).unwrap();
+            sock.write_all(&sealed).unwrap();
+        });
+        let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect failed")
+        };
+        apply("jaring_tls_kunci", &pair(Value::Int(cid), s(SECRET))).unwrap();
+        let res = apply("jaring_tls_terima", &Value::Int(cid));
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("authentication failed")),
+            "tampered record must fail authentication, got {res:?}"
+        );
+        apply("jaring_tutup", &Value::Int(cid)).unwrap();
+    }
+
+    /// TLS send/recv require keys — an unkeyed connection is rejected by the
+    /// model, and keys require ESTABLISHED.
+    #[test]
+    fn tls_requires_keys_and_established() {
+        let addr = spawn_echo();
+        let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect failed")
+        };
+        let res = apply("jaring_tls_hantar", &pair(Value::Int(cid), s("x")));
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("no keys installed")),
+            "unkeyed TLS send must be rejected, got {res:?}"
+        );
+        apply("jaring_tutup", &Value::Int(cid)).unwrap();
+        // After close the machine is CLOSED, so installing keys is rejected.
+        let res = apply("jaring_tls_kunci", &pair(Value::Int(cid), s("secret")));
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("not established")),
+            "keying a closed connection must be rejected, got {res:?}"
+        );
     }
 
     #[test]
