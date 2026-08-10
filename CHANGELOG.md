@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3041 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-09 — Gate C: TLS 1.3 record protection — REAL AEAD over the verified sockets (increment 1)
+
+### Added (Gate C / Standard Library Hardening — TLS record crypto, owner-approved port)
+- **`riina-tls` crate** (`03_PROTO/crates/riina-tls`): RFC 8446 record protection on the
+  **proven** primitives — HKDF-Expand-Label / Derive-Secret (§7.1), the §5.3 per-record
+  nonce (static IV XOR big-endian sequence), and AES-256-GCM AEAD, all from
+  `riina-core`. **Law 8 verified by the gate, not asserted:** the crate's only dependency
+  is first-party `riina-core` by path, and `scripts/generate-sbom.sh` classifies it
+  `workspace` with `externalComponents: 0` — the zero-external-runtime-deps headline
+  still holds. Depending on the proven crypto (rather than copying it into 03_PROTO)
+  keeps the nine Coq⇄Rust equivalence proofs and the CT certification attached to the
+  code that actually runs. 10 unit tests incl. tamper, wrong-sequence, wrong-AAD,
+  wrong-key and truncation rejection.
+- **`jaring_tls_kunci`/`jaring_tls_hantar`/`jaring_tls_terima`** (+ `net_tls_keys`/
+  `net_tls_send`/`net_tls_recv`): real AEAD-sealed records over the existing verified
+  TCP sockets — keys install only on an ESTABLISHED connection, send/recv require keys,
+  and each direction carries its own RFC 8446 sequence number bound into the nonce (so
+  replay/reorder fail authentication). Typed `Effect::NetworkSecure`, distinguishing the
+  encrypted paths from the plaintext `jaring_*` `Effect::Network` ones. STDLIB.md
+  regenerated (329 → 335 builtins). 3 end-to-end tests, including one asserting the
+  **plaintext never appears on the wire** (the sealed bytes are captured and searched).
+- **Honesty scope, stated in both module headers and NOT softened elsewhere:** this is
+  real record crypto, not yet a complete TLS stack. (a) The instantiation is AES-256-GCM
+  under an HKDF-**SHA256** schedule — self-consistent RIINA↔RIINA but NOT the IANA
+  `TLS_AES_256_GCM_SHA384` wire suite, so it does not interoperate with OpenSSL et al;
+  closing that needs SHA-384/HKDF-SHA384 (or AES-128) in riina-core. (b) There is **no
+  handshake yet** — the traffic secret is caller-supplied; X25519 key exchange (already
+  in riina-core) + transcript hashing driving the Coq `tls_connected` conjuncts is
+  increment 2. The pre-existing "TLS record-layer cryptography is NOT implemented"
+  disclaimer in `builtins/net.rs` is replaced by this precise scope, not simply deleted.
+
+### 2026-08-09 — Gate C: host-FS `fail_*`/`file_*_safe` gated by the verified access-control model
+
+### Changed (Gate C / Standard Library Hardening — owner-approved semantic change)
+- **`fail_*` and `file_*_safe` builtins now enforce the verified `VerifiedFileSystem.v`
+  predicates on the real host filesystem** (the "wire VirtualFs into the surface `file_*`
+  builtins" item; path→inode→uid). A thread-local metadata mirror maps each host path to a
+  verified `riina_os::vfs::Inode` on first touch — owned by the current access context's uid
+  (the one `vfs_jadi_pengguna` switches; ONE access-control world shared with `vfs_*`), mode
+  0644 as `vfs_tulis` creates. Reads gate on `can_read`, writes/appends/deletes on
+  `can_write`; delete clears the mapping so a re-created file belongs to its re-creator.
+  The denied operation never touches the host FS. Honesty scope in the module header: the
+  I/O is real, the enforcement models THIS RUN's operations (the host's own uid model is
+  not portably visible); `fail_ada`/`fail_senarai` are metadata queries with no Coq
+  predicate — ungated; quotas remain a `vfs_*`-world concern. Single-identity programs
+  (i.e. every program not calling the interpreter-only `vfs_jadi_pengguna`) behave exactly
+  as before, so C/WASM parity is preserved by construction (backends fail closed on
+  `vfs_*`). +4 gate tests (cross-uid write/append/delete denied + read allowed + no host
+  side effect on denial; delete-transfers-ownership; safe-twin shares the gate) and an
+  interpreter end-to-end denial test.
 
 ### 2026-08-08 — Gate C: rendering parity, `pelaku` rename, verified listener close
 

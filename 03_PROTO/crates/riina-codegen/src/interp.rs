@@ -3915,6 +3915,39 @@ mod tests {
         assert_eq!(run_src(src), Value::String("data".to_string()));
     }
 
+    #[test]
+    fn test_host_fs_gate_through_interpreter() {
+        // The owner-approved file_*→VirtualFs gating end-to-end: uid 1000
+        // writes a real host file; after vfs_jadi_pengguna(2000) the surface
+        // fail_tulis is rejected by the verified can_write, while fail_baca
+        // still succeeds (other = r).
+        let dir = std::env::temp_dir().join("riina_interp_gate.txt");
+        let path = dir.to_str().unwrap();
+        let src = format!(
+            "biar a = vfs_jadi_pengguna(1000); \
+             biar b = fail_tulis((\"{path}\", \"milik 1000\")); \
+             biar c = vfs_jadi_pengguna(2000); \
+             fail_baca(\"{path}\")"
+        );
+        assert_eq!(run_src(&src), Value::String("milik 1000".to_string()));
+        let denied = format!(
+            "biar a = vfs_jadi_pengguna(2000); \
+             fail_tulis((\"{path}\", \"rampas\"))"
+        );
+        let mut p = riina_parser::Parser::new(&denied);
+        let expr = p.parse_program().unwrap().desugar();
+        let res = Interpreter::new().eval_with_builtins(&expr);
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("permission denied")),
+            "cross-uid surface write must be denied, got {res:?}"
+        );
+        // Owner cleans up (also proves the owner path still works).
+        let cleanup = format!(
+            "biar a = vfs_jadi_pengguna(1000); fail_buang(\"{path}\")"
+        );
+        assert_eq!(run_src(&cleanup), Value::Bool(true));
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // NETWORK (jaring_*) — real TCP gated by the verified state machine
     // ═══════════════════════════════════════════════════════════════════════
