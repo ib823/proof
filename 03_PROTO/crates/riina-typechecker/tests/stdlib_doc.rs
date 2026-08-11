@@ -11,11 +11,47 @@
 //! Regenerate after changing the builtin table:
 //!   REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc
 
-use riina_codegen::codegen_supports_builtin;
+use riina_codegen::{codegen_supports_builtin, wasm_supports_builtin};
 use riina_fmt::format_ty;
 use riina_typechecker::{register_builtin_types, Context};
 use riina_types::{Effect, Ty};
 use std::path::PathBuf;
+
+/// Which backends implement a builtin (REQ-70 Backend column, REQ-78 split).
+///
+/// `codegen_supports_builtin` alone was not enough: it answers "does lowering
+/// bind this?", which the C backend then implements — but the WASM backend
+/// implements far fewer, and used to emit a silent stub for the rest. The doc
+/// must not tell a reader that a native-only builtin runs on WASM.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Backend {
+    /// Compiles to C and WASM.
+    Wasm,
+    /// Compiles to C; the WASM backend refuses it (fails closed).
+    Native,
+    /// Neither: `riinac run` only.
+    Interp,
+}
+
+impl Backend {
+    fn of(name: &str) -> Self {
+        if wasm_supports_builtin(name) {
+            Self::Wasm
+        } else if codegen_supports_builtin(name) {
+            Self::Native
+        } else {
+            Self::Interp
+        }
+    }
+
+    fn cell(self) -> &'static str {
+        match self {
+            Self::Wasm => "compiled",
+            Self::Native => "**native-only**",
+            Self::Interp => "**interp-only**",
+        }
+    }
+}
 
 /// Effect label for grouping (Bahasa Melayu surface name + English).
 fn effect_label(eff: Effect) -> &'static str {
@@ -60,20 +96,22 @@ fn generate() -> String {
     // comes from `riina_codegen::codegen_supports_builtin`, i.e. from the same
     // `builtin_canonical` the lowering pass consults, so the doc cannot claim a
     // builtin compiles when `riinac build` would reject it.
-    let mut rows: Vec<(String, String, Effect, bool)> = ctx
+    let mut rows: Vec<(String, String, Effect, Backend)> = ctx
         .iter()
         .map(|(name, ty): (&String, &Ty)| {
             (
                 name.clone(),
                 format_ty(ty),
                 builtin_effect(ty),
-                codegen_supports_builtin(name),
+                Backend::of(name),
             )
         })
         .collect();
     rows.sort_by(|a, b| a.0.cmp(&b.0)); // by builtin name — unique, deterministic
 
-    let compiled_count = rows.iter().filter(|(_, _, _, c)| *c).count();
+    let wasm_count = rows.iter().filter(|(_, _, _, b)| *b == Backend::Wasm).count();
+    let native_count = rows.iter().filter(|(_, _, _, b)| *b == Backend::Native).count();
+    let compiled_count = wasm_count + native_count;
     let interp_only_count = rows.len() - compiled_count;
 
     // Group by effect; render an effect section ordered by the effect enum.
@@ -126,30 +164,32 @@ fn generate() -> String {
     out.push_str(&format!(
         "## ⚠ Read first: type-checking does not imply compiling\n\n\
          Every builtin below type-checks and runs under `riinac run` (the \
-         interpreter). Only **{compiled}** of the {total} also compile; the other \
-         **{interp}** are **interpreter-only** and make `riinac build`, \
-         `riinac emit-c`, and `riinac build --target wasm32/wasm64` **fail \
-         closed**:\n\n\
+         interpreter). Only **{compiled}** of the {total} also compile, and they \
+         do NOT all reach the same backends:\n\n\
+         | Backend value | Meaning |\n|---|---|\n\
+         | `compiled` | Lowers to C **and** WASM ({wasm} builtins). |\n\
+         | `native-only` | Lowers to C. The WASM backend **refuses** it ({native} builtins). |\n\
+         | `interp-only` | `riinac run` only ({interp} builtins). `riinac build` fails with `unbound variable`. |\n\n\
          ```\n\
          $ riinac check pelayan.rii     # Success!  Effect: Network\n\
          $ riinac run   pelayan.rii     # works — serves a real HTTP/1.1 200\n\
          $ riinac build pelayan.rii     # Codegen Error: unbound variable: jaring_dengar\n\
          ```\n\n\
-         This is deliberate — lowering refuses to emit a builtin the C/WASM \
-         backends do not implement, rather than miscompiling it — but it means a \
-         program using ANY `interp-only` builtin has no native or WASM \
-         deployment path today. In practice the compilable surface is the pure \
-         core: printing, strings, lists, maps, sets, math, conversions, the \
-         numeric tower, and test assertions. **Networking, filesystem, VFS, \
-         JSON, time, and the security/taint sinks are all interpreter-only.**\n\n\
-         The `Backend` column in every table below records this per builtin. \
-         Closing the gap is master plan **REQ-70** (Gate C); the exit criteria \
-         require a compiled, multi-file, networked, persistent reference \
-         service.\n\n\
-         | Backend value | Meaning |\n|---|---|\n\
-         | `compiled` | Lowers to C and WASM. Safe for `riinac build`. |\n\
-         | `interp-only` | `riinac run` only. `riinac build` fails with `unbound variable`. |\n\n",
+         Both refusals are deliberate: a backend that cannot implement a builtin \
+         fails closed rather than miscompiling it. Until 2026-08-11 the WASM \
+         backend did NOT do this — it emitted a silent stub, so \
+         `teks_huruf_besar(\"halo\")` returned `halo` and `panjang(\"abcd\")` \
+         returned `abcd`, while the interpreter and C both gave the right answer \
+         (master plan REQ-78).\n\n\
+         In practice: the WASM surface is printing, string concatenation, \
+         `ke_teks` and the numeric-tower constructors. The wider C surface adds \
+         strings, lists, maps, sets, math, conversions and test assertions. \
+         **Networking, filesystem, VFS, JSON, time, the durable store and the \
+         security/taint sinks are interpreter-only** — closing that is master \
+         plan REQ-70.\n\n",
         compiled = compiled_count,
+        wasm = wasm_count,
+        native = native_count,
         total = rows.len(),
         interp = interp_only_count,
     ));
@@ -169,7 +209,10 @@ fn generate() -> String {
 
         // Section-level verdict, so a wholly interpreter-only effect (Network,
         // FileSystem, Time, …) is visible without scanning every row.
-        let sec_compiled = group.iter().filter(|(_, _, _, c)| *c).count();
+        let sec_compiled = group
+            .iter()
+            .filter(|(_, _, _, b)| *b != Backend::Interp)
+            .count();
         if sec_compiled == 0 {
             out.push_str(
                 "> **Entirely interpreter-only.** No builtin in this section \
@@ -185,9 +228,8 @@ fn generate() -> String {
         }
 
         out.push_str("| Builtin | Type | Backend |\n|---|---|---|\n");
-        for (name, sig, _, compiled) in group {
-            let backend = if *compiled { "compiled" } else { "**interp-only**" };
-            out.push_str(&format!("| `{name}` | `{sig}` | {backend} |\n"));
+        for (name, sig, _, backend) in group {
+            out.push_str(&format!("| `{name}` | `{sig}` | {} |\n", backend.cell()));
         }
         out.push('\n');
     }

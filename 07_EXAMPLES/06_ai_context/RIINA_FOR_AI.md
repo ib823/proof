@@ -114,7 +114,8 @@ Information can flow up (from Public to Secret) but not down. Declassification r
 ## Modules — multi-file programs
 
 `guna <name>;` imports the sibling file `<name>.rii`. Multi-file programs
-check, run, and compile (native and wasm32).
+check, run, and compile natively (and to wasm32 if they stay inside the small
+WASM builtin surface — see the Backend table below).
 
 ```riina
 // kira.rii
@@ -154,17 +155,17 @@ dependencies yet — master plan REQ-71 remainder, REQ-72).
 **Counts and the Backend column below are command-derived (2026-08-11) from the
 builtin tables in `03_PROTO/crates/riina-codegen/src/builtins/` and the
 compiled-backend boundary `riina_codegen::codegen_supports_builtin`.** The
-authoritative per-builtin list is the generated `docs/api/STDLIB.md` (341
+authoritative per-builtin list is the generated `docs/api/STDLIB.md` (357
 registered builtins, each with its own Backend marker).
 
 | Module | BM Name | Builtins | Backend | Description |
 |--------|---------|----------|---------|-------------|
-| teks | Teks | 16 | all compiled | String operations |
-| senarai | Senarai | 18 | all compiled | List operations |
-| peta | Peta | 8 | all compiled | Hash maps |
-| set | Set | 7 | all compiled | Hash sets |
-| matematik | Matematik | 10 | 7 of 10 | Math functions (`baki`, `log2`, `rawak` are interpreter-only) |
-| ujian | Ujian | 6 | 5 of 6 | Test assertions (`jangkakan` is interpreter-only) |
+| teks | Teks | 16 | native-only | String operations |
+| senarai | Senarai | 18 | native-only | List operations |
+| peta | Peta | 8 | native-only | Hash maps |
+| set | Set | 7 | native-only | Hash sets |
+| matematik | Matematik | 10 | 7 of 10 native-only | Math functions (`baki`, `log2`, `rawak` are interpreter-only) |
+| ujian | Ujian | 6 | 5 of 6 native-only | Test assertions (`jangkakan` is interpreter-only) |
 | masa | Masa | 7 | **none** | Time operations |
 | fail | Fail | 8 | **none** | File I/O |
 | json | Json | 5 | **none** | JSON parsing |
@@ -175,7 +176,11 @@ registered builtins, each with its own Backend marker).
 
 Conversions (`ke_teks`, `ke_nombor`, …), printing (`cetak`, `cetakln`), and the
 numeric-tower constructors (`besar`, `perpuluhan`, `wang`, `titik_tetap`, `qmn`)
-are registered directly rather than in a module table; all of them compile.
+are registered directly rather than in a module table. Printing, `ke_teks`,
+`gabung_teks` and the numeric-tower constructors are the **only** builtins the
+WASM backend implements; everything else marked `native-only` compiles to C but
+is REFUSED for wasm32 (it used to be silently miscompiled — master plan
+REQ-78).
 
 ### Real HTTP vs modelled HTTP — do not confuse them
 
@@ -196,7 +201,8 @@ duplicate lengths — are **errors**, not repaired messages.
 
 ### ⚠ Type-checking does not imply compiling
 
-**148 of the 341 builtins compile. The other 193 are interpreter-only.** A
+**Of 357 builtins: 20 compile to C *and* WASM, 128 are native-only (the WASM
+backend refuses them), and 209 are interpreter-only.** A
 program using any interpreter-only builtin type-checks and runs, but cannot be
 built for native or WASM — lowering fails closed rather than miscompiling:
 
@@ -206,9 +212,10 @@ riinac run   pelayan.rii   # works — serves a real HTTP/1.1 200
 riinac build pelayan.rii   # Codegen Error: unbound variable: jaring_dengar
 ```
 
-If you are generating RIINA code that must be **compiled**, restrict yourself to
-the `all compiled` modules above plus printing, conversions, and the numeric
-tower. Anything touching the network (including the real HTTP layer),
+If you are generating RIINA code that must be **compiled for WASM**, restrict
+yourself to printing, `gabung_teks`, `ke_teks` and the numeric-tower
+constructors — that is the entire WASM surface. For **native**, the `all
+compiled` modules above plus conversions and math are available. Anything touching the network (including the real HTTP layer),
 filesystem, JSON, time, or the security sinks is `riinac run` only. Closing this gap is master plan **REQ-70** (Gate C).
 
 ## Formal Verification

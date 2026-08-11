@@ -101,11 +101,47 @@ pub use interp::Interpreter;
 pub use ir::{BasicBlock, Function, Instruction, Program};
 pub use lower::Lower;
 
+/// Builtins the **WASM** backend actually implements (canonical names).
+///
+/// The WASM emitter dispatches on these names; anything else now fails closed
+/// (REQ-78) instead of emitting a silent stub. Kept as an explicit list so the
+/// generated `docs/api/STDLIB.md` can tell `native-only` from `compiled`
+/// rather than claiming every C-compiled builtin also runs on WASM — it does
+/// not, and it used to say so.
+///
+/// Correspondence with the emitter is pinned behaviourally by
+/// `wasm_supported_builtins_all_compile` in `riina-codegen`'s tests.
+pub const WASM_SUPPORTED_BUILTINS: &[&str] = &[
+    "cetak",
+    "cetakln",
+    "ke_teks",
+    "nombor_ke_teks",
+    "gabung_teks",
+    "besar",
+    "perpuluhan",
+    "wang",
+    "titik_tetap",
+    "qmn",
+];
+
+/// Does the **WASM** backend implement this builtin?
+///
+/// `false` while [`codegen_supports_builtin`] is `true` means **native-only**:
+/// `riinac build` works, `riinac build --target wasm32/wasm64` fails closed.
+/// Accepts either surface spelling.
+#[must_use]
+pub fn wasm_supports_builtin(name: &str) -> bool {
+    lower::builtin_canonical(name).is_some_and(|c| WASM_SUPPORTED_BUILTINS.contains(&c))
+}
+
 /// Does the compiled-backend pipeline (C / WASM) implement this builtin?
 ///
 /// `false` means **interpreter-only**: the typechecker accepts the call and
 /// `riinac run` executes it, but `riinac build` / `emit-c` / `--target wasm*`
-/// fail closed with `unbound variable: <name>` — lowering never binds it. The
+/// fail closed with `unbound variable: <name>` — lowering never binds it.
+///
+/// `true` means the C backend implements it. It does NOT imply WASM does —
+/// ask [`wasm_supports_builtin`] for that (REQ-78). The
 /// gap is invisible in a type signature, which is why `docs/api/STDLIB.md`
 /// renders a Backend column generated from this function (master plan REQ-70).
 ///

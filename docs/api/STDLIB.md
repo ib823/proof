@@ -6,7 +6,13 @@ Total registered builtins: **357**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 357 also compile; the other **209** are **interpreter-only** and make `riinac build`, `riinac emit-c`, and `riinac build --target wasm32/wasm64` **fail closed**:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 357 also compile, and they do NOT all reach the same backends:
+
+| Backend value | Meaning |
+|---|---|
+| `compiled` | Lowers to C **and** WASM (20 builtins). |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (128 builtins). |
+| `interp-only` | `riinac run` only (209 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -14,14 +20,9 @@ $ riinac run   pelayan.rii     # works — serves a real HTTP/1.1 200
 $ riinac build pelayan.rii     # Codegen Error: unbound variable: jaring_dengar
 ```
 
-This is deliberate — lowering refuses to emit a builtin the C/WASM backends do not implement, rather than miscompiling it — but it means a program using ANY `interp-only` builtin has no native or WASM deployment path today. In practice the compilable surface is the pure core: printing, strings, lists, maps, sets, math, conversions, the numeric tower, and test assertions. **Networking, filesystem, VFS, JSON, time, and the security/taint sinks are all interpreter-only.**
+Both refusals are deliberate: a backend that cannot implement a builtin fails closed rather than miscompiling it. Until 2026-08-11 the WASM backend did NOT do this — it emitted a silent stub, so `teks_huruf_besar("halo")` returned `halo` and `panjang("abcd")` returned `abcd`, while the interpreter and C both gave the right answer (master plan REQ-78).
 
-The `Backend` column in every table below records this per builtin. Closing the gap is master plan **REQ-70** (Gate C); the exit criteria require a compiled, multi-file, networked, persistent reference service.
-
-| Backend value | Meaning |
-|---|---|
-| `compiled` | Lowers to C and WASM. Safe for `riinac build`. |
-| `interp-only` | `riinac run` only. `riinac build` fails with `unbound variable`. |
+In practice: the WASM surface is printing, string concatenation, `ke_teks` and the numeric-tower constructors. The wider C surface adds strings, lists, maps, sets, math, conversions and test assertions. **Networking, filesystem, VFS, JSON, time, the durable store and the security/taint sinks are interpreter-only** — closing that is master plan REQ-70.
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 
@@ -31,22 +32,22 @@ The `Backend` column in every table below records this per builtin. Closing the 
 
 | Builtin | Type | Backend |
 |---|---|---|
-| `abs` | `Fn(Nombor, Nombor)` | compiled |
+| `abs` | `Fn(Nombor, Nombor)` | **native-only** |
 | `adalah_kanan` | `Fn(Any, Benar)` | **interp-only** |
 | `adalah_keliru` | `Fn((Teks, Teks), Benar)` | **interp-only** |
 | `adalah_kiri` | `Fn(Any, Benar)` | **interp-only** |
-| `assert` | `Fn(Benar, ())` | compiled |
-| `assert_eq` | `Fn((Any, Any), ())` | compiled |
-| `assert_false` | `Fn(Benar, ())` | compiled |
-| `assert_ne` | `Fn((Any, Any), ())` | compiled |
-| `assert_true` | `Fn(Benar, ())` | compiled |
+| `assert` | `Fn(Benar, ())` | **native-only** |
+| `assert_eq` | `Fn((Any, Any), ())` | **native-only** |
+| `assert_false` | `Fn(Benar, ())` | **native-only** |
+| `assert_ne` | `Fn((Any, Any), ())` | **native-only** |
+| `assert_true` | `Fn(Benar, ())` | **native-only** |
 | `baca_garisan` | `Teks` | **interp-only** |
 | `baki` | `Fn(Nombor, Nombor)` | **interp-only** |
 | `besar` | `Fn(Teks, Besar)` | compiled |
 | `bigint` | `Fn(Teks, Besar)` | compiled |
 | `binary_fixed` | `Fn((Teks, Nombor), Qmn)` | compiled |
-| `bool_ke_nombor` | `Fn(Benar, Nombor)` | compiled |
-| `bool_to_int` | `Fn(Benar, Nombor)` | compiled |
+| `bool_ke_nombor` | `Fn(Benar, Nombor)` | **native-only** |
+| `bool_to_int` | `Fn(Benar, Nombor)` | **native-only** |
 | `buang_null` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
 | `concat` | `Fn((Teks, Teks), Teks)` | compiled |
 | `csrf_check_origin` | `Fn((Teks, Teks), Benar)` | **interp-only** |
@@ -61,7 +62,7 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `emel_tetap_kepala` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **interp-only** |
 | `fixed` | `Fn((Teks, Nombor), Wang)` | compiled |
 | `gabung_teks` | `Fn((Teks, Teks), Teks)` | compiled |
-| `gcd` | `Fn((Nombor, Nombor), Nombor)` | compiled |
+| `gcd` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `html_papar` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
 | `html_render` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
 | `http_balas` | `Fn((Nombor, Teks), Teks)` | **interp-only** |
@@ -90,46 +91,46 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `json_urai_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
 | `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
 | `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
-| `ke_bool` | `Fn(Any, Benar)` | compiled |
+| `ke_bool` | `Fn(Any, Benar)` | **native-only** |
 | `ke_nfc` | `Fn(Teks, Teks)` | **interp-only** |
-| `ke_nombor` | `Fn(Teks, Nombor)` | compiled |
+| `ke_nombor` | `Fn(Teks, Nombor)` | **native-only** |
 | `ke_teks` | `Fn(Any, Teks)` | compiled |
-| `kuasa` | `Fn((Nombor, Nombor), Nombor)` | compiled |
-| `lcm` | `Fn((Nombor, Nombor), Nombor)` | compiled |
-| `length` | `Fn(Teks, Nombor)` | compiled |
-| `list_concat` | `Fn(Any, Any)` | compiled |
-| `list_contains` | `Fn(Any, Any)` | compiled |
-| `list_enumerate` | `Fn(Any, Any)` | compiled |
-| `list_filter` | `Fn(Any, Any)` | compiled |
-| `list_flatten` | `Fn(Any, Any)` | compiled |
-| `list_fold` | `Fn(Any, Any)` | compiled |
-| `list_get` | `Fn(Any, Any)` | compiled |
-| `list_head` | `Fn(Any, Any)` | compiled |
-| `list_len` | `Fn(Any, Any)` | compiled |
-| `list_map` | `Fn(Any, Any)` | compiled |
-| `list_new` | `Fn(Any, Any)` | compiled |
-| `list_push` | `Fn(Any, Any)` | compiled |
-| `list_reverse` | `Fn(Any, Any)` | compiled |
-| `list_slice` | `Fn(Any, Any)` | compiled |
-| `list_sort` | `Fn(Any, Any)` | compiled |
-| `list_tail` | `Fn(Any, Any)` | compiled |
-| `list_unique` | `Fn(Any, Any)` | compiled |
-| `list_zip` | `Fn(Any, Any)` | compiled |
+| `kuasa` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `lcm` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `length` | `Fn(Teks, Nombor)` | **native-only** |
+| `list_concat` | `Fn(Any, Any)` | **native-only** |
+| `list_contains` | `Fn(Any, Any)` | **native-only** |
+| `list_enumerate` | `Fn(Any, Any)` | **native-only** |
+| `list_filter` | `Fn(Any, Any)` | **native-only** |
+| `list_flatten` | `Fn(Any, Any)` | **native-only** |
+| `list_fold` | `Fn(Any, Any)` | **native-only** |
+| `list_get` | `Fn(Any, Any)` | **native-only** |
+| `list_head` | `Fn(Any, Any)` | **native-only** |
+| `list_len` | `Fn(Any, Any)` | **native-only** |
+| `list_map` | `Fn(Any, Any)` | **native-only** |
+| `list_new` | `Fn(Any, Any)` | **native-only** |
+| `list_push` | `Fn(Any, Any)` | **native-only** |
+| `list_reverse` | `Fn(Any, Any)` | **native-only** |
+| `list_slice` | `Fn(Any, Any)` | **native-only** |
+| `list_sort` | `Fn(Any, Any)` | **native-only** |
+| `list_tail` | `Fn(Any, Any)` | **native-only** |
+| `list_unique` | `Fn(Any, Any)` | **native-only** |
+| `list_zip` | `Fn(Any, Any)` | **native-only** |
 | `log2` | `Fn(Nombor, Nombor)` | **interp-only** |
-| `maksimum` | `Fn((Nombor, Nombor), Nombor)` | compiled |
-| `map_contains` | `Fn(Any, Any)` | compiled |
-| `map_get` | `Fn(Any, Any)` | compiled |
-| `map_insert` | `Fn(Any, Any)` | compiled |
-| `map_keys` | `Fn(Any, Any)` | compiled |
-| `map_len` | `Fn(Any, Any)` | compiled |
-| `map_new` | `Fn(Any, Any)` | compiled |
-| `map_remove` | `Fn(Any, Any)` | compiled |
-| `map_values` | `Fn(Any, Any)` | compiled |
-| `max` | `Fn((Nombor, Nombor), Nombor)` | compiled |
-| `min` | `Fn((Nombor, Nombor), Nombor)` | compiled |
-| `minimum` | `Fn((Nombor, Nombor), Nombor)` | compiled |
+| `maksimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `map_contains` | `Fn(Any, Any)` | **native-only** |
+| `map_get` | `Fn(Any, Any)` | **native-only** |
+| `map_insert` | `Fn(Any, Any)` | **native-only** |
+| `map_keys` | `Fn(Any, Any)` | **native-only** |
+| `map_len` | `Fn(Any, Any)` | **native-only** |
+| `map_new` | `Fn(Any, Any)` | **native-only** |
+| `map_remove` | `Fn(Any, Any)` | **native-only** |
+| `map_values` | `Fn(Any, Any)` | **native-only** |
+| `max` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `min` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `minimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `money` | `Fn(Teks, Wang)` | compiled |
-| `mutlak` | `Fn(Nombor, Nombor)` | compiled |
+| `mutlak` | `Fn(Nombor, Nombor)` | **native-only** |
 | `nfc` | `Fn(Teks, Teks)` | **interp-only** |
 | `nilai_kanan` | `Fn(Any, Any)` | **interp-only** |
 | `nilai_kiri` | `Fn(Any, Any)` | **interp-only** |
@@ -137,19 +138,19 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `normal_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
 | `normalize_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
 | `nyahsiri_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
-| `panjang` | `Fn(Teks, Nombor)` | compiled |
-| `parse_int` | `Fn(Teks, Nombor)` | compiled |
+| `panjang` | `Fn(Teks, Nombor)` | **native-only** |
+| `parse_int` | `Fn(Teks, Nombor)` | **native-only** |
 | `perpuluhan` | `Fn(Teks, Perpuluhan)` | compiled |
-| `peta_baru` | `Fn(Any, Any)` | compiled |
-| `peta_buang` | `Fn(Any, Any)` | compiled |
-| `peta_dapat` | `Fn(Any, Any)` | compiled |
-| `peta_kunci` | `Fn(Any, Any)` | compiled |
-| `peta_letak` | `Fn(Any, Any)` | compiled |
-| `peta_mengandungi` | `Fn(Any, Any)` | compiled |
-| `peta_nilai` | `Fn(Any, Any)` | compiled |
-| `peta_panjang` | `Fn(Any, Any)` | compiled |
-| `pow` | `Fn((Nombor, Nombor), Nombor)` | compiled |
-| `punca` | `Fn(Nombor, Nombor)` | compiled |
+| `peta_baru` | `Fn(Any, Any)` | **native-only** |
+| `peta_buang` | `Fn(Any, Any)` | **native-only** |
+| `peta_dapat` | `Fn(Any, Any)` | **native-only** |
+| `peta_kunci` | `Fn(Any, Any)` | **native-only** |
+| `peta_letak` | `Fn(Any, Any)` | **native-only** |
+| `peta_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `peta_nilai` | `Fn(Any, Any)` | **native-only** |
+| `peta_panjang` | `Fn(Any, Any)` | **native-only** |
+| `pow` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `punca` | `Fn(Nombor, Nombor)` | **native-only** |
 | `qmn` | `Fn((Teks, Nombor), Qmn)` | compiled |
 | `rangka` | `Fn(Teks, Teks)` | **interp-only** |
 | `rem` | `Fn(Nombor, Nombor)` | **interp-only** |
@@ -177,82 +178,82 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `sanitize_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **interp-only** |
 | `sanitize_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **interp-only** |
 | `sanitize_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **interp-only** |
-| `senarai_balik` | `Fn(Any, Any)` | compiled |
-| `senarai_baru` | `Fn(Any, Any)` | compiled |
-| `senarai_dapat` | `Fn(Any, Any)` | compiled |
-| `senarai_ekor` | `Fn(Any, Any)` | compiled |
-| `senarai_kepala` | `Fn(Any, Any)` | compiled |
-| `senarai_lipat` | `Fn(Any, Any)` | compiled |
-| `senarai_mengandungi` | `Fn(Any, Any)` | compiled |
-| `senarai_nombor` | `Fn(Any, Any)` | compiled |
-| `senarai_panjang` | `Fn(Any, Any)` | compiled |
-| `senarai_peta` | `Fn(Any, Any)` | compiled |
-| `senarai_potong` | `Fn(Any, Any)` | compiled |
-| `senarai_rata` | `Fn(Any, Any)` | compiled |
-| `senarai_sambung` | `Fn(Any, Any)` | compiled |
-| `senarai_susun` | `Fn(Any, Any)` | compiled |
-| `senarai_tapis` | `Fn(Any, Any)` | compiled |
-| `senarai_tolak` | `Fn(Any, Any)` | compiled |
-| `senarai_unik` | `Fn(Any, Any)` | compiled |
-| `senarai_zip` | `Fn(Any, Any)` | compiled |
-| `set_baru` | `Fn(Any, Any)` | compiled |
-| `set_buang` | `Fn(Any, Any)` | compiled |
-| `set_contains` | `Fn(Any, Any)` | compiled |
-| `set_insert` | `Fn(Any, Any)` | compiled |
-| `set_intersect` | `Fn(Any, Any)` | compiled |
-| `set_kesatuan` | `Fn(Any, Any)` | compiled |
-| `set_len` | `Fn(Any, Any)` | compiled |
-| `set_letak` | `Fn(Any, Any)` | compiled |
-| `set_mengandungi` | `Fn(Any, Any)` | compiled |
-| `set_new` | `Fn(Any, Any)` | compiled |
-| `set_panjang` | `Fn(Any, Any)` | compiled |
-| `set_persilangan` | `Fn(Any, Any)` | compiled |
-| `set_remove` | `Fn(Any, Any)` | compiled |
-| `set_union` | `Fn(Any, Any)` | compiled |
+| `senarai_balik` | `Fn(Any, Any)` | **native-only** |
+| `senarai_baru` | `Fn(Any, Any)` | **native-only** |
+| `senarai_dapat` | `Fn(Any, Any)` | **native-only** |
+| `senarai_ekor` | `Fn(Any, Any)` | **native-only** |
+| `senarai_kepala` | `Fn(Any, Any)` | **native-only** |
+| `senarai_lipat` | `Fn(Any, Any)` | **native-only** |
+| `senarai_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `senarai_nombor` | `Fn(Any, Any)` | **native-only** |
+| `senarai_panjang` | `Fn(Any, Any)` | **native-only** |
+| `senarai_peta` | `Fn(Any, Any)` | **native-only** |
+| `senarai_potong` | `Fn(Any, Any)` | **native-only** |
+| `senarai_rata` | `Fn(Any, Any)` | **native-only** |
+| `senarai_sambung` | `Fn(Any, Any)` | **native-only** |
+| `senarai_susun` | `Fn(Any, Any)` | **native-only** |
+| `senarai_tapis` | `Fn(Any, Any)` | **native-only** |
+| `senarai_tolak` | `Fn(Any, Any)` | **native-only** |
+| `senarai_unik` | `Fn(Any, Any)` | **native-only** |
+| `senarai_zip` | `Fn(Any, Any)` | **native-only** |
+| `set_baru` | `Fn(Any, Any)` | **native-only** |
+| `set_buang` | `Fn(Any, Any)` | **native-only** |
+| `set_contains` | `Fn(Any, Any)` | **native-only** |
+| `set_insert` | `Fn(Any, Any)` | **native-only** |
+| `set_intersect` | `Fn(Any, Any)` | **native-only** |
+| `set_kesatuan` | `Fn(Any, Any)` | **native-only** |
+| `set_len` | `Fn(Any, Any)` | **native-only** |
+| `set_letak` | `Fn(Any, Any)` | **native-only** |
+| `set_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `set_new` | `Fn(Any, Any)` | **native-only** |
+| `set_panjang` | `Fn(Any, Any)` | **native-only** |
+| `set_persilangan` | `Fn(Any, Any)` | **native-only** |
+| `set_remove` | `Fn(Any, Any)` | **native-only** |
+| `set_union` | `Fn(Any, Any)` | **native-only** |
 | `skeleton` | `Fn(Teks, Teks)` | **interp-only** |
-| `sqrt` | `Fn(Nombor, Nombor)` | compiled |
-| `str_char_at` | `Fn(Any, Any)` | compiled |
-| `str_contains` | `Fn(Any, Any)` | compiled |
-| `str_ends_with` | `Fn(Any, Any)` | compiled |
-| `str_index_of` | `Fn(Any, Any)` | compiled |
-| `str_join` | `Fn(Any, Any)` | compiled |
-| `str_lines` | `Fn(Any, Any)` | compiled |
-| `str_pad_left` | `Fn(Any, Any)` | compiled |
-| `str_pad_right` | `Fn(Any, Any)` | compiled |
-| `str_repeat` | `Fn(Any, Any)` | compiled |
-| `str_replace` | `Fn(Any, Any)` | compiled |
-| `str_split` | `Fn(Any, Any)` | compiled |
-| `str_starts_with` | `Fn(Any, Any)` | compiled |
-| `str_substring` | `Fn(Any, Any)` | compiled |
-| `str_to_lower` | `Fn(Any, Any)` | compiled |
-| `str_to_upper` | `Fn(Any, Any)` | compiled |
-| `str_trim` | `Fn(Any, Any)` | compiled |
+| `sqrt` | `Fn(Nombor, Nombor)` | **native-only** |
+| `str_char_at` | `Fn(Any, Any)` | **native-only** |
+| `str_contains` | `Fn(Any, Any)` | **native-only** |
+| `str_ends_with` | `Fn(Any, Any)` | **native-only** |
+| `str_index_of` | `Fn(Any, Any)` | **native-only** |
+| `str_join` | `Fn(Any, Any)` | **native-only** |
+| `str_lines` | `Fn(Any, Any)` | **native-only** |
+| `str_pad_left` | `Fn(Any, Any)` | **native-only** |
+| `str_pad_right` | `Fn(Any, Any)` | **native-only** |
+| `str_repeat` | `Fn(Any, Any)` | **native-only** |
+| `str_replace` | `Fn(Any, Any)` | **native-only** |
+| `str_split` | `Fn(Any, Any)` | **native-only** |
+| `str_starts_with` | `Fn(Any, Any)` | **native-only** |
+| `str_substring` | `Fn(Any, Any)` | **native-only** |
+| `str_to_lower` | `Fn(Any, Any)` | **native-only** |
+| `str_to_upper` | `Fn(Any, Any)` | **native-only** |
+| `str_trim` | `Fn(Any, Any)` | **native-only** |
 | `strip_nulls` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
-| `tegaskan` | `Fn(Benar, ())` | compiled |
-| `tegaskan_betul` | `Fn(Benar, ())` | compiled |
-| `tegaskan_beza` | `Fn((Any, Any), ())` | compiled |
-| `tegaskan_salah` | `Fn(Benar, ())` | compiled |
-| `tegaskan_sama` | `Fn((Any, Any), ())` | compiled |
-| `teks_akhir_dengan` | `Fn(Any, Any)` | compiled |
-| `teks_aksara_di` | `Fn(Any, Any)` | compiled |
-| `teks_baris` | `Fn(Any, Any)` | compiled |
-| `teks_belah` | `Fn(Any, Any)` | compiled |
-| `teks_cantum` | `Fn(Any, Any)` | compiled |
-| `teks_ganti` | `Fn(Any, Any)` | compiled |
-| `teks_huruf_besar` | `Fn(Any, Any)` | compiled |
-| `teks_huruf_kecil` | `Fn(Any, Any)` | compiled |
-| `teks_indeks` | `Fn(Any, Any)` | compiled |
-| `teks_mengandungi` | `Fn(Any, Any)` | compiled |
-| `teks_mula_dengan` | `Fn(Any, Any)` | compiled |
-| `teks_pad_kanan` | `Fn(Any, Any)` | compiled |
-| `teks_pad_kiri` | `Fn(Any, Any)` | compiled |
-| `teks_potong` | `Fn(Any, Any)` | compiled |
-| `teks_sub` | `Fn(Any, Any)` | compiled |
-| `teks_ulang` | `Fn(Any, Any)` | compiled |
+| `tegaskan` | `Fn(Benar, ())` | **native-only** |
+| `tegaskan_betul` | `Fn(Benar, ())` | **native-only** |
+| `tegaskan_beza` | `Fn((Any, Any), ())` | **native-only** |
+| `tegaskan_salah` | `Fn(Benar, ())` | **native-only** |
+| `tegaskan_sama` | `Fn((Any, Any), ())` | **native-only** |
+| `teks_akhir_dengan` | `Fn(Any, Any)` | **native-only** |
+| `teks_aksara_di` | `Fn(Any, Any)` | **native-only** |
+| `teks_baris` | `Fn(Any, Any)` | **native-only** |
+| `teks_belah` | `Fn(Any, Any)` | **native-only** |
+| `teks_cantum` | `Fn(Any, Any)` | **native-only** |
+| `teks_ganti` | `Fn(Any, Any)` | **native-only** |
+| `teks_huruf_besar` | `Fn(Any, Any)` | **native-only** |
+| `teks_huruf_kecil` | `Fn(Any, Any)` | **native-only** |
+| `teks_indeks` | `Fn(Any, Any)` | **native-only** |
+| `teks_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `teks_mula_dengan` | `Fn(Any, Any)` | **native-only** |
+| `teks_pad_kanan` | `Fn(Any, Any)` | **native-only** |
+| `teks_pad_kiri` | `Fn(Any, Any)` | **native-only** |
+| `teks_potong` | `Fn(Any, Any)` | **native-only** |
+| `teks_sub` | `Fn(Any, Any)` | **native-only** |
+| `teks_ulang` | `Fn(Any, Any)` | **native-only** |
 | `titik_tetap` | `Fn((Teks, Nombor), Wang)` | compiled |
 | `tls_dasar_ok` | `Fn((Teks, Teks), Benar)` | **interp-only** |
 | `tls_policy_ok` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `to_bool` | `Fn(Any, Benar)` | compiled |
+| `to_bool` | `Fn(Any, Benar)` | **native-only** |
 | `to_string` | `Fn(Any, Teks)` | compiled |
 | `validate_length` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **interp-only** |
 | `validate_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **interp-only** |

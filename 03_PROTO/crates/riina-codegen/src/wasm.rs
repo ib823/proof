@@ -52,7 +52,7 @@ use crate::wasm_encode::{
     self, DataSegment, ElemSegment, Export, ExportKind, FuncBody, FuncType, GlobalType, Import,
     ImportKind, MemoryType, Op, TableType, ValType, WasmModule,
 };
-use crate::Result;
+use crate::{Error, Result};
 
 use std::collections::HashMap;
 
@@ -6407,12 +6407,28 @@ impl WasmBackend {
                     wasm_encode::encode_uleb128(ctx.qmn_parse_index as u64, code);
                     code.push(Op::I64ExtendI32U as u8);
                 } else {
-                    // Other builtins: push 0 (stub)
-                    wasm_i64c(code, 0);
+                    // FAIL CLOSED (REQ-78). This arm used to emit a literal 0
+                    // as a "stub", which did not fail — it silently produced a
+                    // WRONG ANSWER. `teks_huruf_besar("halo")` returned "halo",
+                    // `teks_ulang(("ab",3))` returned "ab", and
+                    // `panjang("abcd")` returned the string instead of 4, while
+                    // the interpreter and the C backend both agreed on the
+                    // right result. A backend that quietly disagrees with the
+                    // others is worse than one that refuses, so refuse.
+                    return Err(Error::InvalidOperation(format!(
+                        "builtin `{name}` is not implemented by the WASM backend \
+                         (native/C only). Refusing to emit a stub that would silently \
+                         return a wrong value (master plan REQ-78) — build for the \
+                         native target, or use only WASM-supported builtins."
+                    )));
                 }
             }
             Instruction::Perform { payload, .. } => {
-                // Effect perform — stub: pass through payload
+                // `perform` has no WASM lowering; passing the payload through
+                // is a value-level no-op that happens to be what the C backend
+                // does for the same node, so it is kept rather than made an
+                // error. (Unlike the builtin arm above, this does not fabricate
+                // a value out of thin air.)
                 Self::emit_local_get(payload, ctx.var_map, code);
             }
             Instruction::RequireCap(_) | Instruction::GrantCap(_) => {
