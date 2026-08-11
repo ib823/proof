@@ -37,6 +37,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod auth;
 pub mod handshake;
 
 use riina_core::crypto::gcm::{Aes256Gcm, KEY_SIZE, NONCE_SIZE, TAG_SIZE};
