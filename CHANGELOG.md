@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 2026-08-11 — Gate C: SHA-384 / HMAC-SHA384 / HKDF-SHA384 in riina-core
+
+### Added (Gate C / crypto primitives — unblocks TLS wire interop)
+- **`Sha384`** (`05_TOOLING/crates/riina-core/src/crypto/sha2.rs`): FIPS 180-4 §6.5.
+  Implemented as the SHA-512 core with the SHA-384 IV and a 48-byte truncation, reusing
+  the **same** compression function rather than carrying a second copy that could drift.
+  Validated against the FIPS 180-4 known-answer vectors (empty, `"abc"`, the 448-bit
+  two-block message), plus a test asserting SHA-384 is **not** a truncated SHA-512 (the
+  distinct IV is the whole point, and that shortcut is the classic implementation bug),
+  streaming-vs-one-shot equality across 8 chunk sizes straddling the 128-byte block
+  boundary, and exact-block-multiple padding.
+- **`HmacSha384`** (RFC 2104 / FIPS 198-1): validated against **RFC 4231 §4** vectors,
+  including Case 6 (a 131-byte key, longer than the block) — the case that fails loudly
+  if the block size is wrong. SHA-384 is a SHA-512-family hash, so HMAC pads keys to
+  **128** bytes, not 64; getting that wrong yields a plausible-but-wrong MAC that only
+  published vectors catch. Constant-time `verify`, keys zeroized on drop.
+- **`HkdfSha384`** (RFC 5869 over HMAC-SHA384) with the 255-block ceiling enforced (which
+  also stops the one-byte counter wrapping). RFC 5869 publishes no SHA-384 vectors, so
+  correctness rests on the construction plus structural tests — stated plainly rather
+  than implying a KAT that does not exist.
+- **Verification status (no overclaiming):** SHA-256 carries a Coq⇄Rust formal-equivalence
+  proof; **SHA-384 does not** — it is KAT-validated and shares the SHA-512 compression
+  path, which is a weaker guarantee. Extending the Coq work to cover it is future work.
+- **What this does NOT yet do:** wire interop is still unavailable. `riina-tls` remains
+  hard-wired to SHA-256 (`HASH_LEN`, `derive_secret`, `RecordKeys`, key schedule,
+  transcript, Finished), so the blocker has moved from "the crypto is missing" to
+  "parameterise the TLS module over the hash" — the next increment. The module header
+  now says exactly that.
+- 05_TOOLING 304 -> **323** tests.
+
 ### 2026-08-11 — Gate C: TLS increment 3 — peer authentication; `tls_connected` can finally hold
 
 ### Added (Gate C / Standard Library Hardening — TLS authentication)

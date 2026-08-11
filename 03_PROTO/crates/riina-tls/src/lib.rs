@@ -18,14 +18,18 @@
 //!     that share a traffic secret get a confidential, integrity-protected
 //!     channel over the verified TCP sockets (`riina-os` net).
 //!   * NOT a wire-interoperable named ciphersuite YET. IANA pairs AES-256-GCM
-//!     with SHA-384 (`TLS_AES_256_GCM_SHA384`); riina-core currently ships
-//!     AES-256-GCM + HKDF-**SHA256** and no AES-128, so this instantiation
-//!     (AES-256-GCM keyed by an HKDF-SHA256 schedule) is self-consistent
-//!     RIINA↔RIINA but will NOT interoperate with OpenSSL et al. Closing that
-//!     gap = add SHA-384 + HKDF-SHA384 (or AES-128) to riina-core — a later
-//!     increment. The `tls_dasar_ok`/verified-policy layer already restricts
-//!     acceptance to the standard suites; this module is the crypto beneath a
-//!     handshake that a subsequent increment will add.
+//!     with SHA-384 (`TLS_AES_256_GCM_SHA384`), whereas this module is keyed
+//!     by an HKDF-**SHA256** schedule — self-consistent RIINA↔RIINA, but it
+//!     will NOT interoperate with OpenSSL et al.
+//!
+//!     **Status update (2026-08-11):** the missing primitives now exist —
+//!     riina-core ships `Sha384` (FIPS 180-4 KATs), `HmacSha384` (RFC 4231
+//!     KATs) and `HkdfSha384`. So the remaining work is no longer "add the
+//!     crypto" but **parameterising this module over the hash**: `HASH_LEN`,
+//!     `derive_secret`, `RecordKeys`, the key schedule, the transcript and
+//!     the Finished MAC are all hard-wired to SHA-256 today. That refactor is
+//!     the next increment; until it lands, wire interop remains unavailable
+//!     and this note is the accurate statement of why.
 //!   * No handshake in THIS module — callers may supply a traffic secret
 //!     directly. The handshake that establishes one (ephemeral X25519, the
 //!     §7.1 key schedule, transcript binding and Finished) landed as

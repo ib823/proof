@@ -16,7 +16,7 @@
 //! - All intermediate values are zeroized (Law 4)
 //! - Maximum output is 8160 bytes (255 * 32 for SHA-256)
 
-use crate::crypto::hmac::{HmacSha256, HMAC_SHA256_OUTPUT_SIZE};
+use crate::crypto::hmac::{HmacSha256, HmacSha384, HMAC_SHA256_OUTPUT_SIZE, HMAC_SHA384_OUTPUT_SIZE};
 use crate::crypto::CryptoError;
 use crate::zeroize::Zeroize;
 
@@ -126,6 +126,171 @@ impl HkdfSha256 {
         // This cannot fail since output length is valid
         Self::derive(salt, ikm, info, &mut output).expect("32 bytes is valid");
         output
+    }
+}
+
+/// Maximum output length for HKDF-SHA384 (255 * 48 = 12240 bytes).
+pub const MAX_OUTPUT_LEN_SHA384: usize = 255 * HMAC_SHA384_OUTPUT_SIZE;
+
+/// HKDF-SHA384 (RFC 5869 instantiated with HMAC-SHA-384).
+///
+/// Needed for the IANA `TLS_AES_256_GCM_SHA384` cipher suite, whose whole key
+/// schedule is SHA-384-based. Identical construction to [`HkdfSha256`] — only
+/// the underlying PRF and therefore the output/counter sizes differ.
+pub struct HkdfSha384;
+
+impl HkdfSha384 {
+    /// HKDF-Extract: `PRK = HMAC(salt, IKM)`.
+    ///
+    /// An empty salt is replaced by `HashLen` zero bytes, per RFC 5869 §2.2.
+    #[must_use]
+    pub fn extract(salt: &[u8], ikm: &[u8]) -> [u8; HMAC_SHA384_OUTPUT_SIZE] {
+        let zeros = [0u8; HMAC_SHA384_OUTPUT_SIZE];
+        let salt = if salt.is_empty() { &zeros[..] } else { salt };
+        HmacSha384::mac(salt, ikm)
+    }
+
+    /// HKDF-Expand: `T(i) = HMAC(PRK, T(i-1) | info | i)`, truncated to
+    /// `output.len()` (RFC 5869 §2.3).
+    ///
+    /// # Errors
+    /// [`CryptoError::InvalidInputLength`] if `output` exceeds
+    /// [`MAX_OUTPUT_LEN_SHA384`] — the RFC's 255-block ceiling, which also
+    /// keeps the one-byte counter from wrapping.
+    pub fn expand(prk: &[u8], info: &[u8], output: &mut [u8]) -> Result<(), CryptoError> {
+        if output.len() > MAX_OUTPUT_LEN_SHA384 {
+            return Err(CryptoError::InvalidInputLength);
+        }
+
+        let n = output.len().div_ceil(HMAC_SHA384_OUTPUT_SIZE);
+        let mut t = [0u8; HMAC_SHA384_OUTPUT_SIZE];
+        let mut offset = 0;
+
+        for i in 1..=n {
+            let mut hmac = HmacSha384::new(prk);
+            if i > 1 {
+                hmac.update(&t);
+            }
+            hmac.update(info);
+            // `n <= 255` is guaranteed by the length check above, so this
+            // cast cannot truncate the counter.
+            hmac.update(&[u8::try_from(i).unwrap_or(u8::MAX)]);
+            t = hmac.finalize();
+
+            let remaining = output.len() - offset;
+            let to_copy = remaining.min(HMAC_SHA384_OUTPUT_SIZE);
+            output[offset..offset + to_copy].copy_from_slice(&t[..to_copy]);
+            offset += to_copy;
+        }
+
+        t.zeroize();
+        Ok(())
+    }
+
+    /// Extract-then-expand in one call.
+    ///
+    /// # Errors
+    /// Propagates [`Self::expand`]'s length error.
+    pub fn derive(
+        salt: &[u8],
+        ikm: &[u8],
+        info: &[u8],
+        output: &mut [u8],
+    ) -> Result<(), CryptoError> {
+        let mut prk = Self::extract(salt, ikm);
+        let r = Self::expand(&prk, info, output);
+        prk.zeroize();
+        r
+    }
+}
+
+#[cfg(test)]
+mod hkdf_sha384_tests {
+    use super::*;
+
+    fn hex(b: &[u8]) -> String {
+        use core::fmt::Write as _;
+        b.iter().fold(String::new(), |mut acc, x| {
+            let _ = write!(acc, "{x:02x}");
+            acc
+        })
+    }
+
+    /// RFC 5869 does not publish SHA-384 vectors (it covers SHA-256 and
+    /// SHA-1), so correctness here rests on the construction being exactly
+    /// RFC 5869 over the RFC-4231-validated HMAC-SHA384, plus these
+    /// structural properties. Stated plainly rather than implying a KAT that
+    /// does not exist.
+    #[test]
+    fn extract_is_hmac_of_ikm_under_salt() {
+        let salt = b"salt";
+        let ikm = b"input key material";
+        assert_eq!(
+            hex(&HkdfSha384::extract(salt, ikm)),
+            hex(&crate::crypto::hmac::HmacSha384::mac(salt, ikm))
+        );
+    }
+
+    /// An empty salt means HashLen zero bytes (RFC 5869 §2.2), NOT an empty
+    /// HMAC key — a subtle difference that changes every derived key.
+    #[test]
+    fn empty_salt_uses_zero_block() {
+        let ikm = b"ikm";
+        let zeros = [0u8; HMAC_SHA384_OUTPUT_SIZE];
+        assert_eq!(
+            hex(&HkdfSha384::extract(&[], ikm)),
+            hex(&crate::crypto::hmac::HmacSha384::mac(&zeros, ikm))
+        );
+    }
+
+    /// Expand is a PRF: output depends on prk, info and length; and a longer
+    /// request extends the same stream block-wise (T(1) is a prefix).
+    #[test]
+    fn expand_is_deterministic_and_block_extending() {
+        let prk = HkdfSha384::extract(b"s", b"i");
+        let mut a = [0u8; 48];
+        let mut b = [0u8; 96];
+        HkdfSha384::expand(&prk, b"info", &mut a).unwrap();
+        HkdfSha384::expand(&prk, b"info", &mut b).unwrap();
+        assert_eq!(a[..], b[..48], "T(1) must prefix a longer expansion");
+
+        let mut c = [0u8; 48];
+        HkdfSha384::expand(&prk, b"other", &mut c).unwrap();
+        assert_ne!(a, c, "info must change the output");
+    }
+
+    /// Multi-block expansion crosses the 48-byte boundary correctly.
+    #[test]
+    fn multi_block_expansion() {
+        let prk = HkdfSha384::extract(b"s", b"i");
+        for len in [1usize, 47, 48, 49, 96, 97, 200] {
+            let mut out = vec![0u8; len];
+            HkdfSha384::expand(&prk, b"ctx", &mut out).unwrap();
+            assert_eq!(out.len(), len);
+            assert!(out.iter().any(|&x| x != 0), "output must not be all zeros");
+        }
+    }
+
+    /// The RFC's 255-block ceiling is enforced, which also stops the one-byte
+    /// counter from wrapping.
+    #[test]
+    fn over_long_output_is_rejected() {
+        let prk = HkdfSha384::extract(b"s", b"i");
+        let mut too_long = vec![0u8; MAX_OUTPUT_LEN_SHA384 + 1];
+        assert!(HkdfSha384::expand(&prk, b"", &mut too_long).is_err());
+        // Exactly at the limit is allowed.
+        let mut at_limit = vec![0u8; MAX_OUTPUT_LEN_SHA384];
+        assert!(HkdfSha384::expand(&prk, b"", &mut at_limit).is_ok());
+    }
+
+    /// SHA-384 and SHA-256 schedules must not collide.
+    #[test]
+    fn differs_from_hkdf_sha256() {
+        let mut a = [0u8; 32];
+        let mut b = [0u8; 32];
+        HkdfSha384::derive(b"salt", b"ikm", b"info", &mut a).unwrap();
+        HkdfSha256::derive(b"salt", b"ikm", b"info", &mut b).unwrap();
+        assert_ne!(a, b);
     }
 }
 
