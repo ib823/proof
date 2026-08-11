@@ -1,6 +1,6 @@
 # TASK PROMPTS FOR CLAUDE AI (WEB)
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3069 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3072 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 Use these by copying the CLAUDE_AI_DELEGATION_PROMPT.md first, then appending one of these tasks in Section 4.
 

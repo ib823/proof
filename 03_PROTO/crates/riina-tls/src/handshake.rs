@@ -49,10 +49,7 @@
 //!     record-layer fragmentation or key update.**
 
 use crate::auth::{verify_peer, Identity, TrustStore, CREDENTIAL_LEN, SIGNATURE_LEN};
-use crate::{derive_secret, hkdf_expand_label, RecordKeys, TlsError, HASH_LEN};
-use riina_core::crypto::hkdf::HkdfSha256;
-use riina_core::crypto::hmac::HmacSha256;
-use riina_core::crypto::sha2::Sha256;
+use crate::{derive_secret, hkdf_expand_label, HashAlg, RecordKeys, TlsError};
 use riina_core::crypto::x25519::X25519KeyPair;
 
 /// Length of an X25519 key share.
@@ -95,15 +92,19 @@ pub fn os_entropy_32() -> Result<[u8; 32], TlsError> {
 /// keeping the bytes and re-hashing is both simpler and less error-prone than
 /// snapshotting hasher state — and the handshake transcript is a few hundred
 /// bytes, so the cost is irrelevant.
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Transcript {
+    alg: HashAlg,
     data: Vec<u8>,
 }
 
 impl Transcript {
     #[must_use]
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(alg: HashAlg) -> Self {
+        Self {
+            alg,
+            data: Vec::new(),
+        }
     }
 
     /// Append one tagged, length-prefixed message.
@@ -117,15 +118,16 @@ impl Transcript {
 
     /// `Transcript-Hash(messages so far)`.
     #[must_use]
-    pub fn hash(&self) -> [u8; HASH_LEN] {
-        Sha256::hash(&self.data)
+    pub fn hash(&self) -> Vec<u8> {
+        self.alg.hash(&self.data)
     }
 }
 
 /// The RFC 8446 §7.1 key schedule, walked to the Master Secret.
 struct KeySchedule {
-    handshake_secret: [u8; HASH_LEN],
-    master_secret: [u8; HASH_LEN],
+    alg: HashAlg,
+    handshake_secret: Vec<u8>,
+    master_secret: Vec<u8>,
 }
 
 impl KeySchedule {
@@ -137,43 +139,55 @@ impl KeySchedule {
     ///          0 -> HKDF-Extract = Master Secret
     /// ```
     /// No PSK, so the Early Secret's IKM is all zeros.
-    fn new(shared_secret: &[u8]) -> Result<Self, TlsError> {
-        let zeros = [0u8; HASH_LEN];
-        let early = HkdfSha256::extract(&[], &zeros);
+    fn new(alg: HashAlg, shared_secret: &[u8]) -> Result<Self, TlsError> {
+        let zeros = vec![0u8; alg.hash_len()];
+        let early = alg.hkdf_extract(&[], &zeros);
         // Derive-Secret with an EMPTY-message transcript hash, per the spec.
-        let empty_hash = Sha256::hash(&[]);
-        let derived1 = derive_secret(&early, b"derived", &empty_hash)?;
-        let handshake_secret = HkdfSha256::extract(&derived1, shared_secret);
-        let derived2 = derive_secret(&handshake_secret, b"derived", &empty_hash)?;
-        let master_secret = HkdfSha256::extract(&derived2, &zeros);
+        let empty_hash = alg.hash(&[]);
+        let derived1 = derive_secret(alg, &early, b"derived", &empty_hash)?;
+        let handshake_secret = alg.hkdf_extract(&derived1, shared_secret);
+        let derived2 = derive_secret(alg, &handshake_secret, b"derived", &empty_hash)?;
+        let master_secret = alg.hkdf_extract(&derived2, &zeros);
         Ok(Self {
+            alg,
             handshake_secret,
             master_secret,
         })
     }
 
-    fn handshake_traffic(&self, label: &[u8], th: &[u8]) -> Result<[u8; HASH_LEN], TlsError> {
-        derive_secret(&self.handshake_secret, label, th)
+    fn handshake_traffic(&self, label: &[u8], th: &[u8]) -> Result<Vec<u8>, TlsError> {
+        derive_secret(self.alg, &self.handshake_secret, label, th)
     }
 
-    fn application_traffic(&self, label: &[u8], th: &[u8]) -> Result<[u8; HASH_LEN], TlsError> {
-        derive_secret(&self.master_secret, label, th)
+    fn application_traffic(&self, label: &[u8], th: &[u8]) -> Result<Vec<u8>, TlsError> {
+        derive_secret(self.alg, &self.master_secret, label, th)
     }
 }
 
 /// RFC 8446 §4.4.4:
 /// `finished_key = HKDF-Expand-Label(BaseKey, "finished", "", Hash.length)`,
 /// `verify_data = HMAC(finished_key, Transcript-Hash(...))`.
-fn finished_mac(base_key: &[u8], transcript_hash: &[u8]) -> Result<[u8; VERIFY_DATA_LEN], TlsError> {
-    let fk = hkdf_expand_label(base_key, b"finished", b"", HASH_LEN as u16)?;
-    Ok(HmacSha256::mac(&fk, transcript_hash))
+fn finished_mac(
+    alg: HashAlg,
+    base_key: &[u8],
+    transcript_hash: &[u8],
+) -> Result<Vec<u8>, TlsError> {
+    let n = u16::try_from(alg.hash_len()).map_err(|_| TlsError::BadLength)?;
+    let fk = hkdf_expand_label(alg, base_key, b"finished", b"", n)?;
+    Ok(alg.hmac(&fk, transcript_hash))
 }
 
 /// Constant-time Finished check (`HmacSha256::verify` compares in constant
 /// time — a variable-time compare here would leak the expected MAC).
-fn finished_verify(base_key: &[u8], transcript_hash: &[u8], got: &[u8]) -> Result<(), TlsError> {
-    let fk = hkdf_expand_label(base_key, b"finished", b"", HASH_LEN as u16)?;
-    if HmacSha256::verify(&fk, transcript_hash, got) {
+fn finished_verify(
+    alg: HashAlg,
+    base_key: &[u8],
+    transcript_hash: &[u8],
+    got: &[u8],
+) -> Result<(), TlsError> {
+    let n = u16::try_from(alg.hash_len()).map_err(|_| TlsError::BadLength)?;
+    let fk = hkdf_expand_label(alg, base_key, b"finished", b"", n)?;
+    if alg.hmac_verify(&fk, transcript_hash, got) {
         Ok(())
     } else {
         Err(TlsError::HandshakeFailed)
@@ -244,8 +258,8 @@ fn session_from(
     let c_ap = ks.application_traffic(b"c ap traffic", th)?;
     let s_ap = ks.application_traffic(b"s ap traffic", th)?;
     Ok(Session {
-        client_keys: RecordKeys::derive(&c_ap)?,
-        server_keys: RecordKeys::derive(&s_ap)?,
+        client_keys: RecordKeys::derive(ks.alg, &c_ap)?,
+        server_keys: RecordKeys::derive(ks.alg, &s_ap)?,
         evidence: ConnectedEvidence {
             version_is_tls13: true,
             transcript_bound,
@@ -272,6 +286,7 @@ pub struct ServerAuth {
 
 /// Client side of the handshake.
 pub struct ClientHandshake {
+    alg: HashAlg,
     keypair: X25519KeyPair,
     transcript: Transcript,
 }
@@ -281,13 +296,14 @@ impl ClientHandshake {
     /// bytes — use [`os_entropy_32`]; a fixed seed is for known-answer tests
     /// only and destroys forward secrecy.
     #[must_use]
-    pub fn start(entropy: &[u8; 32]) -> (Self, [u8; SHARE_LEN]) {
+    pub fn start(alg: HashAlg, entropy: &[u8; 32]) -> (Self, [u8; SHARE_LEN]) {
         let keypair = X25519KeyPair::generate(entropy);
         let share = *keypair.public_key();
-        let mut transcript = Transcript::new();
+        let mut transcript = Transcript::new(alg);
         transcript.push(TAG_CLIENT_SHARE, &share);
         (
             Self {
+                alg,
                 keypair,
                 transcript,
             },
@@ -307,7 +323,7 @@ impl ClientHandshake {
         self,
         server_share: &[u8; SHARE_LEN],
         server_finished: &[u8],
-    ) -> Result<([u8; VERIFY_DATA_LEN], Session), TlsError> {
+    ) -> Result<(Vec<u8>, Session), TlsError> {
         self.finish_inner(server_share, None, server_finished, None)
     }
 
@@ -327,7 +343,7 @@ impl ClientHandshake {
         auth: &ServerAuth,
         server_finished: &[u8],
         store: &TrustStore,
-    ) -> Result<([u8; VERIFY_DATA_LEN], Session), TlsError> {
+    ) -> Result<(Vec<u8>, Session), TlsError> {
         self.finish_inner(server_share, Some(auth), server_finished, Some(store))
     }
 
@@ -337,12 +353,12 @@ impl ClientHandshake {
         auth: Option<&ServerAuth>,
         server_finished: &[u8],
         store: Option<&TrustStore>,
-    ) -> Result<([u8; VERIFY_DATA_LEN], Session), TlsError> {
+    ) -> Result<(Vec<u8>, Session), TlsError> {
         let shared = self
             .keypair
             .diffie_hellman(server_share)
             .map_err(|_| TlsError::HandshakeFailed)?;
-        let ks = KeySchedule::new(&shared)?;
+        let ks = KeySchedule::new(self.alg, &shared)?;
 
         self.transcript.push(TAG_SERVER_SHARE, server_share);
         let th_hs = self.transcript.hash();
@@ -370,11 +386,11 @@ impl ClientHandshake {
         };
 
         // The server proves it derived the same keys over the same transcript.
-        finished_verify(&s_hs, &th_hs, server_finished)?;
+        finished_verify(self.alg, &s_hs, &th_hs, server_finished)?;
 
         self.transcript.push(TAG_SERVER_FINISHED, server_finished);
         let th_ap = self.transcript.hash();
-        let client_finished = finished_mac(&c_hs, &th_ap)?;
+        let client_finished = finished_mac(self.alg, &c_hs, &th_ap)?;
         let session = session_from(&ks, &th_ap, true, authenticated)?;
         Ok((client_finished, session))
     }
@@ -382,19 +398,15 @@ impl ClientHandshake {
 
 /// What `accept_inner` produces: the server state, its key share, optional
 /// authentication messages, and the server Finished.
-type AcceptOutput = (
-    ServerHandshake,
-    [u8; SHARE_LEN],
-    Option<ServerAuth>,
-    [u8; VERIFY_DATA_LEN],
-);
+type AcceptOutput = (ServerHandshake, [u8; SHARE_LEN], Option<ServerAuth>, Vec<u8>);
 
 /// Server side of the handshake.
 pub struct ServerHandshake {
+    alg: HashAlg,
     transcript: Transcript,
-    c_hs: [u8; HASH_LEN],
+    c_hs: Vec<u8>,
     ks: KeySchedule,
-    th_ap: [u8; HASH_LEN],
+    th_ap: Vec<u8>,
     authenticated: bool,
 }
 
@@ -405,10 +417,11 @@ impl ServerHandshake {
     /// # Errors
     /// [`TlsError::HandshakeFailed`] if the client's share is degenerate.
     pub fn accept(
+        alg: HashAlg,
         entropy: &[u8; 32],
         client_share: &[u8; SHARE_LEN],
-    ) -> Result<(Self, [u8; SHARE_LEN], [u8; VERIFY_DATA_LEN]), TlsError> {
-        let (hs, share, auth, fin) = Self::accept_inner(entropy, client_share, None)?;
+    ) -> Result<(Self, [u8; SHARE_LEN], Vec<u8>), TlsError> {
+        let (hs, share, auth, fin) = Self::accept_inner(alg, entropy, client_share, None)?;
         debug_assert!(auth.is_none());
         Ok((hs, share, fin))
     }
@@ -420,16 +433,19 @@ impl ServerHandshake {
     /// # Errors
     /// [`TlsError::HandshakeFailed`] if the client's share is degenerate.
     pub fn accept_authenticated(
+        alg: HashAlg,
         entropy: &[u8; 32],
         client_share: &[u8; SHARE_LEN],
         identity: &Identity,
-    ) -> Result<(Self, [u8; SHARE_LEN], ServerAuth, [u8; VERIFY_DATA_LEN]), TlsError> {
-        let (hs, share, auth, fin) = Self::accept_inner(entropy, client_share, Some(identity))?;
+    ) -> Result<(Self, [u8; SHARE_LEN], ServerAuth, Vec<u8>), TlsError> {
+        let (hs, share, auth, fin) =
+            Self::accept_inner(alg, entropy, client_share, Some(identity))?;
         let auth = auth.ok_or(TlsError::HandshakeFailed)?;
         Ok((hs, share, auth, fin))
     }
 
     fn accept_inner(
+        alg: HashAlg,
         entropy: &[u8; 32],
         client_share: &[u8; SHARE_LEN],
         identity: Option<&Identity>,
@@ -439,9 +455,9 @@ impl ServerHandshake {
         let shared = keypair
             .diffie_hellman(client_share)
             .map_err(|_| TlsError::HandshakeFailed)?;
-        let ks = KeySchedule::new(&shared)?;
+        let ks = KeySchedule::new(alg, &shared)?;
 
-        let mut transcript = Transcript::new();
+        let mut transcript = Transcript::new(alg);
         transcript.push(TAG_CLIENT_SHARE, client_share);
         transcript.push(TAG_SERVER_SHARE, &share);
         let th_hs = transcript.hash();
@@ -465,12 +481,13 @@ impl ServerHandshake {
             None => None,
         };
 
-        let server_finished = finished_mac(&s_hs, &th_hs)?;
+        let server_finished = finished_mac(alg, &s_hs, &th_hs)?;
         transcript.push(TAG_SERVER_FINISHED, &server_finished);
         let th_ap = transcript.hash();
 
         Ok((
             Self {
+                alg,
                 transcript,
                 c_hs,
                 ks,
@@ -488,7 +505,7 @@ impl ServerHandshake {
     /// # Errors
     /// [`TlsError::HandshakeFailed`] if the client Finished does not verify.
     pub fn confirm(self, client_finished: &[u8]) -> Result<Session, TlsError> {
-        finished_verify(&self.c_hs, &self.th_ap, client_finished)?;
+        finished_verify(self.alg, &self.c_hs, &self.th_ap, client_finished)?;
         // Silence the unused-field lint honestly: the transcript is kept for
         // future increments (CertificateVerify signs over it).
         let _ = &self.transcript;
@@ -507,9 +524,12 @@ mod tests {
     /// The happy path: both sides derive identical, working record keys.
     #[test]
     fn handshake_agrees_on_keys() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let (cs, ss) = seeds();
-        let (client, client_share) = ClientHandshake::start(&cs);
-        let (server, server_share, server_fin) = ServerHandshake::accept(&ss, &client_share).unwrap();
+        let (client, client_share) = ClientHandshake::start(alg, &cs);
+        let (server, server_share, server_fin) = ServerHandshake::accept(alg, &ss, &client_share).unwrap();
         let (client_fin, c_session) = client.finish(&server_share, &server_fin).unwrap();
         let s_session = server.confirm(&client_fin).unwrap();
 
@@ -531,9 +551,12 @@ mod tests {
     /// about the other.
     #[test]
     fn fresh_entropy_yields_different_keys() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let run = |c: [u8; 32], s: [u8; 32]| {
-            let (client, cshare) = ClientHandshake::start(&c);
-            let (server, sshare, sfin) = ServerHandshake::accept(&s, &cshare).unwrap();
+            let (client, cshare) = ClientHandshake::start(alg, &c);
+            let (server, sshare, sfin) = ServerHandshake::accept(alg, &s, &cshare).unwrap();
             let (cfin, sess) = client.finish(&sshare, &sfin).unwrap();
             server.confirm(&cfin).unwrap();
             sess.client_keys.protect(0, b"", b"tetap").unwrap()
@@ -547,9 +570,12 @@ mod tests {
     /// the client cannot be talked into a different view of the exchange.
     #[test]
     fn tampered_server_share_fails_finished() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let (cs, ss) = seeds();
-        let (client, client_share) = ClientHandshake::start(&cs);
-        let (_server, server_share, server_fin) = ServerHandshake::accept(&ss, &client_share).unwrap();
+        let (client, client_share) = ClientHandshake::start(alg, &cs);
+        let (_server, server_share, server_fin) = ServerHandshake::accept(alg, &ss, &client_share).unwrap();
         let mut forged = server_share;
         forged[0] ^= 0x01;
         let res = client.finish(&forged, &server_fin);
@@ -559,10 +585,13 @@ mod tests {
     /// A forged Finished is rejected.
     #[test]
     fn forged_server_finished_is_rejected() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let (cs, ss) = seeds();
-        let (client, client_share) = ClientHandshake::start(&cs);
+        let (client, client_share) = ClientHandshake::start(alg, &cs);
         let (_server, server_share, mut server_fin) =
-            ServerHandshake::accept(&ss, &client_share).unwrap();
+            ServerHandshake::accept(alg, &ss, &client_share).unwrap();
         server_fin[0] ^= 0x80;
         let res = client.finish(&server_share, &server_fin);
         assert_eq!(res.err(), Some(TlsError::HandshakeFailed));
@@ -571,9 +600,12 @@ mod tests {
     /// A forged client Finished is rejected by the server.
     #[test]
     fn forged_client_finished_is_rejected() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let (cs, ss) = seeds();
-        let (client, client_share) = ClientHandshake::start(&cs);
-        let (server, server_share, server_fin) = ServerHandshake::accept(&ss, &client_share).unwrap();
+        let (client, client_share) = ClientHandshake::start(alg, &cs);
+        let (server, server_share, server_fin) = ServerHandshake::accept(alg, &ss, &client_share).unwrap();
         let (mut client_fin, _) = client.finish(&server_share, &server_fin).unwrap();
         client_fin[31] ^= 0x01;
         assert_eq!(
@@ -585,9 +617,12 @@ mod tests {
     /// A truncated Finished is rejected (length is part of the check).
     #[test]
     fn truncated_finished_is_rejected() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let (cs, ss) = seeds();
-        let (client, client_share) = ClientHandshake::start(&cs);
-        let (_server, server_share, server_fin) = ServerHandshake::accept(&ss, &client_share).unwrap();
+        let (client, client_share) = ClientHandshake::start(alg, &cs);
+        let (_server, server_share, server_fin) = ServerHandshake::accept(alg, &ss, &client_share).unwrap();
         let res = client.finish(&server_share, &server_fin[..16]);
         assert_eq!(res.err(), Some(TlsError::HandshakeFailed));
     }
@@ -599,9 +634,12 @@ mod tests {
     /// drift silently.
     #[test]
     fn anonymous_handshake_does_not_satisfy_tls_connected() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let (cs, ss) = seeds();
-        let (client, client_share) = ClientHandshake::start(&cs);
-        let (server, server_share, server_fin) = ServerHandshake::accept(&ss, &client_share).unwrap();
+        let (client, client_share) = ClientHandshake::start(alg, &cs);
+        let (server, server_share, server_fin) = ServerHandshake::accept(alg, &ss, &client_share).unwrap();
         let (client_fin, session) = client.finish(&server_share, &server_fin).unwrap();
         server.confirm(&client_fin).unwrap();
 
@@ -621,8 +659,8 @@ mod tests {
     /// ignored it would still "work" symmetrically but have no security.
     #[test]
     fn key_schedule_depends_on_shared_secret() {
-        let a = KeySchedule::new(&[1u8; 32]).unwrap();
-        let b = KeySchedule::new(&[2u8; 32]).unwrap();
+        let a = KeySchedule::new(HashAlg::Sha384, &[1u8; 32]).unwrap();
+        let b = KeySchedule::new(HashAlg::Sha384, &[2u8; 32]).unwrap();
         assert_ne!(a.handshake_secret, b.handshake_secret);
         assert_ne!(a.master_secret, b.master_secret);
         // …and the two stages must not collapse to the same value.
@@ -632,12 +670,13 @@ mod tests {
     // ── Increment 3: authentication ────────────────────────────────────
 
     fn authenticated_run(
+        alg: HashAlg,
         store: &TrustStore,
         identity: &Identity,
     ) -> Result<(Session, Session), TlsError> {
-        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (client, cshare) = ClientHandshake::start(alg, &[11u8; 32]);
         let (server, sshare, auth, sfin) =
-            ServerHandshake::accept_authenticated(&[12u8; 32], &cshare, identity)?;
+            ServerHandshake::accept_authenticated(alg, &[12u8; 32], &cshare, identity)?;
         let (cfin, c_sess) = client.finish_authenticated(&sshare, &auth, &sfin, store)?;
         let s_sess = server.confirm(&cfin)?;
         Ok((c_sess, s_sess))
@@ -647,10 +686,11 @@ mod tests {
     /// `tls_connected` conjunction finally holds.
     #[test]
     fn authenticated_handshake_satisfies_tls_connected() {
+        let alg = HashAlg::Sha384;
         let id = Identity::from_seed(&[21u8; 32]);
         let mut store = TrustStore::new();
         store.trust(id.credential());
-        let (c, s) = authenticated_run(&store, &id).unwrap();
+        let (c, s) = authenticated_run(alg, &store, &id).unwrap();
 
         for e in [c.evidence, s.evidence] {
             assert!(e.version_is_tls13);
@@ -673,15 +713,18 @@ mod tests {
     /// eavesdroppers only.
     #[test]
     fn mitm_with_substituted_key_is_rejected() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let real = Identity::from_seed(&[21u8; 32]);
         let attacker = Identity::from_seed(&[66u8; 32]);
         let mut store = TrustStore::new();
         store.trust(real.credential()); // the client pins the REAL server
 
         // The MITM runs a complete, internally-valid handshake as "the server".
-        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (client, cshare) = ClientHandshake::start(alg, &[11u8; 32]);
         let (_mitm, sshare, mitm_auth, sfin) =
-            ServerHandshake::accept_authenticated(&[99u8; 32], &cshare, &attacker).unwrap();
+            ServerHandshake::accept_authenticated(alg, &[99u8; 32], &cshare, &attacker).unwrap();
 
         // Everything the MITM sent is self-consistent — and still refused.
         let res = client.finish_authenticated(&sshare, &mitm_auth, &sfin, &store);
@@ -696,14 +739,17 @@ mod tests {
     /// it cannot produce the matching signature without the private key.
     #[test]
     fn mitm_replaying_the_real_credential_is_rejected() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let real = Identity::from_seed(&[21u8; 32]);
         let attacker = Identity::from_seed(&[66u8; 32]);
         let mut store = TrustStore::new();
         store.trust(real.credential());
 
-        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (client, cshare) = ClientHandshake::start(alg, &[11u8; 32]);
         let (_mitm, sshare, mut spoofed, sfin) =
-            ServerHandshake::accept_authenticated(&[99u8; 32], &cshare, &attacker).unwrap();
+            ServerHandshake::accept_authenticated(alg, &[99u8; 32], &cshare, &attacker).unwrap();
         // Swap in the real server's credential, keep the attacker's signature.
         spoofed.credential = real.credential();
 
@@ -720,12 +766,15 @@ mod tests {
     /// anonymous server rather than silently accepting it.
     #[test]
     fn authenticating_client_refuses_anonymous_server() {
+        // Default to the standard suite's hash; both are covered by
+        // `handshake_works_under_both_hashes`.
+        let alg = HashAlg::Sha384;
         let id = Identity::from_seed(&[21u8; 32]);
         let mut store = TrustStore::new();
         store.trust(id.credential());
 
-        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
-        let (_server, sshare, sfin) = ServerHandshake::accept(&[12u8; 32], &cshare).unwrap();
+        let (client, cshare) = ClientHandshake::start(alg, &[11u8; 32]);
+        let (_server, sshare, sfin) = ServerHandshake::accept(alg, &[12u8; 32], &cshare).unwrap();
         // The anonymous path is the ONLY one available without a ServerAuth,
         // and taking it with a trust store in hand is exactly the downgrade we
         // refuse: the resulting session must not claim authentication.
@@ -740,12 +789,69 @@ mod tests {
     /// failure mode is refusal.
     #[test]
     fn empty_trust_store_rejects_everything() {
+        let alg = HashAlg::Sha384;
         let id = Identity::from_seed(&[21u8; 32]);
         let empty = TrustStore::new();
         assert_eq!(
-            authenticated_run(&empty, &id).err(),
+            authenticated_run(alg, &empty, &id).err(),
             Some(TlsError::HandshakeFailed)
         );
+    }
+
+    /// The parameterisation actually works: a full handshake completes under
+    /// BOTH hashes, and the two produce different key material (so the alg is
+    /// really threaded through the schedule rather than ignored).
+    #[test]
+    fn handshake_works_under_both_hashes() {
+        let mut sealed = Vec::new();
+        for alg in [HashAlg::Sha256, HashAlg::Sha384] {
+            let (client, cshare) = ClientHandshake::start(alg, &[41u8; 32]);
+            let (server, sshare, sfin) =
+                ServerHandshake::accept(alg, &[42u8; 32], &cshare).unwrap();
+            let (cfin, c_sess) = client.finish(&sshare, &sfin).unwrap();
+            let s_sess = server.confirm(&cfin).unwrap();
+
+            // Finished length tracks the hash length — the visible sign the
+            // schedule really switched.
+            assert_eq!(sfin.len(), alg.hash_len());
+            assert_eq!(cfin.len(), alg.hash_len());
+
+            // The channel works end to end.
+            let ct = s_sess.server_keys.protect(0, b"", b"ujian").unwrap();
+            assert_eq!(c_sess.server_keys.unprotect(0, b"", &ct).unwrap(), b"ujian");
+            sealed.push(ct);
+        }
+        assert_ne!(
+            sealed[0], sealed[1],
+            "different hashes must yield different traffic keys"
+        );
+    }
+
+    /// Only SHA-384 corresponds to a registered IANA suite when paired with
+    /// AES-256-GCM. Pinned so the honesty note and the code cannot drift.
+    #[test]
+    fn only_sha384_names_a_registered_suite() {
+        assert_eq!(
+            HashAlg::Sha384.iana_suite(),
+            Some("TLS_AES_256_GCM_SHA384")
+        );
+        assert_eq!(HashAlg::Sha256.iana_suite(), None);
+        assert_eq!(HashAlg::Sha256.hash_len(), 32);
+        assert_eq!(HashAlg::Sha384.hash_len(), 48);
+    }
+
+    /// Authentication works under both hashes too (CertificateVerify is
+    /// Ed25519 either way, but the transcript it signs is hash-dependent).
+    #[test]
+    fn authentication_works_under_both_hashes() {
+        for alg in [HashAlg::Sha256, HashAlg::Sha384] {
+            let id = Identity::from_seed(&[21u8; 32]);
+            let mut store = TrustStore::new();
+            store.trust(id.credential());
+            let (c, s) = authenticated_run(alg, &store, &id).unwrap();
+            assert!(c.evidence.tls_connected(), "{alg:?} must authenticate");
+            assert!(s.evidence.tls_connected());
+        }
     }
 
     /// OS entropy is available and not obviously broken.
