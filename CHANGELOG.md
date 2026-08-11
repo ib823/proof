@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3069 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3072 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,65 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-11 — Gate C: TLS parameterised over the hash — the standard `TLS_AES_256_GCM_SHA384` suite
+
+### Changed (Gate C / TLS — cryptographic suite is now standard)
+- **`riina-tls` is parameterised over a new `HashAlg`** (`Sha256` | `Sha384`) instead of a
+  hard-wired `HASH_LEN = 32`. `hkdf_expand_label`, `derive_secret`, `RecordKeys::derive`,
+  the RFC 8446 §7.1 key schedule, the transcript and the Finished MAC all take the
+  algorithm, so the entire schedule switches together rather than in parts.
+- **RIINA now negotiates SHA-384 by default**, making the algorithms in play exactly those
+  of the IANA-registered **`TLS_AES_256_GCM_SHA384`**: AES-256-GCM records, HKDF-SHA384
+  schedule, SHA-384 transcripts, HMAC-SHA384 Finished. The previous AES-256-GCM +
+  HKDF-SHA256 pairing corresponded to **no registered suite** — `HashAlg::iana_suite()`
+  encodes that fact and a test pins it so the claim and the code cannot drift.
+- `HashAlg::len` named `hash_len` (RFC 8446's `Hash.length`; `len` on an enum invites the
+  `is_empty` convention and reads like a collection).
+
+### Honest scope — interop still needs the wire format
+A matching cipher suite is **necessary but not sufficient** for interoperability. The
+handshake messages remain a compact RIINA-internal encoding, not RFC 8446
+ClientHello/ServerHello records with extensions (`key_share`, `supported_versions`, …), so
+**RIINA↔OpenSSL still does not work**. The remaining gap is now the *wire format*, not the
+cryptography — stated precisely because "supports TLS_AES_256_GCM_SHA384" would otherwise
+imply an interop that does not exist. The module header says the same.
+
+### Testing
+- New cross-hash tests: a full handshake completes under **both** hashes with the Finished
+  length tracking `hash_len` (the visible sign the schedule really switched), the two
+  produce **different** traffic keys, authentication works under both, and only SHA-384
+  names a registered suite. 03_PROTO 3,069 → **3,072**.
+
+### 2026-08-11 — Gate C: SHA-384 / HMAC-SHA384 / HKDF-SHA384 in riina-core
+
+### Added (Gate C / crypto primitives — unblocks TLS wire interop)
+- **`Sha384`** (`05_TOOLING/crates/riina-core/src/crypto/sha2.rs`): FIPS 180-4 §6.5.
+  Implemented as the SHA-512 core with the SHA-384 IV and a 48-byte truncation, reusing
+  the **same** compression function rather than carrying a second copy that could drift.
+  Validated against the FIPS 180-4 known-answer vectors (empty, `"abc"`, the 448-bit
+  two-block message), plus a test asserting SHA-384 is **not** a truncated SHA-512 (the
+  distinct IV is the whole point, and that shortcut is the classic implementation bug),
+  streaming-vs-one-shot equality across 8 chunk sizes straddling the 128-byte block
+  boundary, and exact-block-multiple padding.
+- **`HmacSha384`** (RFC 2104 / FIPS 198-1): validated against **RFC 4231 §4** vectors,
+  including Case 6 (a 131-byte key, longer than the block) — the case that fails loudly
+  if the block size is wrong. SHA-384 is a SHA-512-family hash, so HMAC pads keys to
+  **128** bytes, not 64; getting that wrong yields a plausible-but-wrong MAC that only
+  published vectors catch. Constant-time `verify`, keys zeroized on drop.
+- **`HkdfSha384`** (RFC 5869 over HMAC-SHA384) with the 255-block ceiling enforced (which
+  also stops the one-byte counter wrapping). RFC 5869 publishes no SHA-384 vectors, so
+  correctness rests on the construction plus structural tests — stated plainly rather
+  than implying a KAT that does not exist.
+- **Verification status (no overclaiming):** SHA-256 carries a Coq⇄Rust formal-equivalence
+  proof; **SHA-384 does not** — it is KAT-validated and shares the SHA-512 compression
+  path, which is a weaker guarantee. Extending the Coq work to cover it is future work.
+- **What this does NOT yet do:** wire interop is still unavailable. `riina-tls` remains
+  hard-wired to SHA-256 (`HASH_LEN`, `derive_secret`, `RecordKeys`, key schedule,
+  transcript, Finished), so the blocker has moved from "the crypto is missing" to
+  "parameterise the TLS module over the hash" — the next increment. The module header
+  now says exactly that.
+- 05_TOOLING 304 -> **323** tests.
 
 ### 2026-08-11 — Gate C: TLS increment 3 — peer authentication; `tls_connected` can finally hold
 

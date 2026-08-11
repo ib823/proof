@@ -17,15 +17,22 @@
 //!     wrong-sequence, and wrong-key all fail authentication. Two RIINA peers
 //!     that share a traffic secret get a confidential, integrity-protected
 //!     channel over the verified TCP sockets (`riina-os` net).
-//!   * NOT a wire-interoperable named ciphersuite YET. IANA pairs AES-256-GCM
-//!     with SHA-384 (`TLS_AES_256_GCM_SHA384`); riina-core currently ships
-//!     AES-256-GCM + HKDF-**SHA256** and no AES-128, so this instantiation
-//!     (AES-256-GCM keyed by an HKDF-SHA256 schedule) is self-consistent
-//!     RIINA↔RIINA but will NOT interoperate with OpenSSL et al. Closing that
-//!     gap = add SHA-384 + HKDF-SHA384 (or AES-128) to riina-core — a later
-//!     increment. The `tls_dasar_ok`/verified-policy layer already restricts
-//!     acceptance to the standard suites; this module is the crypto beneath a
-//!     handshake that a subsequent increment will add.
+//!   * **The cryptographic suite is now standard; the wire format is not.**
+//!     This module is parameterised over [`HashAlg`], and the default
+//!     everywhere in RIINA is SHA-384 — so the algorithms in play are exactly
+//!     those of the IANA-registered **`TLS_AES_256_GCM_SHA384`**: AES-256-GCM
+//!     record protection, an HKDF-SHA384 key schedule, SHA-384 transcripts and
+//!     HMAC-SHA384 Finished. (The SHA-256 variant is retained for the existing
+//!     tests but, paired with AES-256-GCM, names *no* registered suite.)
+//!
+//!     **Interop still requires more.** A matching cipher suite is necessary
+//!     but not sufficient: the handshake messages here are a compact
+//!     RIINA-internal encoding, not RFC 8446 ClientHello/ServerHello records
+//!     with extensions, `key_share`, `supported_versions` and the rest. So
+//!     RIINA↔OpenSSL still does not work, and the remaining gap is the **wire
+//!     format**, not the cryptography. Stating it precisely because "supports
+//!     TLS_AES_256_GCM_SHA384" would otherwise imply an interop that does not
+//!     exist.
 //!   * No handshake in THIS module — callers may supply a traffic secret
 //!     directly. The handshake that establishes one (ephemeral X25519, the
 //!     §7.1 key schedule, transcript binding and Finished) landed as
@@ -41,11 +48,99 @@ pub mod auth;
 pub mod handshake;
 
 use riina_core::crypto::gcm::{Aes256Gcm, KEY_SIZE, NONCE_SIZE, TAG_SIZE};
-use riina_core::crypto::hkdf::HkdfSha256;
+use riina_core::crypto::hkdf::{HkdfSha256, HkdfSha384};
+use riina_core::crypto::hmac::{HmacSha256, HmacSha384};
+use riina_core::crypto::sha2::{Sha256, Sha384};
 
-/// The hash output length of the KDF (SHA-256 → 32). In a fully standard
-/// TLS_AES_256_GCM_SHA384 this would be 48; see the module honesty note.
-pub const HASH_LEN: usize = 32;
+/// The largest hash output this module handles (SHA-384 → 48). Used to size
+/// stack buffers; the *active* length is always [`HashAlg::hash_len`].
+pub const MAX_HASH_LEN: usize = 48;
+
+/// Which hash the TLS key schedule runs on.
+///
+/// TLS 1.3 does not have a free choice here: the hash is fixed by the cipher
+/// suite. Of the IANA-registered suites, the one this crate can instantiate is
+/// **`TLS_AES_256_GCM_SHA384`** — AES-256-GCM paired with SHA-384. The
+/// SHA-256 variant is retained because it is what increments 1–3 shipped and
+/// what existing sessions/tests use, but note it corresponds to **no
+/// registered suite** (IANA pairs AES-256-GCM only with SHA-384; SHA-256 goes
+/// with AES-128-GCM and ChaCha20-Poly1305, neither of which riina-core has).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HashAlg {
+    /// SHA-256 schedule. Non-standard with AES-256-GCM — RIINA↔RIINA only.
+    Sha256,
+    /// SHA-384 schedule — the hash of the registered `TLS_AES_256_GCM_SHA384`.
+    Sha384,
+}
+
+impl HashAlg {
+    /// Digest length in bytes (`Hash.length` in RFC 8446).
+    #[must_use]
+    pub const fn hash_len(self) -> usize {
+        match self {
+            Self::Sha256 => 32,
+            Self::Sha384 => 48,
+        }
+    }
+
+    /// The IANA cipher-suite name this hash pairs with in this crate, or
+    /// `None` when the pairing is not a registered suite.
+    #[must_use]
+    pub const fn iana_suite(self) -> Option<&'static str> {
+        match self {
+            Self::Sha384 => Some("TLS_AES_256_GCM_SHA384"),
+            Self::Sha256 => None,
+        }
+    }
+
+    /// `Transcript-Hash` / `Hash(...)`.
+    #[must_use]
+    pub fn hash(self, data: &[u8]) -> Vec<u8> {
+        match self {
+            Self::Sha256 => Sha256::hash(data).to_vec(),
+            Self::Sha384 => Sha384::hash(data).to_vec(),
+        }
+    }
+
+    /// HMAC under this hash (the Finished MAC and HKDF's PRF).
+    #[must_use]
+    pub fn hmac(self, key: &[u8], data: &[u8]) -> Vec<u8> {
+        match self {
+            Self::Sha256 => HmacSha256::mac(key, data).to_vec(),
+            Self::Sha384 => HmacSha384::mac(key, data).to_vec(),
+        }
+    }
+
+    /// Constant-time HMAC verification — a variable-time compare would leak
+    /// the expected MAC.
+    #[must_use]
+    pub fn hmac_verify(self, key: &[u8], data: &[u8], tag: &[u8]) -> bool {
+        match self {
+            Self::Sha256 => HmacSha256::verify(key, data, tag),
+            Self::Sha384 => HmacSha384::verify(key, data, tag),
+        }
+    }
+
+    /// HKDF-Extract.
+    #[must_use]
+    pub fn hkdf_extract(self, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
+        match self {
+            Self::Sha256 => HkdfSha256::extract(salt, ikm).to_vec(),
+            Self::Sha384 => HkdfSha384::extract(salt, ikm).to_vec(),
+        }
+    }
+
+    /// HKDF-Expand into `out`.
+    ///
+    /// # Errors
+    /// [`TlsError::BadLength`] if `out` exceeds the RFC 5869 255-block bound.
+    pub fn hkdf_expand(self, prk: &[u8], info: &[u8], out: &mut [u8]) -> Result<(), TlsError> {
+        match self {
+            Self::Sha256 => HkdfSha256::expand(prk, info, out).map_err(|_| TlsError::BadLength),
+            Self::Sha384 => HkdfSha384::expand(prk, info, out).map_err(|_| TlsError::BadLength),
+        }
+    }
+}
 
 /// Record-protection errors. Deliberately coarse — a TLS peer must not learn
 /// *why* a record failed to open (padding-oracle discipline), so open failures
@@ -83,6 +178,7 @@ pub enum TlsError {
 /// [`TlsError::BadLength`] if `length` exceeds the HKDF-SHA256 output bound or
 /// the label/context violate the RFC length limits.
 pub fn hkdf_expand_label(
+    alg: HashAlg,
     secret: &[u8],
     label: &[u8],
     context: &[u8],
@@ -102,7 +198,7 @@ pub fn hkdf_expand_label(
     info.extend_from_slice(context);
 
     let mut out = vec![0u8; length as usize];
-    HkdfSha256::expand(secret, &info, &mut out).map_err(|_| TlsError::BadLength)?;
+    alg.hkdf_expand(secret, &info, &mut out)?;
     Ok(out)
 }
 
@@ -113,14 +209,18 @@ pub fn hkdf_expand_label(
 /// # Errors
 /// [`TlsError::BadLength`] on an out-of-range label.
 pub fn derive_secret(
+    alg: HashAlg,
     secret: &[u8],
     label: &[u8],
     transcript_hash: &[u8],
-) -> Result<[u8; HASH_LEN], TlsError> {
-    let v = hkdf_expand_label(secret, label, transcript_hash, HASH_LEN as u16)?;
-    let mut out = [0u8; HASH_LEN];
-    out.copy_from_slice(&v);
-    Ok(out)
+) -> Result<Vec<u8>, TlsError> {
+    hkdf_expand_label(
+        alg,
+        secret,
+        label,
+        transcript_hash,
+        u16::try_from(alg.hash_len()).map_err(|_| TlsError::BadLength)?,
+    )
 }
 
 /// The per-direction record-protection key material, derived from a traffic
@@ -138,9 +238,9 @@ impl RecordKeys {
     /// # Errors
     /// [`TlsError::BadLength`] should not occur for the fixed lengths here, but
     /// is propagated rather than panicked.
-    pub fn derive(traffic_secret: &[u8]) -> Result<Self, TlsError> {
-        let key_v = hkdf_expand_label(traffic_secret, b"key", b"", KEY_SIZE as u16)?;
-        let iv_v = hkdf_expand_label(traffic_secret, b"iv", b"", NONCE_SIZE as u16)?;
+    pub fn derive(alg: HashAlg, traffic_secret: &[u8]) -> Result<Self, TlsError> {
+        let key_v = hkdf_expand_label(alg, traffic_secret, b"key", b"", KEY_SIZE as u16)?;
+        let iv_v = hkdf_expand_label(alg, traffic_secret, b"iv", b"", NONCE_SIZE as u16)?;
         let mut key = [0u8; KEY_SIZE];
         let mut iv = [0u8; NONCE_SIZE];
         key.copy_from_slice(&key_v);
@@ -200,6 +300,11 @@ impl RecordKeys {
 
 #[cfg(test)]
 mod tests {
+    /// These record-layer tests are hash-agnostic in substance; run them under
+    /// the standard suite's hash. `hash_alg_switch_changes_derivation` covers
+    /// the difference between the two.
+    const ALG: HashAlg = HashAlg::Sha384;
+
     use super::*;
 
     // A fixed 32-byte "traffic secret" for the tests (not secret here).
@@ -212,9 +317,9 @@ mod tests {
     #[test]
     fn expand_label_structure_and_determinism() {
         // Same inputs → same output; different label → different output.
-        let a = hkdf_expand_label(&SECRET, b"key", b"", 32).unwrap();
-        let b = hkdf_expand_label(&SECRET, b"key", b"", 32).unwrap();
-        let c = hkdf_expand_label(&SECRET, b"iv", b"", 32).unwrap();
+        let a = hkdf_expand_label(ALG, &SECRET, b"key", b"", 32).unwrap();
+        let b = hkdf_expand_label(ALG, &SECRET, b"key", b"", 32).unwrap();
+        let c = hkdf_expand_label(ALG, &SECRET, b"iv", b"", 32).unwrap();
         assert_eq!(a, b, "deterministic");
         assert_ne!(a, c, "label is bound into the derivation");
         assert_eq!(a.len(), 32);
@@ -224,19 +329,19 @@ mod tests {
     fn expand_label_rejects_out_of_range() {
         // Empty label → full label "tls13 " = 6 < 7 minimum.
         assert_eq!(
-            hkdf_expand_label(&SECRET, b"", b"", 32),
+            hkdf_expand_label(ALG, &SECRET, b"", b"", 32),
             Err(TlsError::BadLength)
         );
         // Context > 255.
         assert_eq!(
-            hkdf_expand_label(&SECRET, b"key", &[0u8; 256], 32),
+            hkdf_expand_label(ALG, &SECRET, b"key", &[0u8; 256], 32),
             Err(TlsError::BadLength)
         );
     }
 
     #[test]
     fn key_and_iv_are_distinct_and_sized() {
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         assert_eq!(k.key.len(), KEY_SIZE);
         assert_eq!(k.iv.len(), NONCE_SIZE);
         // key and iv derive from different labels, so their common prefix must
@@ -246,7 +351,7 @@ mod tests {
 
     #[test]
     fn nonce_xors_sequence_into_the_low_bytes() {
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         let n0 = k.nonce(0);
         assert_eq!(n0, k.iv, "seq 0 leaves the IV unchanged");
         let n1 = k.nonce(1);
@@ -257,7 +362,7 @@ mod tests {
 
     #[test]
     fn protect_unprotect_roundtrip() {
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         let aad = b"\x17\x03\x03\x00\x2a"; // a plausible TLS record header
         let msg = b"salam dunia dari RIINA";
         let sealed = k.protect(7, aad, msg).unwrap();
@@ -269,7 +374,7 @@ mod tests {
 
     #[test]
     fn tamper_is_rejected() {
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         let mut sealed = k.protect(1, b"", b"secret payload").unwrap();
         sealed[0] ^= 0x01; // flip a ciphertext bit
         assert_eq!(k.unprotect(1, b"", &sealed), Err(TlsError::BadRecord));
@@ -279,7 +384,7 @@ mod tests {
     fn wrong_sequence_is_rejected() {
         // The nonce binds the sequence number, so opening at the wrong seq
         // fails authentication — this is TLS's replay/reorder protection.
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         let sealed = k.protect(4, b"", b"in order").unwrap();
         assert_eq!(k.unprotect(5, b"", &sealed), Err(TlsError::BadRecord));
         assert_eq!(k.unprotect(4, b"", &sealed).unwrap(), b"in order");
@@ -287,24 +392,24 @@ mod tests {
 
     #[test]
     fn wrong_aad_is_rejected() {
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         let sealed = k.protect(0, b"header-A", b"body").unwrap();
         assert_eq!(k.unprotect(0, b"header-B", &sealed), Err(TlsError::BadRecord));
     }
 
     #[test]
     fn wrong_key_is_rejected() {
-        let k1 = RecordKeys::derive(&SECRET).unwrap();
+        let k1 = RecordKeys::derive(ALG, &SECRET).unwrap();
         let mut other = SECRET;
         other[0] ^= 0xff;
-        let k2 = RecordKeys::derive(&other).unwrap();
+        let k2 = RecordKeys::derive(ALG, &other).unwrap();
         let sealed = k1.protect(0, b"", b"for k1 only").unwrap();
         assert_eq!(k2.unprotect(0, b"", &sealed), Err(TlsError::BadRecord));
     }
 
     #[test]
     fn truncated_record_is_rejected() {
-        let k = RecordKeys::derive(&SECRET).unwrap();
+        let k = RecordKeys::derive(ALG, &SECRET).unwrap();
         assert_eq!(k.unprotect(0, b"", b"short"), Err(TlsError::BadRecord));
     }
 }

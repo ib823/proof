@@ -388,8 +388,21 @@ impl Sha512 {
     /// Create a new SHA-512 hasher
     #[must_use]
     pub fn new() -> Self {
+        Self::with_iv(SHA512_H0)
+    }
+
+    /// Create a hasher over the SHA-512 compression function with a caller-
+    /// supplied initial hash value.
+    ///
+    /// FIPS 180-4 defines SHA-384 as *exactly* SHA-512 with a different IV and
+    /// a truncated output — same block size, same round constants, same
+    /// padding, same 128-bit length field. Exposing the IV here lets
+    /// [`Sha384`] reuse this compression path byte for byte instead of
+    /// carrying a second copy that could drift from it.
+    #[must_use]
+    pub(crate) fn with_iv(iv: [u64; 8]) -> Self {
         Self {
-            state: SHA512_H0,
+            state: iv,
             buffer: [0u8; SHA512_BLOCK_SIZE],
             buffer_len: 0,
             total_len: 0,
@@ -585,6 +598,176 @@ fn sha512_sigma0(x: u64) -> u64 {
 #[inline]
 fn sha512_sigma1(x: u64) -> u64 {
     x.rotate_right(19) ^ x.rotate_right(61) ^ (x >> 6)
+}
+
+// =============================================================================
+// SHA-384 Implementation (FIPS 180-4 §6.5)
+// =============================================================================
+
+/// SHA-384 block size in bytes (1024 bits) — identical to SHA-512.
+pub const SHA384_BLOCK_SIZE: usize = SHA512_BLOCK_SIZE;
+/// SHA-384 output size in bytes (384 bits).
+pub const SHA384_OUTPUT_SIZE: usize = 48;
+
+/// SHA-384 initial hash values — FIPS 180-4 §5.3.4 (the first 64 bits of the
+/// fractional parts of the square roots of the 9th through 16th primes).
+///
+/// This IV is the ONLY thing that distinguishes SHA-384 from a truncated
+/// SHA-512; without it, `SHA-384(m)` would simply be `SHA-512(m)[..48]`, which
+/// is a different (and non-standard) function.
+const SHA384_H0: [u64; 8] = [
+    0xcbbb9d5dc1059ed8,
+    0x629a292a367cd507,
+    0x9159015a3070dd17,
+    0x152fecd8f70e5939,
+    0x67332667ffc00b31,
+    0x8eb44a8768581511,
+    0xdb0c2e0d64f98fa7,
+    0x47b5481dbefa4fa4,
+];
+
+/// SHA-384 hasher (FIPS 180-4).
+///
+/// A thin wrapper over the SHA-512 core with the SHA-384 IV, truncating the
+/// digest to 48 bytes. Sharing the core is deliberate: the compression
+/// function is the part that is easy to get subtly wrong, and this way there
+/// is exactly one copy of it.
+///
+/// **Verification status (no overclaiming):** SHA-256 in this crate carries a
+/// Coq⇄Rust formal-equivalence proof (`02_FORMAL/coq/crypto/SHA256.v`).
+/// SHA-384 does **not** — it is validated by FIPS 180-4 known-answer vectors
+/// and by sharing the SHA-512 compression path, which is a weaker guarantee.
+/// A future increment could extend the Coq work to cover it.
+pub struct Sha384 {
+    inner: Sha512,
+}
+
+impl Default for Sha384 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Sha384 {
+    /// Create a new SHA-384 hasher.
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            inner: Sha512::with_iv(SHA384_H0),
+        }
+    }
+
+    /// Update the hash with additional data.
+    pub fn update(&mut self, data: &[u8]) {
+        self.inner.update(data);
+    }
+
+    /// Finalize and return the 48-byte digest (the leftmost 384 bits of the
+    /// 512-bit state, per FIPS 180-4 §6.5).
+    #[must_use]
+    pub fn finalize(self) -> [u8; SHA384_OUTPUT_SIZE] {
+        let full = self.inner.finalize();
+        let mut out = [0u8; SHA384_OUTPUT_SIZE];
+        out.copy_from_slice(&full[..SHA384_OUTPUT_SIZE]);
+        out
+    }
+
+    /// Hash data in one call.
+    #[must_use]
+    pub fn hash(data: &[u8]) -> [u8; SHA384_OUTPUT_SIZE] {
+        let mut hasher = Self::new();
+        hasher.update(data);
+        hasher.finalize()
+    }
+}
+
+#[cfg(test)]
+mod sha384_tests {
+    use super::*;
+
+    fn hex(b: &[u8]) -> String {
+        use core::fmt::Write as _;
+        b.iter().fold(String::new(), |mut acc, x| {
+            let _ = write!(acc, "{x:02x}");
+            acc
+        })
+    }
+
+    /// FIPS 180-4 / NIST CAVP known-answer vectors. These are the contract:
+    /// SHA-384 is not "SHA-512 truncated", and only the published digests can
+    /// show the IV was applied correctly.
+    #[test]
+    fn nist_known_answer_vectors() {
+        // Empty message.
+        assert_eq!(
+            hex(&Sha384::hash(b"")),
+            "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b"
+        );
+        // "abc" — FIPS 180-4 §D.3.
+        assert_eq!(
+            hex(&Sha384::hash(b"abc")),
+            "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7"
+        );
+        // 448-bit message — FIPS 180-4 §D.4 (two-block, exercises padding).
+        assert_eq!(
+            hex(&Sha384::hash(
+                b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+            )),
+            "3391fdddfc8dc7393707a65b1b4709397cf8b1d162af05abfe8f450de5f36bc6b0455a8520bc4e6f5fe95b1fe3c8452b"
+        );
+    }
+
+    /// SHA-384 must NOT equal a truncated SHA-512 — the distinct IV is the
+    /// whole point, and this catches the classic implementation shortcut.
+    #[test]
+    fn sha384_is_not_truncated_sha512() {
+        for msg in [b"".as_ref(), b"abc".as_ref(), b"the quick brown fox".as_ref()] {
+            let s384 = Sha384::hash(msg);
+            let s512 = Sha512::hash(msg);
+            assert_ne!(
+                s384[..],
+                s512[..SHA384_OUTPUT_SIZE],
+                "SHA-384 must use its own IV, not truncate SHA-512"
+            );
+        }
+    }
+
+    /// Streaming in arbitrary chunks must equal the one-shot hash — the
+    /// buffering/padding path is where block-boundary bugs hide.
+    #[test]
+    fn streaming_matches_one_shot_across_block_boundaries() {
+        let msg: Vec<u8> = (0..300u32).map(|i| (i % 251) as u8).collect();
+        let one_shot = Sha384::hash(&msg);
+        // Chunk sizes chosen to straddle the 128-byte block boundary.
+        for chunk in [1usize, 7, 63, 64, 127, 128, 129, 200] {
+            let mut h = Sha384::new();
+            for part in msg.chunks(chunk) {
+                h.update(part);
+            }
+            assert_eq!(h.finalize(), one_shot, "chunked by {chunk} must match");
+        }
+    }
+
+    /// Exact-block-multiple inputs exercise the "padding needs a whole extra
+    /// block" branch.
+    #[test]
+    fn exact_block_multiples_are_padded_correctly() {
+        for n in [111usize, 112, 127, 128, 255, 256] {
+            let msg = vec![0x61u8; n];
+            let mut h = Sha384::new();
+            h.update(&msg);
+            let streamed = h.finalize();
+            assert_eq!(streamed, Sha384::hash(&msg), "len {n}");
+            assert_eq!(streamed.len(), SHA384_OUTPUT_SIZE);
+        }
+    }
+
+    #[test]
+    fn output_size_is_48_bytes() {
+        assert_eq!(SHA384_OUTPUT_SIZE, 48);
+        assert_eq!(Sha384::hash(b"x").len(), 48);
+        assert_eq!(SHA384_BLOCK_SIZE, 128);
+    }
 }
 
 #[cfg(test)]

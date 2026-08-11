@@ -67,9 +67,16 @@ use crate::{Error, Result};
 use riina_os::net::{tls_policy_accepts, CipherSuite, TcpConnection, TcpEvent, TcpState, TlsVersion};
 use riina_tls::auth::{Identity, TrustStore, CREDENTIAL_LEN, SIGNATURE_LEN};
 use riina_tls::handshake::{
-    os_entropy_32, ClientHandshake, ServerAuth, ServerHandshake, SHARE_LEN, VERIFY_DATA_LEN,
+    os_entropy_32, ClientHandshake, ServerAuth, ServerHandshake, SHARE_LEN,
 };
-use riina_tls::RecordKeys;
+use riina_tls::{HashAlg, RecordKeys};
+
+/// The TLS hash RIINA negotiates. SHA-384 is the hash of the registered IANA
+/// suite `TLS_AES_256_GCM_SHA384`, which is the only TLS 1.3 suite riina-core
+/// can instantiate (it has AES-256-GCM but no AES-128 or ChaCha20). Before the
+/// hash parameterisation this was hard-wired to SHA-256, which paired with
+/// AES-256-GCM corresponds to NO registered suite.
+const TLS_HASH: HashAlg = HashAlg::Sha384;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -458,13 +465,13 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             // using the RFC 8446 application-traffic labels. Both peers derive
             // both, then pick send/recv by role — so no key is ever used to
             // seal in both directions (see TlsState for why that matters).
-            let c_secret = riina_tls::derive_secret(secret.as_bytes(), b"c ap traffic", &[])
+            let c_secret = riina_tls::derive_secret(TLS_HASH, secret.as_bytes(), b"c ap traffic", &[])
                 .map_err(|_| err("jaring_tls: bad traffic secret"))?;
-            let s_secret = riina_tls::derive_secret(secret.as_bytes(), b"s ap traffic", &[])
+            let s_secret = riina_tls::derive_secret(TLS_HASH, secret.as_bytes(), b"s ap traffic", &[])
                 .map_err(|_| err("jaring_tls: bad traffic secret"))?;
-            let c_keys = RecordKeys::derive(&c_secret)
+            let c_keys = RecordKeys::derive(TLS_HASH, &c_secret)
                 .map_err(|_| err("jaring_tls: bad traffic secret"))?;
-            let s_keys = RecordKeys::derive(&s_secret)
+            let s_keys = RecordKeys::derive(TLS_HASH, &s_secret)
                 .map_err(|_| err("jaring_tls: bad traffic secret"))?;
             NET.with(|n| -> Result<Value> {
                 let st = &mut *n.borrow_mut();
@@ -559,12 +566,12 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                         "jaring_tls: no trusted credentials (jaring_tls_percaya) — refusing",
                     ));
                 }
-                let (hs, share) = ClientHandshake::start(&entropy);
+                let (hs, share) = ClientHandshake::start(TLS_HASH, &entropy);
                 stream.write_all(&share).map_err(io)?;
                 let mut server_share = [0u8; SHARE_LEN];
                 let mut credential = [0u8; CREDENTIAL_LEN];
                 let mut signature = [0u8; SIGNATURE_LEN];
-                let mut server_fin = [0u8; VERIFY_DATA_LEN];
+                let mut server_fin = vec![0u8; TLS_HASH.hash_len()];
                 stream.read_exact(&mut server_share).map_err(io)?;
                 stream.read_exact(&mut credential).map_err(io)?;
                 stream.read_exact(&mut signature).map_err(io)?;
@@ -586,14 +593,14 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     let identity = st.identity.as_ref().ok_or_else(|| {
                         err("jaring_tls: no identity (jaring_tls_identiti) — refusing")
                     })?;
-                    ServerHandshake::accept_authenticated(&entropy, &client_share, identity)
+                    ServerHandshake::accept_authenticated(TLS_HASH, &entropy, &client_share, identity)
                         .map_err(|_| err("jaring_tls: handshake failed"))
                 })?;
                 stream.write_all(&share).map_err(io)?;
                 stream.write_all(&auth.credential).map_err(io)?;
                 stream.write_all(&auth.signature).map_err(io)?;
                 stream.write_all(&server_fin).map_err(io)?;
-                let mut client_fin = [0u8; VERIFY_DATA_LEN];
+                let mut client_fin = vec![0u8; TLS_HASH.hash_len()];
                 stream.read_exact(&mut client_fin).map_err(io)?;
                 hs.confirm(&client_fin)
                     .map_err(|_| err("jaring_tls: handshake failed"))?
@@ -661,10 +668,10 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             let io = |e: std::io::Error| err(format!("jaring_tls: jabat: {e}"));
 
             let session = if is_client {
-                let (hs, share) = ClientHandshake::start(&entropy);
+                let (hs, share) = ClientHandshake::start(TLS_HASH, &entropy);
                 stream.write_all(&share).map_err(io)?;
                 let mut server_share = [0u8; SHARE_LEN];
-                let mut server_fin = [0u8; VERIFY_DATA_LEN];
+                let mut server_fin = vec![0u8; TLS_HASH.hash_len()];
                 stream.read_exact(&mut server_share).map_err(io)?;
                 stream.read_exact(&mut server_fin).map_err(io)?;
                 let (client_fin, session) = hs
@@ -675,11 +682,11 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             } else {
                 let mut client_share = [0u8; SHARE_LEN];
                 stream.read_exact(&mut client_share).map_err(io)?;
-                let (hs, share, server_fin) = ServerHandshake::accept(&entropy, &client_share)
+                let (hs, share, server_fin) = ServerHandshake::accept(TLS_HASH, &entropy, &client_share)
                     .map_err(|_| err("jaring_tls: handshake failed"))?;
                 stream.write_all(&share).map_err(io)?;
                 stream.write_all(&server_fin).map_err(io)?;
-                let mut client_fin = [0u8; VERIFY_DATA_LEN];
+                let mut client_fin = vec![0u8; TLS_HASH.hash_len()];
                 stream.read_exact(&mut client_fin).map_err(io)?;
                 hs.confirm(&client_fin)
                     .map_err(|_| err("jaring_tls: handshake failed"))?
@@ -981,8 +988,8 @@ mod tests {
             // per-direction secrets (client→server here), which is the fix for
             // the increment-1 nonce-reuse flaw.
             let c_secret =
-                riina_tls::derive_secret(SECRET.as_bytes(), b"c ap traffic", &[]).unwrap();
-            let keys = RecordKeys::derive(&c_secret).unwrap();
+                riina_tls::derive_secret(TLS_HASH, SECRET.as_bytes(), b"c ap traffic", &[]).unwrap();
+            let keys = RecordKeys::derive(TLS_HASH, &c_secret).unwrap();
             let opened = keys.unprotect(0, &[], &sealed).unwrap();
             (sealed, String::from_utf8(opened).unwrap())
         });
@@ -1015,7 +1022,7 @@ mod tests {
         // Server seals a record, flips one bit, and sends it.
         std::thread::spawn(move || {
             let (mut sock, _) = listener.accept().unwrap();
-            let keys = RecordKeys::derive(SECRET.as_bytes()).unwrap();
+            let keys = RecordKeys::derive(TLS_HASH, SECRET.as_bytes()).unwrap();
             let mut sealed = keys.protect(0, &[], b"tampered payload").unwrap();
             sealed[0] ^= 0x01;
             let len = u32::try_from(sealed.len()).unwrap();
