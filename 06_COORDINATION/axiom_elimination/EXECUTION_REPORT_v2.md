@@ -5,7 +5,7 @@
 > It includes stale "remaining admits" state and is not operational truth.
 > Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md` and `PROOF_STATUS.md` for live status.
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3041 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3053 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 **Date:** 2026-01-25
 **Mode:** ULTRA KIASU | ZERO TRUST | ZERO SHORTCUTS

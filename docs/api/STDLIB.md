@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **335**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **337**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 
@@ -325,8 +325,10 @@ Total registered builtins: **335**. Grouped by the effect each performs (`kesan`
 | Builtin | Type |
 |---|---|
 | `jaring_tls_hantar` | `Fn((Nombor, Teks), Nombor, RangkaianSelamat)` |
+| `jaring_tls_jabat` | `Fn(Nombor, Benar, RangkaianSelamat)` |
 | `jaring_tls_kunci` | `Fn((Nombor, Teks), Benar, RangkaianSelamat)` |
 | `jaring_tls_terima` | `Fn(Nombor, Teks, RangkaianSelamat)` |
+| `net_tls_handshake` | `Fn(Nombor, Benar, RangkaianSelamat)` |
 | `net_tls_keys` | `Fn((Nombor, Teks), Benar, RangkaianSelamat)` |
 | `net_tls_recv` | `Fn(Nombor, Teks, RangkaianSelamat)` |
 | `net_tls_send` | `Fn((Nombor, Teks), Nombor, RangkaianSelamat)` |

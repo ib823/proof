@@ -994,6 +994,14 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // `jaring_tls_hantar` seals `(conn, data)`; `jaring_tls_terima` opens the
     // next record on a conn. NetworkSecure effect — these are the encrypted
     // paths, distinguished from the plaintext `jaring_*` Network ones.
+    // A real TLS 1.3 handshake over an established connection (ECDHE + key
+    // schedule + Finished): `Nombor -> Benar`, NetworkSecure.
+    for nm in ["jaring_tls_jabat", "net_tls_handshake"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
     for nm in ["jaring_tls_kunci", "net_tls_keys"] {
         c = c.extend(
             nm.to_string(),
