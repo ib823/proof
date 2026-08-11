@@ -488,7 +488,7 @@ fungsi utama() -> Nombor kesan Tulis {
     0
 }
 ```
-**Rule:** Type-checking does not imply compiling. **148 of the 329 builtins compile; 181 are interpreter-only.** Networking (`jaring_*`), filesystem (`fail_*`), VFS (`vfs_*`), JSON (`json_*`), time (`masa_*`), and every security sink (`sanitasi_*`, `sql_*`, `http_*`, `csrf_*`) run only under `riinac run` — `riinac build` and `emit-c` fail closed with `unbound variable` rather than miscompiling. The compiled surface is: printing, strings (`teks_*`), lists (`senarai_*`), maps (`peta_*`), sets (`set_*`), most math, conversions, the numeric tower, and test assertions. Check the `Backend` column in `docs/api/STDLIB.md` before generating code that must be built. Master plan REQ-70 tracks closing this gap.
+**Rule:** Type-checking does not imply compiling. **148 of the 341 builtins compile; 193 are interpreter-only.** Networking (`jaring_*`), filesystem (`fail_*`), VFS (`vfs_*`), JSON (`json_*`), time (`masa_*`), every security sink (`sanitasi_*`, `sql_*`, `csrf_*`), and the real HTTP layer (`http_hurai_*`, `http_balas`, `http_minta`) run only under `riinac run` — `riinac build` and `emit-c` fail closed with `unbound variable` rather than miscompiling. The compiled surface is: printing, strings (`teks_*`), lists (`senarai_*`), maps (`peta_*`), sets (`set_*`), most math, conversions, the numeric tower, and test assertions. Check the `Backend` column in `docs/api/STDLIB.md` before generating code that must be built. Master plan REQ-70 tracks closing this gap.
 
 ---
 

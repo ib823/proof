@@ -995,6 +995,57 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
         );
     }
+    // Real HTTP/1.1 above the verified TCP machine (REQ-73). Parsing is Pure;
+    // only `http_minta` touches the network. These are DISTINCT from the
+    // modelled `http_get`/`http_post` sinks below, which open no socket.
+    for nm in ["http_hurai_kaedah", "http_parse_method"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["http_hurai_laluan", "http_parse_target"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["http_hurai_jasad", "http_parse_body"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["http_hurai_kepala", "http_parse_header"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Pure,
+            ),
+        );
+    }
+    for nm in ["http_balas", "http_build_response"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Pure,
+            ),
+        );
+    }
+    for nm in ["http_minta", "http_request"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Network,
+            ),
+        );
+    }
     // Pure TLS acceptance policy (Coq NET_001_03 no-downgrade + NET_001_08
     // cipher strength): `(version, cipher_suite) -> Bool`, no I/O.
     for nm in ["tls_dasar_ok", "tls_policy_ok"] {

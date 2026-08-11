@@ -12,6 +12,7 @@ pub(crate) mod json;
 pub(crate) mod keselamatan;
 pub(crate) mod masa;
 pub(crate) mod matematik;
+pub(crate) mod http;
 pub(crate) mod net;
 pub(crate) mod penukaran;
 pub(crate) mod peta;
@@ -210,6 +211,14 @@ pub fn register_builtins(env: &Env) -> Env {
 
     // Network builtins (real TCP gated by the verified RFC 793 state machine).
     for (bm, en, canonical) in net::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
+    // Real HTTP/1.1 above that TCP (REQ-73) — distinct from the MODELLED
+    // `http_get`/`http_post` sinks in `keselamatan`, which carry the taint
+    // type discipline and open no socket.
+    for (bm, en, canonical) in http::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
@@ -576,6 +585,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 
     // Network (real TCP gated by the verified state machine)
     if let Some(result) = net::apply(name, &arg)? {
+        return Ok(result);
+    }
+
+    // Real HTTP/1.1 codec + client above that TCP (REQ-73)
+    if let Some(result) = http::apply(name, &arg)? {
         return Ok(result);
     }
 

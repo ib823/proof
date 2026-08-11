@@ -2,11 +2,11 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) and the compiled-backend boundary (`riina_codegen::codegen_supports_builtin`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts or compiles. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **329**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **341**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 329 also compile; the other **181** are **interpreter-only** and make `riinac build`, `riinac emit-c`, and `riinac build --target wasm32/wasm64` **fail closed**:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 341 also compile; the other **193** are **interpreter-only** and make `riinac build`, `riinac emit-c`, and `riinac build --target wasm32/wasm64` **fail closed**:
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -27,7 +27,7 @@ The `Backend` column in every table below records this per builtin. Closing the 
 
 ## Bersih (Pure)
 
-> **Mixed:** 144 of 220 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 144 of 230 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -64,6 +64,16 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `gcd` | `Fn((Nombor, Nombor), Nombor)` | compiled |
 | `html_papar` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
 | `html_render` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
+| `http_balas` | `Fn((Nombor, Teks), Teks)` | **interp-only** |
+| `http_build_response` | `Fn((Nombor, Teks), Teks)` | **interp-only** |
+| `http_hurai_jasad` | `Fn(Teks, Teks)` | **interp-only** |
+| `http_hurai_kaedah` | `Fn(Teks, Teks)` | **interp-only** |
+| `http_hurai_kepala` | `Fn((Teks, Teks), Teks)` | **interp-only** |
+| `http_hurai_laluan` | `Fn(Teks, Teks)` | **interp-only** |
+| `http_parse_body` | `Fn(Teks, Teks)` | **interp-only** |
+| `http_parse_header` | `Fn((Teks, Teks), Teks)` | **interp-only** |
+| `http_parse_method` | `Fn(Teks, Teks)` | **interp-only** |
+| `http_parse_target` | `Fn(Teks, Teks)` | **interp-only** |
 | `int_to_string` | `Fn(Nombor, Teks)` | compiled |
 | `is_confusable` | `Fn((Teks, Teks), Benar)` | **interp-only** |
 | `json_ada` | `Fn(Any, Any)` | **interp-only** |
@@ -328,10 +338,12 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `http_get` | `Fn(Teks, Any, Rangkaian)` | **interp-only** |
 | `http_hantar` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
 | `http_kemaskini` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
+| `http_minta` | `Fn((Teks, Teks), Teks, Rangkaian)` | **interp-only** |
 | `http_padam` | `Fn((Teks, Teks), Any, Rangkaian)` | **interp-only** |
 | `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
 | `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
 | `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **interp-only** |
+| `http_request` | `Fn((Teks, Teks), Teks, Rangkaian)` | **interp-only** |
 | `jaring_alamat` | `Fn(Nombor, Teks, Rangkaian)` | **interp-only** |
 | `jaring_dengar` | `Fn(Teks, Nombor, Rangkaian)` | **interp-only** |
 | `jaring_hantar` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **interp-only** |

@@ -151,10 +151,10 @@ dependencies yet — master plan REQ-71 remainder, REQ-72).
 
 ## Standard Library Modules
 
-**Counts and the Backend column below are command-derived (2026-08-09) from the
+**Counts and the Backend column below are command-derived (2026-08-11) from the
 builtin tables in `03_PROTO/crates/riina-codegen/src/builtins/` and the
 compiled-backend boundary `riina_codegen::codegen_supports_builtin`.** The
-authoritative per-builtin list is the generated `docs/api/STDLIB.md` (329
+authoritative per-builtin list is the generated `docs/api/STDLIB.md` (341
 registered builtins, each with its own Backend marker).
 
 | Module | BM Name | Builtins | Backend | Description |
@@ -170,15 +170,33 @@ registered builtins, each with its own Backend marker).
 | json | Json | 5 | **none** | JSON parsing |
 | net | Jaring | 9 | **none** | TCP sockets (real I/O, verified RFC 793 state machine) |
 | vfs | Vfs | 5 | **none** | Virtual filesystem (verified access-control model) |
-| keselamatan | Keselamatan | 42 | **none** | Taint sanitizers + sinks (`sanitasi_*`, `sql_*`, `http_*`, `csrf_*`) |
+| keselamatan | Keselamatan | 42 | **none** | Taint sanitizers + **modelled** sinks (`sanitasi_*`, `sql_*`, `http_dapat`/`http_hantar`, `csrf_*`) — type discipline only, no socket/database/SMTP |
+| http | Http | 6 | **none** | **Real** HTTP/1.1 (`http_hurai_*`, `http_balas`, `http_minta`) over the verified TCP machine |
 
 Conversions (`ke_teks`, `ke_nombor`, …), printing (`cetak`, `cetakln`), and the
 numeric-tower constructors (`besar`, `perpuluhan`, `wang`, `titik_tetap`, `qmn`)
 are registered directly rather than in a module table; all of them compile.
 
+### Real HTTP vs modelled HTTP — do not confuse them
+
+Two different `http_*` families exist, deliberately:
+
+| Family | Behaviour |
+|---|---|
+| `http_hurai_kaedah/laluan/jasad/kepala`, `http_balas`, `http_minta` | **REAL.** RFC 9112 codec; `http_minta` opens a real socket over the verified TCP machine. Use these to serve or call HTTP. |
+| `http_dapat`/`http_get`, `http_hantar`/`http_post`, `sql_laksana`, `emel_hantar`, `shell_laksana` | **MODELLED.** Return canned values, open no socket, contact no database or SMTP. They exist to carry the taint→sink *type* discipline. |
+
+Writing a server: read the request with `jaring_terima`, parse it with
+`http_hurai_*`, build the reply with `http_balas` (which computes
+`Content-Length` itself, so a response cannot be split). Malformed or smuggled
+requests — `Content-Length` plus `Transfer-Encoding`, `Foo : bar`, conflicting
+duplicate lengths — are **errors**, not repaired messages.
+
+`https://` is refused, not silently downgraded: there is no TLS record layer yet.
+
 ### ⚠ Type-checking does not imply compiling
 
-**148 of the 329 builtins compile. The other 181 are interpreter-only.** A
+**148 of the 341 builtins compile. The other 193 are interpreter-only.** A
 program using any interpreter-only builtin type-checks and runs, but cannot be
 built for native or WASM — lowering fails closed rather than miscompiling:
 
@@ -190,8 +208,8 @@ riinac build pelayan.rii   # Codegen Error: unbound variable: jaring_dengar
 
 If you are generating RIINA code that must be **compiled**, restrict yourself to
 the `all compiled` modules above plus printing, conversions, and the numeric
-tower. Anything touching the network, filesystem, JSON, time, or the security
-sinks is `riinac run` only. Closing this gap is master plan **REQ-70** (Gate C).
+tower. Anything touching the network (including the real HTTP layer),
+filesystem, JSON, time, or the security sinks is `riinac run` only. Closing this gap is master plan **REQ-70** (Gate C).
 
 ## Formal Verification
 
