@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3041 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3053 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-09 — Gate C: TLS increment 2 — real X25519 handshake + a nonce-reuse fix
+
+### Added (Gate C / Standard Library Hardening — TLS handshake)
+- **`riina_tls::handshake`**: a real TLS 1.3 handshake core — ephemeral X25519 ECDHE
+  (`riina-core`'s proven ladder, private keys zeroized on drop, RFC 7748 contributory
+  check), the **RFC 8446 §7.1 key schedule** clause for clause (Early -> Handshake ->
+  Master with the standard `derived`/`c hs traffic`/`s hs traffic`/`c ap traffic`/
+  `s ap traffic` labels), transcript hashing, and **Finished** MAC verification
+  (§4.4.4, constant-time compare). Entropy comes from the OS CSPRNG (`/dev/urandom`) —
+  precisely what riina-core's caller-supplies-randomness contract demands — and **fails
+  closed**: no weak fallback, because a predictable ephemeral key destroys forward
+  secrecy silently.
+- **`jaring_tls_jabat`/`net_tls_handshake`**: runs that handshake over an ESTABLISHED
+  verified socket; role (client/server) is taken from how the connection was created,
+  so both peers agree on direction with no extra API surface. The traffic secret is now
+  one **neither peer chose**, replacing increment 1's caller-supplied secret.
+  STDLIB.md 335 -> 337 builtins.
+- **`ConnectedEvidence`** reports which conjuncts of the Coq `tls_connected` predicate
+  actually hold. Increment 2 establishes `version_is_tls13`, `transcript_bound`,
+  `forward_secret` and `verified`; `cert_chain_verified` is **false**, so
+  `tls_connected()` is false — the gap is machine-visible and asserted by a test, not
+  left in prose. **The handshake is ANONYMOUS: no certificates, so it resists a passive
+  eavesdropper but NOT an active MITM.** Authentication (Ed25519 CertificateVerify +
+  a trust store) is the next increment.
+
+### Fixed (security — introduced in increment 1, found and demonstrated here)
+- **Catastrophic AES-GCM nonce reuse in the caller-supplied key path.**
+  `jaring_tls_kunci` installed ONE `RecordKeys` on both peers with each side's sequence
+  starting at 0, so client record 0 and server record 0 used the **same key with the
+  same nonce**. Demonstrated by command before fixing: `XOR(ciphertexts)` equalled
+  `XOR(plaintexts)` — keystream reuse, which also exposes the GHASH authentication key
+  (forgery). Now each direction derives its own keys (RFC 8446 application-traffic
+  labels, assigned by connection role), and `directional_keys_are_not_reused` locks it.
 
 ### 2026-08-09 — Gate C: TLS 1.3 record protection — REAL AEAD over the verified sockets (increment 1)
 
