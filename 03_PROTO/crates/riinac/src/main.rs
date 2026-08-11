@@ -11,6 +11,7 @@
 
 mod diagnostics;
 mod frontend;
+mod pkg_compile;
 mod mcp;
 mod repl;
 mod verify;
@@ -352,7 +353,10 @@ fn main() {
     }
 
     if let Command::Pkg(ref pkg_args) = command {
-        if let Err(e) = riina_pkg::cli::run(pkg_args) {
+        // Inject the real compiler (REQ-72). `riina-pkg` has no compiler
+        // dependency of its own, so `pkg build` and `riinac build` cannot drift
+        // apart: both go through the same resolver/typechecker/backend.
+        if let Err(e) = riina_pkg::cli::run(pkg_args, &pkg_compile::compile_package) {
             eprintln!("pkg error: {e}");
             process::exit(1);
         }

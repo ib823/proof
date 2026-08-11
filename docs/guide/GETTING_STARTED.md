@@ -232,7 +232,59 @@ Two things to know:
   the importing file's directory — no search path or package dependencies.
   (Master plan REQ-71 remainder / REQ-72.)
 
-## 9. Where to go next
+## 9. Packages (~1 minute)
+
+For anything bigger than a couple of files, use a package:
+
+```bash
+mkdir kalkulator && cd kalkulator
+riinac pkg init kalkulator
+```
+
+That writes `riina.toml` and `src/lib.rii`. The entry module is
+`src/utama.rii` for a binary, or `src/lib.rii` for a library. Replace the
+scaffold with a two-file binary:
+
+```riina
+// src/kira.rii
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+```
+
+```riina
+// src/utama.rii
+guna kira;
+fungsi utama() -> Nombor kesan Tulis {
+    cetakln(ke_teks(kira::tambah(20, 22)));
+    0
+}
+```
+
+```bash
+rm src/lib.rii
+riinac pkg build                   # Built: kalkulator -> <...>/sasaran/kalkulator/kalkulator
+./sasaran/kalkulator/kalkulator    # 42
+```
+
+`pkg build` runs the same compiler as `riinac build` — same parser, module
+resolver, typechecker and backend — so a package that does not compile does not
+build:
+
+```bash
+$ riinac pkg build
+pkg error: package `kalkulator` failed to compile:
+Annotation mismatch: expected Int, found String
+$ echo $?
+1
+```
+
+A `lib.rii` library entry is type-checked but emits no binary.
+
+Not yet available: **dependencies you add with `riinac pkg add` cannot be
+imported yet** — `guna` resolves only within the importing file's directory, so
+cross-package linking is still open (master plan REQ-71 search path). Packages
+are useful today for building your own multi-file program.
+
+## 10. Where to go next
 
 - **[Writing Secure RIINA](WRITING_SECURE_RIINA.md)** — the security features
   in depth, each labeled with what is enforced today.

@@ -54,6 +54,14 @@ pub enum PkgError {
     Network { message: String },
     /// Workspace error.
     Workspace(String),
+    /// A package's RIINA sources failed to compile (REQ-72).
+    ///
+    /// Carries the compiler's own diagnostic verbatim — `pkg build` must never
+    /// paraphrase or swallow it, because the whole point of REQ-72 is that a
+    /// package with a type error cannot report success.
+    CompileFailed { package: String, detail: String },
+    /// A package has no entry module to build.
+    NoEntryPoint { package: String, src_dir: PathBuf },
     /// Generic error.
     Other(String),
 }
@@ -115,6 +123,16 @@ impl fmt::Display for PkgError {
             }
             Self::Network { message } => write!(f, "network error: {message}"),
             Self::Workspace(msg) => write!(f, "workspace error: {msg}"),
+            Self::CompileFailed { package, detail } => {
+                write!(f, "package `{package}` failed to compile:\n{detail}")
+            }
+            Self::NoEntryPoint { package, src_dir } => write!(
+                f,
+                "package `{package}` has no entry module: expected `{}/utama.rii` \
+                 (binary) or `{}/lib.rii` (library)",
+                src_dir.display(),
+                src_dir.display()
+            ),
             Self::Other(msg) => write!(f, "{msg}"),
         }
     }
