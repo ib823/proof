@@ -46,9 +46,11 @@ theorem counts as "verified theorems."
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
 - Rust: 2,898 proto tests + 294 tooling tests = 3,192 (all passing), 19 proto +
   4 tooling crates, 0 external runtime deps (proto). This part is solid.
-- Examples: 167 .rii files, of which 61 currently pass `riinac check` (all 26 of
+- Examples: 169 .rii files, of which 94 currently pass `riinac check` (all 28 of
   `00_basics/`); the shipped parser accepts a narrower grammar than some examples
-  assume — see `07_EXAMPLES/README.md`.
+  assume — see `07_EXAMPLES/README.md`. Passing `check` does NOT imply the
+  example can be COMPILED: every effectful builtin is interpreter-only
+  (REQ-70), so `riinac build` fails closed on them.
 
 ## Session Protocol
 

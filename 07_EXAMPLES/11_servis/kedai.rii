@@ -1,0 +1,26 @@
+// kedai.rii — durable storage helpers for the guest-book service.
+//
+// Every write here is fsynced before it returns (`simpan_letak`), so a power
+// cut cannot lose an acknowledged entry.
+
+/// Increment and return the visit counter, persisting the new value.
+awam fungsi naik_kiraan(db: Nombor) -> Nombor kesan SistemFail {
+    biar semasa = kalau simpan_ada((db, "kiraan")) {
+        ke_nombor(simpan_dapat((db, "kiraan")))
+    } lain {
+        0
+    };
+    biar baharu = semasa + 1;
+    biar _ = simpan_letak((db, ("kiraan", ke_teks(baharu))));
+    baharu
+}
+
+/// Record a guest-book entry under a monotonic key.
+awam fungsi tambah_catatan(db: Nombor, bil: Nombor, teks: Teks) -> Benar kesan SistemFail {
+    simpan_letak((db, ("catatan:" + ke_teks(bil), teks)))
+}
+
+/// Read one entry back ("" when absent).
+awam fungsi baca_catatan(db: Nombor, bil: Nombor) -> Teks kesan SistemFail {
+    simpan_dapat((db, "catatan:" + ke_teks(bil)))
+}

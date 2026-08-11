@@ -995,6 +995,79 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
         );
     }
+    // Durable key-value store (REQ-73 persistence). All carry FileSystem: a
+    // put/delete is fsynced to disk before it returns.
+    for nm in ["simpan_buka", "store_open"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::FileSystem),
+        );
+    }
+    for nm in ["simpan_letak", "store_put"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(
+                    Box::new(Ty::Int),
+                    Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                )),
+                Box::new(Ty::Bool),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_dapat", "store_get"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_ada", "store_has"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_padam", "store_delete"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_kunci", "store_keys"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Int),
+                Box::new(Ty::List(Box::new(Ty::String))),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_padat", "store_compact"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem),
+        );
+    }
+    for nm in ["simpan_tutup", "store_close"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem),
+        );
+    }
     // Real HTTP/1.1 above the verified TCP machine (REQ-73). Parsing is Pure;
     // only `http_minta` touches the network. These are DISTINCT from the
     // modelled `http_get`/`http_post` sinks below, which open no socket.

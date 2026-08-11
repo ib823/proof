@@ -6,14 +6,20 @@ This directory contains 147 `.rii` example files across 18 category directories.
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **92 of the 167 examples pass
-`riinac check`** end-to-end (re-measured 2026-08-09; and all of `00_basics/`), and closing the
+of the examples assume. As of this writing, **94 of the 169 examples pass
+`riinac check`** end-to-end (re-measured 2026-08-11; and all 28 of `00_basics/`), and closing the
 remaining gap is active work (`RIINA_MASTER_PLAN.md` Gate B).
 
 Separately, passing `riinac check` does **not** imply the example can be
-compiled: every `jaring_*`/`fail_*`/`vfs_*`/`json_*`/`masa_*` and security
-builtin is **interpreter-only**, so `riinac build` on a program using them
-fails closed with `unbound variable` (master plan REQ-70). The parser is
+compiled: every `jaring_*`/`http_*`/`simpan_*`/`fail_*`/`vfs_*`/`json_*`/`masa_*`
+and security builtin is **interpreter-only**, so `riinac build` on a program
+using them fails closed with `unbound variable` (master plan REQ-70).
+
+`11_servis/` is the persistent-service reference: a multi-file (REQ-71),
+networked (REQ-73 HTTP/1.1), durable (REQ-73 store) guest book whose visit
+counter survives a restart. Run `riinac run 11_servis/pelayan.rii` twice and
+curl it — the count continues. It runs on the interpreter; compiling it needs
+REQ-70's codegen half. The parser is
 being extended incrementally; the forms below are **now accepted** but some
 example files stack several advanced constructs and need all of them supported
 before they pass.

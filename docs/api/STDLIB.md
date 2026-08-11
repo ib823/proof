@@ -2,11 +2,11 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) and the compiled-backend boundary (`riina_codegen::codegen_supports_builtin`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts or compiles. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **341**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **357**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 341 also compile; the other **193** are **interpreter-only** and make `riinac build`, `riinac emit-c`, and `riinac build --target wasm32/wasm64` **fail closed**:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 357 also compile; the other **209** are **interpreter-only** and make `riinac build`, `riinac emit-c`, and `riinac build --target wasm32/wasm64` **fail closed**:
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -315,6 +315,22 @@ The `Backend` column in every table below records this per builtin. Closing the 
 | `file_read_lines` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **interp-only** |
 | `file_size` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
 | `file_write` | `Fn((Teks, Teks), (), SistemFail)` | **interp-only** |
+| `simpan_ada` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
+| `simpan_buka` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
+| `simpan_dapat` | `Fn((Nombor, Teks), Teks, SistemFail)` | **interp-only** |
+| `simpan_kunci` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **interp-only** |
+| `simpan_letak` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **interp-only** |
+| `simpan_padam` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
+| `simpan_padat` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
+| `simpan_tutup` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
+| `store_close` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
+| `store_compact` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
+| `store_delete` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
+| `store_get` | `Fn((Nombor, Teks), Teks, SistemFail)` | **interp-only** |
+| `store_has` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
+| `store_keys` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **interp-only** |
+| `store_open` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
+| `store_put` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **interp-only** |
 | `vfs_become_user` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
 | `vfs_init` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
 | `vfs_jadi_pengguna` | `Fn(Nombor, (), SistemFail)` | **interp-only** |

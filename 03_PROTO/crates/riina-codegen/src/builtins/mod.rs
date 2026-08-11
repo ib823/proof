@@ -18,6 +18,7 @@ pub(crate) mod penukaran;
 pub(crate) mod peta;
 pub(crate) mod senarai;
 pub(crate) mod set;
+pub(crate) mod simpan;
 pub(crate) mod teks;
 pub(crate) mod ujian;
 pub(crate) mod vfs;
@@ -211,6 +212,12 @@ pub fn register_builtins(env: &Env) -> Env {
 
     // Network builtins (real TCP gated by the verified RFC 793 state machine).
     for (bm, en, canonical) in net::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
+    // Durable key-value store (REQ-73 persistence).
+    for (bm, en, canonical) in simpan::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
@@ -590,6 +597,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 
     // Real HTTP/1.1 codec + client above that TCP (REQ-73)
     if let Some(result) = http::apply(name, &arg)? {
+        return Ok(result);
+    }
+
+    // Durable key-value store (REQ-73 persistence)
+    if let Some(result) = simpan::apply(name, &arg)? {
         return Ok(result);
     }
 

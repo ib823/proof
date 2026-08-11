@@ -1,6 +1,6 @@
 # RIINA PHASE 3: INFRASTRUCTURE HELPER LEMMAS
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3024 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3125 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 **Date:** 2026-01-25  
 **Target:** 6 helper lemmas from Phase 2 patch
