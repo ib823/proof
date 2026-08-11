@@ -26,13 +26,19 @@
 //!     increment. The `tls_dasar_ok`/verified-policy layer already restricts
 //!     acceptance to the standard suites; this module is the crypto beneath a
 //!     handshake that a subsequent increment will add.
-//!   * NO handshake here (no ClientHello/key-exchange/transcript). Key
-//!     exchange (X25519, present in riina-core) and the transcript that feeds
-//!     `Derive-Secret` are increment 2. Callers supply the traffic secret.
+//!   * No handshake in THIS module — callers may supply a traffic secret
+//!     directly. The handshake that establishes one (ephemeral X25519, the
+//!     §7.1 key schedule, transcript binding and Finished) landed as
+//!     increment 2 in [`handshake`]; read that module's header for what it
+//!     does and does NOT provide (notably: it is anonymous — no certificate
+//!     verification, so it does not withstand an active MITM).
 //!
 //! Law 8: the only dependency is first-party `riina-core`. No `unsafe`.
 
 #![forbid(unsafe_code)]
+
+pub mod auth;
+pub mod handshake;
 
 use riina_core::crypto::gcm::{Aes256Gcm, KEY_SIZE, NONCE_SIZE, TAG_SIZE};
 use riina_core::crypto::hkdf::HkdfSha256;
@@ -51,6 +57,14 @@ pub enum TlsError {
     BadRecord,
     /// A derive/expand length was out of the HKDF range.
     BadLength,
+    /// A handshake step failed: Finished did not verify (which includes any
+    /// transcript disagreement) or a key share was degenerate. Coarse on
+    /// purpose — a peer must not learn which.
+    HandshakeFailed,
+    /// The OS CSPRNG could not be read. Fails closed: there is deliberately no
+    /// weaker fallback, since a predictable ephemeral key destroys forward
+    /// secrecy silently.
+    NoEntropy,
 }
 
 /// RFC 8446 §7.1 HKDF-Expand-Label.
