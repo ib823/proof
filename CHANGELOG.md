@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3053 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3069 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-11 — Gate C: TLS increment 3 — peer authentication; `tls_connected` can finally hold
+
+### Added (Gate C / Standard Library Hardening — TLS authentication)
+- **`riina_tls::auth`**: RFC 7250 raw-public-key credentials + RFC 8446 §4.4.3
+  CertificateVerify (Ed25519 from riina-core, deterministic RFC 8032 signing) with a
+  pinned `TrustStore`. The §4.4.3 payload is built exactly as specified (64 × 0x20, the
+  context string, a 0x00 separator, then the transcript hash) — the domain separation
+  that stops a signature made in one context being replayed in another.
+- **Authenticated handshake**: `ClientHandshake::finish_authenticated` /
+  `ServerHandshake::accept_authenticated`. The Certificate enters the transcript before
+  the signature is computed over it, so the signature covers the key exchange and the
+  credential together. **Pinning is checked BEFORE the signature**: a perfectly valid
+  signature from a key nobody pinned is refused.
+- **`ConnectedEvidence::tls_connected()` can now be TRUE** — the first time the full Coq
+  conjunction from `VerifiedNetwork.v` is satisfiable at runtime. It holds only after an
+  authenticated handshake; the anonymous path still reports false.
+- **Surface builtins**: `jaring_tls_identiti`/`net_tls_identity` (set signing identity,
+  returns the hex credential to pin), `jaring_tls_percaya`/`net_tls_trust` (pin a peer
+  credential), `jaring_tls_jabat_sah`/`net_tls_handshake_auth` (authenticated handshake),
+  `jaring_tls_disahkan`/`net_tls_is_authenticated` (does the full Coq conjunction hold?).
+  STDLIB.md 337 -> 345 builtins.
+- **Downgrade protection**: a client holding a trust store REQUIRES authentication and a
+  server holding an identity REQUIRES its peer to want it — a mismatch is a hard failure,
+  never a silent fallback to anonymous. An empty trust store trusts nothing, so the
+  "forgot to pin" failure mode is refusal.
+
+### Honest scope (trust model — read before relying on this)
+- Authentication is **raw-public-key pinning, NOT PKI**: no certificate chains, no CA, no
+  name binding, no expiry, **no revocation**. `cert_chain_verified` therefore means "the
+  peer proved possession of a pinned key", not "a chain validated to a root". X.509
+  parsing, chain building and revocation remain future work.
+- Unchanged from earlier increments: AES-256-GCM under an HKDF-SHA256 schedule (not the
+  IANA `TLS_AES_256_GCM_SHA384` suite) over a RIINA-internal message encoding — **no
+  OpenSSL interop**; RIINA↔RIINA only.
 
 ### 2026-08-09 — Gate C: TLS increment 2 — real X25519 handshake + a nonce-reuse fix
 

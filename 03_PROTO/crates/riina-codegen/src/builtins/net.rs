@@ -43,12 +43,21 @@
 //!     Honest limits, all stated in `riina-tls`'s headers: (a) the
 //!     instantiation is AES-256-GCM under an HKDF-SHA256 schedule —
 //!     self-consistent RIINA↔RIINA but NOT the IANA
-//!     `TLS_AES_256_GCM_SHA384` wire suite, so no OpenSSL interop; (b) the
-//!     handshake is **ANONYMOUS** — no certificates, so it resists a passive
+//!     `TLS_AES_256_GCM_SHA384` wire suite, so no OpenSSL interop;
+//!     (b) `jaring_tls_jabat` is **ANONYMOUS** — it resists a passive
 //!     eavesdropper but NOT an active MITM, and the Coq `tls_connected`
-//!     conjunction is deliberately NOT satisfied; (c) `jaring_tls_kunci`
-//!     (caller-supplied secret) remains for testing and for peers with an
-//!     out-of-band key — prefer `jaring_tls_jabat`.
+//!     conjunction is deliberately NOT satisfied on that path;
+//!     (c) `jaring_tls_kunci` (caller-supplied secret) remains for testing and
+//!     for peers with an out-of-band key.
+//!   * **`jaring_tls_jabat_sah` authenticates the peer** (increment 3):
+//!     `jaring_tls_identiti` sets this peer's signing identity and returns its
+//!     credential; `jaring_tls_percaya` pins a peer credential; the
+//!     authenticated handshake then adds an RFC 7250 raw-public-key
+//!     Certificate + RFC 8446 §4.4.3 CertificateVerify, so a MITM presenting
+//!     an unpinned key is rejected (tested end-to-end over real sockets).
+//!     `jaring_tls_disahkan` reports whether the FULL Coq `tls_connected`
+//!     conjunction holds. Trust is **pinning**, not PKI — no chains, no CA, no
+//!     revocation; see `riina-tls`'s `auth` module for the exact trust model.
 //!
 //! Interpreter-only: not registered in codegen's `builtin_canonical`, so the
 //! C/WASM backends fail closed (unbound `jaring_*`) rather than miscompiling.
@@ -56,7 +65,10 @@
 use crate::value::Value;
 use crate::{Error, Result};
 use riina_os::net::{tls_policy_accepts, CipherSuite, TcpConnection, TcpEvent, TcpState, TlsVersion};
-use riina_tls::handshake::{os_entropy_32, ClientHandshake, ServerHandshake, SHARE_LEN, VERIFY_DATA_LEN};
+use riina_tls::auth::{Identity, TrustStore, CREDENTIAL_LEN, SIGNATURE_LEN};
+use riina_tls::handshake::{
+    os_entropy_32, ClientHandshake, ServerAuth, ServerHandshake, SHARE_LEN, VERIFY_DATA_LEN,
+};
 use riina_tls::RecordKeys;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -75,6 +87,10 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("jaring_tutup_dengar", "net_close_listener", "jaring_tutup_dengar"),
     ("tls_dasar_ok", "tls_policy_ok", "tls_dasar_ok"),
     ("jaring_tls_jabat", "net_tls_handshake", "jaring_tls_jabat"),
+    ("jaring_tls_identiti", "net_tls_identity", "jaring_tls_identiti"),
+    ("jaring_tls_percaya", "net_tls_trust", "jaring_tls_percaya"),
+    ("jaring_tls_jabat_sah", "net_tls_handshake_auth", "jaring_tls_jabat_sah"),
+    ("jaring_tls_disahkan", "net_tls_is_authenticated", "jaring_tls_disahkan"),
     ("jaring_tls_kunci", "net_tls_keys", "jaring_tls_kunci"),
     ("jaring_tls_hantar", "net_tls_send", "jaring_tls_hantar"),
     ("jaring_tls_terima", "net_tls_recv", "jaring_tls_terima"),
@@ -105,8 +121,11 @@ struct Conn {
     /// agree on which key protects which direction without extra API surface.
     is_client: bool,
     /// Record-protection state, present once keys are installed (by
-    /// `jaring_tls_kunci` or a completed `jaring_tls_jabat`).
+    /// `jaring_tls_kunci` or a completed handshake).
     tls: Option<TlsState>,
+    /// True only after an AUTHENTICATED handshake — i.e. the full Coq
+    /// `tls_connected` conjunction holds for this connection.
+    authenticated: bool,
 }
 
 /// One tracked listener: the enforcing machine held in LISTEN plus the real
@@ -123,10 +142,37 @@ struct NetState {
     next_id: u64,
     conns: HashMap<u64, Conn>,
     listeners: HashMap<u64, Listener>,
+    /// This peer's long-term signing identity (`jaring_tls_identiti`), used
+    /// when acting as an authenticating server.
+    identity: Option<Identity>,
+    /// Credentials this peer pins (`jaring_tls_percaya`). An EMPTY store
+    /// trusts nothing, so an authenticated handshake against it fails — the
+    /// "forgot to pin" failure mode is refusal, never acceptance.
+    trust: TrustStore,
 }
 
 thread_local! {
     static NET: RefCell<NetState> = RefCell::new(NetState::default());
+}
+
+/// Lowercase hex, for exchanging credentials as RIINA strings.
+fn to_hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// Parse exactly `N` bytes of hex; anything else is an error (a short or
+/// malformed credential must never be padded into something acceptable).
+fn from_hex<const N: usize>(s: &str, ctx: &str) -> Result<[u8; N]> {
+    let s = s.trim();
+    if s.len() != N * 2 {
+        return Err(err(format!("{ctx}: expected {} hex chars", N * 2)));
+    }
+    let mut out = [0u8; N];
+    for (i, o) in out.iter_mut().enumerate() {
+        *o = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16)
+            .map_err(|_| err(format!("{ctx}: invalid hex")))?;
+    }
+    Ok(out)
 }
 
 fn err(msg: impl Into<String>) -> Error {
@@ -182,6 +228,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                         stream: Some(stream),
                         is_client: true,
                         tls: None,
+                        authenticated: false,
                     },
                 );
                 Value::Int(id)
@@ -367,6 +414,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                         stream: Some(stream),
                         is_client: false,
                         tls: None,
+                        authenticated: false,
                     },
                 );
                 Value::Int(id)
@@ -439,6 +487,140 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     recv_seq: 0,
                 });
                 Ok(Value::Bool(true))
+            })?
+        }
+        // Set this peer's long-term signing identity from a 32-byte hex seed
+        // and return its public credential (hex) for peers to pin. The seed
+        // MUST be CSPRNG output in a real deployment; Ed25519 signing itself
+        // is deterministic (RFC 8032) so no further randomness is consumed.
+        "jaring_tls_identiti" => {
+            let seed_hex = as_str(arg, name)?;
+            let seed = from_hex::<32>(&seed_hex, "jaring_tls_identiti")?;
+            let id = Identity::from_seed(&seed);
+            let credential = to_hex(&id.credential());
+            NET.with(|n| n.borrow_mut().identity = Some(id));
+            Value::String(credential)
+        }
+        // Pin a peer credential (hex public key). Trust is explicit pinning:
+        // there is no CA, no chain, and no revocation — see riina-tls `auth`.
+        "jaring_tls_percaya" => {
+            let cred_hex = as_str(arg, name)?;
+            let cred = from_hex::<CREDENTIAL_LEN>(&cred_hex, "jaring_tls_percaya")?;
+            NET.with(|n| n.borrow_mut().trust.trust(cred));
+            Value::Bool(true)
+        }
+        // Does this connection carry an AUTHENTICATED session — i.e. does the
+        // full Coq `tls_connected` conjunction hold? False for anonymous
+        // handshakes and for connections with no TLS at all.
+        "jaring_tls_disahkan" => {
+            let id = as_int(arg, name)?;
+            NET.with(|n| -> Result<Value> {
+                let st = &*n.borrow();
+                let conn = st
+                    .conns
+                    .get(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                Ok(Value::Bool(conn.authenticated && conn.tls.is_some()))
+            })?
+        }
+        // AUTHENTICATED handshake: as `jaring_tls_jabat`, plus RFC 7250
+        // raw-public-key Certificate + RFC 8446 §4.4.3 CertificateVerify. The
+        // server signs with its `jaring_tls_identiti`; the client requires the
+        // credential to be pinned via `jaring_tls_percaya` AND the signature
+        // to verify. A MITM substituting its own key cannot pass. Fails closed
+        // if the server has no identity or the client has an empty store.
+        "jaring_tls_jabat_sah" => {
+            let id = as_int(arg, name)?;
+            let (mut stream, is_client) = NET.with(|n| -> Result<_> {
+                let st = &*n.borrow();
+                let conn = st
+                    .conns
+                    .get(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                if conn.machine.state() != TcpState::Established {
+                    return Err(err("jaring: not established"));
+                }
+                let s = conn
+                    .stream
+                    .as_ref()
+                    .ok_or_else(|| err("jaring: not established"))?
+                    .try_clone()
+                    .map_err(|e| err(format!("jaring_tls: jabat: {e}")))?;
+                Ok((s, conn.is_client))
+            })?;
+
+            let entropy = os_entropy_32().map_err(|_| err("jaring_tls: no OS entropy"))?;
+            let io = |e: std::io::Error| err(format!("jaring_tls: jabat: {e}"));
+
+            let session = if is_client {
+                let store = NET.with(|n| n.borrow().trust.clone());
+                if store.is_empty() {
+                    return Err(err(
+                        "jaring_tls: no trusted credentials (jaring_tls_percaya) — refusing",
+                    ));
+                }
+                let (hs, share) = ClientHandshake::start(&entropy);
+                stream.write_all(&share).map_err(io)?;
+                let mut server_share = [0u8; SHARE_LEN];
+                let mut credential = [0u8; CREDENTIAL_LEN];
+                let mut signature = [0u8; SIGNATURE_LEN];
+                let mut server_fin = [0u8; VERIFY_DATA_LEN];
+                stream.read_exact(&mut server_share).map_err(io)?;
+                stream.read_exact(&mut credential).map_err(io)?;
+                stream.read_exact(&mut signature).map_err(io)?;
+                stream.read_exact(&mut server_fin).map_err(io)?;
+                let auth = ServerAuth {
+                    credential,
+                    signature,
+                };
+                let (client_fin, session) = hs
+                    .finish_authenticated(&server_share, &auth, &server_fin, &store)
+                    .map_err(|_| err("jaring_tls: peer authentication failed"))?;
+                stream.write_all(&client_fin).map_err(io)?;
+                session
+            } else {
+                let mut client_share = [0u8; SHARE_LEN];
+                stream.read_exact(&mut client_share).map_err(io)?;
+                let (hs, share, auth, server_fin) = NET.with(|n| -> Result<_> {
+                    let st = &*n.borrow();
+                    let identity = st.identity.as_ref().ok_or_else(|| {
+                        err("jaring_tls: no identity (jaring_tls_identiti) — refusing")
+                    })?;
+                    ServerHandshake::accept_authenticated(&entropy, &client_share, identity)
+                        .map_err(|_| err("jaring_tls: handshake failed"))
+                })?;
+                stream.write_all(&share).map_err(io)?;
+                stream.write_all(&auth.credential).map_err(io)?;
+                stream.write_all(&auth.signature).map_err(io)?;
+                stream.write_all(&server_fin).map_err(io)?;
+                let mut client_fin = [0u8; VERIFY_DATA_LEN];
+                stream.read_exact(&mut client_fin).map_err(io)?;
+                hs.confirm(&client_fin)
+                    .map_err(|_| err("jaring_tls: handshake failed"))?
+            };
+
+            // Only report authentication if the evidence says the FULL Coq
+            // conjunction holds — never from the code path alone.
+            let connected = session.evidence.tls_connected();
+            NET.with(|n| -> Result<Value> {
+                let st = &mut *n.borrow_mut();
+                let conn = st
+                    .conns
+                    .get_mut(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                let (send, recv) = if is_client {
+                    (session.client_keys, session.server_keys)
+                } else {
+                    (session.server_keys, session.client_keys)
+                };
+                conn.tls = Some(TlsState {
+                    send,
+                    send_seq: 0,
+                    recv,
+                    recv_seq: 0,
+                });
+                conn.authenticated = connected;
+                Ok(Value::Bool(connected))
             })?
         }
         // Perform a REAL TLS 1.3 handshake over an ESTABLISHED connection:
@@ -1076,6 +1258,139 @@ mod tests {
             matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("unknown connection")),
             "handshake on an unknown connection must be rejected, got {res:?}"
         );
+    }
+
+    /// Authenticated handshake over real sockets: the client pins the
+    /// server's credential, both sides report the FULL Coq `tls_connected`
+    /// conjunction, and the channel works.
+    #[test]
+    fn authenticated_handshake_over_sockets() {
+        // Server identity, and the credential the client will pin.
+        let Some(Value::String(credential)) =
+            apply("jaring_tls_identiti", &s(&"11".repeat(32))).unwrap()
+        else {
+            panic!("identity failed")
+        };
+        let Some(Value::Int(lid)) = apply("jaring_dengar", &s("127.0.0.1:0")).unwrap() else {
+            panic!("listen failed")
+        };
+        let Some(Value::String(addr)) = apply("jaring_alamat", &Value::Int(lid)).unwrap() else {
+            panic!("addr failed")
+        };
+        let client = std::thread::spawn(move || {
+            // A different thread = a different peer: it has NO identity, only
+            // the pin.
+            apply("jaring_tls_percaya", &s(&credential)).unwrap();
+            let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr)).unwrap() else {
+                panic!("connect failed")
+            };
+            let ok = apply("jaring_tls_jabat_sah", &Value::Int(cid)).unwrap();
+            assert_eq!(ok, Some(Value::Bool(true)), "client must authenticate");
+            assert_eq!(
+                apply("jaring_tls_disahkan", &Value::Int(cid)).unwrap(),
+                Some(Value::Bool(true)),
+                "tls_connected must hold"
+            );
+            apply("jaring_tls_hantar", &pair(Value::Int(cid), s("sah"))).unwrap();
+            match apply("jaring_tls_terima", &Value::Int(cid)).unwrap() {
+                Some(Value::String(got)) => got,
+                other => panic!("expected string, got {other:?}"),
+            }
+        });
+        let Some(Value::Int(sid)) = apply("jaring_terima_sambungan", &Value::Int(lid)).unwrap()
+        else {
+            panic!("accept failed")
+        };
+        assert_eq!(
+            apply("jaring_tls_jabat_sah", &Value::Int(sid)).unwrap(),
+            Some(Value::Bool(true)),
+            "server must complete the authenticated handshake"
+        );
+        assert_eq!(
+            apply("jaring_tls_terima", &Value::Int(sid)).unwrap(),
+            Some(Value::String("sah".to_string()))
+        );
+        apply("jaring_tls_hantar", &pair(Value::Int(sid), s("balas"))).unwrap();
+        assert_eq!(client.join().unwrap(), "balas");
+        let _ = apply("jaring_tutup_dengar", &Value::Int(lid));
+    }
+
+    /// THE attack, end to end over real sockets: the "server" is a MITM
+    /// holding a DIFFERENT identity from the one the client pinned. Its
+    /// handshake is internally valid and still must be refused.
+    #[test]
+    fn mitm_server_is_rejected_over_sockets() {
+        // The client will pin THIS credential…
+        let Some(Value::String(pinned)) =
+            apply("jaring_tls_identiti", &s(&"22".repeat(32))).unwrap()
+        else {
+            panic!("identity failed")
+        };
+        let Some(Value::Int(lid)) = apply("jaring_dengar", &s("127.0.0.1:0")).unwrap() else {
+            panic!("listen failed")
+        };
+        let Some(Value::String(addr)) = apply("jaring_alamat", &Value::Int(lid)).unwrap() else {
+            panic!("addr failed")
+        };
+        // …but the listening peer switches to an ATTACKER identity.
+        apply("jaring_tls_identiti", &s(&"77".repeat(32))).unwrap();
+
+        let client = std::thread::spawn(move || {
+            apply("jaring_tls_percaya", &s(&pinned)).unwrap();
+            let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr)).unwrap() else {
+                panic!("connect failed")
+            };
+            let res = apply("jaring_tls_jabat_sah", &Value::Int(cid));
+            let rejected = matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("authentication failed"));
+            // Even on rejection, nothing may claim to be authenticated.
+            // (`Value` holds `Rc` and is not `Send`, so reduce to a bool here.)
+            let claims = apply("jaring_tls_disahkan", &Value::Int(cid)).unwrap()
+                == Some(Value::Bool(true));
+            (rejected, claims)
+        });
+        let Some(Value::Int(sid)) = apply("jaring_terima_sambungan", &Value::Int(lid)).unwrap()
+        else {
+            panic!("accept failed")
+        };
+        // The MITM's own side may or may not error (the client hangs up); what
+        // matters is the client's verdict.
+        let _ = apply("jaring_tls_jabat_sah", &Value::Int(sid));
+        let (rejected, claims) = client.join().unwrap();
+        assert!(rejected, "a MITM with an unpinned credential must be rejected");
+        assert!(
+            !claims,
+            "a rejected handshake must never report authentication"
+        );
+        let _ = apply("jaring_tutup_dengar", &Value::Int(lid));
+    }
+
+    /// Fail closed: a client with nothing pinned refuses to authenticate at
+    /// all, rather than accepting whatever shows up.
+    #[test]
+    fn client_without_pins_refuses_authenticated_handshake() {
+        let addr = spawn_echo();
+        let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect failed")
+        };
+        // This thread has no trust store entries.
+        NET.with(|n| n.borrow_mut().trust = TrustStore::new());
+        let res = apply("jaring_tls_jabat_sah", &Value::Int(cid));
+        assert!(
+            matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("no trusted credentials")),
+            "an empty trust store must refuse, got {res:?}"
+        );
+    }
+
+    /// Hex parsing is strict: a short, long or malformed credential is an
+    /// error, never silently padded into something acceptable.
+    #[test]
+    fn credential_hex_parsing_is_strict() {
+        for bad in ["ab", &"zz".repeat(32), &"11".repeat(31), &"11".repeat(33)] {
+            assert!(
+                apply("jaring_tls_percaya", &s(bad)).is_err(),
+                "malformed credential {bad} must be rejected"
+            );
+        }
     }
 
     #[test]

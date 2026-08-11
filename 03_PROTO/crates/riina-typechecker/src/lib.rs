@@ -1002,6 +1002,38 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
         );
     }
+    // Authentication (RFC 7250 raw public keys + §4.4.3 CertificateVerify):
+    // identity takes a hex seed and returns the hex credential; percaya pins a
+    // hex credential; jabat_sah runs the authenticated handshake; disahkan
+    // reports whether the full Coq tls_connected conjunction holds.
+    for nm in ["jaring_tls_identiti", "net_tls_identity"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::String),
+                Box::new(Ty::String),
+                Effect::NetworkSecure,
+            ),
+        );
+    }
+    for nm in ["jaring_tls_percaya", "net_tls_trust"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
+    for nm in ["jaring_tls_jabat_sah", "net_tls_handshake_auth"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
+    for nm in ["jaring_tls_disahkan", "net_tls_is_authenticated"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
     for nm in ["jaring_tls_kunci", "net_tls_keys"] {
         c = c.extend(
             nm.to_string(),

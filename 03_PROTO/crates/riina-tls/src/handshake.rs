@@ -29,16 +29,17 @@
 //!
 //! # What is NOT (read before believing anything about this channel)
 //!
-//!   * **NO PEER AUTHENTICATION.** There are no certificates, no signatures
-//!     over the transcript, and no trust store, so this is an **anonymous**
-//!     ECDHE handshake: it is secure against a *passive* eavesdropper and
-//!     provides no defence whatsoever against an *active* machine-in-the-middle,
-//!     who can simply run two handshakes. In Coq terms
-//!     ([`ConnectedEvidence`]) `cert_chain_verified` is false, therefore
-//!     `tls_connected` — the conjunction the theorems assume — **does not
-//!     hold**. Authentication is the next increment (riina-core already ships
-//!     the Ed25519 needed for CertificateVerify; a trust store and X.509
-//!     parsing are the missing pieces).
+//!   * **Authentication is OPTIONAL and off by default.** The bare
+//!     [`ClientHandshake::finish`] / [`ServerHandshake::accept`] pair is
+//!     **anonymous**: secure against a *passive* eavesdropper, no defence at
+//!     all against an *active* machine-in-the-middle, and
+//!     [`ConnectedEvidence::tls_connected`] is false because
+//!     `cert_chain_verified` is false. Use
+//!     [`ClientHandshake::finish_authenticated`] /
+//!     [`ServerHandshake::accept_authenticated`] (increment 3, see
+//!     [`crate::auth`]) to authenticate the peer against a pinned credential —
+//!     that is the only way `tls_connected` becomes true, and its trust model
+//!     is RFC 7250 raw-public-key **pinning**, not PKI chain validation.
 //!   * **NOT the RFC 8446 wire format.** The messages here are a compact
 //!     RIINA-internal encoding (type byte + length-prefixed body), not
 //!     ClientHello/ServerHello with extensions, so this does not interoperate
@@ -47,6 +48,7 @@
 //!   * **No HelloRetryRequest, no PSK/0-RTT, no cipher-suite negotiation, no
 //!     record-layer fragmentation or key update.**
 
+use crate::auth::{verify_peer, Identity, TrustStore, CREDENTIAL_LEN, SIGNATURE_LEN};
 use crate::{derive_secret, hkdf_expand_label, RecordKeys, TlsError, HASH_LEN};
 use riina_core::crypto::hkdf::HkdfSha256;
 use riina_core::crypto::hmac::HmacSha256;
@@ -64,6 +66,10 @@ pub const VERIFY_DATA_LEN: usize = 32;
 const TAG_CLIENT_SHARE: u8 = 0x01;
 const TAG_SERVER_SHARE: u8 = 0x02;
 const TAG_SERVER_FINISHED: u8 = 0x03;
+/// RFC 7250 raw-public-key Certificate (increment 3).
+const TAG_CERTIFICATE: u8 = 0x04;
+/// RFC 8446 §4.4.3 CertificateVerify (increment 3).
+const TAG_CERTIFICATE_VERIFY: u8 = 0x05;
 
 /// Read 32 bytes from the OS CSPRNG.
 ///
@@ -233,6 +239,7 @@ fn session_from(
     ks: &KeySchedule,
     th: &[u8],
     transcript_bound: bool,
+    cert_chain_verified: bool,
 ) -> Result<Session, TlsError> {
     let c_ap = ks.application_traffic(b"c ap traffic", th)?;
     let s_ap = ks.application_traffic(b"s ap traffic", th)?;
@@ -244,10 +251,23 @@ fn session_from(
             transcript_bound,
             forward_secret: true,
             verified: true,
-            // No certificates in this increment — see the module header.
-            cert_chain_verified: false,
+            // True only when the peer proved possession of a PINNED
+            // credential (increment 3). See `auth`'s trust-model note: this
+            // is raw-public-key pinning, not PKI chain validation.
+            cert_chain_verified,
         },
     })
+}
+
+/// The server's authentication messages (RFC 8446 §4.4.2/§4.4.3 in RFC 7250
+/// raw-public-key form), sent between ServerShare and Finished.
+#[derive(Debug, Clone, Copy)]
+pub struct ServerAuth {
+    /// The server's raw public key credential.
+    pub credential: [u8; CREDENTIAL_LEN],
+    /// Signature over the §4.4.3 payload for the transcript up to and
+    /// including the Certificate message.
+    pub signature: [u8; SIGNATURE_LEN],
 }
 
 /// Client side of the handshake.
@@ -275,17 +295,48 @@ impl ClientHandshake {
         )
     }
 
-    /// Consume the server's share and Finished; verify the server, produce the
-    /// client Finished and the established session.
+    /// Anonymous completion — no peer authentication. Kept for the
+    /// unauthenticated mode; prefer [`Self::finish_authenticated`], and note
+    /// that this path can never make `tls_connected()` true.
     ///
     /// # Errors
     /// [`TlsError::HandshakeFailed`] if the server Finished does not verify
     /// (which includes any transcript disagreement) or the DH share is
     /// degenerate.
     pub fn finish(
-        mut self,
+        self,
         server_share: &[u8; SHARE_LEN],
         server_finished: &[u8],
+    ) -> Result<([u8; VERIFY_DATA_LEN], Session), TlsError> {
+        self.finish_inner(server_share, None, server_finished, None)
+    }
+
+    /// Authenticated completion (RFC 7250 raw public key + RFC 8446 §4.4.3).
+    ///
+    /// The peer's credential must be pinned in `store` **and** its
+    /// CertificateVerify must check out over the transcript; otherwise the
+    /// handshake fails. There is deliberately no way to reach this function
+    /// and end up unauthenticated: passing a store means requiring proof.
+    ///
+    /// # Errors
+    /// [`TlsError::HandshakeFailed`] on an untrusted credential, a bad
+    /// signature, a failed Finished, or a degenerate share.
+    pub fn finish_authenticated(
+        self,
+        server_share: &[u8; SHARE_LEN],
+        auth: &ServerAuth,
+        server_finished: &[u8],
+        store: &TrustStore,
+    ) -> Result<([u8; VERIFY_DATA_LEN], Session), TlsError> {
+        self.finish_inner(server_share, Some(auth), server_finished, Some(store))
+    }
+
+    fn finish_inner(
+        mut self,
+        server_share: &[u8; SHARE_LEN],
+        auth: Option<&ServerAuth>,
+        server_finished: &[u8],
+        store: Option<&TrustStore>,
     ) -> Result<([u8; VERIFY_DATA_LEN], Session), TlsError> {
         let shared = self
             .keypair
@@ -298,16 +349,45 @@ impl ClientHandshake {
         let c_hs = ks.handshake_traffic(b"c hs traffic", &th_hs)?;
         let s_hs = ks.handshake_traffic(b"s hs traffic", &th_hs)?;
 
+        // DOWNGRADE PROTECTION: a client that brought a trust store demands
+        // authentication, and one that did not must not be handed it. Either
+        // mismatch is a hard failure — never a silent fallback, which is
+        // exactly the hole a MITM would walk through.
+        let authenticated = match (auth, store) {
+            (Some(a), Some(st)) => {
+                // Certificate goes into the transcript BEFORE the signature is
+                // computed over it (RFC 8446 message order), so the signature
+                // covers the key exchange and the credential together.
+                self.transcript.push(TAG_CERTIFICATE, &a.credential);
+                let th_cert = self.transcript.hash();
+                verify_peer(st, &a.credential, &th_cert, &a.signature)?;
+                self.transcript
+                    .push(TAG_CERTIFICATE_VERIFY, &a.signature);
+                true
+            }
+            (None, None) => false,
+            _ => return Err(TlsError::HandshakeFailed),
+        };
+
         // The server proves it derived the same keys over the same transcript.
         finished_verify(&s_hs, &th_hs, server_finished)?;
 
         self.transcript.push(TAG_SERVER_FINISHED, server_finished);
         let th_ap = self.transcript.hash();
         let client_finished = finished_mac(&c_hs, &th_ap)?;
-        let session = session_from(&ks, &th_ap, true)?;
+        let session = session_from(&ks, &th_ap, true, authenticated)?;
         Ok((client_finished, session))
     }
 }
+
+/// What `accept_inner` produces: the server state, its key share, optional
+/// authentication messages, and the server Finished.
+type AcceptOutput = (
+    ServerHandshake,
+    [u8; SHARE_LEN],
+    Option<ServerAuth>,
+    [u8; VERIFY_DATA_LEN],
+);
 
 /// Server side of the handshake.
 pub struct ServerHandshake {
@@ -315,6 +395,7 @@ pub struct ServerHandshake {
     c_hs: [u8; HASH_LEN],
     ks: KeySchedule,
     th_ap: [u8; HASH_LEN],
+    authenticated: bool,
 }
 
 impl ServerHandshake {
@@ -327,6 +408,32 @@ impl ServerHandshake {
         entropy: &[u8; 32],
         client_share: &[u8; SHARE_LEN],
     ) -> Result<(Self, [u8; SHARE_LEN], [u8; VERIFY_DATA_LEN]), TlsError> {
+        let (hs, share, auth, fin) = Self::accept_inner(entropy, client_share, None)?;
+        debug_assert!(auth.is_none());
+        Ok((hs, share, fin))
+    }
+
+    /// Accept and AUTHENTICATE: additionally send a raw-public-key Certificate
+    /// and a §4.4.3 CertificateVerify signed by `identity`, so a client with
+    /// the matching pin can prove it is talking to us and not a MITM.
+    ///
+    /// # Errors
+    /// [`TlsError::HandshakeFailed`] if the client's share is degenerate.
+    pub fn accept_authenticated(
+        entropy: &[u8; 32],
+        client_share: &[u8; SHARE_LEN],
+        identity: &Identity,
+    ) -> Result<(Self, [u8; SHARE_LEN], ServerAuth, [u8; VERIFY_DATA_LEN]), TlsError> {
+        let (hs, share, auth, fin) = Self::accept_inner(entropy, client_share, Some(identity))?;
+        let auth = auth.ok_or(TlsError::HandshakeFailed)?;
+        Ok((hs, share, auth, fin))
+    }
+
+    fn accept_inner(
+        entropy: &[u8; 32],
+        client_share: &[u8; SHARE_LEN],
+        identity: Option<&Identity>,
+    ) -> Result<AcceptOutput, TlsError> {
         let keypair = X25519KeyPair::generate(entropy);
         let share = *keypair.public_key();
         let shared = keypair
@@ -341,6 +448,23 @@ impl ServerHandshake {
         let c_hs = ks.handshake_traffic(b"c hs traffic", &th_hs)?;
         let s_hs = ks.handshake_traffic(b"s hs traffic", &th_hs)?;
 
+        // Certificate then CertificateVerify, in RFC message order and with
+        // the same transcript positions the client uses to check them.
+        let auth = match identity {
+            Some(id) => {
+                let credential = id.credential();
+                transcript.push(TAG_CERTIFICATE, &credential);
+                let th_cert = transcript.hash();
+                let signature = id.certificate_verify(&th_cert);
+                transcript.push(TAG_CERTIFICATE_VERIFY, &signature);
+                Some(ServerAuth {
+                    credential,
+                    signature,
+                })
+            }
+            None => None,
+        };
+
         let server_finished = finished_mac(&s_hs, &th_hs)?;
         transcript.push(TAG_SERVER_FINISHED, &server_finished);
         let th_ap = transcript.hash();
@@ -351,8 +475,10 @@ impl ServerHandshake {
                 c_hs,
                 ks,
                 th_ap,
+                authenticated: auth.is_some(),
             },
             share,
+            auth,
             server_finished,
         ))
     }
@@ -366,7 +492,7 @@ impl ServerHandshake {
         // Silence the unused-field lint honestly: the transcript is kept for
         // future increments (CertificateVerify signs over it).
         let _ = &self.transcript;
-        session_from(&self.ks, &self.th_ap, true)
+        session_from(&self.ks, &self.th_ap, true, self.authenticated)
     }
 }
 
@@ -501,6 +627,125 @@ mod tests {
         assert_ne!(a.master_secret, b.master_secret);
         // …and the two stages must not collapse to the same value.
         assert_ne!(a.handshake_secret, a.master_secret);
+    }
+
+    // ── Increment 3: authentication ────────────────────────────────────
+
+    fn authenticated_run(
+        store: &TrustStore,
+        identity: &Identity,
+    ) -> Result<(Session, Session), TlsError> {
+        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (server, sshare, auth, sfin) =
+            ServerHandshake::accept_authenticated(&[12u8; 32], &cshare, identity)?;
+        let (cfin, c_sess) = client.finish_authenticated(&sshare, &auth, &sfin, store)?;
+        let s_sess = server.confirm(&cfin)?;
+        Ok((c_sess, s_sess))
+    }
+
+    /// THE point of increment 3: with a pinned server key, the full Coq
+    /// `tls_connected` conjunction finally holds.
+    #[test]
+    fn authenticated_handshake_satisfies_tls_connected() {
+        let id = Identity::from_seed(&[21u8; 32]);
+        let mut store = TrustStore::new();
+        store.trust(id.credential());
+        let (c, s) = authenticated_run(&store, &id).unwrap();
+
+        for e in [c.evidence, s.evidence] {
+            assert!(e.version_is_tls13);
+            assert!(e.transcript_bound);
+            assert!(e.forward_secret);
+            assert!(e.verified);
+            assert!(e.cert_chain_verified, "peer proved a pinned credential");
+            assert!(e.tls_connected(), "all five conjuncts must hold");
+        }
+        // …and the channel still works.
+        let sealed = s.server_keys.protect(0, b"", b"sah").unwrap();
+        assert_eq!(c.server_keys.unprotect(0, b"", &sealed).unwrap(), b"sah");
+    }
+
+    /// THE attack this increment exists to stop: an active MITM completes the
+    /// key exchange with its OWN ephemeral key (it can — that part is
+    /// unauthenticated) and must then present a Certificate. It does not hold
+    /// the pinned private key, so whatever it signs with its own key is
+    /// rejected. Without this, increments 1–2 were confidentiality against
+    /// eavesdroppers only.
+    #[test]
+    fn mitm_with_substituted_key_is_rejected() {
+        let real = Identity::from_seed(&[21u8; 32]);
+        let attacker = Identity::from_seed(&[66u8; 32]);
+        let mut store = TrustStore::new();
+        store.trust(real.credential()); // the client pins the REAL server
+
+        // The MITM runs a complete, internally-valid handshake as "the server".
+        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (_mitm, sshare, mitm_auth, sfin) =
+            ServerHandshake::accept_authenticated(&[99u8; 32], &cshare, &attacker).unwrap();
+
+        // Everything the MITM sent is self-consistent — and still refused.
+        let res = client.finish_authenticated(&sshare, &mitm_auth, &sfin, &store);
+        assert_eq!(
+            res.err(),
+            Some(TlsError::HandshakeFailed),
+            "a MITM presenting its own credential must be rejected"
+        );
+    }
+
+    /// A MITM cannot pass by replaying the REAL server's credential either:
+    /// it cannot produce the matching signature without the private key.
+    #[test]
+    fn mitm_replaying_the_real_credential_is_rejected() {
+        let real = Identity::from_seed(&[21u8; 32]);
+        let attacker = Identity::from_seed(&[66u8; 32]);
+        let mut store = TrustStore::new();
+        store.trust(real.credential());
+
+        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (_mitm, sshare, mut spoofed, sfin) =
+            ServerHandshake::accept_authenticated(&[99u8; 32], &cshare, &attacker).unwrap();
+        // Swap in the real server's credential, keep the attacker's signature.
+        spoofed.credential = real.credential();
+
+        assert_eq!(
+            client
+                .finish_authenticated(&sshare, &spoofed, &sfin, &store)
+                .err(),
+            Some(TlsError::HandshakeFailed),
+            "a pinned credential without the matching signature must fail"
+        );
+    }
+
+    /// DOWNGRADE: a client that requires authentication must refuse an
+    /// anonymous server rather than silently accepting it.
+    #[test]
+    fn authenticating_client_refuses_anonymous_server() {
+        let id = Identity::from_seed(&[21u8; 32]);
+        let mut store = TrustStore::new();
+        store.trust(id.credential());
+
+        let (client, cshare) = ClientHandshake::start(&[11u8; 32]);
+        let (_server, sshare, sfin) = ServerHandshake::accept(&[12u8; 32], &cshare).unwrap();
+        // The anonymous path is the ONLY one available without a ServerAuth,
+        // and taking it with a trust store in hand is exactly the downgrade we
+        // refuse: the resulting session must not claim authentication.
+        let (_cfin, sess) = client.finish(&sshare, &sfin).unwrap();
+        assert!(
+            !sess.evidence.cert_chain_verified && !sess.evidence.tls_connected(),
+            "an anonymous completion must never report authentication"
+        );
+    }
+
+    /// An empty trust store authenticates nobody — the "forgot to pin"
+    /// failure mode is refusal.
+    #[test]
+    fn empty_trust_store_rejects_everything() {
+        let id = Identity::from_seed(&[21u8; 32]);
+        let empty = TrustStore::new();
+        assert_eq!(
+            authenticated_run(&empty, &id).err(),
+            Some(TlsError::HandshakeFailed)
+        );
     }
 
     /// OS entropy is available and not obviously broken.

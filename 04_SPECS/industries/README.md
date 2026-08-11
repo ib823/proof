@@ -1,6 +1,6 @@
 # RIINA Industry Specifications
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3053 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3069 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 This directory contains industry-specific security requirements and threat models for RIINA.
 
