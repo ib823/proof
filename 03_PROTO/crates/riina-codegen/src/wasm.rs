@@ -5898,6 +5898,18 @@ impl WasmBackend {
                     wasm_encode::encode_uleb128(0, code); // table 0
                 }
             }
+            // REQ-79 + REQ-78: the WASM backend has no list representation, so
+            // a list literal is REFUSED rather than lowered to something the
+            // (also-unsupported) `senarai_*` builtins would misread.
+            Instruction::MakeList(_) => {
+                return Err(Error::InvalidOperation(
+                    "list literals are not supported by the WASM backend \
+                     (native/C only) — master plan REQ-79. Build for the native \
+                     target."
+                        .to_string(),
+                ));
+            }
+
             Instruction::Pair(a, b) => {
                 // Alloc 16 bytes (two 8-byte cells), store a at +0, b at +8
                 Self::emit_alloc_call(ctx.alloc_func_index, 16, code);

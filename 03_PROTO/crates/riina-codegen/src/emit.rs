@@ -3898,6 +3898,12 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
                         vars.insert(*a);
                         vars.insert(*b);
                     }
+                    // A list literal uses every one of its element vars.
+                    Instruction::MakeList(elems) => {
+                        for e in elems {
+                            vars.insert(*e);
+                        }
+                    }
                     Instruction::Alloc { init, .. } => {
                         vars.insert(*init);
                     }
@@ -4112,6 +4118,20 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
                 ));
                 self.dedent();
                 self.writeln("}");
+            }
+
+            // REQ-79: a first-class list. The C runtime already had
+            // `riina_list_push`/`riina_make_list` (builtins RETURN tagged lists);
+            // literals just never used them, so `senarai_*` aborted on them.
+            Instruction::MakeList(elems) => {
+                // Mirrors the `riina_pair` convention: vars are already
+                // `riina_value_t*`, and the constructor returns one.
+                let tmp = format!("lst_{}", result.replace(|c: char| !c.is_alphanumeric(), "_"));
+                self.writeln(&format!("riina_list_t {tmp} = riina_list_new();"));
+                for e in elems {
+                    self.writeln(&format!("riina_list_push(&{tmp}, {});", self.var_name(e)));
+                }
+                self.writeln(&format!("{result} = riina_make_list({tmp});"));
             }
 
             Instruction::Pair(fst, snd) => {

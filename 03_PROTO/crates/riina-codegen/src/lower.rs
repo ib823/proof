@@ -1126,24 +1126,25 @@ impl Lower {
             // builds a first-class Value::List directly; this representation is
             // for the C/WASM lowering path.
             Expr::ListLit(elems) => {
+                // REQ-79: emit a first-class list, NOT a cons chain of pairs.
+                // The C backend's `senarai_*` builtins require a tagged list and
+                // `abort()` on anything else, so the old cons-chain lowering made
+                // every compiled program touching a list literal die with SIGABRT
+                // and no diagnostic while the interpreter answered correctly.
                 let effect = self.infer_effect(expr);
-                let mut acc = self.emit(
-                    Instruction::Const(Constant::Unit),
-                    Ty::Unit,
-                    SecurityLevel::Public,
-                    Effect::Pure,
-                );
-                for e in elems.iter().rev() {
-                    let head = self.lower_expr(e)?;
-                    let elem_ty = self.infer_type(e);
-                    acc = self.emit(
-                        Instruction::Pair(head, acc),
-                        Ty::List(Box::new(elem_ty)),
-                        SecurityLevel::Public,
-                        effect,
-                    );
+                let elem_ty = elems
+                    .first()
+                    .map_or(Ty::Any, |e| self.infer_type(e));
+                let mut vars = Vec::with_capacity(elems.len());
+                for e in elems {
+                    vars.push(self.lower_expr(e)?);
                 }
-                Ok(acc)
+                Ok(self.emit(
+                    Instruction::MakeList(vars),
+                    Ty::List(Box::new(elem_ty)),
+                    SecurityLevel::Public,
+                    effect,
+                ))
             }
 
             // Record literal — lowered (for the C/WASM path) as a cons chain of
