@@ -1553,7 +1553,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // `Unit -> Teks` function, like the `masa_*` clocks beside it. It used to
     // be bound to its RESULT type `Teks`, because a zero-arg call dropped its
     // `()` and left a bare `Var`; that typed the call site as a string while
-    // the runtime value was the un-applied builtin (master plan REQ-81).
+    // the runtime value was the un-applied builtin (master plan REQ-68).
     c = c.extend(
         "baca_garisan".to_string(),
         Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::System),

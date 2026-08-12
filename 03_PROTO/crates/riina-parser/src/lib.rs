@@ -727,7 +727,7 @@ impl<'a> Parser<'a> {
             // Build the curried lambda and its function type through the SAME
             // helper top-level declarations use. This was a third hand-rolled
             // copy of the fold, and it diverged: when zero-parameter functions
-            // gained a synthesised `()` parameter (REQ-81) a NESTED zero-arg
+            // gained a synthesised `()` parameter (REQ-68) a NESTED zero-arg
             // `fungsi` kept the old thunk shape here, so calling it applied a
             // non-function.
             let (lam, fn_ty) = riina_types::desugar_function(params, return_ty, effect, body);
@@ -1635,7 +1635,7 @@ impl<'a> Parser<'a> {
                         // application like any other. Treating `()` as a no-op
                         // suffix is what made a zero-arg function a global
                         // thunk that ran once, eagerly, whether called or not
-                        // (master plan REQ-81).
+                        // (master plan REQ-68).
                         expr = Expr::App(Box::new(expr), Box::new(Expr::Unit));
                     }
                     self.consume(TokenKind::RParen)?;

@@ -41,15 +41,16 @@ pub fn register_builtins(env: &Env) -> Env {
     );
     e = e.extend("println".to_string(), Value::Builtin("cetakln".to_string()));
 
-    // Input-source thunks. A zero-arg call like `baca_garisan()` parses to a
-    // bare `Var` (the empty `()` is a no-op suffix — see the parser note in
-    // `riina-parser`), and the typechecker binds the thunk to its result type
-    // (`baca_garisan : Teks`) or to `Unit -> Tainted<Teks>` (`baca_baris` /
-    // `read_line`). Register them here so the bare `Var` *materialises* to its
-    // `Builtin` value at runtime instead of raising `UnboundVariable` — the
-    // zero-arg-thunk materialisation tracked under the Gate C "OS/system" row.
-    // (Like the `masa_*` clocks, the runtime value is the `Builtin` itself; the
-    // C/WASM backends likewise carry no side-effecting input read yet.)
+    // Input sources. All three are `Unit -> Teks` functions (`baca_baris` /
+    // `read_line` additionally carry `Tainted<Teks, UserInput>` in the type
+    // system; taint is type-level, so the runtime value is the same string).
+    // Registering the name binds it to its `Builtin`, which `apply_builtin`
+    // then really applies — see the stdin read there.
+    //
+    // Until REQ-68 a zero-arg call dropped its `()`, so a call site evaluated
+    // to this un-applied `Builtin` VALUE and no input was ever read, while the
+    // typechecker had `baca_garisan : Teks`. Both halves are fixed.
+    // The C/WASM backends still carry no input read — they fail closed.
     for nm in ["baca_garisan", "baca_baris", "read_line"] {
         e = e.extend(nm.to_string(), Value::Builtin(nm.to_string()));
     }
@@ -252,7 +253,7 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
         // These are `Unit -> Teks` functions and are now really APPLIED. They
         // used to be reachable only as a bare `Var` — a zero-arg call dropped
         // its `()` — so the call site evaluated to the `Builtin` VALUE and no
-        // input was ever read (master plan REQ-81). `baca_baris`/`read_line`
+        // input was ever read (master plan REQ-68). `baca_baris`/`read_line`
         // additionally carry `Tainted<Teks, UserInput>` in the type system;
         // taint is type-level, so the runtime value is the same string.
         "baca_garisan" | "baca_baris" | "read_line" => {
@@ -632,7 +633,14 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 pub fn format_value(v: &Value) -> String {
     match v {
         Value::Unit => "()".to_string(),
-        Value::Bool(b) => b.to_string(),
+        // A RIINA boolean renders in RIINA's own spelling. The literals are
+        // `betul`/`salah`, so printing `true` from a program written in Bahasa
+        // Melayu was an inconsistency — and a real interp/C divergence: the C
+        // backend's `riina_format` has always emitted `betul`/`salah`, so
+        // `ke_teks(betul)` gave `true` interpreted and `betul` compiled
+        // (master plan REQ-80). Rust's `bool` Display is English, hence the
+        // explicit mapping rather than `b.to_string()`.
+        Value::Bool(b) => if *b { "betul" } else { "salah" }.to_string(),
         Value::Int(n) => n.to_string(),
         Value::BigInt(b) => b.to_string(),
         Value::Decimal(d) => d.to_string(),

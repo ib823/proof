@@ -1,6 +1,6 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
-//! Zero-parameter functions are real functions — master plan REQ-81.
+//! Zero-parameter functions are real functions — master plan REQ-68.
 //!
 //! # The bug this pins
 //!
@@ -91,7 +91,7 @@ struct Sandbox {
 
 impl Sandbox {
     fn new(tag: &str) -> Self {
-        let stem = format!("req81_{tag}");
+        let stem = format!("req68_{tag}");
         let dir = std::env::temp_dir().join(format!("riina_{stem}_{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("create sandbox");
@@ -211,7 +211,7 @@ fn assert_output(tag: &str, source: &str, expected: &str) {
     );
 }
 
-/// THE REQ-81 regression: called twice, so it runs twice — and it runs WHEN
+/// THE REQ-68 regression: called twice, so it runs twice — and it runs WHEN
 /// called, after `utama` has started. Before, `dipanggil` printed once, before
 /// `mula`.
 #[test]
@@ -251,7 +251,7 @@ fn uncalled_function_does_not_run() {
     );
 }
 
-/// REQ-80 + REQ-81 together: an early `pulang` inside a zero-arg function
+/// REQ-80 + REQ-68 together: an early `pulang` inside a zero-arg function
 /// returns from THAT function. The trailing `tamat` is the load-bearing part —
 /// it proves the return did not unwind past the call site into `utama`.
 #[test]
@@ -373,5 +373,50 @@ fn entry_point_is_invoked_and_its_return_is_not_printed() {
          \x20   7\n\
          }\n",
         "satu\n",
+    );
+}
+
+/// THE REQ-68 "t22" trigger shape, named in the original 2026-08-06 row:
+/// `fungsi a()` + `fungsi b(x) { a() }` + `fungsi c() { b(5) }`.
+///
+/// This is the second consequence that row recorded, distinct from the
+/// eager-evaluation one above: a zero-parameter member was excluded from the
+/// mutual-recursion group's sibling-closure rebind set, so `c` evaluated
+/// eagerly at bind time, entered `b`, and died with `unbound variable: a` —
+/// **even when `c` was never called** — while `riinac check` and BOTH compiled
+/// backends accepted and ran the same program. The corpus carried a written
+/// discipline because of it ("zero-param functions must not call group
+/// siblings"), and `07_EXAMPLES/02_effects/effect_inference.rii` carried a
+/// workaround note; both are removed now that this passes.
+#[test]
+fn zero_arg_function_may_call_its_group_siblings() {
+    assert_output(
+        "siblings",
+        "fungsi a() -> Nombor kesan Bersih { 7 }\n\
+         fungsi b(x: Nombor) -> Nombor kesan Bersih { a() + x }\n\
+         fungsi c() -> Nombor kesan Bersih { b(5) }\n\
+         fungsi utama() -> Nombor kesan Tulis {\n\
+         \x20   cetakln(ke_teks(c()));\n\
+         \x20   0\n\
+         }\n",
+        "12\n",
+    );
+}
+
+/// The same shape where the sibling-calling zero-arg function is NEVER called.
+/// Under the old model this still died at startup, because binding the group
+/// evaluated it; nothing should happen now.
+#[test]
+fn uncalled_sibling_caller_does_not_run_or_fail() {
+    assert_output(
+        "siblings_uncalled",
+        "fungsi a() -> Nombor kesan Bersih { 7 }\n\
+         fungsi b(x: Nombor) -> Nombor kesan Bersih { a() + x }\n\
+         fungsi c() -> Nombor kesan Bersih { b(5) }\n\
+         fungsi utama() -> Nombor kesan Tulis {\n\
+         \x20   cetakln(\"tiada panggilan\");\n\
+         \x20   0\n\
+         }\n",
+        "tiada panggilan\n",
     );
 }

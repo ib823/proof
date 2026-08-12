@@ -809,7 +809,7 @@ pub fn declared_fn_ty(params: &[(Ident, Ty)], return_ty: &Ty, effect: Effect) ->
 ///
 /// It used to yield its body directly, as a bare binding typed at the return
 /// type — "a global thunk". That was not a function in any sense that survived
-/// contact with the semantics (master plan REQ-81), and all three of these were
+/// contact with the semantics (master plan REQ-68), and all three of these were
 /// measured, with the interpreter and C backend agreeing on the wrong answer:
 ///   * the body ran ONCE, when the binding was evaluated, no matter how many
 ///     times it was called — two calls printed one line;
@@ -928,7 +928,7 @@ impl Program {
         // Otherwise the body CALLS `utama`. It used to be left as `Unit`, which
         // worked only because a zero-parameter function was a thunk: evaluating
         // its binding ran its body, so the program ran as a side effect of being
-        // bound. Now that `utama` is a real `Unit -> T` function (REQ-81),
+        // bound. Now that `utama` is a real `Unit -> T` function (REQ-68),
         // nothing would run unless it is applied.
         let body = if matches!(decls.last(), Some(TopLevelDecl::Expr(_))) {
             match decls.pop() {

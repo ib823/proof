@@ -71,6 +71,11 @@ pub struct WasmBackend {
     target: Target,
 }
 
+/// How a RIINA boolean renders as text, in RIINA's own spelling — index 0 is
+/// `false`, index 1 is `true`. Byte-identical to the C backend's `riina_format`
+/// and to the interpreter's `format_value` (master plan REQ-80).
+const BOOL_RENDERINGS: [&str; 2] = ["salah", "betul"];
+
 impl WasmBackend {
     pub fn new(target: Target) -> Self {
         Self { target }
@@ -85,28 +90,38 @@ impl WasmBackend {
         let mut data_offset: u32 = 0;
         let mut data_segments: Vec<DataSegment> = Vec::new();
 
-        for func in program.functions.values() {
-            for block in &func.blocks {
-                for instr in &block.instrs {
-                    if let Instruction::Const(Constant::String(s)) = &instr.instr {
-                        if !string_table.contains_key(s) {
-                            let offset = data_offset;
-                            let bytes = s.as_bytes();
-                            // Store length (4 bytes) + string bytes
-                            data_segments.push(DataSegment {
-                                offset,
-                                data: {
-                                    let mut d = Vec::with_capacity(4 + bytes.len());
-                                    d.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
-                                    d.extend_from_slice(bytes);
-                                    d
-                                },
-                            });
-                            string_table.insert(s.clone(), offset);
-                            data_offset += 4 + bytes.len() as u32;
-                        }
-                    }
-                }
+        // `ke_teks` of a Bool renders "betul"/"salah" (REQ-80), so those two
+        // heap strings must exist whether or not the program contains the
+        // literals. Interned first, in this pass, because the data section is
+        // laid out here. 18 bytes total.
+        let interned: Vec<String> = BOOL_RENDERINGS
+            .iter()
+            .map(|s| (*s).to_string())
+            .chain(program.functions.values().flat_map(|f| {
+                f.blocks.iter().flat_map(|b| {
+                    b.instrs.iter().filter_map(|i| match &i.instr {
+                        Instruction::Const(Constant::String(s)) => Some(s.clone()),
+                        _ => None,
+                    })
+                })
+            }))
+            .collect();
+        for s in &interned {
+            if !string_table.contains_key(s) {
+                let offset = data_offset;
+                let bytes = s.as_bytes();
+                // Store length (4 bytes) + string bytes
+                data_segments.push(DataSegment {
+                    offset,
+                    data: {
+                        let mut d = Vec::with_capacity(4 + bytes.len());
+                        d.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
+                        d.extend_from_slice(bytes);
+                        d
+                    },
+                });
+                string_table.insert(s.clone(), offset);
+                data_offset += 4 + bytes.len() as u32;
             }
         }
 
@@ -6380,9 +6395,44 @@ impl WasmBackend {
                             // wrapped in `ke_teks` by `lower_to_text`.
                             Self::emit_local_get(arg, ctx.var_map, code);
                         }
-                        _ => {
-                            // Other types: stub 0 (prior behavior).
-                            wasm_i64c(code, 0);
+                        Some(Ty::Bool) => {
+                            // Bool -> the "betul"/"salah" heap string, chosen at
+                            // runtime. Both are interned unconditionally in the
+                            // data section (see BOOL_RENDERINGS), so this is a
+                            // select between two constant pointers. `select` is
+                            // not in this emitter's opcode set, so use the
+                            // if/else form already used for phi merges.
+                            let ptr = |b: bool| {
+                                ctx.string_table
+                                    .get(BOOL_RENDERINGS[usize::from(b)])
+                                    .copied()
+                                    .unwrap_or(0) as i64
+                            };
+                            Self::emit_local_get(arg, ctx.var_map, code);
+                            code.push(Op::I32WrapI64 as u8);
+                            code.push(Op::If as u8);
+                            code.push(ValType::I64 as u8);
+                            wasm_i64c(code, ptr(true));
+                            code.push(Op::Else as u8);
+                            wasm_i64c(code, ptr(false));
+                            code.push(Op::End as u8);
+                        }
+                        other => {
+                            // FAIL CLOSED (REQ-78). This arm used to push a
+                            // literal 0 as a "stub", which is a null string
+                            // pointer — `ke_teks` then rendered as EMPTY rather
+                            // than failing, a silent wrong answer. REQ-78
+                            // removed the silent stubs from the builtin
+                            // dispatch but missed this one, inside `ke_teks`'s
+                            // own type dispatch; `ke_teks(betul)` printed
+                            // nothing on WASM while C and the interpreter both
+                            // printed `betul`.
+                            return Err(Error::InvalidOperation(format!(
+                                "`ke_teks` of {other:?} is not implemented by the \
+                                 WASM backend. Refusing to emit a stub that would \
+                                 silently render as an empty string (master plan \
+                                 REQ-78) — build for the native target."
+                            )));
                         }
                     }
                 } else if name == "gabung_teks" {

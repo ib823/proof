@@ -190,7 +190,7 @@ fn early_return_terminates_its_block() {
     );
 }
 
-/// REQ-81: a `pulang` in a ZERO-PARAMETER function is honoured too.
+/// REQ-68: a `pulang` in a ZERO-PARAMETER function is honoured too.
 ///
 /// It was not, and could not be: `desugar_function` with no params returned the
 /// body unchanged, so a zero-arg `fungsi` never became an IR function and its
@@ -213,7 +213,7 @@ fn early_return_in_a_zero_arg_function_is_honoured() {
     );
 }
 
-/// REQ-81: a zero-parameter function is a real `Unit -> T` closure, so calling
+/// REQ-68: a zero-parameter function is a real `Unit -> T` closure, so calling
 /// it twice runs it twice — and never calling it runs it not at all.
 ///
 /// The old thunk model ran the body ONCE when its binding was evaluated,

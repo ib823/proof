@@ -214,9 +214,12 @@ mod tests {
 
     #[test]
     fn test_jangkakan_bool_value() {
+        // `jangkakan` compares against the value's RENDERED form, which for a
+        // boolean is RIINA's own spelling `betul`/`salah`, not English
+        // (master plan REQ-80).
         let arg = Value::Pair(
             Box::new(Value::Bool(true)),
-            Box::new(Value::String("true".to_string())),
+            Box::new(Value::String("betul".to_string())),
         );
         assert_eq!(apply("jangkakan", &arg).unwrap(), Some(Value::Unit));
     }
