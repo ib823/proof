@@ -165,26 +165,59 @@ fn record_field_access_still_lowers() {
     .expect("record field access must still compile");
 }
 
-/// REQ-80 REMAINING: early return is still lowered as a plain value, so this
-/// program compiles but returns the WRONG answer under C (99 instead of 1).
+/// REQ-80: `pulang` inside a parameterised function really terminates its
+/// block.
 ///
-/// This test documents the open defect rather than asserting the bug is fixed:
-/// it fails the day someone implements early return, which is exactly when it
-/// should be revisited. See the `Expr::Return` arm in `lower.rs` for why the
-/// working implementation was reverted (it broke the WASM relooper).
+/// It used to lower to just the inner value, discarding the control flow, so
+/// `kalau n <= 1 { pulang 1; } pulang 99;` fell through to 99 and a recursive
+/// function never reached its base case (`recursion.rii` SIGSEGV'd on unbounded
+/// recursion). Behaviour is pinned by the differential in
+/// `riinac/tests/early_return_differential.rs`; this checks the IR shape that
+/// makes it work, which is where a regression would first show up.
 #[test]
-fn early_return_is_still_unimplemented_in_the_ir() {
-    let c = emit_native(
+fn early_return_terminates_its_block() {
+    let ir = lower_to_ir(
         "fungsi f(n: Nombor) -> Nombor kesan Bersih { kalau n <= 1 { pulang 1; } pulang 99; }\n\
          fungsi utama() -> Nombor kesan Tulis { cetak(f(0)); 0 }\n",
     )
-    .expect("emits today");
-    // No early-exit terminator is generated: the function has a single return
-    // path. When early return lands, this assertion should be REPLACED by a
-    // behavioural check that `f(0) == 1`.
+    .expect("lowers");
+    // Two `ret` terminators inside `f`: the early one and the fall-through.
+    // With the bug there was exactly one (the function's single exit).
+    let rets = ir.matches("return ").count();
     assert!(
-        !c.contains("/* early return */"),
-        "early return appears implemented — replace this test with a behavioural \
-         assertion that f(0) == 1 (REQ-80)"
+        rets >= 2,
+        "early return did not terminate its own block ({rets} ret terminators):\n{ir}"
+    );
+}
+
+/// REQ-80 REMAINING, pinned so it cannot regress silently: a `pulang` in a
+/// ZERO-PARAMETER function is NOT honoured.
+///
+/// `build_lambda` with no params returns the body unchanged, so a zero-arg
+/// `fungsi` never becomes an IR function — its body is spliced into the
+/// definition site. Emitting a real return there returns from the CALLER, which
+/// was measured: a `pulang 42` in a zero-arg helper made `utama` itself return
+/// 42 and skip its own output. Lowering therefore keeps the old
+/// value-passthrough in that position, which is correct in tail position (where
+/// nearly all of them sit) and no worse than before anywhere else.
+///
+/// Closing this properly means making a zero-arg `fungsi` a real function —
+/// a desugaring change reaching the typechecker, interpreter and both backends,
+/// which is its own piece of work.
+#[test]
+fn early_return_in_a_zero_arg_function_is_not_yet_honoured() {
+    let ir = lower_to_ir(
+        "fungsi ambil() -> Nombor kesan Bersih { pulang 42; }\n\
+         fungsi utama() -> Nombor kesan Tulis { cetak(ambil()); 0 }\n",
+    )
+    .expect("lowers");
+    // Exactly one `ret`: main's own. If this ever becomes 2, zero-arg functions
+    // have become real functions (or the suppression broke) — re-check that
+    // `utama` still runs to completion before relaxing this.
+    let rets = ir.matches("return ").count();
+    assert_eq!(
+        rets, 1,
+        "a zero-arg `pulang` now emits a return; verify it does not return from \
+         the CALLER before changing this (REQ-80):\n{ir}"
     );
 }

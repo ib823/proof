@@ -418,6 +418,18 @@ pub struct Lower {
     /// Variables currently known to hold a struct value: var name -> struct
     /// name. Scoped like `env` (saved/restored around each `Let` body).
     var_struct: HashMap<String, String>,
+    /// Whether a `pulang` here can be lowered as a real early return (REQ-80).
+    ///
+    /// True only while lowering the body of an `Expr::Lam`, i.e. inside a block
+    /// that is genuinely its own IR function. A ZERO-PARAMETER `fungsi` is not:
+    /// `build_lambda` with no params returns the body unchanged, so the body is
+    /// spliced into its DEFINITION SITE and a `Terminator::Return` there would
+    /// return from the caller — measured, not assumed (a `pulang 42` in a
+    /// zero-arg helper made `utama` itself return 42). Outside a real function
+    /// body `pulang` keeps the old value-passthrough, which is correct in tail
+    /// position — where all but a handful of them sit — and no worse than
+    /// before anywhere else.
+    honour_return: bool,
 }
 
 impl Lower {
@@ -433,6 +445,7 @@ impl Lower {
             struct_layouts: HashMap::new(),
             fn_returns_struct: HashMap::new(),
             var_struct: HashMap::new(),
+            honour_return: false,
         }
     }
 
@@ -717,6 +730,31 @@ impl Lower {
         }
 
         result
+    }
+
+    /// Append a fresh empty block to the current function.
+    fn new_block(&mut self) -> Result<BlockId> {
+        self.current_func
+            .and_then(|f| self.program.function_mut(f))
+            .map(|f| f.new_block())
+            .ok_or_else(|| Error::InvalidOperation("No current function".to_string()))
+    }
+
+    /// Terminate the current block, but ONLY if it is still open.
+    ///
+    /// An early `pulang` already closed its block with `Terminator::Return`;
+    /// the enclosing `kalau`/`padan` then tries to close the same region with a
+    /// `Branch` to the merge. Overwriting would silently delete the return and
+    /// restore exactly the fall-through bug this exists to fix, so a closed
+    /// block keeps the terminator it has (REQ-80).
+    fn terminate_if_open(&mut self, block: BlockId, term: Terminator) {
+        if let Some(func) = self.current_func.and_then(|f| self.program.function_mut(f)) {
+            if let Some(b) = func.block_mut(block) {
+                if b.terminator.is_none() {
+                    b.terminate(term);
+                }
+            }
+        }
     }
 
     fn emit_string_const(&mut self, value: impl Into<String>, ty: Ty) -> VarId {
@@ -1359,15 +1397,16 @@ impl Lower {
                 // Add function to program so we can add blocks to it
                 self.program.add_function(func);
 
-                // Lower the body
+                // Lower the body. This IS a real IR function, so a `pulang`
+                // inside it can terminate its block for real (REQ-80).
+                let saved_honour = self.honour_return;
+                self.honour_return = true;
                 let result = self.lower_expr(body)?;
+                self.honour_return = saved_honour;
 
-                // Terminate with return
-                if let Some(func) = self.program.function_mut(func_id) {
-                    if let Some(block) = func.block_mut(self.current_block) {
-                        block.terminate(Terminator::Return(result));
-                    }
-                }
+                // Terminate with return — unless an early `pulang` already
+                // closed this block, which `terminate_if_open` preserves.
+                self.terminate_if_open(self.current_block, Terminator::Return(result));
 
                 // Restore state
                 self.current_func = saved_func;
@@ -1595,13 +1634,7 @@ impl Lower {
                 let then_end_block = self.current_block;
 
                 // Branch to merge
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(then_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(then_end_block, Terminator::Branch(merge_block));
 
                 // Right branch (else block)
                 self.current_block = else_block;
@@ -1625,13 +1658,7 @@ impl Lower {
                 let else_end_block = self.current_block;
 
                 // Branch to merge
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(else_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(else_end_block, Terminator::Branch(merge_block));
 
                 // Merge block with phi
                 self.current_block = merge_block;
@@ -1704,26 +1731,14 @@ impl Lower {
                 let then_result = self.lower_expr(then_expr)?;
                 let then_end_block = self.current_block;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(then_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(then_end_block, Terminator::Branch(merge_block));
 
                 // Else branch
                 self.current_block = else_block;
                 let else_result = self.lower_expr(else_expr)?;
                 let else_end_block = self.current_block;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(else_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(else_end_block, Terminator::Branch(merge_block));
 
                 // Merge with phi
                 self.current_block = merge_block;
@@ -1796,7 +1811,21 @@ impl Lower {
 
                 // Lower the binding (lambda). This creates a closure that captures
                 // placeholder as the self-reference.
+                //
+                // A `fungsi` declaration desugars to LetRecGroup -> LetRec, so
+                // this is the DECLARATION position. For a zero-parameter
+                // function `build_lambda` emits no `Lam` at all and the body
+                // lands here directly, spliced into the definition site — a
+                // `Terminator::Return` there would return from the ENCLOSING
+                // function (measured: `pulang 42` in a zero-arg helper made
+                // `utama` itself return 42). Suppress honouring across the
+                // binding; an `Expr::Lam` value re-enables it for its own body,
+                // which is what makes every parameterised function work
+                // (REQ-80).
+                let saved_honour = self.honour_return;
+                self.honour_return = false;
                 let bind_var = self.lower_expr(binding)?;
+                self.honour_return = saved_honour;
 
                 // Only emit FixClosure if the binding actually captured the
                 // placeholder (i.e., the function is genuinely recursive).
@@ -1913,13 +1942,7 @@ impl Lower {
                 self.current_block = body_block;
                 let body_result = self.lower_expr(body)?;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(self.current_block) {
-                            block.terminate(Terminator::Branch(result_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(self.current_block, Terminator::Branch(result_block));
 
                 // Lower handler
                 self.current_block = handler_block;
@@ -1932,13 +1955,7 @@ impl Lower {
                 );
                 let _handler_result = self.lower_expr(handler)?;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(self.current_block) {
-                            block.terminate(Terminator::Branch(result_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(self.current_block, Terminator::Branch(result_block));
 
                 // Result block
                 self.current_block = result_block;
@@ -1989,31 +2006,33 @@ impl Lower {
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // `pulang e` — early return. The IR backend has no early-return
-            // instruction, so the operand is lowered and its value flows through
-            // (best-effort; the reference interpreter implements true unwinding).
-            // Early return (`pulang e`) — REQ-80: DIAGNOSED, NOT YET FIXED.
+            // `pulang e` — early return (REQ-80).
             //
-            // This lowers to just the inner value, DISCARDING the control flow.
-            // Both consequences were measured against the interpreter:
-            //   * `kalau n <= 1 { pulang 1; } pulang 99;` falls through and
-            //     yields 99 — a silent wrong answer in the C backend;
-            //   * a recursive function never reaches its base case, so
-            //     `faktorial` recurses until the stack dies (SIGSEGV).
+            // This used to lower to just the inner value, DISCARDING the
+            // control flow, which the interpreter implements as real unwinding.
+            // Both consequences were measured:
+            //   * `kalau n <= 1 { pulang 1; } pulang 99;` fell through and
+            //     yielded 99 — a silent wrong answer in the C backend;
+            //   * a recursive function never reached its base case, so
+            //     `faktorial` recursed until the stack died (SIGSEGV).
             //
-            // A working implementation was built and verified against C
-            // (terminate the current block with `Terminator::Return`, continue
-            // into a fresh unreachable block): it fixed both bugs and made
-            // `07_EXAMPLES/00_basics/recursion.rii` run to completion. It was
-            // REVERTED because it breaks the WASM backend — the structured
-            // control-flow emitter (relooper) cannot translate the extra block
-            // and rejects `00_basics/conditionals.rii` with a WebAssembly
-            // translation error, a NEW C/WASM divergence. Trading a C bug for a
-            // WASM bug is not an improvement.
-            //
-            // Doing this properly requires teaching the relooper about early
-            // exits. Tracked in REQ-80.
-            Expr::Return(inner) => self.lower_expr(inner),
+            // The return really terminates its block. Anything textually after
+            // it in the same block is unreachable, so it is lowered into a
+            // fresh block that nothing branches to — the enclosing `kalau` may
+            // still close that block with a `Branch` to its merge, which is why
+            // closing uses `terminate_if_open`: overwriting the `Return` here
+            // would restore the fall-through bug.
+            Expr::Return(inner) => {
+                let value = self.lower_expr(inner)?;
+                if self.honour_return {
+                    self.terminate_if_open(self.current_block, Terminator::Return(value));
+                    // Dead continuation: code after `pulang` still lowers (it is
+                    // well-typed and may bind names), it just lands in a block
+                    // nothing branches to.
+                    self.current_block = self.new_block()?;
+                }
+                Ok(value)
+            }
 
             // SECURITY (Expr::Classify, Expr::Declassify, Expr::Prove)
             // ═══════════════════════════════════════════════════════════════

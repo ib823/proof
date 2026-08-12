@@ -1,10 +1,10 @@
 {
-  "generated": "2026-08-12T01:47:16Z",
-  "generatedHuman": "August 12, 2026 at 01:47 UTC",
+  "generated": "2026-08-12T02:49:42Z",
+  "generatedHuman": "August 12, 2026 at 02:49 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "a2e7730",
+    "commit": "137aaf9",
     "branch": "claude/language-solution-codebase-review-3cyrui"
   },
   "proofs": {
@@ -196,8 +196,8 @@
   "rust": {
     "tests": 3236,
     "testsVerified": 3236,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 3240,
+    "testsSource": "cached_verified",
     "crates": 20
   },
   "examples": 169,

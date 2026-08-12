@@ -4870,7 +4870,23 @@ impl WasmBackend {
                     }
                     match merge {
                         Some(m) => cur = m,
-                        None => return Ok(None),
+                        None => {
+                            // No merge: BOTH arms diverge (each ends in a
+                            // `return`), so nothing rejoins. The `if` was
+                            // still typed `(result i64)`, so its result is
+                            // sitting on the operand stack with no phi local
+                            // to receive it — wasmtime rejects that as
+                            // "values remaining on stack at end of block".
+                            //
+                            // Control genuinely cannot reach here, so say so:
+                            // `unreachable` makes the rest of the frame
+                            // polymorphic, which absorbs the dangling value.
+                            // Before REQ-80's early return this arm was
+                            // effectively dead, because a branch could not end
+                            // in `return` — every one fell through to a merge.
+                            code.push(Op::Unreachable as u8);
+                            return Ok(None);
+                        }
                     }
                 }
                 Some(Terminator::Handle { .. }) | None => return Ok(None),
