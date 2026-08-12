@@ -20,7 +20,7 @@
 #![allow(unsafe_code)]
 
 use crate::constant_time::ConstantTimeEq;
-use crate::crypto::sha2::{Sha256, BLOCK_SIZE, OUTPUT_SIZE};
+use crate::crypto::sha2::{Sha256, Sha384, BLOCK_SIZE, OUTPUT_SIZE, SHA384_BLOCK_SIZE, SHA384_OUTPUT_SIZE};
 use crate::zeroize::Zeroize;
 use core::mem::ManuallyDrop;
 
@@ -130,6 +130,197 @@ impl Drop for HmacSha256 {
         // Zeroize keys (Law 4)
         self.inner_key.zeroize();
         self.outer_key.zeroize();
+    }
+}
+
+/// HMAC-SHA384 output size in bytes (48).
+pub const HMAC_SHA384_OUTPUT_SIZE: usize = SHA384_OUTPUT_SIZE;
+
+/// HMAC-SHA384 (RFC 2104 / FIPS 198-1) over the SHA-384 hash.
+///
+/// Note the block size: HMAC pads the key to the HASH's block size, which for
+/// SHA-384 is **128** bytes (it is a SHA-512-family function), not the 64 of
+/// SHA-256. Using 64 here would produce a wrong-but-plausible MAC that only
+/// fails against published vectors — which is why the RFC 4231 KATs below are
+/// non-negotiable.
+pub struct HmacSha384 {
+    inner_key: [u8; SHA384_BLOCK_SIZE],
+    outer_key: [u8; SHA384_BLOCK_SIZE],
+    inner_hash: ManuallyDrop<Sha384>,
+}
+
+impl HmacSha384 {
+    /// Create an HMAC-SHA384 instance. Keys longer than the 128-byte block are
+    /// hashed first; shorter keys are zero-padded (RFC 2104).
+    #[must_use]
+    pub fn new(key: &[u8]) -> Self {
+        let mut key_block = [0u8; SHA384_BLOCK_SIZE];
+        if key.len() > SHA384_BLOCK_SIZE {
+            let hash = Sha384::hash(key);
+            key_block[..SHA384_OUTPUT_SIZE].copy_from_slice(&hash);
+        } else {
+            key_block[..key.len()].copy_from_slice(key);
+        }
+
+        let mut inner_key = [0u8; SHA384_BLOCK_SIZE];
+        let mut outer_key = [0u8; SHA384_BLOCK_SIZE];
+        for i in 0..SHA384_BLOCK_SIZE {
+            inner_key[i] = key_block[i] ^ 0x36;
+            outer_key[i] = key_block[i] ^ 0x5c;
+        }
+        key_block.zeroize();
+
+        let mut inner_hash = Sha384::new();
+        inner_hash.update(&inner_key);
+
+        Self {
+            inner_key,
+            outer_key,
+            inner_hash: ManuallyDrop::new(inner_hash),
+        }
+    }
+
+    /// Feed message data.
+    pub fn update(&mut self, data: &[u8]) {
+        self.inner_hash.update(data);
+    }
+
+    /// Finalize: `H(outer_key || H(inner_key || message))`.
+    #[must_use]
+    pub fn finalize(mut self) -> [u8; HMAC_SHA384_OUTPUT_SIZE] {
+        // SAFETY-free move-out: ManuallyDrop lets us take the hasher by value
+        // without running Drop twice (mirrors HmacSha256 exactly).
+        let inner_hash = unsafe { ManuallyDrop::take(&mut self.inner_hash) };
+        let inner_digest = inner_hash.finalize();
+
+        let mut outer = Sha384::new();
+        outer.update(&self.outer_key);
+        outer.update(&inner_digest);
+        outer.finalize()
+    }
+
+    /// One-shot MAC.
+    #[must_use]
+    pub fn mac(key: &[u8], data: &[u8]) -> [u8; HMAC_SHA384_OUTPUT_SIZE] {
+        let mut h = Self::new(key);
+        h.update(data);
+        h.finalize()
+    }
+
+    /// Constant-time verification. A variable-time compare here would leak the
+    /// expected MAC one byte at a time.
+    #[must_use]
+    pub fn verify(key: &[u8], data: &[u8], expected_mac: &[u8]) -> bool {
+        if expected_mac.len() != HMAC_SHA384_OUTPUT_SIZE {
+            return false;
+        }
+        let computed = Self::mac(key, data);
+        let expected: &[u8; HMAC_SHA384_OUTPUT_SIZE] = match expected_mac.try_into() {
+            Ok(a) => a,
+            Err(_) => return false,
+        };
+        computed.ct_eq(expected)
+    }
+}
+
+impl Drop for HmacSha384 {
+    fn drop(&mut self) {
+        // Zeroize keys (Law 4).
+        //
+        // Deliberately NOT dropping `inner_hash`: `finalize` moves it out with
+        // `ManuallyDrop::take`, and `self` is still dropped afterwards, so
+        // touching it here would be a double-drop on moved-out memory (UB).
+        // `Sha384` is plain data with no `Drop`, so leaving it is a no-op.
+        // This mirrors `HmacSha256` exactly.
+        self.inner_key.zeroize();
+        self.outer_key.zeroize();
+    }
+}
+
+#[cfg(test)]
+mod hmac_sha384_tests {
+    use super::*;
+
+    fn hex(b: &[u8]) -> String {
+        use core::fmt::Write as _;
+        b.iter().fold(String::new(), |mut acc, x| {
+            let _ = write!(acc, "{x:02x}");
+            acc
+        })
+    }
+
+    /// RFC 4231 §4 test vectors for HMAC-SHA-384. These pin the block size:
+    /// SHA-384 is a SHA-512-family hash, so HMAC must pad keys to 128 bytes.
+    /// A 64-byte block would still produce a MAC — just the wrong one — and
+    /// only published vectors catch that.
+    #[test]
+    fn rfc4231_vectors() {
+        // Case 1: key = 20 x 0x0b, data = "Hi There"
+        assert_eq!(
+            hex(&HmacSha384::mac(&[0x0b; 20], b"Hi There")),
+            "afd03944d84895626b0825f4ab46907f15f9dadbe4101ec682aa034c7cebc59cfaea9ea9076ede7f4af152e8b2fa9cb6"
+        );
+        // Case 2: key = "Jefe", data = "what do ya want for nothing?"
+        assert_eq!(
+            hex(&HmacSha384::mac(b"Jefe", b"what do ya want for nothing?")),
+            "af45d2e376484031617f78d2b58a6b1b9c7ef464f5a01b47e42ec3736322445e8e2240ca5e69e2c78b3239ecfab21649"
+        );
+        // Case 3: key = 20 x 0xaa, data = 50 x 0xdd
+        assert_eq!(
+            hex(&HmacSha384::mac(&[0xaa; 20], &[0xdd; 50])),
+            "88062608d3e6ad8a0aa2ace014c8a86f0aa635d947ac9febe83ef4e55966144b2a5ab39dc13814b94e3ab6e101a34f27"
+        );
+        // Case 6: key = 131 x 0xaa (LONGER than the 128-byte block, so it is
+        // hashed first) — the case that fails loudly on a wrong block size.
+        assert_eq!(
+            hex(&HmacSha384::mac(
+                &[0xaa; 131],
+                b"Test Using Larger Than Block-Size Key - Hash Key First"
+            )),
+            "4ece084485813e9088d2c63a041bc5b44f9ef1012a2b588f3cd11f05033ac4c60c2ef6ab4030fe8296248df163f44952"
+        );
+    }
+
+    /// Verification is length-checked and rejects a wrong MAC.
+    #[test]
+    fn verify_accepts_correct_and_rejects_wrong() {
+        let key = b"kunci rahsia";
+        let data = b"mesej";
+        let mac = HmacSha384::mac(key, data);
+        assert!(HmacSha384::verify(key, data, &mac));
+
+        let mut bad = mac;
+        bad[0] ^= 0x01;
+        assert!(!HmacSha384::verify(key, data, &bad));
+        // Wrong key, wrong data, and wrong length all fail.
+        assert!(!HmacSha384::verify(b"kunci lain", data, &mac));
+        assert!(!HmacSha384::verify(key, b"mesej lain", &mac));
+        assert!(!HmacSha384::verify(key, data, &mac[..47]));
+        assert!(!HmacSha384::verify(key, data, &[]));
+    }
+
+    /// Streaming equals one-shot.
+    #[test]
+    fn streaming_matches_one_shot() {
+        let key = b"k";
+        let data: Vec<u8> = (0..500u32).map(|i| (i % 253) as u8).collect();
+        let one = HmacSha384::mac(key, &data);
+        let mut h = HmacSha384::new(key);
+        for c in data.chunks(37) {
+            h.update(c);
+        }
+        assert_eq!(h.finalize(), one);
+    }
+
+    /// HMAC-SHA384 and HMAC-SHA256 must differ (guards against wiring the
+    /// wrong hash into the generic paths).
+    #[test]
+    fn differs_from_hmac_sha256() {
+        let m384 = HmacSha384::mac(b"k", b"m");
+        let m256 = HmacSha256::mac(b"k", b"m");
+        assert_eq!(m384.len(), 48);
+        assert_eq!(m256.len(), 32);
+        assert_ne!(m384[..32], m256[..]);
     }
 }
 

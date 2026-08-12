@@ -13,6 +13,7 @@ dependencies = [
  "riina-os",
  "riina-parser",
  "riina-runtime",
+ "riina-tls",
  "riina-typechecker",
  "riina-types",
 ]
@@ -23,6 +24,10 @@ version = "0.4.0"
 dependencies = [
  "riina-types",
 ]
+
+[[package]]
+name = "riina-core"
+version = "0.4.0"
 
 [[package]]
 name = "riina-doc"
@@ -90,6 +95,13 @@ version = "0.4.0"
 [[package]]
 name = "riina-symbols"
 version = "0.4.0"
+
+[[package]]
+name = "riina-tls"
+version = "0.4.0"
+dependencies = [
+ "riina-core",
+]
 
 [[package]]
 name = "riina-typechecker"

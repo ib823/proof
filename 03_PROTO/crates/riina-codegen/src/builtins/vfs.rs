@@ -78,6 +78,15 @@ thread_local! {
     static VFS: RefCell<VfsState> = RefCell::new(VfsState::new(u64::MAX));
 }
 
+/// The current access context (uid switched by `vfs_jadi_pengguna`) — shared
+/// with the host-FS gate in `builtins::fail`, so the interpreter has ONE
+/// verified access-control world: `vfs_*` stores in memory, `fail_*` touches
+/// the host FS, and both are gated by the same Coq predicates under the same
+/// identity.
+pub(crate) fn current_ctx() -> AccessContext {
+    VFS.with(|v| v.borrow().ctx.clone())
+}
+
 fn vfs_err(e: VfsError) -> Error {
     Error::InvalidOperation(
         match e {

@@ -31,7 +31,7 @@ order:
 
 ## 1. Access you need (owner grants)
 
-- GitHub: write access to `ib823/proof` (branch pushes; note that pushing
+- GitHub: write access to the development repository (branch pushes; note that pushing
   **tags** and deleting refs may be blocked in managed environments — releases
   are cut by the owner).
 - The website mirror `ib823/riina` (separate repo) only if you will run

@@ -2,17 +2,17 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) and the compiled-backend boundary (`riina_codegen::codegen_supports_builtin`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts or compiles. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **357**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **373**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 357 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
 | `native-only` | Lowers to C. The WASM backend **refuses** it (128 builtins). |
-| `interp-only` | `riinac run` only (209 builtins). `riinac build` fails with `unbound variable`. |
+| `interp-only` | `riinac run` only (225 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -377,6 +377,29 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `net_local_addr` | `Fn(Nombor, Teks, Rangkaian)` | **interp-only** |
 | `net_recv` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **interp-only** |
 | `net_send` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **interp-only** |
+
+## RangkaianSelamat (NetworkSecure)
+
+> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `jaring_tls_disahkan` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_hantar` | `Fn((Nombor, Teks), Nombor, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_identiti` | `Fn(Teks, Teks, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_jabat` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_jabat_sah` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_kunci` | `Fn((Nombor, Teks), Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_percaya` | `Fn(Teks, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_terima` | `Fn(Nombor, Teks, RangkaianSelamat)` | **interp-only** |
+| `net_tls_handshake` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_handshake_auth` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_identity` | `Fn(Teks, Teks, RangkaianSelamat)` | **interp-only** |
+| `net_tls_is_authenticated` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_keys` | `Fn((Nombor, Teks), Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_recv` | `Fn(Nombor, Teks, RangkaianSelamat)` | **interp-only** |
+| `net_tls_send` | `Fn((Nombor, Teks), Nombor, RangkaianSelamat)` | **interp-only** |
+| `net_tls_trust` | `Fn(Teks, Benar, RangkaianSelamat)` | **interp-only** |
 
 ## Kripto (Crypto)
 

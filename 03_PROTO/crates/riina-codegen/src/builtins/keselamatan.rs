@@ -228,6 +228,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         // ── Safe file I/O (real filesystem; path already PathTraversal-sanitized) ──
         "file_read_safe" => {
             let path = as_str(arg, name)?;
+            // Same verified can_read gate as fail_baca (shared host-FS gate).
+            crate::builtins::fail::gate_read("file_read_safe", &path)?;
             let content = std::fs::read_to_string(&path).map_err(|e| {
                 Error::InvalidOperation(format!("file_read_safe: cannot read '{path}': {e}"))
             })?;
@@ -238,6 +240,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             Either::Pair(a, b) => {
                 let path = as_str(&a, name)?;
                 let content = as_str(&b, name)?;
+                // Same verified can_write gate as fail_tulis.
+                crate::builtins::fail::gate_write("file_write_safe", &path)?;
                 std::fs::write(&path, content.as_bytes()).map_err(|e| {
                     Error::InvalidOperation(format!("file_write_safe: cannot write '{path}': {e}"))
                 })?;
@@ -246,6 +250,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         },
         "file_delete_safe" => {
             let path = as_str(arg, name)?;
+            // Same verified can_write delete gate as fail_buang.
+            crate::builtins::fail::gate_delete("file_delete_safe", &path)?;
             Value::Bool(std::fs::remove_file(&path).is_ok())
         }
 

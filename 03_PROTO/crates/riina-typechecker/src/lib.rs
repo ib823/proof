@@ -989,6 +989,77 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Network),
         );
     }
+    // TLS 1.3 record protection (real AEAD via riina-tls on riina-core):
+    // `jaring_tls_kunci` installs keys from `(conn, traffic_secret)`;
+    // `jaring_tls_hantar` seals `(conn, data)`; `jaring_tls_terima` opens the
+    // next record on a conn. NetworkSecure effect — these are the encrypted
+    // paths, distinguished from the plaintext `jaring_*` Network ones.
+    // A real TLS 1.3 handshake over an established connection (ECDHE + key
+    // schedule + Finished): `Nombor -> Benar`, NetworkSecure.
+    for nm in ["jaring_tls_jabat", "net_tls_handshake"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
+    // Authentication (RFC 7250 raw public keys + §4.4.3 CertificateVerify):
+    // identity takes a hex seed and returns the hex credential; percaya pins a
+    // hex credential; jabat_sah runs the authenticated handshake; disahkan
+    // reports whether the full Coq tls_connected conjunction holds.
+    for nm in ["jaring_tls_identiti", "net_tls_identity"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::String),
+                Box::new(Ty::String),
+                Effect::NetworkSecure,
+            ),
+        );
+    }
+    for nm in ["jaring_tls_percaya", "net_tls_trust"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
+    for nm in ["jaring_tls_jabat_sah", "net_tls_handshake_auth"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
+    for nm in ["jaring_tls_disahkan", "net_tls_is_authenticated"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+        );
+    }
+    for nm in ["jaring_tls_kunci", "net_tls_keys"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::NetworkSecure,
+            ),
+        );
+    }
+    for nm in ["jaring_tls_hantar", "net_tls_send"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Int),
+                Effect::NetworkSecure,
+            ),
+        );
+    }
+    for nm in ["jaring_tls_terima", "net_tls_recv"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::NetworkSecure),
+        );
+    }
     for nm in ["jaring_tutup_dengar", "net_close_listener"] {
         c = c.extend(
             nm.to_string(),
