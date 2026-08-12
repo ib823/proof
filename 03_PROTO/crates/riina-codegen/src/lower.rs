@@ -1189,7 +1189,19 @@ impl Lower {
                 });
                 match proj {
                     Some(p) => self.lower_expr(&p),
-                    None => self.lower_expr(base),
+                    // REQ-80: FAIL CLOSED. This arm used to lower to the BASE
+                    // expression, silently turning `t.panjang()` into `t` — so
+                    // the C backend evaluated the receiver, then aborted with
+                    // `RIINA: call on non-closure` when the result was applied,
+                    // while the interpreter reported a clean type error. A
+                    // field access we cannot resolve to a known struct layout
+                    // is refused rather than quietly reinterpreted.
+                    None => Err(Error::InvalidOperation(format!(
+                        "cannot resolve field `.{field}`: the receiver is not a \
+                         record with a known layout. RIINA has no methods, so \
+                         `x.{field}()` is not a call — use `{field}(x)` (master \
+                         plan REQ-80)."
+                    ))),
                 }
             }
 
@@ -1379,8 +1391,17 @@ impl Lower {
             Expr::App(func_expr, arg_expr) => {
                 // Intercept builtin calls: if func is Var(name) and name is a known builtin,
                 // emit BuiltinCall instead of Call.
+                // REQ-80: a USER definition shadows a builtin of the same name.
+                // This used to consult `builtin_canonical` without checking the
+                // environment, so a program defining `fungsi kuasa(asas, eksp)`
+                // had its calls routed to the BUILTIN `kuasa` by the C backend
+                // (which then failed with "kuasa expects pair") while the
+                // interpreter correctly used the user's function. The `Expr::Var`
+                // arm above already checks the environment first; this mirrors it.
                 if let Expr::Var(name) = func_expr.as_ref() {
-                    if let Some(canonical) = builtin_canonical(name) {
+                    if self.env.lookup(name).is_some() {
+                        // Shadowed by a user binding — fall through to a normal call.
+                    } else if let Some(canonical) = builtin_canonical(name) {
                         let arg_var = self.lower_expr(arg_expr)?;
                         let effect = self.infer_effect(expr);
                         // Most builtins return Unit (or a String the C emitter
@@ -1971,6 +1992,27 @@ impl Lower {
             // `pulang e` — early return. The IR backend has no early-return
             // instruction, so the operand is lowered and its value flows through
             // (best-effort; the reference interpreter implements true unwinding).
+            // Early return (`pulang e`) — REQ-80: DIAGNOSED, NOT YET FIXED.
+            //
+            // This lowers to just the inner value, DISCARDING the control flow.
+            // Both consequences were measured against the interpreter:
+            //   * `kalau n <= 1 { pulang 1; } pulang 99;` falls through and
+            //     yields 99 — a silent wrong answer in the C backend;
+            //   * a recursive function never reaches its base case, so
+            //     `faktorial` recurses until the stack dies (SIGSEGV).
+            //
+            // A working implementation was built and verified against C
+            // (terminate the current block with `Terminator::Return`, continue
+            // into a fresh unreachable block): it fixed both bugs and made
+            // `07_EXAMPLES/00_basics/recursion.rii` run to completion. It was
+            // REVERTED because it breaks the WASM backend — the structured
+            // control-flow emitter (relooper) cannot translate the extra block
+            // and rejects `00_basics/conditionals.rii` with a WebAssembly
+            // translation error, a NEW C/WASM divergence. Trading a C bug for a
+            // WASM bug is not an improvement.
+            //
+            // Doing this properly requires teaching the relooper about early
+            // exits. Tracked in REQ-80.
             Expr::Return(inner) => self.lower_expr(inner),
 
             // SECURITY (Expr::Classify, Expr::Declassify, Expr::Prove)
