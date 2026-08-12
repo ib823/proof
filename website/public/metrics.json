@@ -196,8 +196,8 @@
   "rust": {
     "tests": 3236,
     "testsVerified": 3236,
-    "testsEstimated": 3232,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 20
   },
   "examples": 169,
