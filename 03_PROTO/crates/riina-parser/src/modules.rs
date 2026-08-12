@@ -689,6 +689,359 @@ fn walk_free_idents<F: FnMut(&mut Ident)>(e: &mut Expr, bound: &mut Vec<Ident>, 
 mod tests {
     use super::*;
 
+    /// A throwaway directory that cleans itself up.
+    ///
+    /// The resolver's whole job is reading sibling files off disk, so the
+    /// interesting half of it cannot be tested without a filesystem. No
+    /// external temp-dir crate (Law 8: zero external dependencies).
+    struct Sandbox(PathBuf);
+
+    impl Sandbox {
+        fn new(tag: &str) -> Self {
+            let dir = std::env::temp_dir().join(format!(
+                "riina_modres_{tag}_{}",
+                std::process::id()
+            ));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).expect("create sandbox");
+            Self(dir)
+        }
+
+        fn write(&self, name: &str, contents: &str) -> PathBuf {
+            let p = self.0.join(name);
+            std::fs::write(&p, contents).expect("write module");
+            p
+        }
+    }
+
+    impl Drop for Sandbox {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    const KIRA: &str = "\
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+awam fungsi dua_kali(x: Nombor) -> Nombor kesan Bersih { tambah(x, x) }
+fungsi rahsia_dalaman(x: Nombor) -> Nombor kesan Bersih { x * 99 }
+";
+
+    /// Resolve `main.rii` in `sb` and return the error kind, failing the test
+    /// if resolution unexpectedly SUCCEEDED.
+    fn resolve_err(sb: &Sandbox, main: &Path) -> ResolveErrorKind {
+        match resolve_file(main) {
+            Ok(_) => panic!("expected resolution to fail in {}", sb.0.display()),
+            Err(e) => e.kind,
+        }
+    }
+
+    /// The linked program is one flat namespace: imported names are prefixed
+    /// with their module, the ROOT's names are left alone.
+    #[test]
+    fn links_imported_names_and_leaves_the_root_alone() {
+        let sb = Sandbox::new("link");
+        sb.write("kira.rii", KIRA);
+        let main = sb.write(
+            "main.rii",
+            "guna kira;\nfungsi utama() -> Nombor kesan Bersih { kira::tambah(3, 4) }\n",
+        );
+        let linked = resolve_file(&main).expect("resolves");
+        let names = top_level_names(&linked);
+        assert!(names.contains(&"kira_tambah".to_string()), "{names:?}");
+        assert!(names.contains(&"kira_dua_kali".to_string()), "{names:?}");
+        // The root keeps its own names — `utama` must stay `utama` or nothing
+        // downstream can find the entry point.
+        assert!(names.contains(&"utama".to_string()), "{names:?}");
+        assert!(!names.contains(&"main_utama".to_string()), "{names:?}");
+        // A private helper is still LINKED (its module needs it) — visibility
+        // is enforced by reference checking, not by dropping the definition.
+        assert!(
+            names.contains(&"kira_rahsia_dalaman".to_string()),
+            "{names:?}"
+        );
+    }
+
+    /// A module imported through two paths is loaded and linked ONCE.
+    #[test]
+    fn diamond_import_links_the_shared_module_once() {
+        let sb = Sandbox::new("diamond");
+        sb.write("asas.rii", "awam fungsi nilai() -> Nombor kesan Bersih { 1 }\n");
+        sb.write(
+            "kiri.rii",
+            "guna asas;\nawam fungsi l() -> Nombor kesan Bersih { asas::nilai() }\n",
+        );
+        sb.write(
+            "kanan.rii",
+            "guna asas;\nawam fungsi r() -> Nombor kesan Bersih { asas::nilai() }\n",
+        );
+        let main = sb.write(
+            "main.rii",
+            "guna kiri;\nguna kanan;\n\
+             fungsi utama() -> Nombor kesan Bersih { kiri::l() + kanan::r() }\n",
+        );
+        let linked = resolve_file(&main).expect("resolves");
+        let names = top_level_names(&linked);
+        let n = names.iter().filter(|s| *s == "asas_nilai").count();
+        assert_eq!(n, 1, "shared module linked {n} times: {names:?}");
+    }
+
+    /// A multi-segment path names the BUILTIN namespace and has no file behind
+    /// it, so it must not be looked up on disk. This is what keeps every
+    /// pre-REQ-71 example resolving unchanged.
+    #[test]
+    fn qualified_path_is_not_a_file_import() {
+        let sb = Sandbox::new("builtin_ns");
+        let main = sb.write(
+            "main.rii",
+            "guna std::teks;\nfungsi utama() -> Nombor kesan Bersih { 0 }\n",
+        );
+        resolve_file(&main).expect("a qualified path must not be resolved as a file");
+    }
+
+    #[test]
+    fn missing_module_reports_the_file_it_looked_for() {
+        let sb = Sandbox::new("missing");
+        let main = sb.write(
+            "main.rii",
+            "guna tiada_ini;\nfungsi utama() -> Nombor kesan Bersih { 0 }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::ModuleNotFound { module, tried } => {
+                assert_eq!(module, "tiada_ini");
+                assert!(tried.ends_with("tiada_ini.rii"), "{}", tried.display());
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// A cycle must terminate with the CHAIN, not recurse to death.
+    #[test]
+    fn circular_import_reports_the_chain() {
+        let sb = Sandbox::new("cycle");
+        sb.write(
+            "a.rii",
+            "guna b;\nawam fungsi fa() -> Nombor kesan Bersih { b::fb() }\n",
+        );
+        sb.write(
+            "b.rii",
+            "guna a;\nawam fungsi fb() -> Nombor kesan Bersih { a::fa() }\n",
+        );
+        let main = sb.write(
+            "main.rii",
+            "guna a;\nfungsi utama() -> Nombor kesan Bersih { a::fa() }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::CircularImport { chain } => {
+                assert!(chain.contains(&"a".to_string()), "{chain:?}");
+                assert!(chain.contains(&"b".to_string()), "{chain:?}");
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// Two modules producing the same linked name is an ERROR. Silent
+    /// shadowing would mean the program that runs is not the one written.
+    #[test]
+    fn colliding_linked_names_are_rejected() {
+        let sb = Sandbox::new("collide");
+        sb.write("kira.rii", KIRA);
+        let main = sb.write(
+            "main.rii",
+            "guna kira;\n\
+             fungsi kira_tambah(x: Nombor) -> Nombor kesan Bersih { x }\n\
+             fungsi utama() -> Nombor kesan Bersih { kira::tambah(1, 2) }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::NameCollision { name, .. } => assert_eq!(name, "kira_tambah"),
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// A non-`awam` name is module-private even though linking puts every name
+    /// into one flat namespace.
+    #[test]
+    fn private_name_is_not_reachable_across_a_module_boundary() {
+        let sb = Sandbox::new("private");
+        sb.write("kira.rii", KIRA);
+        let main = sb.write(
+            "main.rii",
+            "guna kira;\nfungsi utama() -> Nombor kesan Bersih { kira::rahsia_dalaman(2) }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::PrivateAccess { module, name, from } => {
+                assert_eq!(module, "kira");
+                assert_eq!(name, "rahsia_dalaman");
+                assert_eq!(from, "main");
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// A transitively-loaded module IS in the linked program — it has to be,
+    /// for its importer — but it is not silently in scope.
+    #[test]
+    fn transitive_module_requires_a_direct_import() {
+        let sb = Sandbox::new("transitive");
+        sb.write("deep.rii", "awam fungsi jauh() -> Nombor kesan Bersih { 7 }\n");
+        sb.write(
+            "mid.rii",
+            "guna deep;\nawam fungsi pertengahan() -> Nombor kesan Bersih { deep::jauh() }\n",
+        );
+        let main = sb.write(
+            "main.rii",
+            "guna mid;\nfungsi utama() -> Nombor kesan Bersih { deep::jauh() }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::MissingImport { module, name, from } => {
+                assert_eq!(module, "deep");
+                assert_eq!(name, "jauh");
+                assert_eq!(from, "main");
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// Only the ROOT file may have a program body. Top-level code in an
+    /// imported module would run at an unspecified point during linking.
+    #[test]
+    fn top_level_code_in_an_imported_module_is_rejected() {
+        let sb = Sandbox::new("toplevel");
+        sb.write(
+            "kesan_sampingan.rii",
+            "awam fungsi f() -> Nombor kesan Bersih { 1 }\ncetakln(\"hai\");\n",
+        );
+        let main = sb.write(
+            "main.rii",
+            "guna kesan_sampingan;\n\
+             fungsi utama() -> Nombor kesan Bersih { kesan_sampingan::f() }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::TopLevelCodeInModule { module } => {
+                assert_eq!(module, "kesan_sampingan");
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// A parse failure in an IMPORTED file names that module, not the root —
+    /// otherwise the diagnostic points at the wrong file.
+    #[test]
+    fn parse_error_in_an_imported_module_names_that_module() {
+        let sb = Sandbox::new("parse");
+        sb.write("rosak.rii", "fungsi ( ) ) tidak sah\n");
+        let main = sb.write(
+            "main.rii",
+            "guna rosak;\nfungsi utama() -> Nombor kesan Bersih { 0 }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::Parse { module, detail } => {
+                assert_eq!(module, "rosak");
+                assert!(!detail.is_empty(), "inner diagnostic was dropped");
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
+    /// `resolve_file` on a path that does not exist is an IO error naming the
+    /// path, not a panic.
+    #[test]
+    fn unreadable_root_is_an_io_error() {
+        let sb = Sandbox::new("io");
+        let missing = sb.0.join("tiada.rii");
+        match resolve_file(&missing) {
+            Err(ResolveError {
+                kind: ResolveErrorKind::Io { path, .. },
+                ..
+            }) => assert_eq!(path, missing),
+            other => panic!("wrong result: {other:?}"),
+        }
+    }
+
+    /// Every error kind renders a message that names the thing at fault and
+    /// says what to do. These strings are the user-facing half of the feature,
+    /// so they are asserted rather than left to drift.
+    #[test]
+    fn every_error_kind_renders_an_actionable_message() {
+        let at = |kind| ResolveError {
+            kind,
+            path: PathBuf::from("/x/main.rii"),
+        };
+        let cases: Vec<(ResolveError, Vec<&str>)> = vec![
+            (
+                at(ResolveErrorKind::ModuleNotFound {
+                    module: "kira".into(),
+                    tried: PathBuf::from("/x/kira.rii"),
+                }),
+                vec!["kira", "/x/kira.rii", "guna std::teks"],
+            ),
+            (
+                at(ResolveErrorKind::Io {
+                    path: PathBuf::from("/x/kira.rii"),
+                    detail: "permission denied".into(),
+                }),
+                vec!["/x/kira.rii", "permission denied"],
+            ),
+            (
+                at(ResolveErrorKind::CircularImport {
+                    chain: vec!["a".into(), "b".into(), "a".into()],
+                }),
+                vec!["circular import", "a -> b -> a"],
+            ),
+            (
+                at(ResolveErrorKind::NameCollision {
+                    name: "f".into(),
+                    first: "a".into(),
+                    second: "b".into(),
+                }),
+                vec!["collision", "never \n  silently shadows", "`a`", "`b`"],
+            ),
+            (
+                at(ResolveErrorKind::PrivateAccess {
+                    module: "kira".into(),
+                    name: "rahsia".into(),
+                    from: "main".into(),
+                }),
+                vec!["private", "awam fungsi rahsia"],
+            ),
+            (
+                at(ResolveErrorKind::MissingImport {
+                    module: "deep".into(),
+                    name: "jauh".into(),
+                    from: "main".into(),
+                }),
+                vec!["without importing", "guna deep;"],
+            ),
+            (
+                at(ResolveErrorKind::TopLevelCodeInModule {
+                    module: "m".into(),
+                }),
+                vec!["top-level code", "move it into a function"],
+            ),
+            (
+                at(ResolveErrorKind::Parse {
+                    module: "m".into(),
+                    detail: "unexpected token".into(),
+                }),
+                vec!["in module `m`", "unexpected token"],
+            ),
+        ];
+        for (err, expected) in cases {
+            let rendered = err.to_string();
+            for needle in expected {
+                // The collision note wraps across a line; compare on collapsed
+                // whitespace so the assertion pins the WORDS, not the layout.
+                let flat: String = rendered.split_whitespace().collect::<Vec<_>>().join(" ");
+                let flat_needle: String =
+                    needle.split_whitespace().collect::<Vec<_>>().join(" ");
+                assert!(
+                    flat.contains(&flat_needle),
+                    "{:?} missing {flat_needle:?} in {flat:?}",
+                    err.kind
+                );
+            }
+        }
+    }
+
     fn parse(src: &str) -> Expr {
         let mut p = Parser::new(src);
         let prog = p.parse_program().expect("parses");
