@@ -1,0 +1,24 @@
+# Repo-root build/test configuration.
+#
+# Cargo discovers `.cargo/config.toml` by walking up from the *current
+# directory*, not from `--manifest-path`. The documented workspace commands
+# (CLAUDE.md) are run from the repo root:
+#
+#     cargo test --all --manifest-path 03_PROTO/Cargo.toml
+#
+# which does NOT discover `03_PROTO/.cargo/config.toml`. Without the setting
+# below, interpreter tests that recurse deeply (e.g. the BigInt `fac(30)`
+# letrec test, ~11 MiB of native frames in a debug build) overflow the 2 MiB
+# default stack of a spawned test thread and abort the whole run with SIGABRT
+# rather than failing a single test.
+#
+# This mirrors `03_PROTO/.cargo/config.toml` and the `RUST_MIN_STACK` env in
+# `.github/workflows/verify.yml`; keep the three in step. It is a floor on
+# thread stack size only — no semantic change to what is tested.
+#
+# The interpreter tests reserve their own stack as well (see `EVAL_STACK` in
+# `riina-codegen/src/interp.rs`), so they no longer depend on this being
+# found; it remains the safety net for every other cargo invocation made from
+# the repo root.
+[env]
+RUST_MIN_STACK = "67108864"
