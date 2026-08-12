@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3072 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3104 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-12 — Gate C: TLS increment 4 — the RFC 8446 wire format, validated against OpenSSL
+
+### Added (Gate C / TLS — `riina-tls::wire`)
+- **A byte-exact RFC 8446 codec**: `TLSPlaintext` record framing and
+  `TLSInnerPlaintext` (§5.1–5.2), handshake message framing (§4), ClientHello
+  (§4.1.2) and ServerHello (§4.1.3) with the `supported_versions`,
+  `supported_groups`, `signature_algorithms` and `key_share` extensions,
+  Certificate (§4.4.2) in RFC 7250 raw-public-key form, CertificateVerify
+  (§4.4.3), Finished (§4.4.4) and EncryptedExtensions (§4.3.1).
+- Length-prefixed vector writers (`vec8`/`vec16`/`vec24`) that **reserve and
+  patch their own lengths** instead of counting by hand — a wrong hand-count is
+  invisible to a round-trip test, because encoder and parser share the mistake.
+- Strict parsing: truncation, inconsistent inner/outer lengths, trailing bytes
+  and over-long records are rejected; unknown *extensions* are skipped as §4.2
+  requires. `HelloRetryRequest` is **detected**, not misparsed as a ServerHello.
+- `TlsError::Decode`, distinct from `BadRecord` — there is no padding-oracle
+  concern in reporting that a peer's bytes were malformed.
+
+### Testing — validated against a real implementation, not against itself
+- `tests/openssl_wire_differential.rs` tests **both directions** against
+  OpenSSL 3.0: `s_client` generates a ClientHello that this code must parse,
+  and `s_server` must accept a ClientHello that this code produced, answering
+  with a ServerHello that agrees on suite, group, version and the echoed
+  session id. Round-trip tests cannot substantiate a wire format — an encoder
+  and parser sharing one misunderstanding round-trip perfectly and interoperate
+  with nobody.
+- **Negative controls were run before trusting the result.** Corrupting the
+  `key_share` code point made OpenSSL reply with alert `02 6d` —
+  fatal/`missing_extension(109)`, the semantically correct diagnosis — and an
+  off-by-one in the `vec16` length patch also failed the suite. Both were
+  restored.
+- The differentials **fail** when `openssl` is absent rather than skipping, per
+  the `riinac` C/WASM precedent; `RIINA_ALLOW_MISSING_BACKEND_TOOLS=1` opts out
+  loudly.
+- A port race in the first draft (bind-and-drop, then the parallel test's
+  `s_server` took the port) failed 2 runs in 8. Fixed by holding the listener;
+  20/20 clean after. 03_PROTO 3,072 → **3,104**.
+
+### Honest scope — this does NOT deliver interop
+`riina-tls::wire` is the **codec only**. `handshake` still exchanges the
+RIINA-internal encoding and still computes its transcript over it, so nothing
+on the live path emits or accepts these structures yet. Wiring the handshake
+onto the codec — full messages instead of bare key shares, EncryptedExtensions
+in the transcript, and handshake-phase records under the handshake keys — is
+increment 5. The claim this earns is "RIINA can read and write RFC 8446
+messages", **not** "RIINA speaks TLS".
 
 ### 2026-08-11 — Gate C: TLS parameterised over the hash — the standard `TLS_AES_256_GCM_SHA384` suite
 
