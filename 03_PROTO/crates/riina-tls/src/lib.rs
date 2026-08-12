@@ -25,14 +25,16 @@
 //!     HMAC-SHA384 Finished. (The SHA-256 variant is retained for the existing
 //!     tests but, paired with AES-256-GCM, names *no* registered suite.)
 //!
-//!     **Interop still requires more.** A matching cipher suite is necessary
-//!     but not sufficient: the handshake messages here are a compact
-//!     RIINA-internal encoding, not RFC 8446 ClientHello/ServerHello records
-//!     with extensions, `key_share`, `supported_versions` and the rest. So
-//!     RIINA↔OpenSSL still does not work, and the remaining gap is the **wire
-//!     format**, not the cryptography. Stating it precisely because "supports
-//!     TLS_AES_256_GCM_SHA384" would otherwise imply an interop that does not
-//!     exist.
+//!     **Interop is closer but still incomplete.** As of increment 5 the
+//!     handshake speaks the real RFC 8446 message format ([`wire`]), and a
+//!     stock OpenSSL server accepts RIINA's ClientHello and answers with a
+//!     ServerHello RIINA parses. What remains is the **record layer**: the
+//!     messages after ServerHello must be encrypted under the handshake
+//!     traffic keys (§5.2), and RIINA does not do that yet, so a real server's
+//!     flight is unreadable to it. Beyond that, RIINA authenticates with
+//!     RFC 7250 raw public keys, which OpenSSL does not enable by default.
+//!     Stating this precisely because "supports TLS_AES_256_GCM_SHA384" would
+//!     otherwise imply a completed handshake that does not exist.
 //!   * No handshake in THIS module — callers may supply a traffic secret
 //!     directly. The handshake that establishes one (ephemeral X25519, the
 //!     §7.1 key schedule, transcript binding and Finished) landed as
@@ -91,6 +93,32 @@ impl HashAlg {
         match self {
             Self::Sha384 => Some("TLS_AES_256_GCM_SHA384"),
             Self::Sha256 => None,
+        }
+    }
+
+    /// The cipher-suite code point to put on the wire for this hash.
+    ///
+    /// SHA-384 gets the registered `TLS_AES_256_GCM_SHA384` (0x1302). SHA-256
+    /// paired with AES-256-GCM is not a registered suite, so it gets a code
+    /// point from the IANA **Reserved for Private Use** range rather than
+    /// borrowing 0x1302 — squatting on a registered number would make RIINA
+    /// announce a suite whose algorithms it is not actually using, which is a
+    /// far worse failure than being non-interoperable honestly.
+    #[must_use]
+    pub const fn wire_suite(self) -> u16 {
+        match self {
+            Self::Sha384 => wire::TLS_AES_256_GCM_SHA384,
+            Self::Sha256 => wire::RIINA_AES_256_GCM_SHA256_PRIVATE,
+        }
+    }
+
+    /// The hash a wire cipher-suite code point selects, if this crate knows it.
+    #[must_use]
+    pub const fn from_wire_suite(suite: u16) -> Option<Self> {
+        match suite {
+            wire::TLS_AES_256_GCM_SHA384 => Some(Self::Sha384),
+            wire::RIINA_AES_256_GCM_SHA256_PRIVATE => Some(Self::Sha256),
+            _ => None,
         }
     }
 

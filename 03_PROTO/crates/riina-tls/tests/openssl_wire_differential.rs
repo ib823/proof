@@ -24,11 +24,13 @@
 //! not green. Opt out deliberately with `RIINA_ALLOW_MISSING_BACKEND_TOOLS=1`
 //! and the skip is announced on stderr.
 
+use riina_tls::handshake::{ClientHandshake, ClientRandomness};
 use riina_tls::wire::{
     parse_handshake, parse_record, ClientHello, ServerHello, CT_ALERT, CT_HANDSHAKE,
     ED25519_SPKI_LEN, GROUP_X25519, HS_SERVER_HELLO, SIG_ED25519, TLS13_VERSION,
     TLS_AES_256_GCM_SHA384,
 };
+use riina_tls::HashAlg;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
@@ -244,31 +246,19 @@ fn parses_a_real_openssl_client_hello() {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Encode: OpenSSL must accept OUR ClientHello
+// Spinning up a real OpenSSL server
 // ---------------------------------------------------------------------------
 
-/// The load-bearing test: a real OpenSSL server parses a ClientHello that this
-/// crate produced, and answers with a ServerHello that agrees on the suite and
-/// the group.
+/// Generate an Ed25519 server certificate into `dir`.
 ///
-/// If any length prefix, field order or extension encoding were wrong, OpenSSL
-/// would send an alert (content type 21) or drop the connection — both of
-/// which fail here, distinguishably.
-#[test]
-fn openssl_server_accepts_our_client_hello() {
-    if !require_openssl() {
-        return;
-    }
-
-    let dir = TempDir::new("srv");
-    let cert = dir.path().join("cert.pem");
-    let key = dir.path().join("key.pem");
-
-    // An Ed25519 server certificate, so the server's signing algorithm matches
-    // the single scheme our hello offers. With an RSA certificate OpenSSL
-    // would reject the hello for lack of a shared signature algorithm — a
-    // *negotiation* failure that would look exactly like an encoding failure
-    // and make this test lie about what it proved.
+/// Ed25519 specifically, so the server's signing algorithm matches the single
+/// scheme our hello offers. With an RSA certificate OpenSSL would reject the
+/// hello for lack of a shared signature algorithm — a *negotiation* failure
+/// that looks exactly like an encoding failure and would make these tests lie
+/// about what they proved.
+fn make_ed25519_cert(dir: &Path) -> (PathBuf, PathBuf) {
+    let cert = dir.join("cert.pem");
+    let key = dir.join("key.pem");
     let st = Command::new("openssl")
         .args([
             "req",
@@ -290,12 +280,16 @@ fn openssl_server_accepts_our_client_hello() {
         .status()
         .expect("run openssl req");
     assert!(st.success(), "failed to generate an Ed25519 test certificate");
+    (cert, key)
+}
 
-    // `s_server` must bind the port itself, so the port cannot be reserved for
-    // it in advance. Rather than assume the guess was free, retry on a fresh
-    // port when the server does not come up — a lost race then costs a retry
-    // instead of a spurious failure.
-    let mut server: Option<(Reaper, TcpStream)> = None;
+/// Start `openssl s_server` and connect to it.
+///
+/// `s_server` must bind the port itself, so the port cannot be reserved for it
+/// in advance. Rather than assume the guess was free, retry on a fresh port
+/// when the server does not come up — a lost race then costs a retry instead
+/// of a spurious failure.
+fn openssl_server(cert: &Path, key: &Path) -> (Reaper, TcpStream) {
     for attempt in 1..=4 {
         let port = candidate_port();
         let child = Command::new("openssl")
@@ -337,26 +331,26 @@ fn openssl_server_accepts_our_client_hello() {
             std::thread::sleep(Duration::from_millis(25));
         }
         if let Some(s) = connected {
-            server = Some((reaper, s));
-            break;
+            s.set_read_timeout(Some(Duration::from_secs(15))).ok();
+            return (reaper, s);
         }
         eprintln!("openssl s_server did not come up on port {port} (attempt {attempt}); retrying");
     }
-    let (_reap, mut sock) = server.expect("openssl s_server never came up on any candidate port");
-    sock.set_read_timeout(Some(Duration::from_secs(15))).ok();
+    panic!("openssl s_server never came up on any candidate port");
+}
 
-    // A syntactically valid but cryptographically arbitrary share: this test
-    // checks that OpenSSL *parses and accepts* our hello, and it never gets as
-    // far as needing the matching private key.
-    let share = [0x09u8; 32];
-    let hello = riina_client_hello(share).encode().expect("encode hello");
-    let record = riina_tls::wire::encode_record(CT_HANDSHAKE, &hello).expect("encode record");
+/// Send `hello_msg` as a handshake record and require a ServerHello back.
+///
+/// OpenSSL rejecting a malformed hello produces an alert, and an alert is a
+/// *distinguishable* outcome from a ServerHello — so this fails loudly on
+/// exactly the bug it exists to catch.
+fn exchange_client_hello(sock: &mut TcpStream, hello_msg: &[u8]) -> ServerHello {
+    let record = riina_tls::wire::encode_record(CT_HANDSHAKE, hello_msg).expect("encode record");
     sock.write_all(&record).expect("send ClientHello");
     sock.flush().ok();
 
     let mut resp = Vec::new();
     let mut chunk = [0u8; 8192];
-    // Read until we have at least one complete record, or the peer stops.
     let deadline = Instant::now() + Duration::from_secs(15);
     while Instant::now() < deadline {
         match sock.read(&mut chunk) {
@@ -375,7 +369,6 @@ fn openssl_server_accepts_our_client_hello() {
         !resp.is_empty(),
         "openssl s_server closed without a single byte — it did not accept our ClientHello"
     );
-
     let rec = parse_record(&resp).expect("parse the server's first record");
     assert_ne!(
         rec.content_type, CT_ALERT,
@@ -387,15 +380,18 @@ fn openssl_server_accepts_our_client_hello() {
         "expected a handshake record, got content type {}",
         rec.content_type
     );
-
     let hs = parse_handshake(rec.fragment).expect("parse the server handshake message");
     assert_eq!(
         hs.msg_type, HS_SERVER_HELLO,
         "expected ServerHello, got handshake type {}",
         hs.msg_type
     );
+    ServerHello::parse(hs.body).expect("parse ServerHello")
+}
 
-    let sh = ServerHello::parse(hs.body).expect("parse ServerHello");
+/// The checks that say OpenSSL genuinely agreed with us, rather than merely
+/// not crashing.
+fn assert_agreed(sh: &ServerHello, expect_session_id: &[u8]) {
     assert!(
         !sh.is_hello_retry_request(),
         "we offered the group openssl was configured with, so an HRR means our \
@@ -418,10 +414,116 @@ fn openssl_server_accepts_our_client_hello() {
     // clearest single proof that OpenSSL read our fields at the right offsets
     // rather than accidentally succeeding.
     assert_eq!(
-        sh.legacy_session_id_echo,
-        vec![0x7Cu8; 32],
+        sh.legacy_session_id_echo, expect_session_id,
         "openssl echoed a different session id than the one we sent"
     );
+}
+
+// ---------------------------------------------------------------------------
+// 2. Encode: OpenSSL must accept OUR ClientHello
+// ---------------------------------------------------------------------------
+
+/// The load-bearing test: a real OpenSSL server parses a ClientHello that this
+/// crate produced, and answers with a ServerHello that agrees on the suite and
+/// the group.
+///
+/// If any length prefix, field order or extension encoding were wrong, OpenSSL
+/// would send an alert (content type 21) or drop the connection — both of
+/// which fail here, distinguishably.
+#[test]
+fn openssl_server_accepts_our_client_hello() {
+    if !require_openssl() {
+        return;
+    }
+    let dir = TempDir::new("srv");
+    let (cert, key) = make_ed25519_cert(dir.path());
+    let (_reap, mut sock) = openssl_server(&cert, &key);
+
+    // A syntactically valid but cryptographically arbitrary share: this test
+    // checks that OpenSSL *parses and accepts* our hello, and it never gets as
+    // far as needing the matching private key.
+    let session_id = vec![0x7Cu8; 32];
+    let hello = riina_client_hello([0x09u8; 32]).encode().expect("encode hello");
+    let sh = exchange_client_hello(&mut sock, &hello);
+    assert_agreed(&sh, &session_id);
+}
+
+/// **The increment-5 test.** The hello above is hand-built from `wire`; this
+/// one comes out of the real handshake path — `ClientHandshake::start`, the
+/// same call the `jaring_tls_jabat` builtin makes. OpenSSL must accept it and
+/// agree on suite, group, version and the echoed session id.
+///
+/// This is the difference between "RIINA can construct RFC 8446 bytes" and
+/// "the bytes RIINA actually sends are RFC 8446". Increment 4 could only claim
+/// the former.
+#[test]
+fn openssl_server_accepts_the_handshakes_own_client_hello() {
+    if !require_openssl() {
+        return;
+    }
+    let dir = TempDir::new("hs");
+    let (cert, key) = make_ed25519_cert(dir.path());
+    let (_reap, mut sock) = openssl_server(&cert, &key);
+
+    // Real OS entropy, exactly as a live handshake would use.
+    let rnd = ClientRandomness::from_os().expect("OS CSPRNG");
+    let (_client, hello) =
+        ClientHandshake::start(HashAlg::Sha384, &rnd).expect("start handshake");
+
+    let sh = exchange_client_hello(&mut sock, &hello);
+    assert_agreed(&sh, &rnd.legacy_session_id);
+
+    // And our own parser reads OpenSSL's ServerHello well enough to drive the
+    // key exchange: the share is there and is not degenerate.
+    let share = sh.key_share_x25519.expect("x25519 share");
+    assert_ne!(share, [0u8; 32], "an all-zero server share is not plausible");
+}
+
+/// The SHA-256 variant must NOT interoperate — it announces a private-use code
+/// point, and a conforming server has to refuse it. Asserting the refusal
+/// keeps the "not a registered suite" note honest: if OpenSSL ever accepted
+/// this, the claim that RIINA only speaks a registered suite on the wire would
+/// be wrong.
+#[test]
+fn openssl_refuses_the_unregistered_private_suite() {
+    if !require_openssl() {
+        return;
+    }
+    let dir = TempDir::new("priv");
+    let (cert, key) = make_ed25519_cert(dir.path());
+    let (_reap, mut sock) = openssl_server(&cert, &key);
+
+    let rnd = ClientRandomness::from_os().expect("OS CSPRNG");
+    let (_client, hello) =
+        ClientHandshake::start(HashAlg::Sha256, &rnd).expect("start handshake");
+    let record = riina_tls::wire::encode_record(CT_HANDSHAKE, &hello).expect("encode record");
+    sock.write_all(&record).expect("send ClientHello");
+    sock.flush().ok();
+
+    let mut resp = Vec::new();
+    let mut chunk = [0u8; 4096];
+    let deadline = Instant::now() + Duration::from_secs(15);
+    while Instant::now() < deadline {
+        match sock.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => {
+                resp.extend_from_slice(&chunk[..n]);
+                if parse_record(&resp).is_ok() {
+                    break;
+                }
+            }
+            Err(_) => break,
+        }
+    }
+
+    // Either an alert or a closed connection is a correct refusal. What must
+    // NOT happen is a ServerHello.
+    if let Ok(rec) = parse_record(&resp) {
+        assert_ne!(
+            rec.content_type, CT_HANDSHAKE,
+            "openssl accepted a private-use cipher suite it cannot possibly implement"
+        );
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3104 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3117 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-08-12 — Gate C: TLS increment 5 — the handshake now speaks RFC 8446 on the wire
+
+### Changed (Gate C / TLS — the live path emits real TLS messages)
+- **The handshake exchanges whole RFC 8446 messages, not bare key shares.**
+  `ClientHandshake::start` returns an encoded **ClientHello**;
+  `ServerHandshake::accept` parses it and returns a `ServerFlight` of
+  **ServerHello** plus EncryptedExtensions ‖ [Certificate ‖ CertificateVerify] ‖
+  **Finished**. `riina-tls::wire` is now load-bearing rather than a codec
+  nothing called.
+- **The transcript is `Transcript-Hash` over the real messages** (RFC 8446
+  §4.4.1) — concatenated handshake messages, headers included, nothing
+  re-framed. This is the piece that decides whether a RIINA Finished MAC could
+  ever agree with a conforming peer's.
+- **Real negotiation checks, which are security checks.** The client refuses a
+  ServerHello that selects an unoffered suite, does not select TLS 1.3, echoes
+  the wrong `legacy_session_id`, or is a HelloRetryRequest; the server refuses a
+  hello offering no shared suite or no x25519 share. Each is a downgrade or
+  replay avenue if skipped, and each has a test.
+- **`ClientRandomness` / `ServerRandomness`** replace a single entropy blob. A
+  TLS client needs three independent 32-byte values, and the secret key seed is
+  kept distinct from the two that go out in the clear — deriving them from one
+  seed is how forward secrecy dies quietly.
+- **The SHA-256 variant takes a private-use cipher-suite code point**
+  (`0xFF01`) instead of squatting on the registered `0x1302`. Announcing a
+  registered number while running different algorithms is a lie told to every
+  peer; a private code point is merely non-interoperable, which is the honest
+  failure. A differential test asserts OpenSSL **refuses** it.
+- The `jaring_tls_*` builtins frame flights as real `TLSPlaintext` handshake
+  records over the socket.
+
+### Testing
+- **`openssl_server_accepts_the_handshakes_own_client_hello`** — the milestone
+  for this increment. Increment 4 fed OpenSSL a hand-built hello; this feeds it
+  the hello `ClientHandshake::start` produces, with real OS entropy, and
+  requires a ServerHello agreeing on suite, group, version and the echoed
+  session id. The claim moves from "RIINA can construct RFC 8446 bytes" to
+  "the bytes RIINA sends are RFC 8446".
+- Negative control run before trusting the private-suite test: pointing SHA-256
+  at `0x1302` made OpenSSL accept it and the test fail, as designed.
+- 15/15 clean runs of the OpenSSL differentials. 03_PROTO 3,104 → **3,117**.
+
+### Honest scope — a handshake against an outside peer still does not complete
+Two things remain. **The record layer**: post-ServerHello messages must travel
+encrypted under the handshake traffic keys (§5.2), and RIINA does not do that
+yet, so a real server's flight is unreadable to it — increment 6. **The
+credential**: RIINA authenticates with RFC 7250 raw public keys, which OpenSSL
+does not enable by default, so this additionally needs `server_certificate_type`
+negotiated at both ends or real X.509 chain validation — increment 7, and the
+one carrying genuine uncertainty. RIINA↔RIINA remains the only pairing that
+completes today.
 
 ### 2026-08-12 — Gate C: TLS increment 4 — the RFC 8446 wire format, validated against OpenSSL
 
