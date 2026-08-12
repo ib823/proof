@@ -46,6 +46,7 @@
 
 pub mod auth;
 pub mod handshake;
+pub mod wire;
 
 use riina_core::crypto::gcm::{Aes256Gcm, KEY_SIZE, NONCE_SIZE, TAG_SIZE};
 use riina_core::crypto::hkdf::{HkdfSha256, HkdfSha384};
@@ -160,6 +161,13 @@ pub enum TlsError {
     /// weaker fallback, since a predictable ephemeral key destroys forward
     /// secrecy silently.
     NoEntropy,
+    /// A wire structure did not parse: truncation, an inconsistent length, an
+    /// unexpected trailing byte, or a field of the wrong shape. Distinct from
+    /// [`Self::BadRecord`] because it describes *parsing* a structure, not
+    /// opening an AEAD — there is no padding-oracle concern in reporting that
+    /// a peer's bytes were malformed, and collapsing the two would make
+    /// debugging a wire mismatch needlessly blind.
+    Decode,
 }
 
 /// RFC 8446 §7.1 HKDF-Expand-Label.
