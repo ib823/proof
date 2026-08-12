@@ -10,5 +10,13 @@
 # interpreter semantics. 16 MiB proved borderline (the BigInt `fac(30)` recursion
 # nests many large eval frames and overflowed it intermittently, flaking
 # `verify --full`); 64 MiB gives ample margin.
+#
+# This file is only discovered when cargo's *current directory* is inside
+# `03_PROTO/` — cargo reads config from the CWD, not from `--manifest-path`.
+# The three deep tests no longer rely on it: they reserve their own stack via
+# `with_eval_stack` (see `EVAL_STACK` in `riina-codegen/src/interp.rs`). It
+# remains the safety net for everything else. Mirrored by the repo-root
+# `.cargo/config.toml` and by `RUST_MIN_STACK` in
+# `.github/workflows/verify.yml`; keep the three in step.
 [env]
 RUST_MIN_STACK = "67108864"

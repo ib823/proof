@@ -65,11 +65,11 @@
 use crate::value::Value;
 use crate::{Error, Result};
 use riina_os::net::{tls_policy_accepts, CipherSuite, TcpConnection, TcpEvent, TcpState, TlsVersion};
-use riina_tls::auth::{Identity, TrustStore, CREDENTIAL_LEN, SIGNATURE_LEN};
+use riina_tls::auth::{Identity, TrustStore, CREDENTIAL_LEN};
 use riina_tls::handshake::{
-    os_entropy_32, ClientHandshake, ServerAuth, ServerHandshake, SHARE_LEN,
+    ClientHandshake, ClientRandomness, ServerHandshake, ServerRandomness,
 };
-use riina_tls::{HashAlg, RecordKeys};
+use riina_tls::{wire, HashAlg, RecordKeys};
 
 /// The TLS hash RIINA negotiates. SHA-384 is the hash of the registered IANA
 /// suite `TLS_AES_256_GCM_SHA384`, which is the only TLS 1.3 suite riina-core
@@ -81,6 +81,37 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+
+/// Send a handshake flight as one RFC 8446 `TLSPlaintext` record.
+///
+/// Handshake messages are variable-length now, so the socket needs framing.
+/// Using the real record layer rather than an ad-hoc length prefix means the
+/// bytes on the wire are already the shape a conforming peer expects; what is
+/// still missing is encrypting the post-ServerHello records under the
+/// handshake traffic keys, which is increment 6.
+fn write_handshake_record(stream: &mut TcpStream, payload: &[u8]) -> std::io::Result<()> {
+    let rec = wire::encode_record(wire::CT_HANDSHAKE, payload).map_err(|_| {
+        std::io::Error::new(std::io::ErrorKind::InvalidData, "handshake flight too large")
+    })?;
+    stream.write_all(&rec)
+}
+
+/// Read exactly one handshake record and return its fragment.
+fn read_handshake_record(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
+    let mut header = [0u8; 5];
+    stream.read_exact(&mut header)?;
+    let bad = |m: &'static str| std::io::Error::new(std::io::ErrorKind::InvalidData, m);
+    if header[0] != wire::CT_HANDSHAKE {
+        return Err(bad("expected a handshake record"));
+    }
+    let len = u16::from_be_bytes([header[3], header[4]]) as usize;
+    if len > wire::MAX_CIPHERTEXT {
+        return Err(bad("record length out of range"));
+    }
+    let mut body = vec![0u8; len];
+    stream.read_exact(&mut body)?;
+    Ok(body)
+}
 
 /// (BM name, EN name, canonical key).
 pub static BUILTINS: &[(&str, &str, &str)] = &[
@@ -556,7 +587,9 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 Ok((s, conn.is_client))
             })?;
 
-            let entropy = os_entropy_32().map_err(|_| err("jaring_tls: no OS entropy"))?;
+            // Fails closed: no CSPRNG means no handshake, never a weaker source.
+            let rnd_c = ClientRandomness::from_os().map_err(|_| err("jaring_tls: no OS entropy"))?;
+            let rnd_s = ServerRandomness::from_os().map_err(|_| err("jaring_tls: no OS entropy"))?;
             let io = |e: std::io::Error| err(format!("jaring_tls: jabat: {e}"));
 
             let session = if is_client {
@@ -566,42 +599,29 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                         "jaring_tls: no trusted credentials (jaring_tls_percaya) — refusing",
                     ));
                 }
-                let (hs, share) = ClientHandshake::start(TLS_HASH, &entropy);
-                stream.write_all(&share).map_err(io)?;
-                let mut server_share = [0u8; SHARE_LEN];
-                let mut credential = [0u8; CREDENTIAL_LEN];
-                let mut signature = [0u8; SIGNATURE_LEN];
-                let mut server_fin = vec![0u8; TLS_HASH.hash_len()];
-                stream.read_exact(&mut server_share).map_err(io)?;
-                stream.read_exact(&mut credential).map_err(io)?;
-                stream.read_exact(&mut signature).map_err(io)?;
-                stream.read_exact(&mut server_fin).map_err(io)?;
-                let auth = ServerAuth {
-                    credential,
-                    signature,
-                };
+                let (hs, hello) = ClientHandshake::start(TLS_HASH, &rnd_c)
+                    .map_err(|_| err("jaring_tls: handshake failed"))?;
+                write_handshake_record(&mut stream, &hello).map_err(io)?;
+                let server_hello = read_handshake_record(&mut stream).map_err(io)?;
+                let rest = read_handshake_record(&mut stream).map_err(io)?;
                 let (client_fin, session) = hs
-                    .finish_authenticated(&server_share, &auth, &server_fin, &store)
+                    .finish_authenticated(&server_hello, &rest, &store)
                     .map_err(|_| err("jaring_tls: peer authentication failed"))?;
-                stream.write_all(&client_fin).map_err(io)?;
+                write_handshake_record(&mut stream, &client_fin).map_err(io)?;
                 session
             } else {
-                let mut client_share = [0u8; SHARE_LEN];
-                stream.read_exact(&mut client_share).map_err(io)?;
-                let (hs, share, auth, server_fin) = NET.with(|n| -> Result<_> {
+                let client_hello = read_handshake_record(&mut stream).map_err(io)?;
+                let (hs, flight) = NET.with(|n| -> Result<_> {
                     let st = &*n.borrow();
                     let identity = st.identity.as_ref().ok_or_else(|| {
                         err("jaring_tls: no identity (jaring_tls_identiti) — refusing")
                     })?;
-                    ServerHandshake::accept_authenticated(TLS_HASH, &entropy, &client_share, identity)
+                    ServerHandshake::accept_authenticated(TLS_HASH, &rnd_s, &client_hello, identity)
                         .map_err(|_| err("jaring_tls: handshake failed"))
                 })?;
-                stream.write_all(&share).map_err(io)?;
-                stream.write_all(&auth.credential).map_err(io)?;
-                stream.write_all(&auth.signature).map_err(io)?;
-                stream.write_all(&server_fin).map_err(io)?;
-                let mut client_fin = vec![0u8; TLS_HASH.hash_len()];
-                stream.read_exact(&mut client_fin).map_err(io)?;
+                write_handshake_record(&mut stream, &flight.server_hello).map_err(io)?;
+                write_handshake_record(&mut stream, &flight.rest).map_err(io)?;
+                let client_fin = read_handshake_record(&mut stream).map_err(io)?;
                 hs.confirm(&client_fin)
                     .map_err(|_| err("jaring_tls: handshake failed"))?
             };
@@ -664,30 +684,29 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 Ok((s, conn.is_client))
             })?;
 
-            let entropy = os_entropy_32().map_err(|_| err("jaring_tls: no OS entropy"))?;
+            // Fails closed: no CSPRNG means no handshake, never a weaker source.
+            let rnd_c = ClientRandomness::from_os().map_err(|_| err("jaring_tls: no OS entropy"))?;
+            let rnd_s = ServerRandomness::from_os().map_err(|_| err("jaring_tls: no OS entropy"))?;
             let io = |e: std::io::Error| err(format!("jaring_tls: jabat: {e}"));
 
             let session = if is_client {
-                let (hs, share) = ClientHandshake::start(TLS_HASH, &entropy);
-                stream.write_all(&share).map_err(io)?;
-                let mut server_share = [0u8; SHARE_LEN];
-                let mut server_fin = vec![0u8; TLS_HASH.hash_len()];
-                stream.read_exact(&mut server_share).map_err(io)?;
-                stream.read_exact(&mut server_fin).map_err(io)?;
-                let (client_fin, session) = hs
-                    .finish(&server_share, &server_fin)
+                let (hs, hello) = ClientHandshake::start(TLS_HASH, &rnd_c)
                     .map_err(|_| err("jaring_tls: handshake failed"))?;
-                stream.write_all(&client_fin).map_err(io)?;
+                write_handshake_record(&mut stream, &hello).map_err(io)?;
+                let server_hello = read_handshake_record(&mut stream).map_err(io)?;
+                let rest = read_handshake_record(&mut stream).map_err(io)?;
+                let (client_fin, session) = hs
+                    .finish(&server_hello, &rest)
+                    .map_err(|_| err("jaring_tls: handshake failed"))?;
+                write_handshake_record(&mut stream, &client_fin).map_err(io)?;
                 session
             } else {
-                let mut client_share = [0u8; SHARE_LEN];
-                stream.read_exact(&mut client_share).map_err(io)?;
-                let (hs, share, server_fin) = ServerHandshake::accept(TLS_HASH, &entropy, &client_share)
+                let client_hello = read_handshake_record(&mut stream).map_err(io)?;
+                let (hs, flight) = ServerHandshake::accept(TLS_HASH, &rnd_s, &client_hello)
                     .map_err(|_| err("jaring_tls: handshake failed"))?;
-                stream.write_all(&share).map_err(io)?;
-                stream.write_all(&server_fin).map_err(io)?;
-                let mut client_fin = vec![0u8; TLS_HASH.hash_len()];
-                stream.read_exact(&mut client_fin).map_err(io)?;
+                write_handshake_record(&mut stream, &flight.server_hello).map_err(io)?;
+                write_handshake_record(&mut stream, &flight.rest).map_err(io)?;
+                let client_fin = read_handshake_record(&mut stream).map_err(io)?;
                 hs.confirm(&client_fin)
                     .map_err(|_| err("jaring_tls: handshake failed"))?
             };

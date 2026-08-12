@@ -2624,36 +2624,39 @@ mod tests {
 
     #[test]
     fn test_eval_letrec_countdown() {
-        let mut interp = Interpreter::new();
-        // let rec count : Int -> Int = λn. if n <= 0 then 0 else count(n-1) in count(10)
-        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
-        let body = Expr::If(
-            Box::new(Expr::BinOp(
-                BinOp::Le,
-                Box::new(Expr::Var("n".into())),
-                Box::new(Expr::Int(0)),
-            )),
-            Box::new(Expr::Int(0)),
-            Box::new(Expr::App(
-                Box::new(Expr::Var("count".into())),
+        // 11 nested interpreter levels: needs a reserved stack (see EVAL_STACK).
+        with_eval_stack(|| {
+            let mut interp = Interpreter::new();
+            // let rec count : Int -> Int = λn. if n <= 0 then 0 else count(n-1) in count(10)
+            let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+            let body = Expr::If(
                 Box::new(Expr::BinOp(
-                    BinOp::Sub,
+                    BinOp::Le,
                     Box::new(Expr::Var("n".into())),
-                    Box::new(Expr::Int(1)),
+                    Box::new(Expr::Int(0)),
                 )),
-            )),
-        );
-        let lam = Expr::Lam("n".into(), Ty::Int, Box::new(body));
-        let letrec = Expr::LetRec(
-            "count".into(),
-            fn_ty,
-            Box::new(lam),
-            Box::new(Expr::App(
-                Box::new(Expr::Var("count".into())),
-                Box::new(Expr::Int(10)),
-            )),
-        );
-        assert_eq!(interp.eval(&letrec), Ok(Value::Int(0)));
+                Box::new(Expr::Int(0)),
+                Box::new(Expr::App(
+                    Box::new(Expr::Var("count".into())),
+                    Box::new(Expr::BinOp(
+                        BinOp::Sub,
+                        Box::new(Expr::Var("n".into())),
+                        Box::new(Expr::Int(1)),
+                    )),
+                )),
+            );
+            let lam = Expr::Lam("n".into(), Ty::Int, Box::new(body));
+            let letrec = Expr::LetRec(
+                "count".into(),
+                fn_ty,
+                Box::new(lam),
+                Box::new(Expr::App(
+                    Box::new(Expr::Var("count".into())),
+                    Box::new(Expr::Int(10)),
+                )),
+            );
+            assert_eq!(interp.eval(&letrec), Ok(Value::Int(0)));
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -3566,7 +3569,46 @@ mod tests {
         assert_eq!(r1, r2);
     }
 
+    /// Stack reserved for deeply-recursive interpreter tests.
+    ///
+    /// `eval_with_env` is one large `match`, and in debug builds Rust does not
+    /// overlap the stack slots of disjoint arms, so a single interpreter
+    /// recursion level costs roughly 350 KiB of native stack. `fac(30)` nests
+    /// 31 levels — about 11 MiB — which overflows the 2 MiB default stack of a
+    /// spawned test thread. A stack overflow cannot be caught: it aborts the
+    /// process with SIGABRT, so one deep test takes the entire run down with it
+    /// rather than failing on its own.
+    ///
+    /// `03_PROTO/.cargo/config.toml`, `.cargo/config.toml` and the CI workflow
+    /// all raise `RUST_MIN_STACK` for this reason, but cargo discovers config
+    /// from the *current directory*, not from `--manifest-path`: running
+    /// `cargo test --all --manifest-path 03_PROTO/Cargo.toml` from the repo
+    /// root silently drops a config that lives only under `03_PROTO/`.
+    /// [`with_eval_stack`] makes the deep tests independent of that — of cwd,
+    /// ambient environment, and runner alike.
+    const EVAL_STACK: usize = 64 * 1024 * 1024;
+
+    /// Run `body` on a thread with [`EVAL_STACK`] reserved.
+    ///
+    /// `body` returns `()` deliberately: `Value::Closure` holds an `Rc<Expr>`
+    /// and so is not `Send`, which means an evaluated `Value` cannot cross the
+    /// thread boundary. Keeping the assertions inside `body` keeps every
+    /// interpreter value on the reserved-stack thread.
+    fn with_eval_stack(body: impl FnOnce() + Send) {
+        std::thread::scope(|scope| {
+            std::thread::Builder::new()
+                .stack_size(EVAL_STACK)
+                .spawn_scoped(scope, body)
+                .expect("spawn reserved-stack interpreter thread")
+                .join()
+                .expect("interpreter test body panicked")
+        });
+    }
+
     /// Parse `src` and evaluate with builtins, returning the resulting Value.
+    ///
+    /// Callers that recurse more than a couple of levels deep must wrap the
+    /// call in [`with_eval_stack`].
     fn run_src(src: &str) -> Value {
         let mut p = riina_parser::Parser::new(src);
         let expr = p.parse_program().unwrap().desugar();
@@ -3606,10 +3648,13 @@ mod tests {
     fn test_early_return_recursive_accumulator_terminates() {
         // Tail-style recursion that relies on an early-return base case now
         // terminates (previously diverged because `pulang` was identity).
-        let v = run_src(
-            "fungsi fib(n: Nombor) -> Nombor kesan Bersih { fungsi akum(k: Nombor, a: Nombor, b: Nombor) -> Nombor { kalau k == 0 { pulang a; } pulang akum(k - 1, b, a + b); } pulang akum(n, 0, 1); } fib(10)",
-        );
-        assert_eq!(v, Value::Int(55));
+        // Recurses deeply enough to need a reserved stack (see EVAL_STACK).
+        with_eval_stack(|| {
+            let v = run_src(
+                "fungsi fib(n: Nombor) -> Nombor kesan Bersih { fungsi akum(k: Nombor, a: Nombor, b: Nombor) -> Nombor { kalau k == 0 { pulang a; } pulang akum(k - 1, b, a + b); } pulang akum(n, 0, 1); } fib(10)",
+            );
+            assert_eq!(v, Value::Int(55));
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -3770,11 +3815,14 @@ mod tests {
     fn test_bigint_factorial_via_letrec() {
         // 30! = 265252859812191058636308480000000 — far beyond 64 bits — computed
         // end-to-end through the interpreter with a recursive function.
-        let src = "fungsi fac(n: Besar) -> Besar kesan Bersih { \
-                   kalau n == besar(\"0\") { pulang besar(\"1\"); } \
-                   pulang n * fac(n - besar(\"1\")); } \
-                   fac(besar(\"30\"))";
-        assert_eq!(run_src(src), big("265252859812191058636308480000000"));
+        // 31 nested interpreter levels: needs a reserved stack (see EVAL_STACK).
+        with_eval_stack(|| {
+            let src = "fungsi fac(n: Besar) -> Besar kesan Bersih { \
+                       kalau n == besar(\"0\") { pulang besar(\"1\"); } \
+                       pulang n * fac(n - besar(\"1\")); } \
+                       fac(besar(\"30\"))";
+            assert_eq!(run_src(src), big("265252859812191058636308480000000"));
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════════════

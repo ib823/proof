@@ -29,17 +29,14 @@
 //!
 //! # What is NOT
 //!
-//!   * **RIINA does not interoperate yet, and this module does not change
-//!     that.** It is the codec only. [`crate::handshake`] still exchanges the
-//!     RIINA-internal encoding and still computes its transcript over it, so
-//!     nothing on the live path emits or accepts these structures. Wiring the
-//!     handshake onto this codec — full messages over the wire instead of bare
-//!     key shares, EncryptedExtensions in the transcript, and handshake-phase
-//!     records under the handshake keys — is the next increment. Until then
-//!     the honest claim is "RIINA can read and write RFC 8446 messages", not
-//!     "RIINA speaks TLS".
 //!   * **Encoding only.** No key exchange, no negotiation policy, no state
-//!     machine, no alert generation.
+//!     machine, no alert generation — [`crate::handshake`] drives all of that,
+//!     and as of increment 5 it does: the messages RIINA actually sends are
+//!     built here, not by a parallel encoder.
+//!   * **A complete handshake against an outside peer still does not work.**
+//!     The remaining gap is the *record layer*: post-ServerHello messages must
+//!     travel encrypted under the handshake traffic keys (§5.2), which
+//!     [`crate::handshake`] does not do yet. See its header for the full list.
 //!   * **No HelloRetryRequest, no PSK/0-RTT, no fragmentation across records,
 //!     no KeyUpdate, no session tickets.** HRR is *detected* and rejected
 //!     ([`ServerHello::is_hello_retry_request`]) rather than silently
@@ -74,6 +71,16 @@ pub const TLS13_VERSION: u16 = 0x0304;
 pub const TLS_AES_256_GCM_SHA384: u16 = 0x1302;
 /// `TLS_AES_128_GCM_SHA256`, recognised for negotiation refusal only.
 pub const TLS_AES_128_GCM_SHA256: u16 = 0x1301;
+
+/// RIINA's private code point for AES-256-GCM with a SHA-256 key schedule.
+///
+/// That pairing is **not** an IANA-registered suite (0x1302 pairs AES-256-GCM
+/// with SHA-384), so it takes a number from the registry's *Reserved for
+/// Private Use* range, `0xFF00`–`0xFFFF`. Announcing 0x1302 while running a
+/// SHA-256 schedule would be a lie told to every peer; a private code point is
+/// merely non-interoperable, which is the honest failure. No outside
+/// implementation will accept it, and that is the intent.
+pub const RIINA_AES_256_GCM_SHA256_PRIVATE: u16 = 0xFF01;
 
 /// NamedGroup `x25519`.
 pub const GROUP_X25519: u16 = 0x001d;
