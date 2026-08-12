@@ -190,34 +190,49 @@ fn early_return_terminates_its_block() {
     );
 }
 
-/// REQ-80 REMAINING, pinned so it cannot regress silently: a `pulang` in a
-/// ZERO-PARAMETER function is NOT honoured.
+/// REQ-81: a `pulang` in a ZERO-PARAMETER function is honoured too.
 ///
-/// `build_lambda` with no params returns the body unchanged, so a zero-arg
-/// `fungsi` never becomes an IR function — its body is spliced into the
-/// definition site. Emitting a real return there returns from the CALLER, which
-/// was measured: a `pulang 42` in a zero-arg helper made `utama` itself return
-/// 42 and skip its own output. Lowering therefore keeps the old
-/// value-passthrough in that position, which is correct in tail position (where
-/// nearly all of them sit) and no worse than before anywhere else.
-///
-/// Closing this properly means making a zero-arg `fungsi` a real function —
-/// a desugaring change reaching the typechecker, interpreter and both backends,
-/// which is its own piece of work.
+/// It was not, and could not be: `desugar_function` with no params returned the
+/// body unchanged, so a zero-arg `fungsi` never became an IR function and its
+/// body was spliced into the definition site — emitting a real return there
+/// returned from the CALLER (measured: `pulang 42` in a zero-arg helper made
+/// `utama` itself return 42 and skip its own output). Zero-parameter functions
+/// now get a synthesised `()` parameter, so they are functions like any other.
 #[test]
-fn early_return_in_a_zero_arg_function_is_not_yet_honoured() {
+fn early_return_in_a_zero_arg_function_is_honoured() {
     let ir = lower_to_ir(
-        "fungsi ambil() -> Nombor kesan Bersih { pulang 42; }\n\
+        "fungsi ambil() -> Nombor kesan Bersih { kalau 1 > 0 { pulang 42; } pulang 7; }\n\
          fungsi utama() -> Nombor kesan Tulis { cetak(ambil()); 0 }\n",
     )
     .expect("lowers");
-    // Exactly one `ret`: main's own. If this ever becomes 2, zero-arg functions
-    // have become real functions (or the suppression broke) — re-check that
-    // `utama` still runs to completion before relaxing this.
-    let rets = ir.matches("return ").count();
-    assert_eq!(
-        rets, 1,
-        "a zero-arg `pulang` now emits a return; verify it does not return from \
-         the CALLER before changing this (REQ-80):\n{ir}"
+    // `ambil` is its own function with two exits (the early one and the
+    // fall-through). With the old thunk model there was no function at all.
+    assert!(
+        ir.matches("return ").count() >= 3,
+        "a zero-arg function should have its own early + fall-through returns:\n{ir}"
+    );
+}
+
+/// REQ-81: a zero-parameter function is a real `Unit -> T` closure, so calling
+/// it twice runs it twice — and never calling it runs it not at all.
+///
+/// The old thunk model ran the body ONCE when its binding was evaluated,
+/// whether it was called or not, and BEFORE `utama`; the behavioural proof is
+/// in `riinac/tests/zero_arg_function.rs`. This pins the IR shape: the call is
+/// an application of a closure, not a reference to a precomputed value.
+#[test]
+fn zero_arg_function_lowers_to_a_closure_and_a_call() {
+    let ir = lower_to_ir(
+        "fungsi ambil() -> Nombor kesan Bersih { 42 }\n\
+         fungsi utama() -> Nombor kesan Tulis { cetak(ambil()); cetak(ambil()); 0 }\n",
+    )
+    .expect("lowers");
+    assert!(
+        ir.contains("closure"),
+        "a zero-arg function must lower to a closure:\n{ir}"
+    );
+    assert!(
+        ir.matches("call ").count() >= 2,
+        "two call sites must produce two calls, not one shared value:\n{ir}"
     );
 }

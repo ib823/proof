@@ -245,6 +245,26 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
             println!("{}", format_value(&arg));
             return Ok(Value::Unit);
         }
+        // Read one line from stdin, without its trailing newline. EOF yields
+        // the empty string rather than an error, so a program can drain input
+        // with a loop and terminate.
+        //
+        // These are `Unit -> Teks` functions and are now really APPLIED. They
+        // used to be reachable only as a bare `Var` — a zero-arg call dropped
+        // its `()` — so the call site evaluated to the `Builtin` VALUE and no
+        // input was ever read (master plan REQ-81). `baca_baris`/`read_line`
+        // additionally carry `Tainted<Teks, UserInput>` in the type system;
+        // taint is type-level, so the runtime value is the same string.
+        "baca_garisan" | "baca_baris" | "read_line" => {
+            let mut line = String::new();
+            std::io::stdin()
+                .read_line(&mut line)
+                .map_err(|e| Error::InvalidOperation(format!("{name}: {e}")))?;
+            while line.ends_with('\n') || line.ends_with('\r') {
+                line.pop();
+            }
+            return Ok(Value::String(line));
+        }
         "gabung_teks" => {
             return match arg {
                 Value::Pair(a, b) => {

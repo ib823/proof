@@ -3634,11 +3634,22 @@ mod tests {
     }
 
     #[test]
-    fn test_zero_arg_call_baca_garisan_parses_and_evaluates() {
-        // End-to-end: the surface zero-arg call `baca_garisan()` (the `()` is a
-        // no-op suffix the parser drops) evaluates without `UnboundVariable`.
-        let v = run_src("baca_garisan()");
-        assert_eq!(v, Value::Builtin("baca_garisan".to_string()));
+    fn test_zero_arg_call_baca_garisan_is_a_real_application() {
+        // `baca_garisan()` is a real `Unit -> Teks` application, so it READS.
+        // It used to evaluate to the un-applied `Builtin` value — the `()` was
+        // a no-op suffix — which type-checked as `Teks` while being a function
+        // at runtime, and never consumed any input (REQ-81).
+        //
+        // Driving stdin from a unit test is not worth the machinery; what this
+        // pins is the SHAPE: the call is an application of the builtin, not a
+        // bare reference to it.
+        let mut p = riina_parser::Parser::new("baca_garisan()");
+        let expr = p.parse_program().unwrap().desugar();
+        assert!(
+            matches!(&expr, Expr::App(f, a)
+                if **f == Expr::Var("baca_garisan".to_string()) && **a == Expr::Unit),
+            "expected an application to (), got {expr:?}"
+        );
     }
 
     #[test]

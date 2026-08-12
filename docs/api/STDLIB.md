@@ -28,7 +28,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Bersih (Pure)
 
-> **Mixed:** 144 of 230 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 144 of 229 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -41,7 +41,6 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `assert_false` | `Fn(Benar, ())` | **native-only** |
 | `assert_ne` | `Fn((Any, Any), ())` | **native-only** |
 | `assert_true` | `Fn(Benar, ())` | **native-only** |
-| `baca_garisan` | `Teks` | **interp-only** |
 | `baki` | `Fn(Nombor, Nombor)` | **interp-only** |
 | `besar` | `Fn(Teks, Besar)` | compiled |
 | `bigint` | `Fn(Teks, Besar)` | compiled |
@@ -434,6 +433,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | Builtin | Type | Backend |
 |---|---|---|
 | `baca_baris` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **interp-only** |
+| `baca_garisan` | `Fn((), Teks, Sistem)` | **interp-only** |
 | `dom_set_attr` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **interp-only** |
 | `dom_set_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **interp-only** |
 | `dom_tetap_atribut` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **interp-only** |

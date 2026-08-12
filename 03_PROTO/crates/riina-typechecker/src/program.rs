@@ -16,14 +16,12 @@ fn builtin_typing_context() -> TypingContext {
     register_builtin_types(&Context::new()).to_typing_context()
 }
 
-fn declared_function_type(params: &[(String, Ty)], return_ty: &Ty, effect: Effect) -> Ty {
-    params
-        .iter()
-        .rev()
-        .fold(return_ty.clone(), |ret, (_, param_ty)| {
-            Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-        })
-}
+/// The declared type of a function, re-exported from `riina_types` so the
+/// typechecker and desugaring cannot disagree about arity (they did: this used
+/// to compute a bare return type for a zero-parameter function while
+/// desugaring built a `Unit -> R` lambda, so every zero-arg call failed to
+/// type-check).
+use riina_types::declared_fn_ty as declared_function_type;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 struct ExecSummary {

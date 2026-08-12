@@ -25,7 +25,7 @@ fungsi gelung_tak_terhingga_mudah() -> Nombor kesan Tulis {
     pulang 0;
 }
 
-fungsi proses_amalan() -> Nombor kesan (Tulis, Baca) {
+fungsi proses_amalan() -> Nombor kesan (Tulis, Baca, Sistem) {
     /// Gelung tak terhingga dengan input
     /// Infinite loop with user input
     ulang {

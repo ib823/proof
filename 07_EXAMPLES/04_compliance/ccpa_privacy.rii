@@ -82,7 +82,7 @@ fungsi hak_penghapusan(senarai: Senarai<DataKonsumen>, id_konsumen: Teks) -> Sen
 }
 
 /// CCPA Section 1798.120: Right to opt-out of sale
-fungsi hak_tolak_penjualan(id_konsumen: Teks) -> Benar kesan Tulis {
+fungsi hak_tolak_penjualan(id_konsumen: Teks) -> Benar kesan (Tulis, Masa) {
     cetak_baris(format!("Memproses tolak penjualan data untuk {}", id_konsumen));
 
     biar preferensi = {
@@ -143,7 +143,7 @@ fungsi proses_permintaan_agen(id_konsumen: Teks, id_agen: Teks) -> Benar kesan T
 }
 
 /// California Privacy Rights for Minors (COPPA-like)
-fungsi proteksi_minor(id_konsumen: Teks, umur: Nombor) -> kesan Tulis {
+fungsi proteksi_minor(id_konsumen: Teks, umur: Nombor) -> kesan (Tulis, Masa) {
     kalau umur < 13 {
         cetak_baris("COPPA: Persetujuan orang tua diperlukan untuk data pelajar");
     } lain kalau umur < 16 {
@@ -185,7 +185,7 @@ fungsi laporkan_penjualan_data() -> Teks kesan Tulis {
     pulang laporan;
 }
 
-awam fungsi utama() -> kesan Tulis {
+awam fungsi utama() -> kesan (Tulis, Masa) {
     cetak_baris("=== KEPATUHAN HAK PRIVASI CCPA ===");
 
     biar id_konsumen = "konsumen_12345";

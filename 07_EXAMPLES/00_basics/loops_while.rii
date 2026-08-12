@@ -51,7 +51,7 @@ fungsi cari_elemen() -> Nombor kesan Bersih {
     pulang indeks;
 }
 
-fungsi baca_sehingga_selesai() -> Nombor kesan (Tulis, Baca) {
+fungsi baca_sehingga_selesai() -> Nombor kesan (Tulis, Baca, Sistem) {
     /// Gelung selagi dengan pembacaan
     /// While loop with input (pseudo-code)
     biar ubah garisan = baca_garisan();

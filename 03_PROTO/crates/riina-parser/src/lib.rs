@@ -724,17 +724,13 @@ impl<'a> Parser<'a> {
             } else {
                 self.parse_stmt_sequence()?
             };
-            // Build the curried lambda and its function type (right-fold over
-            // params), matching `riina_types::desugar_function`.
-            let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
-                Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
-            });
-            let fn_ty = params
-                .iter()
-                .rev()
-                .fold(return_ty, |ret, (_, param_ty)| {
-                    Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-                });
+            // Build the curried lambda and its function type through the SAME
+            // helper top-level declarations use. This was a third hand-rolled
+            // copy of the fold, and it diverged: when zero-parameter functions
+            // gained a synthesised `()` parameter (REQ-81) a NESTED zero-arg
+            // `fungsi` kept the old thunk shape here, so calling it applied a
+            // non-function.
+            let (lam, fn_ty) = riina_types::desugar_function(params, return_ty, effect, body);
             return Ok(Expr::LetRec(
                 name,
                 fn_ty,
@@ -1632,11 +1628,16 @@ impl<'a> Parser<'a> {
                             expr = Expr::App(Box::new(expr), Box::new(arg));
                         }
                     }
-                    // NOTE: empty parens `f()` are a no-op suffix. A zero-arg
-                    // function is modeled as a global thunk whose type is its
-                    // return type, so `f` already denotes the result value and
-                    // the `()` carries no application. (Applying to `()` here
-                    // would break every zero-arg call site.)
+                    else {
+                        // Empty parens `f()` are a real application to `()`.
+                        // A zero-parameter function now has a synthesised `()`
+                        // parameter (`build_lambda`), so calling it is an
+                        // application like any other. Treating `()` as a no-op
+                        // suffix is what made a zero-arg function a global
+                        // thunk that ran once, eagerly, whether called or not
+                        // (master plan REQ-81).
+                        expr = Expr::App(Box::new(expr), Box::new(Expr::Unit));
+                    }
                     self.consume(TokenKind::RParen)?;
                 }
                 _ => break,

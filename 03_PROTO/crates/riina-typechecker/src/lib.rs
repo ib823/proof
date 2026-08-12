@@ -1549,10 +1549,15 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::System,
         ),
     );
-    // `baca_garisan` — read one line of input as plain text. Zero-arg calls are
-    // modeled as global thunks (the `()` suffix is a no-op), so this is bound to
-    // its result type `Teks` directly rather than `Fn(Unit, Teks)`.
-    c = c.extend("baca_garisan".to_string(), Ty::String);
+    // `baca_garisan` — read one line of input as plain text. A real
+    // `Unit -> Teks` function, like the `masa_*` clocks beside it. It used to
+    // be bound to its RESULT type `Teks`, because a zero-arg call dropped its
+    // `()` and left a bare `Var`; that typed the call site as a string while
+    // the runtime value was the un-applied builtin (master plan REQ-81).
+    c = c.extend(
+        "baca_garisan".to_string(),
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::System),
+    );
 
     // HTTP request body → Tainted<String, NetworkExternal>
     c = c.extend(
