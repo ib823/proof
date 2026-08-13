@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-12T07:47:04Z
-**Git SHA:** 39f4ac1ab
+**Generated:** 2026-08-12T23:10:07Z
+**Git SHA:** eb7e50619
 **Mode:** full
 **Status:** PASS
 
@@ -11,7 +11,7 @@
 | Rust Tests | PASS | 3117 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 195s |
+| Coq Compilation | PASS | 331 .vo files compiled in 176s |
 | Coq Kernel Assumptions | PASS | 5 capstones attested; axioms within reviewed whitelist (1 allowed: funext) |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
@@ -22,15 +22,15 @@
 | Isabelle sorry/oops | PASS | 0 sorry + 0 oops in 368 files (12925 lemmas) |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | WARN | 12010 admit in 315 files (19 lemmas) |
-| TLA+ Compilation | WARN | pinned local TLA2Tools jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 317 files (12282 theorems) |
-| Alloy Compilation | WARN | pinned local Alloy jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh) |
+| Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 8s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 306 files (11627 assertions) |
 | SMT Scan | PASS | 318 files (12431 assertions) |
 | Verus admit Scan | PASS | 0 admit in 323 files (6395 proof fns) |
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
 | Cross-Prover Validation (10 provers) | PASS | Grand total: 104563 | Coq: 12678 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12282 | Alloy: 11627 | SMT: 12431 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
-| Transpiler Staleness | WARN | 2 prover(s) may be stale: F*, SMT — run `python3 scripts/generate-full-stack.py` (checked: F*, SMT; skipped generated/non-compiled: Lean, Isabelle, TLA+, Alloy, Verus, Kani, TV) |
+| Transpiler Staleness | WARN | 1 prover(s) may be stale: F* — run `python3 scripts/generate-full-stack.py` (checked: F*, SMT; skipped generated/non-compiled: Lean, Isabelle, TLA+, Alloy, Verus, Kani, TV) |
 | Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12678, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
