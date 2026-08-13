@@ -57,8 +57,6 @@ fungsi peta_dengan_inferensi<T1, T2>(
 }
 
 /// Tupling inference
-/// NOTA: parameter dikekalkan kerana fungsi TANPA parameter yang memanggil
-/// fungsi kumpulan lain tersandung kecacatan interp yang direkod (REQ-68)
 fungsi pasangan_daripada_pembacaan(tambahan: Nombor) -> Mungkin<(Teks, Nombor)> kesan Baca {
     padan baca_dan_tambah(tambahan) {
         Ada(n) -> {

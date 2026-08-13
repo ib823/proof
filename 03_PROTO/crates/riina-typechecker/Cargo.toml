@@ -12,6 +12,13 @@ riina-types.workspace = true
 [dev-dependencies]
 riina-parser.workspace = true
 riina-fmt.workspace = true
+# Dev-only, and deliberately a cycle (riina-codegen depends on this crate).
+# Cargo permits dev-dependency cycles, and the STDLIB.md generator needs BOTH
+# sides of the truth: which builtins the checker registers (here) and which the
+# compiled backends implement (`riina_codegen::codegen_supports_builtin`).
+# Without it the doc cannot state whether a builtin is interpreter-only — the
+# gap that REQ-70 exists to close.
+riina-codegen.workspace = true
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

@@ -14,7 +14,11 @@ use crate::workspace::Workspace;
 use std::path::PathBuf;
 
 /// Run a pkg subcommand. Args should be everything after `riinac pkg`.
-pub fn run(args: &[String]) -> Result<()> {
+///
+/// `compile` is the RIINA compiler, injected by the caller so that `pkg build`
+/// and `riinac build` share one pipeline instead of two that can diverge
+/// (REQ-72). Every other subcommand ignores it.
+pub fn run(args: &[String], compile: crate::build::CompileFn<'_>) -> Result<()> {
     if args.is_empty() {
         return Err(PkgError::Other(usage_string()));
     }
@@ -58,7 +62,7 @@ pub fn run(args: &[String]) -> Result<()> {
         }
         "update" => cmd_update(filtered.get(1).map(|s| s.as_str()), registry_url.as_deref()),
         "lock" => cmd_lock(registry_url.as_deref()),
-        "build" => cmd_build(registry_url.as_deref()),
+        "build" => cmd_build(registry_url.as_deref(), compile),
         "publish" => cmd_publish(registry_url.as_deref()),
         "list" => cmd_list(),
         "tree" => cmd_tree(registry_url.as_deref()),
@@ -250,7 +254,7 @@ fn cmd_lock(registry_url: Option<&str>) -> Result<()> {
     Ok(())
 }
 
-fn cmd_build(registry_url: Option<&str>) -> Result<()> {
+fn cmd_build(registry_url: Option<&str>, compile: crate::build::CompileFn<'_>) -> Result<()> {
     let root = find_project_root()?;
     let manifest = Manifest::from_file(&root.join("riina.toml"))?;
     let deps = manifest.dep_reqs()?;
@@ -271,13 +275,13 @@ fn cmd_build(registry_url: Option<&str>) -> Result<()> {
             packages: graph_packages,
         };
         let steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
-        crate::build::execute_build(&steps)?;
+        crate::build::execute_build(&steps, compile)?;
     } else {
         let reg = make_registry(registry_url, Some(&manifest));
         let graph = resolve::resolve(&deps, reg.as_ref())?;
         let config = crate::build::BuildConfig::new(&root).with_registry(registry_root());
         let steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
-        crate::build::execute_build(&steps)?;
+        crate::build::execute_build(&steps, compile)?;
     }
 
     eprintln!("Build complete.");

@@ -1,6 +1,6 @@
 # RIINA Common Mistakes for AI Agents
 
-> **Purpose:** LLM context injection. Top 20 errors AI agents make when generating RIINA code.
+> **Purpose:** LLM context injection. Top 21 errors AI agents make when generating RIINA code.
 > Each entry: wrong code, error message, fixed code, explanation.
 
 ---
@@ -461,6 +461,34 @@ biar kunci: Rahsia<Teks> = Rahsia("supersecret");
 biar nilai = dedah(kunci, bukti: "enkripsi_sah_untuk_penghantaran");
 ```
 **Rule:** `dedah` (declassify) always requires `bukti: "reason"`. The proof string is logged for audit. The compiler tracks all declassification points.
+
+---
+
+## 21. Assuming `riinac check` passing means the program can be compiled
+
+```riina
+// WRONG — if the goal is a compiled binary
+fungsi utama() -> Teks kesan Rangkaian {
+    biar pendengar = jaring_dengar("127.0.0.1:8099");
+    biar sambungan = jaring_terima_sambungan(pendengar);
+    jaring_terima((sambungan, 1024))
+}
+```
+```
+$ riinac check pelayan.rii    # Success!  Effect: Network
+$ riinac run   pelayan.rii    # works — serves a real HTTP/1.1 200
+$ riinac build pelayan.rii
+Codegen Error: unbound variable: jaring_dengar
+```
+```riina
+// FIXED — for a program that must COMPILE, stay inside the compiled surface
+fungsi utama() -> Nombor kesan Tulis {
+    biar mesej = gabung_teks(("Selamat ", "datang"));
+    cetakln(mesej);
+    0
+}
+```
+**Rule:** Type-checking does not imply compiling. **Of 357 builtins, 20 compile to C and WASM, 128 are native-only, and 209 are interpreter-only.** Networking (`jaring_*`), filesystem (`fail_*`), VFS (`vfs_*`), JSON (`json_*`), time (`masa_*`), every security sink (`sanitasi_*`, `sql_*`, `csrf_*`), and the real HTTP layer (`http_hurai_*`, `http_balas`, `http_minta`) run only under `riinac run` — `riinac build` and `emit-c` fail closed with `unbound variable` rather than miscompiling. The compiled surface is: printing, strings (`teks_*`), lists (`senarai_*`), maps (`peta_*`), sets (`set_*`), most math, conversions, the numeric tower, and test assertions. Check the `Backend` column in `docs/api/STDLIB.md` before generating code that must be built. Master plan REQ-70 tracks closing this gap.
 
 ---
 

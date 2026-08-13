@@ -1,6 +1,6 @@
 # Claude AI Web Integration Supplement
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3117 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3275 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Purpose
 This document provides all auxiliary definitions, lemma signatures, and helper functions needed to complete the remaining 18 admits in NonInterference_v2.v with 100% integration compatibility.

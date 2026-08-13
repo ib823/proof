@@ -183,7 +183,108 @@ fungsi utama() -> Unit kesan Sistem {
 }
 ```
 
-## 8. Where to go next
+## 8. Splitting a program across files (~1 minute)
+
+`guna <name>;` imports the sibling file `<name>.rii`. Create `kira.rii`:
+
+```riina
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+awam fungsi dua_kali(x: Nombor) -> Nombor kesan Bersih { tambah(x, x) }
+
+// No `awam` — private to this file.
+fungsi pembantu(x: Nombor) -> Nombor kesan Bersih { x * 99 }
+```
+
+and `main.rii` beside it:
+
+```riina
+guna kira;
+
+fungsi utama() -> Nombor kesan Tulis {
+    biar a = kira::tambah(3, 4);
+    cetakln(ke_teks(kira::dua_kali(a)));   // 14
+    0
+}
+```
+
+```bash
+riinac run   main.rii    # 14
+riinac build --run main.rii   # compiles both files into one binary, prints 14
+```
+
+`awam` is what makes a name importable. Calling `kira::pembantu(2)` from
+`main.rii` is rejected:
+
+```
+error: `kira::pembantu` is private to module `kira` (referenced from `main`)
+  note: mark it `awam fungsi pembantu` to export it
+```
+
+Import cycles, cross-module name collisions, and naming a module you did not
+import are all errors too, each naming the problem rather than failing later or
+silently picking a definition.
+
+Two things to know:
+
+- **`guna std::teks;` is not a file import.** A multi-segment path names the
+  builtin namespace; builtins are always available and need no `std/` directory.
+- **There is no `.rii` standard library yet**, and imports resolve only within
+  the importing file's directory — no search path or package dependencies.
+  (Master plan REQ-71 remainder / REQ-72.)
+
+## 9. Packages (~1 minute)
+
+For anything bigger than a couple of files, use a package:
+
+```bash
+mkdir kalkulator && cd kalkulator
+riinac pkg init kalkulator
+```
+
+That writes `riina.toml` and `src/lib.rii`. The entry module is
+`src/utama.rii` for a binary, or `src/lib.rii` for a library. Replace the
+scaffold with a two-file binary:
+
+```riina
+// src/kira.rii
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+```
+
+```riina
+// src/utama.rii
+guna kira;
+fungsi utama() -> Nombor kesan Tulis {
+    cetakln(ke_teks(kira::tambah(20, 22)));
+    0
+}
+```
+
+```bash
+rm src/lib.rii
+riinac pkg build                   # Built: kalkulator -> <...>/sasaran/kalkulator/kalkulator
+./sasaran/kalkulator/kalkulator    # 42
+```
+
+`pkg build` runs the same compiler as `riinac build` — same parser, module
+resolver, typechecker and backend — so a package that does not compile does not
+build:
+
+```bash
+$ riinac pkg build
+pkg error: package `kalkulator` failed to compile:
+Annotation mismatch: expected Int, found String
+$ echo $?
+1
+```
+
+A `lib.rii` library entry is type-checked but emits no binary.
+
+Not yet available: **dependencies you add with `riinac pkg add` cannot be
+imported yet** — `guna` resolves only within the importing file's directory, so
+cross-package linking is still open (master plan REQ-71 search path). Packages
+are useful today for building your own multi-file program.
+
+## 10. Where to go next
 
 - **[Writing Secure RIINA](WRITING_SECURE_RIINA.md)** — the security features
   in depth, each labeled with what is enforced today.

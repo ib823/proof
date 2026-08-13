@@ -279,6 +279,23 @@ impl CEmitter {
         self.writeln("    RIINA_TAG_FIXEDBIN = 15 /* binary fixed-point Q-format (qmn) */");
         self.writeln("} riina_tag_t;");
         self.writeln("");
+        // Collection tags live with the enum so every consumer sees them
+        // (`riina_binop_add` is emitted before the list machinery and needs
+        // them). REQ-80: they MUST start past the last enum value — they used
+        // to start at 12, colliding with RIINA_TAG_BIGINT/DECIMAL/FIXED, which
+        // made a list indistinguishable from a bigint and segfaulted both ways.
+        self.writeln("/* Extended tags for collections (must not collide with riina_tag_t) */");
+        self.writeln("#define RIINA_TAG_LIST 16");
+        self.writeln("#define RIINA_TAG_MAP 17");
+        self.writeln("#define RIINA_TAG_SET 18");
+        self.writeln("#define RIINA_LIST_DATA(v) ((riina_list_t*)(v)->data.wrapped_val)");
+        self.writeln("/* REQ-80 guard: a future tag_t value must never reach the collection tags. */");
+        self.writeln("#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L");
+        self.writeln(
+            "_Static_assert(RIINA_TAG_FIXEDBIN < RIINA_TAG_LIST, \"riina_tag_t grew into the collection tag range (REQ-80)\");",
+        );
+        self.writeln("#endif");
+        self.writeln("");
 
         // Forward declare value type
         self.writeln("/* Forward declaration */");
@@ -1655,7 +1672,14 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // Binary operations
+        // Forward declaration: the list machinery is emitted later in the
+        // prelude, but `+` on two lists concatenates (REQ-80) and must match the
+        // interpreter, which supports it.
+        self.writeln("static riina_value_t* riina_list_concat(riina_value_t* a, riina_value_t* b);");
+        self.writeln("");
         self.writeln("static riina_value_t* riina_binop_add(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    /* REQ-80: list concatenation, matching the interpreter. */");
+        self.writeln("    if (a->tag == RIINA_TAG_LIST && b->tag == RIINA_TAG_LIST) return riina_list_concat(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_add(a, b);");
@@ -2261,13 +2285,20 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // UPDATE: Actually, re-reading the plan, M1 asks us to add runtime types.
         // Let's do it properly — add RIINA_TAG_LIST, RIINA_TAG_MAP, RIINA_TAG_SET.
 
-        // We already emitted the tag enum earlier. We need to add these tags.
-        // Since we can't go back, we'll define them as additional constants.
-        self.writeln("/* Extended tags for collections */");
-        self.writeln("#define RIINA_TAG_LIST 12");
-        self.writeln("#define RIINA_TAG_MAP 13");
-        self.writeln("#define RIINA_TAG_SET 14");
-        self.writeln("");
+        // Collection tags, defined as constants because the tag enum is emitted
+        // earlier in the prelude.
+        //
+        // REQ-80: these MUST NOT collide with the enum. They previously started
+        // at 12, which is exactly `RIINA_TAG_BIGINT`, so a list was
+        // indistinguishable from a bigint (and a map from a decimal, a set from
+        // a fixed). Any tag dispatch then confused them: `[1] + [2,3]` reached
+        // `riina_bigint_add`, which read a list through the bigint union member
+        // and SEGFAULTED, and `senarai_panjang(besar("123"))` segfaulted the
+        // other way — while the interpreter reported a clean type error for
+        // both. They now start past `RIINA_TAG_FIXEDBIN` (15), and the static
+        // assertion below fails the C compile if the enum ever grows into them.
+        // (Collection tags are defined next to the tag enum — see REQ-80.)
+
 
         // Map entry type
         self.writeln("typedef struct riina_map_entry {");
@@ -2296,7 +2327,17 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    return v;");
         self.writeln("}");
         self.writeln("");
-        self.writeln("#define RIINA_LIST_DATA(v) ((riina_list_t*)(v)->data.wrapped_val)");
+        self.writeln("/* REQ-80: `+` on two lists concatenates, matching the interpreter. */");
+        self.writeln("static riina_value_t* riina_list_concat(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    riina_list_t out = riina_list_new();");
+        self.writeln("    riina_list_t* la = RIINA_LIST_DATA(a);");
+        self.writeln("    riina_list_t* lb = RIINA_LIST_DATA(b);");
+        self.writeln("    for (size_t i = 0; i < la->len; i++) riina_list_push(&out, la->items[i]);");
+        self.writeln("    for (size_t i = 0; i < lb->len; i++) riina_list_push(&out, lb->items[i]);");
+        self.writeln("    return riina_make_list(out);");
+        self.writeln("}");
+        self.writeln("");
+        // (RIINA_LIST_DATA is defined next to the tag enum — see REQ-80.)
         self.writeln("");
 
         // Helper: make map value
@@ -3898,6 +3939,12 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
                         vars.insert(*a);
                         vars.insert(*b);
                     }
+                    // A list literal uses every one of its element vars.
+                    Instruction::MakeList(elems) => {
+                        for e in elems {
+                            vars.insert(*e);
+                        }
+                    }
                     Instruction::Alloc { init, .. } => {
                         vars.insert(*init);
                     }
@@ -4112,6 +4159,20 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
                 ));
                 self.dedent();
                 self.writeln("}");
+            }
+
+            // REQ-79: a first-class list. The C runtime already had
+            // `riina_list_push`/`riina_make_list` (builtins RETURN tagged lists);
+            // literals just never used them, so `senarai_*` aborted on them.
+            Instruction::MakeList(elems) => {
+                // Mirrors the `riina_pair` convention: vars are already
+                // `riina_value_t*`, and the constructor returns one.
+                let tmp = format!("lst_{}", result.replace(|c: char| !c.is_alphanumeric(), "_"));
+                self.writeln(&format!("riina_list_t {tmp} = riina_list_new();"));
+                for e in elems {
+                    self.writeln(&format!("riina_list_push(&{tmp}, {});", self.var_name(e)));
+                }
+                self.writeln(&format!("{result} = riina_make_list({tmp});"));
             }
 
             Instruction::Pair(fst, snd) => {

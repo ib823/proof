@@ -1,0 +1,31 @@
+// pelayan.rii — a persistent HTTP service in RIINA.
+//
+// Combines three master-plan requirements:
+//   REQ-71  modules       — `guna kedai;` links a second file
+//   REQ-73  real HTTP/1.1 — strict parsing, computed framing
+//   REQ-73  persistence   — the visit count survives a restart
+//
+// Run it twice: the counter continues where it left off.
+
+guna kedai;
+
+fungsi utama() -> Nombor kesan (Rangkaian | SistemFail | Tulis) {
+    biar db = simpan_buka("kedai.simpan");
+    biar pendengar = jaring_dengar("127.0.0.1:8140");
+    cetakln("mendengar di " + jaring_alamat(pendengar));
+
+    biar sambungan = jaring_terima_sambungan(pendengar);
+    biar mentah = jaring_terima((sambungan, 8192));
+
+    biar laluan = http_hurai_laluan(mentah);
+    biar bil = kedai::naik_kiraan(db);
+    biar _c = kedai::tambah_catatan(db, bil, laluan);
+
+    biar jasad = "<h1>Buku pelawat</h1><p>lawatan #" + ke_teks(bil)
+               + " ke " + laluan + "</p>";
+    biar _h = jaring_hantar((sambungan, http_balas((200, jasad))));
+    biar _t = jaring_tutup(sambungan);
+    biar _l = jaring_tutup_dengar(pendengar);
+    biar _d = simpan_tutup(db);
+    bil
+}

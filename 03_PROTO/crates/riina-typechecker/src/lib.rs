@@ -1066,6 +1066,130 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
         );
     }
+    // Durable key-value store (REQ-73 persistence). All carry FileSystem: a
+    // put/delete is fsynced to disk before it returns.
+    for nm in ["simpan_buka", "store_open"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::FileSystem),
+        );
+    }
+    for nm in ["simpan_letak", "store_put"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(
+                    Box::new(Ty::Int),
+                    Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                )),
+                Box::new(Ty::Bool),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_dapat", "store_get"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_ada", "store_has"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_padam", "store_delete"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::Bool),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_kunci", "store_keys"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Int),
+                Box::new(Ty::List(Box::new(Ty::String))),
+                Effect::FileSystem,
+            ),
+        );
+    }
+    for nm in ["simpan_padat", "store_compact"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem),
+        );
+    }
+    for nm in ["simpan_tutup", "store_close"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem),
+        );
+    }
+    // Real HTTP/1.1 above the verified TCP machine (REQ-73). Parsing is Pure;
+    // only `http_minta` touches the network. These are DISTINCT from the
+    // modelled `http_get`/`http_post` sinks below, which open no socket.
+    for nm in ["http_hurai_kaedah", "http_parse_method"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["http_hurai_laluan", "http_parse_target"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["http_hurai_jasad", "http_parse_body"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+        );
+    }
+    for nm in ["http_hurai_kepala", "http_parse_header"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Pure,
+            ),
+        );
+    }
+    for nm in ["http_balas", "http_build_response"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Pure,
+            ),
+        );
+    }
+    for nm in ["http_minta", "http_request"] {
+        c = c.extend(
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+                Box::new(Ty::String),
+                Effect::Network,
+            ),
+        );
+    }
     // Pure TLS acceptance policy (Coq NET_001_03 no-downgrade + NET_001_08
     // cipher strength): `(version, cipher_suite) -> Bool`, no I/O.
     for nm in ["tls_dasar_ok", "tls_policy_ok"] {
@@ -1425,10 +1549,15 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::System,
         ),
     );
-    // `baca_garisan` — read one line of input as plain text. Zero-arg calls are
-    // modeled as global thunks (the `()` suffix is a no-op), so this is bound to
-    // its result type `Teks` directly rather than `Fn(Unit, Teks)`.
-    c = c.extend("baca_garisan".to_string(), Ty::String);
+    // `baca_garisan` — read one line of input as plain text. A real
+    // `Unit -> Teks` function, like the `masa_*` clocks beside it. It used to
+    // be bound to its RESULT type `Teks`, because a zero-arg call dropped its
+    // `()` and left a bare `Var`; that typed the call site as a string while
+    // the runtime value was the un-applied builtin (master plan REQ-68).
+    c = c.extend(
+        "baca_garisan".to_string(),
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::System),
+    );
 
     // HTTP request body → Tainted<String, NetworkExternal>
     c = c.extend(

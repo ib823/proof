@@ -1,6 +1,6 @@
 # ZERO AXIOM ATTACK PLAN
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3117 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3275 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Current State (Session 27)
 

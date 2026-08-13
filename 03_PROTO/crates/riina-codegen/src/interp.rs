@@ -3658,32 +3658,43 @@ mod tests {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // ZERO-ARG THUNK MATERIALISATION (Gate C "OS/system" row)
+    // INPUT SOURCES (`Unit -> Teks`)
     // ═══════════════════════════════════════════════════════════════════════
 
     #[test]
-    fn test_zero_arg_thunk_materialises_to_builtin() {
-        // A bare input-source `Var` must resolve to its `Builtin` value rather
-        // than raising `UnboundVariable`. Previously `baca_garisan` was typed
-        // (`Teks`) but never registered in the interpreter env, so any
-        // reference crashed at runtime.
+    fn test_input_source_name_resolves_to_its_builtin() {
+        // Naming an input source (without calling it) must resolve to its
+        // `Builtin` value rather than raising `UnboundVariable` — that is what
+        // makes it usable as a first-class function. `baca_garisan` was once
+        // typed (`Teks`) but never registered, so any reference crashed.
         let mut interp = Interpreter::new();
         let env = crate::builtins::register_builtins(&Env::new());
         for nm in ["baca_garisan", "baca_baris", "read_line"] {
             assert_eq!(
                 interp.eval_with_env(&env, &Expr::Var(nm.to_string())),
                 Ok(Value::Builtin(nm.to_string())),
-                "input-source thunk `{nm}` should materialise to its Builtin",
+                "input source `{nm}` should resolve to its Builtin",
             );
         }
     }
 
     #[test]
-    fn test_zero_arg_call_baca_garisan_parses_and_evaluates() {
-        // End-to-end: the surface zero-arg call `baca_garisan()` (the `()` is a
-        // no-op suffix the parser drops) evaluates without `UnboundVariable`.
-        let v = run_src("baca_garisan()");
-        assert_eq!(v, Value::Builtin("baca_garisan".to_string()));
+    fn test_zero_arg_call_baca_garisan_is_a_real_application() {
+        // `baca_garisan()` is a real `Unit -> Teks` application, so it READS.
+        // It used to evaluate to the un-applied `Builtin` value — the `()` was
+        // a no-op suffix — which type-checked as `Teks` while being a function
+        // at runtime, and never consumed any input (REQ-68).
+        //
+        // Driving stdin from a unit test is not worth the machinery; what this
+        // pins is the SHAPE: the call is an application of the builtin, not a
+        // bare reference to it.
+        let mut p = riina_parser::Parser::new("baca_garisan()");
+        let expr = p.parse_program().unwrap().desugar();
+        assert!(
+            matches!(&expr, Expr::App(f, a)
+                if **f == Expr::Var("baca_garisan".to_string()) && **a == Expr::Unit),
+            "expected an application to (), got {expr:?}"
+        );
     }
 
     #[test]

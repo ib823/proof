@@ -1,6 +1,6 @@
 # RIINA for AI Assistants
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3117 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3275 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## What is RIINA?
 
@@ -111,20 +111,112 @@ Awam (Public) ⊑ Dalaman (Internal) ⊑ Sesi (Session) ⊑ Pengguna (User) ⊑ 
 
 Information can flow up (from Public to Secret) but not down. Declassification requires explicit proof.
 
+## Modules — multi-file programs
+
+`guna <name>;` imports the sibling file `<name>.rii`. Multi-file programs
+check, run, and compile natively (and to wasm32 if they stay inside the small
+WASM builtin surface — see the Backend table below).
+
+```riina
+// kira.rii
+awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
+fungsi pembantu_persendirian(x: Nombor) -> Nombor kesan Bersih { x * 2 }  // no `awam` = private
+```
+
+```riina
+// main.rii
+guna kira;
+fungsi utama() -> Nombor kesan Tulis {
+    cetakln(ke_teks(kira::tambah(3, 4)));   // qualified call
+    0
+}
+```
+
+Rules, each enforced with a real error (not a silent fallback):
+
+| Rule | Behaviour |
+|---|---|
+| Visibility | Only `awam` names cross a module boundary. Referencing a private one errors and tells you to add `awam`. |
+| Direct imports | You may only name modules you `guna` yourself; a transitively-loaded module is not silently in scope. |
+| Cycles | `a` → `b` → `a` reports the chain, it does not hang or overflow. |
+| Collisions | Two modules producing the same linked name is an error, never silent shadowing. |
+| Module bodies | Only the root file may have top-level code; an imported module must be declarations only. |
+
+**`guna std::teks;` is different** — a *multi-segment* path names the builtin
+namespace, not a file. It is not an import and needs no `std/` directory. Use
+single-segment `guna kira;` for your own files.
+
+Not yet available: there is no `.rii` standard library to import, and modules
+resolve only within the importing file's directory (no search path or package
+dependencies yet — master plan REQ-71 remainder, REQ-72).
+
 ## Standard Library Modules
 
-| Module | BM Name | Builtins | Description |
-|--------|---------|----------|-------------|
-| teks | Teks | 18 | String operations |
-| senarai | Senarai | 17 | List operations |
-| matematik | Matematik | 10 | Math functions |
-| penukaran | Penukaran | 5 | Type conversions |
-| peta | Peta | 6 | Hash maps |
-| set | Set | 5 | Hash sets |
-| ujian | Ujian | 5 | Testing assertions |
-| masa | Masa | 6 | Time operations |
-| fail | Fail | 8 | File I/O |
-| json | Json | 5 | JSON parsing |
+**Counts and the Backend column below are command-derived (2026-08-11) from the
+builtin tables in `03_PROTO/crates/riina-codegen/src/builtins/` and the
+compiled-backend boundary `riina_codegen::codegen_supports_builtin`.** The
+authoritative per-builtin list is the generated `docs/api/STDLIB.md` (357
+registered builtins, each with its own Backend marker).
+
+| Module | BM Name | Builtins | Backend | Description |
+|--------|---------|----------|---------|-------------|
+| teks | Teks | 16 | native-only | String operations |
+| senarai | Senarai | 18 | native-only | List operations |
+| peta | Peta | 8 | native-only | Hash maps |
+| set | Set | 7 | native-only | Hash sets |
+| matematik | Matematik | 10 | 7 of 10 native-only | Math functions (`baki`, `log2`, `rawak` are interpreter-only) |
+| ujian | Ujian | 6 | 5 of 6 native-only | Test assertions (`jangkakan` is interpreter-only) |
+| masa | Masa | 7 | **none** | Time operations |
+| fail | Fail | 8 | **none** | File I/O |
+| json | Json | 5 | **none** | JSON parsing |
+| net | Jaring | 9 | **none** | TCP sockets (real I/O, verified RFC 793 state machine) |
+| vfs | Vfs | 5 | **none** | Virtual filesystem (verified access-control model) |
+| keselamatan | Keselamatan | 42 | **none** | Taint sanitizers + **modelled** sinks (`sanitasi_*`, `sql_*`, `http_dapat`/`http_hantar`, `csrf_*`) — type discipline only, no socket/database/SMTP |
+| http | Http | 6 | **none** | **Real** HTTP/1.1 (`http_hurai_*`, `http_balas`, `http_minta`) over the verified TCP machine |
+
+Conversions (`ke_teks`, `ke_nombor`, …), printing (`cetak`, `cetakln`), and the
+numeric-tower constructors (`besar`, `perpuluhan`, `wang`, `titik_tetap`, `qmn`)
+are registered directly rather than in a module table. Printing, `ke_teks`,
+`gabung_teks` and the numeric-tower constructors are the **only** builtins the
+WASM backend implements; everything else marked `native-only` compiles to C but
+is REFUSED for wasm32 (it used to be silently miscompiled — master plan
+REQ-78).
+
+### Real HTTP vs modelled HTTP — do not confuse them
+
+Two different `http_*` families exist, deliberately:
+
+| Family | Behaviour |
+|---|---|
+| `http_hurai_kaedah/laluan/jasad/kepala`, `http_balas`, `http_minta` | **REAL.** RFC 9112 codec; `http_minta` opens a real socket over the verified TCP machine. Use these to serve or call HTTP. |
+| `http_dapat`/`http_get`, `http_hantar`/`http_post`, `sql_laksana`, `emel_hantar`, `shell_laksana` | **MODELLED.** Return canned values, open no socket, contact no database or SMTP. They exist to carry the taint→sink *type* discipline. |
+
+Writing a server: read the request with `jaring_terima`, parse it with
+`http_hurai_*`, build the reply with `http_balas` (which computes
+`Content-Length` itself, so a response cannot be split). Malformed or smuggled
+requests — `Content-Length` plus `Transfer-Encoding`, `Foo : bar`, conflicting
+duplicate lengths — are **errors**, not repaired messages.
+
+`https://` is refused, not silently downgraded: there is no TLS record layer yet.
+
+### ⚠ Type-checking does not imply compiling
+
+**Of 357 builtins: 20 compile to C *and* WASM, 128 are native-only (the WASM
+backend refuses them), and 209 are interpreter-only.** A
+program using any interpreter-only builtin type-checks and runs, but cannot be
+built for native or WASM — lowering fails closed rather than miscompiling:
+
+```bash
+riinac check pelayan.rii   # Success!  Effect: Network
+riinac run   pelayan.rii   # works — serves a real HTTP/1.1 200
+riinac build pelayan.rii   # Codegen Error: unbound variable: jaring_dengar
+```
+
+If you are generating RIINA code that must be **compiled for WASM**, restrict
+yourself to printing, `gabung_teks`, `ke_teks` and the numeric-tower
+constructors — that is the entire WASM surface. For **native**, the `all
+compiled` modules above plus conversions and math are available. Anything touching the network (including the real HTTP layer),
+filesystem, JSON, time, or the security sinks is `riinac run` only. Closing this gap is master plan **REQ-70** (Gate C).
 
 ## Formal Verification
 
@@ -140,10 +232,11 @@ The proofs are in `02_FORMAL/coq/` with 4,885 Qed proofs (active build) and 0 ad
 ## Compiler
 
 The RIINA compiler (`riinac`) supports:
-- `riinac check <file.rii>` — Parse and typecheck
-- `riinac run <file.rii>` — Interpret
-- `riinac build <file.rii>` — Compile to native (via C)
-- `riinac emit-c <file.rii>` — Emit C code
+- `riinac check <file.rii>` — Parse and typecheck (accepts all 329 builtins)
+- `riinac run <file.rii>` — Interpret (runs all 329 builtins)
+- `riinac build <file.rii>` — Compile to native via C (**only the 148 compiled
+  builtins**; fails closed on the rest — see the warning above)
+- `riinac emit-c <file.rii>` — Emit C code (same 148-builtin limit)
 - `riinac fmt <file.rii>` — Format source
 - `riinac doc <file.rii>` — Generate HTML docs
 - `riinac lsp` — Start LSP server

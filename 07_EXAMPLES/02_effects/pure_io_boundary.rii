@@ -3,7 +3,7 @@
 /// Demonstrates: maintaining purity, IO at periphery, functional core
 
 /// Tulen - core logic
-fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan Baca {
+fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan (Baca, Sistem) {
     /// Simulasi pembacaan nombor dari pengguna
     Ok(42)
 }
@@ -28,7 +28,7 @@ fungsi wajar_kredit(skor: Nombor) -> Benar {
 }
 
 /// I/O wrapper - ambil input dan panggil logic tulen
-fungsi ambil_gaji_dari_pengguna() -> Hasil<Nombor, Teks> kesan (Tulis, Baca) {
+fungsi ambil_gaji_dari_pengguna() -> Hasil<Nombor, Teks> kesan (Tulis, Baca, Sistem) {
     cetak("Masukkan gaji asas: ");
     padan baca_nombor_dari_pengguna() {
         Ok(gaji) -> {
@@ -46,7 +46,7 @@ fungsi ambil_gaji_dari_pengguna() -> Hasil<Nombor, Teks> kesan (Tulis, Baca) {
 }
 
 /// I/O wrapper - ambil emel dan validasi
-fungsi ambil_emel_terpilih() -> Hasil<Benar, Teks> kesan (Tulis, Baca) {
+fungsi ambil_emel_terpilih() -> Hasil<Benar, Teks> kesan (Tulis, Baca, Sistem) {
     cetak("Masukkan emel: ");
     biar e = baca_garisan();
 
@@ -55,7 +55,7 @@ fungsi ambil_emel_terpilih() -> Hasil<Benar, Teks> kesan (Tulis, Baca) {
 }
 
 /// I/O wrapper - ambil skor dan periksa kelayakan
-fungsi periksa_kelayakan_kredit() -> Hasil<Benar, Teks> kesan (Tulis, Baca) {
+fungsi periksa_kelayakan_kredit() -> Hasil<Benar, Teks> kesan (Tulis, Baca, Sistem) {
     cetak("Masukkan skor kredit: ");
     padan baca_nombor_dari_pengguna() {
         Ok(skor) -> {
@@ -67,7 +67,7 @@ fungsi periksa_kelayakan_kredit() -> Hasil<Benar, Teks> kesan (Tulis, Baca) {
 }
 
 /// Wrapper yang menggabungkan tulen dan I/O
-fungsi proses_permohonan_gaji() -> Hasil<Nombor, Teks> kesan (Tulis, Baca) {
+fungsi proses_permohonan_gaji() -> Hasil<Nombor, Teks> kesan (Tulis, Baca, Sistem) {
     cetak("=== Permohonan Gaji ===\n");
 
     padan ambil_gaji_dari_pengguna() {
@@ -82,7 +82,7 @@ fungsi proses_permohonan_gaji() -> Hasil<Nombor, Teks> kesan (Tulis, Baca) {
 }
 
 /// Wrapper gabungan dengan pelbagai validasi
-fungsi proses_permohonan_lengkap() -> Hasil<Benar, Teks> kesan (Tulis, Baca) {
+fungsi proses_permohonan_lengkap() -> Hasil<Benar, Teks> kesan (Tulis, Baca, Sistem) {
     cetak("=== Permohonan Lengkap ===\n");
 
     /// Validasi emel
@@ -112,7 +112,7 @@ fungsi proses_permohonan_lengkap() -> Hasil<Benar, Teks> kesan (Tulis, Baca) {
     }
 }
 
-fungsi utama() -> Nombor kesan (Tulis, Baca) {
+fungsi utama() -> Nombor kesan (Tulis, Baca, Sistem) {
     cetak("=== Sempadan Tulen/I/O ===\n");
 
     padan proses_permohonan_gaji() {
