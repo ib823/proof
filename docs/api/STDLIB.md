@@ -6,13 +6,13 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **162** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **178** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (142 builtins). |
-| `interp-only` | `riinac run` only (211 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (158 builtins). |
+| `interp-only` | `riinac run` only (195 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -295,7 +295,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## SistemFail (FileSystem)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+> **Mixed:** 16 of 36 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -315,22 +315,22 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `file_read_lines` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **interp-only** |
 | `file_size` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
 | `file_write` | `Fn((Teks, Teks), (), SistemFail)` | **interp-only** |
-| `simpan_ada` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
-| `simpan_buka` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
-| `simpan_dapat` | `Fn((Nombor, Teks), Teks, SistemFail)` | **interp-only** |
-| `simpan_kunci` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **interp-only** |
-| `simpan_letak` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **interp-only** |
-| `simpan_padam` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
-| `simpan_padat` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
-| `simpan_tutup` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
-| `store_close` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
-| `store_compact` | `Fn(Nombor, Benar, SistemFail)` | **interp-only** |
-| `store_delete` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
-| `store_get` | `Fn((Nombor, Teks), Teks, SistemFail)` | **interp-only** |
-| `store_has` | `Fn((Nombor, Teks), Benar, SistemFail)` | **interp-only** |
-| `store_keys` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **interp-only** |
-| `store_open` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
-| `store_put` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **interp-only** |
+| `simpan_ada` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `simpan_buka` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `simpan_dapat` | `Fn((Nombor, Teks), Teks, SistemFail)` | **native-only** |
+| `simpan_kunci` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **native-only** |
+| `simpan_letak` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **native-only** |
+| `simpan_padam` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `simpan_padat` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `simpan_tutup` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `store_close` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `store_compact` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `store_delete` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `store_get` | `Fn((Nombor, Teks), Teks, SistemFail)` | **native-only** |
+| `store_has` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `store_keys` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **native-only** |
+| `store_open` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `store_put` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **native-only** |
 | `vfs_become_user` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
 | `vfs_init` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
 | `vfs_jadi_pengguna` | `Fn(Nombor, (), SistemFail)` | **interp-only** |

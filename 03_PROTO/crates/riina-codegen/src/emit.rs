@@ -1977,6 +1977,19 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
     }
 
     /// Emit built-in function helpers (C implementations of RIINA builtins)
+    /// The C half of `riina-os::store` — the `simpan_*` durable key-value
+    /// store (REQ-70 family routing).
+    ///
+    /// Emitted as one raw block rather than ~400 escaped `writeln` calls, so
+    /// the runtime stays readable AS C and can be diffed against the Rust it
+    /// mirrors. The ON-DISK FORMAT is the contract between the two: a store
+    /// written by an interpreted program must be readable by a compiled one
+    /// and vice versa, which is what the differential actually checks.
+    fn emit_store_builtins(&mut self) {
+        self.write_raw(STORE_RUNTIME_C);
+        self.writeln("");
+    }
+
     fn emit_builtin_helpers(&mut self) {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("/*                      BUILTIN FUNCTIONS                              */");
@@ -3187,6 +3200,18 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         );
         self.writeln("}");
         self.writeln("");
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DURABLE STORE BUILTINS (simpan) — REQ-70 family routing
+        // ═══════════════════════════════════════════════════════════════════
+        //
+        // A second implementation of `riina-os::store`, in C. The ON-DISK
+        // FORMAT is the contract and must be byte-identical, because a store
+        // written by an interpreted program has to be readable by a compiled
+        // one and vice versa — that cross-backend round trip is what the
+        // differential actually checks. Emitted as a raw block rather than 250
+        // escaped `writeln` calls so it stays readable AS C.
+        self.emit_store_builtins();
 
         // ═══════════════════════════════════════════════════════════════════
         // FILE I/O BUILTINS (fail)
@@ -4746,6 +4771,424 @@ pub fn emit_c(program: &Program) -> Result<String> {
     let mut emitter = CEmitter::new();
     emitter.emit(program)
 }
+
+/// C source for the `simpan_*` durable store runtime (REQ-70).
+///
+/// Mirrors `riina-os::store`. Kept as one block so it reads as C; the on-disk
+/// format it implements is byte-identical to the Rust side by construction and
+/// by differential test.
+const STORE_RUNTIME_C: &str = r##"
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <errno.h>
+
+/* ── Durable key-value store (simpan) ───────────────────────────────────────
+ *
+ * The C half of `riina-os::store`. The on-disk format is the contract:
+ *
+ *   header  : "RIINASTORv1\0"                        (12 bytes)
+ *   record  : [payload_len:u32 LE][crc32:u32 LE][payload]
+ *   payload : [op:u8][key_len:u32 LE][key][value_len:u32 LE][value]
+ *   op      : 1 = put, 2 = delete
+ *
+ * A record counts only when its length prefix AND CRC both validate; a torn
+ * tail from a crash is discarded on replay, because the VerifiedFileSystem.v
+ * model says a pending transaction makes the journal inconsistent. Every put
+ * and delete is fsynced before the call returns.
+ */
+#define RIINA_STORE_MAGIC "RIINASTORv1\0"
+#define RIINA_STORE_MAGIC_LEN 12
+#define RIINA_STORE_MAX_KEY (4 * 1024)
+#define RIINA_STORE_MAX_VALUE (16 * 1024 * 1024)
+#define RIINA_STORE_OP_PUT 1
+#define RIINA_STORE_OP_DELETE 2
+#define RIINA_STORE_SLOTS 64
+
+/* CRC-32/IEEE, bitwise — identical to the Rust `crc32`.
+   KAT: crc32("123456789") == 0xCBF43926. */
+static uint32_t riina_store_crc32(const unsigned char* d, size_t n) {
+    uint32_t crc = 0xFFFFFFFFu;
+    for (size_t i = 0; i < n; i++) {
+        crc ^= (uint32_t)d[i];
+        for (int b = 0; b < 8; b++) {
+            uint32_t mask = (uint32_t)(-(int32_t)(crc & 1u));
+            crc = (crc >> 1) ^ (0xEDB88320u & mask);
+        }
+    }
+    return ~crc;
+}
+
+typedef struct { char* k; size_t klen; char* v; size_t vlen; } riina_store_kv_t;
+
+typedef struct {
+    int used;
+    char* path;
+    int fd;
+    riina_store_kv_t* kv;   /* sorted by key bytes, matching Rust's BTreeMap */
+    size_t n, cap;
+    uint64_t dead_bytes;
+} riina_store_t;
+
+static riina_store_t riina_stores[RIINA_STORE_SLOTS];
+
+static void riina_store_die(const char* what, const char* detail) {
+    fprintf(stderr, "RIINA: simpan %s: %s\n", what, detail);
+    abort();
+}
+
+/* Byte-lexicographic compare, matching Rust's Vec<u8> ordering. */
+static int riina_store_kcmp(const char* a, size_t alen, const char* b, size_t blen) {
+    size_t n = alen < blen ? alen : blen;
+    int c = n ? memcmp(a, b, n) : 0;
+    if (c != 0) return c;
+    return alen < blen ? -1 : (alen > blen ? 1 : 0);
+}
+
+/* Index of `key`, or the insertion point with *found = 0. */
+static size_t riina_store_find(riina_store_t* s, const char* k, size_t klen, int* found) {
+    size_t lo = 0, hi = s->n;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        int c = riina_store_kcmp(s->kv[mid].k, s->kv[mid].klen, k, klen);
+        if (c < 0) lo = mid + 1;
+        else if (c > 0) hi = mid;
+        else { *found = 1; return mid; }
+    }
+    *found = 0;
+    return lo;
+}
+
+static uint64_t riina_store_record_size(size_t klen, size_t vlen) {
+    return (uint64_t)(8 + 9 + klen + vlen);
+}
+
+static void riina_store_set(riina_store_t* s, const char* k, size_t klen,
+                            const char* v, size_t vlen, int count_dead) {
+    int found = 0;
+    size_t at = riina_store_find(s, k, klen, &found);
+    if (found) {
+        if (count_dead)
+            s->dead_bytes += riina_store_record_size(klen, s->kv[at].vlen);
+        free(s->kv[at].v);
+        s->kv[at].v = (char*)malloc(vlen ? vlen : 1);
+        if (!s->kv[at].v) abort();
+        memcpy(s->kv[at].v, v, vlen);
+        s->kv[at].vlen = vlen;
+        return;
+    }
+    if (s->n == s->cap) {
+        size_t nc = s->cap ? s->cap * 2 : 16;
+        riina_store_kv_t* nk = (riina_store_kv_t*)realloc(s->kv, nc * sizeof(*nk));
+        if (!nk) abort();
+        s->kv = nk; s->cap = nc;
+    }
+    memmove(&s->kv[at + 1], &s->kv[at], (s->n - at) * sizeof(s->kv[0]));
+    s->kv[at].k = (char*)malloc(klen ? klen : 1);
+    s->kv[at].v = (char*)malloc(vlen ? vlen : 1);
+    if (!s->kv[at].k || !s->kv[at].v) abort();
+    memcpy(s->kv[at].k, k, klen); s->kv[at].klen = klen;
+    memcpy(s->kv[at].v, v, vlen); s->kv[at].vlen = vlen;
+    s->n++;
+}
+
+static int riina_store_erase(riina_store_t* s, const char* k, size_t klen, size_t* old_vlen) {
+    int found = 0;
+    size_t at = riina_store_find(s, k, klen, &found);
+    if (!found) return 0;
+    *old_vlen = s->kv[at].vlen;
+    free(s->kv[at].k); free(s->kv[at].v);
+    memmove(&s->kv[at], &s->kv[at + 1], (s->n - at - 1) * sizeof(s->kv[0]));
+    s->n--;
+    return 1;
+}
+
+/* Encode one record into a freshly malloc'd buffer; *out_len gets its size. */
+static unsigned char* riina_store_encode(unsigned char op, const char* k, size_t klen,
+                                         const char* v, size_t vlen, size_t* out_len) {
+    size_t plen = 1 + 4 + klen + 4 + vlen;
+    size_t total = 8 + plen;
+    unsigned char* buf = (unsigned char*)malloc(total);
+    if (!buf) abort();
+    unsigned char* p = buf + 8;
+    p[0] = op;
+    uint32_t kl = (uint32_t)klen, vl = (uint32_t)vlen;
+    memcpy(p + 1, &kl, 4);
+    memcpy(p + 5, k, klen);
+    memcpy(p + 5 + klen, &vl, 4);
+    memcpy(p + 9 + klen, v, vlen);
+    uint32_t pl = (uint32_t)plen;
+    uint32_t crc = riina_store_crc32(p, plen);
+    memcpy(buf, &pl, 4);
+    memcpy(buf + 4, &crc, 4);
+    *out_len = total;
+    return buf;
+}
+
+/* Replay a journal image, rebuilding the live map. Stops at the first torn or
+   CRC-invalid record — that is a pending transaction, not corruption. */
+static void riina_store_replay(riina_store_t* s, const unsigned char* b, size_t n) {
+    size_t pos = 0;
+    while (pos + 8 <= n) {
+        uint32_t len, want;
+        memcpy(&len, b + pos, 4);
+        memcpy(&want, b + pos + 4, 4);
+        size_t start = pos + 8;
+        if ((size_t)len > (size_t)(RIINA_STORE_MAX_KEY + RIINA_STORE_MAX_VALUE + 9)
+            || start + len > n) break;              /* torn tail */
+        if (riina_store_crc32(b + start, len) != want) break;  /* pending */
+        const unsigned char* p = b + start;
+        if (len < 9) riina_store_die("replay", "committed record too short");
+        unsigned char op = p[0];
+        uint32_t kl; memcpy(&kl, p + 1, 4);
+        if (5 + (size_t)kl + 4 > len) riina_store_die("replay", "key length past record");
+        uint32_t vl; memcpy(&vl, p + 5 + kl, 4);
+        if (9 + (size_t)kl + (size_t)vl != len) riina_store_die("replay", "value length mismatch");
+        const char* k = (const char*)(p + 5);
+        const char* v = (const char*)(p + 9 + kl);
+        uint64_t rec_len = (uint64_t)(8 + len);
+        if (op == RIINA_STORE_OP_PUT) {
+            riina_store_set(s, k, kl, v, vl, 1);
+        } else if (op == RIINA_STORE_OP_DELETE) {
+            size_t old = 0;
+            if (riina_store_erase(s, k, kl, &old))
+                s->dead_bytes += riina_store_record_size(kl, old) + rec_len;
+            else
+                s->dead_bytes += rec_len;
+        } else {
+            riina_store_die("replay", "unknown op byte");
+        }
+        pos = start + len;
+    }
+}
+
+static riina_store_t* riina_store_slot(uint64_t id, const char* what) {
+    if (id >= RIINA_STORE_SLOTS || !riina_stores[id].used)
+        riina_store_die(what, "unknown store handle");
+    return &riina_stores[id];
+}
+
+/* fsync the directory containing `path` — without it a rename is not durable. */
+static void riina_store_sync_parent(const char* path) {
+    char dir[4096];
+    size_t n = strlen(path);
+    if (n >= sizeof(dir)) return;
+    memcpy(dir, path, n + 1);
+    char* slash = strrchr(dir, '/');
+    if (slash) *slash = 0; else { dir[0] = '.'; dir[1] = 0; }
+    int dfd = open(dir, O_RDONLY);
+    if (dfd >= 0) { fsync(dfd); close(dfd); }
+}
+
+/* simpan_buka (store_open): Teks -> Nombor handle */
+static riina_value_t* riina_builtin_simpan_buka(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) riina_store_die("simpan_buka", "expects a path string");
+    const char* path = arg->data.string_val.data;
+    uint64_t id = RIINA_STORE_SLOTS;
+    for (uint64_t i = 0; i < RIINA_STORE_SLOTS; i++)
+        if (!riina_stores[i].used) { id = i; break; }
+    if (id == RIINA_STORE_SLOTS) riina_store_die("simpan_buka", "too many open stores");
+    riina_store_t* s = &riina_stores[id];
+    memset(s, 0, sizeof(*s));
+
+    int fd = open(path, O_RDWR);
+    if (fd < 0) {
+        fd = open(path, O_RDWR | O_CREAT | O_EXCL, 0644);
+        if (fd < 0) riina_store_die("simpan_buka", strerror(errno));
+        if (write(fd, RIINA_STORE_MAGIC, RIINA_STORE_MAGIC_LEN) != RIINA_STORE_MAGIC_LEN)
+            riina_store_die("simpan_buka", "short write of header");
+        if (fsync(fd) != 0) riina_store_die("simpan_buka", strerror(errno));
+        riina_store_sync_parent(path);
+    } else {
+        off_t sz = lseek(fd, 0, SEEK_END);
+        if (sz < 0) riina_store_die("simpan_buka", strerror(errno));
+        if (sz < RIINA_STORE_MAGIC_LEN) {
+            if (sz != 0) riina_store_die("simpan_buka", "not a RIINA store (bad magic)");
+            if (lseek(fd, 0, SEEK_SET) < 0) riina_store_die("simpan_buka", strerror(errno));
+            if (write(fd, RIINA_STORE_MAGIC, RIINA_STORE_MAGIC_LEN) != RIINA_STORE_MAGIC_LEN)
+                riina_store_die("simpan_buka", "short write of header");
+            if (fsync(fd) != 0) riina_store_die("simpan_buka", strerror(errno));
+        } else {
+            if (lseek(fd, 0, SEEK_SET) < 0) riina_store_die("simpan_buka", strerror(errno));
+            unsigned char magic[RIINA_STORE_MAGIC_LEN];
+            if (read(fd, magic, RIINA_STORE_MAGIC_LEN) != RIINA_STORE_MAGIC_LEN)
+                riina_store_die("simpan_buka", "short read of header");
+            if (memcmp(magic, RIINA_STORE_MAGIC, RIINA_STORE_MAGIC_LEN) != 0)
+                riina_store_die("simpan_buka", "not a RIINA store (bad magic) - refusing to overwrite it");
+            size_t body = (size_t)(sz - RIINA_STORE_MAGIC_LEN);
+            if (body) {
+                unsigned char* buf = (unsigned char*)malloc(body);
+                if (!buf) abort();
+                ssize_t got = read(fd, buf, body);
+                if (got < 0 || (size_t)got != body) riina_store_die("simpan_buka", "short read of journal");
+                riina_store_replay(s, buf, body);
+                free(buf);
+            }
+        }
+    }
+    if (lseek(fd, 0, SEEK_END) < 0) riina_store_die("simpan_buka", strerror(errno));
+    s->used = 1;
+    s->fd = fd;
+    s->path = (char*)malloc(strlen(path) + 1);
+    if (!s->path) abort();
+    memcpy(s->path, path, strlen(path) + 1);
+    return riina_int(id);
+}
+
+static void riina_store_append(riina_store_t* s, const unsigned char* rec, size_t len) {
+    if (lseek(s->fd, 0, SEEK_END) < 0) riina_store_die("append", strerror(errno));
+    ssize_t w = write(s->fd, rec, len);
+    if (w < 0 || (size_t)w != len) riina_store_die("append", "short write");
+    /* Durability point: the caller is told "stored" only after this. */
+    if (fsync(s->fd) != 0) riina_store_die("append", strerror(errno));
+}
+
+/* simpan_letak (store_put): (handle, (key, value)) -> Benar */
+static riina_value_t* riina_builtin_simpan_letak(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_store_die("simpan_letak", "expects (handle, (key, value))");
+    riina_value_t* h = arg->data.pair_val.fst;
+    riina_value_t* rest = arg->data.pair_val.snd;
+    if (h->tag != RIINA_TAG_INT || rest->tag != RIINA_TAG_PAIR)
+        riina_store_die("simpan_letak", "expects (handle, (key, value))");
+    riina_value_t* kv = rest->data.pair_val.fst;
+    riina_value_t* vv = rest->data.pair_val.snd;
+    if (kv->tag != RIINA_TAG_STRING || vv->tag != RIINA_TAG_STRING)
+        riina_store_die("simpan_letak", "key and value must be text");
+    riina_store_t* s = riina_store_slot(h->data.int_val, "simpan_letak");
+    size_t klen = kv->data.string_val.len, vlen = vv->data.string_val.len;
+    if (klen > RIINA_STORE_MAX_KEY) riina_store_die("simpan_letak", "key exceeds 4096 bytes");
+    if (vlen > RIINA_STORE_MAX_VALUE) riina_store_die("simpan_letak", "value exceeds 16777216 bytes");
+    size_t rlen = 0;
+    unsigned char* rec = riina_store_encode(RIINA_STORE_OP_PUT, kv->data.string_val.data, klen,
+                                            vv->data.string_val.data, vlen, &rlen);
+    riina_store_append(s, rec, rlen);
+    free(rec);
+    riina_store_set(s, kv->data.string_val.data, klen, vv->data.string_val.data, vlen, 1);
+    return riina_bool(true);
+}
+
+/* simpan_dapat (store_get): (handle, key) -> Teks ("" when absent) */
+static riina_value_t* riina_builtin_simpan_dapat(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_store_die("simpan_dapat", "expects (handle, key)");
+    riina_value_t* h = arg->data.pair_val.fst;
+    riina_value_t* kv = arg->data.pair_val.snd;
+    if (h->tag != RIINA_TAG_INT || kv->tag != RIINA_TAG_STRING)
+        riina_store_die("simpan_dapat", "expects (handle, key)");
+    riina_store_t* s = riina_store_slot(h->data.int_val, "simpan_dapat");
+    int found = 0;
+    size_t at = riina_store_find(s, kv->data.string_val.data, kv->data.string_val.len, &found);
+    if (!found) return riina_string("");
+    char* tmp = (char*)malloc(s->kv[at].vlen + 1);
+    if (!tmp) abort();
+    memcpy(tmp, s->kv[at].v, s->kv[at].vlen);
+    tmp[s->kv[at].vlen] = 0;
+    riina_value_t* out = riina_string(tmp);
+    free(tmp);
+    return out;
+}
+
+/* simpan_ada (store_has): (handle, key) -> Benar */
+static riina_value_t* riina_builtin_simpan_ada(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_store_die("simpan_ada", "expects (handle, key)");
+    riina_value_t* h = arg->data.pair_val.fst;
+    riina_value_t* kv = arg->data.pair_val.snd;
+    if (h->tag != RIINA_TAG_INT || kv->tag != RIINA_TAG_STRING)
+        riina_store_die("simpan_ada", "expects (handle, key)");
+    riina_store_t* s = riina_store_slot(h->data.int_val, "simpan_ada");
+    int found = 0;
+    riina_store_find(s, kv->data.string_val.data, kv->data.string_val.len, &found);
+    return riina_bool(found ? true : false);
+}
+
+/* simpan_padam (store_delete): (handle, key) -> Benar (whether it was present) */
+static riina_value_t* riina_builtin_simpan_padam(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_store_die("simpan_padam", "expects (handle, key)");
+    riina_value_t* h = arg->data.pair_val.fst;
+    riina_value_t* kv = arg->data.pair_val.snd;
+    if (h->tag != RIINA_TAG_INT || kv->tag != RIINA_TAG_STRING)
+        riina_store_die("simpan_padam", "expects (handle, key)");
+    riina_store_t* s = riina_store_slot(h->data.int_val, "simpan_padam");
+    size_t klen = kv->data.string_val.len;
+    const char* k = kv->data.string_val.data;
+    int found = 0;
+    riina_store_find(s, k, klen, &found);
+    if (!found) return riina_bool(false);
+    size_t rlen = 0;
+    unsigned char* rec = riina_store_encode(RIINA_STORE_OP_DELETE, k, klen, "", 0, &rlen);
+    riina_store_append(s, rec, rlen);
+    size_t old = 0;
+    riina_store_erase(s, k, klen, &old);
+    s->dead_bytes += riina_store_record_size(klen, old) + (uint64_t)rlen;
+    free(rec);
+    return riina_bool(true);
+}
+
+/* simpan_kunci (store_keys): handle -> Senarai<Teks>, sorted */
+static riina_value_t* riina_builtin_simpan_kunci(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_store_die("simpan_kunci", "expects a handle");
+    riina_store_t* s = riina_store_slot(arg->data.int_val, "simpan_kunci");
+    riina_list_t l = {0};
+    for (size_t i = 0; i < s->n; i++) {
+        char* tmp = (char*)malloc(s->kv[i].klen + 1);
+        if (!tmp) abort();
+        memcpy(tmp, s->kv[i].k, s->kv[i].klen);
+        tmp[s->kv[i].klen] = 0;
+        riina_list_push(&l, riina_string(tmp));
+        free(tmp);
+    }
+    return riina_make_list(l);
+}
+
+/* simpan_padat (store_compact): handle -> Benar.
+   Atomic: temp file -> fsync -> rename -> fsync of the PARENT DIRECTORY.
+   Without that last step the rename is not durable and a crash can resurrect
+   the old file. */
+static riina_value_t* riina_builtin_simpan_padat(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_store_die("simpan_padat", "expects a handle");
+    riina_store_t* s = riina_store_slot(arg->data.int_val, "simpan_padat");
+    size_t plen = strlen(s->path);
+    char* tmp = (char*)malloc(plen + 16);
+    if (!tmp) abort();
+    memcpy(tmp, s->path, plen);
+    memcpy(tmp + plen, ".padat-tmp", 11);
+    int fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) riina_store_die("simpan_padat", strerror(errno));
+    if (write(fd, RIINA_STORE_MAGIC, RIINA_STORE_MAGIC_LEN) != RIINA_STORE_MAGIC_LEN)
+        riina_store_die("simpan_padat", "short write of header");
+    for (size_t i = 0; i < s->n; i++) {
+        size_t rlen = 0;
+        unsigned char* rec = riina_store_encode(RIINA_STORE_OP_PUT, s->kv[i].k, s->kv[i].klen,
+                                                s->kv[i].v, s->kv[i].vlen, &rlen);
+        ssize_t w = write(fd, rec, rlen);
+        if (w < 0 || (size_t)w != rlen) riina_store_die("simpan_padat", "short write");
+        free(rec);
+    }
+    if (fsync(fd) != 0) riina_store_die("simpan_padat", strerror(errno));
+    close(fd);
+    if (rename(tmp, s->path) != 0) riina_store_die("simpan_padat", strerror(errno));
+    riina_store_sync_parent(s->path);
+    free(tmp);
+    close(s->fd);
+    s->fd = open(s->path, O_RDWR);
+    if (s->fd < 0) riina_store_die("simpan_padat", strerror(errno));
+    if (lseek(s->fd, 0, SEEK_END) < 0) riina_store_die("simpan_padat", strerror(errno));
+    s->dead_bytes = 0;
+    return riina_bool(true);
+}
+
+/* simpan_tutup (store_close): handle -> Benar. Every write was already
+   fsynced, so closing only releases the handle. */
+static riina_value_t* riina_builtin_simpan_tutup(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_store_die("simpan_tutup", "expects a handle");
+    riina_store_t* s = riina_store_slot(arg->data.int_val, "simpan_tutup");
+    close(s->fd);
+    for (size_t i = 0; i < s->n; i++) { free(s->kv[i].k); free(s->kv[i].v); }
+    free(s->kv);
+    free(s->path);
+    memset(s, 0, sizeof(*s));
+    return riina_bool(true);
+}
+"##;
 
 #[cfg(test)]
 mod tests {

@@ -143,6 +143,12 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
+    // Durable store (simpan) builtins — REQ-70 family routing.
+    for &(bm, en, canonical) in builtins::simpan::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
     None
 }
 
