@@ -150,6 +150,32 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
+    // Time builtins (REQ-70 family routing) — a DELIBERATE SUBSET, not the
+    // whole `builtins::masa::BUILTINS` array.
+    //
+    // The four clock/sleep builtins below read a clock or block; the two
+    // remaining ones, `masa_format` and `masa_urai`, are NOT routed because the
+    // two backends do not agree on what they mean. The interpreter ignores the
+    // format string entirely (`masa_format((0, "%Y"))` yields "0"), while the C
+    // helpers in emit.rs implement real strftime/strptime (the same call yields
+    // "1970"). That is a language-semantics question — the declared type
+    // `Fn((Nombor, Teks), Teks, Masa)` advertises a format parameter the
+    // interpreter silently discards — and is left for an owner decision rather
+    // than settled by whichever backend happened to be routed first.
+    //
+    // The clocks cannot be byte-equal across backends by nature: two runs read
+    // the clock at different instants. `masa_differential.rs` therefore pins
+    // the PROPERTIES that must hold identically in both (monotonicity, the
+    // seconds/millis relationship, sleep duration) rather than raw values.
+    match name {
+        "masa_sekarang" | "time_now" | "masa_unix" | "time_unix" => {
+            return Some("masa_sekarang")
+        }
+        "masa_sekarang_ms" | "time_now_ms" => return Some("masa_sekarang_ms"),
+        "masa_jam" | "time_clock" => return Some("masa_jam"),
+        "masa_tidur" | "time_sleep" => return Some("masa_tidur"),
+        _ => {}
+    }
     None
 }
 

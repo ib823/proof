@@ -3041,6 +3041,20 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // masa_format (time_format): (Int, String) -> String
+        //
+        // NOT ROUTED (REQ-70). `lower::builtin_canonical` deliberately omits
+        // `masa_format`/`masa_urai`, so this helper and the next are currently
+        // unreachable. They disagree with the interpreter, which ignores the
+        // format string outright and returns the timestamp as a decimal string:
+        // `masa_format((0, "%Y"))` is "0" interpreted and "1970" here. Routing
+        // either behaviour would settle a language-semantics question by
+        // accident, so the choice is left open.
+        //
+        // Note also, for whoever resolves it: these two are inconsistent with
+        // EACH OTHER. `masa_format` formats via gmtime (UTC) while `masa_urai`
+        // parses via mktime (LOCAL time), so a format/parse round trip is not
+        // the identity outside UTC. That is a bug under any of the candidate
+        // semantics and should be fixed with them, not after.
         self.writeln("static riina_value_t* riina_builtin_masa_format(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* ts = arg->data.pair_val.fst;");

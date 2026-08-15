@@ -6,13 +6,13 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **158** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **168** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (138 builtins). |
-| `interp-only` | `riinac run` only (215 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (148 builtins). |
+| `interp-only` | `riinac run` only (205 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -450,22 +450,22 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Masa (Time)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+> **Mixed:** 10 of 14 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
 | `masa_format` | `Fn((Nombor, Teks), Teks, Masa)` | **interp-only** |
-| `masa_jam` | `Fn((), Nombor, Masa)` | **interp-only** |
-| `masa_sekarang` | `Fn((), Nombor, Masa)` | **interp-only** |
-| `masa_sekarang_ms` | `Fn((), Nombor, Masa)` | **interp-only** |
-| `masa_tidur` | `Fn(Nombor, (), Masa)` | **interp-only** |
-| `masa_unix` | `Fn((), Nombor, Masa)` | **interp-only** |
+| `masa_jam` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_sekarang` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_sekarang_ms` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_tidur` | `Fn(Nombor, (), Masa)` | **native-only** |
+| `masa_unix` | `Fn((), Nombor, Masa)` | **native-only** |
 | `masa_urai` | `Fn((Teks, Teks), Nombor, Masa)` | **interp-only** |
-| `time_clock` | `Fn((), Nombor, Masa)` | **interp-only** |
+| `time_clock` | `Fn((), Nombor, Masa)` | **native-only** |
 | `time_format` | `Fn((Nombor, Teks), Teks, Masa)` | **interp-only** |
-| `time_now` | `Fn((), Nombor, Masa)` | **interp-only** |
-| `time_now_ms` | `Fn((), Nombor, Masa)` | **interp-only** |
+| `time_now` | `Fn((), Nombor, Masa)` | **native-only** |
+| `time_now_ms` | `Fn((), Nombor, Masa)` | **native-only** |
 | `time_parse` | `Fn((Teks, Teks), Nombor, Masa)` | **interp-only** |
-| `time_sleep` | `Fn(Nombor, (), Masa)` | **interp-only** |
-| `time_unix` | `Fn((), Nombor, Masa)` | **interp-only** |
+| `time_sleep` | `Fn(Nombor, (), Masa)` | **native-only** |
+| `time_unix` | `Fn((), Nombor, Masa)` | **native-only** |
 
