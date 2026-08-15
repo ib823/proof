@@ -137,6 +137,12 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
+    // Time (masa) builtins — REQ-70 family routing (1.0).
+    for &(bm, en, canonical) in builtins::masa::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
     None
 }
 

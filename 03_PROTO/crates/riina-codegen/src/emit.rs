@@ -3040,16 +3040,73 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("}");
         self.writeln("");
 
+        // Civil calendar, mirroring `builtins::masa` exactly.
+        //
+        // Deliberately NOT strftime/strptime. libc can format dates; the
+        // interpreter cannot reach an equivalent under Law 8, so letting libc
+        // define the contract guaranteed the backends disagreed — and they
+        // did: `masa_format((1700000000, "%Y-%m-%d"))` gave `2023-11-14` here
+        // and `1700000000` interpreted, because the interpreter ignored the
+        // format string outright (REQ-70). One algorithm, two implementations,
+        // pinned by a differential.
+        self.writeln("static void riina_civil_from_days(int64_t z, int64_t* y, uint32_t* m, uint32_t* d) {");
+        self.writeln("    z += 719468;");
+        self.writeln("    int64_t era = (z >= 0 ? z : z - 146096) / 146097;");
+        self.writeln("    uint64_t doe = (uint64_t)(z - era * 146097);");
+        self.writeln("    uint64_t yoe = (doe - doe/1460 + doe/36524 - doe/146096) / 365;");
+        self.writeln("    int64_t yy = (int64_t)yoe + era * 400;");
+        self.writeln("    uint64_t doy = doe - (365*yoe + yoe/4 - yoe/100);");
+        self.writeln("    uint64_t mp = (5*doy + 2) / 153;");
+        self.writeln("    *d = (uint32_t)(doy - (153*mp + 2)/5 + 1);");
+        self.writeln("    *m = (uint32_t)(mp < 10 ? mp + 3 : mp - 9);");
+        self.writeln("    *y = (*m <= 2) ? yy + 1 : yy;");
+        self.writeln("}");
+        self.writeln("");
+        self.writeln("static int64_t riina_days_from_civil(int64_t y, uint32_t m, uint32_t d) {");
+        self.writeln("    y -= (m <= 2);");
+        self.writeln("    int64_t era = (y >= 0 ? y : y - 399) / 400;");
+        self.writeln("    uint64_t yoe = (uint64_t)(y - era * 400);");
+        self.writeln("    uint64_t mp = (m > 2 ? m - 3 : m + 9);");
+        self.writeln("    uint64_t doy = (153*mp + 2)/5 + d - 1;");
+        self.writeln("    uint64_t doe = yoe*365 + yoe/4 - yoe/100 + doy;");
+        self.writeln("    return era * 146097 + (int64_t)doe - 719468;");
+        self.writeln("}");
+        self.writeln("");
+
         // masa_format (time_format): (Int, String) -> String
         self.writeln("static riina_value_t* riina_builtin_masa_format(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
-        self.writeln("    riina_value_t* ts = arg->data.pair_val.fst;");
+        self.writeln("    riina_value_t* tsv = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* fmt = arg->data.pair_val.snd;");
-        self.writeln("    if (ts->tag != RIINA_TAG_INT || fmt->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    time_t t = (time_t)ts->data.int_val;");
-        self.writeln("    struct tm* tm_p = gmtime(&t);");
-        self.writeln("    char buf[256];");
-        self.writeln("    strftime(buf, sizeof(buf), fmt->data.string_val.data, tm_p);");
+        self.writeln("    if (tsv->tag != RIINA_TAG_INT || fmt->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    int64_t ts = (int64_t)tsv->data.int_val;");
+        self.writeln("    int64_t days = ts / 86400; int64_t rem = ts % 86400;");
+        self.writeln("    if (rem < 0) { rem += 86400; days -= 1; }  /* floor, not trunc */");
+        self.writeln("    int64_t y; uint32_t mo, d;");
+        self.writeln("    riina_civil_from_days(days, &y, &mo, &d);");
+        self.writeln("    uint32_t hh = (uint32_t)(rem/3600), mi = (uint32_t)((rem%3600)/60), ss = (uint32_t)(rem%60);");
+        self.writeln("    char buf[512]; size_t o = 0;");
+        self.writeln("    const char* f = fmt->data.string_val.data;");
+        self.writeln("    for (size_t i = 0; f[i] && o + 32 < sizeof(buf); i++) {");
+        self.writeln("        if (f[i] != '%') { buf[o++] = f[i]; continue; }");
+        self.writeln("        char sp = f[i+1];");
+        self.writeln("        if (sp == 0) { buf[o++] = '%'; break; }");
+        self.writeln("        i++;");
+        self.writeln("        switch (sp) {");
+        self.writeln("            case 'Y': o += (size_t)snprintf(buf+o, 32, \"%04lld\", (long long)y); break;");
+        self.writeln("            case 'm': o += (size_t)snprintf(buf+o, 32, \"%02u\", mo); break;");
+        self.writeln("            case 'd': o += (size_t)snprintf(buf+o, 32, \"%02u\", d); break;");
+        self.writeln("            case 'H': o += (size_t)snprintf(buf+o, 32, \"%02u\", hh); break;");
+        self.writeln("            case 'M': o += (size_t)snprintf(buf+o, 32, \"%02u\", mi); break;");
+        self.writeln("            case 'S': o += (size_t)snprintf(buf+o, 32, \"%02u\", ss); break;");
+        self.writeln("            case 's': o += (size_t)snprintf(buf+o, 32, \"%lld\", (long long)ts); break;");
+        self.writeln("            case '%': buf[o++] = '%'; break;");
+        self.writeln("            /* Unsupported specifier is emitted LITERALLY, % and all, so it");
+        self.writeln("               is visible rather than silently dropped — matching Rust. */");
+        self.writeln("            default: buf[o++] = '%'; buf[o++] = sp; break;");
+        self.writeln("        }");
+        self.writeln("    }");
+        self.writeln("    buf[o] = 0;");
         self.writeln("    return riina_string(buf);");
         self.writeln("}");
         self.writeln("");
@@ -3057,14 +3114,55 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // masa_urai (time_parse): (String, String) -> Int
         self.writeln("static riina_value_t* riina_builtin_masa_urai(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
-        self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
+        self.writeln("    riina_value_t* sv = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* fmt = arg->data.pair_val.snd;");
         self.writeln(
-            "    if (s->tag != RIINA_TAG_STRING || fmt->tag != RIINA_TAG_STRING) abort();",
+            "    if (sv->tag != RIINA_TAG_STRING || fmt->tag != RIINA_TAG_STRING) abort();",
         );
-        self.writeln("    struct tm tm_s = {0};");
-        self.writeln("    strptime(s->data.string_val.data, fmt->data.string_val.data, &tm_s);");
-        self.writeln("    return riina_int((uint64_t)mktime(&tm_s));");
+        self.writeln("    const char* s = sv->data.string_val.data;");
+        self.writeln("    const char* f = fmt->data.string_val.data;");
+        self.writeln("    int64_t y = 1970; uint32_t mo = 1, d = 1, hh = 0, mi = 0, ss = 0;");
+        self.writeln("    int64_t epoch = 0; int have_epoch = 0; size_t i = 0;");
+        self.writeln("    for (size_t k = 0; f[k]; k++) {");
+        self.writeln("        if (f[k] != '%') { if (s[i] != f[k]) goto bad; i++; continue; }");
+        self.writeln("        char sp = f[++k];");
+        self.writeln("        if (sp == 0) goto bad;");
+        self.writeln("        if (sp == '%') { if (s[i] != '%') goto bad; i++; continue; }");
+        self.writeln("        int width;");
+        self.writeln("        switch (sp) {");
+        self.writeln("            case 'Y': width = 4; break;");
+        self.writeln("            case 'm': case 'd': case 'H': case 'M': case 'S': width = 2; break;");
+        self.writeln("            case 's': width = 20; break;");
+        self.writeln("            default:");
+        self.writeln("                if (s[i] != '%' || s[i+1] != sp) goto bad;");
+        self.writeln("                i += 2; continue;");
+        self.writeln("        }");
+        self.writeln("        size_t start = i;");
+        self.writeln("        if (sp == 's' && s[i] == '-') i++;");
+        self.writeln("        while (s[i] && (int)(i - start) < width && s[i] >= '0' && s[i] <= '9') i++;");
+        self.writeln("        if (i == start) goto bad;");
+        self.writeln("        char num[32]; size_t n = i - start;");
+        self.writeln("        if (n >= sizeof(num)) goto bad;");
+        self.writeln("        memcpy(num, s + start, n); num[n] = 0;");
+        self.writeln("        long long v = atoll(num);");
+        self.writeln("        switch (sp) {");
+        self.writeln("            case 'Y': y = (int64_t)v; break;");
+        self.writeln("            case 'm': mo = (uint32_t)v; break;");
+        self.writeln("            case 'd': d = (uint32_t)v; break;");
+        self.writeln("            case 'H': hh = (uint32_t)v; break;");
+        self.writeln("            case 'M': mi = (uint32_t)v; break;");
+        self.writeln("            case 'S': ss = (uint32_t)v; break;");
+        self.writeln("            case 's': epoch = (int64_t)v; have_epoch = 1; break;");
+        self.writeln("        }");
+        self.writeln("    }");
+        self.writeln("    if (s[i] != 0) goto bad;");
+        self.writeln("    if (have_epoch) return riina_int((uint64_t)epoch);");
+        self.writeln("    if (mo < 1 || mo > 12 || d < 1 || d > 31 || hh > 23 || mi > 59 || ss > 59) goto bad;");
+        self.writeln("    return riina_int((uint64_t)(riina_days_from_civil(y, mo, d) * 86400");
+        self.writeln("                     + (int64_t)hh * 3600 + (int64_t)mi * 60 + (int64_t)ss));");
+        self.writeln("bad:");
+        self.writeln("    fprintf(stderr, \"RIINA: masa_urai cannot parse '%s' with format '%s'\\n\", s, f);");
+        self.writeln("    abort();");
         self.writeln("}");
         self.writeln("");
 
