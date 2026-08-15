@@ -137,6 +137,20 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
+    // Time (masa) builtins — REQ-70 family routing (1.0).
+    for &(bm, en, canonical) in builtins::masa::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
+    // Durable store (simpan) builtins — REQ-70 family routing. The journal
+    // format is the contract between this backend and the interpreter; see
+    // `simpan_differential.rs` for the cross-backend round trip.
+    for &(bm, en, canonical) in builtins::simpan::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
     // JSON builtins (REQ-70 family routing). Pure value transformations — no
     // syscalls — so the C backend can implement them outright. The C helpers
     // (`riina_builtin_json_*`) already existed in `emit.rs` but were
@@ -146,6 +160,27 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // JSON parser), which its fail-closed arm reports rather than stubbing —
     // so the family is `native-only`, not `compiled`.
     for &(bm, en, canonical) in builtins::json::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
+    // Network (jaring) builtins — REQ-70 family routing, PARTIAL by design.
+    // Only the names in `net::COMPILED` route: the plain TCP half is ported to
+    // C together with the verified RFC 793 machine that gates it, while the
+    // `jaring_tls_*` half stays interpreter-only because a C TLS that is not
+    // really `riina-tls` would compile programs that look negotiated and are
+    // weaker than the interpreter they were tested against. Those names fail
+    // closed (unbound) rather than lowering to a weaker handshake.
+    for &(bm, en, canonical) in builtins::net::BUILTINS {
+        if (name == bm || name == en) && builtins::net::COMPILED.contains(&canonical) {
+            return Some(canonical);
+        }
+    }
+    // HTTP (http) builtins — REQ-70 family routing. The strict RFC 9112 codec
+    // is ported in full: a message that frames two ways must be refused by
+    // compiled code exactly as the interpreter refuses it, because two parsers
+    // disagreeing about one byte stream IS the vulnerability class.
+    for &(bm, en, canonical) in builtins::http::BUILTINS {
         if name == bm || name == en {
             return Some(canonical);
         }

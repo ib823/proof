@@ -236,3 +236,94 @@ fn zero_arg_function_lowers_to_a_closure_and_a_call() {
         "two call sites must produce two calls, not one shared value:\n{ir}"
     );
 }
+
+// ── REQ-70: the net family routes in HALVES, on purpose ────────────────────
+
+/// The plain TCP half and the whole HTTP codec must ROUTE, so `riinac build`
+/// produces a real networked binary rather than failing on an unbound name.
+#[test]
+fn net_plain_and_http_halves_are_routed() {
+    for name in [
+        "jaring_sambung",
+        "jaring_hantar",
+        "jaring_terima",
+        "jaring_tutup",
+        "jaring_dengar",
+        "jaring_alamat",
+        "jaring_terima_sambungan",
+        "jaring_tutup_dengar",
+        "tls_dasar_ok",
+        "http_hurai_kaedah",
+        "http_hurai_laluan",
+        "http_hurai_jasad",
+        "http_hurai_kepala",
+        "http_balas",
+        "http_minta",
+        // The English spellings must route identically — they are the same
+        // builtin, and a program written in either surface must compile.
+        "net_connect",
+        "net_accept",
+        "http_build_response",
+    ] {
+        assert!(
+            riina_codegen::codegen_supports_builtin(name),
+            "{name} must be routed to the C backend (REQ-70 family routing)"
+        );
+    }
+}
+
+/// The `jaring_tls_*` half must NOT route, and this is the precise statement of
+/// why the family is only half-compiled.
+///
+/// The C backend has no `riina-tls`: no X25519, no HKDF-SHA384, no AES-256-GCM,
+/// no RFC 8446 §7.1 key schedule, no raw-public-key authentication. Emitting
+/// something *nearly* that is the one outcome worse than refusing — a program
+/// would compile, appear to negotiate, and be weaker than the interpreter it
+/// was tested against, with nothing in the type signature to say so. So these
+/// names stay unbound at lowering and `riinac build` fails closed (REQ-78).
+#[test]
+fn net_tls_half_is_not_routed() {
+    for name in [
+        "jaring_tls_jabat",
+        "jaring_tls_jabat_sah",
+        "jaring_tls_identiti",
+        "jaring_tls_percaya",
+        "jaring_tls_disahkan",
+        "jaring_tls_kunci",
+        "jaring_tls_hantar",
+        "jaring_tls_terima",
+        "net_tls_handshake",
+        "net_tls_send",
+    ] {
+        assert!(
+            !riina_codegen::codegen_supports_builtin(name),
+            "{name} must NOT lower — a C TLS that is not really riina-tls would \
+             compile programs that look negotiated and are weaker than the \
+             interpreter they were tested against"
+        );
+    }
+}
+
+/// WASI preview 1 has no listening sockets, so nothing in this family is
+/// WASM-supported: every routed name is `native-only`, and `docs/api/STDLIB.md`
+/// must be able to say so rather than claiming C-compiled implies WASM.
+#[test]
+fn net_family_is_native_only_never_wasm() {
+    for name in [
+        "jaring_sambung",
+        "jaring_dengar",
+        "jaring_terima_sambungan",
+        "tls_dasar_ok",
+        "http_balas",
+        "http_minta",
+    ] {
+        assert!(
+            riina_codegen::codegen_supports_builtin(name),
+            "{name} must compile natively"
+        );
+        assert!(
+            !riina_codegen::wasm_supports_builtin(name),
+            "{name} must not claim WASM support — WASI preview 1 has no sockets"
+        );
+    }
+}

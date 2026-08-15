@@ -34,7 +34,53 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
+
+/// How long a corpus example may run before it is treated as non-terminating.
+///
+/// This exists because of REQ-70. Until the effectful families were routed,
+/// nothing in the corpus could block: every compiled example was pure
+/// computation that ran to completion or crashed. Now `07_EXAMPLES/11_servis/`
+/// compiles, and a server example parked in `jaring_terima_sambungan` waits for
+/// a client that this harness will never send — so `Command::output()` hung the
+/// whole test suite forever rather than failing. A timeout turns "blocks" into a
+/// reportable outcome, which is the only version of this a test can act on.
+const RUN_TIMEOUT: Duration = Duration::from_secs(20);
+
+/// Run `cmd` with stdout/stderr captured to files, killing it after
+/// [`RUN_TIMEOUT`]. `None` means it was killed for running too long.
+///
+/// Files rather than pipes on purpose: `Command::output()` reads the pipes only
+/// after the child exits, so a child that both fills a pipe buffer AND outlives
+/// the deadline would deadlock before the deadline could be checked.
+fn run_bounded(mut cmd: Command, out_path: &Path, err_path: &Path) -> Option<(bool, Vec<u8>)> {
+    let out = fs::File::create(out_path).ok()?;
+    let err = fs::File::create(err_path).ok()?;
+    let mut child = cmd.stdout(Stdio::from(out)).stderr(Stdio::from(err)).spawn().ok()?;
+
+    let deadline = Instant::now() + RUN_TIMEOUT;
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(s)) => break s,
+            Ok(None) => {
+                if Instant::now() >= deadline {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return None;
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+            Err(_) => return None,
+        }
+    };
+    let stdout = fs::read(out_path).unwrap_or_default();
+    let stderr = fs::read(err_path).unwrap_or_default();
+    Some((
+        status.success(),
+        if status.success() { stdout } else { stderr },
+    ))
+}
 
 /// Examples that run in both backends but currently differ, with the WASM-side
 /// root cause. These are tracked, not silently ignored. Removing a WASM bug
@@ -184,13 +230,20 @@ fn run_c(work: &Path, stem: &str, src: &Path) -> BackendOutcome {
     if !cc.status.success() {
         return BackendOutcome::NoBuild;
     }
-    let Ok(run) = Command::new(&bin).output() else {
-        return BackendOutcome::RunFail("spawn failed".to_string());
+    let Some((ok, bytes)) = run_bounded(
+        Command::new(&bin),
+        &work.join(format!("{stem}_c.out")),
+        &work.join(format!("{stem}_c.err")),
+    ) else {
+        return BackendOutcome::RunFail(format!(
+            "did not terminate within {}s",
+            RUN_TIMEOUT.as_secs()
+        ));
     };
-    if !run.status.success() {
-        return BackendOutcome::RunFail(String::from_utf8_lossy(&run.stderr).chars().take(120).collect());
+    if !ok {
+        return BackendOutcome::RunFail(String::from_utf8_lossy(&bytes).chars().take(120).collect());
     }
-    BackendOutcome::Ran(run.stdout)
+    BackendOutcome::Ran(bytes)
 }
 
 /// Build+run via the WASM backend.
@@ -210,16 +263,22 @@ fn run_wasm(work: &Path, stem: &str, src: &Path) -> BackendOutcome {
     if !build.status.success() {
         return BackendOutcome::NoBuild;
     }
-    let Ok(run) = Command::new("wasmtime")
-        .args(["run", &wasm.to_string_lossy()])
-        .output()
-    else {
-        return BackendOutcome::RunFail("spawn failed".to_string());
+    let mut cmd = Command::new("wasmtime");
+    cmd.args(["run", &wasm.to_string_lossy()]);
+    let Some((ok, bytes)) = run_bounded(
+        cmd,
+        &work.join(format!("{stem}_w.out")),
+        &work.join(format!("{stem}_w.err")),
+    ) else {
+        return BackendOutcome::RunFail(format!(
+            "did not terminate within {}s",
+            RUN_TIMEOUT.as_secs()
+        ));
     };
-    if !run.status.success() {
-        return BackendOutcome::RunFail(String::from_utf8_lossy(&run.stderr).chars().take(120).collect());
+    if !ok {
+        return BackendOutcome::RunFail(String::from_utf8_lossy(&bytes).chars().take(120).collect());
     }
-    BackendOutcome::Ran(run.stdout)
+    BackendOutcome::Ran(bytes)
 }
 
 #[test]

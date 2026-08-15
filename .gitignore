@@ -63,3 +63,8 @@ result
 # scripts/ct-timing-certify.sh); not committed (an indicative in-container run must
 # not be mistaken for controlled-host certification).
 reports/ct_evidence/
+
+# Durable-store files written by running the REQ-73 persistence examples
+# (07_EXAMPLES/11_servis) from the repo root. Runtime data, never source —
+# one was committed by accident at b5815399 and removed immediately after.
+*.simpan

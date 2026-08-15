@@ -134,6 +134,37 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("jaring_tls_terima", "net_tls_recv", "jaring_tls_terima"),
 ];
 
+/// Canonical names the **C backend** also implements (REQ-70 family routing).
+///
+/// The split is deliberate and is the whole reason this is a separate list
+/// rather than "all of [`BUILTINS`]":
+///
+/// * The plain TCP half is portable — BSD sockets plus the same 15-edge RFC
+///   793 table, so `emit.rs` gates send/recv on ESTABLISHED exactly as this
+///   module does.
+/// * The **`jaring_tls_*` half is NOT here.** It rests on `riina-tls` over
+///   `riina-core` — X25519, HKDF-SHA384, AES-256-GCM, the RFC 8446 §7.1 key
+///   schedule, transcript binding, raw-public-key authentication. Emitting a C
+///   TLS that is *nearly* that would be the worst possible outcome: a program
+///   would compile, appear to negotiate, and be weaker than the interpreter it
+///   was tested against. So the compiled backends fail closed on those names
+///   (`unbound variable: jaring_tls_*`) until the crypto is really ported.
+///
+/// `tls_dasar_ok` IS here despite the name: it is the pure acceptance policy
+/// (NET_001_03 + NET_001_08), a total function of two strings with no
+/// handshake, so both backends can compute it and must agree.
+pub static COMPILED: &[&str] = &[
+    "jaring_sambung",
+    "jaring_hantar",
+    "jaring_terima",
+    "jaring_tutup",
+    "jaring_dengar",
+    "jaring_alamat",
+    "jaring_terima_sambungan",
+    "jaring_tutup_dengar",
+    "tls_dasar_ok",
+];
+
 /// One tracked connection: the enforcing verified state machine plus the real
 /// socket. The stream is dropped (really closed) when the machine leaves
 /// ESTABLISHED via `jaring_tutup`.
