@@ -768,8 +768,31 @@ PY
         fi
     fi
 else
-    # Full: run cargo test for accurate count
-    RUST_TESTS=$(cd "$ROOT_DIR/03_PROTO" && cargo test --all 2>&1 | grep -oP '\d+ passed' | awk '{sum += $1} END {print sum+0}' || echo "0")
+    # Full: run cargo test for an accurate count.
+    #
+    # FAIL CLOSED. The sum below counts `N passed` across suites, which is a
+    # PARTIAL total whenever cargo test does not succeed: a failing or aborting
+    # suite contributes nothing and the rest are still added up. The pipeline's
+    # exit status is grep/awk's, not cargo's, so a broken run used to be
+    # recorded silently as a smaller-but-plausible number — metrics.json once
+    # published 2659 where the true count was 3284, and because a wrong
+    # metrics.json then fails `metrics_doc_consistency`, the next run
+    # under-counted again. An understated metric is exactly the class of
+    # dishonesty the Prime Directives exist to prevent, so refuse to emit one.
+    # `set -e` is on: without this guard the script would die at the assignment
+    # below and take the diagnostic with it, failing closed but silently.
+    set +e
+    RUST_TEST_OUT=$(cd "$ROOT_DIR/03_PROTO" && cargo test --all 2>&1)
+    RUST_TEST_STATUS=$?
+    set -e
+    if [ "$RUST_TEST_STATUS" -ne 0 ]; then
+        echo "ERROR: cargo test --all failed (exit $RUST_TEST_STATUS) in 03_PROTO." >&2
+        echo "       Refusing to derive a test count from a failed run — the sum" >&2
+        echo "       would silently under-report. Fix the tests, then re-run." >&2
+        echo "$RUST_TEST_OUT" | grep -E "error: test failed|^test result: FAILED" | head -5 >&2
+        exit 1
+    fi
+    RUST_TESTS=$(printf '%s\n' "$RUST_TEST_OUT" | grep -oP '\d+ passed' | awk '{sum += $1} END {print sum+0}')
     RUST_TESTS_VERIFIED="$RUST_TESTS"
 fi
 
