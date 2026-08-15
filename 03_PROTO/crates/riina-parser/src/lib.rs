@@ -7,10 +7,12 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
+pub mod modules;
+
 use riina_lexer::{Lexer, Span, Token, TokenKind};
 use riina_types::Span as AstSpan;
 use riina_types::{
-    BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Linearity, Program, Sanitizer,
+    BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Import, Linearity, Program, Sanitizer,
     SecurityLevel, SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
 };
 use std::fmt;
@@ -157,6 +159,16 @@ pub struct Parser<'a> {
     /// A module function `fungsi f` becomes a top-level `Name_f` so the existing
     /// `Name::f` -> `Name_f` qualified-call resolution finds it.
     pending_decls: Vec<TopLevelDecl>,
+    /// Sibling modules named by a single-segment `guna <name>;` (REQ-71).
+    /// A multi-segment path (`guna std::teks;`) names the builtin namespace,
+    /// has no file behind it, and is deliberately NOT recorded here.
+    imports: Vec<Import>,
+    /// Top-level names introduced with the `awam` (pub) visibility keyword.
+    /// Everything else is module-private to the file that declares it.
+    public_names: Vec<Ident>,
+    /// Set while parsing the declaration that directly follows an `awam`, so
+    /// the name is captured wherever the decl parser finally produces it.
+    pending_pub: bool,
 }
 
 /// A surface match pattern, used only during `padan` compilation. The AST has
@@ -235,6 +247,9 @@ impl<'a> Parser<'a> {
             gensym: 0,
             pending_gt: false,
             pending_decls: Vec::new(),
+            imports: Vec::new(),
+            public_names: Vec::new(),
+            pending_pub: false,
         }
     }
 
@@ -301,7 +316,12 @@ impl<'a> Parser<'a> {
             });
             decls.push(decl);
         }
-        Ok(Program::with_spans(decls, spans))
+        Ok(Program::with_modules(
+            decls,
+            spans,
+            std::mem::take(&mut self.imports),
+            std::mem::take(&mut self.public_names),
+        ))
     }
 
     /// Continue parsing the next top-level declaration after a skipped one
@@ -372,12 +392,37 @@ impl<'a> Parser<'a> {
                 self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwUse) => {
-                // guna path::to::module; — skip (no module system yet)
+                // `guna <name>;`            — import the sibling file <name>.rii (REQ-71).
+                // `guna a::b;` / `guna std::teks;` — the BUILTIN namespace: no file
+                //   behind it, so it is consumed and not recorded. This is what
+                //   keeps every pre-module-system example (`guna std::senarai;`)
+                //   compiling unchanged.
                 self.consume(TokenKind::KwUse)?;
+                let first = self.peek().and_then(|t| match &t.kind {
+                    TokenKind::Identifier(n) => Some(n.clone()),
+                    _ => None,
+                });
+                let name_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
+                let mut segments = 0usize;
                 while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi) | None) {
+                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
+                        segments += 1;
+                    }
                     self.next();
                 }
                 self.consume(TokenKind::Semi)?;
+                if segments == 0 {
+                    if let Some(module) = first {
+                        // Deduplicate: importing the same module twice is
+                        // harmless, and the resolver loads each file once.
+                        if !self.imports.iter().any(|i| i.module == module) {
+                            self.imports.push(Import {
+                                module,
+                                span: AstSpan::new(name_span.start, name_span.end),
+                            });
+                        }
+                    }
+                }
                 self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwStruct) | Some(TokenKind::KwEnum) => {
@@ -446,9 +491,29 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwTest) => self.parse_test_block(),
             Some(TokenKind::KwExtern) => self.parse_extern_block(),
             Some(TokenKind::KwPub) => {
-                // awam fungsi ... — consume visibility, delegate
+                // `awam fungsi ...` — consume the visibility keyword, then let
+                // the normal decl parser run with `pending_pub` set so whatever
+                // name it produces is recorded as public (REQ-71). Delegating
+                // (rather than special-casing `fungsi` here) keeps `awam` working
+                // for every decl form the parser already supports.
                 self.consume(TokenKind::KwPub)?;
-                self.parse_next_decl_or_unit()
+                self.pending_pub = true;
+                let decl = self.parse_next_decl_or_unit();
+                self.pending_pub = false;
+                if let Ok(d) = &decl {
+                    match d {
+                        TopLevelDecl::Function { name, .. }
+                        | TopLevelDecl::Binding { name, .. } => {
+                            if !self.public_names.contains(name) {
+                                self.public_names.push(name.clone());
+                            }
+                        }
+                        TopLevelDecl::Expr(_)
+                        | TopLevelDecl::ExternBlock { .. }
+                        | TopLevelDecl::Test { .. } => {}
+                    }
+                }
+                decl
             }
             Some(TokenKind::KwFn) => self.parse_function_decl(),
             Some(TokenKind::KwLet) => {
@@ -659,17 +724,13 @@ impl<'a> Parser<'a> {
             } else {
                 self.parse_stmt_sequence()?
             };
-            // Build the curried lambda and its function type (right-fold over
-            // params), matching `riina_types::desugar_function`.
-            let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
-                Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
-            });
-            let fn_ty = params
-                .iter()
-                .rev()
-                .fold(return_ty, |ret, (_, param_ty)| {
-                    Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-                });
+            // Build the curried lambda and its function type through the SAME
+            // helper top-level declarations use. This was a third hand-rolled
+            // copy of the fold, and it diverged: when zero-parameter functions
+            // gained a synthesised `()` parameter (REQ-68) a NESTED zero-arg
+            // `fungsi` kept the old thunk shape here, so calling it applied a
+            // non-function.
+            let (lam, fn_ty) = riina_types::desugar_function(params, return_ty, effect, body);
             return Ok(Expr::LetRec(
                 name,
                 fn_ty,
@@ -1567,11 +1628,16 @@ impl<'a> Parser<'a> {
                             expr = Expr::App(Box::new(expr), Box::new(arg));
                         }
                     }
-                    // NOTE: empty parens `f()` are a no-op suffix. A zero-arg
-                    // function is modeled as a global thunk whose type is its
-                    // return type, so `f` already denotes the result value and
-                    // the `()` carries no application. (Applying to `()` here
-                    // would break every zero-arg call site.)
+                    else {
+                        // Empty parens `f()` are a real application to `()`.
+                        // A zero-parameter function now has a synthesised `()`
+                        // parameter (`build_lambda`), so calling it is an
+                        // application like any other. Treating `()` as a no-op
+                        // suffix is what made a zero-arg function a global
+                        // thunk that ran once, eagerly, whether called or not
+                        // (master plan REQ-68).
+                        expr = Expr::App(Box::new(expr), Box::new(Expr::Unit));
+                    }
                     self.consume(TokenKind::RParen)?;
                 }
                 _ => break,

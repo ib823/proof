@@ -67,7 +67,15 @@ use riina_types::{BinOp, Effect, Expr, Ident, SecurityLevel, Ty};
 use std::collections::{HashMap, HashSet};
 
 /// Map a source name to its canonical builtin name, if it is a known builtin.
-fn builtin_canonical(name: &str) -> Option<&'static str> {
+///
+/// This function IS the compiled-backend boundary. A builtin the typechecker
+/// accepts but that this returns `None` for is **interpreter-only**: lowering
+/// leaves it as an unbound variable, so `riinac build`/`emit-c`/`--target wasm*`
+/// fail closed with `unbound variable: <name>` rather than miscompiling. That
+/// distinction is invisible in a signature, so `docs/api/STDLIB.md` renders it
+/// as a per-builtin Backend column, generated from this very function via
+/// [`codegen_supports_builtin`] (master plan REQ-70).
+pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // I/O
     match name {
         "cetak" | "print" => return Some("cetak"),
@@ -125,6 +133,19 @@ fn builtin_canonical(name: &str) -> Option<&'static str> {
     }
     // Set builtins
     for &(bm, en, canonical) in builtins::set::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
+    // JSON builtins (REQ-70 family routing). Pure value transformations — no
+    // syscalls — so the C backend can implement them outright. The C helpers
+    // (`riina_builtin_json_*`) already existed in `emit.rs` but were
+    // unreachable dead code until this arm was added, so they had never been
+    // exercised; the divergences that shook out are pinned by
+    // `json_differential.rs`. The WASM backend still refuses these (it has no
+    // JSON parser), which its fail-closed arm reports rather than stubbing —
+    // so the family is `native-only`, not `compiled`.
+    for &(bm, en, canonical) in builtins::json::BUILTINS {
         if name == bm || name == en {
             return Some(canonical);
         }
@@ -410,6 +431,18 @@ pub struct Lower {
     /// Variables currently known to hold a struct value: var name -> struct
     /// name. Scoped like `env` (saved/restored around each `Let` body).
     var_struct: HashMap<String, String>,
+    /// Whether a `pulang` here can be lowered as a real early return (REQ-80).
+    ///
+    /// True only while lowering the body of an `Expr::Lam`, i.e. inside a block
+    /// that is genuinely its own IR function. A ZERO-PARAMETER `fungsi` is not:
+    /// `build_lambda` with no params returns the body unchanged, so the body is
+    /// spliced into its DEFINITION SITE and a `Terminator::Return` there would
+    /// return from the caller — measured, not assumed (a `pulang 42` in a
+    /// zero-arg helper made `utama` itself return 42). Outside a real function
+    /// body `pulang` keeps the old value-passthrough, which is correct in tail
+    /// position — where all but a handful of them sit — and no worse than
+    /// before anywhere else.
+    honour_return: bool,
 }
 
 impl Lower {
@@ -425,6 +458,7 @@ impl Lower {
             struct_layouts: HashMap::new(),
             fn_returns_struct: HashMap::new(),
             var_struct: HashMap::new(),
+            honour_return: false,
         }
     }
 
@@ -709,6 +743,31 @@ impl Lower {
         }
 
         result
+    }
+
+    /// Append a fresh empty block to the current function.
+    fn new_block(&mut self) -> Result<BlockId> {
+        self.current_func
+            .and_then(|f| self.program.function_mut(f))
+            .map(|f| f.new_block())
+            .ok_or_else(|| Error::InvalidOperation("No current function".to_string()))
+    }
+
+    /// Terminate the current block, but ONLY if it is still open.
+    ///
+    /// An early `pulang` already closed its block with `Terminator::Return`;
+    /// the enclosing `kalau`/`padan` then tries to close the same region with a
+    /// `Branch` to the merge. Overwriting would silently delete the return and
+    /// restore exactly the fall-through bug this exists to fix, so a closed
+    /// block keeps the terminator it has (REQ-80).
+    fn terminate_if_open(&mut self, block: BlockId, term: Terminator) {
+        if let Some(func) = self.current_func.and_then(|f| self.program.function_mut(f)) {
+            if let Some(b) = func.block_mut(block) {
+                if b.terminator.is_none() {
+                    b.terminate(term);
+                }
+            }
+        }
     }
 
     fn emit_string_const(&mut self, value: impl Into<String>, ty: Ty) -> VarId {
@@ -1118,24 +1177,25 @@ impl Lower {
             // builds a first-class Value::List directly; this representation is
             // for the C/WASM lowering path.
             Expr::ListLit(elems) => {
+                // REQ-79: emit a first-class list, NOT a cons chain of pairs.
+                // The C backend's `senarai_*` builtins require a tagged list and
+                // `abort()` on anything else, so the old cons-chain lowering made
+                // every compiled program touching a list literal die with SIGABRT
+                // and no diagnostic while the interpreter answered correctly.
                 let effect = self.infer_effect(expr);
-                let mut acc = self.emit(
-                    Instruction::Const(Constant::Unit),
-                    Ty::Unit,
-                    SecurityLevel::Public,
-                    Effect::Pure,
-                );
-                for e in elems.iter().rev() {
-                    let head = self.lower_expr(e)?;
-                    let elem_ty = self.infer_type(e);
-                    acc = self.emit(
-                        Instruction::Pair(head, acc),
-                        Ty::List(Box::new(elem_ty)),
-                        SecurityLevel::Public,
-                        effect,
-                    );
+                let elem_ty = elems
+                    .first()
+                    .map_or(Ty::Any, |e| self.infer_type(e));
+                let mut vars = Vec::with_capacity(elems.len());
+                for e in elems {
+                    vars.push(self.lower_expr(e)?);
                 }
-                Ok(acc)
+                Ok(self.emit(
+                    Instruction::MakeList(vars),
+                    Ty::List(Box::new(elem_ty)),
+                    SecurityLevel::Public,
+                    effect,
+                ))
             }
 
             // Record literal — lowered (for the C/WASM path) as a cons chain of
@@ -1180,7 +1240,19 @@ impl Lower {
                 });
                 match proj {
                     Some(p) => self.lower_expr(&p),
-                    None => self.lower_expr(base),
+                    // REQ-80: FAIL CLOSED. This arm used to lower to the BASE
+                    // expression, silently turning `t.panjang()` into `t` — so
+                    // the C backend evaluated the receiver, then aborted with
+                    // `RIINA: call on non-closure` when the result was applied,
+                    // while the interpreter reported a clean type error. A
+                    // field access we cannot resolve to a known struct layout
+                    // is refused rather than quietly reinterpreted.
+                    None => Err(Error::InvalidOperation(format!(
+                        "cannot resolve field `.{field}`: the receiver is not a \
+                         record with a known layout. RIINA has no methods, so \
+                         `x.{field}()` is not a call — use `{field}(x)` (master \
+                         plan REQ-80)."
+                    ))),
                 }
             }
 
@@ -1338,15 +1410,16 @@ impl Lower {
                 // Add function to program so we can add blocks to it
                 self.program.add_function(func);
 
-                // Lower the body
+                // Lower the body. This IS a real IR function, so a `pulang`
+                // inside it can terminate its block for real (REQ-80).
+                let saved_honour = self.honour_return;
+                self.honour_return = true;
                 let result = self.lower_expr(body)?;
+                self.honour_return = saved_honour;
 
-                // Terminate with return
-                if let Some(func) = self.program.function_mut(func_id) {
-                    if let Some(block) = func.block_mut(self.current_block) {
-                        block.terminate(Terminator::Return(result));
-                    }
-                }
+                // Terminate with return — unless an early `pulang` already
+                // closed this block, which `terminate_if_open` preserves.
+                self.terminate_if_open(self.current_block, Terminator::Return(result));
 
                 // Restore state
                 self.current_func = saved_func;
@@ -1370,8 +1443,17 @@ impl Lower {
             Expr::App(func_expr, arg_expr) => {
                 // Intercept builtin calls: if func is Var(name) and name is a known builtin,
                 // emit BuiltinCall instead of Call.
+                // REQ-80: a USER definition shadows a builtin of the same name.
+                // This used to consult `builtin_canonical` without checking the
+                // environment, so a program defining `fungsi kuasa(asas, eksp)`
+                // had its calls routed to the BUILTIN `kuasa` by the C backend
+                // (which then failed with "kuasa expects pair") while the
+                // interpreter correctly used the user's function. The `Expr::Var`
+                // arm above already checks the environment first; this mirrors it.
                 if let Expr::Var(name) = func_expr.as_ref() {
-                    if let Some(canonical) = builtin_canonical(name) {
+                    if self.env.lookup(name).is_some() {
+                        // Shadowed by a user binding — fall through to a normal call.
+                    } else if let Some(canonical) = builtin_canonical(name) {
                         let arg_var = self.lower_expr(arg_expr)?;
                         let effect = self.infer_effect(expr);
                         // Most builtins return Unit (or a String the C emitter
@@ -1565,13 +1647,7 @@ impl Lower {
                 let then_end_block = self.current_block;
 
                 // Branch to merge
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(then_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(then_end_block, Terminator::Branch(merge_block));
 
                 // Right branch (else block)
                 self.current_block = else_block;
@@ -1595,13 +1671,7 @@ impl Lower {
                 let else_end_block = self.current_block;
 
                 // Branch to merge
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(else_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(else_end_block, Terminator::Branch(merge_block));
 
                 // Merge block with phi
                 self.current_block = merge_block;
@@ -1674,26 +1744,14 @@ impl Lower {
                 let then_result = self.lower_expr(then_expr)?;
                 let then_end_block = self.current_block;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(then_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(then_end_block, Terminator::Branch(merge_block));
 
                 // Else branch
                 self.current_block = else_block;
                 let else_result = self.lower_expr(else_expr)?;
                 let else_end_block = self.current_block;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(else_end_block) {
-                            block.terminate(Terminator::Branch(merge_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(else_end_block, Terminator::Branch(merge_block));
 
                 // Merge with phi
                 self.current_block = merge_block;
@@ -1766,7 +1824,21 @@ impl Lower {
 
                 // Lower the binding (lambda). This creates a closure that captures
                 // placeholder as the self-reference.
+                //
+                // A `fungsi` declaration desugars to LetRecGroup -> LetRec, so
+                // this is the DECLARATION position. For a zero-parameter
+                // function `build_lambda` emits no `Lam` at all and the body
+                // lands here directly, spliced into the definition site — a
+                // `Terminator::Return` there would return from the ENCLOSING
+                // function (measured: `pulang 42` in a zero-arg helper made
+                // `utama` itself return 42). Suppress honouring across the
+                // binding; an `Expr::Lam` value re-enables it for its own body,
+                // which is what makes every parameterised function work
+                // (REQ-80).
+                let saved_honour = self.honour_return;
+                self.honour_return = false;
                 let bind_var = self.lower_expr(binding)?;
+                self.honour_return = saved_honour;
 
                 // Only emit FixClosure if the binding actually captured the
                 // placeholder (i.e., the function is genuinely recursive).
@@ -1883,13 +1955,7 @@ impl Lower {
                 self.current_block = body_block;
                 let body_result = self.lower_expr(body)?;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(self.current_block) {
-                            block.terminate(Terminator::Branch(result_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(self.current_block, Terminator::Branch(result_block));
 
                 // Lower handler
                 self.current_block = handler_block;
@@ -1902,13 +1968,7 @@ impl Lower {
                 );
                 let _handler_result = self.lower_expr(handler)?;
 
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(self.current_block) {
-                            block.terminate(Terminator::Branch(result_block));
-                        }
-                    }
-                }
+                self.terminate_if_open(self.current_block, Terminator::Branch(result_block));
 
                 // Result block
                 self.current_block = result_block;
@@ -1959,10 +2019,33 @@ impl Lower {
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // `pulang e` — early return. The IR backend has no early-return
-            // instruction, so the operand is lowered and its value flows through
-            // (best-effort; the reference interpreter implements true unwinding).
-            Expr::Return(inner) => self.lower_expr(inner),
+            // `pulang e` — early return (REQ-80).
+            //
+            // This used to lower to just the inner value, DISCARDING the
+            // control flow, which the interpreter implements as real unwinding.
+            // Both consequences were measured:
+            //   * `kalau n <= 1 { pulang 1; } pulang 99;` fell through and
+            //     yielded 99 — a silent wrong answer in the C backend;
+            //   * a recursive function never reached its base case, so
+            //     `faktorial` recursed until the stack died (SIGSEGV).
+            //
+            // The return really terminates its block. Anything textually after
+            // it in the same block is unreachable, so it is lowered into a
+            // fresh block that nothing branches to — the enclosing `kalau` may
+            // still close that block with a `Branch` to its merge, which is why
+            // closing uses `terminate_if_open`: overwriting the `Return` here
+            // would restore the fall-through bug.
+            Expr::Return(inner) => {
+                let value = self.lower_expr(inner)?;
+                if self.honour_return {
+                    self.terminate_if_open(self.current_block, Terminator::Return(value));
+                    // Dead continuation: code after `pulang` still lowers (it is
+                    // well-typed and may bind names), it just lands in a block
+                    // nothing branches to.
+                    self.current_block = self.new_block()?;
+                }
+                Ok(value)
+            }
 
             // SECURITY (Expr::Classify, Expr::Declassify, Expr::Prove)
             // ═══════════════════════════════════════════════════════════════

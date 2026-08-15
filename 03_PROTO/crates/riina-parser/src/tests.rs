@@ -1962,11 +1962,21 @@ fn test_parse_grant_wraps_full_application() {
 
 #[test]
 fn test_parse_grant_zero_arg_call_stays_inside_body() {
+    // The point of this test is SCOPE: the call sits inside the grant body, so
+    // the capability covers it. The call itself is a real application to `()`
+    // now that a zero-parameter function is a real function (REQ-68); it used
+    // to parse to a bare `Var` because the empty parens were a no-op suffix.
     let mut p = Parser::new("grant Network f()");
     let expr = p.parse_expr().unwrap();
     assert_eq!(
         expr,
-        Expr::Grant(Effect::Network, Box::new(Expr::Var("f".to_string())))
+        Expr::Grant(
+            Effect::Network,
+            Box::new(Expr::App(
+                Box::new(Expr::Var("f".to_string())),
+                Box::new(Expr::Unit)
+            ))
+        )
     );
 }
 

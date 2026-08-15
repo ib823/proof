@@ -885,12 +885,23 @@ fn run_cargo_test(proto_dir: &Path) -> CheckResult {
             let combined = format!("{stdout}\n{stderr}");
             let count = parse_test_count(&combined);
             let passed = o.status.success();
+            // A backend differential that cannot run panics rather than
+            // silently skipping (deliberately — see the harnesses' own
+            // `require_backend_tools`). That panic means `cc`/`wasmtime` is
+            // absent HERE, which is an environment fact, not a repo one, and
+            // must not be recorded as a verification result (REQ-76).
+            let tools_absent = combined.contains("required backend tool(s) missing");
             CheckResult {
                 name: "Rust Tests".into(),
                 passed,
                 blocking: true,
                 details: if passed {
                     format!("{count} tests")
+                } else if tools_absent {
+                    format!(
+                        "FAILED ({count} tests parsed) — a backend differential could not \
+                         run for want of `cc`/`wasmtime` ({ENV_INCOMPLETE})"
+                    )
                 } else {
                     format!("FAILED ({count} tests parsed)")
                 },
@@ -2331,6 +2342,9 @@ enum ManifestAction {
     SkipWeakerMode,
     /// Nothing about the verification changed — only the timestamp/SHA would.
     SkipUnchanged,
+    /// The run could not actually verify (a toolchain is absent locally), so it
+    /// must not replace a record of a run that could.
+    SkipIncomplete,
 }
 
 /// The `Mode:` recorded in an existing manifest, if it is parseable.
@@ -2392,6 +2406,32 @@ fn manifest_body(text: &str) -> String {
         .join("\n")
 }
 
+/// Sentinel embedded in a BLOCKING failure's `details` when the cause is the
+/// MACHINE — a toolchain this container lacks — rather than the repository.
+///
+/// A run carrying one is INCOMPLETE: it verified strictly less than its mode
+/// claims, so it neither confirms nor refutes a stored record and must not
+/// overwrite a complete one (REQ-76). The text is user-facing as well as a
+/// marker, so it reads correctly in the manifest row it lands in.
+pub const ENV_INCOMPLETE: &str = "environment incomplete";
+
+/// Whether any BLOCKING check failed for an environmental reason.
+fn run_is_incomplete(results: &[CheckResult]) -> bool {
+    results
+        .iter()
+        .any(|r| r.blocking && !r.passed && r.details.contains(ENV_INCOMPLETE))
+}
+
+/// Whether the manifest already on disk records an incomplete run.
+///
+/// An incomplete run may replace another incomplete one — nothing stronger is
+/// lost — but never a complete one.
+fn manifest_is_incomplete(existing: &str) -> bool {
+    existing
+        .lines()
+        .any(|l| l.trim_start().starts_with("**Incomplete:**"))
+}
+
 /// Decide whether a new manifest should replace the one already on disk.
 ///
 /// This exists because the manifest used to be rewritten AND `git add`-ed on
@@ -2414,11 +2454,30 @@ fn manifest_action(
     new_text: &str,
     new_mode: Mode,
     new_passed: bool,
+    new_incomplete: bool,
 ) -> ManifestAction {
     let Some(existing) = existing else {
         return ManifestAction::Write;
     };
-    // Rule 1: never suppress a failure, whatever mode found it.
+    // Rule 0: an INCOMPLETE run never replaces a complete record.
+    //
+    // A blocking failure whose only cause is an absent local toolchain is a
+    // fact about the MACHINE, not the repository — it neither confirms nor
+    // refutes what the stored record attests, so overwriting with it destroys
+    // evidence and produces none. This fired twice on 2026-08-11: a `--fast`
+    // run without `wasmtime` replaced full/PASS with fast/FAIL, erasing every
+    // Coq attestation row, and a `--full` run without `coqc` replaced it with
+    // full/FAIL whose sole failing row was the Coq presence check. Rule 1
+    // below returns `Write` before any other rule is consulted, which is
+    // exactly how an environment fact came to destroy a repo fact (REQ-76).
+    //
+    // Ordered FIRST, ahead of Rule 1, because the failure it describes is not
+    // one this run established. Rule 1 keeps its full force for every failure
+    // that is.
+    if new_incomplete && !manifest_is_incomplete(existing) {
+        return ManifestAction::SkipIncomplete;
+    }
+    // Rule 1: never suppress a failure the run actually established.
     if !new_passed {
         return ManifestAction::Write;
     }
@@ -2473,6 +2532,25 @@ fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     writeln!(md, "**Git SHA:** {sha}").unwrap();
     writeln!(md, "**Mode:** {mode_label}").unwrap();
     writeln!(md, "**Status:** {status}").unwrap();
+    // An incomplete run that DOES get written (no prior record, or the prior
+    // one was incomplete too) says so, so a reader never mistakes it for a
+    // verification that actually ran (REQ-76).
+    let incomplete = run_is_incomplete(results);
+    if incomplete {
+        let lanes: Vec<&str> = results
+            .iter()
+            .filter(|r| r.blocking && !r.passed && r.details.contains(ENV_INCOMPLETE))
+            .map(|r| r.name.as_str())
+            .collect();
+        writeln!(
+            md,
+            "**Incomplete:** {} — a required toolchain is absent on this machine, \
+             so these lanes did NOT run. This is not a verification of the \
+             repository.",
+            lanes.join(", ")
+        )
+        .unwrap();
+    }
     writeln!(md).unwrap();
     writeln!(md, "> {scope_note}").unwrap();
     writeln!(md).unwrap();
@@ -2491,11 +2569,19 @@ fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
 
     let manifest_path = repo.join("VERIFICATION_MANIFEST.md");
     let existing = fs::read_to_string(&manifest_path).ok();
-    match manifest_action(existing.as_deref(), &md, mode, all_pass) {
+    match manifest_action(existing.as_deref(), &md, mode, all_pass, incomplete) {
         ManifestAction::SkipWeakerMode => {
             eprintln!(
                 "  manifest: kept the existing full-mode record (a {mode_label}-mode \
                  PASS would weaken it)"
+            );
+            return;
+        }
+        ManifestAction::SkipIncomplete => {
+            eprintln!(
+                "  manifest: kept the existing record — this run is INCOMPLETE (a \
+                 required toolchain is absent here), so it cannot speak to what \
+                 the stored record attests"
             );
             return;
         }
@@ -3365,8 +3451,8 @@ fn primary_verifier_result(status: ToolStatus) -> CheckResult {
             blocking: true,
             details: format!(
                 "{msg}. `verify --full` cannot machine-check any proof without coqc, so it is \
-                 failing closed instead of reporting PASS. Install Rocq/Coq (see CLAUDE.md), or \
-                 use `verify --fast` for the Rust-only gate."
+                 failing closed instead of reporting PASS ({ENV_INCOMPLETE}). Install Rocq/Coq \
+                 (see CLAUDE.md), or use `verify --fast` for the Rust-only gate."
             ),
         },
     }
@@ -3574,6 +3660,14 @@ mod tests {
         )
     }
 
+    /// A manifest that records an INCOMPLETE run.
+    fn incomplete_manifest(mode: &str, rows: &str) -> String {
+        manifest(mode, rows).replace(
+            "**Status:**",
+            "**Incomplete:** Rust Tests — a required toolchain is absent.\n**Status:**",
+        )
+    }
+
     const ROWS_FAST: &str = "| Rust Tests | PASS | 10 tests |\n";
     const ROWS_FULL: &str =
         "| Rust Tests | PASS | 10 tests |\n| Coq Compilation | PASS | 328 .vo |\n";
@@ -3585,7 +3679,7 @@ mod tests {
         let existing = manifest("full", ROWS_FULL);
         let new = manifest("fast", ROWS_FAST);
         assert_eq!(
-            manifest_action(Some(&existing), &new, Mode::Fast, true),
+            manifest_action(Some(&existing), &new, Mode::Fast, true, false),
             ManifestAction::SkipWeakerMode
         );
     }
@@ -3597,7 +3691,7 @@ mod tests {
         let existing = manifest("fast", ROWS_FAST);
         let new = manifest("full", ROWS_FULL);
         assert_eq!(
-            manifest_action(Some(&existing), &new, Mode::Full, true),
+            manifest_action(Some(&existing), &new, Mode::Full, true, false),
             ManifestAction::Write
         );
     }
@@ -3613,7 +3707,7 @@ mod tests {
         new = new.replace("deadbeef", "cafef00d");
         assert_ne!(existing, new, "the fixtures must differ, or this proves nothing");
         assert_eq!(
-            manifest_action(Some(&existing), &new, Mode::Full, true),
+            manifest_action(Some(&existing), &new, Mode::Full, true, false),
             ManifestAction::SkipUnchanged
         );
     }
@@ -3627,7 +3721,7 @@ mod tests {
             "| Rust Tests | PASS | 99 tests |\n| Coq Compilation | PASS | 328 .vo |\n",
         );
         assert_eq!(
-            manifest_action(Some(&existing), &new, Mode::Full, true),
+            manifest_action(Some(&existing), &new, Mode::Full, true, false),
             ManifestAction::Write
         );
     }
@@ -3640,7 +3734,7 @@ mod tests {
         let existing = manifest("full", ROWS_FULL);
         let new = manifest("fast", ROWS_FAST);
         assert_eq!(
-            manifest_action(Some(&existing), &new, Mode::Fast, false),
+            manifest_action(Some(&existing), &new, Mode::Fast, false, false),
             ManifestAction::Write
         );
     }
@@ -3649,9 +3743,105 @@ mod tests {
     fn first_ever_run_writes() {
         let new = manifest("fast", ROWS_FAST);
         assert_eq!(
-            manifest_action(None, &new, Mode::Fast, true),
+            manifest_action(None, &new, Mode::Fast, true, false),
             ManifestAction::Write
         );
+    }
+
+
+    // ── REQ-76: an environment fact must not destroy a repo fact ────────────
+
+    #[test]
+    fn incomplete_run_never_overwrites_a_complete_record() {
+        // THE REQ-76 bug, both times it fired on 2026-08-11. A blocking
+        // failure caused only by an absent local toolchain says nothing about
+        // the repository, so it must not replace a record of a run that
+        // actually verified — even though Rule 1 ("never suppress a failure")
+        // would otherwise write it immediately.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest("full", ROWS_FULL);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, false, true),
+            ManifestAction::SkipIncomplete
+        );
+        // ... and the `--fast`-without-wasmtime shape, which erased every Coq
+        // attestation row.
+        let new_fast = manifest("fast", ROWS_FAST);
+        assert_eq!(
+            manifest_action(Some(&existing), &new_fast, Mode::Fast, false, true),
+            ManifestAction::SkipIncomplete
+        );
+    }
+
+    #[test]
+    fn a_real_failure_still_writes_over_a_complete_record() {
+        // Rule 1 keeps its full force for a failure the run actually
+        // established. Only an INCOMPLETE run is held back.
+        let existing = manifest("full", ROWS_FULL);
+        let new = manifest("full", ROWS_FULL);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, false, false),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn incomplete_run_may_replace_another_incomplete_record() {
+        // Nothing stronger is lost, so an incomplete run is free to refresh an
+        // equally incomplete one — otherwise a container that never has the
+        // toolchain could never record anything at all.
+        let existing = incomplete_manifest("full", ROWS_FULL);
+        let new = manifest("full", ROWS_FAST);
+        assert_eq!(
+            manifest_action(Some(&existing), &new, Mode::Full, false, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn incomplete_run_writes_when_there_is_no_record_at_all() {
+        let new = manifest("full", ROWS_FAST);
+        assert_eq!(
+            manifest_action(None, &new, Mode::Full, false, true),
+            ManifestAction::Write
+        );
+    }
+
+    #[test]
+    fn environmental_failures_are_recognised_only_when_blocking_and_failed() {
+        let env = |passed, blocking| CheckResult {
+            name: "Rust Tests".into(),
+            passed,
+            blocking,
+            details: format!("FAILED — tool absent ({ENV_INCOMPLETE})"),
+        };
+        assert!(run_is_incomplete(&[env(false, true)]));
+        // A PASS is never incomplete, whatever its text says.
+        assert!(!run_is_incomplete(&[env(true, true)]));
+        // A non-blocking (informational) row never makes a run incomplete.
+        assert!(!run_is_incomplete(&[env(false, false)]));
+        // An ordinary failure is a REPO fact and must stay one.
+        assert!(!run_is_incomplete(&[CheckResult {
+            name: "Rust Tests".into(),
+            passed: false,
+            blocking: true,
+            details: "FAILED (3200 tests parsed)".into(),
+        }]));
+    }
+
+    #[test]
+    fn stored_incompleteness_round_trips() {
+        assert!(manifest_is_incomplete(&incomplete_manifest("full", ROWS_FULL)));
+        assert!(!manifest_is_incomplete(&manifest("full", ROWS_FULL)));
+    }
+
+    #[test]
+    fn coq_absent_in_full_mode_is_an_environment_fact() {
+        // The `--full`-without-coqc shape: it must fail the RUN (fail closed)
+        // but be classified as environmental so it cannot rewrite the record.
+        let r = primary_verifier_result(ToolStatus::NotFound("coqc/rocq not found".into()));
+        assert!(!r.passed && r.blocking, "must still fail closed");
+        assert!(run_is_incomplete(std::slice::from_ref(&r)));
     }
 
     #[test]
@@ -3662,7 +3852,7 @@ mod tests {
         // would wedge the file permanently against every future write.
         assert_eq!(parse_manifest_mode("# nothing useful here"), None);
         assert_eq!(
-            manifest_action(Some("# nothing useful here"), &manifest("fast", ROWS_FAST), Mode::Fast, true),
+            manifest_action(Some("# nothing useful here"), &manifest("fast", ROWS_FAST), Mode::Fast, true, false),
             ManifestAction::Write
         );
     }
@@ -3691,7 +3881,7 @@ mod tests {
         let new = manifest("full", rows_b);
         assert_ne!(existing, new, "the fixtures must differ, or this proves nothing");
         assert_eq!(
-            manifest_action(Some(&existing), &new, Mode::Full, true),
+            manifest_action(Some(&existing), &new, Mode::Full, true, false),
             ManifestAction::SkipUnchanged
         );
     }
@@ -3703,7 +3893,7 @@ mod tests {
         let a = manifest("full", "| Coq Compilation | PASS | 328 .vo files compiled in 180s |\n");
         let b = manifest("full", "| Coq Compilation | PASS | 327 .vo files compiled in 180s |\n");
         assert_eq!(
-            manifest_action(Some(&a), &b, Mode::Full, true),
+            manifest_action(Some(&a), &b, Mode::Full, true, false),
             ManifestAction::Write,
             "a dropped .vo file must not be mistaken for timing jitter"
         );

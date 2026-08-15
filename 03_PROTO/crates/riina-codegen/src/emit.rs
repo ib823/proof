@@ -279,6 +279,23 @@ impl CEmitter {
         self.writeln("    RIINA_TAG_FIXEDBIN = 15 /* binary fixed-point Q-format (qmn) */");
         self.writeln("} riina_tag_t;");
         self.writeln("");
+        // Collection tags live with the enum so every consumer sees them
+        // (`riina_binop_add` is emitted before the list machinery and needs
+        // them). REQ-80: they MUST start past the last enum value — they used
+        // to start at 12, colliding with RIINA_TAG_BIGINT/DECIMAL/FIXED, which
+        // made a list indistinguishable from a bigint and segfaulted both ways.
+        self.writeln("/* Extended tags for collections (must not collide with riina_tag_t) */");
+        self.writeln("#define RIINA_TAG_LIST 16");
+        self.writeln("#define RIINA_TAG_MAP 17");
+        self.writeln("#define RIINA_TAG_SET 18");
+        self.writeln("#define RIINA_LIST_DATA(v) ((riina_list_t*)(v)->data.wrapped_val)");
+        self.writeln("/* REQ-80 guard: a future tag_t value must never reach the collection tags. */");
+        self.writeln("#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L");
+        self.writeln(
+            "_Static_assert(RIINA_TAG_FIXEDBIN < RIINA_TAG_LIST, \"riina_tag_t grew into the collection tag range (REQ-80)\");",
+        );
+        self.writeln("#endif");
+        self.writeln("");
 
         // Forward declare value type
         self.writeln("/* Forward declaration */");
@@ -1655,7 +1672,14 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // Binary operations
+        // Forward declaration: the list machinery is emitted later in the
+        // prelude, but `+` on two lists concatenates (REQ-80) and must match the
+        // interpreter, which supports it.
+        self.writeln("static riina_value_t* riina_list_concat(riina_value_t* a, riina_value_t* b);");
+        self.writeln("");
         self.writeln("static riina_value_t* riina_binop_add(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    /* REQ-80: list concatenation, matching the interpreter. */");
+        self.writeln("    if (a->tag == RIINA_TAG_LIST && b->tag == RIINA_TAG_LIST) return riina_list_concat(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_add(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_add(a, b);");
@@ -2261,13 +2285,20 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // UPDATE: Actually, re-reading the plan, M1 asks us to add runtime types.
         // Let's do it properly — add RIINA_TAG_LIST, RIINA_TAG_MAP, RIINA_TAG_SET.
 
-        // We already emitted the tag enum earlier. We need to add these tags.
-        // Since we can't go back, we'll define them as additional constants.
-        self.writeln("/* Extended tags for collections */");
-        self.writeln("#define RIINA_TAG_LIST 12");
-        self.writeln("#define RIINA_TAG_MAP 13");
-        self.writeln("#define RIINA_TAG_SET 14");
-        self.writeln("");
+        // Collection tags, defined as constants because the tag enum is emitted
+        // earlier in the prelude.
+        //
+        // REQ-80: these MUST NOT collide with the enum. They previously started
+        // at 12, which is exactly `RIINA_TAG_BIGINT`, so a list was
+        // indistinguishable from a bigint (and a map from a decimal, a set from
+        // a fixed). Any tag dispatch then confused them: `[1] + [2,3]` reached
+        // `riina_bigint_add`, which read a list through the bigint union member
+        // and SEGFAULTED, and `senarai_panjang(besar("123"))` segfaulted the
+        // other way — while the interpreter reported a clean type error for
+        // both. They now start past `RIINA_TAG_FIXEDBIN` (15), and the static
+        // assertion below fails the C compile if the enum ever grows into them.
+        // (Collection tags are defined next to the tag enum — see REQ-80.)
+
 
         // Map entry type
         self.writeln("typedef struct riina_map_entry {");
@@ -2296,7 +2327,17 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    return v;");
         self.writeln("}");
         self.writeln("");
-        self.writeln("#define RIINA_LIST_DATA(v) ((riina_list_t*)(v)->data.wrapped_val)");
+        self.writeln("/* REQ-80: `+` on two lists concatenates, matching the interpreter. */");
+        self.writeln("static riina_value_t* riina_list_concat(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    riina_list_t out = riina_list_new();");
+        self.writeln("    riina_list_t* la = RIINA_LIST_DATA(a);");
+        self.writeln("    riina_list_t* lb = RIINA_LIST_DATA(b);");
+        self.writeln("    for (size_t i = 0; i < la->len; i++) riina_list_push(&out, la->items[i]);");
+        self.writeln("    for (size_t i = 0; i < lb->len; i++) riina_list_push(&out, lb->items[i]);");
+        self.writeln("    return riina_make_list(out);");
+        self.writeln("}");
+        self.writeln("");
+        // (RIINA_LIST_DATA is defined next to the tag enum — see REQ-80.)
         self.writeln("");
 
         // Helper: make map value
@@ -2747,6 +2788,34 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("}");
         self.writeln("");
 
+        // Canonical map insert: strcmp-sorted key order, replacing on equal.
+        //
+        // The interpreter backs `Value::Map` with a `BTreeMap`, so its iteration
+        // order is sorted by key. The C runtime used to append each new key at
+        // the tail — insertion order — so `peta_kunci` returned a different
+        // sequence under `riinac run` than under a compiled binary, and
+        // `json_ke_teks` serialised the same object into two different strings.
+        // Every map-producing builtin now funnels through this one helper so the
+        // ordering rule is stated once and cannot drift between them.
+        self.writeln("static void riina_map_put_sorted(riina_map_t* m, const char* key, riina_value_t* val) {");
+        self.writeln("    riina_map_entry_t** slot = &m->head;");
+        self.writeln("    while (*slot) {");
+        self.writeln("        int c = strcmp((*slot)->key, key);");
+        self.writeln("        if (c == 0) { (*slot)->value = val; return; }");
+        self.writeln("        if (c > 0) break;");
+        self.writeln("        slot = &(*slot)->next;");
+        self.writeln("    }");
+        self.writeln("    riina_map_entry_t* ne = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
+        self.writeln("    if (!ne) abort();");
+        self.writeln("    ne->key = strdup(key);");
+        self.writeln("    if (!ne->key) abort();");
+        self.writeln("    ne->value = val;");
+        self.writeln("    ne->next = *slot;");
+        self.writeln("    *slot = ne;");
+        self.writeln("    m->len++;");
+        self.writeln("}");
+        self.writeln("");
+
         // peta_letak (map_insert): (Map, (String, Value)) -> Map
         self.writeln("static riina_value_t* riina_builtin_peta_letak(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
@@ -2757,34 +2826,13 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    riina_value_t* val = kv->data.pair_val.snd;");
         self.writeln("    if (key->tag != RIINA_TAG_STRING) abort();");
         self.writeln("    riina_map_t* old = RIINA_MAP_DATA(mv);");
-        self.writeln("    /* Copy existing entries */");
+        self.writeln("    /* Rebuild through the sorted insert so the result is");
+        self.writeln("       canonically ordered even if `old` somehow was not. */");
         self.writeln("    riina_map_t nm = { NULL, 0 };");
-        self.writeln("    riina_map_entry_t** tail = &nm.head;");
-        self.writeln("    bool replaced = false;");
         self.writeln("    for (riina_map_entry_t* e = old->head; e; e = e->next) {");
-        self.writeln("        riina_map_entry_t* ne = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
-        self.writeln("        if (!ne) abort();");
-        self.writeln("        if (strcmp(e->key, key->data.string_val.data) == 0) {");
-        self.writeln("            ne->key = strdup(key->data.string_val.data);");
-        self.writeln("            ne->value = val;");
-        self.writeln("            replaced = true;");
-        self.writeln("        } else {");
-        self.writeln("            ne->key = strdup(e->key);");
-        self.writeln("            ne->value = e->value;");
-        self.writeln("        }");
-        self.writeln("        ne->next = NULL;");
-        self.writeln("        *tail = ne; tail = &ne->next;");
-        self.writeln("        nm.len++;");
+        self.writeln("        riina_map_put_sorted(&nm, e->key, e->value);");
         self.writeln("    }");
-        self.writeln("    if (!replaced) {");
-        self.writeln("        riina_map_entry_t* ne = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
-        self.writeln("        if (!ne) abort();");
-        self.writeln("        ne->key = strdup(key->data.string_val.data);");
-        self.writeln("        ne->value = val;");
-        self.writeln("        ne->next = NULL;");
-        self.writeln("        *tail = ne;");
-        self.writeln("        nm.len++;");
-        self.writeln("    }");
+        self.writeln("    riina_map_put_sorted(&nm, key->data.string_val.data, val);");
         self.writeln("    return riina_make_map(nm);");
         self.writeln("}");
         self.writeln("");
@@ -2814,16 +2862,9 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    if (mv->tag != RIINA_TAG_MAP || key->tag != RIINA_TAG_STRING) abort();");
         self.writeln("    riina_map_t* old = RIINA_MAP_DATA(mv);");
         self.writeln("    riina_map_t nm = { NULL, 0 };");
-        self.writeln("    riina_map_entry_t** tail = &nm.head;");
         self.writeln("    for (riina_map_entry_t* e = old->head; e; e = e->next) {");
         self.writeln("        if (strcmp(e->key, key->data.string_val.data) != 0) {");
-        self.writeln("            riina_map_entry_t* ne = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
-        self.writeln("            if (!ne) abort();");
-        self.writeln(
-            "            ne->key = strdup(e->key); ne->value = e->value; ne->next = NULL;",
-        );
-        self.writeln("            *tail = ne; tail = &ne->next;");
-        self.writeln("            nm.len++;");
+        self.writeln("            riina_map_put_sorted(&nm, e->key, e->value);");
         self.writeln("        }");
         self.writeln("    }");
         self.writeln("    return riina_make_map(nm);");
@@ -3206,6 +3247,35 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("                case 't': buf[len++] = '\\t'; break;");
         self.writeln("                case 'b': buf[len++] = '\\b'; break;");
         self.writeln("                case 'f': buf[len++] = '\\f'; break;");
+        self.writeln("                case 'u': {");
+        self.writeln("                    /* \\uXXXX -> UTF-8. The interpreter does");
+        self.writeln("                       char::from_u32(cp) and pushes on Some, so an");
+        self.writeln("                       unpaired surrogate is dropped; match that. Without");
+        self.writeln("                       this case the default arm emitted a literal 'u' and");
+        self.writeln("                       the four hex digits fell through as ordinary text. */");
+        self.writeln("                    unsigned int cp = 0; int nhex = 0;");
+        self.writeln("                    for (int i = 0; i < 4; i++) {");
+        self.writeln("                        char h = (*p)[1]; int d;");
+        self.writeln("                        if (h >= '0' && h <= '9') d = h - '0';");
+        self.writeln("                        else if (h >= 'a' && h <= 'f') d = h - 'a' + 10;");
+        self.writeln("                        else if (h >= 'A' && h <= 'F') d = h - 'A' + 10;");
+        self.writeln("                        else break;");
+        self.writeln("                        cp = (cp << 4) | (unsigned int)d; (*p)++; nhex++;");
+        self.writeln("                    }");
+        self.writeln("                    if (nhex == 4 && !(cp >= 0xD800 && cp <= 0xDFFF)) {");
+        self.writeln("                        if (cp < 0x80) {");
+        self.writeln("                            buf[len++] = (char)cp;");
+        self.writeln("                        } else if (cp < 0x800) {");
+        self.writeln("                            buf[len++] = (char)(0xC0 | (cp >> 6));");
+        self.writeln("                            buf[len++] = (char)(0x80 | (cp & 0x3F));");
+        self.writeln("                        } else {");
+        self.writeln("                            buf[len++] = (char)(0xE0 | (cp >> 12));");
+        self.writeln("                            buf[len++] = (char)(0x80 | ((cp >> 6) & 0x3F));");
+        self.writeln("                            buf[len++] = (char)(0x80 | (cp & 0x3F));");
+        self.writeln("                        }");
+        self.writeln("                    }");
+        self.writeln("                    break;");
+        self.writeln("                }");
         self.writeln("                default: buf[len++] = **p; break;");
         self.writeln("            }");
         self.writeln("        } else {");
@@ -3236,7 +3306,6 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("static riina_value_t* riina_json_parse_object(const char** p) {");
         self.writeln("    (*p)++; /* skip '{' */");
         self.writeln("    riina_map_t m = { NULL, 0 };");
-        self.writeln("    riina_map_entry_t** tail = &m.head;");
         self.writeln("    riina_json_skip_ws(p);");
         self.writeln("    if (**p == '}') { (*p)++; return riina_make_map(m); }");
         self.writeln("    for (;;) {");
@@ -3245,15 +3314,9 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("        riina_json_skip_ws(p);");
         self.writeln("        if (**p == ':') (*p)++;");
         self.writeln("        riina_value_t* val = riina_json_parse_value(p);");
-        self.writeln(
-            "        riina_map_entry_t* e = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));",
-        );
-        self.writeln("        if (!e) abort();");
-        self.writeln("        e->key = strdup(key->data.string_val.data);");
-        self.writeln("        e->value = val;");
-        self.writeln("        e->next = NULL;");
-        self.writeln("        *tail = e; tail = &e->next;");
-        self.writeln("        m.len++;");
+        self.writeln("        /* Sorted insert: the interpreter parses into a BTreeMap, so a");
+        self.writeln("           duplicate key keeps the LAST value and iteration is by key. */");
+        self.writeln("        riina_map_put_sorted(&m, key->data.string_val.data, val);");
         self.writeln("        riina_json_skip_ws(p);");
         self.writeln("        if (**p == ',') { (*p)++; continue; }");
         self.writeln("        if (**p == '}') { (*p)++; break; }");
@@ -3339,6 +3402,12 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("                else if (c == '\\n') riina_json_buf_append(buf, len, cap, \"\\\\n\", 2);");
         self.writeln("                else if (c == '\\r') riina_json_buf_append(buf, len, cap, \"\\\\r\", 2);");
         self.writeln("                else if (c == '\\t') riina_json_buf_append(buf, len, cap, \"\\\\t\", 2);");
+        self.writeln("                else if ((unsigned char)c < 0x20) {");
+        self.writeln("                    /* Interpreter escapes every c < U+0020 as \\u00xx. */");
+        self.writeln("                    char esc[8];");
+        self.writeln("                    int en = snprintf(esc, sizeof(esc), \"\\\\u%04x\", (unsigned int)(unsigned char)c);");
+        self.writeln("                    riina_json_buf_append(buf, len, cap, esc, (size_t)en);");
+        self.writeln("                }");
         self.writeln("                else { riina_json_buf_append(buf, len, cap, &c, 1); }");
         self.writeln("            }");
         self.writeln("            riina_json_buf_append(buf, len, cap, \"\\\"\", 1);");
@@ -3370,6 +3439,17 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("                riina_json_stringify_impl(e->value, buf, len, cap);");
         self.writeln("            }");
         self.writeln("            riina_json_buf_append(buf, len, cap, \"}\", 1);");
+        self.writeln("            break;");
+        self.writeln("        }");
+        self.writeln("        case RIINA_TAG_PAIR: {");
+        self.writeln("            /* The interpreter renders a Pair as a 2-element array; this");
+        self.writeln("               arm used to fall through to `default` and emit `null`, so a");
+        self.writeln("               tuple silently lost its contents under the C backend. */");
+        self.writeln("            riina_json_buf_append(buf, len, cap, \"[\", 1);");
+        self.writeln("            riina_json_stringify_impl(v->data.pair_val.fst, buf, len, cap);");
+        self.writeln("            riina_json_buf_append(buf, len, cap, \",\", 1);");
+        self.writeln("            riina_json_stringify_impl(v->data.pair_val.snd, buf, len, cap);");
+        self.writeln("            riina_json_buf_append(buf, len, cap, \"]\", 1);");
         self.writeln("            break;");
         self.writeln("        }");
         self.writeln("        default: riina_json_buf_append(buf, len, cap, \"null\", 4); break;");
@@ -3898,6 +3978,12 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
                         vars.insert(*a);
                         vars.insert(*b);
                     }
+                    // A list literal uses every one of its element vars.
+                    Instruction::MakeList(elems) => {
+                        for e in elems {
+                            vars.insert(*e);
+                        }
+                    }
                     Instruction::Alloc { init, .. } => {
                         vars.insert(*init);
                     }
@@ -4112,6 +4198,20 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
                 ));
                 self.dedent();
                 self.writeln("}");
+            }
+
+            // REQ-79: a first-class list. The C runtime already had
+            // `riina_list_push`/`riina_make_list` (builtins RETURN tagged lists);
+            // literals just never used them, so `senarai_*` aborted on them.
+            Instruction::MakeList(elems) => {
+                // Mirrors the `riina_pair` convention: vars are already
+                // `riina_value_t*`, and the constructor returns one.
+                let tmp = format!("lst_{}", result.replace(|c: char| !c.is_alphanumeric(), "_"));
+                self.writeln(&format!("riina_list_t {tmp} = riina_list_new();"));
+                for e in elems {
+                    self.writeln(&format!("riina_list_push(&{tmp}, {});", self.var_name(e)));
+                }
+                self.writeln(&format!("{result} = riina_make_list({tmp});"));
             }
 
             Instruction::Pair(fst, snd) => {

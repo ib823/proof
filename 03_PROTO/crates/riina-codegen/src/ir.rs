@@ -298,6 +298,20 @@ pub enum Instruction {
     /// ```
     BuiltinCall { name: String, arg: VarId },
 
+    /// Construct a first-class LIST value from its elements (REQ-79).
+    ///
+    /// ```text
+    /// v = make_list [v1, v2, v3]
+    /// ```
+    ///
+    /// A list literal used to lower to a cons chain of [`Instruction::Pair`]s
+    /// terminated by Unit. That disagreed with the C backend's own `senarai_*`
+    /// builtins, which require a tagged list and `abort()`ed on anything else —
+    /// so every compiled program touching a list literal died with SIGABRT and
+    /// no diagnostic, while the interpreter returned the right answer. The
+    /// representation is now explicit and shared.
+    MakeList(Vec<VarId>),
+
     // ═══════════════════════════════════════════════════════════════════
     // PRODUCTS (correspond to Expr::Pair, Expr::Fst, Expr::Snd)
     // ═══════════════════════════════════════════════════════════════════
@@ -541,6 +555,16 @@ impl std::fmt::Display for Instruction {
             } => write!(f, "fix_closure {closure} [{capture_index}]"),
             Self::Call(func, arg) => write!(f, "call {func} {arg}"),
             Self::BuiltinCall { name, arg } => write!(f, "builtin_call \"{name}\" {arg}"),
+            Self::MakeList(elems) => {
+                write!(f, "make_list [")?;
+                for (i, e) in elems.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{e}")?;
+                }
+                write!(f, "]")
+            }
             Self::Pair(l, r) => write!(f, "pair {l} {r}"),
             Self::Fst(v) => write!(f, "fst {v}"),
             Self::Snd(v) => write!(f, "snd {v}"),

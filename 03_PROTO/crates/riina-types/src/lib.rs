@@ -737,34 +737,102 @@ pub struct SpannedDecl {
     pub name_span: Option<Span>,
 }
 
+/// One `guna <name>;` import of a sibling `.rii` file (REQ-71).
+///
+/// Only a SINGLE-segment path is a file import. A multi-segment path such as
+/// `guna std::teks;` names the builtin namespace, carries no file, and is not
+/// recorded here — that keeps every pre-module-system example working.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Import {
+    /// The module name, which is also its file stem (`kira` ⇒ `kira.rii`).
+    pub module: Ident,
+    /// Span of the module name, for diagnostics.
+    pub span: Span,
+}
+
 /// A complete .rii file
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Program {
     pub decls: Vec<TopLevelDecl>,
     /// Parallel span info for each decl (same length as `decls`).
     pub spans: Vec<SpannedDecl>,
+    /// Sibling modules imported with `guna <name>;`, in source order (REQ-71).
+    /// Empty for a single-file program, which is why `new`/`with_spans` still
+    /// build a valid `Program` without mentioning it.
+    pub imports: Vec<Import>,
+    /// Top-level names declared `awam` (public). Everything else is
+    /// module-private and may not be named from another module (REQ-71).
+    pub public_names: Vec<Ident>,
+}
+
+/// Parameter name given to a zero-parameter function's synthesised `()` param.
+///
+/// Leading `_` keeps it out of unused-name diagnostics, and nothing in
+/// `07_EXAMPLES` or the stdlib binds it, so the synthesised binder cannot shadow
+/// a name the body needs.
+pub const UNIT_PARAM: &str = "_unit";
+
+/// The program entry point, invoked automatically when a program has no
+/// trailing top-level expression.
+pub const ENTRY_POINT: &str = "utama";
+
+/// The declared type of a function with these parameters, return type and
+/// effect — `(A, B) -> R ! E` becomes `A -> B -> R ! E`.
+///
+/// A ZERO-parameter function is `Unit -> R ! E`, matching the synthesised `()`
+/// parameter `build_lambda` gives it. This is the single source of truth: the
+/// typechecker seeds its top-level environment from here and desugaring builds
+/// the matching lambda from here, so the two cannot disagree about a function's
+/// arity. They did disagree — the typechecker kept computing the old bare
+/// return type for zero-parameter functions after desugaring had moved on, and
+/// every zero-arg call then failed with "Expected function type, found Int".
+#[must_use]
+pub fn declared_fn_ty(params: &[(Ident, Ty)], return_ty: &Ty, effect: Effect) -> Ty {
+    if params.is_empty() {
+        return Ty::Fn(Box::new(Ty::Unit), Box::new(return_ty.clone()), effect);
+    }
+    params
+        .iter()
+        .rev()
+        .fold(return_ty.clone(), |ret, (_, param_ty)| {
+            Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
+        })
 }
 
 /// Desugar a single function decl into a LetRec binding.
 #[allow(clippy::boxed_local)]
 /// Build the (lambda, function-type) pair for a top-level function decl.
-/// A zero-parameter function yields its body directly (a non-lambda binding)
-/// and its declared return type.
-fn build_lambda(
+///
+/// A zero-parameter function gets a SYNTHESISED `()` parameter, so it is a real
+/// function like any other: `fungsi f() -> T kesan E` becomes
+/// `Lam(_unit, Unit, body) : Unit -> T ! E`.
+///
+/// It used to yield its body directly, as a bare binding typed at the return
+/// type — "a global thunk". That was not a function in any sense that survived
+/// contact with the semantics (master plan REQ-68), and all three of these were
+/// measured, with the interpreter and C backend agreeing on the wrong answer:
+///   * the body ran ONCE, when the binding was evaluated, no matter how many
+///     times it was called — two calls printed one line;
+///   * it ran even when the function was NEVER called;
+///   * it ran BEFORE `utama`, so its output preceded the program's own first
+///     line, and its effects escaped their function entirely.
+///
+/// `pulang` was broken there too: with no `Lam` there was no IR function to
+/// return from, so an early return would have returned from the CALLER (REQ-80).
+#[must_use]
+pub fn desugar_function(
     params: Vec<(Ident, Ty)>,
     return_ty: Ty,
     effect: Effect,
     body: Box<Expr>,
 ) -> (Expr, Ty) {
+    let fn_ty = declared_fn_ty(&params, &return_ty, effect);
+    if params.is_empty() {
+        return (Expr::Lam(UNIT_PARAM.to_string(), Ty::Unit, body), fn_ty);
+    }
     let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
         Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
     });
-    let fn_ty = params
-        .iter()
-        .rev()
-        .fold(return_ty, |ret, (_, param_ty)| {
-            Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-        });
     (lam, fn_ty)
 }
 
@@ -794,13 +862,51 @@ impl Program {
         Self {
             spans: Vec::new(),
             decls,
+            imports: Vec::new(),
+            public_names: Vec::new(),
         }
     }
 
     /// Create a Program with span info.
     #[must_use]
     pub fn with_spans(decls: Vec<TopLevelDecl>, spans: Vec<SpannedDecl>) -> Self {
-        Self { decls, spans }
+        Self {
+            decls,
+            spans,
+            imports: Vec::new(),
+            public_names: Vec::new(),
+        }
+    }
+
+    /// Create a Program carrying module metadata (REQ-71 module system).
+    #[must_use]
+    pub fn with_modules(
+        decls: Vec<TopLevelDecl>,
+        spans: Vec<SpannedDecl>,
+        imports: Vec<Import>,
+        public_names: Vec<Ident>,
+    ) -> Self {
+        Self {
+            decls,
+            spans,
+            imports,
+            public_names,
+        }
+    }
+
+    /// Whether `decls` declares the entry point as a ZERO-parameter function.
+    ///
+    /// Only a zero-parameter `utama` is auto-invoked: one that takes arguments
+    /// has nothing to pass it, so it stays a plain binding rather than becoming
+    /// an application that could not type-check.
+    fn declares_entry_point(decls: &[TopLevelDecl]) -> bool {
+        decls.iter().any(|d| {
+            matches!(
+                d,
+                TopLevelDecl::Function { name, params, .. }
+                    if name == ENTRY_POINT && params.is_empty()
+            )
+        })
     }
 
     /// Desugar a program into a single expression.
@@ -817,14 +923,33 @@ impl Program {
         // A trailing top-level EXPRESSION is the program body; everything else
         // (including the trailing function — usually `utama`) is a binding, so
         // all top-level functions land in the mutually-recursive group built by
-        // `wrap_decls` (REQ-44 forward references). A trailing binding/function
-        // leaves the body as Unit — the functions are still bound and checked,
-        // and the interpreter invokes `utama` by name.
+        // `wrap_decls` (REQ-44 forward references).
+        //
+        // Otherwise the body CALLS `utama`. It used to be left as `Unit`, which
+        // worked only because a zero-parameter function was a thunk: evaluating
+        // its binding ran its body, so the program ran as a side effect of being
+        // bound. Now that `utama` is a real `Unit -> T` function (REQ-68),
+        // nothing would run unless it is applied.
         let body = if matches!(decls.last(), Some(TopLevelDecl::Expr(_))) {
             match decls.pop() {
                 Some(TopLevelDecl::Expr(e)) => *e,
                 _ => Expr::Unit,
             }
+        } else if Self::declares_entry_point(&decls) {
+            // The call is SEQUENCED, not returned: the program's value stays
+            // `Unit`, exactly as when `utama`'s binding ran it. Returning it
+            // instead would make every compiled program print its own exit code
+            // as a trailing line (measured: `satu` became `satu\n7`), because
+            // the backends print a non-Unit program value.
+            Expr::Let(
+                "_".to_string(),
+                None,
+                Box::new(Expr::App(
+                    Box::new(Expr::Var(ENTRY_POINT.to_string())),
+                    Box::new(Expr::Unit),
+                )),
+                Box::new(Expr::Unit),
+            )
         } else {
             Expr::Unit
         };
@@ -869,7 +994,7 @@ impl Program {
                     body,
                     ..
                 } => {
-                    let (lam, fn_ty) = build_lambda(params, return_ty, effect, body);
+                    let (lam, fn_ty) = desugar_function(params, return_ty, effect, body);
                     pending.push((name, fn_ty, lam));
                 }
                 TopLevelDecl::Expr(e) => {

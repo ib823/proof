@@ -52,7 +52,7 @@ use crate::wasm_encode::{
     self, DataSegment, ElemSegment, Export, ExportKind, FuncBody, FuncType, GlobalType, Import,
     ImportKind, MemoryType, Op, TableType, ValType, WasmModule,
 };
-use crate::Result;
+use crate::{Error, Result};
 
 use std::collections::HashMap;
 
@@ -71,6 +71,11 @@ pub struct WasmBackend {
     target: Target,
 }
 
+/// How a RIINA boolean renders as text, in RIINA's own spelling — index 0 is
+/// `false`, index 1 is `true`. Byte-identical to the C backend's `riina_format`
+/// and to the interpreter's `format_value` (master plan REQ-80).
+const BOOL_RENDERINGS: [&str; 2] = ["salah", "betul"];
+
 impl WasmBackend {
     pub fn new(target: Target) -> Self {
         Self { target }
@@ -85,28 +90,38 @@ impl WasmBackend {
         let mut data_offset: u32 = 0;
         let mut data_segments: Vec<DataSegment> = Vec::new();
 
-        for func in program.functions.values() {
-            for block in &func.blocks {
-                for instr in &block.instrs {
-                    if let Instruction::Const(Constant::String(s)) = &instr.instr {
-                        if !string_table.contains_key(s) {
-                            let offset = data_offset;
-                            let bytes = s.as_bytes();
-                            // Store length (4 bytes) + string bytes
-                            data_segments.push(DataSegment {
-                                offset,
-                                data: {
-                                    let mut d = Vec::with_capacity(4 + bytes.len());
-                                    d.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
-                                    d.extend_from_slice(bytes);
-                                    d
-                                },
-                            });
-                            string_table.insert(s.clone(), offset);
-                            data_offset += 4 + bytes.len() as u32;
-                        }
-                    }
-                }
+        // `ke_teks` of a Bool renders "betul"/"salah" (REQ-80), so those two
+        // heap strings must exist whether or not the program contains the
+        // literals. Interned first, in this pass, because the data section is
+        // laid out here. 18 bytes total.
+        let interned: Vec<String> = BOOL_RENDERINGS
+            .iter()
+            .map(|s| (*s).to_string())
+            .chain(program.functions.values().flat_map(|f| {
+                f.blocks.iter().flat_map(|b| {
+                    b.instrs.iter().filter_map(|i| match &i.instr {
+                        Instruction::Const(Constant::String(s)) => Some(s.clone()),
+                        _ => None,
+                    })
+                })
+            }))
+            .collect();
+        for s in &interned {
+            if !string_table.contains_key(s) {
+                let offset = data_offset;
+                let bytes = s.as_bytes();
+                // Store length (4 bytes) + string bytes
+                data_segments.push(DataSegment {
+                    offset,
+                    data: {
+                        let mut d = Vec::with_capacity(4 + bytes.len());
+                        d.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
+                        d.extend_from_slice(bytes);
+                        d
+                    },
+                });
+                string_table.insert(s.clone(), offset);
+                data_offset += 4 + bytes.len() as u32;
             }
         }
 
@@ -4870,7 +4885,23 @@ impl WasmBackend {
                     }
                     match merge {
                         Some(m) => cur = m,
-                        None => return Ok(None),
+                        None => {
+                            // No merge: BOTH arms diverge (each ends in a
+                            // `return`), so nothing rejoins. The `if` was
+                            // still typed `(result i64)`, so its result is
+                            // sitting on the operand stack with no phi local
+                            // to receive it — wasmtime rejects that as
+                            // "values remaining on stack at end of block".
+                            //
+                            // Control genuinely cannot reach here, so say so:
+                            // `unreachable` makes the rest of the frame
+                            // polymorphic, which absorbs the dangling value.
+                            // Before REQ-80's early return this arm was
+                            // effectively dead, because a branch could not end
+                            // in `return` — every one fell through to a merge.
+                            code.push(Op::Unreachable as u8);
+                            return Ok(None);
+                        }
                     }
                 }
                 Some(Terminator::Handle { .. }) | None => return Ok(None),
@@ -5898,6 +5929,18 @@ impl WasmBackend {
                     wasm_encode::encode_uleb128(0, code); // table 0
                 }
             }
+            // REQ-79 + REQ-78: the WASM backend has no list representation, so
+            // a list literal is REFUSED rather than lowered to something the
+            // (also-unsupported) `senarai_*` builtins would misread.
+            Instruction::MakeList(_) => {
+                return Err(Error::InvalidOperation(
+                    "list literals are not supported by the WASM backend \
+                     (native/C only) — master plan REQ-79. Build for the native \
+                     target."
+                        .to_string(),
+                ));
+            }
+
             Instruction::Pair(a, b) => {
                 // Alloc 16 bytes (two 8-byte cells), store a at +0, b at +8
                 Self::emit_alloc_call(ctx.alloc_func_index, 16, code);
@@ -6352,9 +6395,44 @@ impl WasmBackend {
                             // wrapped in `ke_teks` by `lower_to_text`.
                             Self::emit_local_get(arg, ctx.var_map, code);
                         }
-                        _ => {
-                            // Other types: stub 0 (prior behavior).
-                            wasm_i64c(code, 0);
+                        Some(Ty::Bool) => {
+                            // Bool -> the "betul"/"salah" heap string, chosen at
+                            // runtime. Both are interned unconditionally in the
+                            // data section (see BOOL_RENDERINGS), so this is a
+                            // select between two constant pointers. `select` is
+                            // not in this emitter's opcode set, so use the
+                            // if/else form already used for phi merges.
+                            let ptr = |b: bool| {
+                                ctx.string_table
+                                    .get(BOOL_RENDERINGS[usize::from(b)])
+                                    .copied()
+                                    .unwrap_or(0) as i64
+                            };
+                            Self::emit_local_get(arg, ctx.var_map, code);
+                            code.push(Op::I32WrapI64 as u8);
+                            code.push(Op::If as u8);
+                            code.push(ValType::I64 as u8);
+                            wasm_i64c(code, ptr(true));
+                            code.push(Op::Else as u8);
+                            wasm_i64c(code, ptr(false));
+                            code.push(Op::End as u8);
+                        }
+                        other => {
+                            // FAIL CLOSED (REQ-78). This arm used to push a
+                            // literal 0 as a "stub", which is a null string
+                            // pointer — `ke_teks` then rendered as EMPTY rather
+                            // than failing, a silent wrong answer. REQ-78
+                            // removed the silent stubs from the builtin
+                            // dispatch but missed this one, inside `ke_teks`'s
+                            // own type dispatch; `ke_teks(betul)` printed
+                            // nothing on WASM while C and the interpreter both
+                            // printed `betul`.
+                            return Err(Error::InvalidOperation(format!(
+                                "`ke_teks` of {other:?} is not implemented by the \
+                                 WASM backend. Refusing to emit a stub that would \
+                                 silently render as an empty string (master plan \
+                                 REQ-78) — build for the native target."
+                            )));
                         }
                     }
                 } else if name == "gabung_teks" {
@@ -6407,12 +6485,28 @@ impl WasmBackend {
                     wasm_encode::encode_uleb128(ctx.qmn_parse_index as u64, code);
                     code.push(Op::I64ExtendI32U as u8);
                 } else {
-                    // Other builtins: push 0 (stub)
-                    wasm_i64c(code, 0);
+                    // FAIL CLOSED (REQ-78). This arm used to emit a literal 0
+                    // as a "stub", which did not fail — it silently produced a
+                    // WRONG ANSWER. `teks_huruf_besar("halo")` returned "halo",
+                    // `teks_ulang(("ab",3))` returned "ab", and
+                    // `panjang("abcd")` returned the string instead of 4, while
+                    // the interpreter and the C backend both agreed on the
+                    // right result. A backend that quietly disagrees with the
+                    // others is worse than one that refuses, so refuse.
+                    return Err(Error::InvalidOperation(format!(
+                        "builtin `{name}` is not implemented by the WASM backend \
+                         (native/C only). Refusing to emit a stub that would silently \
+                         return a wrong value (master plan REQ-78) — build for the \
+                         native target, or use only WASM-supported builtins."
+                    )));
                 }
             }
             Instruction::Perform { payload, .. } => {
-                // Effect perform — stub: pass through payload
+                // `perform` has no WASM lowering; passing the payload through
+                // is a value-level no-op that happens to be what the C backend
+                // does for the same node, so it is kept rather than made an
+                // error. (Unlike the builtin arm above, this does not fabricate
+                // a value out of thin air.)
                 Self::emit_local_get(payload, ctx.var_map, code);
             }
             Instruction::RequireCap(_) | Instruction::GrantCap(_) => {

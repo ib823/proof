@@ -16,14 +16,12 @@ fn builtin_typing_context() -> TypingContext {
     register_builtin_types(&Context::new()).to_typing_context()
 }
 
-fn declared_function_type(params: &[(String, Ty)], return_ty: &Ty, effect: Effect) -> Ty {
-    params
-        .iter()
-        .rev()
-        .fold(return_ty.clone(), |ret, (_, param_ty)| {
-            Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-        })
-}
+/// The declared type of a function, re-exported from `riina_types` so the
+/// typechecker and desugaring cannot disagree about arity (they did: this used
+/// to compute a bare return type for a zero-parameter function while
+/// desugaring built a `Unit -> R` lambda, so every zero-arg call failed to
+/// type-check).
+use riina_types::declared_fn_ty as declared_function_type;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 struct ExecSummary {
@@ -590,15 +588,38 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
     Ok(())
 }
 
-pub(crate) fn check_expr(expr: &Expr) -> Result<(Ty, Effect), TypeError> {
-    let mut ctx = builtin_typing_context();
-    type_check_full(&mut ctx, expr)
-}
-
 pub fn check_program(program: &Program) -> Result<(Expr, Ty, Effect), TypeError> {
     validate_top_level_decls(program)?;
     let expr = program.clone().desugar();
-    let (ty, eff) = check_expr(&expr)?;
+
+    // Seed the capability grants with EVERY effect declared by a top-level
+    // function (REQ-77).
+    //
+    // Why this is needed: `Expr::LetRecGroup` recovers grants from each
+    // binding's `Ty::Fn(_, _, eff)` annotation, but a ZERO-PARAMETER function
+    // (`fungsi utama() -> Nombor kesan Rangkaian`) desugars to its bare return
+    // type, not a `Ty::Fn`, so its declared effect is invisible there. The
+    // capability gate is opt-in on "granted set non-empty", so a program whose
+    // `utama` is zero-arg and which has ANY other function had the gate
+    // switched on by that other function while `utama`'s own effect was
+    // missing — rejecting a correct program with
+    // `Capability violation for Network`. A single-function program happened to
+    // work only because nothing switched the gate on.
+    //
+    // Over-granting here is the documented design of the LetRecGroup rule: the
+    // real per-function discipline (body effect <= declared effect, with only
+    // that function's own components granted) is enforced above in
+    // `validate_top_level_decls`, so this admits more programs without ever
+    // weakening a function's own check.
+    let mut ctx = builtin_typing_context();
+    for decl in &program.decls {
+        if let TopLevelDecl::Function { effect_set, .. } = decl {
+            for e in effect_set {
+                ctx = ctx.with_grant(*e);
+            }
+        }
+    }
+    let (ty, eff) = type_check_full(&mut ctx, &expr)?;
     Ok((expr, ty, eff))
 }
 
@@ -612,6 +633,35 @@ mod tests {
     fn parse_program(source: &str) -> Program {
         let mut parser = Parser::new(source);
         parser.parse_program().expect("program should parse")
+    }
+
+    /// REQ-77 regression: a ZERO-PARAMETER `utama` declaring a gated effect
+    /// desugars to a bare return type, not a `Ty::Fn`, so `LetRecGroup` cannot
+    /// see its declared effect. Any OTHER top-level function then switched the
+    /// opt-in capability gate on with `utama`'s own effect missing, rejecting a
+    /// correct program with `Capability violation for Network`. A one-function
+    /// program happened to pass only because nothing switched the gate on.
+    #[test]
+    fn zero_arg_main_keeps_its_own_capability_alongside_other_functions() {
+        let src = "fungsi bantu(x: Nombor) -> Nombor kesan Bersih { x }\n\
+                   fungsi utama() -> Nombor kesan Rangkaian { biar l = jaring_dengar(\"127.0.0.1:1\"); 0 }";
+        assert!(
+            check_program(&parse_program(src)).is_ok(),
+            "a zero-arg networked `utama` must keep its Network capability when \
+             another function is present"
+        );
+    }
+
+    /// The fix must not disable the gate: a Network operation inside a function
+    /// that does NOT declare it is still rejected.
+    #[test]
+    fn ungranted_network_operation_is_still_rejected() {
+        let src = "fungsi bantu(x: Nombor) -> Nombor kesan Bersih { x }\n\
+                   fungsi utama() -> Nombor kesan Bersih { biar l = jaring_dengar(\"127.0.0.1:1\"); 0 }";
+        assert!(
+            check_program(&parse_program(src)).is_err(),
+            "a Network op in a `kesan Bersih` function must still be rejected"
+        );
     }
 
     #[test]

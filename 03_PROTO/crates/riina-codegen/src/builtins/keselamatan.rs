@@ -195,9 +195,10 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         },
 
         // ── CSRF ──
-        // Unit → String. Called as `csrf_generate(())` (a `Unit → String`
-        // function; the bare `csrf_generate()` is dropped to a `Var` by the
-        // parser — see the zero-arg-thunk note in `builtins::register_builtins`).
+        // Unit → String. `csrf_generate()` and `csrf_generate(())` are the
+        // same application: a zero-arg call applies `()` (REQ-68). Before that,
+        // the bare form was dropped to a `Var` and evaluated to the un-applied
+        // builtin instead of a token.
         "csrf_generate" => Value::String(generate_csrf_token()),
         // (request_token, session_token) → Bool. Non-short-circuiting compare so
         // matching does not leak the common prefix length by timing.

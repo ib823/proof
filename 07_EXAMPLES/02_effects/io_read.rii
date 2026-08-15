@@ -37,12 +37,12 @@ fungsi tukar_string_ke_nombor(t: Teks) -> Mungkin<Nombor> kesan Bersih {
     Tiada
 }
 
-fungsi baca_baris_dari_pengguna() -> Teks kesan Baca {
+fungsi baca_baris_dari_pengguna() -> Teks kesan (Baca, Sistem) {
     /// Baca satu baris dari stdin
     baca_garisan()
 }
 
-fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan Baca {
+fungsi baca_nombor_dari_pengguna() -> Hasil<Nombor, Teks> kesan (Baca, Sistem) {
     /// Baca nombor dari pengguna
     biar teks_masuk = baca_garisan();
     padan tukar_string_ke_nombor(teks_masuk) {
@@ -130,7 +130,7 @@ fungsi baca_json_dari_fail(nama_fail: Teks) -> Hasil<Teks, Teks> kesan Baca {
 
 fungsi minta_input(
     gesaan: Teks
-) -> Teks kesan (Tulis, Baca) {
+) -> Teks kesan (Tulis, Baca, Sistem) {
     /// Minta input dengan gesaan
     cetak(gesaan);
     cetak(": ");
@@ -139,7 +139,7 @@ fungsi minta_input(
 
 fungsi minta_input_nombor(
     gesaan: Teks
-) -> Hasil<Nombor, Teks> kesan (Tulis, Baca) {
+) -> Hasil<Nombor, Teks> kesan (Tulis, Baca, Sistem) {
     /// Minta input nombor dengan gesaan
     cetak(gesaan);
     cetak(": ");
@@ -150,7 +150,7 @@ fungsi minta_input_nombor(
     }
 }
 
-fungsi utama() -> Nombor kesan (Tulis, Baca) {
+fungsi utama() -> Nombor kesan (Tulis, Baca, Sistem) {
     cetak("=== Operasi Baca ===\n");
 
     /// Minta nama
