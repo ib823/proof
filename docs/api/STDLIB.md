@@ -6,19 +6,21 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **188** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **218** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (168 builtins). |
-| `interp-only` | `riinac run` only (185 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (198 builtins). |
+| `interp-only` | `riinac run` only (155 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
-$ riinac check pelayan.rii     # Success!  Effect: Network
-$ riinac run   pelayan.rii     # works — serves a real HTTP/1.1 200
-$ riinac build pelayan.rii     # Codegen Error: unbound variable: jaring_dengar
+$ riinac check baca.rii     # Success!  Effect: FileSystem
+$ riinac run   baca.rii     # works — reads the file
+$ riinac build baca.rii     # Codegen Error: unbound variable: fail_baca
 ```
+
+The example used to be a `jaring_dengar` HTTP server. It is not any more, because that program now COMPILES: as of 2026-08-15 the `jaring`, `http`, `simpan`, `masa` and `json` families are routed, so a networked, persistent service has a native deployment path (master plan REQ-70). The families still interpreter-only are `fail_*`, `vfs_*`, the `keselamatan` sinks, and the `jaring_tls_*` half.
 
 Both refusals are deliberate: a backend that cannot implement a builtin fails closed rather than miscompiling it. Until 2026-08-11 the WASM backend did NOT do this — it emitted a silent stub, so `teks_huruf_besar("halo")` returned `halo` and `panjang("abcd")` returned `abcd`, while the interpreter and C both gave the right answer (master plan REQ-78).
 
@@ -28,7 +30,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Bersih (Pure)
 
-> **Mixed:** 154 of 229 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 166 of 229 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -64,16 +66,16 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `gcd` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `html_papar` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
 | `html_render` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
-| `http_balas` | `Fn((Nombor, Teks), Teks)` | **interp-only** |
-| `http_build_response` | `Fn((Nombor, Teks), Teks)` | **interp-only** |
-| `http_hurai_jasad` | `Fn(Teks, Teks)` | **interp-only** |
-| `http_hurai_kaedah` | `Fn(Teks, Teks)` | **interp-only** |
-| `http_hurai_kepala` | `Fn((Teks, Teks), Teks)` | **interp-only** |
-| `http_hurai_laluan` | `Fn(Teks, Teks)` | **interp-only** |
-| `http_parse_body` | `Fn(Teks, Teks)` | **interp-only** |
-| `http_parse_header` | `Fn((Teks, Teks), Teks)` | **interp-only** |
-| `http_parse_method` | `Fn(Teks, Teks)` | **interp-only** |
-| `http_parse_target` | `Fn(Teks, Teks)` | **interp-only** |
+| `http_balas` | `Fn((Nombor, Teks), Teks)` | **native-only** |
+| `http_build_response` | `Fn((Nombor, Teks), Teks)` | **native-only** |
+| `http_hurai_jasad` | `Fn(Teks, Teks)` | **native-only** |
+| `http_hurai_kaedah` | `Fn(Teks, Teks)` | **native-only** |
+| `http_hurai_kepala` | `Fn((Teks, Teks), Teks)` | **native-only** |
+| `http_hurai_laluan` | `Fn(Teks, Teks)` | **native-only** |
+| `http_parse_body` | `Fn(Teks, Teks)` | **native-only** |
+| `http_parse_header` | `Fn((Teks, Teks), Teks)` | **native-only** |
+| `http_parse_method` | `Fn(Teks, Teks)` | **native-only** |
+| `http_parse_target` | `Fn(Teks, Teks)` | **native-only** |
 | `int_to_string` | `Fn(Nombor, Teks)` | compiled |
 | `is_confusable` | `Fn((Teks, Teks), Benar)` | **interp-only** |
 | `json_ada` | `Fn(Any, Any)` | **native-only** |
@@ -250,8 +252,8 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `teks_sub` | `Fn(Any, Any)` | **native-only** |
 | `teks_ulang` | `Fn(Any, Any)` | **native-only** |
 | `titik_tetap` | `Fn((Teks, Nombor), Wang)` | compiled |
-| `tls_dasar_ok` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `tls_policy_ok` | `Fn((Teks, Teks), Benar)` | **interp-only** |
+| `tls_dasar_ok` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `tls_policy_ok` | `Fn((Teks, Teks), Benar)` | **native-only** |
 | `to_bool` | `Fn(Any, Benar)` | **native-only** |
 | `to_string` | `Fn(Any, Teks)` | compiled |
 | `validate_length` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **interp-only** |
@@ -338,7 +340,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Rangkaian (Network)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+> **Mixed:** 18 of 34 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -354,28 +356,28 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `http_get` | `Fn(Teks, Any, Rangkaian)` | **interp-only** |
 | `http_hantar` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
 | `http_kemaskini` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
-| `http_minta` | `Fn((Teks, Teks), Teks, Rangkaian)` | **interp-only** |
+| `http_minta` | `Fn((Teks, Teks), Teks, Rangkaian)` | **native-only** |
 | `http_padam` | `Fn((Teks, Teks), Any, Rangkaian)` | **interp-only** |
 | `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
 | `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
 | `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **interp-only** |
-| `http_request` | `Fn((Teks, Teks), Teks, Rangkaian)` | **interp-only** |
-| `jaring_alamat` | `Fn(Nombor, Teks, Rangkaian)` | **interp-only** |
-| `jaring_dengar` | `Fn(Teks, Nombor, Rangkaian)` | **interp-only** |
-| `jaring_hantar` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **interp-only** |
-| `jaring_sambung` | `Fn(Teks, Nombor, Rangkaian)` | **interp-only** |
-| `jaring_terima` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **interp-only** |
-| `jaring_terima_sambungan` | `Fn(Nombor, Nombor, Rangkaian)` | **interp-only** |
-| `jaring_tutup` | `Fn(Nombor, Benar, Rangkaian)` | **interp-only** |
-| `jaring_tutup_dengar` | `Fn(Nombor, Benar, Rangkaian)` | **interp-only** |
-| `net_accept` | `Fn(Nombor, Nombor, Rangkaian)` | **interp-only** |
-| `net_close` | `Fn(Nombor, Benar, Rangkaian)` | **interp-only** |
-| `net_close_listener` | `Fn(Nombor, Benar, Rangkaian)` | **interp-only** |
-| `net_connect` | `Fn(Teks, Nombor, Rangkaian)` | **interp-only** |
-| `net_listen` | `Fn(Teks, Nombor, Rangkaian)` | **interp-only** |
-| `net_local_addr` | `Fn(Nombor, Teks, Rangkaian)` | **interp-only** |
-| `net_recv` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **interp-only** |
-| `net_send` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **interp-only** |
+| `http_request` | `Fn((Teks, Teks), Teks, Rangkaian)` | **native-only** |
+| `jaring_alamat` | `Fn(Nombor, Teks, Rangkaian)` | **native-only** |
+| `jaring_dengar` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `jaring_hantar` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **native-only** |
+| `jaring_sambung` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `jaring_terima` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **native-only** |
+| `jaring_terima_sambungan` | `Fn(Nombor, Nombor, Rangkaian)` | **native-only** |
+| `jaring_tutup` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `jaring_tutup_dengar` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `net_accept` | `Fn(Nombor, Nombor, Rangkaian)` | **native-only** |
+| `net_close` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `net_close_listener` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `net_connect` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `net_listen` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `net_local_addr` | `Fn(Nombor, Teks, Rangkaian)` | **native-only** |
+| `net_recv` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **native-only** |
+| `net_send` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **native-only** |
 
 ## RangkaianSelamat (NetworkSecure)
 

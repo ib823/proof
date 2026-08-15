@@ -1990,6 +1990,25 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
     }
 
+    /// The C half of `riina-os::net` + `riina-os::http` — the `jaring_*` and
+    /// `http_*` builtins (REQ-70 family routing).
+    ///
+    /// Two things are ported, not approximated:
+    ///
+    /// * the **verified RFC 793 state machine** (`next_state`'s 15 edges), so
+    ///   the compiled backend gates send/recv on ESTABLISHED for the same
+    ///   reason the interpreter does — a C backend that skipped the machine
+    ///   would be strictly weaker than the language it compiles;
+    /// * the **strict RFC 9112 parser**, so a request that the interpreter
+    ///   refuses as a smuggling attempt (CL+TE, conflicting duplicate
+    ///   `Content-Length`, `Foo : bar`, missing `Host`) is refused by compiled
+    ///   code too. Two parsers reading one byte stream differently IS the
+    ///   vulnerability class; agreement is the whole point.
+    fn emit_net_builtins(&mut self) {
+        self.write_raw(NET_RUNTIME_C);
+        self.writeln("");
+    }
+
     fn emit_builtin_helpers(&mut self) {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("/*                      BUILTIN FUNCTIONS                              */");
@@ -2021,8 +2040,18 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // cetak (print without newline)
+        //
+        // The `fflush` is not decoration. Rust's stdout is line-buffered even
+        // when piped, so the interpreter's output is observable as it is
+        // produced; C's stdout switches to BLOCK buffering off a tty, so a
+        // compiled program that prints and then blocks (a `jaring_dengar`
+        // service announcing its address before `jaring_terima_sambungan`,
+        // which is exactly `07_EXAMPLES/11_servis/pelayan.rii`) delivers
+        // nothing until it exits. That is a cross-backend divergence in
+        // observable behaviour, not a performance preference.
         self.writeln("static riina_value_t* riina_builtin_cetak(riina_value_t* arg) {");
         self.writeln("    printf(\"%s\", riina_format(arg));");
+        self.writeln("    fflush(stdout);");
         self.writeln("    return riina_unit();");
         self.writeln("}");
         self.writeln("");
@@ -2030,6 +2059,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // cetakln (print with newline)
         self.writeln("static riina_value_t* riina_builtin_cetakln(riina_value_t* arg) {");
         self.writeln("    printf(\"%s\\n\", riina_format(arg));");
+        self.writeln("    fflush(stdout);");
         self.writeln("    return riina_unit();");
         self.writeln("}");
         self.writeln("");
@@ -3212,6 +3242,21 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // differential actually checks. Emitted as a raw block rather than 250
         // escaped `writeln` calls so it stays readable AS C.
         self.emit_store_builtins();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NETWORK + HTTP BUILTINS (jaring, http) — REQ-70 family routing
+        // ═══════════════════════════════════════════════════════════════════
+        //
+        // A second implementation of `riina-os::net` (the RFC 793 machine) and
+        // `riina-os::http` (the strict RFC 9112 codec), in C. The WIRE FORMAT
+        // is the contract: a request a compiled server parses must frame the
+        // same way the interpreter frames it, and a response either emits must
+        // be byte-identical — otherwise the two backends disagree about what a
+        // message *is*, which is exactly the class of bug the strict parser
+        // exists to refuse. The `jaring_tls_*` half is deliberately absent (it
+        // needs the whole `riina-tls` stack in C); it stays interpreter-only
+        // and fails closed rather than shipping a weaker TLS.
+        self.emit_net_builtins();
 
         // ═══════════════════════════════════════════════════════════════════
         // FILE I/O BUILTINS (fail)
@@ -5226,6 +5271,1079 @@ static riina_value_t* riina_builtin_simpan_tutup(riina_value_t* arg) {
     free(s->path);
     memset(s, 0, sizeof(*s));
     return riina_bool(true);
+}
+"##;
+
+/// C source for the `jaring_*` + `http_*` runtime (REQ-70 family routing).
+///
+/// Mirrors `riina-os::net` and `riina-os::http`. Kept as one block so it reads
+/// as C and can be diffed against the Rust it ports. Two invariants must hold
+/// for the two backends to be the same language:
+///
+/// 1. every socket operation is gated by the same verified RFC 793 machine, so
+///    "send on a closed connection" is refused by the model on both sides;
+/// 2. the HTTP parser is byte-for-byte as strict, so a message that frames two
+///    ways is an error in compiled code exactly as it is in the interpreter.
+const NET_RUNTIME_C: &str = r##"
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/time.h>
+
+/* ── Verified TCP state machine (jaring) ────────────────────────────────────
+ *
+ * The C port of `riina-os::net`, which is itself the 1:1 port of the predicate
+ * core of `02_FORMAL/coq/domains/VerifiedNetwork.v`. `riina_tcp_next_state` is
+ * the SAME 15-edge table as Rust's `next_state`; anything not in it is not a
+ * transition, and an operation needing one is refused. The kernel performs the
+ * real packet exchange — the machine records the corresponding verified events
+ * — so this gates RIINA's view of the connection, not the wire.
+ */
+typedef enum {
+    RIINA_TCP_CLOSED = 0,
+    RIINA_TCP_LISTEN,
+    RIINA_TCP_SYN_SENT,
+    RIINA_TCP_SYN_RECEIVED,
+    RIINA_TCP_ESTABLISHED,
+    RIINA_TCP_FIN_WAIT_1,
+    RIINA_TCP_FIN_WAIT_2,
+    RIINA_TCP_CLOSE_WAIT,
+    RIINA_TCP_CLOSING,
+    RIINA_TCP_LAST_ACK,
+    RIINA_TCP_TIME_WAIT
+} riina_tcp_state_t;
+
+typedef enum {
+    RIINA_EV_PASSIVE_OPEN = 0,
+    RIINA_EV_ACTIVE_OPEN,
+    RIINA_EV_SYN_RECEIVED,
+    RIINA_EV_SYN_ACK_RECEIVED,
+    RIINA_EV_ACK_RECEIVED,
+    RIINA_EV_FIN_RECEIVED,
+    RIINA_EV_CLOSE,
+    RIINA_EV_TIMEOUT
+} riina_tcp_event_t;
+
+/* The transition table. Returns the successor state, or -1 for "no edge" —
+   which is a REFUSAL, never a fallback to the current state. */
+static int riina_tcp_next_state(riina_tcp_state_t from, riina_tcp_event_t ev) {
+    switch (from) {
+    case RIINA_TCP_CLOSED:
+        if (ev == RIINA_EV_PASSIVE_OPEN) return RIINA_TCP_LISTEN;
+        if (ev == RIINA_EV_ACTIVE_OPEN)  return RIINA_TCP_SYN_SENT;
+        return -1;
+    case RIINA_TCP_LISTEN:
+        if (ev == RIINA_EV_SYN_RECEIVED) return RIINA_TCP_SYN_RECEIVED;
+        if (ev == RIINA_EV_CLOSE)        return RIINA_TCP_CLOSED;
+        return -1;
+    case RIINA_TCP_SYN_SENT:
+        if (ev == RIINA_EV_SYN_ACK_RECEIVED) return RIINA_TCP_ESTABLISHED;
+        return -1;
+    case RIINA_TCP_SYN_RECEIVED:
+        if (ev == RIINA_EV_ACK_RECEIVED) return RIINA_TCP_ESTABLISHED;
+        return -1;
+    case RIINA_TCP_ESTABLISHED:
+        if (ev == RIINA_EV_FIN_RECEIVED) return RIINA_TCP_CLOSE_WAIT;
+        if (ev == RIINA_EV_CLOSE)        return RIINA_TCP_FIN_WAIT_1;
+        return -1;
+    case RIINA_TCP_FIN_WAIT_1:
+        if (ev == RIINA_EV_FIN_RECEIVED) return RIINA_TCP_CLOSING;
+        if (ev == RIINA_EV_ACK_RECEIVED) return RIINA_TCP_FIN_WAIT_2;
+        return -1;
+    case RIINA_TCP_FIN_WAIT_2:
+        if (ev == RIINA_EV_FIN_RECEIVED) return RIINA_TCP_TIME_WAIT;
+        return -1;
+    case RIINA_TCP_CLOSING:
+        if (ev == RIINA_EV_ACK_RECEIVED) return RIINA_TCP_TIME_WAIT;
+        return -1;
+    case RIINA_TCP_CLOSE_WAIT:
+        if (ev == RIINA_EV_CLOSE) return RIINA_TCP_LAST_ACK;
+        return -1;
+    case RIINA_TCP_LAST_ACK:
+        if (ev == RIINA_EV_ACK_RECEIVED) return RIINA_TCP_CLOSED;
+        return -1;
+    case RIINA_TCP_TIME_WAIT:
+        if (ev == RIINA_EV_TIMEOUT) return RIINA_TCP_CLOSED;
+        return -1;
+    }
+    return -1;
+}
+
+static void riina_net_die(const char* what, const char* detail) {
+    fprintf(stderr, "RIINA: jaring %s: %s\n", what, detail);
+    abort();
+}
+
+/* One tracked connection or listener. Ids are handed out from a single
+   monotonically increasing counter shared by both kinds, exactly as the
+   interpreter's `NetState::next_id` does, so a program's handle values agree
+   across backends. */
+#define RIINA_NET_KIND_FREE 0
+#define RIINA_NET_KIND_CONN 1
+#define RIINA_NET_KIND_LISTENER 2
+
+typedef struct {
+    int kind;
+    riina_tcp_state_t state;
+    int fd;                 /* -1 once the socket has really been closed */
+} riina_net_entry_t;
+
+static riina_net_entry_t* riina_net_tab = NULL;
+static size_t riina_net_cap = 0;
+static uint64_t riina_net_next_id = 0;
+
+static uint64_t riina_net_new_id(int kind, riina_tcp_state_t state, int fd) {
+    uint64_t id = riina_net_next_id++;
+    if (id >= riina_net_cap) {
+        size_t want = riina_net_cap ? riina_net_cap * 2 : 16;
+        while (id >= want) want *= 2;
+        riina_net_entry_t* grown =
+            (riina_net_entry_t*)realloc(riina_net_tab, want * sizeof(riina_net_entry_t));
+        if (!grown) abort();
+        memset(grown + riina_net_cap, 0, (want - riina_net_cap) * sizeof(riina_net_entry_t));
+        riina_net_tab = grown;
+        riina_net_cap = want;
+    }
+    riina_net_tab[id].kind = kind;
+    riina_net_tab[id].state = state;
+    riina_net_tab[id].fd = fd;
+    return id;
+}
+
+static riina_net_entry_t* riina_net_get(uint64_t id, int kind, const char* what) {
+    if (id >= riina_net_next_id || id >= riina_net_cap || riina_net_tab[id].kind != kind) {
+        riina_net_die(what, kind == RIINA_NET_KIND_CONN ? "unknown connection"
+                                                        : "unknown listener");
+    }
+    return &riina_net_tab[id];
+}
+
+/* Drive the machine, refusing an event with no edge. `detail` is the message
+   the interpreter uses for the same refusal. */
+static void riina_net_event(riina_net_entry_t* e, riina_tcp_event_t ev,
+                            const char* what, const char* detail) {
+    int to = riina_tcp_next_state(e->state, ev);
+    if (to < 0) riina_net_die(what, detail);
+    e->state = (riina_tcp_state_t)to;
+}
+
+/* Build a RIINA string from `n` bytes, replacing ill-formed UTF-8 with U+FFFD
+   the way Rust's `String::from_utf8_lossy` does (one replacement per maximal
+   ill-formed subpart, Unicode 5.2 §3.9). Without this the two backends would
+   disagree byte-for-byte the moment a peer sent non-UTF-8, and `riina_string`
+   alone would additionally truncate at an embedded NUL. */
+static riina_value_t* riina_net_string_lossy(const unsigned char* p, size_t n) {
+    size_t cap = n + 16, len = 0;
+    unsigned char* out = (unsigned char*)malloc(cap + 1);
+    if (!out) abort();
+    size_t i = 0;
+    while (i < n) {
+        unsigned char b = p[i];
+        size_t width;
+        unsigned char lo, hi;   /* accepted range for the SECOND byte */
+        if (b < 0x80) {
+            if (len + 1 > cap) { cap = cap * 2 + 1; out = (unsigned char*)realloc(out, cap + 1); if (!out) abort(); }
+            out[len++] = b;
+            i++;
+            continue;
+        } else if (b >= 0xC2 && b <= 0xDF) { width = 2; lo = 0x80; hi = 0xBF; }
+        else if (b == 0xE0)                { width = 3; lo = 0xA0; hi = 0xBF; }
+        else if (b >= 0xE1 && b <= 0xEC)   { width = 3; lo = 0x80; hi = 0xBF; }
+        else if (b == 0xED)                { width = 3; lo = 0x80; hi = 0x9F; }
+        else if (b >= 0xEE && b <= 0xEF)   { width = 3; lo = 0x80; hi = 0xBF; }
+        else if (b == 0xF0)                { width = 4; lo = 0x90; hi = 0xBF; }
+        else if (b >= 0xF1 && b <= 0xF3)   { width = 4; lo = 0x80; hi = 0xBF; }
+        else if (b == 0xF4)                { width = 4; lo = 0x80; hi = 0x8F; }
+        else                               { width = 0; lo = 0; hi = 0; }
+
+        size_t good = 1;   /* bytes of a maximal subpart consumed so far */
+        if (width != 0) {
+            for (size_t k = 1; k < width; k++) {
+                if (i + k >= n) break;
+                unsigned char c = p[i + k];
+                unsigned char klo = (k == 1) ? lo : 0x80;
+                unsigned char khi = (k == 1) ? hi : 0xBF;
+                if (c < klo || c > khi) break;
+                good++;
+            }
+        }
+        if (len + 3 > cap) { cap = cap * 2 + 3; out = (unsigned char*)realloc(out, cap + 1); if (!out) abort(); }
+        if (width != 0 && good == width) {
+            for (size_t k = 0; k < width; k++) out[len++] = p[i + k];
+            i += width;
+        } else {
+            /* Ill-formed: ONE U+FFFD for the whole maximal subpart. */
+            out[len++] = 0xEF; out[len++] = 0xBF; out[len++] = 0xBD;
+            i += good;
+        }
+    }
+    out[len] = 0;
+    riina_value_t* v = riina_alloc();
+    v->tag = RIINA_TAG_STRING;
+    v->security = RIINA_LEVEL_PUBLIC;
+    v->data.string_val.data = (char*)out;
+    v->data.string_val.len = len;
+    return v;
+}
+
+/* Resolve "host:port" the way Rust's `ToSocketAddrs` does: split at the LAST
+   colon so an unbracketed IPv6 literal cannot be mis-split, then getaddrinfo. */
+static struct addrinfo* riina_net_resolve(const char* addr, const char* what) {
+    const char* colon = strrchr(addr, ':');
+    if (!colon || colon == addr) riina_net_die(what, "address must be \"host:port\"");
+    size_t hlen = (size_t)(colon - addr);
+    char* host = (char*)malloc(hlen + 1);
+    if (!host) abort();
+    memcpy(host, addr, hlen);
+    host[hlen] = 0;
+    /* Strip the brackets of an IPv6 literal, as Rust's parser does. */
+    char* hp = host;
+    if (hlen >= 2 && host[0] == '[' && host[hlen - 1] == ']') {
+        host[hlen - 1] = 0;
+        hp = host + 1;
+    }
+    struct addrinfo hints, *res = NULL;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    int rc = getaddrinfo(hp, colon + 1, &hints, &res);
+    free(host);
+    if (rc != 0) riina_net_die(what, gai_strerror(rc));
+    return res;
+}
+
+/* jaring_sambung (net_connect): Teks -> Nombor
+   CLOSED --ActiveOpen--> SYN_SENT --SynAckReceived--> ESTABLISHED. On connect
+   failure nothing is registered, so no id is ever handed out for a socket that
+   does not exist. */
+static riina_value_t* riina_builtin_jaring_sambung(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) riina_net_die("sambung", "expects an address string");
+    const char* addr = arg->data.string_val.data;
+    riina_tcp_state_t st = RIINA_TCP_CLOSED;
+    int to = riina_tcp_next_state(st, RIINA_EV_ACTIVE_OPEN);
+    if (to < 0) riina_net_die("sambung", "internal state error");
+    st = (riina_tcp_state_t)to;
+
+    struct addrinfo* res = riina_net_resolve(addr, "sambung");
+    int fd = -1;
+    for (struct addrinfo* ai = res; ai; ai = ai->ai_next) {
+        fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        if (fd < 0) continue;
+        if (connect(fd, ai->ai_addr, ai->ai_addrlen) == 0) break;
+        close(fd);
+        fd = -1;
+    }
+    int saved = errno;
+    freeaddrinfo(res);
+    if (fd < 0) riina_net_die("sambung", strerror(saved));
+
+    to = riina_tcp_next_state(st, RIINA_EV_SYN_ACK_RECEIVED);
+    if (to < 0) riina_net_die("sambung", "internal state error");
+    return riina_int(riina_net_new_id(RIINA_NET_KIND_CONN, (riina_tcp_state_t)to, fd));
+}
+
+/* jaring_hantar (net_send): (handle, Teks) -> Nombor, gated on ESTABLISHED. */
+static riina_value_t* riina_builtin_jaring_hantar(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_net_die("hantar", "expects (handle, data)");
+    riina_value_t* h = arg->data.pair_val.fst;
+    riina_value_t* d = arg->data.pair_val.snd;
+    if (h->tag != RIINA_TAG_INT || d->tag != RIINA_TAG_STRING)
+        riina_net_die("hantar", "expects (handle, data)");
+    riina_net_entry_t* e = riina_net_get(h->data.int_val, RIINA_NET_KIND_CONN, "hantar");
+    if (e->state != RIINA_TCP_ESTABLISHED || e->fd < 0) riina_net_die("hantar", "not established");
+    const char* p = d->data.string_val.data;
+    size_t left = d->data.string_val.len;
+    while (left > 0) {
+        ssize_t w = send(e->fd, p, left, 0);
+        if (w < 0) {
+            if (errno == EINTR) continue;
+            riina_net_die("hantar", strerror(errno));
+        }
+        p += (size_t)w;
+        left -= (size_t)w;
+    }
+    return riina_int((uint64_t)d->data.string_val.len);
+}
+
+/* jaring_terima (net_recv): (handle, max) -> Teks, gated on ESTABLISHED.
+   ONE read, like the interpreter's single `stream.read` — a loop here would
+   change how much data a program observes per call. */
+static riina_value_t* riina_builtin_jaring_terima(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_net_die("terima", "expects (handle, max)");
+    riina_value_t* h = arg->data.pair_val.fst;
+    riina_value_t* m = arg->data.pair_val.snd;
+    if (h->tag != RIINA_TAG_INT || m->tag != RIINA_TAG_INT)
+        riina_net_die("terima", "expects (handle, max)");
+    riina_net_entry_t* e = riina_net_get(h->data.int_val, RIINA_NET_KIND_CONN, "terima");
+    if (e->state != RIINA_TCP_ESTABLISHED || e->fd < 0) riina_net_die("terima", "not established");
+    uint64_t max = m->data.int_val;
+    if (max > (uint64_t)SIZE_MAX) riina_net_die("terima", "max too large");
+    size_t cap = (size_t)max;
+    unsigned char* buf = (unsigned char*)malloc(cap ? cap : 1);
+    if (!buf) abort();
+    ssize_t got;
+    do { got = recv(e->fd, buf, cap, 0); } while (got < 0 && errno == EINTR);
+    if (got < 0) { int s = errno; free(buf); riina_net_die("terima", strerror(s)); }
+    riina_value_t* out = riina_net_string_lossy(buf, (size_t)got);
+    free(buf);
+    return out;
+}
+
+/* jaring_tutup (net_close): handle -> Benar.
+   Active close: ESTABLISHED --Close--> FIN_WAIT_1, really close the socket (the
+   OS sends FIN), then replay AckReceived -> FIN_WAIT_2, FinReceived ->
+   TIME_WAIT, Timeout -> CLOSED. The entry stays registered in CLOSED so a later
+   send is refused by the machine rather than by a stale fd. */
+static riina_value_t* riina_builtin_jaring_tutup(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_net_die("tutup", "expects a handle");
+    riina_net_entry_t* e = riina_net_get(arg->data.int_val, RIINA_NET_KIND_CONN, "tutup");
+    riina_net_event(e, RIINA_EV_CLOSE, "tutup", "not established");
+    if (e->fd >= 0) { close(e->fd); e->fd = -1; }
+    riina_net_event(e, RIINA_EV_ACK_RECEIVED, "tutup", "internal state error");
+    riina_net_event(e, RIINA_EV_FIN_RECEIVED, "tutup", "internal state error");
+    riina_net_event(e, RIINA_EV_TIMEOUT, "tutup", "internal state error");
+    return riina_bool(true);
+}
+
+/* jaring_dengar (net_listen): Teks -> Nombor. CLOSED --PassiveOpen--> LISTEN.
+   SO_REUSEADDR and backlog 128 match Rust's `TcpListener::bind`. */
+static riina_value_t* riina_builtin_jaring_dengar(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) riina_net_die("dengar", "expects an address string");
+    int to = riina_tcp_next_state(RIINA_TCP_CLOSED, RIINA_EV_PASSIVE_OPEN);
+    if (to < 0) riina_net_die("dengar", "internal state error");
+
+    struct addrinfo* res = riina_net_resolve(arg->data.string_val.data, "dengar");
+    int fd = -1;
+    for (struct addrinfo* ai = res; ai; ai = ai->ai_next) {
+        fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        if (fd < 0) continue;
+        int on = 1;
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        if (bind(fd, ai->ai_addr, ai->ai_addrlen) == 0 && listen(fd, 128) == 0) break;
+        close(fd);
+        fd = -1;
+    }
+    int saved = errno;
+    freeaddrinfo(res);
+    if (fd < 0) riina_net_die("dengar", strerror(saved));
+    return riina_int(riina_net_new_id(RIINA_NET_KIND_LISTENER, (riina_tcp_state_t)to, fd));
+}
+
+/* jaring_alamat (net_local_addr): handle -> Teks, rendered the way Rust's
+   `SocketAddr` Display does ("127.0.0.1:8080", "[::1]:8080"). */
+static riina_value_t* riina_builtin_jaring_alamat(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_net_die("alamat", "expects a handle");
+    riina_net_entry_t* e = riina_net_get(arg->data.int_val, RIINA_NET_KIND_LISTENER, "alamat");
+    if (e->state != RIINA_TCP_LISTEN || e->fd < 0) riina_net_die("alamat", "not listening");
+    struct sockaddr_storage ss;
+    socklen_t slen = sizeof(ss);
+    if (getsockname(e->fd, (struct sockaddr*)&ss, &slen) != 0)
+        riina_net_die("alamat", strerror(errno));
+    char host[INET6_ADDRSTRLEN + 1];
+    char out[INET6_ADDRSTRLEN + 16];
+    if (ss.ss_family == AF_INET) {
+        struct sockaddr_in* a = (struct sockaddr_in*)&ss;
+        if (!inet_ntop(AF_INET, &a->sin_addr, host, sizeof(host)))
+            riina_net_die("alamat", strerror(errno));
+        snprintf(out, sizeof(out), "%s:%u", host, (unsigned)ntohs(a->sin_port));
+    } else if (ss.ss_family == AF_INET6) {
+        struct sockaddr_in6* a = (struct sockaddr_in6*)&ss;
+        if (!inet_ntop(AF_INET6, &a->sin6_addr, host, sizeof(host)))
+            riina_net_die("alamat", strerror(errno));
+        snprintf(out, sizeof(out), "[%s]:%u", host, (unsigned)ntohs(a->sin6_port));
+    } else {
+        riina_net_die("alamat", "unsupported address family");
+        return NULL;
+    }
+    return riina_string(out);
+}
+
+/* jaring_terima_sambungan (net_accept): handle -> Nombor.
+   Gated on LISTEN; the accepted connection replays the verified passive path
+   LISTEN --SynReceived--> SYN_RECEIVED --AckReceived--> ESTABLISHED and is then
+   indistinguishable from a connected one. */
+static riina_value_t* riina_builtin_jaring_terima_sambungan(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_net_die("terima_sambungan", "expects a handle");
+    riina_net_entry_t* e =
+        riina_net_get(arg->data.int_val, RIINA_NET_KIND_LISTENER, "terima_sambungan");
+    if (e->state != RIINA_TCP_LISTEN || e->fd < 0)
+        riina_net_die("terima_sambungan", "not listening");
+    int lfd = e->fd;
+    int cfd;
+    do { cfd = accept(lfd, NULL, NULL); } while (cfd < 0 && errno == EINTR);
+    if (cfd < 0) riina_net_die("terima_sambungan", strerror(errno));
+
+    riina_tcp_state_t st = RIINA_TCP_LISTEN;
+    int to = riina_tcp_next_state(st, RIINA_EV_SYN_RECEIVED);
+    if (to < 0) riina_net_die("terima_sambungan", "internal state error");
+    to = riina_tcp_next_state((riina_tcp_state_t)to, RIINA_EV_ACK_RECEIVED);
+    if (to < 0) riina_net_die("terima_sambungan", "internal state error");
+    return riina_int(riina_net_new_id(RIINA_NET_KIND_CONN, (riina_tcp_state_t)to, cfd));
+}
+
+/* jaring_tutup_dengar (net_close_listener): handle -> Benar.
+   The RFC 793 p.22 close-from-LISTEN edge; a second close is refused because
+   CLOSED has no Close edge. */
+static riina_value_t* riina_builtin_jaring_tutup_dengar(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_INT) riina_net_die("tutup_dengar", "expects a handle");
+    riina_net_entry_t* e =
+        riina_net_get(arg->data.int_val, RIINA_NET_KIND_LISTENER, "tutup_dengar");
+    riina_net_event(e, RIINA_EV_CLOSE, "tutup_dengar", "not listening");
+    if (e->fd >= 0) { close(e->fd); e->fd = -1; }
+    return riina_bool(true);
+}
+
+/* tls_dasar_ok (tls_policy_ok): (version, cipher) -> Bool.
+   The PURE acceptance policy — NET_001_03 (no downgrade) + NET_001_08 (cipher
+   strength): accept iff TLS 1.3 with a representable strong suite. No
+   handshake happens here, on either backend. */
+static int riina_tls_version_is_13(const char* s) {
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') s++;
+    size_t n = strlen(s);
+    while (n > 0 && (s[n-1] == ' ' || s[n-1] == '\t' || s[n-1] == '\n' || s[n-1] == '\r')) n--;
+    return (n == 3 && memcmp(s, "1.3", 3) == 0)
+        || (n == 6 && memcmp(s, "TLS1.3", 6) == 0)
+        || (n == 7 && memcmp(s, "TLSv1.3", 7) == 0);
+}
+
+static int riina_tls_version_known(const char* s) {
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') s++;
+    size_t n = strlen(s);
+    while (n > 0 && (s[n-1] == ' ' || s[n-1] == '\t' || s[n-1] == '\n' || s[n-1] == '\r')) n--;
+    static const char* known[] = {
+        "1.0", "TLS1.0", "TLSv1.0", "1.1", "TLS1.1", "TLSv1.1",
+        "1.2", "TLS1.2", "TLSv1.2", "1.3", "TLS1.3", "TLSv1.3"
+    };
+    for (size_t i = 0; i < sizeof(known) / sizeof(known[0]); i++) {
+        if (strlen(known[i]) == n && memcmp(s, known[i], n) == 0) return 1;
+    }
+    return 0;
+}
+
+static int riina_tls_cipher_known(const char* s) {
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') s++;
+    size_t n = strlen(s);
+    while (n > 0 && (s[n-1] == ' ' || s[n-1] == '\t' || s[n-1] == '\n' || s[n-1] == '\r')) n--;
+    static const char* known[] = {
+        "TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256"
+    };
+    for (size_t i = 0; i < sizeof(known) / sizeof(known[0]); i++) {
+        if (strlen(known[i]) == n && memcmp(s, known[i], n) == 0) return 1;
+    }
+    return 0;
+}
+
+static riina_value_t* riina_builtin_tls_dasar_ok(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_net_die("tls_dasar_ok", "expects (version, cipher)");
+    riina_value_t* v = arg->data.pair_val.fst;
+    riina_value_t* c = arg->data.pair_val.snd;
+    if (v->tag != RIINA_TAG_STRING || c->tag != RIINA_TAG_STRING)
+        riina_net_die("tls_dasar_ok", "expects (version, cipher)");
+    /* An unparseable version or suite is NOT accepted — the interpreter returns
+       false rather than erroring, and so does this. */
+    if (!riina_tls_version_known(v->data.string_val.data)) return riina_bool(false);
+    if (!riina_tls_cipher_known(c->data.string_val.data)) return riina_bool(false);
+    /* Every representable suite is strong, so the policy reduces to TLS 1.3. */
+    return riina_bool(riina_tls_version_is_13(v->data.string_val.data) ? true : false);
+}
+
+/* ── Strict HTTP/1.1 codec (http) ───────────────────────────────────────────
+ *
+ * The C port of `riina-os::http`. Deliberately strict: it REFUSES rather than
+ * guesses, because HTTP/1.1's real vulnerabilities are framing disagreements
+ * between two parsers reading one byte stream. Every refusal below has a
+ * matching one in the Rust codec, and `net_differential.rs` checks they agree.
+ */
+#define RIINA_HTTP_MAX_HEAD (64 * 1024)
+#define RIINA_HTTP_MAX_HEADERS 128
+#define RIINA_HTTP_MAX_BODY (8 * 1024 * 1024)
+
+static void riina_http_die(const char* detail) {
+    fprintf(stderr, "RIINA: http: %s\n", detail);
+    abort();
+}
+
+typedef struct { char* p; size_t n, cap; } riina_http_buf_t;
+
+static void riina_http_buf_push(riina_http_buf_t* b, const char* d, size_t n) {
+    if (b->n + n + 1 > b->cap) {
+        size_t want = b->cap ? b->cap * 2 : 256;
+        while (b->n + n + 1 > want) want *= 2;
+        char* grown = (char*)realloc(b->p, want);
+        if (!grown) abort();
+        b->p = grown;
+        b->cap = want;
+    }
+    if (n) memcpy(b->p + b->n, d, n);
+    b->n += n;
+    b->p[b->n] = 0;
+}
+
+static void riina_http_buf_str(riina_http_buf_t* b, const char* s) {
+    riina_http_buf_push(b, s, strlen(s));
+}
+
+/* Header map: sorted by lowercase name, unique — the C shape of Rust's
+   `BTreeMap<String, String>`, so `encode_response` emits fields in the SAME
+   order on both backends. */
+typedef struct { char* name; char* value; size_t vlen; } riina_http_hdr_t;
+typedef struct { riina_http_hdr_t* h; size_t n, cap; } riina_http_hdrs_t;
+
+static char* riina_http_dup(const char* p, size_t n) {
+    char* s = (char*)malloc(n + 1);
+    if (!s) abort();
+    if (n) memcpy(s, p, n);
+    s[n] = 0;
+    return s;
+}
+
+/* Insert, or append ", value" to an existing field (RFC 9112 §5.2). Values
+   carry an explicit length: a header value may legitimately contain a NUL on
+   the request path (the parser does not reject it there), and the interpreter
+   keeps it, so truncating at one would be a silent cross-backend divergence. */
+static void riina_http_hdr_add(riina_http_hdrs_t* hs, const char* name,
+                               const char* value, size_t vlen) {
+    size_t lo = 0, hi = hs->n;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        int c = strcmp(hs->h[mid].name, name);
+        if (c < 0) lo = mid + 1;
+        else if (c > 0) hi = mid;
+        else {
+            size_t a = hs->h[mid].vlen;
+            char* joined = (char*)malloc(a + 2 + vlen + 1);
+            if (!joined) abort();
+            memcpy(joined, hs->h[mid].value, a);
+            memcpy(joined + a, ", ", 2);
+            if (vlen) memcpy(joined + a + 2, value, vlen);
+            joined[a + 2 + vlen] = 0;
+            free(hs->h[mid].value);
+            hs->h[mid].value = joined;
+            hs->h[mid].vlen = a + 2 + vlen;
+            return;
+        }
+    }
+    if (hs->n + 1 > hs->cap) {
+        size_t want = hs->cap ? hs->cap * 2 : 16;
+        riina_http_hdr_t* grown = (riina_http_hdr_t*)realloc(hs->h, want * sizeof(riina_http_hdr_t));
+        if (!grown) abort();
+        hs->h = grown;
+        hs->cap = want;
+    }
+    memmove(hs->h + lo + 1, hs->h + lo, (hs->n - lo) * sizeof(riina_http_hdr_t));
+    hs->h[lo].name = riina_http_dup(name, strlen(name));
+    hs->h[lo].value = riina_http_dup(value, vlen);
+    hs->h[lo].vlen = vlen;
+    hs->n++;
+}
+
+static const riina_http_hdr_t* riina_http_hdr_get(const riina_http_hdrs_t* hs, const char* name) {
+    size_t lo = 0, hi = hs->n;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        int c = strcmp(hs->h[mid].name, name);
+        if (c < 0) lo = mid + 1;
+        else if (c > 0) hi = mid;
+        else return &hs->h[mid];
+    }
+    return NULL;
+}
+
+static void riina_http_hdrs_free(riina_http_hdrs_t* hs) {
+    for (size_t i = 0; i < hs->n; i++) { free(hs->h[i].name); free(hs->h[i].value); }
+    free(hs->h);
+    hs->h = NULL;
+    hs->n = hs->cap = 0;
+}
+
+/* Locate the CRLFCRLF head terminator. Returns the head length and sets
+   *body_start; -1 means "incomplete", -2 means "head too large". */
+static long riina_http_split_head(const unsigned char* b, size_t n, size_t* body_start) {
+    size_t limit = n < (size_t)RIINA_HTTP_MAX_HEAD + 4 ? n : (size_t)RIINA_HTTP_MAX_HEAD + 4;
+    for (size_t i = 0; i + 3 < limit; i++) {
+        if (b[i] == '\r' && b[i+1] == '\n' && b[i+2] == '\r' && b[i+3] == '\n') {
+            if (i > (size_t)RIINA_HTTP_MAX_HEAD) return -2;
+            *body_start = i + 4;
+            return (long)i;
+        }
+    }
+    if (n > (size_t)RIINA_HTTP_MAX_HEAD) return -2;
+    return -1;
+}
+
+/* Trim SP/HTAB from both ends, matching Rust's `trim_matches`. */
+static void riina_http_trim(const char** p, size_t* n) {
+    while (*n > 0 && ((*p)[0] == ' ' || (*p)[0] == '\t')) { (*p)++; (*n)--; }
+    while (*n > 0 && ((*p)[*n-1] == ' ' || (*p)[*n-1] == '\t')) (*n)--;
+}
+
+/* Parse the header block. `has_len`/`content_length` report the framing
+   length. Every refusal here mirrors one in `riina-os::http::parse_headers`. */
+static void riina_http_parse_headers(const char* head, size_t head_len, size_t skip_start_line,
+                                     riina_http_hdrs_t* out, int* has_len, uint64_t* content_length) {
+    *has_len = 0;
+    *content_length = 0;
+    int saw_te = 0;
+    size_t count = 0;
+
+    size_t i = 0;
+    int first = 1;
+    while (i <= head_len) {
+        size_t j = i;
+        while (j + 1 < head_len && !(head[j] == '\r' && head[j+1] == '\n')) j++;
+        size_t line_len = (j + 1 < head_len) ? (j - i) : (head_len - i);
+        const char* line = head + i;
+        size_t next = (j + 1 < head_len) ? (j + 2) : (head_len + 1);
+
+        if (first && skip_start_line) { first = 0; i = next; continue; }
+        first = 0;
+        if (line_len == 0) { i = next; continue; }
+
+        if (++count > (size_t)RIINA_HTTP_MAX_HEADERS)
+            riina_http_die("more than 128 header fields");
+
+        const char* colon = (const char*)memchr(line, ':', line_len);
+        if (!colon) riina_http_die("malformed header line");
+        size_t nlen = (size_t)(colon - line);
+        if (nlen == 0) riina_http_die("malformed header line");
+        /* RFC 9112 §5.1: no whitespace between field name and colon. */
+        if (line[nlen-1] == ' ' || line[nlen-1] == '\t')
+            riina_http_die("whitespace between field name and colon (RFC 9112 5.1: request smuggling)");
+
+        char* name = riina_http_dup(line, nlen);
+        for (size_t k = 0; k < nlen; k++)
+            if (name[k] >= 'A' && name[k] <= 'Z') name[k] = (char)(name[k] - 'A' + 'a');
+
+        const char* vp = colon + 1;
+        size_t vlen = line_len - nlen - 1;
+        riina_http_trim(&vp, &vlen);
+        char* value = riina_http_dup(vp, vlen);
+
+        if (strcmp(name, "content-length") == 0) {
+            /* A comma list must agree with itself, or the message frames two ways. */
+            const char* s = value;
+            while (1) {
+                const char* comma = strchr(s, ',');
+                size_t plen = comma ? (size_t)(comma - s) : strlen(s);
+                const char* pp = s;
+                riina_http_trim(&pp, &plen);
+                if (plen == 0) riina_http_die("invalid Content-Length");
+                uint64_t parsed = 0;
+                for (size_t k = 0; k < plen; k++) {
+                    if (pp[k] < '0' || pp[k] > '9') riina_http_die("invalid Content-Length");
+                    if (parsed > (UINT64_MAX - (uint64_t)(pp[k] - '0')) / 10)
+                        riina_http_die("invalid Content-Length");
+                    parsed = parsed * 10 + (uint64_t)(pp[k] - '0');
+                }
+                if (!*has_len) { *has_len = 1; *content_length = parsed; }
+                else if (*content_length != parsed) riina_http_die("conflicting Content-Length values");
+                if (!comma) break;
+                s = comma + 1;
+            }
+        } else if (strcmp(name, "transfer-encoding") == 0) {
+            saw_te = 1;
+        }
+
+        riina_http_hdr_add(out, name, value, vlen);
+        free(name);
+        free(value);
+        i = next;
+    }
+
+    if (saw_te && *has_len)
+        riina_http_die("both Content-Length and Transfer-Encoding present (RFC 9112 6.1: request smuggling)");
+    /* Chunked, or any transfer coding we do not implement: refuse rather than
+       guess the body length. */
+    if (saw_te)
+        riina_http_die("chunked transfer coding is not supported (rejected, not mis-framed)");
+}
+
+typedef struct {
+    char* method;
+    size_t method_len;
+    char* target;
+    size_t target_len;
+    riina_http_hdrs_t headers;
+    char* body;
+    size_t body_len;
+} riina_http_msg_t;
+
+static void riina_http_msg_free(riina_http_msg_t* m) {
+    free(m->method);
+    free(m->target);
+    free(m->body);
+    riina_http_hdrs_free(&m->headers);
+    memset(m, 0, sizeof(*m));
+}
+
+static void riina_http_extract_body(const unsigned char* b, size_t n, size_t body_start,
+                                    int has_len, uint64_t content_length,
+                                    char** body, size_t* body_len) {
+    if (!has_len) { *body = riina_http_dup("", 0); *body_len = 0; return; }
+    if (content_length > (uint64_t)RIINA_HTTP_MAX_BODY)
+        riina_http_die("body exceeds 8388608 bytes");
+    size_t start = body_start < n ? body_start : n;
+    size_t available = n - start;
+    if (available < (size_t)content_length) riina_http_die("body shorter than Content-Length");
+    *body_len = (size_t)content_length;
+    *body = riina_http_dup((const char*)b + start, *body_len);
+}
+
+/* parse_request: the strict RFC 9112 request parser. */
+static void riina_http_parse_request(const unsigned char* b, size_t n, riina_http_msg_t* out) {
+    memset(out, 0, sizeof(*out));
+    size_t body_start = 0;
+    long head_len = riina_http_split_head(b, n, &body_start);
+    if (head_len == -1) riina_http_die("incomplete message: no CRLFCRLF head terminator");
+    if (head_len == -2) riina_http_die("head exceeds 65536 bytes");
+    const char* head = (const char*)b;
+    size_t hlen = (size_t)head_len;
+
+    size_t sl = 0;
+    while (sl + 1 < hlen && !(head[sl] == '\r' && head[sl+1] == '\n')) sl++;
+    size_t start_len = (sl + 1 < hlen) ? sl : hlen;
+
+    /* METHOD SP TARGET SP VERSION — exactly three space-separated fields. */
+    const char* sp1 = (const char*)memchr(head, ' ', start_len);
+    if (!sp1) riina_http_die("malformed start line");
+    size_t mlen = (size_t)(sp1 - head);
+    const char* rest = sp1 + 1;
+    size_t rest_len = start_len - mlen - 1;
+    const char* sp2 = (const char*)memchr(rest, ' ', rest_len);
+    if (!sp2) riina_http_die("malformed start line");
+    size_t tlen = (size_t)(sp2 - rest);
+    const char* ver = sp2 + 1;
+    size_t vlen = rest_len - tlen - 1;
+    if (memchr(ver, ' ', vlen)) riina_http_die("malformed start line");
+    if (mlen == 0 || tlen == 0) riina_http_die("malformed start line");
+    for (size_t k = 0; k < mlen; k++) {
+        char c = head[k];
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')))
+            riina_http_die("malformed start line");
+    }
+    int http11;
+    if (vlen == 8 && memcmp(ver, "HTTP/1.1", 8) == 0) http11 = 1;
+    else if (vlen == 8 && memcmp(ver, "HTTP/1.0", 8) == 0) http11 = 0;
+    else riina_http_die("unsupported HTTP version (only HTTP/1.0 and HTTP/1.1)");
+
+    out->method = riina_http_dup(head, mlen);
+    out->method_len = mlen;
+    out->target = riina_http_dup(rest, tlen);
+    out->target_len = tlen;
+
+    int has_len = 0;
+    uint64_t content_length = 0;
+    riina_http_parse_headers(head, hlen, 1, &out->headers, &has_len, &content_length);
+
+    if (http11 && !riina_http_hdr_get(&out->headers, "host"))
+        riina_http_die("HTTP/1.1 request without a Host header");
+
+    riina_http_extract_body(b, n, body_start, has_len, content_length, &out->body, &out->body_len);
+}
+
+/* parse_response: the status-line counterpart. */
+static void riina_http_parse_response(const unsigned char* b, size_t n, riina_http_msg_t* out) {
+    memset(out, 0, sizeof(*out));
+    size_t body_start = 0;
+    long head_len = riina_http_split_head(b, n, &body_start);
+    if (head_len == -1) riina_http_die("incomplete message: no CRLFCRLF head terminator");
+    if (head_len == -2) riina_http_die("head exceeds 65536 bytes");
+    const char* head = (const char*)b;
+    size_t hlen = (size_t)head_len;
+
+    size_t sl = 0;
+    while (sl + 1 < hlen && !(head[sl] == '\r' && head[sl+1] == '\n')) sl++;
+    size_t start_len = (sl + 1 < hlen) ? sl : hlen;
+
+    const char* sp1 = (const char*)memchr(head, ' ', start_len);
+    if (!sp1) riina_http_die("malformed start line");
+    size_t vlen = (size_t)(sp1 - head);
+    if (!(vlen == 8 && (memcmp(head, "HTTP/1.1", 8) == 0 || memcmp(head, "HTTP/1.0", 8) == 0)))
+        riina_http_die("unsupported HTTP version (only HTTP/1.0 and HTTP/1.1)");
+    const char* rest = sp1 + 1;
+    size_t rest_len = start_len - vlen - 1;
+    const char* sp2 = (const char*)memchr(rest, ' ', rest_len);
+    size_t slen = sp2 ? (size_t)(sp2 - rest) : rest_len;
+    if (slen == 0) riina_http_die("malformed start line");
+    unsigned status = 0;
+    for (size_t k = 0; k < slen; k++) {
+        if (rest[k] < '0' || rest[k] > '9') riina_http_die("malformed start line");
+        status = status * 10 + (unsigned)(rest[k] - '0');
+        if (status > 100000) riina_http_die("malformed start line");
+    }
+    if (status < 100 || status > 599) riina_http_die("malformed start line");
+
+    int has_len = 0;
+    uint64_t content_length = 0;
+    riina_http_parse_headers(head, hlen, 1, &out->headers, &has_len, &content_length);
+    riina_http_extract_body(b, n, body_start, has_len, content_length, &out->body, &out->body_len);
+}
+
+/* message_length: 1 = complete, 0 = need more bytes. Same reasoning as the
+   Rust codec, so both backends stop reading a response at the same byte. */
+static int riina_http_message_complete(const unsigned char* b, size_t n) {
+    size_t body_start = 0;
+    long head_len = riina_http_split_head(b, n, &body_start);
+    if (head_len == -1) return 0;
+    if (head_len == -2) riina_http_die("head exceeds 65536 bytes");
+    riina_http_hdrs_t hs;
+    memset(&hs, 0, sizeof(hs));
+    int has_len = 0;
+    uint64_t content_length = 0;
+    riina_http_parse_headers((const char*)b, (size_t)head_len, 1, &hs, &has_len, &content_length);
+    riina_http_hdrs_free(&hs);
+    uint64_t want = (uint64_t)body_start + (has_len ? content_length : 0);
+    return (uint64_t)n >= want ? 1 : 0;
+}
+
+static const char* riina_http_reason_phrase(unsigned status) {
+    switch (status) {
+    case 200: return "OK";
+    case 201: return "Created";
+    case 204: return "No Content";
+    case 301: return "Moved Permanently";
+    case 302: return "Found";
+    case 304: return "Not Modified";
+    case 400: return "Bad Request";
+    case 401: return "Unauthorized";
+    case 403: return "Forbidden";
+    case 404: return "Not Found";
+    case 405: return "Method Not Allowed";
+    case 408: return "Request Timeout";
+    case 411: return "Length Required";
+    case 413: return "Content Too Large";
+    case 414: return "URI Too Long";
+    case 429: return "Too Many Requests";
+    case 500: return "Internal Server Error";
+    case 501: return "Not Implemented";
+    case 503: return "Service Unavailable";
+    case 505: return "HTTP Version Not Supported";
+    default:  return "Unknown";
+    }
+}
+
+/* A CR, LF or NUL where it would be serialised is refused, so a RIINA program
+   cannot emit a split response even passing attacker data straight through. */
+static void riina_http_reject_control(const char* field, const char* v, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        if (v[i] == '\r' || v[i] == '\n' || v[i] == 0) {
+            fprintf(stderr, "RIINA: http: control character (CR/LF/NUL) in \"%s\"\n", field);
+            abort();
+        }
+    }
+}
+
+/* ── the http_* builtins ───────────────────────────────────────────────── */
+
+static riina_value_t* riina_builtin_http_hurai_kaedah(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) riina_http_die("hurai_kaedah: expected a string");
+    riina_http_msg_t m;
+    riina_http_parse_request((const unsigned char*)arg->data.string_val.data,
+                             arg->data.string_val.len, &m);
+    riina_value_t* out = riina_net_string_lossy((const unsigned char*)m.method, m.method_len);
+    riina_http_msg_free(&m);
+    return out;
+}
+
+static riina_value_t* riina_builtin_http_hurai_laluan(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) riina_http_die("hurai_laluan: expected a string");
+    riina_http_msg_t m;
+    riina_http_parse_request((const unsigned char*)arg->data.string_val.data,
+                             arg->data.string_val.len, &m);
+    riina_value_t* out = riina_net_string_lossy((const unsigned char*)m.target, m.target_len);
+    riina_http_msg_free(&m);
+    return out;
+}
+
+static riina_value_t* riina_builtin_http_hurai_jasad(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) riina_http_die("hurai_jasad: expected a string");
+    riina_http_msg_t m;
+    riina_http_parse_request((const unsigned char*)arg->data.string_val.data,
+                             arg->data.string_val.len, &m);
+    riina_value_t* out = riina_net_string_lossy((const unsigned char*)m.body, m.body_len);
+    riina_http_msg_free(&m);
+    return out;
+}
+
+/* (request, field_name) -> value; an absent field yields "" so a RIINA program
+   can branch without an option type. */
+static riina_value_t* riina_builtin_http_hurai_kepala(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_http_die("hurai_kepala: expects (request, field)");
+    riina_value_t* r = arg->data.pair_val.fst;
+    riina_value_t* f = arg->data.pair_val.snd;
+    if (r->tag != RIINA_TAG_STRING || f->tag != RIINA_TAG_STRING)
+        riina_http_die("hurai_kepala: expects (request, field)");
+    riina_http_msg_t m;
+    riina_http_parse_request((const unsigned char*)r->data.string_val.data,
+                             r->data.string_val.len, &m);
+    char* field = riina_http_dup(f->data.string_val.data, f->data.string_val.len);
+    for (size_t i = 0; field[i]; i++)
+        if (field[i] >= 'A' && field[i] <= 'Z') field[i] = (char)(field[i] - 'A' + 'a');
+    const riina_http_hdr_t* v = riina_http_hdr_get(&m.headers, field);
+    riina_value_t* out = v ? riina_net_string_lossy((const unsigned char*)v->value, v->vlen)
+                           : riina_string("");
+    free(field);
+    riina_http_msg_free(&m);
+    return out;
+}
+
+/* http_balas (http_build_response): (status, body) -> wire bytes.
+   Content-Length and Connection are COMPUTED, never caller-supplied, so a
+   program cannot emit an ambiguous or split response. The single caller header
+   is `content-type` — lowercase, because the codec's map key is, and the two
+   backends must produce identical bytes. */
+static riina_value_t* riina_builtin_http_balas(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_http_die("balas: expects (status, body)");
+    riina_value_t* s = arg->data.pair_val.fst;
+    riina_value_t* b = arg->data.pair_val.snd;
+    if (s->tag != RIINA_TAG_INT) riina_http_die("balas: expected status int");
+    if (b->tag != RIINA_TAG_STRING) riina_http_die("balas: expected a string body");
+    if (s->data.int_val > 65535) riina_http_die("balas: status out of range");
+    unsigned status = (unsigned)s->data.int_val;
+    const char* reason = riina_http_reason_phrase(status);
+    riina_http_reject_control("reason", reason, strlen(reason));
+
+    riina_http_buf_t out;
+    memset(&out, 0, sizeof(out));
+    char line[128];
+    snprintf(line, sizeof(line), "HTTP/1.1 %u %s\r\n", status, reason);
+    riina_http_buf_str(&out, line);
+    riina_http_buf_str(&out, "content-type: text/html; charset=utf-8\r\n");
+    snprintf(line, sizeof(line), "Content-Length: %zu\r\nConnection: close\r\n\r\n",
+             b->data.string_val.len);
+    riina_http_buf_str(&out, line);
+    riina_http_buf_push(&out, b->data.string_val.data, b->data.string_val.len);
+
+    riina_value_t* v = riina_net_string_lossy((const unsigned char*)out.p, out.n);
+    free(out.p);
+    return v;
+}
+
+/* http_minta (http_request): (method, url) -> response body.
+   A real one-shot request over the verified TCP machine. `https://` is
+   REFUSED, loudly — there is no TLS record layer on this backend, and a silent
+   downgrade to cleartext would be far worse than a refusal. */
+static riina_value_t* riina_builtin_http_minta(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) riina_http_die("minta: expects (method, url)");
+    riina_value_t* mv = arg->data.pair_val.fst;
+    riina_value_t* uv = arg->data.pair_val.snd;
+    if (mv->tag != RIINA_TAG_STRING || uv->tag != RIINA_TAG_STRING)
+        riina_http_die("minta: expects (method, url)");
+    const char* method = mv->data.string_val.data;
+    const char* url = uv->data.string_val.data;
+
+    if (strncmp(url, "https://", 8) == 0)
+        riina_http_die("https is not supported (no TLS record layer yet - master plan REQ-73)");
+    if (strncmp(url, "http://", 7) != 0) riina_http_die("not an http:// URL");
+    const char* rest = url + 7;
+    const char* slash = strchr(rest, '/');
+    size_t alen = slash ? (size_t)(slash - rest) : strlen(rest);
+    if (alen == 0) riina_http_die("empty host in URL");
+    char* authority = riina_http_dup(rest, alen);
+    const char* target = slash ? slash : "/";
+
+    /* host:port for the connect, and the Host field value. RFC 9110 §7.2: the
+       port belongs in Host unless it is the scheme default. */
+    riina_http_buf_t hp;
+    memset(&hp, 0, sizeof(hp));
+    riina_http_buf_str(&hp, authority);
+    if (!strchr(authority, ':')) riina_http_buf_str(&hp, ":80");
+    size_t hlen = strlen(authority);
+    if (hlen > 3 && strcmp(authority + hlen - 3, ":80") == 0) authority[hlen - 3] = 0;
+
+    riina_http_reject_control("method", method, strlen(method));
+    riina_http_reject_control("target", target, strlen(target));
+    riina_http_reject_control("host", authority, strlen(authority));
+
+    riina_http_buf_t wire;
+    memset(&wire, 0, sizeof(wire));
+    riina_http_buf_str(&wire, method);
+    riina_http_buf_str(&wire, " ");
+    riina_http_buf_str(&wire, target);
+    riina_http_buf_str(&wire, " HTTP/1.1\r\nHost: ");
+    riina_http_buf_str(&wire, authority);
+    riina_http_buf_str(&wire, "\r\nContent-Length: 0\r\n\r\n");
+
+    /* Verified machine: CLOSED --ActiveOpen--> SYN_SENT --SynAckReceived--> ESTABLISHED. */
+    riina_tcp_state_t st = RIINA_TCP_CLOSED;
+    int to = riina_tcp_next_state(st, RIINA_EV_ACTIVE_OPEN);
+    if (to < 0) riina_http_die("internal state error");
+    st = (riina_tcp_state_t)to;
+
+    struct addrinfo* res = riina_net_resolve(hp.p, "minta");
+    int fd = -1;
+    for (struct addrinfo* ai = res; ai; ai = ai->ai_next) {
+        fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        if (fd < 0) continue;
+        if (connect(fd, ai->ai_addr, ai->ai_addrlen) == 0) break;
+        close(fd);
+        fd = -1;
+    }
+    int saved = errno;
+    freeaddrinfo(res);
+    if (fd < 0) { fprintf(stderr, "RIINA: http: connect %s: %s\n", hp.p, strerror(saved)); abort(); }
+    to = riina_tcp_next_state(st, RIINA_EV_SYN_ACK_RECEIVED);
+    if (to < 0) riina_http_die("internal state error");
+    st = (riina_tcp_state_t)to;
+    if (st != RIINA_TCP_ESTABLISHED) riina_http_die("connection not established");
+
+    struct timeval tv;
+    tv.tv_sec = 30;
+    tv.tv_usec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
+    const char* wp = wire.p;
+    size_t left = wire.n;
+    while (left > 0) {
+        ssize_t w = send(fd, wp, left, 0);
+        if (w < 0) {
+            if (errno == EINTR) continue;
+            fprintf(stderr, "RIINA: http: send: %s\n", strerror(errno));
+            abort();
+        }
+        wp += (size_t)w;
+        left -= (size_t)w;
+    }
+
+    riina_http_buf_t in;
+    memset(&in, 0, sizeof(in));
+    char chunk[4096];
+    while (!riina_http_message_complete((const unsigned char*)(in.p ? in.p : ""), in.n)) {
+        ssize_t got;
+        do { got = recv(fd, chunk, sizeof(chunk), 0); } while (got < 0 && errno == EINTR);
+        if (got < 0) { fprintf(stderr, "RIINA: http: recv: %s\n", strerror(errno)); abort(); }
+        if (got == 0) break;   /* peer closed; parse what we have */
+        riina_http_buf_push(&in, chunk, (size_t)got);
+        if (in.n > (size_t)RIINA_HTTP_MAX_HEAD + (size_t)RIINA_HTTP_MAX_BODY)
+            riina_http_die("response exceeds maximum size");
+    }
+
+    /* Verified active close. */
+    to = riina_tcp_next_state(st, RIINA_EV_CLOSE);
+    if (to < 0) riina_http_die("internal state error");
+    close(fd);
+    st = (riina_tcp_state_t)to;
+    riina_tcp_event_t tail[3] = { RIINA_EV_ACK_RECEIVED, RIINA_EV_FIN_RECEIVED, RIINA_EV_TIMEOUT };
+    for (int k = 0; k < 3; k++) {
+        to = riina_tcp_next_state(st, tail[k]);
+        if (to < 0) riina_http_die("internal state error");
+        st = (riina_tcp_state_t)to;
+    }
+
+    riina_http_msg_t resp;
+    riina_http_parse_response((const unsigned char*)(in.p ? in.p : ""), in.n, &resp);
+    riina_value_t* out = riina_net_string_lossy((const unsigned char*)resp.body, resp.body_len);
+    riina_http_msg_free(&resp);
+    free(in.p);
+    free(wire.p);
+    free(hp.p);
+    free(authority);
+    return out;
 }
 "##;
 

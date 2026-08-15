@@ -1,6 +1,6 @@
 # RIINA for AI Assistants
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3275 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3322 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## What is RIINA?
 
@@ -152,11 +152,12 @@ dependencies yet — master plan REQ-71 remainder, REQ-72).
 
 ## Standard Library Modules
 
-**Counts and the Backend column below are command-derived (2026-08-11) from the
-builtin tables in `03_PROTO/crates/riina-codegen/src/builtins/` and the
-compiled-backend boundary `riina_codegen::codegen_supports_builtin`.** The
-authoritative per-builtin list is the generated `docs/api/STDLIB.md` (357
-registered builtins, each with its own Backend marker).
+**Counts and the Backend column below are command-derived (2026-08-15) from the
+builtin tables in `03_PROTO/crates/riina-codegen/src/builtins/` cross-referenced
+against the generated `docs/api/STDLIB.md`, whose Backend column comes from the
+compiled-backend boundary `riina_codegen::codegen_supports_builtin` itself.** The
+authoritative per-builtin list is that generated file (373 registered builtins,
+each with its own Backend marker).
 
 | Module | BM Name | Builtins | Backend | Description |
 |--------|---------|----------|---------|-------------|
@@ -166,13 +167,14 @@ registered builtins, each with its own Backend marker).
 | set | Set | 7 | native-only | Hash sets |
 | matematik | Matematik | 10 | 7 of 10 native-only | Math functions (`baki`, `log2`, `rawak` are interpreter-only) |
 | ujian | Ujian | 6 | 5 of 6 native-only | Test assertions (`jangkakan` is interpreter-only) |
-| masa | Masa | 7 | **none** | Time operations |
+| masa | Masa | 7 | native-only | Time operations |
+| simpan | Simpan | 8 | native-only | Durable key-value store (log-structured journal, fsync per record) |
+| json | Json | 5 | native-only | JSON parsing |
+| net | Jaring | 17 | 9 of 17 native-only | TCP sockets (real I/O, verified RFC 793 state machine). The 8 `jaring_tls_*` builtins are **interpreter-only**: the C backend has no `riina-tls`, and a weaker handshake that still compiled would be worse than a build error |
+| http | Http | 6 | native-only | **Real** HTTP/1.1 (`http_hurai_*`, `http_balas`, `http_minta`) over the verified TCP machine |
 | fail | Fail | 8 | **none** | File I/O |
-| json | Json | 5 | **none** | JSON parsing |
-| net | Jaring | 9 | **none** | TCP sockets (real I/O, verified RFC 793 state machine) |
 | vfs | Vfs | 5 | **none** | Virtual filesystem (verified access-control model) |
 | keselamatan | Keselamatan | 42 | **none** | Taint sanitizers + **modelled** sinks (`sanitasi_*`, `sql_*`, `http_dapat`/`http_hantar`, `csrf_*`) — type discipline only, no socket/database/SMTP |
-| http | Http | 6 | **none** | **Real** HTTP/1.1 (`http_hurai_*`, `http_balas`, `http_minta`) over the verified TCP machine |
 
 Conversions (`ke_teks`, `ke_nombor`, …), printing (`cetak`, `cetakln`), and the
 numeric-tower constructors (`besar`, `perpuluhan`, `wang`, `titik_tetap`, `qmn`)
@@ -201,16 +203,22 @@ duplicate lengths — are **errors**, not repaired messages.
 
 ### ⚠ Type-checking does not imply compiling
 
-**Of 357 builtins: 20 compile to C *and* WASM, 128 are native-only (the WASM
-backend refuses them), and 209 are interpreter-only.** A
+**Of 373 builtins: 20 compile to C *and* WASM, 198 are native-only (the WASM
+backend refuses them), and 155 are interpreter-only.** A
 program using any interpreter-only builtin type-checks and runs, but cannot be
 built for native or WASM — lowering fails closed rather than miscompiling:
 
 ```bash
-riinac check pelayan.rii   # Success!  Effect: Network
-riinac run   pelayan.rii   # works — serves a real HTTP/1.1 200
-riinac build pelayan.rii   # Codegen Error: unbound variable: jaring_dengar
+riinac check baca.rii   # Success!  Effect: FileSystem
+riinac run   baca.rii   # works — reads the file
+riinac build baca.rii   # Codegen Error: unbound variable: fail_baca
 ```
+
+A **networked, persistent service now compiles**: `jaring_*` (except the TLS
+half), `http_*`, `simpan_*`, `masa_*` and `json_*` are all routed, so
+`07_EXAMPLES/11_servis/pelayan.rii` builds natively and keeps its counter across
+restarts. The families still interpreter-only are `fail_*`, `vfs_*`,
+`keselamatan` and `jaring_tls_*`.
 
 If you are generating RIINA code that must be **compiled for WASM**, restrict
 yourself to printing, `gabung_teks`, `ke_teks` and the numeric-tower

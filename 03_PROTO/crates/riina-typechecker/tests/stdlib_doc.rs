@@ -171,10 +171,16 @@ fn generate() -> String {
          | `native-only` | Lowers to C. The WASM backend **refuses** it ({native} builtins). |\n\
          | `interp-only` | `riinac run` only ({interp} builtins). `riinac build` fails with `unbound variable`. |\n\n\
          ```\n\
-         $ riinac check pelayan.rii     # Success!  Effect: Network\n\
-         $ riinac run   pelayan.rii     # works — serves a real HTTP/1.1 200\n\
-         $ riinac build pelayan.rii     # Codegen Error: unbound variable: jaring_dengar\n\
+         $ riinac check baca.rii     # Success!  Effect: FileSystem\n\
+         $ riinac run   baca.rii     # works — reads the file\n\
+         $ riinac build baca.rii     # Codegen Error: unbound variable: fail_baca\n\
          ```\n\n\
+         The example used to be a `jaring_dengar` HTTP server. It is not any \
+         more, because that program now COMPILES: as of 2026-08-15 the `jaring`, \
+         `http`, `simpan`, `masa` and `json` families are routed, so a networked, \
+         persistent service has a native deployment path (master plan REQ-70). \
+         The families still interpreter-only are `fail_*`, `vfs_*`, the \
+         `keselamatan` sinks, and the `jaring_tls_*` half.\n\n\
          Both refusals are deliberate: a backend that cannot implement a builtin \
          fails closed rather than miscompiling it. Until 2026-08-11 the WASM \
          backend did NOT do this — it emitted a silent stub, so \

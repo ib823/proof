@@ -175,10 +175,16 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
 /// way out. A send is impossible unless the model says ESTABLISHED.
 fn perform_request(method: &str, url: &str) -> Result<String> {
     let (host_port, target) = http::split_url(url).map_err(|e| err(format!("http: {e}")))?;
+    // RFC 9110 §7.2: the port belongs in `Host` unless it is the scheme
+    // default. Stripping whatever port followed the last colon — which is what
+    // this did before the C backend was written against it — sent
+    // `Host: x.test` for `http://x.test:8080/`, so a virtual host keyed on the
+    // port saw the wrong authority. Strip `:80` and nothing else.
     let host = host_port
-        .rsplit_once(':')
-        .map(|(h, _)| h.to_string())
-        .unwrap_or_else(|| host_port.clone());
+        .strip_suffix(":80")
+        .filter(|h| !h.is_empty())
+        .unwrap_or(&host_port)
+        .to_string();
 
     let wire = http::encode_request(method, &target, &host, &Headers::new(), b"")
         .map_err(|e| err(format!("http: {e}")))?;
