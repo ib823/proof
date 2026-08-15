@@ -129,14 +129,20 @@ fn package_with_wrong_return_type_fails_to_build() {
 
 /// A package using an interpreter-only builtin (REQ-70) fails at lowering
 /// rather than emitting a binary that cannot exist.
+///
+/// The example used to be `jaring_dengar`. It is not any more, because that
+/// builtin now compiles — `fail_baca` is one of the families still unrouted, so
+/// it is what still exercises the boundary. Update this again when `fail_*`
+/// lands; the test is about the boundary existing, not about which side any
+/// particular builtin is on.
 #[test]
 fn package_using_interpreter_only_builtin_fails_at_codegen() {
     let pkg = Pkg::new("interponly");
     pkg.rm_src("lib.rii");
     pkg.src(
         "utama.rii",
-        "fungsi utama() -> Nombor kesan (Rangkaian | Tulis) {\n\
-         \x20   biar l = jaring_dengar(\"127.0.0.1:0\");\n\
+        "fungsi utama() -> Nombor kesan (SistemFail | Tulis) {\n\
+         \x20   cetakln(fail_baca(\"nota.txt\"));\n\
          \x20   0\n\
          }\n",
     );

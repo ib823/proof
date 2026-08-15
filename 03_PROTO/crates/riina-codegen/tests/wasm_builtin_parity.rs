@@ -140,9 +140,16 @@ fn support_queries_are_consistent() {
     assert!(codegen_supports_builtin("teks_huruf_besar"));
     assert!(!wasm_supports_builtin("teks_huruf_besar"));
 
-    // Interpreter-only: neither.
-    assert!(!codegen_supports_builtin("jaring_dengar"));
+    // Native-only, and the reason the `jaring` family is now split: the plain
+    // TCP half compiles (REQ-70), but WASI preview 1 has no sockets at all.
+    assert!(codegen_supports_builtin("jaring_dengar"));
     assert!(!wasm_supports_builtin("jaring_dengar"));
+
+    // Interpreter-only: neither. `jaring_tls_*` is the deliberate hold-out —
+    // the C backend has no `riina-tls`, and emitting a weaker handshake would
+    // be worse than refusing. Update this when that half is really ported.
+    assert!(!codegen_supports_builtin("jaring_tls_jabat"));
+    assert!(!wasm_supports_builtin("jaring_tls_jabat"));
 
     // Unknown names are not claimed by either.
     assert!(!codegen_supports_builtin("bukan_builtin_langsung"));
