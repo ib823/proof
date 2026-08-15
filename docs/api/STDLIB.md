@@ -6,13 +6,13 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **148** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **158** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (128 builtins). |
-| `interp-only` | `riinac run` only (225 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (138 builtins). |
+| `interp-only` | `riinac run` only (215 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check pelayan.rii     # Success!  Effect: Network
@@ -28,7 +28,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Bersih (Pure)
 
-> **Mixed:** 144 of 229 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 154 of 229 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -76,17 +76,17 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `http_parse_target` | `Fn(Teks, Teks)` | **interp-only** |
 | `int_to_string` | `Fn(Nombor, Teks)` | compiled |
 | `is_confusable` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `json_ada` | `Fn(Any, Any)` | **interp-only** |
-| `json_dapat` | `Fn(Any, Any)` | **interp-only** |
-| `json_get` | `Fn(Any, Any)` | **interp-only** |
-| `json_has` | `Fn(Any, Any)` | **interp-only** |
-| `json_ke_teks` | `Fn(Any, Any)` | **interp-only** |
-| `json_letak` | `Fn(Any, Any)` | **interp-only** |
-| `json_parse` | `Fn(Any, Any)` | **interp-only** |
+| `json_ada` | `Fn(Any, Any)` | **native-only** |
+| `json_dapat` | `Fn(Any, Any)` | **native-only** |
+| `json_get` | `Fn(Any, Any)` | **native-only** |
+| `json_has` | `Fn(Any, Any)` | **native-only** |
+| `json_ke_teks` | `Fn(Any, Any)` | **native-only** |
+| `json_letak` | `Fn(Any, Any)` | **native-only** |
+| `json_parse` | `Fn(Any, Any)` | **native-only** |
 | `json_parse_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
-| `json_set` | `Fn(Any, Any)` | **interp-only** |
-| `json_stringify` | `Fn(Any, Any)` | **interp-only** |
-| `json_urai` | `Fn(Any, Any)` | **interp-only** |
+| `json_set` | `Fn(Any, Any)` | **native-only** |
+| `json_stringify` | `Fn(Any, Any)` | **native-only** |
+| `json_urai` | `Fn(Any, Any)` | **native-only** |
 | `json_urai_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
 | `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
 | `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |

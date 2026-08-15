@@ -137,6 +137,19 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
+    // JSON builtins (REQ-70 family routing). Pure value transformations — no
+    // syscalls — so the C backend can implement them outright. The C helpers
+    // (`riina_builtin_json_*`) already existed in `emit.rs` but were
+    // unreachable dead code until this arm was added, so they had never been
+    // exercised; the divergences that shook out are pinned by
+    // `json_differential.rs`. The WASM backend still refuses these (it has no
+    // JSON parser), which its fail-closed arm reports rather than stubbing —
+    // so the family is `native-only`, not `compiled`.
+    for &(bm, en, canonical) in builtins::json::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
     None
 }
 
