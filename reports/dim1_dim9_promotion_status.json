@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-08-13T08:21:51Z",
-  "repo_head": "1fca52a5781a4de9683f8e3f06e7e5225e976018",
+  "generated_utc": "2026-08-15T01:24:04Z",
+  "repo_head": "64b8436ccab3ab31d5e8a575823887da4134e139",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 0,
   "provision": {
@@ -17,10 +17,10 @@
 Run: bash scripts/provision-smoke-toolchains.sh
      or: bash scripts/provision-isabelle.sh",
     "java": true,
-    "tla2tools_jar": true,
-    "alloy_jar": true,
-    "tla2tools_path": "/home/user/proof/05_TOOLING/tools/formal/tla2tools.jar",
-    "alloy_path": "/home/user/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+    "tla2tools_jar": false,
+    "alloy_jar": false,
+    "tla2tools_path": "",
+    "alloy_path": ""
   },
   "dimension_1": {
     "status": "FAIL",
@@ -41,7 +41,7 @@ Run: bash scripts/provision-smoke-toolchains.sh
   },
   "dimension_9": {
     "status": "PASS",
-    "promotion_ready": true,
+    "promotion_ready": false,
     "checks": {
       "files": true,
       "coq_theorem_count": 184,
@@ -49,10 +49,10 @@ Run: bash scripts/provision-smoke-toolchains.sh
       "alloy_assert_count": 368,
       "tla_static": true,
       "alloy_static": true,
-      "tla_exec": true,
-      "alloy_exec": true
+      "tla_exec": false,
+      "alloy_exec": false
     },
-    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=1 tla_mode=sany_parse alloy_exec=1 alloy_mode=jar_exec"
+    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=0 tla_mode=static_only alloy_exec=0 alloy_mode=static_only"
   },
   "overall_foundation": "FAIL",
   "overall_promotion_ready": false
