@@ -1,6 +1,6 @@
 # RIINA Bridge Analysis Conclusion
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3322 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3323 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Worker: WORKER_ζ (Zeta)
 ## Date: 2026-01-17
