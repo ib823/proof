@@ -6,13 +6,13 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **218** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **238** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (198 builtins). |
-| `interp-only` | `riinac run` only (155 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (218 builtins). |
+| `interp-only` | `riinac run` only (135 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check baca.rii     # Success!  Effect: FileSystem
@@ -297,26 +297,24 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## SistemFail (FileSystem)
 
-> **Mixed:** 16 of 36 compile; the rest are interpreter-only (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
-| `fail_ada` | `Fn(Teks, Benar, SistemFail)` | **interp-only** |
-| `fail_baca` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **interp-only** |
-| `fail_baca_baris` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **interp-only** |
-| `fail_buang` | `Fn(Teks, (), SistemFail)` | **interp-only** |
-| `fail_panjang` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
-| `fail_senarai` | `Fn(Teks, Any, SistemFail)` | **interp-only** |
-| `fail_tambah` | `Fn((Teks, Teks), (), SistemFail)` | **interp-only** |
-| `fail_tulis` | `Fn((Teks, Teks), (), SistemFail)` | **interp-only** |
-| `file_append` | `Fn((Teks, Teks), (), SistemFail)` | **interp-only** |
-| `file_delete` | `Fn(Teks, (), SistemFail)` | **interp-only** |
-| `file_exists` | `Fn(Teks, Benar, SistemFail)` | **interp-only** |
-| `file_list_dir` | `Fn(Teks, Any, SistemFail)` | **interp-only** |
-| `file_read` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **interp-only** |
-| `file_read_lines` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **interp-only** |
-| `file_size` | `Fn(Teks, Nombor, SistemFail)` | **interp-only** |
-| `file_write` | `Fn((Teks, Teks), (), SistemFail)` | **interp-only** |
+| `fail_ada` | `Fn(Teks, Benar, SistemFail)` | **native-only** |
+| `fail_baca` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `fail_baca_baris` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `fail_buang` | `Fn(Teks, (), SistemFail)` | **native-only** |
+| `fail_panjang` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `fail_senarai` | `Fn(Teks, Any, SistemFail)` | **native-only** |
+| `fail_tambah` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `fail_tulis` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `file_append` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `file_delete` | `Fn(Teks, (), SistemFail)` | **native-only** |
+| `file_exists` | `Fn(Teks, Benar, SistemFail)` | **native-only** |
+| `file_list_dir` | `Fn(Teks, Any, SistemFail)` | **native-only** |
+| `file_read` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `file_read_lines` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `file_size` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `file_write` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
 | `simpan_ada` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
 | `simpan_buka` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
 | `simpan_dapat` | `Fn((Nombor, Teks), Teks, SistemFail)` | **native-only** |
@@ -333,10 +331,10 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `store_keys` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **native-only** |
 | `store_open` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
 | `store_put` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **native-only** |
-| `vfs_become_user` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
-| `vfs_init` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
-| `vfs_jadi_pengguna` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
-| `vfs_mula` | `Fn(Nombor, (), SistemFail)` | **interp-only** |
+| `vfs_become_user` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+| `vfs_init` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+| `vfs_jadi_pengguna` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+| `vfs_mula` | `Fn(Nombor, (), SistemFail)` | **native-only** |
 
 ## Rangkaian (Network)
 
