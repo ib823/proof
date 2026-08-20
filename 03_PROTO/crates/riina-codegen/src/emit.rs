@@ -2016,27 +2016,18 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // Helper: format a value as a string for printing
-        self.writeln("static const char* riina_format(riina_value_t* v) {");
-        self.writeln("    static char buf[256];");
-        self.writeln("    switch (v->tag) {");
-        self.writeln("        case RIINA_TAG_UNIT: return \"()\";");
-        self.writeln(
-            "        case RIINA_TAG_BOOL: return v->data.bool_val ? \"betul\" : \"salah\";",
-        );
-        self.writeln("        case RIINA_TAG_INT:");
-        self.writeln("            if (v->int_signed_bits)");
-        self.writeln("                snprintf(buf, sizeof(buf), \"%lld\", (long long)riina_sext(v->data.int_val, v->int_signed_bits));");
-        self.writeln("            else");
-        self.writeln("                snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)v->data.int_val);");
-        self.writeln("            return buf;");
-        self.writeln("        case RIINA_TAG_STRING: return v->data.string_val.data;");
-        self.writeln("        case RIINA_TAG_BIGINT: return riina_bigint_to_str(v);");
-        self.writeln("        case RIINA_TAG_DECIMAL: return riina_decimal_to_str(v);");
-        self.writeln("        case RIINA_TAG_FIXED: return riina_fixed_to_str(v);");
-        self.writeln("        case RIINA_TAG_FIXEDBIN: return riina_fixedbin_to_str(v);");
-        self.writeln("        default: return \"<value>\";");
-        self.writeln("    }");
-        self.writeln("}");
+        // Value rendering. Only DECLARED here: the definition needs
+        // `riina_list_t` / `riina_map_t`, which are emitted with the collection
+        // runtime further down, and `cetak`/`cetakln` below call it immediately.
+        //
+        // Until REQ-70's keselamatan increment this function handled the scalar
+        // tags and answered the literal text `<value>` for every composite one —
+        // PAIR, LIST, MAP and both SUM arms. `cetakln` and `ke_teks` both go
+        // through it, so a compiled program printing a list, a map, or the
+        // `Option` that `sahkan_panjang` returns showed `<value>` where
+        // `riinac run` shows the contents. See the definition for the two
+        // rendering modes it has to mirror.
+        self.writeln("static const char* riina_format(riina_value_t* v);");
         self.writeln("");
 
         // cetak (print without newline)
@@ -2065,27 +2056,14 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // ke_teks (to_string)
+        // `ke_teks` IS `builtins::format_value` in the interpreter, so it is
+        // that one function here too rather than a parallel switch. It used to
+        // carry its own copy of the scalar arms plus a `default:` returning the
+        // literal text `<value>`, which is how the composite tags came to render
+        // differently from `cetakln` — two switches, one of them updated.
         self.writeln("static riina_value_t* riina_builtin_ke_teks(riina_value_t* arg) {");
-        self.writeln("    char buf[256];");
-        self.writeln("    switch (arg->tag) {");
-        self.writeln("        case RIINA_TAG_UNIT: return riina_string(\"()\");");
-        self.writeln("        case RIINA_TAG_BOOL: return riina_string(arg->data.bool_val ? \"betul\" : \"salah\");");
-        self.writeln("        case RIINA_TAG_INT:");
-        // A signed sized int renders as its signed value (the interpreter is the
-        // reference: `ke_teks(0i8 - 3i8)` is "-3", not the masked "253"). Same
-        // tag-driven branch as riina_format — this one had been left unsigned-only.
-        self.writeln("            if (arg->int_signed_bits)");
-        self.writeln("                snprintf(buf, sizeof(buf), \"%lld\", (long long)riina_sext(arg->data.int_val, arg->int_signed_bits));");
-        self.writeln("            else");
-        self.writeln("                snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)arg->data.int_val);");
-        self.writeln("            return riina_string(buf);");
-        self.writeln("        case RIINA_TAG_STRING: return arg;");
-        self.writeln("        case RIINA_TAG_BIGINT: return riina_string(riina_bigint_to_str(arg));");
-        self.writeln("        case RIINA_TAG_DECIMAL: return riina_string(riina_decimal_to_str(arg));");
-        self.writeln("        case RIINA_TAG_FIXED: return riina_string(riina_fixed_to_str(arg));");
-        self.writeln("        case RIINA_TAG_FIXEDBIN: return riina_string(riina_fixedbin_to_str(arg));");
-        self.writeln("        default: return riina_string(\"<value>\");");
-        self.writeln("    }");
+        self.writeln("    if (arg->tag == RIINA_TAG_STRING) return arg;");
+        self.writeln("    return riina_string(riina_format(arg));");
         self.writeln("}");
         self.writeln("");
 
@@ -2397,6 +2375,117 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
         self.writeln("#define RIINA_MAP_DATA(v) ((riina_map_t*)(v)->data.wrapped_val)");
         self.writeln("");
+
+        // Value rendering, definition (declared above, next to `cetak`).
+        // Emitted as one raw string because it is recursive and carries two
+        // mutually-reachable modes, which the per-line `writeln` form makes
+        // unreadable.
+        //
+        // WHY TWO MODES. The interpreter's `builtins::format_value` handles the
+        // common tags itself and falls through to `Value`'s `Display` for the
+        // rest — and the two spell the same value differently. `format_value`
+        // prints a string BARE and a bool in RIINA's own `betul`/`salah`;
+        // `Display` QUOTES the string and prints Rust's English `true`/`false`.
+        // So `cetakln("x")` is `x` while `cetakln(inl "x")` is `inl "x"`, and a
+        // bool inside a sum comes out English. That is an inconsistency in the
+        // reference rather than a design, but the reference is what a compiled
+        // program must match, so both modes are mirrored here rather than
+        // tidied — changing it is a language decision, not a codegen one.
+        self.writeln(
+            r####"
+static void riina_fmt_put(char** b, size_t* n, size_t* cap, const char* s) {
+    size_t l = strlen(s);
+    while (*n + l + 1 > *cap) {
+        *cap = *cap ? *cap * 2 : 128;
+        *b = (char*)realloc(*b, *cap);
+        if (!*b) abort();
+    }
+    memcpy(*b + *n, s, l);
+    *n += l;
+    (*b)[*n] = '\0';
+}
+
+/* `display` selects Value::Display (quoted strings, English booleans) over
+   builtins::format_value (bare strings, betul/salah). See the note above. */
+static void riina_fmt_impl(riina_value_t* v, char** b, size_t* n, size_t* cap, bool display) {
+    char tmp[64];
+    switch (v->tag) {
+        case RIINA_TAG_UNIT: riina_fmt_put(b, n, cap, "()"); return;
+        case RIINA_TAG_BOOL:
+            if (display) riina_fmt_put(b, n, cap, v->data.bool_val ? "true" : "false");
+            else riina_fmt_put(b, n, cap, v->data.bool_val ? "betul" : "salah");
+            return;
+        case RIINA_TAG_INT:
+            if (v->int_signed_bits) {
+                snprintf(tmp, sizeof(tmp), "%lld",
+                         (long long)riina_sext(v->data.int_val, v->int_signed_bits));
+            } else {
+                snprintf(tmp, sizeof(tmp), "%llu", (unsigned long long)v->data.int_val);
+            }
+            riina_fmt_put(b, n, cap, tmp);
+            return;
+        case RIINA_TAG_STRING:
+            if (display) riina_fmt_put(b, n, cap, "\"");
+            riina_fmt_put(b, n, cap, v->data.string_val.data);
+            if (display) riina_fmt_put(b, n, cap, "\"");
+            return;
+        case RIINA_TAG_BIGINT: riina_fmt_put(b, n, cap, riina_bigint_to_str(v)); return;
+        case RIINA_TAG_DECIMAL: riina_fmt_put(b, n, cap, riina_decimal_to_str(v)); return;
+        case RIINA_TAG_FIXED: riina_fmt_put(b, n, cap, riina_fixed_to_str(v)); return;
+        case RIINA_TAG_FIXEDBIN: riina_fmt_put(b, n, cap, riina_fixedbin_to_str(v)); return;
+        case RIINA_TAG_PAIR:
+            riina_fmt_put(b, n, cap, "(");
+            riina_fmt_impl(v->data.pair_val.fst, b, n, cap, display);
+            riina_fmt_put(b, n, cap, ", ");
+            riina_fmt_impl(v->data.pair_val.snd, b, n, cap, display);
+            riina_fmt_put(b, n, cap, ")");
+            return;
+        /* A sum has no `format_value` arm at all: it reaches Display, and so
+           does everything nested inside it, however deep. Hence the hard `true`
+           rather than passing `display` down. */
+        case RIINA_TAG_SUM_LEFT:
+            riina_fmt_put(b, n, cap, "inl ");
+            riina_fmt_impl(v->data.sum_val, b, n, cap, true);
+            return;
+        case RIINA_TAG_SUM_RIGHT:
+            riina_fmt_put(b, n, cap, "inr ");
+            riina_fmt_impl(v->data.sum_val, b, n, cap, true);
+            return;
+        case RIINA_TAG_LIST: {
+            riina_list_t* l = RIINA_LIST_DATA(v);
+            riina_fmt_put(b, n, cap, "[");
+            for (size_t i = 0; i < l->len; i++) {
+                if (i) riina_fmt_put(b, n, cap, ", ");
+                riina_fmt_impl(l->items[i], b, n, cap, display);
+            }
+            riina_fmt_put(b, n, cap, "]");
+            return;
+        }
+        case RIINA_TAG_MAP: {
+            riina_map_t* m = RIINA_MAP_DATA(v);
+            riina_fmt_put(b, n, cap, "{");
+            size_t i = 0;
+            for (riina_map_entry_t* e = m->head; e; e = e->next, i++) {
+                if (i) riina_fmt_put(b, n, cap, ", ");
+                riina_fmt_put(b, n, cap, "\"");
+                riina_fmt_put(b, n, cap, e->key);
+                riina_fmt_put(b, n, cap, "\": ");
+                riina_fmt_impl(e->value, b, n, cap, display);
+            }
+            riina_fmt_put(b, n, cap, "}");
+            return;
+        }
+        default: riina_fmt_put(b, n, cap, "<value>"); return;
+    }
+}
+
+static const char* riina_format(riina_value_t* v) {
+    char* b = NULL; size_t n = 0, cap = 0;
+    riina_fmt_impl(v, &b, &n, &cap, false);
+    return b ? b : "";
+}
+"####,
+        );
 
         // ═══════════════════════════════════════════════════════════════════
         // STRING BUILTINS (teks)
@@ -3259,6 +3348,528 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.emit_net_builtins();
 
         // ═══════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════
+        // SECURITY BUILTINS (keselamatan) — sanitizers, validators, and the
+        // modelled sinks. REQ-70 family routing.
+        // ═══════════════════════════════════════════════════════════════════
+        //
+        // Emitted as ONE raw-string block rather than ~200 `writeln` calls.
+        // The rest of this file uses per-line `writeln`; at this volume that
+        // is more transcription error than it is house style, and the block is
+        // self-contained C with no interpolation. `writeln` indents only the
+        // first line, which is cosmetic in C.
+        //
+        // These mirror `builtins::keselamatan` exactly, including the parts
+        // that look like bugs and are not: `url_encode` iterates BYTES while
+        // every other transform iterates CODEPOINTS, and `css_escape` emits a
+        // trailing space after the hex escape (which CSS requires as a
+        // terminator). Matching the interpreter matters more than matching
+        // one's expectations of what the function ought to do.
+        //
+        // `constant_time_eq` is security-relevant and is transcribed as a
+        // non-short-circuiting compare: a C version that returned early on the
+        // first differing byte would leak by timing where the interpreter does
+        // not — the same class of gap as the file gate, in a function whose
+        // entire purpose is to not leak.
+        self.writeln(r####"
+/* ---- UTF-8 decode: one codepoint, advancing *i. Invalid bytes are passed
+   through as U+FFFD-free single units so behaviour matches Rust's &str
+   guarantee that the input was already valid UTF-8. ---- */
+static uint32_t riina_sec_utf8_next(const char* s, size_t len, size_t* i) {
+    unsigned char c = (unsigned char)s[*i];
+    if (c < 0x80) { (*i) += 1; return c; }
+    if ((c & 0xE0) == 0xC0 && *i + 1 < len) {
+        uint32_t cp = ((uint32_t)(c & 0x1F) << 6) | (uint32_t)(s[*i+1] & 0x3F);
+        (*i) += 2; return cp;
+    }
+    if ((c & 0xF0) == 0xE0 && *i + 2 < len) {
+        uint32_t cp = ((uint32_t)(c & 0x0F) << 12) | ((uint32_t)(s[*i+1] & 0x3F) << 6)
+                    | (uint32_t)(s[*i+2] & 0x3F);
+        (*i) += 3; return cp;
+    }
+    if ((c & 0xF8) == 0xF0 && *i + 3 < len) {
+        uint32_t cp = ((uint32_t)(c & 0x07) << 18) | ((uint32_t)(s[*i+1] & 0x3F) << 12)
+                    | ((uint32_t)(s[*i+2] & 0x3F) << 6) | (uint32_t)(s[*i+3] & 0x3F);
+        (*i) += 4; return cp;
+    }
+    (*i) += 1; return c;
+}
+
+static void riina_sec_put_utf8(char** b, size_t* n, size_t* cap, uint32_t cp);
+
+static void riina_sec_reserve(char** b, size_t* n, size_t* cap, size_t extra) {
+    while (*n + extra + 1 >= *cap) {
+        *cap *= 2;
+        *b = (char*)realloc(*b, *cap);
+        if (!*b) abort();
+    }
+}
+
+static void riina_sec_puts(char** b, size_t* n, size_t* cap, const char* s) {
+    size_t l = strlen(s);
+    riina_sec_reserve(b, n, cap, l);
+    memcpy(*b + *n, s, l);
+    *n += l;
+}
+
+static void riina_sec_putc(char** b, size_t* n, size_t* cap, char c) {
+    riina_sec_reserve(b, n, cap, 1);
+    (*b)[(*n)++] = c;
+}
+
+static void riina_sec_put_utf8(char** b, size_t* n, size_t* cap, uint32_t cp) {
+    riina_sec_reserve(b, n, cap, 4);
+    if (cp < 0x80) { (*b)[(*n)++] = (char)cp; }
+    else if (cp < 0x800) {
+        (*b)[(*n)++] = (char)(0xC0 | (cp >> 6));
+        (*b)[(*n)++] = (char)(0x80 | (cp & 0x3F));
+    } else if (cp < 0x10000) {
+        (*b)[(*n)++] = (char)(0xE0 | (cp >> 12));
+        (*b)[(*n)++] = (char)(0x80 | ((cp >> 6) & 0x3F));
+        (*b)[(*n)++] = (char)(0x80 | (cp & 0x3F));
+    } else {
+        (*b)[(*n)++] = (char)(0xF0 | (cp >> 18));
+        (*b)[(*n)++] = (char)(0x80 | ((cp >> 12) & 0x3F));
+        (*b)[(*n)++] = (char)(0x80 | ((cp >> 6) & 0x3F));
+        (*b)[(*n)++] = (char)(0x80 | (cp & 0x3F));
+    }
+}
+
+/* Rust's char::is_whitespace, which str::trim uses. Enumerated because an
+   ASCII-only trim would diverge on NBSP and the U+2000 block. */
+static bool riina_sec_is_ws(uint32_t c) {
+    return c == 0x20 || (c >= 0x09 && c <= 0x0D) || c == 0x85 || c == 0xA0
+        || c == 0x1680 || (c >= 0x2000 && c <= 0x200A) || c == 0x2028
+        || c == 0x2029 || c == 0x202F || c == 0x205F || c == 0x3000;
+}
+
+static bool riina_sec_ascii_alnum(uint32_t c) {
+    return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+#define RIINA_SEC_BEGIN(argv) \
+    if ((argv)->tag != RIINA_TAG_STRING) abort(); \
+    const char* _s = (argv)->data.string_val.data; \
+    size_t _slen = (argv)->data.string_val.len; \
+    size_t _cap = _slen * 2 + 16, _n = 0; \
+    char* _b = (char*)malloc(_cap); \
+    if (!_b) abort();
+
+#define RIINA_SEC_END() \
+    _b[_n] = 0; \
+    riina_value_t* _r = riina_string(_b); \
+    free(_b); \
+    return _r;
+
+/* ---- Taint source. Routed alongside the sanitizers deliberately: it is the
+   ONLY producer of `Tainted<Teks, UserInput>`, so without it every sanitizer
+   would be marked `native-only` while being unreachable from any compiled
+   program — the REQ-79 "lowers but aborts on contact" trap in a new costume.
+   Taint is type-level, so the runtime value is just the line. ---- */
+static riina_value_t* riina_builtin_baca_baris(riina_value_t* arg) {
+    (void)arg;
+    size_t cap = 256, n = 0;
+    char* buf = (char*)malloc(cap);
+    if (!buf) abort();
+    int ch;
+    while ((ch = fgetc(stdin)) != EOF) {
+        if (n + 2 >= cap) { cap *= 2; buf = (char*)realloc(buf, cap); if (!buf) abort(); }
+        buf[n++] = (char)ch;
+        if (ch == '\n') break;
+    }
+    buf[n] = 0;
+    /* Mirrors the interpreter: strip ALL trailing \n and \r, not just one. */
+    while (n > 0 && (buf[n-1] == '\n' || buf[n-1] == '\r')) { buf[--n] = 0; }
+    riina_value_t* r = riina_string(buf);
+    free(buf);
+    return r;
+}
+
+static riina_value_t* riina_builtin_sanitize_html(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c == '&') riina_sec_puts(&_b, &_n, &_cap, "&amp;");
+        else if (c == '<') riina_sec_puts(&_b, &_n, &_cap, "&lt;");
+        else if (c == '>') riina_sec_puts(&_b, &_n, &_cap, "&gt;");
+        else if (c == '"') riina_sec_puts(&_b, &_n, &_cap, "&quot;");
+        else if (c == '\'') riina_sec_puts(&_b, &_n, &_cap, "&#x27;");
+        else if (c == '/') riina_sec_puts(&_b, &_n, &_cap, "&#x2F;");
+        else riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_xml(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c == '&') riina_sec_puts(&_b, &_n, &_cap, "&amp;");
+        else if (c == '<') riina_sec_puts(&_b, &_n, &_cap, "&lt;");
+        else if (c == '>') riina_sec_puts(&_b, &_n, &_cap, "&gt;");
+        else if (c == '"') riina_sec_puts(&_b, &_n, &_cap, "&quot;");
+        else if (c == '\'') riina_sec_puts(&_b, &_n, &_cap, "&apos;");
+        else riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_sql(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c == 0) { /* strip NUL */ }
+        else if (c == '\\') riina_sec_puts(&_b, &_n, &_cap, "\\\\");
+        else if (c == '\'') riina_sec_puts(&_b, &_n, &_cap, "''");
+        else riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_js(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    char tmp[16];
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (riina_sec_ascii_alnum(c)) {
+            riina_sec_putc(&_b, &_n, &_cap, (char)c);
+        } else if (c < 0x100) {
+            snprintf(tmp, sizeof(tmp), "\\x%02X", (unsigned)c);
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+        } else if (c < 0x10000) {
+            snprintf(tmp, sizeof(tmp), "\\u%04X", (unsigned)c);
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+        } else {
+            /* Rust encode_utf16 yields a surrogate PAIR above the BMP. */
+            uint32_t v = c - 0x10000;
+            snprintf(tmp, sizeof(tmp), "\\u%04X", (unsigned)(0xD800 + (v >> 10)));
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+            snprintf(tmp, sizeof(tmp), "\\u%04X", (unsigned)(0xDC00 + (v & 0x3FF)));
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+        }
+    }
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_css(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    char tmp[16];
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (riina_sec_ascii_alnum(c)) {
+            riina_sec_putc(&_b, &_n, &_cap, (char)c);
+        } else {
+            snprintf(tmp, sizeof(tmp), "\\%x ", (unsigned)c);
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+        }
+    }
+    RIINA_SEC_END()
+}
+
+/* NOTE: bytes, not codepoints — the interpreter iterates s.bytes() here. */
+static riina_value_t* riina_builtin_sanitize_url(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    char tmp[8];
+    for (size_t i = 0; i < _slen; i++) {
+        unsigned char b = (unsigned char)_s[i];
+        if ((b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z') || (b >= '0' && b <= '9')
+            || b == '-' || b == '.' || b == '_' || b == '~') {
+            riina_sec_putc(&_b, &_n, &_cap, (char)b);
+        } else {
+            snprintf(tmp, sizeof(tmp), "%%%02X", b);
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+        }
+    }
+    RIINA_SEC_END()
+}
+
+/* Drop NULs, then split on '/' and '\\', dropping empty, "." and ".."
+   segments, and rejoin with '/'. */
+static riina_value_t* riina_builtin_sanitize_path(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    size_t seg_start = 0;
+    bool first_out = true;
+    char* seg = (char*)malloc(_slen + 1);
+    if (!seg) abort();
+    for (size_t i = 0; i <= _slen; i++) {
+        char ch = (i < _slen) ? _s[i] : '/';
+        if (ch == '/' || ch == '\\' || i == _slen) {
+            size_t sl = 0;
+            for (size_t k = seg_start; k < i; k++) {
+                if (_s[k] != 0) seg[sl++] = _s[k];
+            }
+            seg[sl] = 0;
+            bool skip = (sl == 0) || (strcmp(seg, ".") == 0) || (strcmp(seg, "..") == 0);
+            if (!skip) {
+                if (!first_out) riina_sec_putc(&_b, &_n, &_cap, '/');
+                riina_sec_puts(&_b, &_n, &_cap, seg);
+                first_out = false;
+            }
+            seg_start = i + 1;
+        }
+    }
+    free(seg);
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_command(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    riina_sec_putc(&_b, &_n, &_cap, '\'');
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c == '\'') riina_sec_puts(&_b, &_n, &_cap, "'\\''");
+        else riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    riina_sec_putc(&_b, &_n, &_cap, '\'');
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_ldap(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c == '\\') riina_sec_puts(&_b, &_n, &_cap, "\\5c");
+        else if (c == '*') riina_sec_puts(&_b, &_n, &_cap, "\\2a");
+        else if (c == '(') riina_sec_puts(&_b, &_n, &_cap, "\\28");
+        else if (c == ')') riina_sec_puts(&_b, &_n, &_cap, "\\29");
+        else if (c == 0) riina_sec_puts(&_b, &_n, &_cap, "\\00");
+        else riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_sanitize_json(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    char tmp[16];
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c == '"') riina_sec_puts(&_b, &_n, &_cap, "\\\"");
+        else if (c == '\\') riina_sec_puts(&_b, &_n, &_cap, "\\\\");
+        else if (c == 0x08) riina_sec_puts(&_b, &_n, &_cap, "\\b");
+        else if (c == 0x0C) riina_sec_puts(&_b, &_n, &_cap, "\\f");
+        else if (c == '\n') riina_sec_puts(&_b, &_n, &_cap, "\\n");
+        else if (c == '\r') riina_sec_puts(&_b, &_n, &_cap, "\\r");
+        else if (c == '\t') riina_sec_puts(&_b, &_n, &_cap, "\\t");
+        else if (c == 0x2028) riina_sec_puts(&_b, &_n, &_cap, "\\u2028");
+        else if (c == 0x2029) riina_sec_puts(&_b, &_n, &_cap, "\\u2029");
+        else if (c < 0x20) {
+            snprintf(tmp, sizeof(tmp), "\\u%04x", (unsigned)c);
+            riina_sec_puts(&_b, &_n, &_cap, tmp);
+        }
+        else riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+/* Filter CR/LF/NUL, then trim (Rust str::trim = Unicode whitespace). */
+static riina_value_t* riina_builtin_sanitize_email(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    uint32_t* cps = (uint32_t*)malloc((_slen + 1) * sizeof(uint32_t));
+    if (!cps) abort();
+    size_t ncp = 0;
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c != '\r' && c != '\n' && c != 0) cps[ncp++] = c;
+    }
+    size_t lo = 0, hi = ncp;
+    while (lo < hi && riina_sec_is_ws(cps[lo])) lo++;
+    while (hi > lo && riina_sec_is_ws(cps[hi-1])) hi--;
+    for (size_t k = lo; k < hi; k++) riina_sec_put_utf8(&_b, &_n, &_cap, cps[k]);
+    free(cps);
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_validate_url(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    size_t lo = 0, hi = _slen;
+    while (lo < hi && (unsigned char)_s[lo] <= 0x20) lo++;
+    while (hi > lo && (unsigned char)_s[hi-1] <= 0x20) hi--;
+    size_t tl = hi - lo;
+    char* t = (char*)malloc(tl + 1);
+    if (!t) abort();
+    memcpy(t, _s + lo, tl); t[tl] = 0;
+    char* low = (char*)malloc(tl + 1);
+    if (!low) abort();
+    for (size_t k = 0; k < tl; k++) {
+        char c = t[k];
+        low[k] = (c >= 'A' && c <= 'Z') ? (char)(c - 'A' + 'a') : c;
+    }
+    low[tl] = 0;
+    bool ok = strncmp(low, "http://", 7) == 0 || strncmp(low, "https://", 8) == 0
+           || strncmp(low, "mailto:", 7) == 0
+           || (tl > 0 && t[0] == '/' && !(tl > 1 && t[1] == '/'));
+    riina_sec_puts(&_b, &_n, &_cap, ok ? t : "about:blank");
+    free(t); free(low);
+    RIINA_SEC_END()
+}
+
+static bool riina_sec_dangerous_format(uint32_t c) {
+    return (c >= 0x200B && c <= 0x200F) || (c >= 0x202A && c <= 0x202E)
+        || (c >= 0x2066 && c <= 0x2069) || c == 0x2060 || c == 0x00AD || c == 0xFEFF;
+}
+
+static riina_value_t* riina_builtin_normalize_unicode(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (!riina_sec_dangerous_format(c)) riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+static riina_value_t* riina_builtin_strip_nulls(riina_value_t* arg) {
+    RIINA_SEC_BEGIN(arg)
+    for (size_t i = 0; i < _slen; ) {
+        uint32_t c = riina_sec_utf8_next(_s, _slen, &i);
+        if (c != 0) riina_sec_put_utf8(&_b, &_n, &_cap, c);
+    }
+    RIINA_SEC_END()
+}
+
+/* ---- Modelled sinks. These do NOT perform the dangerous operation; the
+   interpreter models them and so does this. Their value is that the type
+   system forces a Disanitasi<_> argument to reach them at all. ---- */
+static riina_value_t* riina_builtin_sql_execute(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    return riina_string(arg->data.string_val.data);
+}
+static riina_value_t* riina_builtin_ldap_search(riina_value_t* arg) {
+    return riina_builtin_sql_execute(arg);
+}
+static riina_value_t* riina_builtin_xml_query(riina_value_t* arg) {
+    return riina_builtin_sql_execute(arg);
+}
+static riina_value_t* riina_builtin_js_eval(riina_value_t* arg) {
+    return riina_builtin_sql_execute(arg);
+}
+static riina_value_t* riina_builtin_html_render(riina_value_t* arg) {
+    return riina_builtin_sql_execute(arg);
+}
+static riina_value_t* riina_builtin_shell_exec(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    return riina_int(0);
+}
+static riina_value_t* riina_builtin_http_redirect_safe(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    return riina_unit();
+}
+/* Mirrors `MODELLED_HTTP_RESPONSE` in builtins/keselamatan.rs. No socket is
+   opened on either side; the two must agree on the string they invent. */
+#define RIINA_MODELLED_HTTP_RESPONSE "200 OK"
+static riina_value_t* riina_builtin_http_get(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    return riina_string(RIINA_MODELLED_HTTP_RESPONSE);
+}
+static riina_value_t* riina_builtin_http_fetch_safe(riina_value_t* arg) {
+    return riina_builtin_http_get(arg);
+}
+static riina_value_t* riina_builtin_http_body(riina_value_t* arg) {
+    if (arg->tag == RIINA_TAG_STRING) return riina_string(arg->data.string_val.data);
+    return riina_builtin_ke_teks(arg);
+}
+
+/* ---- Pair-taking members of the family.
+
+   These take ONE argument that is a pair, never two curried arguments: every
+   signature in riina-typechecker types them `Ty::Prod(..) -> _`, so the surface
+   form `f(a, b)` is REJECTED AT TYPE-CHECK in both backends and only `f((a, b))`
+   reaches a runtime. That is why no partial-application machinery is needed
+   here — the interpreter's `BuiltinPartial` arm is unreachable from well-typed
+   source, and a C backend that only understands pairs loses nothing. ---- */
+
+/* (Tainted<Teks>, Nombor) -> Option<Tainted<Teks>>. Length is counted in
+   UNICODE SCALAR VALUES, not bytes, so a multi-byte character costs one. */
+static riina_value_t* riina_builtin_validate_length(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* sv = arg->data.pair_val.fst;
+    riina_value_t* nv = arg->data.pair_val.snd;
+    if (sv->tag != RIINA_TAG_STRING || nv->tag != RIINA_TAG_INT) abort();
+    const char* s = sv->data.string_val.data;
+    size_t slen = sv->data.string_val.len, i = 0, chars = 0;
+    while (i < slen) { (void)riina_sec_utf8_next(s, slen, &i); chars++; }
+    if ((uint64_t)chars <= nv->data.int_val) return riina_inl(riina_string(s));
+    return riina_inr(riina_unit());
+}
+
+static riina_value_t* riina_builtin_dom_set_html(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    return riina_unit();
+}
+static riina_value_t* riina_builtin_dom_set_attr(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    return riina_unit();
+}
+/* Modelled send: no SMTP is spoken, and the interpreter reports success. */
+static riina_value_t* riina_builtin_email_send(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    return riina_bool(true);
+}
+static riina_value_t* riina_builtin_email_set_header(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    return riina_unit();
+}
+
+/* POST/PUT carry (url, (body, csrf_token)); DELETE carries (url, token). All
+   three answer with the same modelled status line as GET. */
+static riina_value_t* riina_builtin_http_post(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    return riina_string(RIINA_MODELLED_HTTP_RESPONSE);
+}
+static riina_value_t* riina_builtin_http_put(riina_value_t* arg) {
+    return riina_builtin_http_post(arg);
+}
+static riina_value_t* riina_builtin_http_delete(riina_value_t* arg) {
+    return riina_builtin_http_post(arg);
+}
+
+/* Non-short-circuiting compare: the loop must not stop at the first differing
+   byte, or the time taken leaks the length of the matching prefix. Length is
+   compared first, exactly as the interpreter does — that much is already
+   observable from the token's size. */
+static riina_value_t* riina_builtin_csrf_validate(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* a = arg->data.pair_val.fst;
+    riina_value_t* b = arg->data.pair_val.snd;
+    if (a->tag != RIINA_TAG_STRING || b->tag != RIINA_TAG_STRING) abort();
+    if (a->data.string_val.len != b->data.string_val.len) return riina_bool(false);
+    unsigned char diff = 0;
+    for (size_t i = 0; i < a->data.string_val.len; i++) {
+        diff |= (unsigned char)(a->data.string_val.data[i] ^ b->data.string_val.data[i]);
+    }
+    return riina_bool(diff == 0);
+}
+
+/* An EMPTY allowed-origin never matches. Without that guard a program that
+   forgot to configure one would accept every origin. */
+static riina_value_t* riina_builtin_csrf_check_origin(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* o = arg->data.pair_val.fst;
+    riina_value_t* w = arg->data.pair_val.snd;
+    if (o->tag != RIINA_TAG_STRING || w->tag != RIINA_TAG_STRING) abort();
+    if (w->data.string_val.len == 0) return riina_bool(false);
+    if (o->data.string_val.len != w->data.string_val.len) return riina_bool(false);
+    return riina_bool(memcmp(o->data.string_val.data, w->data.string_val.data,
+                             w->data.string_val.len) == 0);
+}
+static riina_value_t* riina_builtin_csrf_check_referer(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* r = arg->data.pair_val.fst;
+    riina_value_t* w = arg->data.pair_val.snd;
+    if (r->tag != RIINA_TAG_STRING || w->tag != RIINA_TAG_STRING) abort();
+    if (w->data.string_val.len == 0) return riina_bool(false);
+    if (r->data.string_val.len < w->data.string_val.len) return riina_bool(false);
+    return riina_bool(memcmp(r->data.string_val.data, w->data.string_val.data,
+                             w->data.string_val.len) == 0);
+}
+
+/* No XML tree exists in-tree, so the interpreter models the parse as identity
+   on the document text and deliberately does NOT resolve entities (no XXE
+   surface). Identity here too — inventing a tree would be the overclaim. */
+static riina_value_t* riina_builtin_xml_parse_safe(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    return riina_string(arg->data.string_val.data);
+}
+"####);
         // FILE I/O BUILTINS (fail)
         // ═══════════════════════════════════════════════════════════════════
 
@@ -3475,6 +4086,63 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("}");
         self.writeln("");
 
+        // The keselamatan safe-file trio. They live HERE rather than with the
+        // rest of their family because they go through the SAME verified gate as
+        // `fail_*` — `riina_gate` is defined above and the security family is
+        // emitted before it. The interpreter shares `fail::gate_read` /
+        // `gate_write` / `gate_delete` for exactly this reason; a "safe" file op
+        // that skipped the access check would be the REQ-72 bypass wearing the
+        // word `selamat`. The gate is passed the SAFE builtin's own name so a
+        // denial says which call site was refused.
+        self.writeln(
+            r####"
+static riina_value_t* riina_builtin_file_read_safe(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_gate("file_read_safe", arg->data.string_val.data, false);
+    FILE* f = fopen(arg->data.string_val.data, "r");
+    if (!f) {
+        fprintf(stderr, "RIINA: file_read_safe: cannot read '%s'\n", arg->data.string_val.data);
+        exit(1);
+    }
+    fseek(f, 0, SEEK_END);
+    long sz = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char* buf = (char*)malloc((size_t)sz + 1);
+    if (!buf) abort();
+    size_t rd = fread(buf, 1, (size_t)sz, f);
+    buf[rd] = '\0';
+    fclose(f);
+    riina_value_t* r = riina_string(buf);
+    free(buf);
+    return r;
+}
+
+static riina_value_t* riina_builtin_file_write_safe(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* path = arg->data.pair_val.fst;
+    riina_value_t* content = arg->data.pair_val.snd;
+    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();
+    riina_gate("file_write_safe", path->data.string_val.data, true);
+    FILE* f = fopen(path->data.string_val.data, "w");
+    if (!f) {
+        fprintf(stderr, "RIINA: file_write_safe: cannot write '%s'\n", path->data.string_val.data);
+        exit(1);
+    }
+    fwrite(content->data.string_val.data, 1, content->data.string_val.len, f);
+    fclose(f);
+    return riina_unit();
+}
+
+/* Returns whether the removal succeeded rather than stopping the program — the
+   interpreter's `remove_file(..).is_ok()`. The GATE still stops it. */
+static riina_value_t* riina_builtin_file_delete_safe(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_gate_delete("file_delete_safe", arg->data.string_val.data);
+    return riina_bool(remove(arg->data.string_val.data) == 0);
+}
+"####,
+        );
+
         // fail_panjang (file_size): Teks -> Int
         self.writeln("static riina_value_t* riina_builtin_fail_panjang(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
@@ -3524,157 +4192,333 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // JSON BUILTINS
         // ═══════════════════════════════════════════════════════════════════
 
-        // Forward-declare the recursive parser
-        self.writeln("static riina_value_t* riina_json_parse_value(const char** p);");
-        self.writeln("");
-
-        // Skip whitespace helper
-        self.writeln("static void riina_json_skip_ws(const char** p) {");
+        // The parser is emitted as one raw string rather than per-line
+        // `writeln` calls (the house style elsewhere in this file). At this
+        // volume of C the escaping noise of the per-line form actively hides
+        // bugs — which is how the LENIENT parser this replaces went unnoticed.
+        //
+        // STRICTNESS IS THE POINT. The previous emitter never failed: garbage
+        // fell through to `strtoll` and became `0`, `nul` became `()`, `12abc`
+        // became `12`, and an unterminated array closed itself. The interpreter
+        // (`builtins/json.rs`) rejects all four. A compiled program parsing
+        // attacker-controlled JSON therefore saw a FABRICATED value where
+        // `riinac run` refuses — and `json_parse_safe`/`nyahsiri_selamat`, whose
+        // whole contract is "malformed input yields Unit", cannot be routed to a
+        // backend that has no notion of malformed.
+        //
+        // So this mirrors `builtins/json.rs` production-for-production,
+        // including the parts that are not obviously deliberate:
+        //   * whitespace is UNICODE (`str::trim`), not the ASCII four;
+        //   * `\uD800`-`\uDFFF` decode to nothing at all (`char::from_u32`
+        //     returns None and the interpreter pushes no character);
+        //   * a number is read as `u64` first and only then as `f64` with a
+        //     SATURATING cast, so `-5` is `0` and not a huge unsigned value;
+        //   * trailing content after the top-level value is an error.
+        // Failure is recorded rather than raised in place, because `json_urai`
+        // must report it and `json_parse_safe` must swallow it.
         self.writeln(
-            "    while (**p == ' ' || **p == '\\t' || **p == '\\n' || **p == '\\r') (*p)++;",
+            r####"
+static bool riina_json_has_err = false;
+static char riina_json_errbuf[192];
+
+static void riina_json_fail(const char* msg) {
+    if (riina_json_has_err) return;
+    riina_json_has_err = true;
+    snprintf(riina_json_errbuf, sizeof(riina_json_errbuf), "%s", msg);
+}
+
+/* Decode one codepoint from a NUL-terminated buffer. A truncated or invalid
+   sequence advances one byte and reports U+FFFD, which is never whitespace and
+   never a structural character, so the caller treats it as ordinary text. */
+static uint32_t riina_json_cp(const char* p, size_t* adv) {
+    unsigned char c0 = (unsigned char)p[0];
+    unsigned char c1 = (unsigned char)p[1];
+    if (c0 < 0x80) { *adv = 1; return c0; }
+    if ((c0 & 0xE0) == 0xC0 && (c1 & 0xC0) == 0x80) {
+        *adv = 2; return ((uint32_t)(c0 & 0x1F) << 6) | (uint32_t)(c1 & 0x3F);
+    }
+    unsigned char c2 = c1 ? (unsigned char)p[2] : 0;
+    if ((c0 & 0xF0) == 0xE0 && (c1 & 0xC0) == 0x80 && (c2 & 0xC0) == 0x80) {
+        *adv = 3;
+        return ((uint32_t)(c0 & 0x0F) << 12) | ((uint32_t)(c1 & 0x3F) << 6)
+             | (uint32_t)(c2 & 0x3F);
+    }
+    unsigned char c3 = c2 ? (unsigned char)p[3] : 0;
+    if ((c0 & 0xF8) == 0xF0 && (c1 & 0xC0) == 0x80 && (c2 & 0xC0) == 0x80
+        && (c3 & 0xC0) == 0x80) {
+        *adv = 4;
+        return ((uint32_t)(c0 & 0x07) << 18) | ((uint32_t)(c1 & 0x3F) << 12)
+             | ((uint32_t)(c2 & 0x3F) << 6) | (uint32_t)(c3 & 0x3F);
+    }
+    *adv = 1; return 0xFFFD;
+}
+
+/* `str::trim_start`. Unicode, because the interpreter's is: an NBSP-indented
+   document parses there and must parse here. */
+static void riina_json_skip_ws(const char** p) {
+    while (**p) {
+        size_t adv; uint32_t c = riina_json_cp(*p, &adv);
+        if (!riina_sec_is_ws(c)) return;
+        *p += adv;
+    }
+}
+
+static riina_value_t* riina_json_parse_value(const char** p);
+
+static riina_value_t* riina_json_parse_string(const char** p) {
+    (*p)++; /* opening quote; the caller has already matched it */
+    size_t cap = 64, len = 0;
+    char* buf = (char*)malloc(cap);
+    if (!buf) abort();
+    for (;;) {
+        if (len + 8 >= cap) {
+            cap *= 2; buf = (char*)realloc(buf, cap); if (!buf) abort();
+        }
+        if (**p == '\0') {
+            free(buf); riina_json_fail("unterminated string"); return NULL;
+        }
+        if (**p == '"') {
+            (*p)++; buf[len] = '\0';
+            riina_value_t* r = riina_string(buf);
+            free(buf);
+            return r;
+        }
+        if (**p != '\\') {
+            size_t adv; (void)riina_json_cp(*p, &adv);
+            for (size_t k = 0; k < adv; k++) buf[len++] = (*p)[k];
+            *p += adv;
+            continue;
+        }
+        (*p)++;
+        char e = **p;
+        if (e == '"')       { buf[len++] = '"';  (*p)++; continue; }
+        if (e == '\\')      { buf[len++] = '\\'; (*p)++; continue; }
+        if (e == '/')       { buf[len++] = '/';  (*p)++; continue; }
+        if (e == 'n')       { buf[len++] = '\n'; (*p)++; continue; }
+        if (e == 'r')       { buf[len++] = '\r'; (*p)++; continue; }
+        if (e == 't')       { buf[len++] = '\t'; (*p)++; continue; }
+        if (e == 'b')       { buf[len++] = '\b'; (*p)++; continue; }
+        if (e == 'f')       { buf[len++] = '\f'; (*p)++; continue; }
+        if (e != 'u') {
+            /* Covers end-of-input too: the interpreter's `_ => invalid escape`
+               arm matches `None` as well as an unknown character. */
+            free(buf); riina_json_fail("invalid escape"); return NULL;
+        }
+        (*p)++;
+        /* The interpreter takes FOUR CHARS and then checks the BYTE length, so
+           a multi-byte char inside the escape is not "incomplete" — it reaches
+           `from_str_radix` and fails as "invalid" instead. Mirror both arms. */
+        const char* hex = *p;
+        int nchars = 0;
+        while (nchars < 4 && **p) {
+            size_t adv; (void)riina_json_cp(*p, &adv);
+            *p += adv; nchars++;
+        }
+        size_t nbytes = (size_t)(*p - hex);
+        if (nbytes < 4) {
+            free(buf); riina_json_fail("incomplete unicode escape"); return NULL;
+        }
+        /* `u32::from_str_radix` accepts an optional leading '+' and nothing
+           else outside the digits. Anything wider than 4 bytes contains a
+           non-ASCII char and so cannot be radix-16 digits. */
+        bool ok = (nbytes == 4);
+        size_t i = (ok && hex[0] == '+') ? 1 : 0;
+        if (ok && i == nbytes) ok = false;
+        uint32_t cp = 0;
+        for (; ok && i < nbytes; i++) {
+            char h = hex[i]; int d;
+            if (h >= '0' && h <= '9') d = h - '0';
+            else if (h >= 'a' && h <= 'f') d = h - 'a' + 10;
+            else if (h >= 'A' && h <= 'F') d = h - 'A' + 10;
+            else { ok = false; break; }
+            cp = (cp << 4) | (uint32_t)d;
+        }
+        if (!ok) {
+            free(buf); riina_json_fail("invalid unicode escape"); return NULL;
+        }
+        /* A lone surrogate is `char::from_u32(cp) == None`, and the interpreter
+           pushes NOTHING in that case rather than erroring. */
+        if (cp >= 0xD800 && cp <= 0xDFFF) continue;
+        if (cp < 0x80) {
+            buf[len++] = (char)cp;
+        } else if (cp < 0x800) {
+            buf[len++] = (char)(0xC0 | (cp >> 6));
+            buf[len++] = (char)(0x80 | (cp & 0x3F));
+        } else {
+            buf[len++] = (char)(0xE0 | (cp >> 12));
+            buf[len++] = (char)(0x80 | ((cp >> 6) & 0x3F));
+            buf[len++] = (char)(0x80 | (cp & 0x3F));
+        }
+    }
+}
+
+/* `u64` first, then `f64` with Rust's SATURATING `as u64`. The old emitter used
+   `strtoll` and a C cast, so `-5` became 18446744073709551611 where the
+   interpreter gives 0. */
+static riina_value_t* riina_json_parse_number(const char** p) {
+    const char* s = *p;
+    size_t end = 0;
+    while (s[end]) {
+        char c = s[end];
+        bool allowed = (c >= '0' && c <= '9') || c == '-' || c == '.'
+                    || c == 'e' || c == 'E' || c == '+';
+        if (!allowed) break;
+        end++;
+    }
+    char nbuf[128];
+    if (end >= sizeof(nbuf)) {
+        riina_json_fail("cannot parse number"); return NULL;
+    }
+    memcpy(nbuf, s, end);
+    nbuf[end] = '\0';
+    *p = s + end;
+
+    bool u_ok = true;
+    size_t i = (nbuf[0] == '+') ? 1 : 0;
+    if (nbuf[i] == '\0') u_ok = false;
+    unsigned long long uv = 0;
+    for (size_t k = i; u_ok && nbuf[k]; k++) {
+        if (nbuf[k] < '0' || nbuf[k] > '9') { u_ok = false; break; }
+        unsigned long long d = (unsigned long long)(nbuf[k] - '0');
+        if (uv > (0xFFFFFFFFFFFFFFFFULL - d) / 10ULL) { u_ok = false; break; }
+        uv = uv * 10ULL + d;
+    }
+    if (u_ok) return riina_int((uint64_t)uv);
+
+    char* fend = NULL;
+    double d = strtod(nbuf, &fend);
+    if (fend == nbuf || *fend != '\0') {
+        char msg[160];
+        snprintf(msg, sizeof(msg), "cannot parse number: '%s'", nbuf);
+        riina_json_fail(msg);
+        return NULL;
+    }
+    if (!(d == d) || d <= 0.0) return riina_int(0);            /* NaN, negatives */
+    if (d >= 18446744073709551616.0) return riina_int(0xFFFFFFFFFFFFFFFFULL);
+    return riina_int((uint64_t)d);
+}
+
+static riina_value_t* riina_json_parse_object(const char** p) {
+    (*p)++; /* '{' */
+    riina_map_t m = { NULL, 0 };
+    riina_json_skip_ws(p);
+    if (**p == '}') { (*p)++; return riina_make_map(m); }
+    for (;;) {
+        riina_json_skip_ws(p);
+        if (**p != '"') { riina_json_fail("expected string key in object"); return NULL; }
+        riina_value_t* key = riina_json_parse_string(p);
+        if (!key) return NULL;
+        riina_json_skip_ws(p);
+        if (**p != ':') { riina_json_fail("expected ':' in object"); return NULL; }
+        (*p)++;
+        riina_value_t* val = riina_json_parse_value(p);
+        if (!val) return NULL;
+        /* Sorted insert: the interpreter parses into a BTreeMap, so a duplicate
+           key keeps the LAST value and iteration is by key. */
+        riina_map_put_sorted(&m, key->data.string_val.data, val);
+        riina_json_skip_ws(p);
+        if (**p == '}') { (*p)++; return riina_make_map(m); }
+        if (**p == ',') { (*p)++; continue; }
+        riina_json_fail("expected ',' or '}' in object");
+        return NULL;
+    }
+}
+
+static riina_value_t* riina_json_parse_array(const char** p) {
+    (*p)++; /* '[' */
+    riina_list_t l = riina_list_new();
+    riina_json_skip_ws(p);
+    if (**p == ']') { (*p)++; return riina_make_list(l); }
+    for (;;) {
+        riina_value_t* val = riina_json_parse_value(p);
+        if (!val) return NULL;
+        riina_list_push(&l, val);
+        riina_json_skip_ws(p);
+        if (**p == ']') { (*p)++; return riina_make_list(l); }
+        if (**p == ',') { (*p)++; continue; }
+        riina_json_fail("expected ',' or ']' in array");
+        return NULL;
+    }
+}
+
+static bool riina_json_eat(const char** p, const char* lit) {
+    size_t n = strlen(lit);
+    if (strncmp(*p, lit, n) != 0) return false;
+    *p += n;
+    return true;
+}
+
+static riina_value_t* riina_json_parse_value(const char** p) {
+    riina_json_skip_ws(p);
+    if (**p == '\0') { riina_json_fail("unexpected end of input"); return NULL; }
+    char c = **p;
+    if (c == '"') return riina_json_parse_string(p);
+    if (c == '{') return riina_json_parse_object(p);
+    if (c == '[') return riina_json_parse_array(p);
+    if (c == 't' || c == 'f') {
+        if (riina_json_eat(p, "true")) return riina_bool(true);
+        if (riina_json_eat(p, "false")) return riina_bool(false);
+        riina_json_fail("expected 'true' or 'false'");
+        return NULL;
+    }
+    if (c == 'n') {
+        if (riina_json_eat(p, "null")) return riina_unit();
+        riina_json_fail("expected 'null'");
+        return NULL;
+    }
+    if (c == '-' || (c >= '0' && c <= '9')) return riina_json_parse_number(p);
+    char msg[64];
+    snprintf(msg, sizeof(msg), "unexpected char '%c'", c);
+    riina_json_fail(msg);
+    return NULL;
+}
+
+/* Whole document: a value, then nothing but whitespace. NULL ⇒ malformed, with
+   the reason in riina_json_errbuf. */
+static riina_value_t* riina_json_parse_document(const char* s) {
+    riina_json_has_err = false;
+    riina_json_errbuf[0] = '\0';
+    const char* p = s;
+    riina_value_t* v = riina_json_parse_value(&p);
+    if (!v) return NULL;
+    riina_json_skip_ws(&p);
+    if (*p != '\0') {
+        char msg[160];
+        snprintf(msg, sizeof(msg), "unexpected trailing content: '%.20s'", p);
+        riina_json_fail(msg);
+        return NULL;
+    }
+    return v;
+}
+
+/* json_urai (json_parse): Teks -> Value. Malformed input is a runtime error, as
+   in the interpreter — not a fabricated value. */
+static riina_value_t* riina_builtin_json_urai(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_value_t* v = riina_json_parse_document(arg->data.string_val.data);
+    if (!v) {
+        fprintf(stderr, "RIINA: invalid operation: json_urai: %s\n", riina_json_errbuf);
+        exit(1);
+    }
+    return v;
+}
+
+/* json_parse_safe / deserialize_safe: the SAME parser, with malformed input
+   yielding Unit instead of stopping the program. That contract is the reason
+   the strict parser above had to exist first. */
+static riina_value_t* riina_builtin_json_parse_safe(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_value_t* v = riina_json_parse_document(arg->data.string_val.data);
+    return v ? v : riina_unit();
+}
+
+/* nyahsiri_selamat. The interpreter dispatches it to the same JSON parser, so
+   this is an alias and not a second format. */
+static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
+    return riina_builtin_json_parse_safe(arg);
+}
+"####,
         );
-        self.writeln("}");
-        self.writeln("");
-
-        // Parse string (returns riina_value_t* STRING)
-        self.writeln("static riina_value_t* riina_json_parse_string(const char** p) {");
-        self.writeln("    if (**p != '\"') abort();");
-        self.writeln("    (*p)++;");
-        self.writeln("    size_t cap = 64, len = 0;");
-        self.writeln("    char* buf = (char*)malloc(cap);");
-        self.writeln("    if (!buf) abort();");
-        self.writeln("    while (**p && **p != '\"') {");
-        self.writeln("        if (len + 4 >= cap) { cap *= 2; buf = (char*)realloc(buf, cap); if (!buf) abort(); }");
-        self.writeln("        if (**p == '\\\\') {");
-        self.writeln("            (*p)++;");
-        self.writeln("            switch (**p) {");
-        self.writeln("                case '\"': buf[len++] = '\"'; break;");
-        self.writeln("                case '\\\\': buf[len++] = '\\\\'; break;");
-        self.writeln("                case '/': buf[len++] = '/'; break;");
-        self.writeln("                case 'n': buf[len++] = '\\n'; break;");
-        self.writeln("                case 'r': buf[len++] = '\\r'; break;");
-        self.writeln("                case 't': buf[len++] = '\\t'; break;");
-        self.writeln("                case 'b': buf[len++] = '\\b'; break;");
-        self.writeln("                case 'f': buf[len++] = '\\f'; break;");
-        self.writeln("                case 'u': {");
-        self.writeln("                    /* \\uXXXX -> UTF-8. The interpreter does");
-        self.writeln("                       char::from_u32(cp) and pushes on Some, so an");
-        self.writeln("                       unpaired surrogate is dropped; match that. Without");
-        self.writeln("                       this case the default arm emitted a literal 'u' and");
-        self.writeln("                       the four hex digits fell through as ordinary text. */");
-        self.writeln("                    unsigned int cp = 0; int nhex = 0;");
-        self.writeln("                    for (int i = 0; i < 4; i++) {");
-        self.writeln("                        char h = (*p)[1]; int d;");
-        self.writeln("                        if (h >= '0' && h <= '9') d = h - '0';");
-        self.writeln("                        else if (h >= 'a' && h <= 'f') d = h - 'a' + 10;");
-        self.writeln("                        else if (h >= 'A' && h <= 'F') d = h - 'A' + 10;");
-        self.writeln("                        else break;");
-        self.writeln("                        cp = (cp << 4) | (unsigned int)d; (*p)++; nhex++;");
-        self.writeln("                    }");
-        self.writeln("                    if (nhex == 4 && !(cp >= 0xD800 && cp <= 0xDFFF)) {");
-        self.writeln("                        if (cp < 0x80) {");
-        self.writeln("                            buf[len++] = (char)cp;");
-        self.writeln("                        } else if (cp < 0x800) {");
-        self.writeln("                            buf[len++] = (char)(0xC0 | (cp >> 6));");
-        self.writeln("                            buf[len++] = (char)(0x80 | (cp & 0x3F));");
-        self.writeln("                        } else {");
-        self.writeln("                            buf[len++] = (char)(0xE0 | (cp >> 12));");
-        self.writeln("                            buf[len++] = (char)(0x80 | ((cp >> 6) & 0x3F));");
-        self.writeln("                            buf[len++] = (char)(0x80 | (cp & 0x3F));");
-        self.writeln("                        }");
-        self.writeln("                    }");
-        self.writeln("                    break;");
-        self.writeln("                }");
-        self.writeln("                default: buf[len++] = **p; break;");
-        self.writeln("            }");
-        self.writeln("        } else {");
-        self.writeln("            buf[len++] = **p;");
-        self.writeln("        }");
-        self.writeln("        (*p)++;");
-        self.writeln("    }");
-        self.writeln("    if (**p == '\"') (*p)++;");
-        self.writeln("    buf[len] = '\\0';");
-        self.writeln("    riina_value_t* r = riina_string(buf);");
-        self.writeln("    free(buf);");
-        self.writeln("    return r;");
-        self.writeln("}");
-        self.writeln("");
-
-        // Parse number
-        self.writeln("static riina_value_t* riina_json_parse_number(const char** p) {");
-        self.writeln("    char* end;");
-        self.writeln("    long long val = strtoll(*p, &end, 10);");
-        self.writeln("    *p = end;");
-        self.writeln("    /* Skip fractional/exponent parts */");
-        self.writeln("    if (**p == '.') { strtod(*p - (end - *p), &end); *p = end; }");
-        self.writeln("    return riina_int((uint64_t)val);");
-        self.writeln("}");
-        self.writeln("");
-
-        // Parse object
-        self.writeln("static riina_value_t* riina_json_parse_object(const char** p) {");
-        self.writeln("    (*p)++; /* skip '{' */");
-        self.writeln("    riina_map_t m = { NULL, 0 };");
-        self.writeln("    riina_json_skip_ws(p);");
-        self.writeln("    if (**p == '}') { (*p)++; return riina_make_map(m); }");
-        self.writeln("    for (;;) {");
-        self.writeln("        riina_json_skip_ws(p);");
-        self.writeln("        riina_value_t* key = riina_json_parse_string(p);");
-        self.writeln("        riina_json_skip_ws(p);");
-        self.writeln("        if (**p == ':') (*p)++;");
-        self.writeln("        riina_value_t* val = riina_json_parse_value(p);");
-        self.writeln("        /* Sorted insert: the interpreter parses into a BTreeMap, so a");
-        self.writeln("           duplicate key keeps the LAST value and iteration is by key. */");
-        self.writeln("        riina_map_put_sorted(&m, key->data.string_val.data, val);");
-        self.writeln("        riina_json_skip_ws(p);");
-        self.writeln("        if (**p == ',') { (*p)++; continue; }");
-        self.writeln("        if (**p == '}') { (*p)++; break; }");
-        self.writeln("        break;");
-        self.writeln("    }");
-        self.writeln("    return riina_make_map(m);");
-        self.writeln("}");
-        self.writeln("");
-
-        // Parse array
-        self.writeln("static riina_value_t* riina_json_parse_array(const char** p) {");
-        self.writeln("    (*p)++; /* skip '[' */");
-        self.writeln("    riina_list_t l = riina_list_new();");
-        self.writeln("    riina_json_skip_ws(p);");
-        self.writeln("    if (**p == ']') { (*p)++; return riina_make_list(l); }");
-        self.writeln("    for (;;) {");
-        self.writeln("        riina_value_t* val = riina_json_parse_value(p);");
-        self.writeln("        riina_list_push(&l, val);");
-        self.writeln("        riina_json_skip_ws(p);");
-        self.writeln("        if (**p == ',') { (*p)++; continue; }");
-        self.writeln("        if (**p == ']') { (*p)++; break; }");
-        self.writeln("        break;");
-        self.writeln("    }");
-        self.writeln("    return riina_make_list(l);");
-        self.writeln("}");
-        self.writeln("");
-
-        // Parse value (recursive dispatch)
-        self.writeln("static riina_value_t* riina_json_parse_value(const char** p) {");
-        self.writeln("    riina_json_skip_ws(p);");
-        self.writeln("    switch (**p) {");
-        self.writeln("        case '\"': return riina_json_parse_string(p);");
-        self.writeln("        case '{': return riina_json_parse_object(p);");
-        self.writeln("        case '[': return riina_json_parse_array(p);");
-        self.writeln("        case 't': (*p) += 4; return riina_bool(true);");
-        self.writeln("        case 'f': (*p) += 5; return riina_bool(false);");
-        self.writeln("        case 'n': (*p) += 4; return riina_unit();");
-        self.writeln("        default: return riina_json_parse_number(p);");
-        self.writeln("    }");
-        self.writeln("}");
-        self.writeln("");
-
-        // json_urai (json_parse): Teks -> Value
-        self.writeln("static riina_value_t* riina_builtin_json_urai(riina_value_t* arg) {");
-        self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    const char* p = arg->data.string_val.data;");
-        self.writeln("    return riina_json_parse_value(&p);");
-        self.writeln("}");
-        self.writeln("");
 
         // JSON stringify helper (forward declare for recursion)
         self.writeln("static void riina_json_stringify_impl(riina_value_t* v, char** buf, size_t* len, size_t* cap);");
