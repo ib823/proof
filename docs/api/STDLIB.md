@@ -6,13 +6,13 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **238** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **323** of the 373 also compile, and they do NOT all reach the same backends:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (218 builtins). |
-| `interp-only` | `riinac run` only (135 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (303 builtins). |
+| `interp-only` | `riinac run` only (50 builtins). `riinac build` fails with `unbound variable`. |
 
 ```
 $ riinac check baca.rii     # Success!  Effect: FileSystem
@@ -30,7 +30,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Bersih (Pure)
 
-> **Mixed:** 166 of 229 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 214 of 229 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -49,23 +49,23 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `binary_fixed` | `Fn((Teks, Nombor), Qmn)` | compiled |
 | `bool_ke_nombor` | `Fn(Benar, Nombor)` | **native-only** |
 | `bool_to_int` | `Fn(Benar, Nombor)` | **native-only** |
-| `buang_null` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
+| `buang_null` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
 | `concat` | `Fn((Teks, Teks), Teks)` | compiled |
-| `csrf_check_origin` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `csrf_check_referer` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `csrf_sahkan` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `csrf_semak_origin` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `csrf_semak_referer` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `csrf_validate` | `Fn((Teks, Teks), Benar)` | **interp-only** |
+| `csrf_check_origin` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_check_referer` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_sahkan` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_semak_origin` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_semak_referer` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_validate` | `Fn((Teks, Teks), Benar)` | **native-only** |
 | `decimal` | `Fn(Teks, Perpuluhan)` | compiled |
-| `deserialize_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
-| `email_set_header` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **interp-only** |
-| `emel_tetap_kepala` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **interp-only** |
+| `deserialize_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
+| `email_set_header` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **native-only** |
+| `emel_tetap_kepala` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **native-only** |
 | `fixed` | `Fn((Teks, Nombor), Wang)` | compiled |
 | `gabung_teks` | `Fn((Teks, Teks), Teks)` | compiled |
 | `gcd` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
-| `html_papar` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
-| `html_render` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **interp-only** |
+| `html_papar` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **native-only** |
+| `html_render` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **native-only** |
 | `http_balas` | `Fn((Nombor, Teks), Teks)` | **native-only** |
 | `http_build_response` | `Fn((Nombor, Teks), Teks)` | **native-only** |
 | `http_hurai_jasad` | `Fn(Teks, Teks)` | **native-only** |
@@ -85,11 +85,11 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `json_ke_teks` | `Fn(Any, Any)` | **native-only** |
 | `json_letak` | `Fn(Any, Any)` | **native-only** |
 | `json_parse` | `Fn(Any, Any)` | **native-only** |
-| `json_parse_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
+| `json_parse_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
 | `json_set` | `Fn(Any, Any)` | **native-only** |
 | `json_stringify` | `Fn(Any, Any)` | **native-only** |
 | `json_urai` | `Fn(Any, Any)` | **native-only** |
-| `json_urai_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
+| `json_urai_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
 | `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
 | `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
 | `ke_bool` | `Fn(Any, Benar)` | **native-only** |
@@ -136,9 +136,9 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `nilai_kanan` | `Fn(Any, Any)` | **interp-only** |
 | `nilai_kiri` | `Fn(Any, Any)` | **interp-only** |
 | `nombor_ke_teks` | `Fn(Nombor, Teks)` | compiled |
-| `normal_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
-| `normalize_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
-| `nyahsiri_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **interp-only** |
+| `normal_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
+| `normalize_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
+| `nyahsiri_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
 | `panjang` | `Fn(Teks, Nombor)` | **native-only** |
 | `parse_int` | `Fn(Teks, Nombor)` | **native-only** |
 | `perpuluhan` | `Fn(Teks, Perpuluhan)` | compiled |
@@ -155,30 +155,30 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `qmn` | `Fn((Teks, Nombor), Qmn)` | compiled |
 | `rangka` | `Fn(Teks, Teks)` | **interp-only** |
 | `rem` | `Fn(Nombor, Nombor)` | **interp-only** |
-| `sahkan_panjang` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **interp-only** |
-| `sahkan_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **interp-only** |
-| `sanitasi_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **interp-only** |
-| `sanitasi_emel` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **interp-only** |
-| `sanitasi_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **interp-only** |
-| `sanitasi_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **interp-only** |
-| `sanitasi_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **interp-only** |
-| `sanitasi_laluan` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **interp-only** |
-| `sanitasi_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **interp-only** |
-| `sanitasi_perintah` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **interp-only** |
-| `sanitasi_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **interp-only** |
-| `sanitasi_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **interp-only** |
-| `sanitasi_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **interp-only** |
-| `sanitize_command` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **interp-only** |
-| `sanitize_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **interp-only** |
-| `sanitize_email` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **interp-only** |
-| `sanitize_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **interp-only** |
-| `sanitize_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **interp-only** |
-| `sanitize_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **interp-only** |
-| `sanitize_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **interp-only** |
-| `sanitize_path` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **interp-only** |
-| `sanitize_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **interp-only** |
-| `sanitize_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **interp-only** |
-| `sanitize_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **interp-only** |
+| `sahkan_panjang` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
+| `sahkan_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
+| `sanitasi_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **native-only** |
+| `sanitasi_emel` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **native-only** |
+| `sanitasi_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **native-only** |
+| `sanitasi_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **native-only** |
+| `sanitasi_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **native-only** |
+| `sanitasi_laluan` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **native-only** |
+| `sanitasi_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **native-only** |
+| `sanitasi_perintah` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **native-only** |
+| `sanitasi_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **native-only** |
+| `sanitasi_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **native-only** |
+| `sanitasi_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **native-only** |
+| `sanitize_command` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **native-only** |
+| `sanitize_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **native-only** |
+| `sanitize_email` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **native-only** |
+| `sanitize_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **native-only** |
+| `sanitize_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **native-only** |
+| `sanitize_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **native-only** |
+| `sanitize_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **native-only** |
+| `sanitize_path` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **native-only** |
+| `sanitize_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **native-only** |
+| `sanitize_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **native-only** |
+| `sanitize_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **native-only** |
 | `senarai_balik` | `Fn(Any, Any)` | **native-only** |
 | `senarai_baru` | `Fn(Any, Any)` | **native-only** |
 | `senarai_dapat` | `Fn(Any, Any)` | **native-only** |
@@ -229,7 +229,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `str_to_lower` | `Fn(Any, Any)` | **native-only** |
 | `str_to_upper` | `Fn(Any, Any)` | **native-only** |
 | `str_trim` | `Fn(Any, Any)` | **native-only** |
-| `strip_nulls` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **interp-only** |
+| `strip_nulls` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
 | `tegaskan` | `Fn(Benar, ())` | **native-only** |
 | `tegaskan_betul` | `Fn(Benar, ())` | **native-only** |
 | `tegaskan_beza` | `Fn((Any, Any), ())` | **native-only** |
@@ -256,38 +256,38 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `tls_policy_ok` | `Fn((Teks, Teks), Benar)` | **native-only** |
 | `to_bool` | `Fn(Any, Benar)` | **native-only** |
 | `to_string` | `Fn(Any, Teks)` | compiled |
-| `validate_length` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **interp-only** |
-| `validate_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **interp-only** |
+| `validate_length` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
+| `validate_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
 | `wang` | `Fn(Teks, Wang)` | compiled |
-| `xml_cari` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **interp-only** |
-| `xml_parse_safe` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **interp-only** |
-| `xml_query` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **interp-only** |
-| `xml_urai_selamat` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **interp-only** |
+| `xml_cari` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+| `xml_parse_safe` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+| `xml_query` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+| `xml_urai_selamat` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
 
 ## Baca (Read)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+> **Mixed:** 2 of 4 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
-| `fail_baca_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **interp-only** |
-| `file_read_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **interp-only** |
+| `fail_baca_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **native-only** |
+| `file_read_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **native-only** |
 | `vfs_baca` | `Fn(Teks, Teks, Baca)` | **interp-only** |
 | `vfs_read` | `Fn(Teks, Teks, Baca)` | **interp-only** |
 
 ## Tulis (Write)
 
-> **Mixed:** 4 of 13 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 8 of 13 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
 | `cetak` | `Fn(Any, (), Tulis)` | compiled |
 | `cetak_baris` | `Fn(Any, (), Tulis)` | **interp-only** |
 | `cetakln` | `Fn(Any, (), Tulis)` | compiled |
-| `fail_buang_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **interp-only** |
-| `fail_tulis_selamat` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **interp-only** |
-| `file_delete_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **interp-only** |
-| `file_write_safe` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **interp-only** |
+| `fail_buang_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **native-only** |
+| `fail_tulis_selamat` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **native-only** |
+| `file_delete_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **native-only** |
+| `file_write_safe` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **native-only** |
 | `print` | `Fn(Any, (), Tulis)` | compiled |
 | `println` | `Fn(Any, (), Tulis)` | compiled |
 | `vfs_delete` | `Fn(Teks, Benar, Tulis)` | **interp-only** |
@@ -338,27 +338,25 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Rangkaian (Network)
 
-> **Mixed:** 18 of 34 compile; the rest are interpreter-only (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
-| `badan_http` | `Fn(Any, Tercemar<Teks, NetworkExternal>, Rangkaian)` | **interp-only** |
-| `email_send` | `Fn((Disanitasi<Teks, EmailValidation>, Teks), Benar, Rangkaian)` | **interp-only** |
-| `emel_hantar` | `Fn((Disanitasi<Teks, EmailValidation>, Teks), Benar, Rangkaian)` | **interp-only** |
-| `http_ambil_selamat` | `Fn(Disanitasi<Teks, UrlAllowlist>, Any, Rangkaian)` | **interp-only** |
-| `http_arah_selamat` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **interp-only** |
-| `http_body` | `Fn(Any, Tercemar<Teks, NetworkExternal>, Rangkaian)` | **interp-only** |
-| `http_dapat` | `Fn(Teks, Any, Rangkaian)` | **interp-only** |
-| `http_delete` | `Fn((Teks, Teks), Any, Rangkaian)` | **interp-only** |
-| `http_fetch_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, Any, Rangkaian)` | **interp-only** |
-| `http_get` | `Fn(Teks, Any, Rangkaian)` | **interp-only** |
-| `http_hantar` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
-| `http_kemaskini` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
+| `badan_http` | `Fn(Any, Tercemar<Teks, NetworkExternal>, Rangkaian)` | **native-only** |
+| `email_send` | `Fn((Disanitasi<Teks, EmailValidation>, Teks), Benar, Rangkaian)` | **native-only** |
+| `emel_hantar` | `Fn((Disanitasi<Teks, EmailValidation>, Teks), Benar, Rangkaian)` | **native-only** |
+| `http_ambil_selamat` | `Fn(Disanitasi<Teks, UrlAllowlist>, Any, Rangkaian)` | **native-only** |
+| `http_arah_selamat` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **native-only** |
+| `http_body` | `Fn(Any, Tercemar<Teks, NetworkExternal>, Rangkaian)` | **native-only** |
+| `http_dapat` | `Fn(Teks, Any, Rangkaian)` | **native-only** |
+| `http_delete` | `Fn((Teks, Teks), Any, Rangkaian)` | **native-only** |
+| `http_fetch_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, Any, Rangkaian)` | **native-only** |
+| `http_get` | `Fn(Teks, Any, Rangkaian)` | **native-only** |
+| `http_hantar` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_kemaskini` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
 | `http_minta` | `Fn((Teks, Teks), Teks, Rangkaian)` | **native-only** |
-| `http_padam` | `Fn((Teks, Teks), Any, Rangkaian)` | **interp-only** |
-| `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
-| `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **interp-only** |
-| `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **interp-only** |
+| `http_padam` | `Fn((Teks, Teks), Any, Rangkaian)` | **native-only** |
+| `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **native-only** |
 | `http_request` | `Fn((Teks, Teks), Teks, Rangkaian)` | **native-only** |
 | `jaring_alamat` | `Fn(Nombor, Teks, Rangkaian)` | **native-only** |
 | `jaring_dengar` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
@@ -428,25 +426,23 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Sistem (System)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
-| `baca_baris` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **interp-only** |
-| `baca_garisan` | `Fn((), Teks, Sistem)` | **interp-only** |
-| `dom_set_attr` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **interp-only** |
-| `dom_set_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **interp-only** |
-| `dom_tetap_atribut` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **interp-only** |
-| `dom_tetap_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **interp-only** |
-| `js_eval` | `Fn(Disanitasi<Teks, JsEscape>, Any, Sistem)` | **interp-only** |
-| `js_nilai` | `Fn(Disanitasi<Teks, JsEscape>, Any, Sistem)` | **interp-only** |
-| `ldap_cari` | `Fn(Disanitasi<Teks, LdapEscape>, Any, Sistem)` | **interp-only** |
-| `ldap_search` | `Fn(Disanitasi<Teks, LdapEscape>, Any, Sistem)` | **interp-only** |
-| `read_line` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **interp-only** |
-| `shell_exec` | `Fn(Disanitasi<Teks, CommandEscape>, Nombor, Sistem)` | **interp-only** |
-| `shell_laksana` | `Fn(Disanitasi<Teks, CommandEscape>, Nombor, Sistem)` | **interp-only** |
-| `sql_execute` | `Fn(Disanitasi<Teks, SqlParam>, Any, Sistem)` | **interp-only** |
-| `sql_laksana` | `Fn(Disanitasi<Teks, SqlParam>, Any, Sistem)` | **interp-only** |
+| `baca_baris` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **native-only** |
+| `baca_garisan` | `Fn((), Teks, Sistem)` | **native-only** |
+| `dom_set_attr` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **native-only** |
+| `dom_set_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **native-only** |
+| `dom_tetap_atribut` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **native-only** |
+| `dom_tetap_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **native-only** |
+| `js_eval` | `Fn(Disanitasi<Teks, JsEscape>, Any, Sistem)` | **native-only** |
+| `js_nilai` | `Fn(Disanitasi<Teks, JsEscape>, Any, Sistem)` | **native-only** |
+| `ldap_cari` | `Fn(Disanitasi<Teks, LdapEscape>, Any, Sistem)` | **native-only** |
+| `ldap_search` | `Fn(Disanitasi<Teks, LdapEscape>, Any, Sistem)` | **native-only** |
+| `read_line` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **native-only** |
+| `shell_exec` | `Fn(Disanitasi<Teks, CommandEscape>, Nombor, Sistem)` | **native-only** |
+| `shell_laksana` | `Fn(Disanitasi<Teks, CommandEscape>, Nombor, Sistem)` | **native-only** |
+| `sql_execute` | `Fn(Disanitasi<Teks, SqlParam>, Any, Sistem)` | **native-only** |
+| `sql_laksana` | `Fn(Disanitasi<Teks, SqlParam>, Any, Sistem)` | **native-only** |
 
 ## Masa (Time)
 

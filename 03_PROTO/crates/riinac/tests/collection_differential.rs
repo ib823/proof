@@ -189,3 +189,42 @@ fn map_and_set_agree() {
          \x20   cetakln(ke_teks(set_panjang(s)));",
     );
 }
+
+// ── Rendering composite values ─────────────────────────────────────────────
+
+/// `cetakln` and `ke_teks` both render through one function, and until REQ-70's
+/// keselamatan increment the C one answered the literal text `<value>` for every
+/// composite tag: PAIR, LIST, MAP and both SUM arms. A compiled program printing
+/// a list showed `<value>` where `riinac run` shows `[1, 2, 3]`.
+///
+/// The cases here separate the two rendering modes the interpreter actually has,
+/// because a C author mirroring only the obvious one would still pass a
+/// list-of-ints test:
+///
+/// * `builtins::format_value` prints a string BARE and a bool as `betul`/`salah`;
+/// * `Value`'s `Display` — which `format_value` falls through to, and which is
+///   the ONLY path a sum takes — QUOTES the string and prints Rust's English
+///   `true`/`false`.
+///
+/// So the same bool renders `betul` inside a list and `true` inside a sum. That
+/// is an inconsistency in the reference rather than a design; it is pinned here
+/// so that changing it is a deliberate language decision and not codegen drift.
+#[test]
+fn composite_values_render_identically() {
+    assert_backends_agree("fmt_list", "    cetakln(ke_teks([1, 2, 3]));");
+    assert_backends_agree("fmt_pair", "    cetakln(ke_teks((1, \"dua\")));");
+    assert_backends_agree("fmt_nested", "    cetakln(ke_teks(([1, 2], (betul, ()))));");
+}
+
+/// The mode split, isolated: a bool and a string each rendered directly, inside
+/// a list, and inside a sum.
+#[test]
+fn sum_rendering_uses_display_not_format_value() {
+    assert_backends_agree(
+        "fmt_modes",
+        "    cetakln(ke_teks(betul));\n\
+         \x20   cetakln(ke_teks([betul, salah]));\n\
+         \x20   cetakln(ke_teks(\"teks\"));\n\
+         \x20   cetakln(ke_teks([\"teks\"]));",
+    );
+}
