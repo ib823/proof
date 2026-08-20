@@ -3267,9 +3267,143 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("#include <unistd.h>");
         self.writeln("");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // VERIFIED FILE GATE
+        // ═══════════════════════════════════════════════════════════════════
+        //
+        // The interpreter never touches the host filesystem directly: every
+        // `fail_*` builtin first calls gate_read/gate_write/gate_delete, which
+        // evaluate the Coq `can_read`/`can_write` predicates. Emitted C used to
+        // have none of that — bare fopen/fwrite — so compiling a program was a
+        // way around a verified security check (REQ-70/REQ-27). This is the
+        // gate, mirrored.
+        //
+        // ONE SPECIFICATION, TWO IMPLEMENTATIONS. The spec is Coq
+        // `domains/VerifiedFileSystem.v` (Inode / Ownership / Permission /
+        // is_owner / get_permission); `riina-os/src/vfs.rs` is the Rust
+        // implementation and this is the C one. They cannot share code — the
+        // compile pipeline is `cc -o out one.c` with nothing linked, so a
+        // single implementation callable from both would mean shipping a
+        // per-target Rust staticlib. The same shape as the `masa` civil
+        // calendar (REQ-70) and the GF128/AES Coq⇄Rust equivalences: two
+        // implementations of one model, held together by a differential —
+        // here `file_gate_parity.rs` plus `file_differential.rs`.
+        //
+        // Deliberately NOT the host OS's own permission bits. The gate is
+        // RIINA's model, so it must deny where the model denies even when the
+        // host would allow (the process typically owns these files); letting
+        // the kernel decide would silently make the check a no-op.
+        self.writeln("typedef struct { bool read; bool write; bool execute; } riina_perm_t;");
+        self.writeln("typedef struct riina_inode_s {");
+        self.writeln("    char* path;");
+        self.writeln("    uint64_t owner_uid;");
+        self.writeln("    uint64_t owner_gid;");
+        self.writeln("    riina_perm_t perm_owner;");
+        self.writeln("    riina_perm_t perm_group;");
+        self.writeln("    riina_perm_t perm_other;");
+        self.writeln("    struct riina_inode_s* next;");
+        self.writeln("} riina_inode_t;");
+        self.writeln("");
+        // `ctx_for(uid)` in builtins/vfs.rs yields { uid, gid: uid,
+        // groups: [uid], is_root: false }, and DEFAULT_UID is 1000. Supplementary
+        // groups are therefore always exactly [gid] today; `in_group` below is
+        // written in the general form anyway so it still matches the model if
+        // that changes.
+        self.writeln("static uint64_t riina_ctx_uid = 1000;");
+        self.writeln("static uint64_t riina_ctx_gid = 1000;");
+        self.writeln("static bool riina_ctx_is_root = false;");
+        self.writeln("static riina_inode_t* riina_inodes = NULL;");
+        self.writeln("");
+        // First touch registers the path owned by the CURRENT uid at mode 0644,
+        // matching the interpreter's HostGate::gate and the modes vfs_tulis
+        // creates with (owner rw, group/other r).
+        self.writeln("static riina_inode_t* riina_gate_touch(const char* path) {");
+        self.writeln("    for (riina_inode_t* i = riina_inodes; i; i = i->next) {");
+        self.writeln("        if (strcmp(i->path, path) == 0) return i;");
+        self.writeln("    }");
+        self.writeln("    riina_inode_t* ino = (riina_inode_t*)malloc(sizeof(riina_inode_t));");
+        self.writeln("    if (!ino) abort();");
+        self.writeln("    ino->path = strdup(path);");
+        self.writeln("    if (!ino->path) abort();");
+        self.writeln("    ino->owner_uid = riina_ctx_uid;");
+        self.writeln("    ino->owner_gid = riina_ctx_gid;");
+        self.writeln("    ino->perm_owner = (riina_perm_t){ true, true, false };");
+        self.writeln("    ino->perm_group = (riina_perm_t){ true, false, false };");
+        self.writeln("    ino->perm_other = (riina_perm_t){ true, false, false };");
+        self.writeln("    ino->next = riina_inodes;");
+        self.writeln("    riina_inodes = ino;");
+        self.writeln("    return ino;");
+        self.writeln("}");
+        self.writeln("");
+        // Coq `get_permission` — owner > group > other resolution order.
+        self.writeln("static riina_perm_t riina_permission_for(const riina_inode_t* ino) {");
+        self.writeln("    if (ino->owner_uid == riina_ctx_uid) return ino->perm_owner;");
+        self.writeln("    if (ino->owner_gid == riina_ctx_gid) return ino->perm_group;");
+        self.writeln("    return ino->perm_other;");
+        self.writeln("}");
+        self.writeln("");
+        // Coq `can_read` / `can_write` — root always, else the applicable bit.
+        // Denial exits non-zero with the interpreter's wording; it must not be
+        // possible for a denied op to fall through and touch the filesystem.
+        self.writeln("static void riina_gate(const char* op, const char* path, bool want_write) {");
+        self.writeln("    riina_inode_t* ino = riina_gate_touch(path);");
+        self.writeln("    riina_perm_t p = riina_permission_for(ino);");
+        self.writeln("    bool ok = riina_ctx_is_root || (want_write ? p.write : p.read);");
+        self.writeln("    if (!ok) {");
+        self.writeln("        fprintf(stderr, \"RIINA: %s: '%s': permission denied (verified %s is false for the current uid)\\n\",");
+        self.writeln("                op, path, want_write ? \"can_write\" : \"can_read\");");
+        self.writeln("        exit(1);");
+        self.writeln("    }");
+        self.writeln("}");
+        self.writeln("");
+        // gate_delete: gate_write, then drop the mapping so a re-created file is
+        // owned by whoever re-creates it (VFS delete-then-create semantics).
+        self.writeln("static void riina_gate_delete(const char* op, const char* path) {");
+        self.writeln("    riina_gate(op, path, true);");
+        self.writeln("    riina_inode_t** slot = &riina_inodes;");
+        self.writeln("    while (*slot) {");
+        self.writeln("        if (strcmp((*slot)->path, path) == 0) {");
+        self.writeln("            riina_inode_t* dead = *slot;");
+        self.writeln("            *slot = dead->next;");
+        self.writeln("            free(dead->path);");
+        self.writeln("            free(dead);");
+        self.writeln("            return;");
+        self.writeln("        }");
+        self.writeln("        slot = &(*slot)->next;");
+        self.writeln("    }");
+        self.writeln("}");
+        self.writeln("");
+        // vfs_mula (vfs_init): resets the gate. The quota argument is accepted
+        // and ignored here — quota accounting belongs to the in-memory
+        // VirtualFs, which is not routed to C (vfs_tulis/baca/padam stay
+        // interpreter-only), so honouring it would be a claim this backend
+        // cannot make.
+        self.writeln("static riina_value_t* riina_builtin_vfs_mula(riina_value_t* arg) {");
+        self.writeln("    (void)arg;");
+        self.writeln("    while (riina_inodes) {");
+        self.writeln("        riina_inode_t* dead = riina_inodes;");
+        self.writeln("        riina_inodes = dead->next;");
+        self.writeln("        free(dead->path);");
+        self.writeln("        free(dead);");
+        self.writeln("    }");
+        self.writeln("    riina_ctx_uid = 1000; riina_ctx_gid = 1000; riina_ctx_is_root = false;");
+        self.writeln("    return riina_unit();");
+        self.writeln("}");
+        self.writeln("");
+        // vfs_jadi_pengguna (vfs_become_user): mirrors ctx_for(uid).
+        self.writeln("static riina_value_t* riina_builtin_vfs_jadi_pengguna(riina_value_t* arg) {");
+        self.writeln("    if (arg->tag != RIINA_TAG_INT) abort();");
+        self.writeln("    riina_ctx_uid = arg->data.int_val;");
+        self.writeln("    riina_ctx_gid = arg->data.int_val;");
+        self.writeln("    riina_ctx_is_root = false;");
+        self.writeln("    return riina_unit();");
+        self.writeln("}");
+        self.writeln("");
+
         // fail_baca (file_read): Teks -> Teks
         self.writeln("static riina_value_t* riina_builtin_fail_baca(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    riina_gate(\"fail_baca\", arg->data.string_val.data, false);");
         self.writeln("    FILE* f = fopen(arg->data.string_val.data, \"r\");");
         self.writeln("    if (!f) { fprintf(stderr, \"RIINA: cannot open file '%s'\\n\", arg->data.string_val.data); abort(); }");
         self.writeln("    fseek(f, 0, SEEK_END);");
@@ -3291,6 +3425,8 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* path = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* content = arg->data.pair_val.snd;");
+        self.writeln("    if (path->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    riina_gate(\"fail_tulis\", path->data.string_val.data, true);");
         self.writeln(
             "    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();",
         );
@@ -3309,6 +3445,8 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* path = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* content = arg->data.pair_val.snd;");
+        self.writeln("    if (path->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    riina_gate(\"fail_tambah\", path->data.string_val.data, true);");
         self.writeln(
             "    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();",
         );
@@ -3332,6 +3470,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // fail_buang (file_delete): Teks -> Bool
         self.writeln("static riina_value_t* riina_builtin_fail_buang(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    riina_gate_delete(\"fail_buang\", arg->data.string_val.data);");
         self.writeln("    return riina_bool(remove(arg->data.string_val.data) == 0);");
         self.writeln("}");
         self.writeln("");
@@ -3339,6 +3478,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // fail_panjang (file_size): Teks -> Int
         self.writeln("static riina_value_t* riina_builtin_fail_panjang(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    riina_gate(\"fail_panjang\", arg->data.string_val.data, false);");
         self.writeln("    struct stat st;");
         self.writeln("    if (stat(arg->data.string_val.data, &st) != 0) { fprintf(stderr, \"RIINA: cannot stat '%s'\\n\", arg->data.string_val.data); abort(); }");
         self.writeln("    return riina_int((uint64_t)st.st_size);");
@@ -3364,6 +3504,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // fail_baca_baris (file_read_lines): Teks -> List<Teks>
         self.writeln("static riina_value_t* riina_builtin_fail_baca_baris(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
+        self.writeln("    riina_gate(\"fail_baca_baris\", arg->data.string_val.data, false);");
         self.writeln("    FILE* f = fopen(arg->data.string_val.data, \"r\");");
         self.writeln("    if (!f) { fprintf(stderr, \"RIINA: cannot open '%s'\\n\", arg->data.string_val.data); abort(); }");
         self.writeln("    riina_list_t nl = riina_list_new();");

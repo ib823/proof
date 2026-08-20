@@ -151,6 +151,32 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
+    // File builtins (REQ-70 family routing) — routed ONLY because the emitted
+    // C now carries the verified gate.
+    //
+    // These were held back deliberately: the interpreter runs every `fail_*`
+    // through gate_read/gate_write/gate_delete (the Coq can_read/can_write
+    // predicates), and the C helpers were bare fopen/fwrite, so routing them
+    // would have made `riinac build` a way around a security check that
+    // `riinac run` enforces. `emit.rs` now mirrors the gate — inode table,
+    // first-touch ownership at mode 0644, owner > group > other resolution —
+    // and `file_gate_parity.rs` fails if a compiled binary ever performs an
+    // access the interpreter refuses.
+    for &(bm, en, canonical) in builtins::fail::BUILTINS {
+        if name == bm || name == en {
+            return Some(canonical);
+        }
+    }
+    // Only the two VFS context setters route: they are what makes the gate
+    // meaningful (`vfs_jadi_pengguna` switches uid). `vfs_tulis`/`vfs_baca`/
+    // `vfs_padam` operate on the in-memory VirtualFs with quota accounting,
+    // which has no C implementation, so they stay interpreter-only rather than
+    // being stubbed into something that silently ignores the quota.
+    match name {
+        "vfs_mula" | "vfs_init" => return Some("vfs_mula"),
+        "vfs_jadi_pengguna" | "vfs_become_user" => return Some("vfs_jadi_pengguna"),
+        _ => {}
+    }
     // JSON builtins (REQ-70 family routing). Pure value transformations — no
     // syscalls — so the C backend can implement them outright. The C helpers
     // (`riina_builtin_json_*`) already existed in `emit.rs` but were
