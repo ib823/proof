@@ -4805,6 +4805,71 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("}");
         self.writeln("");
 
+        // Range constructors and sum introspection.
+        //
+        // The four sum helpers are NOT a stdlib convenience — they are compiler
+        // internals. `parse_module_path`'s if-chain pattern compiler emits them
+        // for a constructor pattern nested where a `Case` cannot go, e.g.
+        // `(Ada(a), Tiada)` inside a tuple pattern. Until they were routed, that
+        // whole class of pattern ran under `riinac run` and failed `riinac build`
+        // with `Codegen Error: unbound variable: nilai_kiri` — a LANGUAGE feature
+        // that did not compile, surfacing as a missing builtin.
+        //
+        // `nilai_kiri`/`nilai_kanan` are deliberately LENIENT, matching the
+        // interpreter: a non-matching or non-sum argument yields the value
+        // itself rather than aborting. The generated code only projects a
+        // payload after the corresponding `adalah_*` tag test has passed, so the
+        // lenient arms are unreachable from generated code — but a hand-written
+        // call must behave the same in both backends.
+        self.writeln(
+            r####"
+static riina_value_t* riina_builtin_julat(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* a = arg->data.pair_val.fst;
+    riina_value_t* b = arg->data.pair_val.snd;
+    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) abort();
+    riina_list_t l = riina_list_new();
+    for (uint64_t i = a->data.int_val; i < b->data.int_val; i++) {
+        riina_list_push(&l, riina_int(i));
+    }
+    return riina_make_list(l);
+}
+
+/* Inclusive of the upper bound. The interpreter uses a SATURATING increment, so
+   an upper bound of UINT64_MAX yields the same list as the exclusive form
+   rather than wrapping to an empty one. */
+static riina_value_t* riina_builtin_julat_inklusif(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* a = arg->data.pair_val.fst;
+    riina_value_t* b = arg->data.pair_val.snd;
+    if (a->tag != RIINA_TAG_INT || b->tag != RIINA_TAG_INT) abort();
+    uint64_t hi = b->data.int_val;
+    uint64_t end = (hi == 0xFFFFFFFFFFFFFFFFULL) ? hi : hi + 1;
+    riina_list_t l = riina_list_new();
+    for (uint64_t i = a->data.int_val; i < end; i++) {
+        riina_list_push(&l, riina_int(i));
+    }
+    return riina_make_list(l);
+}
+
+static riina_value_t* riina_builtin_adalah_kiri(riina_value_t* arg) {
+    return riina_bool(arg->tag == RIINA_TAG_SUM_LEFT);
+}
+static riina_value_t* riina_builtin_adalah_kanan(riina_value_t* arg) {
+    return riina_bool(arg->tag == RIINA_TAG_SUM_RIGHT);
+}
+static riina_value_t* riina_builtin_nilai_kiri(riina_value_t* arg) {
+    if (arg->tag == RIINA_TAG_SUM_LEFT || arg->tag == RIINA_TAG_SUM_RIGHT) {
+        return arg->data.sum_val;
+    }
+    return arg;
+}
+static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
+    return riina_builtin_nilai_kiri(arg);
+}
+"####,
+        );
+
         // log2: Int -> Int
         self.writeln("static riina_value_t* riina_builtin_log2(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_INT) abort();");

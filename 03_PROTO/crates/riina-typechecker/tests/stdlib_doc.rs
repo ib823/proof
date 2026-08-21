@@ -11,7 +11,9 @@
 //! Regenerate after changing the builtin table:
 //!   REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc
 
-use riina_codegen::{codegen_supports_builtin, wasm_supports_builtin};
+use riina_codegen::{
+    codegen_supports_builtin, interpreter_supports_builtin, wasm_supports_builtin,
+};
 use riina_fmt::format_ty;
 use riina_typechecker::{register_builtin_types, Context};
 use riina_types::{Effect, Ty};
@@ -29,8 +31,19 @@ enum Backend {
     Wasm,
     /// Compiles to C; the WASM backend refuses it (fails closed).
     Native,
-    /// Neither: `riinac run` only.
+    /// Neither compiles, but the interpreter binds it: `riinac run` only.
     Interp,
+    /// NOTHING runs it. The typechecker accepts the call — the name is in the
+    /// builtin type registry — but no interpreter or backend binds it, so every
+    /// path fails with `unbound variable`.
+    ///
+    /// This state was added because `interp-only` was making a FALSE promise for
+    /// the eight crypto-agility builtins: its cell reads "`riinac run` only",
+    /// and `riinac run` cannot run them either. A three-state column had no way
+    /// to say "typed but unimplemented", so it said the nearest thing, which was
+    /// wrong. A doc claiming a builtin runs somewhere it does not is worse than
+    /// one that says nothing.
+    TypedOnly,
 }
 
 impl Backend {
@@ -39,8 +52,10 @@ impl Backend {
             Self::Wasm
         } else if codegen_supports_builtin(name) {
             Self::Native
-        } else {
+        } else if interpreter_supports_builtin(name) {
             Self::Interp
+        } else {
+            Self::TypedOnly
         }
     }
 
@@ -49,6 +64,7 @@ impl Backend {
             Self::Wasm => "compiled",
             Self::Native => "**native-only**",
             Self::Interp => "**interp-only**",
+            Self::TypedOnly => "**typed-only**",
         }
     }
 }
@@ -112,7 +128,11 @@ fn generate() -> String {
     let wasm_count = rows.iter().filter(|(_, _, _, b)| *b == Backend::Wasm).count();
     let native_count = rows.iter().filter(|(_, _, _, b)| *b == Backend::Native).count();
     let compiled_count = wasm_count + native_count;
-    let interp_only_count = rows.len() - compiled_count;
+    let interp_only_count = rows.iter().filter(|(_, _, _, b)| *b == Backend::Interp).count();
+    let typed_only_count = rows
+        .iter()
+        .filter(|(_, _, _, b)| *b == Backend::TypedOnly)
+        .count();
 
     // Group by effect; render an effect section ordered by the effect enum.
     let effect_order = [
@@ -163,13 +183,14 @@ fn generate() -> String {
     // then cannot be built. State it before the tables, not after.
     out.push_str(&format!(
         "## ⚠ Read first: type-checking does not imply compiling\n\n\
-         Every builtin below type-checks and runs under `riinac run` (the \
-         interpreter). Only **{compiled}** of the {total} also compile, and they \
-         do NOT all reach the same backends:\n\n\
+         Every builtin below type-checks. That is ALL it means: type-checking \
+         does not imply compiling, and it does not even imply running. \
+         **{compiled}** of the {total} compile:\n\n\
          | Backend value | Meaning |\n|---|---|\n\
          | `compiled` | Lowers to C **and** WASM ({wasm} builtins). |\n\
          | `native-only` | Lowers to C. The WASM backend **refuses** it ({native} builtins). |\n\
-         | `interp-only` | `riinac run` only ({interp} builtins). `riinac build` fails with `unbound variable`. |\n\n\
+         | `interp-only` | `riinac run` only ({interp} builtins). `riinac build` fails with `unbound variable`. |\n\
+         | `typed-only` | **Nothing runs it** ({typed} builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |\n\n\
          ```\n\
          $ riinac check baca.rii     # Success!  Effect: FileSystem\n\
          $ riinac run   baca.rii     # works — reads the file\n\
@@ -198,6 +219,7 @@ fn generate() -> String {
         native = native_count,
         total = rows.len(),
         interp = interp_only_count,
+        typed = typed_only_count,
     ));
     out.push_str(
         "*Scope note:* this lists the language builtins the typechecker installs. \
