@@ -135,6 +135,13 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
         // under `riinac run` and failed `riinac build` with
         // `unbound variable: nilai_kiri` — a language feature that did not
         // compile, wearing the costume of a missing builtin.
+        // Unicode. These three are why `emit.rs` gained its ONE conditional
+        // prelude block: they need ~250 KB of vendored UCD tables, which would
+        // otherwise more than double every compiled binary to serve builtins
+        // most programs never call. See `emit_unicode_runtime`.
+        "nfc" | "ke_nfc" => return Some("nfc"),
+        "skeleton" | "rangka" => return Some("skeleton"),
+        "adalah_keliru" | "is_confusable" => return Some("adalah_keliru"),
         "adalah_kiri" => return Some("adalah_kiri"),
         "adalah_kanan" => return Some("adalah_kanan"),
         "nilai_kiri" => return Some("nilai_kiri"),

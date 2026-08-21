@@ -6,13 +6,13 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **335** of the 373 compile:
+Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **341** of the 373 compile:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (21 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (314 builtins). |
-| `interp-only` | `riinac run` only (30 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (320 builtins). |
+| `interp-only` | `riinac run` only (24 builtins). `riinac build` fails with `unbound variable`. |
 | `typed-only` | **Nothing runs it** (8 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
 
 ```
@@ -31,13 +31,11 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Bersih (Pure)
 
-> **Mixed:** 223 of 229 compile; the rest are interpreter-only (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
 | `abs` | `Fn(Nombor, Nombor)` | **native-only** |
 | `adalah_kanan` | `Fn(Any, Benar)` | **native-only** |
-| `adalah_keliru` | `Fn((Teks, Teks), Benar)` | **interp-only** |
+| `adalah_keliru` | `Fn((Teks, Teks), Benar)` | **native-only** |
 | `adalah_kiri` | `Fn(Any, Benar)` | **native-only** |
 | `assert` | `Fn(Benar, ())` | **native-only** |
 | `assert_eq` | `Fn((Any, Any), ())` | **native-only** |
@@ -78,7 +76,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `http_parse_method` | `Fn(Teks, Teks)` | **native-only** |
 | `http_parse_target` | `Fn(Teks, Teks)` | **native-only** |
 | `int_to_string` | `Fn(Nombor, Teks)` | compiled |
-| `is_confusable` | `Fn((Teks, Teks), Benar)` | **interp-only** |
+| `is_confusable` | `Fn((Teks, Teks), Benar)` | **native-only** |
 | `json_ada` | `Fn(Any, Any)` | **native-only** |
 | `json_dapat` | `Fn(Any, Any)` | **native-only** |
 | `json_get` | `Fn(Any, Any)` | **native-only** |
@@ -94,7 +92,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **native-only** |
 | `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **native-only** |
 | `ke_bool` | `Fn(Any, Benar)` | **native-only** |
-| `ke_nfc` | `Fn(Teks, Teks)` | **interp-only** |
+| `ke_nfc` | `Fn(Teks, Teks)` | **native-only** |
 | `ke_nombor` | `Fn(Teks, Nombor)` | **native-only** |
 | `ke_teks` | `Fn(Any, Teks)` | compiled |
 | `kuasa` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
@@ -133,7 +131,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `minimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `money` | `Fn(Teks, Wang)` | compiled |
 | `mutlak` | `Fn(Nombor, Nombor)` | **native-only** |
-| `nfc` | `Fn(Teks, Teks)` | **interp-only** |
+| `nfc` | `Fn(Teks, Teks)` | **native-only** |
 | `nilai_kanan` | `Fn(Any, Any)` | **native-only** |
 | `nilai_kiri` | `Fn(Any, Any)` | **native-only** |
 | `nombor_ke_teks` | `Fn(Nombor, Teks)` | compiled |
@@ -154,7 +152,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `pow` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `punca` | `Fn(Nombor, Nombor)` | **native-only** |
 | `qmn` | `Fn((Teks, Nombor), Qmn)` | compiled |
-| `rangka` | `Fn(Teks, Teks)` | **interp-only** |
+| `rangka` | `Fn(Teks, Teks)` | **native-only** |
 | `rem` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `sahkan_panjang` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
 | `sahkan_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
@@ -212,7 +210,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `set_persilangan` | `Fn(Any, Any)` | **native-only** |
 | `set_remove` | `Fn(Any, Any)` | **native-only** |
 | `set_union` | `Fn(Any, Any)` | **native-only** |
-| `skeleton` | `Fn(Teks, Teks)` | **interp-only** |
+| `skeleton` | `Fn(Teks, Teks)` | **native-only** |
 | `sqrt` | `Fn(Nombor, Nombor)` | **native-only** |
 | `str_char_at` | `Fn(Any, Any)` | **native-only** |
 | `str_contains` | `Fn(Any, Any)` | **native-only** |

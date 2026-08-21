@@ -122,6 +122,23 @@ impl CEmitter {
         // Emit runtime support
         self.emit_runtime_prelude();
 
+        // The Unicode runtime is the ONE part of the prelude emitted
+        // conditionally. Everything else is unconditional and already costs a
+        // hello-world ~228 KB of C; the vendored UCD tables would add ~250 KB
+        // MORE — more than doubling every binary — to serve three builtins most
+        // programs never call. So they are emitted only when the program
+        // actually calls one.
+        //
+        // The tables are written out FROM the same Rust statics the interpreter
+        // reads (`unicode_nfc_data`, `unicode_confusables_data`), not
+        // transcribed. A hand-copied 250 KB table is a drift source no
+        // differential could realistically cover; generating it means the two
+        // backends cannot disagree about the DATA, only about the algorithm,
+        // which is small enough to test properly.
+        if Self::program_uses_unicode(program) {
+            self.emit_unicode_runtime();
+        }
+
         // Collect forward declarations
         for func_id in program.functions.keys() {
             self.forward_decls.push(*func_id);
@@ -139,6 +156,346 @@ impl CEmitter {
         self.emit_main_wrapper(program)?;
 
         Ok(self.output.clone())
+    }
+
+
+    /// Canonical names of the builtins that need the Unicode runtime.
+    const UNICODE_BUILTINS: &'static [&'static str] = &["nfc", "skeleton", "adalah_keliru"];
+
+    /// Whether `program` calls any builtin that needs the UCD tables.
+    fn program_uses_unicode(program: &Program) -> bool {
+        program.functions.values().any(|f| {
+            f.blocks.iter().any(|b| {
+                b.instrs.iter().any(|i| {
+                    matches!(&i.instr, crate::ir::Instruction::BuiltinCall { name, .. }
+                        if Self::UNICODE_BUILTINS.contains(&name.as_str()))
+                })
+            })
+        })
+    }
+
+    /// Emit the UCD tables and the NFC / UTS-39 skeleton implementation.
+    ///
+    /// The TABLES are generated from the very statics the interpreter uses, so
+    /// the two backends read identical data by construction. Only the ALGORITHM
+    /// is written twice, and it is short: canonical decomposition (with the
+    /// algorithmic Hangul case), canonical ordering by combining class,
+    /// canonical composition, and the confusable prototype mapping.
+    fn emit_unicode_runtime(&mut self) {
+        use crate::unicode_confusables_data::{CONFUSABLE_DATA, CONFUSABLE_INDEX};
+        use crate::unicode_nfc_data::{COMBINING_CLASS, COMPOSE, DECOMP_DATA, DECOMP_INDEX};
+
+        self.writeln("/* ══════════════════════════════════════════════════════════════════ */");
+        self.writeln("/*   UNICODE RUNTIME (UAX #15 NFC + UTS #39 skeleton)                 */");
+        self.writeln("/*   Emitted only for programs that call nfc/skeleton/adalah_keliru.  */");
+        self.writeln("/*   Tables generated from riina-codegen's own UCD statics — the      */");
+        self.writeln("/*   interpreter and this backend read the SAME data by construction. */");
+        self.writeln("/* ══════════════════════════════════════════════════════════════════ */");
+        self.writeln("");
+
+        // ── Tables ──
+        self.writeln(&format!(
+            "static const uint32_t riina_ucd_ccc[][2] = {{ /* {} */",
+            COMBINING_CLASS.len()
+        ));
+        for chunk in COMBINING_CLASS.chunks(8) {
+            let row: Vec<String> = chunk
+                .iter()
+                .map(|(cp, cc)| format!("{{{cp:#x},{cc}}}"))
+                .collect();
+            self.writeln(&format!("{},", row.join(",")));
+        }
+        self.writeln("};");
+        self.writeln(&format!(
+            "#define RIINA_UCD_CCC_N {}",
+            COMBINING_CLASS.len()
+        ));
+        self.writeln("");
+
+        self.writeln(&format!(
+            "static const uint32_t riina_ucd_decomp_index[][3] = {{ /* {} */",
+            DECOMP_INDEX.len()
+        ));
+        for chunk in DECOMP_INDEX.chunks(6) {
+            let row: Vec<String> = chunk
+                .iter()
+                .map(|(cp, off, len)| format!("{{{cp:#x},{off},{len}}}"))
+                .collect();
+            self.writeln(&format!("{},", row.join(",")));
+        }
+        self.writeln("};");
+        self.writeln(&format!(
+            "#define RIINA_UCD_DECOMP_INDEX_N {}",
+            DECOMP_INDEX.len()
+        ));
+        self.writeln("");
+
+        self.writeln(&format!(
+            "static const uint32_t riina_ucd_decomp_data[] = {{ /* {} */",
+            DECOMP_DATA.len()
+        ));
+        for chunk in DECOMP_DATA.chunks(12) {
+            let row: Vec<String> = chunk.iter().map(|cp| format!("{cp:#x}")).collect();
+            self.writeln(&format!("{},", row.join(",")));
+        }
+        self.writeln("};");
+        self.writeln("");
+
+        self.writeln(&format!(
+            "static const uint32_t riina_ucd_compose[][3] = {{ /* {} */",
+            COMPOSE.len()
+        ));
+        for chunk in COMPOSE.chunks(6) {
+            let row: Vec<String> = chunk
+                .iter()
+                .map(|(a, b, c)| format!("{{{a:#x},{b:#x},{c:#x}}}"))
+                .collect();
+            self.writeln(&format!("{},", row.join(",")));
+        }
+        self.writeln("};");
+        self.writeln(&format!("#define RIINA_UCD_COMPOSE_N {}", COMPOSE.len()));
+        self.writeln("");
+
+        self.writeln(&format!(
+            "static const uint32_t riina_ucd_conf_index[][3] = {{ /* {} */",
+            CONFUSABLE_INDEX.len()
+        ));
+        for chunk in CONFUSABLE_INDEX.chunks(6) {
+            let row: Vec<String> = chunk
+                .iter()
+                .map(|(cp, off, len)| format!("{{{cp:#x},{off},{len}}}"))
+                .collect();
+            self.writeln(&format!("{},", row.join(",")));
+        }
+        self.writeln("};");
+        self.writeln(&format!(
+            "#define RIINA_UCD_CONF_INDEX_N {}",
+            CONFUSABLE_INDEX.len()
+        ));
+        self.writeln("");
+
+        self.writeln(&format!(
+            "static const uint32_t riina_ucd_conf_data[] = {{ /* {} */",
+            CONFUSABLE_DATA.len()
+        ));
+        for chunk in CONFUSABLE_DATA.chunks(12) {
+            let row: Vec<String> = chunk.iter().map(|cp| format!("{cp:#x}")).collect();
+            self.writeln(&format!("{},", row.join(",")));
+        }
+        self.writeln("};");
+        self.writeln("");
+
+        // ── Algorithm ──
+        //
+        // Mirrors unicode_nfc.rs and unicode_confusables.rs. The parts a C
+        // author would get wrong on their own are called out inline.
+        self.writeln(
+            r####"
+/* Hangul composes and decomposes arithmetically (UAX #15 §16) rather than by
+   table, so these 11172 syllables never appear in the decomposition data. */
+#define RIINA_HANGUL_S_BASE 0xAC00u
+#define RIINA_HANGUL_L_BASE 0x1100u
+#define RIINA_HANGUL_V_BASE 0x1161u
+#define RIINA_HANGUL_T_BASE 0x11A7u
+#define RIINA_HANGUL_L_COUNT 19u
+#define RIINA_HANGUL_V_COUNT 21u
+#define RIINA_HANGUL_T_COUNT 28u
+#define RIINA_HANGUL_N_COUNT (RIINA_HANGUL_V_COUNT * RIINA_HANGUL_T_COUNT)
+#define RIINA_HANGUL_S_COUNT (RIINA_HANGUL_L_COUNT * RIINA_HANGUL_N_COUNT)
+
+typedef struct { uint32_t* cps; size_t len; size_t cap; } riina_cpbuf_t;
+
+static void riina_cpbuf_push(riina_cpbuf_t* b, uint32_t cp) {
+    if (b->len >= b->cap) {
+        b->cap = b->cap ? b->cap * 2 : 32;
+        b->cps = (uint32_t*)realloc(b->cps, b->cap * sizeof(uint32_t));
+        if (!b->cps) abort();
+    }
+    b->cps[b->len++] = cp;
+}
+
+static uint8_t riina_ucd_ccc_of(uint32_t cp) {
+    size_t lo = 0, hi = RIINA_UCD_CCC_N;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        if (riina_ucd_ccc[mid][0] == cp) return (uint8_t)riina_ucd_ccc[mid][1];
+        if (riina_ucd_ccc[mid][0] < cp) lo = mid + 1; else hi = mid;
+    }
+    return 0;
+}
+
+/* Full (recursive) canonical decomposition of one code point. */
+static void riina_ucd_decompose_cp(uint32_t cp, riina_cpbuf_t* out) {
+    if (cp >= RIINA_HANGUL_S_BASE && cp < RIINA_HANGUL_S_BASE + RIINA_HANGUL_S_COUNT) {
+        uint32_t si = cp - RIINA_HANGUL_S_BASE;
+        riina_cpbuf_push(out, RIINA_HANGUL_L_BASE + si / RIINA_HANGUL_N_COUNT);
+        riina_cpbuf_push(out, RIINA_HANGUL_V_BASE
+            + (si % RIINA_HANGUL_N_COUNT) / RIINA_HANGUL_T_COUNT);
+        uint32_t t = si % RIINA_HANGUL_T_COUNT;
+        if (t != 0) riina_cpbuf_push(out, RIINA_HANGUL_T_BASE + t);
+        return;
+    }
+    size_t lo = 0, hi = RIINA_UCD_DECOMP_INDEX_N, found = (size_t)-1;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        if (riina_ucd_decomp_index[mid][0] == cp) { found = mid; break; }
+        if (riina_ucd_decomp_index[mid][0] < cp) lo = mid + 1; else hi = mid;
+    }
+    if (found == (size_t)-1) { riina_cpbuf_push(out, cp); return; }
+    uint32_t off = riina_ucd_decomp_index[found][1];
+    uint32_t len = riina_ucd_decomp_index[found][2];
+    for (uint32_t i = 0; i < len; i++) {
+        riina_ucd_decompose_cp(riina_ucd_decomp_data[off + i], out);
+    }
+}
+
+/* Canonical ordering: a STABLE insertion sort over runs of non-zero combining
+   class. Stability is required by UAX #15 — an unstable sort reorders equal
+   classes and changes the result. */
+static void riina_ucd_canonical_order(riina_cpbuf_t* b) {
+    for (size_t i = 1; i < b->len; i++) {
+        uint8_t cc = riina_ucd_ccc_of(b->cps[i]);
+        if (cc == 0) continue;
+        size_t j = i;
+        while (j > 0) {
+            uint8_t prev = riina_ucd_ccc_of(b->cps[j - 1]);
+            if (prev == 0 || prev <= cc) break;
+            uint32_t t = b->cps[j]; b->cps[j] = b->cps[j - 1]; b->cps[j - 1] = t;
+            j--;
+        }
+    }
+}
+
+static int riina_ucd_compose_pair(uint32_t a, uint32_t b, uint32_t* out) {
+    /* Hangul first, arithmetically. */
+    if (a >= RIINA_HANGUL_L_BASE && a < RIINA_HANGUL_L_BASE + RIINA_HANGUL_L_COUNT
+        && b >= RIINA_HANGUL_V_BASE && b < RIINA_HANGUL_V_BASE + RIINA_HANGUL_V_COUNT) {
+        *out = RIINA_HANGUL_S_BASE
+             + ((a - RIINA_HANGUL_L_BASE) * RIINA_HANGUL_V_COUNT + (b - RIINA_HANGUL_V_BASE))
+               * RIINA_HANGUL_T_COUNT;
+        return 1;
+    }
+    if (a >= RIINA_HANGUL_S_BASE && a < RIINA_HANGUL_S_BASE + RIINA_HANGUL_S_COUNT
+        && ((a - RIINA_HANGUL_S_BASE) % RIINA_HANGUL_T_COUNT) == 0
+        && b > RIINA_HANGUL_T_BASE && b < RIINA_HANGUL_T_BASE + RIINA_HANGUL_T_COUNT) {
+        *out = a + (b - RIINA_HANGUL_T_BASE);
+        return 1;
+    }
+    /* COMPOSE is sorted by (first, second). */
+    size_t lo = 0, hi = RIINA_UCD_COMPOSE_N;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        uint32_t ma = riina_ucd_compose[mid][0], mb = riina_ucd_compose[mid][1];
+        if (ma == a && mb == b) { *out = riina_ucd_compose[mid][2]; return 1; }
+        if (ma < a || (ma == a && mb < b)) lo = mid + 1; else hi = mid;
+    }
+    return 0;
+}
+
+/* Canonical composition (UAX #15 §X3). The BLOCKED check is the subtle part: a
+   starter may only combine with a following mark if no intervening character
+   has a combining class >= that mark's. Dropping it composes across a blocker
+   and gives a different string. */
+static void riina_ucd_compose_buf(riina_cpbuf_t* b) {
+    if (b->len == 0) return;
+    size_t starter = 0;
+    uint8_t last_cc = 0;
+    size_t out = 1;
+    if (riina_ucd_ccc_of(b->cps[0]) != 0) last_cc = 0xFF; /* not a starter */
+    for (size_t i = 1; i < b->len; i++) {
+        uint32_t cp = b->cps[i];
+        uint8_t cc = riina_ucd_ccc_of(cp);
+        uint32_t composed;
+        if (last_cc != 0xFF && (last_cc == 0 ? 1 : last_cc < cc)
+            && riina_ucd_compose_pair(b->cps[starter], cp, &composed)) {
+            b->cps[starter] = composed;
+            continue;
+        }
+        if (cc == 0) { starter = out; last_cc = 0; }
+        else { last_cc = cc; }
+        b->cps[out++] = cp;
+    }
+    b->len = out;
+}
+
+static riina_cpbuf_t riina_ucd_decode(const char* s, size_t slen) {
+    riina_cpbuf_t b = { NULL, 0, 0 };
+    size_t i = 0;
+    while (i < slen) riina_cpbuf_push(&b, riina_sec_utf8_next(s, slen, &i));
+    return b;
+}
+
+static riina_value_t* riina_ucd_encode(riina_cpbuf_t* b) {
+    size_t cap = b->len * 4 + 1, n = 0;
+    char* out = (char*)malloc(cap);
+    if (!out) abort();
+    for (size_t i = 0; i < b->len; i++) riina_sec_put_utf8(&out, &n, &cap, b->cps[i]);
+    out[n] = '\0';
+    riina_value_t* v = riina_string(out);
+    free(out);
+    return v;
+}
+
+/* NFD: decompose then canonically order. */
+static void riina_ucd_nfd_buf(riina_cpbuf_t* in, riina_cpbuf_t* out) {
+    for (size_t i = 0; i < in->len; i++) riina_ucd_decompose_cp(in->cps[i], out);
+    riina_ucd_canonical_order(out);
+}
+
+static riina_value_t* riina_builtin_nfc(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_cpbuf_t in = riina_ucd_decode(arg->data.string_val.data, arg->data.string_val.len);
+    riina_cpbuf_t d = { NULL, 0, 0 };
+    riina_ucd_nfd_buf(&in, &d);
+    riina_ucd_compose_buf(&d);
+    riina_value_t* r = riina_ucd_encode(&d);
+    free(in.cps); free(d.cps);
+    return r;
+}
+
+/* skeleton(X) = NFD( map(NFD(X)) ) — UTS #39 §4. Note it ends in NFD, NOT NFC:
+   the skeleton is a comparison key, not a display form. */
+static riina_value_t* riina_builtin_skeleton(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_cpbuf_t in = riina_ucd_decode(arg->data.string_val.data, arg->data.string_val.len);
+    riina_cpbuf_t d1 = { NULL, 0, 0 };
+    riina_ucd_nfd_buf(&in, &d1);
+
+    riina_cpbuf_t mapped = { NULL, 0, 0 };
+    for (size_t i = 0; i < d1.len; i++) {
+        uint32_t cp = d1.cps[i];
+        size_t lo = 0, hi = RIINA_UCD_CONF_INDEX_N, found = (size_t)-1;
+        while (lo < hi) {
+            size_t mid = lo + (hi - lo) / 2;
+            if (riina_ucd_conf_index[mid][0] == cp) { found = mid; break; }
+            if (riina_ucd_conf_index[mid][0] < cp) lo = mid + 1; else hi = mid;
+        }
+        if (found == (size_t)-1) { riina_cpbuf_push(&mapped, cp); continue; }
+        uint32_t off = riina_ucd_conf_index[found][1];
+        uint32_t len = riina_ucd_conf_index[found][2];
+        for (uint32_t k = 0; k < len; k++) {
+            riina_cpbuf_push(&mapped, riina_ucd_conf_data[off + k]);
+        }
+    }
+
+    riina_cpbuf_t d2 = { NULL, 0, 0 };
+    riina_ucd_nfd_buf(&mapped, &d2);
+    riina_value_t* r = riina_ucd_encode(&d2);
+    free(in.cps); free(d1.cps); free(mapped.cps); free(d2.cps);
+    return r;
+}
+
+static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* a = riina_builtin_skeleton(arg->data.pair_val.fst);
+    riina_value_t* b = riina_builtin_skeleton(arg->data.pair_val.snd);
+    int same = a->data.string_val.len == b->data.string_val.len
+        && memcmp(a->data.string_val.data, b->data.string_val.data,
+                  a->data.string_val.len) == 0;
+    return riina_bool(same != 0);
+}
+"####,
+        );
     }
 
     /// Write a line with current indentation
