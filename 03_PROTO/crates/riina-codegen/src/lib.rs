@@ -150,6 +150,29 @@ pub fn wasm_supports_builtin(name: &str) -> bool {
 pub fn codegen_supports_builtin(name: &str) -> bool {
     lower::builtin_canonical(name).is_some()
 }
+
+/// Whether the reference INTERPRETER binds `name` — i.e. whether `riinac run`
+/// can execute a call to it.
+///
+/// This exists because "the typechecker accepts it" and "something can run it"
+/// are different questions, and the Backend column in `docs/api/STDLIB.md` was
+/// silently conflating them. Its `interp-only` cell promised "`riinac run`
+/// only", which for the eight crypto-agility builtins
+/// (`guna_kripto`/`use_crypto`, `pilih_algo`/`select_algorithm`,
+/// `cipher`/`sifer`, `hash_dengan`/`hash_with`) was FALSE: they are registered
+/// in the typechecker with `Fn(Teks, Any, Kripto)` and carry the REQ-48
+/// deprecation check at their call sites, but no runtime binds them, so
+/// `riinac run` fails with `unbound variable` exactly as `riinac build` does.
+/// A doc that says a builtin runs somewhere it does not is worse than one that
+/// says nothing, so the column now distinguishes the two.
+///
+/// Derived by building the real interpreter environment and looking the name
+/// up, not from a list — a list would drift the moment a runtime is added.
+pub fn interpreter_supports_builtin(name: &str) -> bool {
+    builtins::register_builtins(&value::Env::new())
+        .lookup(name)
+        .is_some()
+}
 pub use value::Value;
 
 /// Result type for code generation operations

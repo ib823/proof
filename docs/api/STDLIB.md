@@ -6,13 +6,14 @@ Total registered builtins: **373**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks and runs under `riinac run` (the interpreter). Only **323** of the 373 also compile, and they do NOT all reach the same backends:
+Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **341** of the 373 compile:
 
 | Backend value | Meaning |
 |---|---|
-| `compiled` | Lowers to C **and** WASM (20 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (303 builtins). |
-| `interp-only` | `riinac run` only (50 builtins). `riinac build` fails with `unbound variable`. |
+| `compiled` | Lowers to C **and** WASM (21 builtins). |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (320 builtins). |
+| `interp-only` | `riinac run` only (24 builtins). `riinac build` fails with `unbound variable`. |
+| `typed-only` | **Nothing runs it** (8 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
 
 ```
 $ riinac check baca.rii     # Success!  Effect: FileSystem
@@ -30,20 +31,18 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Bersih (Pure)
 
-> **Mixed:** 214 of 229 compile; the rest are interpreter-only (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
 | `abs` | `Fn(Nombor, Nombor)` | **native-only** |
-| `adalah_kanan` | `Fn(Any, Benar)` | **interp-only** |
-| `adalah_keliru` | `Fn((Teks, Teks), Benar)` | **interp-only** |
-| `adalah_kiri` | `Fn(Any, Benar)` | **interp-only** |
+| `adalah_kanan` | `Fn(Any, Benar)` | **native-only** |
+| `adalah_keliru` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `adalah_kiri` | `Fn(Any, Benar)` | **native-only** |
 | `assert` | `Fn(Benar, ())` | **native-only** |
 | `assert_eq` | `Fn((Any, Any), ())` | **native-only** |
 | `assert_false` | `Fn(Benar, ())` | **native-only** |
 | `assert_ne` | `Fn((Any, Any), ())` | **native-only** |
 | `assert_true` | `Fn(Benar, ())` | **native-only** |
-| `baki` | `Fn(Nombor, Nombor)` | **interp-only** |
+| `baki` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `besar` | `Fn(Teks, Besar)` | compiled |
 | `bigint` | `Fn(Teks, Besar)` | compiled |
 | `binary_fixed` | `Fn((Teks, Nombor), Qmn)` | compiled |
@@ -77,7 +76,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `http_parse_method` | `Fn(Teks, Teks)` | **native-only** |
 | `http_parse_target` | `Fn(Teks, Teks)` | **native-only** |
 | `int_to_string` | `Fn(Nombor, Teks)` | compiled |
-| `is_confusable` | `Fn((Teks, Teks), Benar)` | **interp-only** |
+| `is_confusable` | `Fn((Teks, Teks), Benar)` | **native-only** |
 | `json_ada` | `Fn(Any, Any)` | **native-only** |
 | `json_dapat` | `Fn(Any, Any)` | **native-only** |
 | `json_get` | `Fn(Any, Any)` | **native-only** |
@@ -90,10 +89,10 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `json_stringify` | `Fn(Any, Any)` | **native-only** |
 | `json_urai` | `Fn(Any, Any)` | **native-only** |
 | `json_urai_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
-| `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
-| `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **interp-only** |
+| `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **native-only** |
+| `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **native-only** |
 | `ke_bool` | `Fn(Any, Benar)` | **native-only** |
-| `ke_nfc` | `Fn(Teks, Teks)` | **interp-only** |
+| `ke_nfc` | `Fn(Teks, Teks)` | **native-only** |
 | `ke_nombor` | `Fn(Teks, Nombor)` | **native-only** |
 | `ke_teks` | `Fn(Any, Teks)` | compiled |
 | `kuasa` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
@@ -117,7 +116,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `list_tail` | `Fn(Any, Any)` | **native-only** |
 | `list_unique` | `Fn(Any, Any)` | **native-only** |
 | `list_zip` | `Fn(Any, Any)` | **native-only** |
-| `log2` | `Fn(Nombor, Nombor)` | **interp-only** |
+| `log2` | `Fn(Nombor, Nombor)` | **native-only** |
 | `maksimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `map_contains` | `Fn(Any, Any)` | **native-only** |
 | `map_get` | `Fn(Any, Any)` | **native-only** |
@@ -132,9 +131,9 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `minimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `money` | `Fn(Teks, Wang)` | compiled |
 | `mutlak` | `Fn(Nombor, Nombor)` | **native-only** |
-| `nfc` | `Fn(Teks, Teks)` | **interp-only** |
-| `nilai_kanan` | `Fn(Any, Any)` | **interp-only** |
-| `nilai_kiri` | `Fn(Any, Any)` | **interp-only** |
+| `nfc` | `Fn(Teks, Teks)` | **native-only** |
+| `nilai_kanan` | `Fn(Any, Any)` | **native-only** |
+| `nilai_kiri` | `Fn(Any, Any)` | **native-only** |
 | `nombor_ke_teks` | `Fn(Nombor, Teks)` | compiled |
 | `normal_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
 | `normalize_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
@@ -153,8 +152,8 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `pow` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `punca` | `Fn(Nombor, Nombor)` | **native-only** |
 | `qmn` | `Fn((Teks, Nombor), Qmn)` | compiled |
-| `rangka` | `Fn(Teks, Teks)` | **interp-only** |
-| `rem` | `Fn(Nombor, Nombor)` | **interp-only** |
+| `rangka` | `Fn(Teks, Teks)` | **native-only** |
+| `rem` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
 | `sahkan_panjang` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
 | `sahkan_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
 | `sanitasi_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **native-only** |
@@ -211,7 +210,7 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `set_persilangan` | `Fn(Any, Any)` | **native-only** |
 | `set_remove` | `Fn(Any, Any)` | **native-only** |
 | `set_union` | `Fn(Any, Any)` | **native-only** |
-| `skeleton` | `Fn(Teks, Teks)` | **interp-only** |
+| `skeleton` | `Fn(Teks, Teks)` | **native-only** |
 | `sqrt` | `Fn(Nombor, Nombor)` | **native-only** |
 | `str_char_at` | `Fn(Any, Any)` | **native-only** |
 | `str_contains` | `Fn(Any, Any)` | **native-only** |
@@ -277,12 +276,12 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Tulis (Write)
 
-> **Mixed:** 8 of 13 compile; the rest are interpreter-only (REQ-70).
+> **Mixed:** 9 of 13 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
 | `cetak` | `Fn(Any, (), Tulis)` | compiled |
-| `cetak_baris` | `Fn(Any, (), Tulis)` | **interp-only** |
+| `cetak_baris` | `Fn(Any, (), Tulis)` | compiled |
 | `cetakln` | `Fn(Any, (), Tulis)` | compiled |
 | `fail_buang_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **native-only** |
 | `fail_tulis_selamat` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **native-only** |
@@ -400,29 +399,27 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Kripto (Crypto)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
-| `cipher` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `guna_kripto` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `hash_dengan` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `hash_with` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `pilih_algo` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `select_algorithm` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `sifer` | `Fn(Teks, Any, Kripto)` | **interp-only** |
-| `use_crypto` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `cipher` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `guna_kripto` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `hash_dengan` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `hash_with` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `pilih_algo` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `select_algorithm` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `sifer` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `use_crypto` | `Fn(Teks, Any, Kripto)` | **typed-only** |
 
 ## Rawak (Random)
 
-> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+> **Mixed:** 2 of 4 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
 | `csrf_generate` | `Fn((), Teks, Rawak)` | **interp-only** |
 | `csrf_jana` | `Fn((), Teks, Rawak)` | **interp-only** |
-| `random` | `Fn(Nombor, Nombor, Rawak)` | **interp-only** |
-| `rawak` | `Fn(Nombor, Nombor, Rawak)` | **interp-only** |
+| `random` | `Fn(Nombor, Nombor, Rawak)` | **native-only** |
+| `rawak` | `Fn(Nombor, Nombor, Rawak)` | **native-only** |
 
 ## Sistem (System)
 

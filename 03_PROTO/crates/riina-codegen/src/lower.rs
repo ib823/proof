@@ -79,7 +79,11 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // I/O
     match name {
         "cetak" | "print" => return Some("cetak"),
-        "cetakln" | "println" => return Some("cetakln"),
+        // `cetak_baris` is a third spelling of `cetakln` — the interpreter binds
+        // all three to the same `Value::Builtin("cetakln")`. Only this gate did
+        // not know it, so a program using that spelling ran and then failed to
+        // build. A pure aliasing gap, not a missing implementation.
+        "cetakln" | "println" | "cetak_baris" => return Some("cetakln"),
         // String
         "gabung_teks" | "concat" => return Some("gabung_teks"),
         "panjang" | "length" => return Some("panjang"),
@@ -105,6 +109,43 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
         "punca" | "sqrt" => return Some("punca"),
         "gcd" => return Some("gcd"),
         "lcm" => return Some("lcm"),
+        // `baki`/`rem` and `log2` had C implementations in emit.rs all along;
+        // only this gate was missing, so they were unreachable from a compiled
+        // program. `baki` additionally needed its TYPE corrected — it was
+        // declared unary and so could not be called from any well-typed program
+        // at all (see the note in riina-typechecker's math section).
+        "baki" | "rem" => return Some("baki"),
+        "log2" => return Some("log2"),
+        // `rawak`/`random`. Routed even though the two backends CANNOT be held
+        // to byte equality — both are time-seeded, so a differential can only
+        // pin the range invariant, and `pure_builtin_differential` says so
+        // rather than pretending otherwise. Routing is still right: without it
+        // a compiled RIINA program has no source of randomness at all, and
+        // neither implementation claims to be a CSPRNG (the interpreter hashes
+        // the clock, the emitted C runs an LCG). Anything needing cryptographic
+        // randomness must come from `riina-core`, not from here.
+        "rawak" | "random" => return Some("rawak"),
+        // Range constructors behind the `a..b` / `a..=b` surface syntax.
+        "julat" => return Some("julat"),
+        "julat_inklusif" => return Some("julat_inklusif"),
+        // Sum introspection. COMPILER INTERNALS, not stdlib: the parser's
+        // if-chain pattern compiler emits these for a constructor pattern nested
+        // where a `Case` cannot go, such as `(Ada(a), Tiada)` inside a tuple
+        // pattern. Leaving them unrouted meant that whole class of pattern ran
+        // under `riinac run` and failed `riinac build` with
+        // `unbound variable: nilai_kiri` — a language feature that did not
+        // compile, wearing the costume of a missing builtin.
+        // Unicode. These three are why `emit.rs` gained its ONE conditional
+        // prelude block: they need ~250 KB of vendored UCD tables, which would
+        // otherwise more than double every compiled binary to serve builtins
+        // most programs never call. See `emit_unicode_runtime`.
+        "nfc" | "ke_nfc" => return Some("nfc"),
+        "skeleton" | "rangka" => return Some("skeleton"),
+        "adalah_keliru" | "is_confusable" => return Some("adalah_keliru"),
+        "adalah_kiri" => return Some("adalah_kiri"),
+        "adalah_kanan" => return Some("adalah_kanan"),
+        "nilai_kiri" => return Some("nilai_kiri"),
+        "nilai_kanan" => return Some("nilai_kanan"),
         // Test
         "tegaskan" | "assert" => return Some("tegaskan"),
         "tegaskan_sama" | "assert_eq" => return Some("tegaskan_sama"),
