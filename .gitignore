@@ -68,3 +68,8 @@ reports/ct_evidence/
 # (07_EXAMPLES/11_servis) from the repo root. Runtime data, never source —
 # one was committed by accident at b5815399 and removed immediately after.
 *.simpan
+
+# Package build output (`riinac pkg build` writes artifacts here). The reference
+# service under 07_EXAMPLES/11_servis is built by REQ-75's test, so this appears
+# in a working tree whenever that test has run.
+sasaran/

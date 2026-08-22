@@ -1,0 +1,39 @@
+# The RIINA reference service — Gate C exit criterion 6 (master plan REQ-75).
+#
+# This is a PACKAGE, not two loose files, because the criterion asks for one
+# artifact that is simultaneously compiled, multi-file, networked and
+# persistent, built through `riinac pkg build`. Building it with `riinac build`
+# would satisfy every part except the last: `riinac build` resolves `guna kedai`
+# from the entry file's own directory and never reads this manifest, so the
+# package path — manifest parsing, effect permissions, module resolution under
+# `src/`, artifact layout under `sasaran/` — would go unexercised by the one
+# example that is supposed to prove RIINA ships.
+#
+#   $ riinac pkg build
+#   $ ./sasaran/pelayan/pelayan          # serves on 127.0.0.1:8140, once
+#
+# Run it repeatedly: the visit counter continues where it left off, because
+# `kedai.simpan` outlives the process.
+
+[pakej]
+nama = "pelayan"
+versi = "0.1.0"
+pengarang = []
+lesen = "MIT"
+keterangan = "Perkhidmatan rujukan: HTTP + storan kekal, dibina melalui pkg build"
+
+[kebergantungan]
+
+[dev-kebergantungan]
+
+# Least privilege, and the manifest is CHECKED against the effects the code
+# actually performs. IO covers `Tulis` (printing) and `SistemFail` (the durable
+# store); Network covers `Rangkaian` (the listener). Everything else stays off —
+# flipping Crypto or Product to `true` here would be a claim the service does
+# not make.
+[kesan-dibenarkan]
+IO = true
+Crypto = false
+Network = true
+System = false
+Product = false
