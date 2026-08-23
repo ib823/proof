@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-08-23T01:44:22Z
-**Git SHA:** 6e21ccfde
+**Generated:** 2026-08-23T09:10:06Z
+**Git SHA:** 6ffa628e4
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3280 tests |
+| Rust Tests | PASS | 3286 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 172s |
+| Coq Compilation | PASS | 331 .vo files compiled in 212s |
 | Coq Kernel Assumptions | PASS | 5 capstones attested; axioms within reviewed whitelist (1 allowed: funext) |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
@@ -24,7 +24,7 @@
 | F* admit Scan | WARN | 12010 admit in 315 files (19 lemmas) |
 | TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 317 files (12282 theorems) |
-| Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 6s (6 checked assertions, local_active) |
+| Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 8s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 306 files (11627 assertions) |
 | SMT Scan | PASS | 318 files (12431 assertions) |
 | Verus admit Scan | PASS | 0 admit in 323 files (6395 proof fns) |
