@@ -254,27 +254,6 @@
       "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-runtime@0.4.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "Proprietary"
-          }
-        }
-      ],
-      "name": "riina-runtime",
-      "properties": [
-        {
-          "name": "riina:origin",
-          "value": "workspace"
-        }
-      ],
-      "purl": "pkg:cargo/riina-runtime@0.4.0",
-      "scope": "required",
-      "type": "library",
-      "version": "0.4.0"
-    },
-    {
       "bom-ref": "pkg:cargo/riina-span@0.4.0",
       "licenses": [
         {
@@ -380,27 +359,6 @@
       "version": "0.4.0"
     },
     {
-      "bom-ref": "pkg:cargo/riina-ui@0.4.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "Proprietary"
-          }
-        }
-      ],
-      "name": "riina-ui",
-      "properties": [
-        {
-          "name": "riina:origin",
-          "value": "workspace"
-        }
-      ],
-      "purl": "pkg:cargo/riina-ui@0.4.0",
-      "scope": "required",
-      "type": "library",
-      "version": "0.4.0"
-    },
-    {
       "bom-ref": "pkg:cargo/riina-wasm@0.4.0",
       "licenses": [
         {
@@ -451,7 +409,7 @@
     "properties": [
       {
         "name": "riina:totalComponents",
-        "value": "21"
+        "value": "19"
       },
       {
         "name": "riina:externalComponents",

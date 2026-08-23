@@ -207,153 +207,188 @@ fungsi utama() -> Nombor kesan Sistem {
 // - As more syntax is implemented, the count should increase
 // ============================================================================
 
-/// Helper: run `riinac check` on a .rii file.
-/// Returns true if parse + typecheck succeeded (exit code 0, no error output).
+/// Helper: run `riinac check` on a .rii file. True iff parse + typecheck
+/// succeeded.
+///
+/// EXIT STATUS ONLY. This used to also require that stderr not contain the
+/// substring "error", which made the verdict depend on the FILE'S NAME:
+/// `riinac check` echoes `Compiling: <path>` to stderr, so
+/// `07_EXAMPLES/07_ai_patterns/error_handling.rii` — which compiles cleanly and
+/// prints `Success!` — was counted as failing. It was the entire difference
+/// between the 93 this gate first reported and the 94 that actually pass.
+///
+/// A substring scan of human-facing output is the wrong signal anyway: `riinac`
+/// exits non-zero on failure, which is the contract every other caller relies
+/// on.
 fn rii_check_passes(path: &Path) -> bool {
-    let output = Command::new(env!("CARGO_BIN_EXE_riinac"))
+    Command::new(env!("CARGO_BIN_EXE_riinac"))
         .args(["check", &path.to_string_lossy()])
         .output()
-        .expect("failed to run riinac check");
-
-    output.status.success()
-        && !String::from_utf8_lossy(&output.stderr).contains("error")
+        .expect("failed to run riinac check")
+        .status
+        .success()
 }
 
-/// Collect all .rii files from a directory.
-fn collect_rii_files(dir: &str) -> Vec<std::path::PathBuf> {
-    let base = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()  // crates/
-        .unwrap()
-        .parent()  // 03_PROTO/
-        .unwrap()
-        .parent()  // /workspaces/proof/
-        .unwrap()
-        .join(dir);
+// ── REQ-55 corpus gate: recursive, ratcheted, machine-measured ──────────────
+//
+// This replaces three tests that could not measure what they claimed. They
+// walked a HARDCODED list of 9 directories NON-RECURSIVELY, two of which
+// (`07_EXAMPLES/07_compiler`, `07_EXAMPLES/03_advanced`) do not exist under
+// those names, and asserted floors of 2 / 0 / 2 against a corpus of 169 files.
+// A gate whose floor is 2 does not detect a regression from 94 to 3.
+//
+// The consequence was a number nobody could trust. REQ-55 recorded `90/165`,
+// REQ-71 recorded `92/167`, and the corpus actually holds 169 files of which 94
+// pass. Three figures, none measured by anything, drifting independently of the
+// code. Prime Directive 8 says a metric is re-derived by command or it is not a
+// metric — so the count is now produced by this test and nowhere else.
+//
+// THE RATCHET IS TWO-SIDED, deliberately. `pass < FLOOR` is a regression. But
+// `pass > FLOOR` fails too, because that is exactly how the recorded numbers
+// went stale: someone fixed examples and no counter moved. Raising the floor is
+// a one-line edit the failure message spells out, and it forces the master plan
+// figure to be updated in the same commit as the fix that earned it.
 
-    if !base.exists() {
-        return vec![];
+/// Every `.rii` under `07_EXAMPLES/`, recursively, sorted for stable reporting.
+fn collect_rii_files_recursive(dir: &Path) -> Vec<std::path::PathBuf> {
+    let mut out = Vec::new();
+    let Ok(entries) = fs::read_dir(dir) else {
+        return out;
+    };
+    for e in entries.flatten() {
+        let p = e.path();
+        if p.is_dir() {
+            out.extend(collect_rii_files_recursive(&p));
+        } else if p.extension().is_some_and(|ext| ext == "rii") {
+            out.push(p);
+        }
     }
-
-    fs::read_dir(&base)
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .map(|e| e.path())
-        .filter(|p| p.extension().is_some_and(|ext| ext == "rii"))
-        .collect()
+    out.sort();
+    out
 }
+
+fn examples_root() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .and_then(Path::parent)
+        .expect("repo root")
+        .join("07_EXAMPLES")
+}
+
+/// The corpus figure REQ-55 tracks. Raise BOTH when examples are fixed or added;
+/// the failure messages say so.
+const CORPUS_PASSING: usize = 94;
+const CORPUS_TOTAL: usize = 169;
 
 #[test]
-fn rii_example_regression_gate_effects() {
-    let files = collect_rii_files("07_EXAMPLES/02_effects");
+fn rii_corpus_gate() {
+    let root = examples_root();
+    let files = collect_rii_files_recursive(&root);
     assert!(
         !files.is_empty(),
-        "No .rii files found in 07_EXAMPLES/02_effects/"
+        "no .rii files under {} — the corpus gate is measuring nothing",
+        root.display()
     );
 
-    let mut pass_count = 0;
-    let mut fail_names = vec![];
-
+    let mut passing = Vec::new();
+    let mut failing = Vec::new();
     for f in &files {
         if rii_check_passes(f) {
-            pass_count += 1;
+            passing.push(f.clone());
         } else {
-            fail_names.push(f.file_name().unwrap().to_string_lossy().to_string());
+            failing.push(f.clone());
         }
     }
 
-    // Regression gate: this number must never decrease.
-    // As more syntax is implemented, increase this minimum.
-    let minimum_pass_count = 2;
-
-    assert!(
-        pass_count >= minimum_pass_count,
-        "Effect examples regression: {pass_count}/{} pass (minimum {minimum_pass_count}). \
-         Failures: {:?}",
-        files.len(),
-        fail_names
-    );
+    let rel = |p: &std::path::PathBuf| {
+        p.strip_prefix(&root)
+            .unwrap_or(p)
+            .to_string_lossy()
+            .into_owned()
+    };
 
     eprintln!(
-        "rii_example_regression_gate_effects: {pass_count}/{} pass ({} fail)",
+        "REQ-55 corpus: {}/{} pass, {} fail",
+        passing.len(),
         files.len(),
-        fail_names.len()
+        failing.len()
+    );
+
+    assert_eq!(
+        files.len(),
+        CORPUS_TOTAL,
+        "the corpus changed size ({} files, expected {CORPUS_TOTAL}). An example was \
+         added or removed — update CORPUS_TOTAL, and note REQ-55 forbids DELETING an \
+         example to move the pass count.",
+        files.len()
+    );
+
+    assert!(
+        passing.len() >= CORPUS_PASSING,
+        "REQ-55 REGRESSION: {}/{} pass, was {CORPUS_PASSING}. Newly failing examples \
+         are somewhere in: {:?}",
+        passing.len(),
+        files.len(),
+        failing.iter().map(rel).collect::<Vec<_>>()
+    );
+
+    assert!(
+        passing.len() <= CORPUS_PASSING,
+        "REQ-55 PROGRESS ({}/{} pass, floor is {CORPUS_PASSING}) — raise CORPUS_PASSING \
+         to {} in this file and update the REQ-55 row in RIINA_MASTER_PLAN.md in the same \
+         commit. This assertion exists because the recorded figure drifted to 90/165 \
+         while the truth was {}/{}; a fix that moves the number must move the record.",
+        passing.len(),
+        files.len(),
+        passing.len(),
+        passing.len(),
+        files.len()
     );
 }
 
+/// The failing examples, grouped by first error, so REQ-55 work is planned from
+/// measurement rather than by opening files one at a time. Reporting only — it
+/// asserts nothing beyond the gate above.
 #[test]
-fn rii_example_regression_gate_security() {
-    let files = collect_rii_files("07_EXAMPLES/01_security");
-    assert!(
-        !files.is_empty(),
-        "No .rii files found in 07_EXAMPLES/01_security/"
-    );
+fn rii_corpus_failure_histogram() {
+    let root = examples_root();
+    let mut hist: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
+    let mut fails = 0;
 
-    let mut pass_count = 0;
-    let mut fail_names = vec![];
-
-    for f in &files {
-        if rii_check_passes(f) {
-            pass_count += 1;
-        } else {
-            fail_names.push(f.file_name().unwrap().to_string_lossy().to_string());
+    for f in collect_rii_files_recursive(&root) {
+        let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+            .args(["check", &f.to_string_lossy()])
+            .output()
+            .expect("run riinac check");
+        if out.status.success() {
+            continue;
         }
+        fails += 1;
+        let text = format!(
+            "{}{}",
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+        // First line, with file-specific detail trimmed so classes group.
+        let first = text.lines().next().unwrap_or("<no output>").trim();
+        let class = first
+            .split(" at ")
+            .next()
+            .unwrap_or(first)
+            .split(':')
+            .take(2)
+            .collect::<Vec<_>>()
+            .join(":");
+        *hist.entry(class.chars().take(90).collect()).or_default() += 1;
     }
 
-    // Regression gate: currently 0 security examples pass.
-    // When security syntax is implemented, increase this.
-    let minimum_pass_count = 0;
-
-    assert!(
-        pass_count >= minimum_pass_count,
-        "Security examples regression: {pass_count}/{} pass (minimum {minimum_pass_count}). \
-         Failures: {:?}",
-        files.len(),
-        fail_names
-    );
-
-    eprintln!(
-        "rii_example_regression_gate_security: {pass_count}/{} pass ({} fail)",
-        files.len(),
-        fail_names.len()
-    );
-}
-
-#[test]
-fn rii_example_regression_gate_all() {
-    // Scan ALL .rii example directories
-    let dirs = [
-        "07_EXAMPLES/00_basics",
-        "07_EXAMPLES/01_security",
-        "07_EXAMPLES/02_effects",
-        "07_EXAMPLES/03_advanced",
-        "07_EXAMPLES/04_compliance",
-        "07_EXAMPLES/05_patterns",
-        "07_EXAMPLES/06_ai_context",
-        "07_EXAMPLES/07_compiler",
-        "07_EXAMPLES/08_jalinan",
-    ];
-
-    let mut total = 0;
-    let mut pass = 0;
-
-    for dir in &dirs {
-        for f in collect_rii_files(dir) {
-            total += 1;
-            if rii_check_passes(&f) {
-                pass += 1;
-            }
-        }
+    let mut rows: Vec<_> = hist.into_iter().collect();
+    rows.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    eprintln!("REQ-55 first-error histogram ({fails} failing):");
+    for (class, n) in &rows {
+        eprintln!("  {n:3}  {class}");
     }
-
-    // Overall regression gate
-    let minimum_pass_count = 2;
-
-    assert!(
-        pass >= minimum_pass_count,
-        "Overall .rii regression: {pass}/{total} pass (minimum {minimum_pass_count})"
-    );
-
-    eprintln!("rii_example_regression_gate_all: {pass}/{total} pass");
 }
 
 // ── REQ-27 IFC sink rule, end-to-end through the surface syntax ──

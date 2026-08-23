@@ -17,8 +17,8 @@ prose — per the Paranoid-Absolute Verification directive. Last re-derived: **2
 
 ## Coverage posture
 
-- **`#![forbid(unsafe_code)]` in 11 of 19 proto crates**, including the entire compiler hot path
-  outside the arena: `riinac`, `riina-runtime`, `riina-codegen`'s adjacent crates, `riina-fmt`,
+- **`#![forbid(unsafe_code)]` in 10 of 18 proto crates**, including the entire compiler hot path
+  outside the arena: `riinac`, `riina-codegen`'s adjacent crates, `riina-fmt`,
   `riina-lsp`, `riina-doc`, `riina-pkg`, `riina-span`, `riina-symbols`, `riina-compliance`, and
   `riina-lexer` (the lexer's lib forbids it; the one fast-path lives behind an explicit allow).
 - **All remaining `unsafe` is confined to 3 modules**: `riina-arena` (memory arena), `riina-wasm`

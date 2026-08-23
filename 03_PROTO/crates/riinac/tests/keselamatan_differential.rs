@@ -95,12 +95,30 @@ fn feed(cmd: &mut Command, stdin_text: &str) -> String {
         .stderr(Stdio::piped())
         .spawn()
         .expect("spawn");
-    child
+    // A BrokenPipe here is NOT a failure. Every case writes stdin, but several
+    // programs never call `baca_baris` — the CSRF predicates and the pair-taking
+    // sinks take their inputs as literals. Such a child can run to completion and
+    // exit before this write lands, closing the read end, and the write then
+    // fails with EPIPE. It is a RACE, so it passed locally and failed in CI
+    // (`csrf_predicates_agree_including_the_empty_allowed_origin`, run
+    // 32611119890): a faster machine loses more often.
+    //
+    // What the test is actually asserting is that the two backends produce the
+    // same output; input the program did not want is not part of that. Any other
+    // write error is still fatal.
+    if let Err(e) = child
         .stdin
         .as_mut()
         .expect("stdin")
         .write_all(format!("{stdin_text}\n").as_bytes())
-        .expect("write stdin");
+    {
+        assert_eq!(
+            e.kind(),
+            std::io::ErrorKind::BrokenPipe,
+            "writing stdin failed for a reason other than the child having already \
+             exited: {e}"
+        );
+    }
     let out = child.wait_with_output().expect("wait");
     assert!(
         out.status.success(),
@@ -516,12 +534,17 @@ fn assert_safe_file_agrees(tag: &str, body: &str, filename: &str) {
             .stderr(Stdio::piped())
             .spawn()
             .expect("spawn");
-        child
+        // Same BrokenPipe tolerance as `feed` — see the note there. These
+        // programs DO read stdin, but a denied run can abort before the write
+        // lands, and that abort is the outcome under test rather than an error.
+        if let Err(e) = child
             .stdin
             .as_mut()
             .expect("stdin")
             .write_all(format!("{filename}\n").as_bytes())
-            .expect("write stdin");
+        {
+            assert_eq!(e.kind(), std::io::ErrorKind::BrokenPipe, "write stdin: {e}");
+        }
         let out = child.wait_with_output().expect("wait");
         let s = String::from_utf8_lossy(&out.stdout).into_owned();
         let mut lines: Vec<&str> = s.lines().collect();
