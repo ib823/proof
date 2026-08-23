@@ -225,9 +225,3 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Tulis {
 fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }
-
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Tulis {
-        pulang 0;
-    }
-}
