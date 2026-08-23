@@ -1232,6 +1232,7 @@ cat > "$OUTPUT_FILE" << EOF
     "theorems": $LEAN_THEOREMS,
     "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
     "sorry": $LEAN_SORRY,
+    "sorryVerified": $LEAN_COMPILED,
     "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
     "axioms": $LEAN_AXIOMS,
     "files": $LEAN_FILES,

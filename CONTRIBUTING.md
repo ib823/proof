@@ -1,6 +1,6 @@
 # Contributing to RIINA™
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3286 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3288 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 3286 passing)
+# Run all tests (should show 3288 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out
