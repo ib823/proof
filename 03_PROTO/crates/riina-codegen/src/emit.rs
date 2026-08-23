@@ -2431,6 +2431,9 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // literal text `<value>`, which is how the composite tags came to render
         // differently from `cetakln` — two switches, one of them updated.
         self.writeln("static riina_value_t* riina_builtin_ke_teks(riina_value_t* arg) {");
+        // A string is already its own rendering; returning it avoids a copy and
+        // keeps `ke_teks(s) == s` identical to the interpreter. Everything else
+        // goes through the one shared formatter.
         self.writeln("    if (arg->tag == RIINA_TAG_STRING) return arg;");
         self.writeln("    return riina_string(riina_format(arg));");
         self.writeln("}");
@@ -5592,6 +5595,7 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
         Ok(())
     }
 
+
     /// Emit variable declarations for a function
     fn emit_var_declarations(&mut self, func: &Function) -> Result<()> {
         let mut vars: HashSet<VarId> = HashSet::new();
@@ -5821,12 +5825,16 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
             Instruction::FixClosure {
                 closure,
                 capture_index,
+                value,
             } => {
-                // Patch a closure's capture to point to itself (recursive closure).
-                let closure_name = self.var_name(closure);
+                // Patch one of a closure's capture slots. `value` is the closure
+                // itself for plain recursion, or a sibling in a mutually
+                // recursive group (which is how a forward call resolves).
                 self.writeln(&format!(
-                    "{}->data.closure_val.captures[{}] = {}; /* fix recursive self-capture */",
-                    closure_name, capture_index, closure_name
+                    "{}->data.closure_val.captures[{}] = {}; /* fix closure capture */",
+                    self.var_name(closure),
+                    capture_index,
+                    self.var_name(value)
                 ));
             }
 
