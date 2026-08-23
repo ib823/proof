@@ -2071,12 +2071,29 @@ fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
 
 /// Get the most recent modification time of any file with the given extension
 /// under `dir`.  Returns `None` if no files found.
+/// A directory whose contents must not influence freshness: it holds material
+/// that is deliberately no longer built.
+///
+/// The staleness check compares "newest Coq source" against "newest transpiled
+/// output", and without this an ARCHIVED file drives the verdict for every lane.
+/// It was not hypothetical: `properties/_archive_deprecated/` held the newest
+/// `.v` in the whole tree, 14 days ahead of any active file, so every lane was
+/// measured against a proof that was retired on purpose.
+fn is_archived_dir(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|n| n.to_str())
+        .is_some_and(|n| n.starts_with("_archive"))
+}
+
 fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
     fn walk(dir: &Path, ext: &str, best: &mut Option<SystemTime>) {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
+                    if is_archived_dir(&path) {
+                        continue;
+                    }
                     walk(&path, ext, best);
                 } else if path.extension().and_then(|e| e.to_str()) == Some(ext) {
                     if let Ok(meta) = fs::metadata(&path) {
@@ -2095,21 +2112,58 @@ fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
     best
 }
 
-/// Check if transpiled prover files are stale relative to Coq source files.
-/// Returns non-blocking warnings for each stale prover.
-fn check_transpiler_staleness(repo: &Path, dirs: &ProverDirs<'_>) -> Vec<CheckResult> {
-    let coq_newest = match newest_mtime(dirs.coq_dir, "v") {
-        Some(t) => t,
-        None => return vec![],
+/// Is `lane` one the owner has RETIRED, whatever its per-lane status field
+/// happens to say?
+///
+/// Retirement is recorded in two independent places — `claimLevels.<lane>` and,
+/// for some lanes, a `<lane>Status` field — and the per-lane arms in
+/// `check_transpiler_staleness` only ever enumerated `generated` and `stub`.
+/// `fstarStatus` is `"retired"`, which matches neither, so the F* arm returned
+/// "freshness required" for a lane that is not built at all. Isabelle escaped
+/// only by accident: its arm keys on `isabelleCompiled`, which is false for an
+/// unrelated reason.
+///
+/// Owner decision 2026-08-06 retired F* and Isabelle; asking a retired lane to
+/// keep pace with Coq is asking for a regeneration nobody intends to run.
+///
+/// This is a free function rather than a closure so the test below can call the
+/// REAL predicate — a test that reimplements the rule it is checking proves
+/// only that the author can copy code twice.
+fn lane_is_retired(metrics: &str, lane: &str) -> bool {
+    let (claim_key, status_key) = match lane {
+        "Lean" => ("lean", "leanStatus"),
+        "Isabelle" => ("isabelle", "isabelleStatus"),
+        "F*" => ("fstar", "fstarStatus"),
+        "TLA+" => ("tlaplus", "tlaplusStatus"),
+        "Alloy" => ("alloy", "alloyStatus"),
+        "SMT" => ("smt", "smtStatus"),
+        "Verus" => ("verus", "verusStatus"),
+        "Kani" => ("kani", "kaniStatus"),
+        "TV" => ("tv", "tvStatus"),
+        _ => return false,
     };
+    metrics.contains(&format!("\"{claim_key}\": \"retired\""))
+        || metrics.contains(&format!("\"{status_key}\": \"retired\""))
+}
 
-    let metrics_content = fs::read_to_string(repo.join("website/public/metrics.json")).ok();
-    let lane_requires_freshness = |lane: &str| -> bool {
-        let Some(content) = metrics_content.as_deref() else {
-            // If metrics are unavailable, keep legacy conservative behavior.
-            return true;
-        };
-        match lane {
+/// Must `lane` be regenerated whenever Coq moves?
+///
+/// `metrics` is `None` when `website/public/metrics.json` could not be read, in
+/// which case every lane is held to freshness — the conservative legacy answer.
+///
+/// Free function rather than a closure so the test below can exercise the whole
+/// decision, retirement early-exit included. Testing only `lane_is_retired`
+/// would leave the wiring — the part that was actually missing — unpinned.
+fn lane_requires_freshness(metrics: Option<&str>, lane: &str) -> bool {
+    let Some(content) = metrics else {
+        // If metrics are unavailable, keep legacy conservative behavior.
+        return true;
+    };
+    // Retirement outranks every per-lane rule below.
+    if lane_is_retired(content, lane) {
+        return false;
+    }
+    match lane {
             "Lean" => content.contains("\"leanCompiled\": true"),
             "Isabelle" => content.contains("\"isabelleCompiled\": true"),
             "F*" => {
@@ -2140,9 +2194,21 @@ fn check_transpiler_staleness(repo: &Path, dirs: &ProverDirs<'_>) -> Vec<CheckRe
                 !(content.contains("\"tvStatus\": \"generated\"")
                     || content.contains("\"tvStatus\": \"stub\""))
             }
-            _ => true,
-        }
+        _ => true,
+    }
+}
+
+/// Check if transpiled prover files are stale relative to Coq source files.
+/// Returns non-blocking warnings for each stale prover.
+fn check_transpiler_staleness(repo: &Path, dirs: &ProverDirs<'_>) -> Vec<CheckResult> {
+    let coq_newest = match newest_mtime(dirs.coq_dir, "v") {
+        Some(t) => t,
+        None => return vec![],
     };
+
+    let metrics_content = fs::read_to_string(repo.join("website/public/metrics.json")).ok();
+    let lane_requires_freshness =
+        |lane: &str| -> bool { lane_requires_freshness(metrics_content.as_deref(), lane) };
 
     let provers: &[(&str, &Path, &str, &str)] = &[
         (
@@ -4216,5 +4282,133 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
             let count = count_tv_validations(&dir);
             assert!(count > 100, "Expected >100 TV validations, got {count}");
         }
+    }
+
+    // =======================================================================
+    // Transpiler-staleness gate semantics (owner-sign-off change, 2026-08-23).
+    //
+    // Both defects below were live and both change what `riinac verify --full`
+    // ASSERTS, which is why they are pinned here rather than left to a manual
+    // run: a session must not be able to weaken its own verification gate
+    // without a test saying exactly how.
+    // =======================================================================
+
+    /// A RETIRED lane must not be required to keep pace with Coq.
+    ///
+    /// Before the fix this returned "freshness required" for F*: the per-lane
+    /// arms enumerated only `generated` and `stub`, and `fstarStatus` is
+    /// `"retired"` — which matches neither. Isabelle escaped by accident, via an
+    /// unrelated `isabelleCompiled: false`.
+    ///
+    /// NEGATIVE CONTROL: delete the `if retired { return false; }` early exit in
+    /// `check_transpiler_staleness` and the F* case here fails.
+    #[test]
+    fn retired_lanes_are_exempt_from_transpiler_freshness() {
+        // Mirrors the shape of the real website/public/metrics.json.
+        let metrics = r#"{
+            "quality": { "leanCompiled": false, "isabelleCompiled": false,
+                         "fstarStatus": "retired", "smtStatus": "mechanized",
+                         "tlaplusStatus": "generated" },
+            "claimLevels": { "lean": "generated", "isabelle": "retired",
+                             "fstar": "retired", "smt": "mechanized",
+                             "tlaplus": "generated" }
+        }"#;
+
+        // THE ASSERTION THAT CARRIES THE FIX: the whole decision, not just the
+        // predicate. `fstarStatus` here is `"retired"` — under the old rule the
+        // F* arm asked `!(generated || stub)`, which is TRUE for "retired", so
+        // the lane was required to keep pace with a Coq tree it is no longer
+        // built from.
+        assert!(
+            !lane_requires_freshness(Some(metrics), "F*"),
+            "F* is retired by owner decision 2026-08-06 and must not be held to \
+             freshness"
+        );
+        assert!(
+            !lane_requires_freshness(Some(metrics), "Isabelle"),
+            "Isabelle is retired too — it must be exempt BY RETIREMENT, not by the \
+             accident of isabelleCompiled being false"
+        );
+        assert!(
+            lane_requires_freshness(Some(metrics), "SMT"),
+            "SMT is mechanized and must STILL be held to freshness — an exemption \
+             that swallowed a live lane would be worse than the bug it replaced"
+        );
+        assert!(
+            !lane_requires_freshness(Some(metrics), "TLA+"),
+            "a merely `generated` lane is exempt by its OWN rule, unchanged here"
+        );
+        assert!(
+            lane_requires_freshness(None, "F*"),
+            "with no metrics to read, every lane stays conservative — the exemption \
+             must never be the fallback"
+        );
+
+        assert!(!lane_is_retired(metrics, "Lean"), "Lean is `generated`, not retired");
+        assert!(
+            !lane_is_retired(metrics, "NoSuchLane"),
+            "an unknown lane name must never be treated as retired"
+        );
+
+        // The REAL metrics file, not a fixture: the exemption is only worth
+        // anything if it fires on what the repository actually publishes.
+        let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .ancestors()
+            .nth(3)
+            .expect("repo root");
+        let live = fs::read_to_string(repo.join("website/public/metrics.json"))
+            .expect("website/public/metrics.json must exist");
+        assert!(
+            !lane_requires_freshness(Some(&live), "F*"),
+            "live metrics.json no longer exempts F* — if the owner un-retired it, \
+             this exemption must be revisited, not silently kept"
+        );
+        assert!(
+            lane_requires_freshness(Some(&live), "SMT"),
+            "live metrics.json stopped requiring freshness of SMT, a mechanized lane"
+        );
+    }
+
+    /// An ARCHIVED proof must not drive the freshness verdict.
+    ///
+    /// `newest_mtime` walked every subdirectory, so `_archive_deprecated/` — which
+    /// held the newest `.v` in the tree, 14 days ahead of any active file — set
+    /// the bar that every transpiled lane was measured against.
+    ///
+    /// NEGATIVE CONTROL: remove the `is_archived_dir` guard in `newest_mtime` and
+    /// this fails, because the archived file is deliberately made the newest.
+    #[test]
+    fn archived_proofs_do_not_drive_freshness() {
+        let dir = std::env::temp_dir().join(format!("riina_arch_{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let active = dir.join("active");
+        let archived = dir.join("_archive_deprecated");
+        fs::create_dir_all(&active).unwrap();
+        fs::create_dir_all(&archived).unwrap();
+
+        fs::write(active.join("Live.v"), "(* active *)").unwrap();
+        // Written second, so its mtime is newer than the active file's.
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        fs::write(archived.join("Retired.v"), "(* archived *)").unwrap();
+
+        let newest = newest_mtime(&dir, "v").expect("a .v file exists");
+        let active_mt = fs::metadata(active.join("Live.v")).unwrap().modified().unwrap();
+        let archived_mt = fs::metadata(archived.join("Retired.v")).unwrap().modified().unwrap();
+
+        assert!(
+            archived_mt > active_mt,
+            "test setup is wrong: the archived file must be the newer one, or this \
+             proves nothing"
+        );
+        assert_eq!(
+            newest, active_mt,
+            "the freshness scan picked up an archived proof. Every transpiled lane \
+             would then be measured against a file that is retired on purpose."
+        );
+
+        assert!(is_archived_dir(&archived), "_archive_deprecated must be recognised");
+        assert!(!is_archived_dir(&active), "an ordinary directory must not be");
+
+        let _ = fs::remove_dir_all(&dir);
     }
 }
