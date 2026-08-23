@@ -795,11 +795,31 @@ if [ -f "$METRICS_FILE" ]; then
     # Check: if lean.compiled == false but lean.sorry == 0, warn about misleading claim
     LEAN_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('leanCompiled',True)).lower())" 2>/dev/null || echo "true")
     LEAN_SORRY_WEB=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['sorry'])" 2>/dev/null || echo "0")
-    if [ "$LEAN_COMPILED" = "false" ] && [ "$LEAN_SORRY_WEB" = "0" ]; then
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${YELLOW}[WARN]${NC} Lean reports 0 sorry but leanCompiled=false (sorry count is syntactic, not verified)"
+    # LEAN NOW FOLLOWS THE ISABELLE RULE, which is STRICTER than what it replaces.
+    #
+    # This was an unconditional WARN whenever leanCompiled=false and sorry=0 — a
+    # true statement ("the count is syntactic") that no action could ever clear,
+    # since clearing it means REQ-06, not hygiene. A warning that cannot be acted
+    # on is noise, and noise is what hides the warnings that matter.
+    #
+    # The Isabelle branch below solved the same problem years-of-plan ago and
+    # solved it HARDER: it does not warn, it REQUIRES the metrics to carry an
+    # explicit `sorryVerified: false` marker, and treats a missing marker as a
+    # DISCREPANCY (a hard failure), not a warning. The claim is then qualified in
+    # the published data rather than in a console line nobody keeps.
+    #
+    # Porting that rule to Lean tightens the gate: an un-marked Lean lane now
+    # FAILS the audit where it previously only warned.
+    LEAN_SORRY_VERIFIED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['lean'].get('sorryVerified', True)).lower())" 2>/dev/null || echo "true")
+    if [ "$LEAN_COMPILED" = "false" ]; then
+        if [ "$LEAN_SORRY_VERIFIED" = "false" ]; then
+            if [ "$QUICK_MODE" != "--quick" ]; then
+                echo -e "${GREEN}[OK]${NC} Lean sorry count ($LEAN_SORRY_WEB) correctly marked as unverified (sorryVerified=false)"
+            fi
+        else
+            echo -e "${RED}[MISMATCH]${NC} Lean leanCompiled=false but sorryVerified is not false — run generate-metrics.sh"
+            DISCREPANCIES=$((DISCREPANCIES + 1))
         fi
-        WARNINGS=$((WARNINGS + 1))
     fi
 
     ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',True)).lower())" 2>/dev/null || echo "true")
@@ -1024,16 +1044,67 @@ fi
 COQ_WARNING_STATUS="$REPO_ROOT/reports/coq_warning_status.json"
 COQ_WARNING_BUDGET="$REPO_ROOT/reports/coq_warning_budget.json"
 if [ -f "$COQ_WARNING_STATUS" ] && [ -f "$COQ_WARNING_BUDGET" ]; then
-    COQ_WARN_EVAL=$(python3 - "$COQ_WARNING_STATUS" "$COQ_WARNING_BUDGET" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" <<'PY'
-import json, sys
-status_path, budget_path, head, parent = sys.argv[1:5]
+    COQ_WARN_EVAL=$(python3 - "$COQ_WARNING_STATUS" "$COQ_WARNING_BUDGET" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" "$REPO_ROOT" <<'PY'
+import json, subprocess, sys
+status_path, budget_path, head, parent, repo = sys.argv[1:6]
 with open(status_path, "r", encoding="utf-8") as f:
     status = json.load(f)
 with open(budget_path, "r", encoding="utf-8") as f:
     budget = json.load(f)
 
 repo_head = status.get("repoHead", "")
-fresh = repo_head in {head, parent}
+
+
+def coq_inputs_changed(a, b):
+    """True if anything that could change the Coq warning count moved between
+    the two commits.
+
+    Conservative on purpose: a file we cannot classify counts as a change, so
+    the failure mode is a spurious "stale", never a spurious "fresh".
+    """
+    diff = subprocess.run(
+        ["git", "-C", repo, "diff", "--name-only", f"{a}..{b}", "--",
+         "02_FORMAL/coq", "scripts/audit-coq-warnings.py"],
+        capture_output=True, text=True, check=False,
+    )
+    for line in diff.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # Archived proofs are not built, so they cannot emit a warning.
+        if "/_archive" in line:
+            continue
+        # Prose does not compile.
+        if line.endswith(".md"):
+            continue
+        return True
+    return False
+
+
+def is_ancestor(a, b):
+    return subprocess.run(
+        ["git", "-C", repo, "merge-base", "--is-ancestor", a, b],
+        capture_output=True, check=False,
+    ).returncode == 0
+
+
+# FRESHNESS IS CONTENT-BASED, NOT COMMIT-DISTANCE-BASED.
+#
+# This was `repo_head in {head, parent}`, which made a permanent WARN
+# structurally unavoidable: regenerating the report is itself a commit, so the
+# file is one commit stale the moment it lands, and two commits later it is
+# stale no matter what — even if not a single `.v` file moved. The gate was
+# therefore reporting "stale" for a report that perfectly described the code.
+#
+# The question a warning budget actually cares about is whether the inputs
+# changed, so that is what is asked now. The two-commit window is kept as a fast
+# path; beyond it, the report stays fresh while no Coq input has moved.
+fresh = repo_head in {head, parent} or (
+    bool(repo_head)
+    and bool(head)
+    and is_ancestor(repo_head, head)
+    and not coq_inputs_changed(repo_head, head)
+)
 
 totals = status.get("totals", {})
 obs_total = int(totals.get("warnings", 0))

@@ -4553,6 +4553,40 @@ for why a C TLS that is not really `riina-tls` would be worse than a build error
 VirtualFs trio and `csrf_generate`, each excluded for a stated reason rather than left
 undone.
 
+**GATE-SEMANTICS FIXES PREPARED 2026-08-23 — AWAITING OWNER SIGN-OFF, NOT MERGED.** Three
+checks were reporting things that were not true, and each change alters what a verification gate
+ASSERTS, so per the standing rule a session prepares them and stops at the signature line.
+
+1. **A RETIRED lane was still required to keep pace with Coq.** `lane_requires_freshness`
+   (`riinac/src/verify.rs`) enumerated only `generated` and `stub`; `fstarStatus` is
+   `"retired"`, which matches neither, so F* — retired by owner decision 2026-08-06 — was held
+   to freshness. Isabelle escaped only by ACCIDENT, through an unrelated
+   `isabelleCompiled: false`. Retirement now outranks every per-lane rule. Measured against the
+   real `metrics.json`, exactly one lane changes verdict (F*: required → not required) and SMT,
+   which is `mechanized`, is untouched — so the exemption does not swallow a live lane.
+2. **An ARCHIVED proof was driving the freshness verdict for every lane.** `newest_mtime` walked
+   every subdirectory, and `properties/_archive_deprecated/` held the newest `.v` in the tree,
+   14 days ahead of any active file. Every transpiled lane was being measured against a proof
+   retired on purpose. Archived trees are now skipped.
+3. **Coq warning-budget freshness was structurally unsatisfiable.** It asked
+   `repoHead in {HEAD, HEAD^}`, but regenerating the report is itself a commit, so the file was
+   stale on arrival and permanently stale two commits later — regardless of whether any `.v`
+   moved. Now content-based: fresh while no Coq input has changed. **Measured: 99 commits since
+   the report, and ZERO Coq inputs changed** — the gate had been calling a report stale that
+   described the code perfectly.
+4. **The Lean sorry WARN is replaced by the STRICTER Isabelle rule.** It was an unconditional
+   warning that no action could clear (clearing it means REQ-06, not hygiene), and an
+   unactionable warning is noise that hides real ones. Lean now follows Isabelle: the metrics
+   MUST carry `lean.sorryVerified: false`, and a missing marker is a hard DISCREPANCY rather
+   than a warning. This TIGHTENS the gate — an un-marked Lean lane now fails where it used to
+   warn.
+
+Result: `audit-docs.sh` reports **AUDIT PASSED with 0 discrepancies and 0 warnings** for the
+first time, with no claim weakened. Every change is negative-controlled: reverting the archive
+guard fails `archived_proofs_do_not_drive_freshness`; stripping `lean.sorryVerified` produces a
+hard `[MISMATCH]`; and the retired exemption is shown against real data to move exactly the one
+retired lane.
+
 **The finding this wave keeps producing, now seven groups deep: a family marked as lowering is
 not thereby a family that agrees, neither is a family with a differential, and a builtin marked
 interpreter-only is not thereby a builtin anyone has looked at.** Every routed

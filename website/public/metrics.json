@@ -1,11 +1,11 @@
 {
-  "generated": "2026-08-23T10:54:01Z",
-  "generatedHuman": "August 23, 2026 at 10:54 UTC",
+  "generated": "2026-08-23T11:32:48Z",
+  "generatedHuman": "August 23, 2026 at 11:32 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "8efe68c6c",
-    "branch": "main"
+    "commit": "adfbf3423",
+    "branch": "claude/continue-solution-4gn31y"
   },
   "proofs": {
     "qedActive": 12678,
@@ -26,6 +26,7 @@
     "theorems": 12576,
     "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
     "sorry": 0,
+    "sorryVerified": false,
     "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
     "axioms": 0,
     "files": 325,
@@ -194,10 +195,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3286,
-    "testsVerified": 3286,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 3288,
+    "testsVerified": 3288,
+    "testsEstimated": 3284,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 169,
