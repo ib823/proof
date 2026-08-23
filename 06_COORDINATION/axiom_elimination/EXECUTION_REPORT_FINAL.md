@@ -1,6 +1,6 @@
 # RIINA AXIOM ELIMINATION - FINAL EXECUTION REPORT
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3375 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3280 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 **Date:** 2026-01-25  
 **Mode:** ULTRA KIASU | ZERO TRUST
