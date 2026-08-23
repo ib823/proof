@@ -167,12 +167,6 @@ fungsi potong(teks: Teks, mula: Nombor, hujung: Nombor) -> Teks kesan Bersih {
     pulang teks;
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
-}
-
 ujian "pengesahan_kata_laluan_betul" {
     biar garam = "random_salt_123";
     biar hash = hash_kata_laluan("kata_laluan_sebenar", garam);

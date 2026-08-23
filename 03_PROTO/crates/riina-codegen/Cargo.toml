@@ -21,7 +21,6 @@ Mode: Comprehensive Verification | Zero Trust
 # Internal dependencies - AST definitions
 riina-types.workspace = true
 # Actor runtime (JALINAN Phase 6)
-riina-runtime = { path = "../riina-runtime" }
 # Verified VirtualFs access-control model (exposed via the vfs_* builtins)
 riina-os = { path = "../riina-os" }
 riina-tls = { path = "../riina-tls" }

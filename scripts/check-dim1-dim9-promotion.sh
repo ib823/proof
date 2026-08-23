@@ -72,8 +72,19 @@ else
   exit 1
 fi
 
+# Escape a string for embedding in a JSON string literal.
+#
+# This escaped ONLY backslash and double-quote, which produced INVALID JSON the
+# moment a captured value spanned lines. `riina_require_local_isabelle` fails
+# with a three-line message; that reached "isabelle_local_error" verbatim, and
+# every consumer of reports/dim1_dim9_promotion_status.json then died on
+# "Invalid control character at line 16". JSON forbids a raw control character
+# inside a string (RFC 8259 §7), so CR, tab and newline must be escaped too --
+# newline last, because it needs sed's hold-space join.
 escape_json() {
-  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+  printf '%s' "$1" \
+    | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\r/\\r/g' -e 's/\t/\\t/g' \
+    | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g'
 }
 
 run_with_timeout() {

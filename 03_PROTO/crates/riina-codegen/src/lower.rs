@@ -79,7 +79,11 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // I/O
     match name {
         "cetak" | "print" => return Some("cetak"),
-        "cetakln" | "println" => return Some("cetakln"),
+        // `cetak_baris` is a third spelling of `cetakln` — the interpreter binds
+        // all three to the same `Value::Builtin("cetakln")`. Only this gate did
+        // not know it, so a program using that spelling ran and then failed to
+        // build. A pure aliasing gap, not a missing implementation.
+        "cetakln" | "println" | "cetak_baris" => return Some("cetakln"),
         // String
         "gabung_teks" | "concat" => return Some("gabung_teks"),
         "panjang" | "length" => return Some("panjang"),
@@ -105,6 +109,43 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
         "punca" | "sqrt" => return Some("punca"),
         "gcd" => return Some("gcd"),
         "lcm" => return Some("lcm"),
+        // `baki`/`rem` and `log2` had C implementations in emit.rs all along;
+        // only this gate was missing, so they were unreachable from a compiled
+        // program. `baki` additionally needed its TYPE corrected — it was
+        // declared unary and so could not be called from any well-typed program
+        // at all (see the note in riina-typechecker's math section).
+        "baki" | "rem" => return Some("baki"),
+        "log2" => return Some("log2"),
+        // `rawak`/`random`. Routed even though the two backends CANNOT be held
+        // to byte equality — both are time-seeded, so a differential can only
+        // pin the range invariant, and `pure_builtin_differential` says so
+        // rather than pretending otherwise. Routing is still right: without it
+        // a compiled RIINA program has no source of randomness at all, and
+        // neither implementation claims to be a CSPRNG (the interpreter hashes
+        // the clock, the emitted C runs an LCG). Anything needing cryptographic
+        // randomness must come from `riina-core`, not from here.
+        "rawak" | "random" => return Some("rawak"),
+        // Range constructors behind the `a..b` / `a..=b` surface syntax.
+        "julat" => return Some("julat"),
+        "julat_inklusif" => return Some("julat_inklusif"),
+        // Sum introspection. COMPILER INTERNALS, not stdlib: the parser's
+        // if-chain pattern compiler emits these for a constructor pattern nested
+        // where a `Case` cannot go, such as `(Ada(a), Tiada)` inside a tuple
+        // pattern. Leaving them unrouted meant that whole class of pattern ran
+        // under `riinac run` and failed `riinac build` with
+        // `unbound variable: nilai_kiri` — a language feature that did not
+        // compile, wearing the costume of a missing builtin.
+        // Unicode. These three are why `emit.rs` gained its ONE conditional
+        // prelude block: they need ~250 KB of vendored UCD tables, which would
+        // otherwise more than double every compiled binary to serve builtins
+        // most programs never call. See `emit_unicode_runtime`.
+        "nfc" | "ke_nfc" => return Some("nfc"),
+        "skeleton" | "rangka" => return Some("skeleton"),
+        "adalah_keliru" | "is_confusable" => return Some("adalah_keliru"),
+        "adalah_kiri" => return Some("adalah_kiri"),
+        "adalah_kanan" => return Some("adalah_kanan"),
+        "nilai_kiri" => return Some("nilai_kiri"),
+        "nilai_kanan" => return Some("nilai_kanan"),
         // Test
         "tegaskan" | "assert" => return Some("tegaskan"),
         "tegaskan_sama" | "assert_eq" => return Some("tegaskan_sama"),
@@ -150,6 +191,95 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
         if name == bm || name == en {
             return Some(canonical);
         }
+    }
+    // Security builtins (keselamatan) — REQ-70 family routing. 41 of the 42 are
+    // here; `csrf_generate` is the single exclusion and is justified below.
+    //
+    // ON THE PAIR-TAKING MEMBERS. An earlier increment routed only the
+    // single-argument subset, on the reasoning that eleven members take a pair
+    // and `split_pair` hands back a `Value::BuiltinPartial` for a non-pair
+    // argument, which the C backend has no equivalent of. That reasoning was
+    // WRONG, and checking it rather than repeating it is what unblocked the
+    // rest of the family: every one of those signatures is typed
+    // `Ty::Prod(..) -> _` in riina-typechecker, so the curried surface form
+    // `f(a, b)` is REJECTED AT TYPE-CHECK — identically under `riinac run` and
+    // `riinac build` — and only `f((a, b))` ever reaches a runtime. The
+    // interpreter's partial arm is unreachable from well-typed source, so C
+    // needing no partial-application machinery costs nothing.
+    //
+    // NOT ROUTED: `csrf_generate` / `csrf_jana`. It is the one member whose
+    // result is not a function of its input — a token seeded from the clock and
+    // a process-local counter — so the two backends cannot be held to agreement
+    // by a differential, only to a shape. Mirroring it would mean transcribing
+    // Rust's `DefaultHasher` into C to reproduce a generator its own doc comment
+    // already marks as "a *reference* token, not a certified CSPRNG". Spreading
+    // that to a second implementation makes the eventual fix twice the work and
+    // buys nothing: `csrf_validate` takes plain `Teks`, so a compiled program
+    // can still carry tokens minted elsewhere and is not cut off from the
+    // family the way the sanitizers would have been without `baca_baris`.
+    match name {
+        // The taint SOURCE. Routed with the sanitizers because it is their only
+        // input: `Tainted<Teks, UserInput>` has exactly one producer, so
+        // routing the sanitizers alone would mark them native-only while
+        // leaving them unreachable from compiled code.
+        "baca_baris" | "read_line" | "baca_garisan" => return Some("baca_baris"),
+        // Sanitizers — pure transforms, mirrored byte-for-byte in emit.rs.
+        "sanitasi_html" | "sanitize_html" => return Some("sanitize_html"),
+        "sanitasi_xml" | "sanitize_xml" => return Some("sanitize_xml"),
+        "sanitasi_sql" | "sanitize_sql" => return Some("sanitize_sql"),
+        "sanitasi_js" | "sanitize_js" => return Some("sanitize_js"),
+        "sanitasi_css" | "sanitize_css" => return Some("sanitize_css"),
+        "sanitasi_url" | "sanitize_url" => return Some("sanitize_url"),
+        "sanitasi_laluan" | "sanitize_path" => return Some("sanitize_path"),
+        "sanitasi_perintah" | "sanitize_command" => return Some("sanitize_command"),
+        "sanitasi_ldap" | "sanitize_ldap" => return Some("sanitize_ldap"),
+        "sanitasi_json" | "sanitize_json" => return Some("sanitize_json"),
+        "sanitasi_emel" | "sanitize_email" => return Some("sanitize_email"),
+        // Validators / normalizers.
+        "sahkan_url" | "validate_url" => return Some("validate_url"),
+        "normal_unicode" | "normalize_unicode" => return Some("normalize_unicode"),
+        "buang_null" | "strip_nulls" => return Some("strip_nulls"),
+        // Modelled sinks. These do NOT perform the dangerous operation in
+        // either backend — their value is that the type system forces a
+        // `Disanitasi<_>` argument to reach them at all, which is a
+        // compile-time property and so already holds for both backends.
+        "sql_laksana" | "sql_execute" => return Some("sql_execute"),
+        "ldap_cari" | "ldap_search" => return Some("ldap_search"),
+        "xml_cari" | "xml_query" => return Some("xml_query"),
+        "js_nilai" | "js_eval" => return Some("js_eval"),
+        "html_papar" | "html_render" => return Some("html_render"),
+        "shell_laksana" | "shell_exec" => return Some("shell_exec"),
+        "http_arah_selamat" | "http_redirect_safe" => return Some("http_redirect_safe"),
+        "http_dapat" | "http_get" => return Some("http_get"),
+        "http_ambil_selamat" | "http_fetch_safe" => return Some("http_fetch_safe"),
+        "badan_http" | "http_body" => return Some("http_body"),
+        // Pair-taking sinks. Modelled the same way, and reached only through an
+        // explicit tuple (see the note above).
+        "dom_tetap_html" | "dom_set_html" => return Some("dom_set_html"),
+        "dom_tetap_atribut" | "dom_set_attr" => return Some("dom_set_attr"),
+        "emel_hantar" | "email_send" => return Some("email_send"),
+        "emel_tetap_kepala" | "email_set_header" => return Some("email_set_header"),
+        "http_hantar" | "http_post" => return Some("http_post"),
+        "http_kemaskini" | "http_put" => return Some("http_put"),
+        "http_padam" | "http_delete" => return Some("http_delete"),
+        // Input validation. Counts UNICODE SCALAR VALUES, not bytes.
+        "sahkan_panjang" | "validate_length" => return Some("validate_length"),
+        // CSRF checks — pure predicates over their two arguments.
+        "csrf_sahkan" | "csrf_validate" => return Some("csrf_validate"),
+        "csrf_semak_origin" | "csrf_check_origin" => return Some("csrf_check_origin"),
+        "csrf_semak_referer" | "csrf_check_referer" => return Some("csrf_check_referer"),
+        // Safe file I/O. Routable only because these share the verified gate
+        // with `fail_*`, which the emitted C now carries.
+        "fail_baca_selamat" | "file_read_safe" => return Some("file_read_safe"),
+        "fail_tulis_selamat" | "file_write_safe" => return Some("file_write_safe"),
+        "fail_buang_selamat" | "file_delete_safe" => return Some("file_delete_safe"),
+        // Safe parsers. Routable only because the emitted JSON parser is now
+        // STRICT: "malformed input yields Unit" is not a contract a lenient
+        // parser can honour, and the old one never failed on anything.
+        "json_urai_selamat" | "json_parse_safe" => return Some("json_parse_safe"),
+        "nyahsiri_selamat" | "deserialize_safe" => return Some("deserialize_safe"),
+        "xml_urai_selamat" | "xml_parse_safe" => return Some("xml_parse_safe"),
+        _ => {}
     }
     // File builtins (REQ-70 family routing) — routed ONLY because the emitted
     // C now carries the verified gate.

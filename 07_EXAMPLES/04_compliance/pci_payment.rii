@@ -249,20 +249,14 @@ modul teks {
     }
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
+fungsi Masa::dapat_bulan() -> Nombor kesan Bersih {
+    pulang 1;
+}
 
-    fungsi dapat_bulan() -> Nombor kesan Bersih {
-        pulang 1;
-    }
+fungsi Masa::dapat_tahun() -> Nombor kesan Bersih {
+    pulang 2024;
+}
 
-    fungsi dapat_tahun() -> Nombor kesan Bersih {
-        pulang 2024;
-    }
-
-    fungsi dapat_hari_bulan() -> Nombor kesan Bersih {
-        pulang 1;
-    }
+fungsi Masa::dapat_hari_bulan() -> Nombor kesan Bersih {
+    pulang 1;
 }

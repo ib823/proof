@@ -44,6 +44,26 @@ pub enum ParseErrorKind {
     /// instead of letting deeply nested input (e.g. `((((…`) overflow the stack
     /// — a denial-of-service guard on untrusted input (REQ-30).
     NestingTooDeep,
+    /// `modul Name { … }` with a CAPITALIZED name (REQ-82).
+    ///
+    /// The declaration and the call site disagreed, silently. A `modul Masa`
+    /// block flattens its `fungsi f` to a top-level `Masa_f`, but the call
+    /// `Masa::f` resolves through the capitalized-namespace rule to a bare `f`
+    /// — so the block defined a function nothing could reach, and the call went
+    /// to the BUILTIN of that name instead. A user writing a deterministic
+    /// `masa_unix` stub got the real clock and no diagnostic.
+    ///
+    /// Rejecting the declaration is the lossless half of the fix: the
+    /// capitalized CALL path is what the corpus actually uses (185 sites across
+    /// `Masa`, `SistemFail`, `Kripto`, `Rangkaian`, …) and is untouched.
+    CapitalizedModuleName(String),
+    /// `fungsi Name(...)` whose RESOLVED name starts with an uppercase letter
+    /// (REQ-82, second half).
+    ///
+    /// Such a function is undefinable-callable: an uppercase identifier at a
+    /// call position is a data constructor, so `Kira_tokokan(1)` built the tuple
+    /// `(Kira_tokokan, 1)` instead of calling anything — and said nothing.
+    CapitalizedFunctionName(String),
 }
 
 impl fmt::Display for ParseErrorKind {
@@ -58,6 +78,16 @@ impl fmt::Display for ParseErrorKind {
             ParseErrorKind::InvalidEffect => write!(f, "Invalid effect"),
             ParseErrorKind::InvalidSessionType => write!(f, "Invalid session type"),
             ParseErrorKind::NestingTooDeep => write!(f, "Expression nesting too deep"),
+            ParseErrorKind::CapitalizedModuleName(name) => write!(
+                f,
+                "`modul {name}` has a capitalized name: its functions would be \
+                 unreachable"
+            ),
+            ParseErrorKind::CapitalizedFunctionName(name) => write!(
+                f,
+                "`fungsi {name}` starts with an uppercase letter: it could never be \
+                 called"
+            ),
         }
     }
 }
@@ -76,6 +106,8 @@ impl ParseErrorKind {
             ParseErrorKind::InvalidEffect => "P0007",
             ParseErrorKind::InvalidSessionType => "P0008",
             ParseErrorKind::NestingTooDeep => "P0009",
+            ParseErrorKind::CapitalizedModuleName(_) => "P0010",
+            ParseErrorKind::CapitalizedFunctionName(_) => "P0011",
         }
     }
 
@@ -110,7 +142,40 @@ impl ParseErrorKind {
             ParseErrorKind::NestingTooDeep => {
                 "Expression/grouping nesting is too deep. Deeply nested input like ((((… can exhaust the stack; reduce the nesting depth".to_string()
             }
+            ParseErrorKind::CapitalizedModuleName(name) => {
+                let lower = lowercase_first(name);
+                format!(
+                    "A capitalized `modul` name reads as a BUILTIN namespace, so its \
+                     block is unreachable: `{name}::f` resolves to the bare `f`, never \
+                     to a function defined inside `modul {name}`. Write the function \
+                     qualified instead — `fungsi {name}::f(...)` defines exactly what \
+                     `{name}::f` calls. Or lowercase the module (`modul {lower} {{ \
+                     fungsi f }}`, reachable as `{lower}::f`) if you want a real \
+                     namespace, or drop the block if the builtin `{name}::f` was what \
+                     you meant all along."
+                )
+            }
+            ParseErrorKind::CapitalizedFunctionName(name) => {
+                let lower = lowercase_first(name);
+                format!(
+                    "An uppercase identifier at a call position is a data CONSTRUCTOR, \
+                     not a function, so `{name}(...)` would silently build the value \
+                     `(\"{name}\", args)` instead of calling this definition. Rename it \
+                     to `{lower}`, or write it qualified (`fungsi Ns::{lower}`) if you \
+                     meant to place it in a namespace."
+                )
+            }
         })
+    }
+}
+
+/// Lowercase only the FIRST character, so the fix hint suggests a name the user
+/// recognises: `SistemFail` -> `sistemFail`, not `sistemfail`.
+fn lowercase_first(s: &str) -> String {
+    let mut chars = s.chars();
+    match chars.next() {
+        Some(c) => c.to_lowercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
     }
 }
 
@@ -352,7 +417,26 @@ impl<'a> Parser<'a> {
                 // the user definition. Non-function inner items are skipped
                 // (struct/enum/let have no top-level semantics yet).
                 self.consume(TokenKind::KwMod)?;
+                // Span of the NAME, not of the `modul` keyword, so the caret
+                // lands on the thing the user has to change.
+                let modname_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
                 let modname = self.parse_ident()?;
+                // REQ-82: a CAPITALIZED module name is rejected here rather than
+                // flattened. `modul Masa { fungsi masa_unix }` defines
+                // `Masa_masa_unix`, but `Masa::masa_unix` resolves via the
+                // capitalized-namespace rule in `parse_module_path` to the bare
+                // `masa_unix` — the BUILTIN. The block was therefore dead code
+                // that looked live, and a stub written to make an example
+                // deterministic silently got the real clock instead.
+                //
+                // Only the DECLARATION is rejected. The capitalized call path is
+                // untouched, because that is the form the corpus actually uses.
+                if modname.chars().next().is_some_and(char::is_uppercase) {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::CapitalizedModuleName(modname),
+                        span: modname_span,
+                    });
+                }
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
                     self.consume(TokenKind::LBrace)?;
                     while !matches!(
@@ -546,6 +630,7 @@ impl<'a> Parser<'a> {
 
     fn parse_function_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
         self.consume(TokenKind::KwFn)?;
+        let name_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
         let mut name = self.parse_ident()?;
         // A qualified method-style definition name `Type::method` resolves to the
         // flat builtin name `Type_method` for a lowercase module, or to the final
@@ -553,6 +638,26 @@ impl<'a> Parser<'a> {
         // resolve (see `parse_module_path`), so definitions and calls line up.
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
             name = self.parse_module_path(name)?;
+        }
+        // REQ-82, second half: a function whose RESOLVED name starts uppercase
+        // can never be called, because an uppercase identifier at a call position
+        // is a data constructor. `fungsi Kira_tokokan(x)` parsed, and
+        // `Kira_tokokan(1)` then evaluated to the tuple `(Kira_tokokan, 1)` —
+        // a silent wrong answer with no diagnostic anywhere.
+        //
+        // The decision this encodes: uppercase-at-a-call-site stays a
+        // constructor (that rule is load-bearing for nominal enums), so the
+        // definition is what gives way.
+        //
+        // Checked AFTER `::` resolution on purpose: `fungsi Masa::dapat_bulan`
+        // has an uppercase first segment but resolves to the lowercase
+        // `dapat_bulan`, and that form is the recommended migration — it must
+        // keep working.
+        if name.chars().next().is_some_and(char::is_uppercase) {
+            return Err(ParseError {
+                kind: ParseErrorKind::CapitalizedFunctionName(name),
+                span: name_span,
+            });
         }
         // Optional generic parameter list `<T>`, `<E, T>`, `<T1, T2>`, etc.
         // RIINA's type system is monomorphic at this layer; generic parameters

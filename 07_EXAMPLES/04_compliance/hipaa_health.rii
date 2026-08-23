@@ -251,9 +251,3 @@ fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
 fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
-
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
-}

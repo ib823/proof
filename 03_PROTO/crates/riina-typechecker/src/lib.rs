@@ -1486,16 +1486,31 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     }
 
     // ── Extra math builtins ──
-    for (bm, en) in &[("baki", "rem"), ("log2", "log2")] {
+    //
+    // `baki`/`rem` are BINARY and take a pair, like `minimum`/`maksimum`/`kuasa`.
+    // They were previously typed `Nombor -> Nombor` because they shared this
+    // loop with the genuinely unary `log2`, which made them **uncallable from
+    // any well-typed program**: `baki(10, 3)` is `App(App(baki, 10), 3)` and
+    // failed with "Expected function type, found Int", while `baki((10, 3))`
+    // failed with "expected Int, found Prod(Int, Int)". Both the interpreter
+    // (`matematik.rs`, `extract_pair_ints`) and the emitted C
+    // (`riina_builtin_baki`, which requires `RIINA_TAG_PAIR`) have always taken
+    // a pair, so the type was the single odd one out.
+    for nm in ["baki", "rem"] {
         c = c.extend(
-            bm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
-        );
-        c = c.extend(
-            en.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            nm.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
+                Box::new(Ty::Int),
+                Effect::Pure,
+            ),
         );
     }
+    // `log2` really is unary — it is what the loop above was written for.
+    c = c.extend(
+        "log2".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+    );
     // Random — Effect::Random
     c = c.extend(
         "rawak".to_string(),
