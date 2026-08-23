@@ -9719,12 +9719,6 @@ fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
     pulang s;
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
-}
-
 // === 07_EXAMPLES/03_applications/queue_processor.rii ===
 /// queue_processor.rii
 /// Message queue processing with worker pool
@@ -10553,12 +10547,6 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
-}
-
 // === 07_EXAMPLES/03_applications/todo_app.rii ===
 /// todo_app.rii
 /// Simple todo list application with persistence
@@ -11170,12 +11158,6 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
 
 fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
-}
-
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
 }
 
 // === 07_EXAMPLES/04_compliance/data_residency.rii ===
@@ -11889,12 +11871,6 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
-}
-
 // === 07_EXAMPLES/04_compliance/hipaa_health.rii ===
 /// hipaa_health.rii
 /// HIPAA (Health Insurance Portability and Accountability Act) compliance
@@ -12148,12 +12124,6 @@ fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
 
 fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
-}
-
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
 }
 
 // === 07_EXAMPLES/04_compliance/iso27001_controls.rii ===
@@ -12866,22 +12836,16 @@ modul teks {
     }
 }
 
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
+fungsi Masa::dapat_bulan() -> Nombor kesan Bersih {
+    pulang 1;
+}
 
-    fungsi dapat_bulan() -> Nombor kesan Bersih {
-        pulang 1;
-    }
+fungsi Masa::dapat_tahun() -> Nombor kesan Bersih {
+    pulang 2024;
+}
 
-    fungsi dapat_tahun() -> Nombor kesan Bersih {
-        pulang 2024;
-    }
-
-    fungsi dapat_hari_bulan() -> Nombor kesan Bersih {
-        pulang 1;
-    }
+fungsi Masa::dapat_hari_bulan() -> Nombor kesan Bersih {
+    pulang 1;
 }
 
 // === 07_EXAMPLES/04_compliance/pdpa_data.rii ===
@@ -13131,12 +13095,6 @@ fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
 
 fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
-}
-
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
-    }
 }
 
 // === 07_EXAMPLES/04_compliance/sox_audit.rii ===
@@ -13418,12 +13376,6 @@ fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
 modul teks {
     fungsi daripada_nombor(n: Nombor) -> Teks kesan Bersih {
         pulang "";
-    }
-}
-
-modul Masa {
-    fungsi masa_unix() -> Nombor kesan Bersih {
-        pulang 0;
     }
 }
 

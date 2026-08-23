@@ -4174,3 +4174,201 @@ fn test_modul_block_flattens_functions_to_prefixed_top_level() {
     );
     assert!(names.contains(&"utama"), "main must still be present; got {names:?}");
 }
+
+// ===========================================================================
+// REQ-82: a capitalized `modul` name defined functions nobody could call.
+//
+// `modul Masa { fungsi masa_unix }` flattened to a top-level `Masa_masa_unix`,
+// while the call `Masa::masa_unix` went through the capitalized-namespace rule
+// in `parse_module_path` and resolved to a bare `masa_unix` — the BUILTIN. The
+// declaration and the call site never met, and nothing said so: a stub written
+// to make an example deterministic silently got the real clock.
+//
+// The fix rejects the DECLARATION only. The capitalized CALL path is what the
+// corpus actually uses (185 sites across `Masa`, `SistemFail`, `Kripto`,
+// `Rangkaian`, …) and must keep working — which is why
+// `capitalized_namespace_calls_still_resolve` sits next to the rejection test
+// rather than in some other file.
+// ===========================================================================
+
+/// NEGATIVE CONTROL: delete the `is_uppercase` guard in the `KwMod` arm of
+/// `parse_next_decl_or_unit` and this test fails — the program parses again,
+/// silently reintroducing the unreachable `Kira_tokokan`.
+#[test]
+fn capitalized_modul_declaration_is_rejected() {
+    let src = "modul Kira { fungsi tokokan(x: Nombor) -> Nombor kesan Bersih { pulang x + 1; } }\n\
+               fungsi utama() -> Nombor kesan Bersih { 0 }";
+    let err = Parser::new(src)
+        .parse_program()
+        .expect_err("a capitalized `modul` must be rejected, not silently flattened");
+    assert!(
+        matches!(err.kind, ParseErrorKind::CapitalizedModuleName(ref n) if n == "Kira"),
+        "expected CapitalizedModuleName(\"Kira\"), got {:?}",
+        err.kind
+    );
+
+    // The diagnostic has to name BOTH ways out, or it just moves the confusion.
+    let hint = err.kind.fix_hint().expect("this error must carry a fix hint");
+    assert!(
+        hint.contains("kira"),
+        "the hint must suggest the lowercase form, which actually namespaces; got: {hint}"
+    );
+    assert!(
+        hint.contains("fungsi Kira::f"),
+        "the hint must name the qualified-definition form, which is the migration \
+         that keeps the caller's namespace notation intact; got: {hint}"
+    );
+    assert!(
+        hint.contains("drop the block"),
+        "the hint must also offer dropping the block, which is right when the \
+         builtin already provides the function; got: {hint}"
+    );
+}
+
+/// The migration the corpus was actually rewritten to use, and the one the fix
+/// hint names first: `fungsi Ns::f` defines exactly what `Ns::f` calls.
+///
+/// This is the reason rejecting `modul Ns { … }` costs nothing. Both sides route
+/// through `parse_module_path`, so the definition and the call agree by
+/// construction rather than by coincidence — which is precisely what REQ-82
+/// found was missing.
+#[test]
+fn qualified_function_definition_matches_the_capitalized_call() {
+    let src = "fungsi Masa::dapat_bulan() -> Nombor kesan Bersih { pulang 7; }\n\
+               fungsi utama() -> Nombor kesan Bersih { Masa::dapat_bulan() }";
+    let prog = Parser::new(src).parse_program().expect("qualified definition must parse");
+    let names: Vec<&str> = prog
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            TopLevelDecl::Function { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        names.contains(&"dapat_bulan"),
+        "`fungsi Masa::dapat_bulan` must define the bare `dapat_bulan` that \
+         `Masa::dapat_bulan` resolves to; got {names:?}"
+    );
+
+    // A lowercase qualified definition keeps its prefix, mirroring the call side.
+    let src = "fungsi teks::pecah(s: Teks) -> Teks kesan Bersih { pulang s; }";
+    let prog = Parser::new(src).parse_program().expect("lowercase qualified def must parse");
+    let names: Vec<&str> = prog
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            TopLevelDecl::Function { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        names.contains(&"teks_pecah"),
+        "`fungsi teks::pecah` must define `teks_pecah`, matching `teks::pecah`; got {names:?}"
+    );
+}
+
+/// The rejection must not leak into the call side. If it did, 185 corpus call
+/// sites would break at once.
+#[test]
+fn capitalized_namespace_calls_still_resolve() {
+    for (src, want) in [
+        ("Masa::masa_unix()", "masa_unix"),
+        ("SistemFail::fail_baca(p)", "fail_baca"),
+        // A leading `std` is dropped first, then the capitalized rule applies.
+        // (The segment must not itself be a keyword — `cincang` is one, which is
+        // why this case uses a name the corpus actually namespaces.)
+        ("std::Kripto::sulit_kunci(x)", "sulit_kunci"),
+        // Lowercase modules keep their prefix — this is the form that namespaces.
+        ("teks::mengandungi(s)", "teks_mengandungi"),
+    ] {
+        let mut p = Parser::new(src);
+        let e = p.parse_expr().unwrap_or_else(|e| panic!("{src} must parse: {e}"));
+        let got = match &e {
+            Expr::App(f, _) => match &**f {
+                Expr::Var(v) => v.clone(),
+                other => panic!("{src}: callee is not a Var: {other:?}"),
+            },
+            Expr::Var(v) => v.clone(),
+            other => panic!("{src}: unexpected shape {other:?}"),
+        };
+        assert_eq!(got, want, "{src} must resolve to `{want}`");
+    }
+}
+
+/// A lowercase `modul` is the form that genuinely namespaces, and it is
+/// untouched. Guards against "fixing" REQ-82 by disabling modules outright.
+#[test]
+fn lowercase_modul_still_flattens_with_its_prefix() {
+    let src = "modul kira { fungsi tokokan(x: Nombor) -> Nombor kesan Bersih { pulang x + 1; } }\n\
+               fungsi utama() -> Nombor kesan Bersih { 0 }";
+    let prog = Parser::new(src).parse_program().expect("lowercase modul must still parse");
+    let names: Vec<&str> = prog
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            TopLevelDecl::Function { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        names.contains(&"kira_tokokan"),
+        "lowercase modul must still flatten to kira_tokokan; got {names:?}"
+    );
+}
+
+/// The migration the corpus was rewritten to use: hoist the function to top
+/// level, where the capitalized call rule already finds it. This is what makes
+/// the rejection lossless rather than a capability removal.
+#[test]
+fn hoisting_to_top_level_is_reachable_from_the_capitalized_call() {
+    let src = "fungsi dapat_bulan() -> Nombor kesan Bersih { pulang 7; }\n\
+               fungsi utama() -> Nombor kesan Bersih { Masa::dapat_bulan() }";
+    let prog = Parser::new(src).parse_program().expect("hoisted form must parse");
+    let names: Vec<&str> = prog
+        .decls
+        .iter()
+        .filter_map(|d| match d {
+            TopLevelDecl::Function { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        names.contains(&"dapat_bulan"),
+        "the hoisted definition must be a top-level `dapat_bulan`, which is exactly \
+         what `Masa::dapat_bulan` resolves to; got {names:?}"
+    );
+}
+
+/// REQ-82, second half: an uppercase function name is rejected at the
+/// DEFINITION, because an uppercase identifier at a call position is a
+/// constructor and the call could never reach it.
+///
+/// Before this, `fungsi Kira_tokokan(x)` parsed and `Kira_tokokan(1)` evaluated
+/// to the tuple `(Kira_tokokan, 1)` — a wrong answer with no diagnostic at all.
+///
+/// NEGATIVE CONTROL: delete the `CapitalizedFunctionName` guard in
+/// `parse_function_decl` and the first assertion fails.
+#[test]
+fn capitalized_function_name_is_rejected() {
+    let err = Parser::new("fungsi Kira_tokokan(x: Nombor) -> Nombor kesan Bersih { pulang x; }")
+        .parse_program()
+        .expect_err("an uncallable uppercase function must be rejected at its definition");
+    assert!(
+        matches!(err.kind, ParseErrorKind::CapitalizedFunctionName(ref n) if n == "Kira_tokokan"),
+        "expected CapitalizedFunctionName(\"Kira_tokokan\"), got {:?}",
+        err.kind
+    );
+
+    // The qualified form must survive: `Masa::dapat_bulan` has an UPPERCASE first
+    // segment but resolves to a lowercase name, and it is the recommended
+    // migration. A guard placed before `::` resolution would break it.
+    Parser::new("fungsi Masa::dapat_bulan() -> Nombor kesan Bersih { pulang 7; }")
+        .parse_program()
+        .expect("a qualified definition under a capitalized namespace must still parse");
+
+    // Ordinary lowercase definitions are untouched.
+    Parser::new("fungsi tokokan(x: Nombor) -> Nombor kesan Bersih { pulang x; }")
+        .parse_program()
+        .expect("a lowercase function must still parse");
+}
