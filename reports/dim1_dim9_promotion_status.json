@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-08-22T10:41:43Z",
-  "repo_head": "0a4699b7db00c22bb31b15aa96d9e539a777027b",
+  "generated_utc": "2026-08-23T01:06:45Z",
+  "repo_head": "51e3bf1f58327a6e81ea7c291be5afe8b45a8c06",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 0,
   "provision": {
@@ -13,9 +13,7 @@
     "isabelle": false,
     "docker": false,
     "isabelle_bin": "",
-    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-smoke-toolchains.sh
-     or: bash scripts/provision-isabelle.sh",
+    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh",
     "java": true,
     "tla2tools_jar": true,
     "alloy_jar": true,
@@ -35,9 +33,7 @@ Run: bash scripts/provision-smoke-toolchains.sh
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-smoke-toolchains.sh
-     or: bash scripts/provision-isabelle.sh"
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh"
   },
   "dimension_9": {
     "status": "PASS",
