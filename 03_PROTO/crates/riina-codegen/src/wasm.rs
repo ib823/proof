@@ -4736,7 +4736,11 @@ impl WasmBackend {
                 code.push(Op::I32WrapI64 as u8); // cell -> i32 address
                 code.push(Op::I64Load as u8);
                 code.push(0x02); // align 4
-                code.push(((i + 1) * 8) as u8); // offset (8-byte cells)
+                // A memarg offset is LEB128, not a raw byte: capture 15 is at
+                // offset 128, which needs two bytes. Pushing it raw silently
+                // truncated, so a closure with 16+ captures read and wrote the
+                // wrong cells.
+                wasm_encode::encode_uleb128(((i + 1) * 8) as u64, &mut code);
                 if let Some(&local) = var_to_local.get(&cap_var) {
                     code.push(Op::LocalSet as u8);
                     wasm_encode::encode_uleb128(local as u64, &mut code);
@@ -4820,6 +4824,21 @@ impl WasmBackend {
                             // merge block, not the region's entry CondBranch).
                             return Ok(Some(cur));
                         }
+                        // A BACK edge — the CFG of a `selagi`/`ulang` loop. This
+                        // emitter only knows how to structure forward if/else
+                        // regions; following the edge would walk the same blocks
+                        // forever. WASM needs real `loop`/`br_if` nesting, which
+                        // is not built yet, so refuse the module rather than emit
+                        // something that silently runs the body once (which is
+                        // exactly the bug real loops were introduced to fix).
+                        if t <= cur {
+                            return Err(Error::InvalidOperation(
+                                "the WASM backend cannot yet compile `selagi`/`ulang` loops \
+                                 (they need structured loop/br_if lowering). Use `riinac run`, \
+                                 or `riinac build` for a native binary."
+                                    .to_string(),
+                            ));
+                        }
                         cur = t;
                     }
                     None => return Ok(None),
@@ -4838,6 +4857,23 @@ impl WasmBackend {
                     // target of the then (or else) branch.
                     let merge = Self::branch_target(&func.blocks[then_idx], block_map)
                         .or_else(|| Self::branch_target(&func.blocks[else_idx], block_map));
+
+                    // A "merge" that points BACKWARDS is not a merge — it is the
+                    // back edge of a `selagi`/`ulang` loop, whose header this
+                    // block is. Continuing would re-emit the header forever
+                    // (the emitter's own walk has no visited set). Structuring a
+                    // loop needs real `loop`/`br_if` nesting, which is not built
+                    // yet, so refuse the module: a backend that cannot express a
+                    // construct fails closed rather than emitting something that
+                    // silently runs the body once (REQ-78).
+                    if merge.is_some_and(|m| m <= cur) {
+                        return Err(Error::InvalidOperation(
+                            "the WASM backend cannot yet compile `selagi`/`ulang` loops \
+                             (they need structured loop/br_if lowering). Use `riinac run`, \
+                             or `riinac build` for a native binary."
+                                .to_string(),
+                        ));
+                    }
 
                     if let Some(local) = ctx.var_map.get(cond) {
                         code.push(Op::LocalGet as u8);
@@ -6118,8 +6154,7 @@ impl WasmBackend {
                     Self::emit_local_get(cap, ctx.var_map, code);
                     code.push(Op::I64Store as u8);
                     code.push(0x02); // align 4
-                    let offset = ((i + 1) * 8) as u8;
-                    code.push(offset);
+                    wasm_encode::encode_uleb128(((i + 1) * 8) as u64, code);
                 }
                 // Push ptr for generic LocalSet
                 if let Some(result_var) = result {
@@ -6132,19 +6167,19 @@ impl WasmBackend {
             Instruction::FixClosure {
                 closure,
                 capture_index,
+                value,
             } => {
-                // Patch captures[capture_index] with closure pointer itself
+                // Patch captures[capture_index] with `value` — the closure
+                // itself for plain recursion, a sibling for a group.
                 Self::emit_local_get(closure, ctx.var_map, code);
                 code.push(Op::I32WrapI64 as u8); // ptr cell -> i32 addr
-                // Duplicate (the closure ptr value to store)
-                if let Some(local) = ctx.var_map.get(closure) {
+                if let Some(local) = ctx.var_map.get(value) {
                     code.push(Op::LocalGet as u8);
                     wasm_encode::encode_uleb128(*local as u64, code);
                 }
                 code.push(Op::I64Store as u8);
                 code.push(0x02);
-                let offset = ((capture_index + 1) * 8) as u8;
-                code.push(offset);
+                wasm_encode::encode_uleb128(((capture_index + 1) * 8) as u64, code);
                 // Result is the closure ptr
                 Self::emit_local_get(closure, ctx.var_map, code);
             }
@@ -7580,6 +7615,7 @@ mod tests {
                     Instruction::FixClosure {
                         closure: v0,
                         capture_index: 0,
+                        value: v0,
                     },
                     v1,
                 ),

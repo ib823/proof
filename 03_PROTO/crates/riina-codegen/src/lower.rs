@@ -437,13 +437,17 @@ impl VarEnv {
     }
 }
 
-/// Compute the set of free variables in an expression.
-/// A variable is free if it is referenced but not bound within the expression.
-/// Expand a mutually-recursive binding GROUP into a nested `LetRec` chain
-/// (backward-reference scoping). Codegen (C/WASM) does not need forward
-/// references — the corpus's forward-ref/module examples are exercised through
-/// the typechecker + interpreter, and the C/WASM differential set uses none —
-/// so treating a group as a chain here is sound and never crashes.
+/// Expand a mutually-recursive binding GROUP into a nested `LetRec` chain.
+///
+/// NOT used for lowering any more — a chain scopes backwards only, so a forward
+/// call inside a group failed codegen with `unbound variable: <callee>` while
+/// type-checking and interpreting fine. `Expr::LetRecGroup` is now lowered
+/// directly, with placeholders for every member.
+///
+/// It survives for the two ANALYSES where the distinction cannot matter: a
+/// group and a chain bind exactly the same names to exactly the same
+/// expressions, so they have the same free variables and the same effects. Do
+/// not reach for it when lowering.
 fn letrec_group_to_chain(bindings: &[(riina_types::Ident, riina_types::Ty, Expr)], cont: &Expr) -> Expr {
     let mut result = cont.clone();
     for (name, ty, e) in bindings.iter().rev() {
@@ -484,11 +488,29 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv.extend(free_vars(e2));
             fv
         }
-        Expr::Let(name, _, e1, e2) => {
+        Expr::Let(name, _, e1, e2) | Expr::LetMut(name, e1, e2) => {
             let mut fv = free_vars(e1);
             let mut fv2 = free_vars(e2);
             fv2.remove(name);
             fv.extend(fv2);
+            fv
+        }
+        // A slot read/write references its binder, exactly as `Var` does — a
+        // closure that touches an enclosing `biar ubah` must capture it.
+        Expr::SlotGet(name) => {
+            let mut s = HashSet::new();
+            s.insert(name.clone());
+            s
+        }
+        Expr::SlotSet(name, value) => {
+            let mut fv = free_vars(value);
+            fv.insert(name.clone());
+            fv
+        }
+        Expr::Break | Expr::Continue => HashSet::new(),
+        Expr::While(cond, body) => {
+            let mut fv = free_vars(cond);
+            fv.extend(free_vars(body));
             fv
         }
         Expr::LetRec(name, _, e1, e2) => {
@@ -634,6 +656,11 @@ pub struct Lower {
     /// position — where all but a handful of them sit — and no worse than
     /// before anywhere else.
     honour_return: bool,
+    /// Stack of `(header_block, exit_block)` for the loops currently being
+    /// lowered, innermost last. `putus` branches to the exit, `lanjut` back to
+    /// the header. The parser has already rejected either outside a loop, so a
+    /// pop from an empty stack would be an internal error, not user input.
+    loop_targets: Vec<(BlockId, BlockId)>,
 }
 
 impl Lower {
@@ -650,6 +677,7 @@ impl Lower {
             fn_returns_struct: HashMap::new(),
             var_struct: HashMap::new(),
             honour_return: false,
+            loop_targets: Vec::new(),
         }
     }
 
@@ -721,10 +749,12 @@ impl Lower {
                 self.harvest_struct_info(a);
                 self.harvest_struct_info(b);
             }
-            Expr::Let(_, _, a, b) => {
+            Expr::Let(_, _, a, b) | Expr::LetMut(_, a, b) | Expr::While(a, b) => {
                 self.harvest_struct_info(a);
                 self.harvest_struct_info(b);
             }
+            Expr::SlotSet(_, a) => self.harvest_struct_info(a),
+            Expr::Break | Expr::Continue | Expr::SlotGet(_) => {}
             Expr::If(a, b, c) | Expr::Case(a, _, b, _, c) => {
                 self.harvest_struct_info(a);
                 self.harvest_struct_info(b);
@@ -803,6 +833,7 @@ impl Lower {
             Expr::Lam(_, _, b)
             | Expr::Return(b)
             | Expr::Let(_, _, _, b)
+            | Expr::LetMut(_, _, b)
             | Expr::LetRec(_, _, _, b)
             | Expr::LetRecGroup(_, b) => Self::result_struct_name(b),
             Expr::If(_, t, f) => {
@@ -1086,9 +1117,19 @@ impl Lower {
                     Ty::Unit
                 }
             }
-            Expr::Assign(_, _) => Ty::Unit,
+            Expr::Assign(_, _) | Expr::SlotSet(_, _) | Expr::While(_, _) => Ty::Unit,
+            // `putus`/`lanjut` never yield to their context (as for `pulang`).
+            Expr::Break | Expr::Continue => Ty::Any,
+            // A slot read has the slot's element type; the binding records the
+            // `Ref` wrapper, so peel it.
+            Expr::SlotGet(name) => match self.env.lookup(name).and_then(|v| self.env.types.get(&v)) {
+                Some(Ty::Ref(inner, _)) => (**inner).clone(),
+                Some(other) => other.clone(),
+                None => Ty::Any,
+            },
             Expr::If(_, t, _)
             | Expr::Let(_, _, _, t)
+            | Expr::LetMut(_, _, t)
             | Expr::LetRec(_, _, _, t)
             | Expr::LetRecGroup(_, t)
             | Expr::Case(_, _, t, _, _) => self.infer_type(t),
@@ -1255,7 +1296,12 @@ impl Lower {
                 .infer_effect(c)
                 .join(self.infer_effect(t))
                 .join(self.infer_effect(f)),
-            Expr::Let(_, _, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
+            Expr::Let(_, _, e1, e2) | Expr::LetMut(_, e1, e2) | Expr::While(e1, e2) => {
+                self.infer_effect(e1).join(self.infer_effect(e2))
+            }
+            // Slot access is effect-free by construction (see `Expr::LetMut`).
+            Expr::SlotGet(_) | Expr::Break | Expr::Continue => Effect::Pure,
+            Expr::SlotSet(_, e) => self.infer_effect(e),
             Expr::App(e1, e2) => {
                 let base = self.infer_effect(e1).join(self.infer_effect(e2));
                 if let Ty::Fn(_, _, eff) = self.infer_type(e1) {
@@ -1993,9 +2039,129 @@ impl Lower {
                 Ok(result)
             }
 
+            // REQ-44: a mutually-recursive binding GROUP — every top-level
+            // `fungsi` in a file, and every function in an imported module.
+            //
+            // This used to expand into a nested `LetRec` CHAIN, which gives
+            // backward-reference scoping only: a function could call one
+            // declared ABOVE it but not below. So a forward call type-checked
+            // and interpreted fine and then failed `riinac build` with
+            // `unbound variable: <callee>` (or `<module>_<callee>` for an
+            // imported module, where declaration order is not even the author's
+            // to control). Definition-before-use is a C constraint that has no
+            // business leaking into RIINA's surface.
+            //
+            // Lowered properly here in three passes, generalising the
+            // single-binding placeholder/FixClosure trick to the whole group:
+            //   1. bind every group name to a fresh placeholder VarId, so any
+            //      member's body can reference any sibling, in either direction;
+            //   2. lower each binding — each closure captures the placeholders
+            //      it actually referenced;
+            //   3. patch every captured placeholder to the sibling's real
+            //      closure now that all of them exist.
             Expr::LetRecGroup(bindings, cont) => {
-                // Codegen: expand the group to a nested LetRec chain and lower.
-                self.lower_expr(&letrec_group_to_chain(bindings, cont))
+                let saved_env = self.env.clone();
+
+                // 1. Placeholders for every name, all in scope for every body.
+                //
+                // Each is EMITTED as a real (dummy) value rather than taken from
+                // `fresh_var`. A bare fresh VarId has no defining instruction,
+                // and the WASM backend builds its locals from instruction
+                // RESULTS — so a capture of such a var emitted nothing at all
+                // and the module failed validation with "not enough arguments on
+                // the stack for i64.store". C happened to survive it because
+                // `emit_var_declarations` also walks operands, so the variable
+                // existed (holding garbage) until `FixClosure` overwrote it.
+                // Defining the placeholder makes both backends agree, and the
+                // value is never read: every capture of it is patched in pass 3.
+                let placeholders: Vec<VarId> = bindings
+                    .iter()
+                    .map(|_| {
+                        self.emit(
+                            Instruction::Const(Constant::Unit),
+                            Ty::Any,
+                            SecurityLevel::Public,
+                            Effect::Pure,
+                        )
+                    })
+                    .collect();
+                for ((name, ty, _), placeholder) in bindings.iter().zip(&placeholders) {
+                    self.env.bind(
+                        name.clone(),
+                        *placeholder,
+                        ty.clone(),
+                        SecurityLevel::Public,
+                    );
+                }
+
+                // 2. Lower each binding. `honour_return` is suppressed across a
+                // DECLARATION for the same reason as the single-binding case: a
+                // zero-parameter function's body is spliced in directly, so a
+                // `Terminator::Return` here would return from the enclosing
+                // function (REQ-80).
+                let mut bind_vars: Vec<VarId> = Vec::with_capacity(bindings.len());
+                for (_, _, binding) in bindings.iter() {
+                    let saved_honour = self.honour_return;
+                    self.honour_return = false;
+                    let var = self.lower_expr(binding)?;
+                    self.honour_return = saved_honour;
+                    bind_vars.push(var);
+                }
+
+                // 3. Patch. A binding may have opened new blocks, so the closure
+                // that produced `bind_var` is looked up across the whole
+                // function, not just the current block.
+                for (member, bind_var) in bind_vars.iter().enumerate() {
+                    let captures: Vec<VarId> = self
+                        .current_func
+                        .and_then(|id| self.program.functions.get(&id))
+                        .and_then(|f| {
+                            f.blocks.iter().find_map(|block| {
+                                block.instrs.iter().find_map(|ai| {
+                                    if ai.result != *bind_var {
+                                        return None;
+                                    }
+                                    match &ai.instr {
+                                        Instruction::Closure { captures, .. } => {
+                                            Some(captures.clone())
+                                        }
+                                        _ => None,
+                                    }
+                                })
+                            })
+                        })
+                        .unwrap_or_default();
+
+                    for (capture_index, captured) in captures.iter().enumerate() {
+                        if let Some(sibling) =
+                            placeholders.iter().position(|p| p == captured)
+                        {
+                            // A member capturing its OWN placeholder is ordinary
+                            // self-recursion; the same patch covers both, since
+                            // `bind_vars[member] == bind_vars[sibling]` then.
+                            let _ = member;
+                            self.emit(
+                                Instruction::FixClosure {
+                                    closure: *bind_var,
+                                    capture_index,
+                                    value: bind_vars[sibling],
+                                },
+                                Ty::Unit,
+                                SecurityLevel::Public,
+                                Effect::Pure,
+                            );
+                        }
+                    }
+                }
+
+                // 4. Rebind each name to its real closure for the continuation.
+                for ((name, ty, _), bind_var) in bindings.iter().zip(&bind_vars) {
+                    self.env
+                        .bind(name.clone(), *bind_var, ty.clone(), SecurityLevel::Public);
+                }
+                let result = self.lower_expr(cont)?;
+                self.env = saved_env;
+                Ok(result)
             }
 
             Expr::LetRec(name, ty_ann, binding, body) => {
@@ -2003,7 +2169,15 @@ impl Lower {
                 // The lambda captures the placeholder VarId. After the closure is
                 // created, we emit FixClosure to patch the self-capture.
                 let bind_ty = ty_ann.clone();
-                let placeholder = self.fresh_var();
+                // Emitted, not `fresh_var` — see the LetRecGroup arm: an
+                // undefined VarId gets no WASM local, so capturing it produces
+                // an invalid module.
+                let placeholder = self.emit(
+                    Instruction::Const(Constant::Unit),
+                    Ty::Any,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                );
 
                 let saved_env = self.env.clone();
                 self.env.bind(
@@ -2063,6 +2237,7 @@ impl Lower {
                         Instruction::FixClosure {
                             closure: bind_var,
                             capture_index,
+                            value: bind_var,
                         },
                         Ty::Unit,
                         SecurityLevel::Public,
@@ -2184,6 +2359,30 @@ impl Lower {
             }
 
             Expr::Deref(ref_expr) => {
+                // `!` is overloaded: dereference on a reference, logical
+                // negation on a boolean (the corpus writes `kalau !sah`). The
+                // typechecker accepts both and the interpreter dispatches on the
+                // runtime value, but the IR's `Load` is a memory read in every
+                // backend — so a boolean `!` used to lower to a load of a
+                // non-address. C aborted at runtime ("load on non-ref"); WASM,
+                // which has no runtime tag to check, read whatever i64 sat at
+                // address 0 or 1. Resolve the overload HERE, where the operand's
+                // type is known, so every backend gets the same answer.
+                if matches!(self.infer_type(ref_expr), Ty::Bool) {
+                    let operand = self.lower_expr(ref_expr)?;
+                    let false_var = self.emit(
+                        Instruction::Const(Constant::Bool(false)),
+                        Ty::Bool,
+                        SecurityLevel::Public,
+                        Effect::Pure,
+                    );
+                    return Ok(self.emit(
+                        Instruction::BinOp(IrBinOp::Eq, operand, false_var),
+                        Ty::Bool,
+                        SecurityLevel::Public,
+                        self.infer_effect(ref_expr),
+                    ));
+                }
                 let ref_var = self.lower_expr(ref_expr)?;
                 let inner_ty = if let Ty::Ref(t, _) = self.infer_type(ref_expr) {
                     *t
@@ -2236,6 +2435,137 @@ impl Lower {
                     self.current_block = self.new_block()?;
                 }
                 Ok(value)
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // LOOPS (Expr::While, Expr::Break, Expr::Continue)
+            // ═══════════════════════════════════════════════════════════════
+            //
+            // Lowered to the natural three-block shape, with the back edge that
+            // makes it an actual loop:
+            //
+            //     current ──▶ header ──cond──▶ body ──▶ (back to header)
+            //                    │
+            //                    └─false──▶ exit
+            //
+            // The condition is re-evaluated in `header` on every pass, so it
+            // observes writes the body made. Nothing is carried between
+            // iterations in an SSA value — RIINA's mutable state is `ruj` cells
+            // and `biar ubah` slots, both of which live in the store and are
+            // reached by Load/Store — so the header needs no phi.
+            Expr::While(cond, body) => {
+                let header = self.new_block()?;
+                let body_block = self.new_block()?;
+                let exit = self.new_block()?;
+
+                self.terminate_if_open(self.current_block, Terminator::Branch(header));
+
+                self.current_block = header;
+                let cond_var = self.lower_expr(cond)?;
+                self.terminate_if_open(
+                    self.current_block,
+                    Terminator::CondBranch {
+                        cond: cond_var,
+                        then_block: body_block,
+                        else_block: exit,
+                    },
+                );
+
+                self.loop_targets.push((header, exit));
+                self.current_block = body_block;
+                let _ = self.lower_expr(body)?;
+                self.terminate_if_open(self.current_block, Terminator::Branch(header));
+                self.loop_targets.pop();
+
+                self.current_block = exit;
+                Ok(self.emit(
+                    Instruction::Const(Constant::Unit),
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
+            // `putus` / `lanjut` terminate their block with a jump to the
+            // innermost loop's exit / header. As with `pulang`, whatever follows
+            // textually still lowers, into a block nothing branches to.
+            Expr::Break | Expr::Continue => {
+                let Some(&(header, exit)) = self.loop_targets.last() else {
+                    return Err(Error::InvalidOperation(
+                        "`putus`/`lanjut` outside a loop reached lowering".to_string(),
+                    ));
+                };
+                let target = if matches!(expr, Expr::Break) { exit } else { header };
+                self.terminate_if_open(self.current_block, Terminator::Branch(target));
+                self.current_block = self.new_block()?;
+                Ok(self.emit(
+                    Instruction::Const(Constant::Unit),
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // MUTABLE LOCALS (Expr::LetMut, Expr::SlotGet, Expr::SlotSet)
+            // ═══════════════════════════════════════════════════════════════
+            //
+            // A slot is a store cell, so it reuses the reference instructions —
+            // `Alloc`/`Load`/`Store` — and inherits their C and WASM lowering
+            // unchanged. What differs from `ruj` is the effect: a slot cannot be
+            // aliased or escape its binder, so it stays `Effect::Pure` (see
+            // `Expr::LetMut` in riina-types).
+            Expr::LetMut(name, init, body) => {
+                let init_var = self.lower_expr(init)?;
+                let inner_ty = self.infer_type(init);
+                let slot_ty = Ty::Ref(Box::new(inner_ty), SecurityLevel::Public);
+                let slot = self.emit(
+                    Instruction::Alloc {
+                        init: init_var,
+                        level: SecurityLevel::Public,
+                    },
+                    slot_ty.clone(),
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                );
+
+                let saved_env = self.env.clone();
+                let saved_struct = self.var_struct.clone();
+                self.env
+                    .bind(name.clone(), slot, slot_ty, SecurityLevel::Public);
+                self.var_struct.remove(name);
+                let result = self.lower_expr(body)?;
+                self.env = saved_env;
+                self.var_struct = saved_struct;
+                Ok(result)
+            }
+
+            Expr::SlotGet(name) => {
+                let slot = self
+                    .env
+                    .lookup(name)
+                    .ok_or_else(|| Error::UnboundVariable(name.clone()))?;
+                let inner_ty = self.infer_type(expr);
+                Ok(self.emit(
+                    Instruction::Load(slot),
+                    inner_ty,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
+            Expr::SlotSet(name, value) => {
+                let slot = self
+                    .env
+                    .lookup(name)
+                    .ok_or_else(|| Error::UnboundVariable(name.clone()))?;
+                let val_var = self.lower_expr(value)?;
+                Ok(self.emit(
+                    Instruction::Store(slot, val_var),
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    self.infer_effect(value),
+                ))
             }
 
             // SECURITY (Expr::Classify, Expr::Declassify, Expr::Prove)
