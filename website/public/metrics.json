@@ -1,11 +1,11 @@
 {
-  "generated": "2026-08-24T00:25:38Z",
-  "generatedHuman": "August 24, 2026 at 00:25 UTC",
+  "generated": "2026-08-24T01:49:04Z",
+  "generatedHuman": "August 24, 2026 at 01:49 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "ed32bcf93",
-    "branch": "claude/riina-backmerge"
+    "commit": "14c212d29",
+    "branch": "main"
   },
   "proofs": {
     "qedActive": 12678,
@@ -197,8 +197,8 @@
   "rust": {
     "tests": 3318,
     "testsVerified": 3318,
-    "testsEstimated": 3314,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 18
   },
   "examples": 172,
