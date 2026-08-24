@@ -1046,8 +1046,20 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
         self.writeln("}");
         self.writeln("");
 
-        // Load
+        // Load.
+        //
+        // `!` is overloaded in the surface language: a dereference on a
+        // reference, logical negation on a boolean. The typechecker accepts
+        // both (`Expr::Deref` on `Ty::Bool` yields `Ty::Bool`) and the
+        // interpreter dispatches on the runtime value — but the C backend used
+        // to abort on anything that was not a ref, so `kalau !sah { ... }`
+        // type-checked, ran correctly under `riinac run`, compiled without a
+        // murmur, and then died at runtime with "load on non-ref". Dispatch on
+        // the tag here, exactly as the interpreter does.
         self.writeln("static riina_value_t* riina_load(riina_value_t* ref) {");
+        self.writeln("    if (ref->tag == RIINA_TAG_BOOL) {");
+        self.writeln("        return riina_bool(!ref->data.bool_val);");
+        self.writeln("    }");
         self.writeln("    if (ref->tag != RIINA_TAG_REF) {");
         self.writeln("        fprintf(stderr, \"RIINA: load on non-ref\\n\");");
         self.writeln("        abort();");
@@ -2419,6 +2431,9 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // literal text `<value>`, which is how the composite tags came to render
         // differently from `cetakln` — two switches, one of them updated.
         self.writeln("static riina_value_t* riina_builtin_ke_teks(riina_value_t* arg) {");
+        // A string is already its own rendering; returning it avoids a copy and
+        // keeps `ke_teks(s) == s` identical to the interpreter. Everything else
+        // goes through the one shared formatter.
         self.writeln("    if (arg->tag == RIINA_TAG_STRING) return arg;");
         self.writeln("    return riina_string(riina_format(arg));");
         self.writeln("}");
@@ -3142,6 +3157,78 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("static riina_value_t* riina_builtin_senarai_panjang(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_LIST) abort();");
         self.writeln("    return riina_int((uint64_t)RIINA_LIST_DATA(arg)->len);");
+        self.writeln("}");
+        self.writeln("");
+
+        // ── Higher-order list builtins ────────────────────────────────────
+        //
+        // `senarai_peta`/`senarai_tapis`/`senarai_lipat` were listed as
+        // codegen-supported (so `docs/api/STDLIB.md` published them as
+        // "native-only") but no C body was ever emitted, so any program using
+        // one died at LINK time with `undefined reference to
+        // riina_builtin_senarai_peta`. That hit every `untuk` loop, which
+        // desugars to `senarai_peta` — i.e. the most idiomatic loop in the
+        // language could not be compiled, and said so only as a linker error.
+        //
+        // Calling back into a RIINA closure mirrors `Instruction::Call`: a
+        // closure with captures takes `(_self, arg)`, one without takes `(arg)`.
+        self.writeln("static riina_value_t* riina_apply_closure(riina_value_t* f, riina_value_t* x) {");
+        self.writeln("    if (f->tag != RIINA_TAG_CLOSURE) { fprintf(stderr, \"RIINA: call on non-closure\\n\"); abort(); }");
+        self.writeln("    if (f->data.closure_val.num_captures > 0) {");
+        self.writeln("        return ((riina_value_t* (*)(riina_value_t*, riina_value_t*))f->data.closure_val.func_ptr)(f, x);");
+        self.writeln("    }");
+        self.writeln("    return ((riina_value_t* (*)(riina_value_t*))f->data.closure_val.func_ptr)(x);");
+        self.writeln("}");
+        self.writeln("");
+
+        // senarai_peta (list_map): (list, fn) -> list
+        self.writeln("static riina_value_t* riina_builtin_senarai_peta(riina_value_t* arg) {");
+        self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln("    riina_value_t* lv = arg->data.pair_val.fst;");
+        self.writeln("    riina_value_t* f  = arg->data.pair_val.snd;");
+        self.writeln("    if (lv->tag != RIINA_TAG_LIST) abort();");
+        self.writeln("    riina_list_t* old = RIINA_LIST_DATA(lv);");
+        self.writeln("    riina_list_t nl = riina_list_new();");
+        self.writeln("    for (size_t i = 0; i < old->len; i++) {");
+        self.writeln("        riina_list_push(&nl, riina_apply_closure(f, old->items[i]));");
+        self.writeln("    }");
+        self.writeln("    return riina_make_list(nl);");
+        self.writeln("}");
+        self.writeln("");
+
+        // senarai_tapis (list_filter): (list, fn) -> list
+        self.writeln("static riina_value_t* riina_builtin_senarai_tapis(riina_value_t* arg) {");
+        self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln("    riina_value_t* lv = arg->data.pair_val.fst;");
+        self.writeln("    riina_value_t* f  = arg->data.pair_val.snd;");
+        self.writeln("    if (lv->tag != RIINA_TAG_LIST) abort();");
+        self.writeln("    riina_list_t* old = RIINA_LIST_DATA(lv);");
+        self.writeln("    riina_list_t nl = riina_list_new();");
+        self.writeln("    for (size_t i = 0; i < old->len; i++) {");
+        self.writeln("        riina_value_t* keep = riina_apply_closure(f, old->items[i]);");
+        self.writeln("        if (keep->tag == RIINA_TAG_BOOL && keep->data.bool_val) {");
+        self.writeln("            riina_list_push(&nl, old->items[i]);");
+        self.writeln("        }");
+        self.writeln("    }");
+        self.writeln("    return riina_make_list(nl);");
+        self.writeln("}");
+        self.writeln("");
+
+        // senarai_lipat (list_fold): (list, (init, fn)) -> value.
+        // `fn` is curried — `fn(acc)(item)` — matching how the interpreter
+        // applies a two-parameter RIINA lambda.
+        self.writeln("static riina_value_t* riina_builtin_senarai_lipat(riina_value_t* arg) {");
+        self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln("    riina_value_t* lv = arg->data.pair_val.fst;");
+        self.writeln("    riina_value_t* rest = arg->data.pair_val.snd;");
+        self.writeln("    if (lv->tag != RIINA_TAG_LIST || rest->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln("    riina_value_t* acc = rest->data.pair_val.fst;");
+        self.writeln("    riina_value_t* f = rest->data.pair_val.snd;");
+        self.writeln("    riina_list_t* old = RIINA_LIST_DATA(lv);");
+        self.writeln("    for (size_t i = 0; i < old->len; i++) {");
+        self.writeln("        acc = riina_apply_closure(riina_apply_closure(f, acc), old->items[i]);");
+        self.writeln("    }");
+        self.writeln("    return acc;");
         self.writeln("}");
         self.writeln("");
 
@@ -5508,6 +5595,7 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
         Ok(())
     }
 
+
     /// Emit variable declarations for a function
     fn emit_var_declarations(&mut self, func: &Function) -> Result<()> {
         let mut vars: HashSet<VarId> = HashSet::new();
@@ -5737,12 +5825,16 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
             Instruction::FixClosure {
                 closure,
                 capture_index,
+                value,
             } => {
-                // Patch a closure's capture to point to itself (recursive closure).
-                let closure_name = self.var_name(closure);
+                // Patch one of a closure's capture slots. `value` is the closure
+                // itself for plain recursion, or a sibling in a mutually
+                // recursive group (which is how a forward call resolves).
                 self.writeln(&format!(
-                    "{}->data.closure_val.captures[{}] = {}; /* fix recursive self-capture */",
-                    closure_name, capture_index, closure_name
+                    "{}->data.closure_val.captures[{}] = {}; /* fix closure capture */",
+                    self.var_name(closure),
+                    capture_index,
+                    self.var_name(value)
                 ));
             }
 
