@@ -278,8 +278,15 @@ fn examples_root() -> std::path::PathBuf {
 
 /// The corpus figure REQ-55 tracks. Raise BOTH when examples are fixed or added;
 /// the failure messages say so.
-const CORPUS_PASSING: usize = 94;
-const CORPUS_TOTAL: usize = 169;
+///
+/// 2026-08-24: 94/169 -> 97/172 when the divergent `ib823/riina` work was merged
+/// back. The +3 total is the `12_kelayakan` credential-policy example and its
+/// siblings; the +3 passing is that they all check. The gate earning its keep is
+/// the reason this number is trustworthy — it FAILED the moment the back-merge
+/// changed the corpus size, naming the new count rather than letting a silent
+/// drift through.
+const CORPUS_PASSING: usize = 97;
+const CORPUS_TOTAL: usize = 172;
 
 #[test]
 fn rii_corpus_gate() {
