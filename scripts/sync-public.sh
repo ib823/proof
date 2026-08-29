@@ -110,9 +110,26 @@ INTERNAL_PATHS=(
     "04_SPECS/cross-cutting/RESEARCH_COMPONENTS_AUDIT_*.md"
 
     # --- Internal sync/verification scripts (not needed by external users) ---
+    #
+    # `scripts/sync-metrics.sh` WAS listed here and is deliberately NOT any more.
+    # The rationale above did not hold for it: 12 files that ARE published
+    # reference it, so excluding it published a tree whose own tooling pointed at
+    # a file that was not there. Not only prose — `00_SETUP/hooks/pre-commit`
+    # invokes it, and `riinac/tests/metrics_doc_consistency.rs` fails with
+    # "run `bash scripts/sync-metrics.sh` and stage the result", advice a public
+    # clone could not follow.
+    #
+    # It is safe to publish: it holds no secrets and no container-absolute paths,
+    # and it guards every target with `if [ -f ]`, so the internal-only files it
+    # also knows about (CLAUDE.md, PROGRESS.md) are simply skipped on a tree that
+    # lacks them. Verified by running it against a public-shaped tree: 5 public
+    # docs updated, the two internal ones skipped silently, exit 0.
+    #
+    # The four below stay internal because they genuinely are: they act ON the
+    # public/riina remotes or on the private generator, and an external clone can
+    # neither run them nor need them.
     "scripts/sync-public.sh"
     "scripts/verify-public.sh"
-    "scripts/sync-metrics.sh"
     "scripts/verify-riina-deploy.sh"
     "scripts/generate-full-stack.py"
 
