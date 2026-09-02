@@ -204,6 +204,7 @@ Inductive sanitizer : Type :=
   | SanUrlEncode         : sanitizer  (* URL encoding *)
   | SanJsEscape          : sanitizer  (* JavaScript string escaping *)
   | SanCssEscape         : sanitizer  (* CSS escaping *)
+  | SanJsonEscape        : sanitizer  (* JSON string-content escaping *)
   (* SQL sanitizers *)
   | SanSqlEscape         : sanitizer  (* SQL string escaping *)
   | SanSqlParam          : sanitizer  (* Parameterized query *)

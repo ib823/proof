@@ -3661,6 +3661,7 @@ impl<'a> Parser<'a> {
             "LdapEscape" => Ok(Sanitizer::LdapEscape),
             "XmlEscape" => Ok(Sanitizer::XmlEscape),
             "UrlAllowlist" => Ok(Sanitizer::UrlAllowlist),
+            "JsonEscape" => Ok(Sanitizer::JsonEscape),
             "JsonValidation" => Ok(Sanitizer::JsonValidation),
             "XmlValidation" => Ok(Sanitizer::XmlValidation),
             "EmailValidation" => Ok(Sanitizer::EmailValidation),

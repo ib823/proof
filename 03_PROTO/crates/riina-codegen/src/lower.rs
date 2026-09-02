@@ -237,6 +237,7 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
         "sanitasi_emel" | "sanitize_email" => return Some("sanitize_email"),
         // Validators / normalizers.
         "sahkan_url" | "validate_url" => return Some("validate_url"),
+        "sahkan_json" | "validate_json" => return Some("validate_json"),
         "normal_unicode" | "normalize_unicode" => return Some("normalize_unicode"),
         "buang_null" | "strip_nulls" => return Some("strip_nulls"),
         // Modelled sinks. These do NOT perform the dangerous operation in

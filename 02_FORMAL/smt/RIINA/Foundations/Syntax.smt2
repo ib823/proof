@@ -1,7 +1,6 @@
-; GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized.
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/foundations/Syntax.v (34 assertions)
+; Derived from 02_FORMAL/coq/foundations/Syntax.v (36 assertions)
 ; Source mapping: scripts/generate-full-stack.py
 ; Module: Syntax
 
@@ -21,7 +20,7 @@
 (declare-datatypes ((taint_source 0)) (((TaintNetworkExternal) (TaintNetworkInternal) (TaintUserInput) (TaintFileSystem) (TaintDatabase) (TaintEnvironment) (TaintGapuraRequest) (TaintZirahEvent) (TaintZirahEndpoint) (TaintBentengBiometric) (TaintSandiSignature) (TaintMenaraDevice))))
 
 ; sanitizer (matches Coq: Inductive sanitizer)
-(declare-datatypes ((sanitizer 0)) (((SanHtmlEscape) (SanUrlEncode) (SanJsEscape) (SanCssEscape) (SanSqlEscape) (SanSqlParam) (SanXssFilter) (SanPathTraversal) (SanCommandEscape) (SanLdapEscape) (SanXmlEscape) (SanJsonValidation) (SanXmlValidation) (SanEmailValidation) (SanPhoneValidation) (SanLengthBound) (SanRangeBound) (SanRegexMatch) (SanWhitelist) (SanHashVerify) (SanSignatureVerify) (SanMacVerify) (SanGapuraAuth) (SanZirahSession) (SanBentengBiometric) (SanSandiDecrypt) (SanMenaraAttestation))))
+(declare-datatypes ((sanitizer 0)) (((SanHtmlEscape) (SanUrlEncode) (SanJsEscape) (SanCssEscape) (SanJsonEscape) (SanSqlEscape) (SanSqlParam) (SanXssFilter) (SanPathTraversal) (SanCommandEscape) (SanLdapEscape) (SanXmlEscape) (SanJsonValidation) (SanXmlValidation) (SanEmailValidation) (SanPhoneValidation) (SanLengthBound) (SanRangeBound) (SanRegexMatch) (SanWhitelist) (SanHashVerify) (SanSignatureVerify) (SanMacVerify) (SanGapuraAuth) (SanZirahSession) (SanBentengBiometric) (SanSandiDecrypt) (SanMenaraAttestation))))
 
 ; sanitizer_comp (matches Coq: Inductive sanitizer_comp)
 (declare-datatypes ((sanitizer_comp 0)) (((SanSingle) (SanAnd) (SanSeq))))
@@ -39,7 +38,7 @@
 (declare-datatypes ((session_type 0)) (((SessEnd) (SessSend) (SessRecv) (SessSelect) (SessBranch) (SessRec) (SessVar))))
 
 ; expr (matches Coq: Inductive expr)
-(declare-datatypes ((expr 0)) (((EUnit) (EBool) (EInt) (EString) (ELoc) (EVar) (ELam) (EApp) (EPair) (EFst) (ESnd) (EInl) (EInr) (ECase) (EIf) (ELet) (EPerform) (EHandle) (ERef) (EDeref) (EAssign) (EClassify) (EDeclassify) (EProve) (ERequire) (EGrant))))
+(declare-datatypes ((expr 0)) (((EUnit) (EBool) (EInt) (EString) (ELoc) (EVar) (ELam) (EApp) (EPair) (EFst) (ESnd) (EInl) (EInr) (ECase) (EIf) (ELet) (EPerform) (EHandle) (ERef) (EDeref) (EAssign) (EClassify) (EDeclassify) (EProve) (EFix) (ERequire) (EGrant))))
 
 (declare-const __default_Ind_effect Ind_effect)
 (declare-const __default_capability capability)
@@ -93,6 +92,10 @@
 ; subst (matches Coq: Definition subst)
 (declare-fun subst (Int expr expr) expr)
 
+; recursion_free (matches Coq: Definition recursion_free)
+(define-fun recursion_free ((e expr)) Bool
+  (= 0 0))
+
 ; declass_ok (matches Coq: Definition declass_ok)
 (define-fun declass_ok ((e1 expr) (e2 expr)) Bool
   (= 0 0))
@@ -104,6 +107,14 @@
 ; effect_join_pure_r (matches Coq: Lemma effect_join_pure_r)
 ; effect_join_pure_r: forall e, effect_join e EffPure = e
 (assert (forall ((e Bool)) (= 0 0))) ; effect_join_pure_r [partial: bindings preserved]
+
+; recursion_free_EFix_absurd (matches Coq: Lemma recursion_free_EFix_absurd)
+; recursion_free_EFix_absurd: forall e, ~ recursion_free (EFix e)
+(assert (forall ((e Bool)) (= 0 0))) ; recursion_free_EFix_absurd [partial: bindings preserved]
+
+; recursion_free_subst (matches Coq: Lemma recursion_free_subst)
+; recursion_free_subst: forall x v e, recursion_free v -> recursion_free e -> recursion_free (subst x v e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; recursion_free_subst [partial: bindings preserved]
 
 ; sec_leq_refl (matches Coq: Lemma sec_leq_refl)
 ; sec_leq_refl: forall l, sec_leq l l

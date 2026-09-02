@@ -2,16 +2,16 @@
 
 > **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) and the compiled-backend boundary (`riina_codegen::codegen_supports_builtin`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts or compiles. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
 
-Total registered builtins: **373**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+Total registered builtins: **374**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **341** of the 373 compile:
+Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **342** of the 374 compile:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (21 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (320 builtins). |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (321 builtins). |
 | `interp-only` | `riinac run` only (24 builtins). `riinac build` fails with `unbound variable`. |
 | `typed-only` | **Nothing runs it** (8 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
 
@@ -154,13 +154,14 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `qmn` | `Fn((Teks, Nombor), Qmn)` | compiled |
 | `rangka` | `Fn(Teks, Teks)` | **native-only** |
 | `rem` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `sahkan_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **native-only** |
 | `sahkan_panjang` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
 | `sahkan_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
 | `sanitasi_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **native-only** |
 | `sanitasi_emel` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **native-only** |
 | `sanitasi_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **native-only** |
 | `sanitasi_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **native-only** |
-| `sanitasi_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **native-only** |
+| `sanitasi_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonEscape>)` | **native-only** |
 | `sanitasi_laluan` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **native-only** |
 | `sanitasi_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **native-only** |
 | `sanitasi_perintah` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **native-only** |
