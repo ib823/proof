@@ -2671,8 +2671,42 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::Pure,
         ),
     );
+    // JSON string-CONTENT escaper: Tainted → Sanitized<String, JsonEscape>.
+    //
+    // It used to mint `JsonValidation`, which made it the only producer of the
+    // marker `json_urai_selamat` requires — and therefore the only way to reach
+    // the safe parser. But it ESCAPES rather than validates: `{"a":1}` becomes
+    // `{\"a\":1}`, so every JSON object arrived at the parser malformed and came
+    // back as Unit. Measured before the split: an object parsed to `null`, while
+    // a quote-free `[1,2,3]` survived, because only quote-free documents pass
+    // through an escaper unchanged.
+    //
+    // `JsonEscape` says what this actually guarantees: safe to EMBED inside a
+    // JSON string literal. Reaching the parser is now `sahkan_json`'s job.
     c = c.extend(
         "sanitasi_json".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+
+    // JSON document VALIDATOR: Tainted → Sanitized<String, JsonValidation>.
+    //
+    // The real gate on the safe parser. It does not transform its input at all —
+    // a validator that edited the document would be an escaper again. It parses
+    // to decide, and returns the text unchanged when the parse succeeds; on
+    // malformed input it returns the empty string, which `json_urai_selamat`
+    // then yields Unit for, preserving that builtin's never-abort contract.
+    c = c.extend(
+        "sahkan_json".to_string(),
         Ty::Fn(
             Box::new(Ty::Tainted(
                 Box::new(Ty::String),

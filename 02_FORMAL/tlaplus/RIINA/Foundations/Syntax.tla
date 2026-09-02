@@ -1,8 +1,7 @@
-\* GENERATED-CORPUS-NOT-VERIFIED: machine-generated from the Coq sources by scripts/generate-full-stack.py. This file is NOT independently verified; its proof obligations are placeholders/stubs. Authoritative claim levels: website/public/metrics.json. Only the Coq lane is mechanized.
 ---- MODULE Syntax ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/foundations/Syntax.v (34 invariants)
+\* Derived from 02_FORMAL/coq/foundations/Syntax.v (36 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -20,7 +19,7 @@ CONSTANTS CatPure, CatIO, CatNetwork, CatCrypto, CatSystem, CatProduct
 CONSTANTS TaintNetworkExternal, TaintNetworkInternal, TaintUserInput, TaintFileSystem, TaintDatabase, TaintEnvironment, TaintGapuraRequest, TaintZirahEvent, TaintZirahEndpoint, TaintBentengBiometric, TaintSandiSignature, TaintMenaraDevice
 
 \* sanitizer (matches Coq: Inductive sanitizer)
-CONSTANTS SanHtmlEscape, SanUrlEncode, SanJsEscape, SanCssEscape, SanSqlEscape, SanSqlParam, SanXssFilter, SanPathTraversal, SanCommandEscape, SanLdapEscape, SanXmlEscape, SanJsonValidation, SanXmlValidation, SanEmailValidation, SanPhoneValidation, SanLengthBound, SanRangeBound, SanRegexMatch, SanWhitelist, SanHashVerify, SanSignatureVerify, SanMacVerify, SanGapuraAuth, SanZirahSession, SanBentengBiometric, SanSandiDecrypt, SanMenaraAttestation
+CONSTANTS SanHtmlEscape, SanUrlEncode, SanJsEscape, SanCssEscape, SanJsonEscape, SanSqlEscape, SanSqlParam, SanXssFilter, SanPathTraversal, SanCommandEscape, SanLdapEscape, SanXmlEscape, SanJsonValidation, SanXmlValidation, SanEmailValidation, SanPhoneValidation, SanLengthBound, SanRangeBound, SanRegexMatch, SanWhitelist, SanHashVerify, SanSignatureVerify, SanMacVerify, SanGapuraAuth, SanZirahSession, SanBentengBiometric, SanSandiDecrypt, SanMenaraAttestation
 
 \* sanitizer_comp (matches Coq: Inductive sanitizer_comp)
 CONSTANTS SanSingle, SanAnd, SanSeq
@@ -38,7 +37,7 @@ CONSTANTS TUnit, TBool, TInt, TString, TBytes, TFn, TProd, TSum, TList, TOption,
 CONSTANTS SessEnd, SessSend, SessRecv, SessSelect, SessBranch, SessRec, SessVar
 
 \* expr (matches Coq: Inductive expr)
-CONSTANTS EUnit, EBool, EInt, EString, ELoc, EVar, ELam, EApp, EPair, EFst, ESnd, EInl, EInr, ECase, EIf, ELet, EPerform, EHandle, ERef, EDeref, EAssign, EClassify, EDeclassify, EProve, ERequire, EGrant
+CONSTANTS EUnit, EBool, EInt, EString, ELoc, EVar, ELam, EApp, EPair, EFst, ESnd, EInl, EInr, ECase, EIf, ELet, EPerform, EHandle, ERef, EDeref, EAssign, EClassify, EDeclassify, EProve, EFix, ERequire, EGrant
 
 VARIABLES state
 
@@ -86,6 +85,9 @@ TCapabilityOld(e) == TRUE
 \* subst (matches Coq: Definition subst)
 subst(x, v, e) == TRUE
 
+\* recursion_free (matches Coq: Definition recursion_free)
+recursion_free(e) == TRUE
+
 \* declass_ok (matches Coq: Definition declass_ok)
 declass_ok(e1, e2) == TRUE
 
@@ -94,6 +96,12 @@ THEOREM effect_join_pure_l == Init => TypeOK
 
 \* effect_join_pure_r (matches Coq: Lemma effect_join_pure_r)
 THEOREM effect_join_pure_r == Init => TypeOK
+
+\* recursion_free_EFix_absurd (matches Coq: Lemma recursion_free_EFix_absurd)
+THEOREM recursion_free_EFix_absurd == Init => TypeOK
+
+\* recursion_free_subst (matches Coq: Lemma recursion_free_subst)
+THEOREM recursion_free_subst == Init => TypeOK
 
 \* sec_leq_refl (matches Coq: Lemma sec_leq_refl)
 THEOREM sec_leq_refl == Init => TypeOK

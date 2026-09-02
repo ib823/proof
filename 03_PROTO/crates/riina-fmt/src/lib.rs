@@ -1059,6 +1059,7 @@ fn fmt_sanitizer(out: &mut String, san: &Sanitizer) {
         Sanitizer::LdapEscape => "LdapEscape",
         Sanitizer::XmlEscape => "XmlEscape",
         Sanitizer::UrlAllowlist => "UrlAllowlist",
+        Sanitizer::JsonEscape => "JsonEscape",
         Sanitizer::JsonValidation => "JsonValidation",
         Sanitizer::XmlValidation => "XmlValidation",
         Sanitizer::EmailValidation => "EmailValidation",
