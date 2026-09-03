@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-03T02:53:05Z",
-  "generatedHuman": "September 03, 2026 at 02:53 UTC",
+  "generated": "2026-09-03T07:16:53Z",
+  "generatedHuman": "September 03, 2026 at 07:16 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "8a856a0d7",
-    "branch": "claude/crypto-agility-runtime"
+    "commit": "d3755dad6",
+    "branch": "main"
   },
   "proofs": {
     "qedActive": 12678,
@@ -197,8 +197,8 @@
   "rust": {
     "tests": 3342,
     "testsVerified": 3342,
-    "testsEstimated": 3338,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 18
   },
   "examples": 172,
