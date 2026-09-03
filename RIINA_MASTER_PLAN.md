@@ -4610,7 +4610,13 @@ scoped set and stayed `mechanized` on a fresh full-lane run (318/318 under z3 4.
 non-Coq lane to `generated` — the `retired_lanes_are_exempt_from_transpiler_freshness` test caught
 that on this chain (it reads the live `metrics.json` and refuses an SMT downgrade), which is the
 right outcome but a surprising place for it; the checker must be re-run before metrics after any
-mirror regeneration.
+mirror regeneration. And a second freshness asymmetry, hit on the same chain: on `main` the report
+is fresh by the two-commit fast path (`repoHead == HEAD^`), but `public-quality-gates.sh` on the
+PUBLIC branch (a disjoint reconcile history) decides freshness by a two-dot path diff between the
+report's commit and the public head — so the quarantine marker, committed one commit AFTER the
+report was stamped, made the public gate see a change under `02_FORMAL/tlaplus` and fail claim
+integrity, while the same gate on `main` passed. The report must be stamped at (or after) the commit
+that adds any file under a sensitive path; it was re-stamped at `5d1c71c3` and the chain re-run.
 
 **The finding this wave keeps producing, now seven groups deep: a family marked as lowering is
 not thereby a family that agrees, neither is a family with a differential, and a builtin marked
