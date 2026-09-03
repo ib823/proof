@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-03T07:39:15Z",
-  "generatedHuman": "September 03, 2026 at 07:39 UTC",
+  "generated": "2026-09-03T08:02:45Z",
+  "generatedHuman": "September 03, 2026 at 08:02 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "346b48137",
-    "branch": "main"
+    "commit": "e7f001ac0",
+    "branch": "claude/vfs-trio-c"
   },
   "proofs": {
     "qedActive": 12678,
@@ -195,10 +195,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3342,
-    "testsVerified": 3342,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 3352,
+    "testsVerified": 3352,
+    "testsEstimated": 3348,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 172,

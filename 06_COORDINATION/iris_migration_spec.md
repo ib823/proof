@@ -1,6 +1,6 @@
 # RIINA Iris Migration Specification v1.0.0
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3342 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3352 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 **Document ID:** `RIINA_IRIS_MIGRATION_SPEC_v1_0_0`
 

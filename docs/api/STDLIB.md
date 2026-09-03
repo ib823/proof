@@ -6,13 +6,13 @@ Total registered builtins: **374**. Grouped by the effect each performs (`kesan`
 
 ## ⚠ Read first: type-checking does not imply compiling
 
-Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **342** of the 374 compile:
+Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **348** of the 374 compile:
 
 | Backend value | Meaning |
 |---|---|
 | `compiled` | Lowers to C **and** WASM (21 builtins). |
-| `native-only` | Lowers to C. The WASM backend **refuses** it (321 builtins). |
-| `interp-only` | `riinac run` only (32 builtins). `riinac build` fails with `unbound variable`. |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (327 builtins). |
+| `interp-only` | `riinac run` only (26 builtins). `riinac build` fails with `unbound variable`. |
 | `typed-only` | **Nothing runs it** (0 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
 
 ```
@@ -266,18 +266,14 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Baca (Read)
 
-> **Mixed:** 2 of 4 compile; the rest are interpreter-only (REQ-70).
-
 | Builtin | Type | Backend |
 |---|---|---|
 | `fail_baca_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **native-only** |
 | `file_read_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **native-only** |
-| `vfs_baca` | `Fn(Teks, Teks, Baca)` | **interp-only** |
-| `vfs_read` | `Fn(Teks, Teks, Baca)` | **interp-only** |
+| `vfs_baca` | `Fn(Teks, Teks, Baca)` | **native-only** |
+| `vfs_read` | `Fn(Teks, Teks, Baca)` | **native-only** |
 
 ## Tulis (Write)
-
-> **Mixed:** 9 of 13 compile; the rest are interpreter-only (REQ-70).
 
 | Builtin | Type | Backend |
 |---|---|---|
@@ -290,10 +286,10 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 | `file_write_safe` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **native-only** |
 | `print` | `Fn(Any, (), Tulis)` | compiled |
 | `println` | `Fn(Any, (), Tulis)` | compiled |
-| `vfs_delete` | `Fn(Teks, Benar, Tulis)` | **interp-only** |
-| `vfs_padam` | `Fn(Teks, Benar, Tulis)` | **interp-only** |
-| `vfs_tulis` | `Fn((Teks, Teks), (), Tulis)` | **interp-only** |
-| `vfs_write` | `Fn((Teks, Teks), (), Tulis)` | **interp-only** |
+| `vfs_delete` | `Fn(Teks, Benar, Tulis)` | **native-only** |
+| `vfs_padam` | `Fn(Teks, Benar, Tulis)` | **native-only** |
+| `vfs_tulis` | `Fn((Teks, Teks), (), Tulis)` | **native-only** |
+| `vfs_write` | `Fn((Teks, Teks), (), Tulis)` | **native-only** |
 
 ## SistemFail (FileSystem)
 

@@ -130,23 +130,25 @@ fn package_with_wrong_return_type_fails_to_build() {
 /// A package using an interpreter-only builtin (REQ-70) fails at lowering
 /// rather than emitting a binary that cannot exist.
 ///
-/// The example has moved twice as REQ-70 routed families: first
-/// `jaring_dengar`, then `fail_baca`, and now `vfs_baca`. `fail_baca` compiles
-/// as of the verified-gate work, so it no longer sits on the boundary.
+/// The example has moved three times as REQ-70 routed families: first
+/// `jaring_dengar`, then `fail_baca`, then `vfs_baca` — which compiles as of
+/// Wave B.4 (the VirtualFs port in `emit.rs`), exactly as the previous
+/// version of this comment predicted it would one day.
 ///
-/// `vfs_baca` is a deliberate choice rather than the next arbitrary one: it
-/// reads the in-memory VirtualFs, whose quota accounting has no C
-/// implementation, so it is expected to stay interpreter-only for as long as
-/// that remains true. Update this again when it lands; the test is about the
-/// boundary existing, not about which side any particular builtin is on.
+/// `jaring_tls_jabat` is the deliberate choice now: the `jaring_tls_*` half
+/// is held back ON PURPOSE (master plan REQ-70 — a C TLS that is not really
+/// `riina-tls` would be worse than a build error), so it sits on the boundary
+/// by decision rather than by backlog. Update this again if that decision
+/// changes; the test is about the boundary existing, not about which side any
+/// particular builtin is on.
 #[test]
 fn package_using_interpreter_only_builtin_fails_at_codegen() {
     let pkg = Pkg::new("interponly");
     pkg.rm_src("lib.rii");
     pkg.src(
         "utama.rii",
-        "fungsi utama() -> Nombor kesan (Baca | Tulis) {\n\
-         \x20   cetakln(vfs_baca(\"nota.txt\"));\n\
+        "fungsi utama() -> Nombor kesan RangkaianSelamat {\n\
+         \x20   cetakln(jaring_tls_jabat(1));\n\
          \x20   0\n\
          }\n",
     );
