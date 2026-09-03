@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-09-02T03:55:56Z
-**Git SHA:** 8c3de157
+**Generated:** 2026-09-03T04:08:06Z
+**Git SHA:** e397a9f24
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3324 tests |
+| Rust Tests | PASS | 3334 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 225s |
+| Coq Compilation | PASS | 331 .vo files compiled in 178s |
 | Coq Kernel Assumptions | PASS | 5 capstones attested; axioms within reviewed whitelist (1 allowed: funext) |
 | Coq Admits | PASS | 0 (target: 1) |
 | Coq Axioms | PASS | 0 (informational; explicit assumptions tracked separately) |
@@ -22,7 +22,7 @@
 | Isabelle sorry/oops | PASS | 0 sorry + 0 oops in 368 files (12925 lemmas) |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | WARN | 12012 admit in 315 files (19 lemmas) |
-| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 317 files (12284 theorems) |
 | Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 9s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 306 files (11627 assertions) |
