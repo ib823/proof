@@ -4956,6 +4956,20 @@ static riina_value_t* riina_builtin_json_parse_safe(riina_value_t* arg) {
     return v ? v : riina_unit();
 }
 
+/* sahkan_json. JSON document VALIDATION, not escaping: returns the document
+   UNCHANGED when it parses and "" when it does not.
+
+   Emitted HERE, beside json_parse_safe, rather than up with the sanitizers,
+   because it needs riina_json_parse_document to be in scope — and it must be
+   the SAME parser json_parse_safe uses, so the gate and the thing it gates can
+   never disagree about what well-formed means. That is also why it does not
+   re-implement a check: a second parser is a second opinion. */
+static riina_value_t* riina_builtin_validate_json(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_value_t* v = riina_json_parse_document(arg->data.string_val.data);
+    return v ? arg : riina_string("");
+}
+
 /* nyahsiri_selamat. The interpreter dispatches it to the same JSON parser, so
    this is an alias and not a second format. */
 static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {

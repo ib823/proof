@@ -313,6 +313,17 @@ pub enum Sanitizer {
     UrlEncode,
     JsEscape,
     CssEscape,
+    /// JSON string-CONTENT escaping: makes text safe to embed *inside* a JSON
+    /// string literal. Mirrors Coq `SanJsonEscape`.
+    ///
+    /// Deliberately distinct from [`Sanitizer::JsonValidation`], which asserts
+    /// that a whole document IS well-formed JSON. Conflating the two is what
+    /// made `json_urai_selamat` unreachable for objects: `sanitasi_json` minted
+    /// `JsonValidation` while escaping `"` and `\`, so `{"a":1}` arrived at the
+    /// safe parser as `{\"a\":1}` and parsed to Unit. An escape is not a
+    /// validation — it is closer to its opposite, since escaping a valid
+    /// document is exactly what stops it being one.
+    JsonEscape,
     // SQL
     SqlEscape,
     SqlParam,

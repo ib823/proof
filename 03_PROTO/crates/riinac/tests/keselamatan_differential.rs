@@ -640,42 +640,89 @@ fn safe_parsers_yield_unit_on_malformed_input_in_both() {
         assert_body_agrees(
             tag,
             "    biar mentah = baca_baris(());\n\
-             \x20   cetakln(json_ke_teks(json_urai_selamat(sanitasi_json(mentah))));\n\
-             \x20   cetakln(json_ke_teks(nyahsiri_selamat(sanitasi_json(mentah))));",
+             \x20   cetakln(json_ke_teks(json_urai_selamat(sahkan_json(mentah))));\n\
+             \x20   cetakln(json_ke_teks(nyahsiri_selamat(sahkan_json(mentah))));",
             input,
             "(Sistem | Tulis)",
         );
     }
 }
 
-/// Well-formed input parses identically — and pins a STDLIB WART rather than a
-/// codegen one, so that a future fix has to update this case deliberately.
+/// THE WART THIS PINNED IS NOW FIXED, and this is the case that had to change
+/// deliberately — which is why it was written to pin the defect in the first
+/// place.
 ///
-/// `sanitasi_json` is the only producer of `Disanitasi<Teks, JsonValidation>`
-/// and so the only way to reach `json_urai_selamat`. But it is a
-/// string-EMBEDDING escaper: it turns `{"a":1}` into `{\"a\":1}`. Every JSON
-/// object therefore arrives malformed and parses to Unit, because object keys
-/// are quoted. Only quote-free documents — numbers, booleans, `null`, arrays of
-/// those — survive the round trip, which is what the array case below shows.
-/// Both backends agree on this, so it is a type-signature defect in the security
-/// stdlib (the gate on a safe PARSER should be a validation, not an escape), not
-/// a divergence between them.
+/// `sanitasi_json` used to be the only producer of
+/// `Disanitasi<Teks, JsonValidation>` and so the only way to reach
+/// `json_urai_selamat`. But it is a string-EMBEDDING escaper: it turns
+/// `{"a":1}` into `{\"a\":1}`. Every JSON object therefore arrived malformed
+/// and parsed to Unit, because object keys are quoted; only quote-free
+/// documents survived. Both backends agreed, so it was a type-signature defect
+/// in the security stdlib, not a divergence.
+///
+/// The gate on a safe PARSER is now a validation and not an escape:
+/// `sanitasi_json` mints `JsonEscape` (what it actually guarantees — safe to
+/// embed inside a JSON string literal) and the new `sahkan_json` mints
+/// `JsonValidation` by PARSING and returning the document unchanged. Objects
+/// round-trip now, and the old composition is a TYPE ERROR rather than a silent
+/// `null` — which [`escaper_can_no_longer_reach_the_safe_parser`] pins.
 #[test]
-fn safe_parsers_agree_on_what_survives_the_sanitizer() {
-    assert_body_agrees(
-        "sp_arr_ok",
-        "    biar mentah = baca_baris(());\n\
-         \x20   cetakln(json_ke_teks(json_urai_selamat(sanitasi_json(mentah))));",
-        "[1,2,3]",
-        "(Sistem | Tulis)",
+fn safe_parsers_agree_on_what_survives_the_validator() {
+    for (tag, input) in [
+        ("sv_arr", "[1,2,3]"),
+        // The case that used to come back `null`.
+        ("sv_obj", "{\"a\":1}"),
+        ("sv_nested", "{\"a\":{\"b\":[1,2]}}"),
+        // Rejection still yields Unit, not an abort: json_parse_safe's contract.
+        ("sv_bad", "{\"a\":1"),
+    ] {
+        assert_body_agrees(
+            tag,
+            "    biar mentah = baca_baris(());\n\
+             \x20   cetakln(json_ke_teks(json_urai_selamat(sahkan_json(mentah))));",
+            input,
+            "(Sistem | Tulis)",
+        );
+    }
+}
+
+/// The half of the fix a differential cannot show: the ESCAPER can no longer be
+/// mistaken for a validator, because the type system now rejects it.
+///
+/// Without this the split would be cosmetic — `sanitasi_json` would still
+/// compose with `json_urai_selamat` and still lose every object, just under a
+/// different marker name.
+#[test]
+fn escaper_can_no_longer_reach_the_safe_parser() {
+    let dir = std::env::temp_dir().join(format!("riina_sanmix_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("create dir");
+    let src = dir.join("sanmix.rii");
+    std::fs::write(
+        &src,
+        "fungsi utama() -> Nombor kesan (Sistem | Tulis) {\n\
+         \x20   biar mentah = baca_baris(());\n\
+         \x20   cetakln(json_ke_teks(json_urai_selamat(sanitasi_json(mentah))));\n\
+         \x20   0\n\
+         }\n",
+    )
+    .expect("write");
+
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .arg("check")
+        .arg(&src)
+        .output()
+        .expect("riinac check");
+    assert!(
+        !out.status.success(),
+        "feeding the ESCAPER to the safe parser must not typecheck"
     );
-    assert_body_agrees(
-        "sp_obj_lost",
-        "    biar mentah = baca_baris(());\n\
-         \x20   cetakln(json_ke_teks(json_urai_selamat(sanitasi_json(mentah))));",
-        "{\"a\":1}",
-        "(Sistem | Tulis)",
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.contains("JsonValidation") && err.contains("JsonEscape"),
+        "the error must name both markers so the fix is obvious; got: {err}"
     );
+    let _ = std::fs::remove_dir_all(&dir);
 }
 
 /// `xml_parse_safe` is identity on the document text in the interpreter — there

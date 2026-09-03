@@ -58,6 +58,7 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
     ("sanitasi_emel", "sanitize_email", "sanitize_email"),
     // ── Validators / transformers ──
     ("sahkan_url", "validate_url", "validate_url"),
+    ("sahkan_json", "validate_json", "validate_json"),
     ("normal_unicode", "normalize_unicode", "normalize_unicode"),
     ("buang_null", "strip_nulls", "strip_nulls"),
     ("sahkan_panjang", "validate_length", "validate_length"),
@@ -123,6 +124,16 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
 
         // ── Validators / transformers ──
         "validate_url" => Value::String(url_validate(&as_str(arg, name)?)),
+        // JSON document VALIDATION, as distinct from the string-content
+        // escaping `sanitize_json` does. Returns the document UNCHANGED when
+        // it parses, and the empty string when it does not.
+        //
+        // Unchanged is the whole point: this is the gate on `json_parse_safe`,
+        // and a gate that edited the document would be an escaper again —
+        // which is exactly the bug this builtin exists to fix. Rejection is
+        // the empty string rather than an abort so `json_parse_safe` keeps its
+        // never-abort contract and yields Unit.
+        "validate_json" => Value::String(json_validate(&as_str(arg, name)?)),
         "normalize_unicode" => Value::String(unicode_normalize_security(&as_str(arg, name)?)),
         "strip_nulls" => Value::String(strip_nul_bytes(&as_str(arg, name)?)),
         // (Tainted<String>, Int) → Option<Tainted<String>>.
@@ -480,6 +491,19 @@ fn ldap_escape(s: &str) -> String {
 /// RFC 8259 JSON string-content escaping (no surrounding quotes). Control
 /// characters use the short forms where defined, else `\uHHHH`; U+2028/U+2029
 /// (which terminate JavaScript string literals) are escaped too.
+/// Return `s` unchanged if it is a well-formed JSON document, else "".
+///
+/// Deliberately delegates to the SAME parser `json_parse_safe` uses, so the
+/// validator and the consumer can never disagree about what "well-formed"
+/// means. A second, hand-rolled check here would be a new way for the gate to
+/// drift from the thing it gates.
+fn json_validate(s: &str) -> String {
+    match crate::builtins::json::apply("json_urai", &Value::String(s.to_string())) {
+        Ok(Some(_)) => s.to_string(),
+        _ => String::new(),
+    }
+}
+
 fn json_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
