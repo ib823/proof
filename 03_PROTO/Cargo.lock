@@ -10,6 +10,7 @@ version = "0.4.0"
 name = "riina-codegen"
 version = "0.4.0"
 dependencies = [
+ "riina-core",
  "riina-os",
  "riina-parser",
  "riina-tls",
