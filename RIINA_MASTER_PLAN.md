@@ -4587,6 +4587,31 @@ guard fails `archived_proofs_do_not_drive_freshness`; stripping `lean.sorryVerif
 hard `[MISMATCH]`; and the retired exemption is shown against real data to move exactly the one
 retired lane.
 
+**GATE-SEMANTICS ITEM RECORDED 2026-09-02 — AWAITING OWNER SIGN-OFF (TLA+ held at `generated`
+by owner decision the same day).** The #85 sync chain was the first `generate-metrics.sh` run with
+the pinned TLA2Tools/Alloy jars provisioned (`scripts/provision-formal-tools.sh`), and
+`check-noncoq-mechanized.sh`'s TLA+ rule — "every `.tla` passes SANY, and the smoke spec model-checks"
+— returned `mechanized_ready: true` for the 317-file corpus. That would have flipped
+`claimLevels.tlaplus` from `generated` to **mechanized** on the public site, and the public
+claim-integrity gate would have ACCEPTED it (it ranks a lane by the report's own verdict). But SANY is
+a parser: it accepts `THEOREM recursion_free_subst == Init => TypeOK` without asking for a proof, and
+those files carry `GENERATED-CORPUS-NOT-VERIFIED` banners saying exactly that. REQ-67(c) already
+states the honest scope — one real spec TLC-checked, the generated corpus number retired — and the
+v0.4.0 note above records that publishing `tlaplus: mechanized` was the very overclaim REQ-29
+retracted. So the rule and the requirement disagree, and the rule wins by default the moment the jar
+is present on the machine running the chain. Owner chose (AskUserQuestion, 2026-09-02) to HOLD:
+`02_FORMAL/tlaplus/.STUB_QUARANTINED` is re-added with the rationale inside (the repo's own
+mechanism — the checker reports `quarantined: true`, metrics keep `tlaplus: generated`, smoke TLC
+still counts its 5 theorems), and the checker's TLA+ rule is queued here for redefinition to the
+REQ-67(c) scope rather than changed in a sync chain. SMT is unaffected: its lane is the z3-verified
+scoped set and stayed `mechanized` on a fresh full-lane run (318/318 under z3 4.8.12). Also noted:
+`reports/noncoq_mechanized_status.json` goes stale by its own rule whenever any mirror under
+`02_FORMAL/{smt,tlaplus,fstar,...}` moves, and `generate-metrics.sh` then silently DOWNGRADES every
+non-Coq lane to `generated` — the `retired_lanes_are_exempt_from_transpiler_freshness` test caught
+that on this chain (it reads the live `metrics.json` and refuses an SMT downgrade), which is the
+right outcome but a surprising place for it; the checker must be re-run before metrics after any
+mirror regeneration.
+
 **The finding this wave keeps producing, now seven groups deep: a family marked as lowering is
 not thereby a family that agrees, neither is a family with a differential, and a builtin marked
 interpreter-only is not thereby a builtin anyone has looked at.** Every routed

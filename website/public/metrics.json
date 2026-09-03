@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-02T03:15:11Z",
-  "generatedHuman": "September 02, 2026 at 03:15 UTC",
+  "generated": "2026-09-03T01:38:43Z",
+  "generatedHuman": "September 03, 2026 at 01:38 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "5d01464b",
-    "branch": "claude/sanitasi-json-marker"
+    "commit": "5e3dd3b3",
+    "branch": "main"
   },
   "proofs": {
     "qedActive": 12678,
@@ -70,22 +70,22 @@
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 12284,
+    "theorems": 5,
     "theoremsRaw": 12284,
-    "compiledTheorems": 0,
-    "smokeBuildOk": false,
+    "compiledTheorems": 5,
+    "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (TLA2Tools): smoke check passed",
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "smokeNote": "theoremsRaw is the corpus-wide THEOREM count; only the smoke-spec theorems are TLC-checked",
-    "quarantined": false,
+    "quarantined": true,
     "files": 317,
     "prover": "TLA+"
   },
   "alloy": {
     "assertions": 11627,
     "assertionsRaw": 11627,
-    "compiledAssertions": 0,
-    "smokeBuildOk": false,
+    "compiledAssertions": 6,
+    "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Alloy 6.2.0): smoke check passed",
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
     "smokeNote": "assertionsRaw is the corpus-wide check count; only the smoke-model assertions are bounded-checked",
@@ -128,7 +128,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 10745,
-    "totalProofsAllProvers": 74551,
+    "totalProofsAllProvers": 62272,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -154,8 +154,8 @@
         "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
         "isabelle": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at ./05_TOOLING/tools/isabelle/current/bin/isabelle. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-isabelle.sh)",
         "fstar": "require full Active+Domains F* compilation with zero generated placeholders (local F* enforcement: ERROR: pinned local F* not found at ./05_TOOLING/tools/fstar/current/bin/fstar.exe. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-fstar.sh)",
-        "tlaplus": "require full-lane executable SANY checks across TLA corpus",
-        "alloy": "require full-lane executable command checks across Alloy corpus",
+        "tlaplus": "TelusProcurementProtocol smoke model checked (5 theorems); lane stays generated until full-lane SANY checks across TLA corpus",
+        "alloy": "TelusProcurementAccessControl smoke model checked (6 assertions); lane stays generated until full-lane Alloy checks across corpus",
         "smt": "none",
         "verus": "require full-lane Verus checks and zero generated placeholders",
         "kani": "require full-lane Kani checks and zero generated placeholders",
@@ -197,8 +197,8 @@
   "rust": {
     "tests": 3324,
     "testsVerified": 3324,
-    "testsEstimated": 3320,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 18
   },
   "examples": 172,
