@@ -159,12 +159,14 @@ pub fn codegen_supports_builtin(name: &str) -> bool {
 /// silently conflating them. Its `interp-only` cell promised "`riinac run`
 /// only", which for the eight crypto-agility builtins
 /// (`guna_kripto`/`use_crypto`, `pilih_algo`/`select_algorithm`,
-/// `cipher`/`sifer`, `hash_dengan`/`hash_with`) was FALSE: they are registered
-/// in the typechecker with `Fn(Teks, Any, Kripto)` and carry the REQ-48
-/// deprecation check at their call sites, but no runtime binds them, so
-/// `riinac run` fails with `unbound variable` exactly as `riinac build` does.
-/// A doc that says a builtin runs somewhere it does not is worse than one that
-/// says nothing, so the column now distinguishes the two.
+/// `cipher`/`sifer`, `hash_dengan`/`hash_with`) was FALSE at the time: they
+/// were registered in the typechecker with `Fn(Teks, Any, Kripto)` and carried
+/// the REQ-48 deprecation check at their call sites, but no runtime bound
+/// them, so `riinac run` failed with `unbound variable` exactly as
+/// `riinac build` did. A doc that says a builtin runs somewhere it does not is
+/// worse than one that says nothing, so the column distinguishes the two.
+/// (Those eight are bound now — `builtins::kripto`, Wave B.3 — and the column
+/// moved them to `interp-only` by this same lookup, not by editing a list.)
 ///
 /// Derived by building the real interpreter environment and looking the name
 /// up, not from a list — a list would drift the moment a runtime is added.

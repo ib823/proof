@@ -24,6 +24,10 @@ riina-types.workspace = true
 # Verified VirtualFs access-control model (exposed via the vfs_* builtins)
 riina-os = { path = "../riina-os" }
 riina-tls = { path = "../riina-tls" }
+# The crypto primitives behind the crypto-agility handles (`kripto` builtins):
+# SHA-2/SHA-3, AES-256-GCM, X25519, ML-KEM-768, ML-DSA-65. Same crate riina-tls
+# already builds on — one implementation of each primitive in the tree.
+riina-core = { path = "../../../05_TOOLING/crates/riina-core" }
 
 # No external dependencies (Law 8: Zero third-party deps)
 # All code generation is hand-written for maximum auditability

@@ -12,8 +12,8 @@ Every builtin below type-checks. That is ALL it means: type-checking does not im
 |---|---|
 | `compiled` | Lowers to C **and** WASM (21 builtins). |
 | `native-only` | Lowers to C. The WASM backend **refuses** it (327 builtins). |
-| `interp-only` | `riinac run` only (18 builtins). `riinac build` fails with `unbound variable`. |
-| `typed-only` | **Nothing runs it** (8 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
+| `interp-only` | `riinac run` only (26 builtins). `riinac build` fails with `unbound variable`. |
+| `typed-only` | **Nothing runs it** (0 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
 
 ```
 $ riinac check baca.rii     # Success!  Effect: FileSystem
@@ -396,16 +396,18 @@ In practice: the WASM surface is printing, string concatenation, `ke_teks` and t
 
 ## Kripto (Crypto)
 
+> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+
 | Builtin | Type | Backend |
 |---|---|---|
-| `cipher` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `guna_kripto` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `hash_dengan` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `hash_with` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `pilih_algo` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `select_algorithm` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `sifer` | `Fn(Teks, Any, Kripto)` | **typed-only** |
-| `use_crypto` | `Fn(Teks, Any, Kripto)` | **typed-only** |
+| `cipher` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `guna_kripto` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `hash_dengan` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `hash_with` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `pilih_algo` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `select_algorithm` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `sifer` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `use_crypto` | `Fn(Teks, Any, Kripto)` | **interp-only** |
 
 ## Rawak (Random)
 
