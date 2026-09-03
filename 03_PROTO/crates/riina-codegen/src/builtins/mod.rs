@@ -10,6 +10,7 @@
 pub(crate) mod fail;
 pub(crate) mod json;
 pub(crate) mod keselamatan;
+pub(crate) mod kripto;
 pub(crate) mod masa;
 pub(crate) mod matematik;
 pub(crate) mod http;
@@ -227,6 +228,16 @@ pub fn register_builtins(env: &Env) -> Env {
     // `http_get`/`http_post` sinks in `keselamatan`, which carry the taint
     // type discipline and open no socket.
     for (bm, en, canonical) in http::BUILTINS {
+        e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
+        e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
+    }
+
+    // Crypto-agility selection builtins (REQ-48, Wave B.3). Until this loop
+    // existed the eight names were TYPED-ONLY: registered in the typechecker,
+    // bound by no runtime, so `riinac run` failed with `unbound variable`.
+    // The handles they return are `Builtin("kripto:<algorithm>")` values,
+    // routed back to `kripto::apply` by prefix — see that module.
+    for (bm, en, canonical) in kripto::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));
     }
@@ -623,6 +634,12 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
 
     // Durable key-value store (REQ-73 persistence)
     if let Some(result) = simpan::apply(name, &arg)? {
+        return Ok(result);
+    }
+
+    // Crypto-agility: the four selection builtins and every `kripto:<algo>`
+    // handle they hand out (REQ-48, Wave B.3).
+    if let Some(result) = kripto::apply(name, &arg)? {
         return Ok(result);
     }
 

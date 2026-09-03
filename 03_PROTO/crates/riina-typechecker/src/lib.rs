@@ -2862,53 +2862,14 @@ fn sink_argument_error(arg_ty: Ty, found: Ty) -> TypeError {
 /// should be secret-derived either.
 /// Crypto-agility (REQ-48): the algorithm-deprecation policy.
 ///
-/// This is the Rust counterpart of the Coq `accepts` judgment in
-/// `02_FORMAL/coq/crypto/AlgorithmPolicy.v`. That development proves the check
-/// is SOUND (an accepted program uses no deprecated algorithm) and COMPLETE (it
-/// accepts every program that uses only current algorithms, so a rejection is
-/// always a real deprecated use — no false positives), and that deprecating one
-/// algorithm only affects programs that use it. The check below is the
-/// operational realisation of `accepts pol (CUse a)` = `pol a = Current`.
-///
-/// The policy is data, not code: `DEPRECATED` is the classified list. Advancing
-/// a deprecation date is editing this table, exactly as the mechanized
-/// `tighten` lemma models — "P-256 after 2030" is a policy change, and by
-/// `deprecation_is_local` it cannot break a program that does not use P-256.
-pub mod crypto_policy {
-    /// Algorithm names that are deprecated by the active policy. Matched
-    /// case-insensitively against the algorithm string a program selects.
-    ///
-    /// Grounds (NIST IR 8547 / general hygiene): the classical primitives are
-    /// slated for removal by 2035, and the broken ones are already unsafe. This
-    /// list is the migration lever — a language can make selecting one a
-    /// compile-time error, which a library cannot.
-    pub const DEPRECATED: &[&str] = &[
-        // Broken — deprecated unconditionally.
-        "md5", "sha1", "sha-1", "des", "3des", "triple-des", "rc4", "md4",
-        // Classical asymmetric — NIST IR 8547 removal target (2035), migrate to PQC/hybrid.
-        "rsa1024", "rsa-1024", "dsa1024",
-    ];
-
-    /// The mechanized `pol a = Current` check: is this algorithm name currently
-    /// allowed? A name not in `DEPRECATED` is `Current`.
-    #[must_use]
-    pub fn is_current(algorithm: &str) -> bool {
-        let a = algorithm.to_ascii_lowercase();
-        !DEPRECATED.iter().any(|d| a == *d)
-    }
-
-    /// A one-line rationale for a rejected algorithm, for the diagnostic.
-    #[must_use]
-    pub fn deprecation_reason(algorithm: &str) -> &'static str {
-        let a = algorithm.to_ascii_lowercase();
-        match a.as_str() {
-            "md5" | "sha1" | "sha-1" | "md4" => "cryptographically broken (collisions)",
-            "des" | "3des" | "triple-des" => "inadequate key size / sweet32",
-            "rc4" => "biased keystream, prohibited by RFC 7465",
-            _ => "scheduled for removal (NIST IR 8547); migrate to a PQC or hybrid algorithm",
-        }
-    }
-}
+/// The table and the `is_current` / `deprecation_reason` functions now live in
+/// `riina_types::crypto_policy`, because the policy is consulted TWICE — here,
+/// statically, when a selection site's algorithm name is a literal, and at
+/// runtime by `riina_codegen::builtins::kripto` for every selection whatever
+/// the name's provenance (a computed name is invisible to this checker). One
+/// shared table means the two gates cannot disagree. Re-exported so every
+/// existing `crypto_policy::` path in this crate and its tests still resolves.
+pub use riina_types::crypto_policy;
 
 /// Crypto-agility sink (REQ-48): a crypto-selection builtin whose string
 /// argument names a deprecated algorithm is rejected. Mirrors the Coq
