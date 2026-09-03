@@ -4428,19 +4428,24 @@ static riina_value_t* riina_builtin_xml_parse_safe(riina_value_t* arg) {
         self.writeln("    }");
         self.writeln("}");
         self.writeln("");
-        // vfs_mula (vfs_init): resets the gate. The quota argument is accepted
-        // and ignored here — quota accounting belongs to the in-memory
-        // VirtualFs, which is not routed to C (vfs_tulis/baca/padam stay
-        // interpreter-only), so honouring it would be a claim this backend
-        // cannot make.
+        // The in-memory VirtualFs itself — contents, byte/inode quota and the
+        // three operations — mirroring `riina-os::vfs::VirtualFs` (Wave B.4).
+        // Emitted here because it shares the access context and `riina_perm_t`
+        // above and `vfs_mula` below resets it.
+        self.write_raw(VFS_RUNTIME_C);
+        self.writeln("");
+        // vfs_mula (vfs_init): resets the host-FS gate AND the in-memory
+        // VirtualFs, whose byte quota is the argument — exactly what the
+        // interpreter's `VfsState::new(limit)` does (inode limit 4096).
         self.writeln("static riina_value_t* riina_builtin_vfs_mula(riina_value_t* arg) {");
-        self.writeln("    (void)arg;");
+        self.writeln("    if (arg->tag != RIINA_TAG_INT) abort();");
         self.writeln("    while (riina_inodes) {");
         self.writeln("        riina_inode_t* dead = riina_inodes;");
         self.writeln("        riina_inodes = dead->next;");
         self.writeln("        free(dead->path);");
         self.writeln("        free(dead);");
         self.writeln("    }");
+        self.writeln("    riina_vfs_reset((uint64_t)arg->data.int_val);");
         self.writeln("    riina_ctx_uid = 1000; riina_ctx_gid = 1000; riina_ctx_is_root = false;");
         self.writeln("    return riina_unit();");
         self.writeln("}");
@@ -7857,6 +7862,212 @@ static riina_value_t* riina_builtin_http_minta(riina_value_t* arg) {
     free(hp.p);
     free(authority);
     return out;
+}
+"##;
+
+/// C source for the in-memory verified virtual filesystem behind
+/// `vfs_tulis` / `vfs_baca` / `vfs_padam` (REQ-70 family routing, Wave B.4).
+///
+/// ONE SPECIFICATION, TWO IMPLEMENTATIONS — the same shape as the file gate
+/// above it and the `simpan` store below. The spec is Coq
+/// `domains/VerifiedFileSystem.v` (`can_read`/`can_write`, the byte/inode
+/// `Quota`); `riina-os/src/vfs.rs::VirtualFs` is the Rust implementation the
+/// interpreter runs, and this is the C one. They cannot share code (the
+/// compile pipeline is `cc -o out one.c`, nothing linked), so they are held
+/// together by `vfs_differential.rs`, which runs the same programs on both and
+/// compares every output AND every refusal.
+///
+/// Mirrored exactly, in order, from `VirtualFs::{create,write,read,delete}`
+/// and `builtins/vfs.rs`:
+///
+/// * `vfs_tulis(path, data)`: a path not yet known is CREATED first — gated by
+///   the inode quota (`can_allocate_inode` = `used_inodes < limit_inodes`),
+///   owned by the current uid/gid at mode 0644 (owner rw, group r, other r),
+///   charging one inode. Then `can_write` for the current context, then the
+///   byte quota on GROWTH ONLY (`can_allocate_bytes(new - old)`, checked
+///   against overflow as Rust's `checked_add` is), shrinking refunds.
+/// * `vfs_baca(path)`: `not found`, then `can_read`, then the bytes.
+/// * `vfs_padam(path)`: `not found`, then `can_write`, then the inode's bytes
+///   and its inode are released. Returns `betul`.
+/// * `vfs_mula(limit_bytes)`: the byte quota; `limit_inodes` is the
+///   interpreter's `DEFAULT_INODE_LIMIT` (4096). Before `vfs_mula` the byte
+///   limit is `u64::MAX`, as in the interpreter's thread-local default.
+///
+/// The three refusals carry the interpreter's exact wording — `vfs: not
+/// found`, `vfs: permission denied`, `vfs: quota exceeded` — and exit
+/// non-zero. A refused operation must not be able to fall through and touch
+/// the table; every `die` is before the mutation.
+///
+/// Byte counts are the string's byte length (`string_val.len`), not
+/// `strlen`, so a string carrying an interior NUL is charged as the
+/// interpreter charges `data.as_bytes().len()`.
+///
+/// Separate from the host-FS gate's `riina_inodes`: in the interpreter the
+/// `fail_*` gate (`builtins/fail.rs::HostGate`) and the `vfs_*` store
+/// (`builtins/vfs.rs::VfsState`) are two tables sharing ONE access context,
+/// and that is reproduced here — `riina_ctx_uid/gid/is_root` are shared,
+/// the tables are not.
+const VFS_RUNTIME_C: &str = r##"
+/* ── Verified in-memory virtual filesystem (vfs_tulis / vfs_baca / vfs_padam) ─
+ *
+ * The C half of `riina-os::vfs::VirtualFs`, gated by the Coq-modelled
+ * can_read / can_write predicates and the byte/inode Quota. Every check
+ * precedes every mutation; a refusal exits with the interpreter's wording.
+ */
+typedef struct riina_vfs_node_s {
+    char* path;
+    uint64_t owner_uid;
+    uint64_t owner_gid;
+    riina_perm_t perm_owner;
+    riina_perm_t perm_group;
+    riina_perm_t perm_other;
+    char* data;               /* exactly `size` bytes, plus a NUL for riina_string */
+    uint64_t size;
+    struct riina_vfs_node_s* next;
+} riina_vfs_node_t;
+
+#define RIINA_VFS_DEFAULT_INODE_LIMIT 4096ULL
+
+static riina_vfs_node_t* riina_vfs_nodes = NULL;
+static uint64_t riina_vfs_limit_bytes = UINT64_MAX;   /* interpreter default before vfs_mula */
+static uint64_t riina_vfs_limit_inodes = RIINA_VFS_DEFAULT_INODE_LIMIT;
+static uint64_t riina_vfs_used_bytes = 0;
+static uint64_t riina_vfs_used_inodes = 0;
+
+/* The interpreter surfaces VfsError as `Runtime Error: vfs: <reason>`. */
+static void riina_vfs_die(const char* reason) {
+    fprintf(stderr, "Runtime Error: vfs: %s\n", reason);
+    exit(1);
+}
+
+static riina_vfs_node_t* riina_vfs_find(const char* path) {
+    for (riina_vfs_node_t* n = riina_vfs_nodes; n; n = n->next) {
+        if (strcmp(n->path, path) == 0) return n;
+    }
+    return NULL;
+}
+
+/* Coq get_permission: owner > group > other, against the SHARED context. */
+static riina_perm_t riina_vfs_permission_for(const riina_vfs_node_t* n) {
+    if (n->owner_uid == riina_ctx_uid) return n->perm_owner;
+    if (n->owner_gid == riina_ctx_gid) return n->perm_group;
+    return n->perm_other;
+}
+
+static bool riina_vfs_can_read(const riina_vfs_node_t* n) {
+    return riina_ctx_is_root || riina_vfs_permission_for(n).read;
+}
+
+static bool riina_vfs_can_write(const riina_vfs_node_t* n) {
+    return riina_ctx_is_root || riina_vfs_permission_for(n).write;
+}
+
+/* Quota::can_allocate_bytes — used + n <= limit, with the overflow guard
+   Rust's checked_add gives (an overflowing sum is NOT "within quota"). */
+static bool riina_vfs_can_allocate_bytes(uint64_t n) {
+    if (riina_vfs_used_bytes > UINT64_MAX - n) return false;
+    return riina_vfs_used_bytes + n <= riina_vfs_limit_bytes;
+}
+
+/* Quota::can_allocate_inode — strictly below the limit. */
+static bool riina_vfs_can_allocate_inode(void) {
+    return riina_vfs_used_inodes < riina_vfs_limit_inodes;
+}
+
+static void riina_vfs_reset(uint64_t limit_bytes) {
+    while (riina_vfs_nodes) {
+        riina_vfs_node_t* dead = riina_vfs_nodes;
+        riina_vfs_nodes = dead->next;
+        free(dead->path);
+        free(dead->data);
+        free(dead);
+    }
+    riina_vfs_limit_bytes = limit_bytes;
+    riina_vfs_limit_inodes = RIINA_VFS_DEFAULT_INODE_LIMIT;
+    riina_vfs_used_bytes = 0;
+    riina_vfs_used_inodes = 0;
+}
+
+/* vfs_tulis (vfs_write): (Teks, Teks) -> () */
+static riina_value_t* riina_builtin_vfs_tulis(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_PAIR) abort();
+    riina_value_t* p = arg->data.pair_val.fst;
+    riina_value_t* d = arg->data.pair_val.snd;
+    if (p->tag != RIINA_TAG_STRING || d->tag != RIINA_TAG_STRING) abort();
+    const char* path = p->data.string_val.data;
+    riina_vfs_node_t* n = riina_vfs_find(path);
+    if (!n) {
+        /* VirtualFs::create — inode quota first, then first-touch ownership
+           at mode 0644 by the current context. */
+        if (!riina_vfs_can_allocate_inode()) riina_vfs_die("quota exceeded");
+        n = (riina_vfs_node_t*)malloc(sizeof(riina_vfs_node_t));
+        if (!n) abort();
+        n->path = strdup(path);
+        if (!n->path) abort();
+        n->owner_uid = riina_ctx_uid;
+        n->owner_gid = riina_ctx_gid;
+        n->perm_owner = (riina_perm_t){ true, true, false };
+        n->perm_group = (riina_perm_t){ true, false, false };
+        n->perm_other = (riina_perm_t){ true, false, false };
+        n->data = NULL;
+        n->size = 0;
+        n->next = riina_vfs_nodes;
+        riina_vfs_nodes = n;
+        riina_vfs_used_inodes += 1;
+    }
+    /* VirtualFs::write — can_write, then the byte quota on growth only. */
+    if (!riina_vfs_can_write(n)) riina_vfs_die("permission denied");
+    uint64_t old_len = n->size;
+    uint64_t new_len = (uint64_t)d->data.string_val.len;
+    if (new_len > old_len) {
+        if (!riina_vfs_can_allocate_bytes(new_len - old_len)) riina_vfs_die("quota exceeded");
+        riina_vfs_used_bytes += new_len - old_len;
+    } else {
+        riina_vfs_used_bytes -= old_len - new_len;
+    }
+    char* copy = (char*)malloc((size_t)new_len + 1);
+    if (!copy) abort();
+    memcpy(copy, d->data.string_val.data, (size_t)new_len);
+    copy[new_len] = '\0';
+    free(n->data);
+    n->data = copy;
+    n->size = new_len;
+    return riina_unit();
+}
+
+/* vfs_baca (vfs_read): Teks -> Teks */
+static riina_value_t* riina_builtin_vfs_baca(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    riina_vfs_node_t* n = riina_vfs_find(arg->data.string_val.data);
+    if (!n) riina_vfs_die("not found");
+    if (!riina_vfs_can_read(n)) riina_vfs_die("permission denied");
+    riina_value_t* v = riina_alloc();
+    v->tag = RIINA_TAG_STRING;
+    v->security = RIINA_LEVEL_PUBLIC;
+    v->data.string_val.data = (char*)malloc((size_t)n->size + 1);
+    if (!v->data.string_val.data) abort();
+    if (n->size) memcpy(v->data.string_val.data, n->data, (size_t)n->size);
+    v->data.string_val.data[n->size] = '\0';
+    v->data.string_val.len = (size_t)n->size;
+    return v;
+}
+
+/* vfs_padam (vfs_delete): Teks -> Benar */
+static riina_value_t* riina_builtin_vfs_padam(riina_value_t* arg) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    const char* path = arg->data.string_val.data;
+    riina_vfs_node_t** slot = &riina_vfs_nodes;
+    while (*slot && strcmp((*slot)->path, path) != 0) slot = &(*slot)->next;
+    if (!*slot) riina_vfs_die("not found");
+    if (!riina_vfs_can_write(*slot)) riina_vfs_die("permission denied");
+    riina_vfs_node_t* dead = *slot;
+    *slot = dead->next;
+    riina_vfs_used_bytes -= dead->size;
+    riina_vfs_used_inodes -= 1;
+    free(dead->path);
+    free(dead->data);
+    free(dead);
+    return riina_bool(true);
 }
 "##;
 

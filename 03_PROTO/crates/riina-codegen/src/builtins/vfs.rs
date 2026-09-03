@@ -19,8 +19,11 @@
 //! group/other `r` (mode 0644), so another user can read but not overwrite them.
 //! `vfs_mula` re-initialises the thread-local (also giving tests a clean slate).
 //!
-//! Interpreter-only: not registered in codegen's `builtin_canonical`, so the
-//! C/WASM backends fail closed (unbound `vfs_*`) rather than miscompiling.
+//! Routed to C since Wave B.4: `emit.rs` carries the C port of `VirtualFs`
+//! (same predicates, same quota, same refusals) and `vfs_differential.rs`
+//! holds the two implementations of the one model together on every output
+//! and every refusal. The WASM backend still fails closed (unbound `vfs_*`)
+//! rather than miscompiling.
 
 use crate::value::Value;
 use crate::{Error, Result};

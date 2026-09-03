@@ -298,14 +298,20 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
             return Some(canonical);
         }
     }
-    // Only the two VFS context setters route: they are what makes the gate
-    // meaningful (`vfs_jadi_pengguna` switches uid). `vfs_tulis`/`vfs_baca`/
-    // `vfs_padam` operate on the in-memory VirtualFs with quota accounting,
-    // which has no C implementation, so they stay interpreter-only rather than
-    // being stubbed into something that silently ignores the quota.
+    // The VFS family (REQ-70; the trio since Wave B.4). The two context
+    // setters make the gate meaningful (`vfs_jadi_pengguna` switches uid);
+    // `vfs_tulis`/`vfs_baca`/`vfs_padam` run on `emit.rs`'s in-memory
+    // VirtualFs — the C port of `riina-os::vfs::VirtualFs` with the same
+    // can_read/can_write gate and byte/inode quota, held to the interpreter by
+    // `vfs_differential.rs` on every output and every refusal. Before that
+    // port existed they stayed interpreter-only rather than be stubbed into
+    // something that silently ignored the quota.
     match name {
         "vfs_mula" | "vfs_init" => return Some("vfs_mula"),
         "vfs_jadi_pengguna" | "vfs_become_user" => return Some("vfs_jadi_pengguna"),
+        "vfs_tulis" | "vfs_write" => return Some("vfs_tulis"),
+        "vfs_baca" | "vfs_read" => return Some("vfs_baca"),
+        "vfs_padam" | "vfs_delete" => return Some("vfs_padam"),
         _ => {}
     }
     // JSON builtins (REQ-70 family routing). Pure value transformations — no
