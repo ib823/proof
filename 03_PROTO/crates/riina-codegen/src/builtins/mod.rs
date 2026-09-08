@@ -177,6 +177,9 @@ pub fn register_builtins(env: &Env) -> Env {
     }
 
     // Test builtins (ujian)
+    e = e.extend("$guard_fail".to_string(), Value::Builtin("riina_guard_fail".to_string()));
+    e = e.extend("$for_len".to_string(), Value::Builtin("senarai_panjang".to_string()));
+    e = e.extend("$for_get".to_string(), Value::Builtin("senarai_dapat".to_string()));
     for (bm, en, canonical) in ujian::BUILTINS {
         e = e.extend(bm.to_string(), Value::Builtin(canonical.to_string()));
         e = e.extend(en.to_string(), Value::Builtin(canonical.to_string()));

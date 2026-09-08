@@ -72,6 +72,15 @@ pub fn build_plan(
         });
     }
 
+    // resolve() receives the root's dependency requirements, so its graph
+    // normally contains only dependencies. The local package must still build.
+    if !graph.packages.contains_key(root_package) {
+        steps.push(BuildStep {
+            name: root_package.to_string(),
+            source_dir: config.project_root.clone(),
+            output_dir: config.target_dir.join(root_package),
+        });
+    }
     Ok(steps)
 }
 
@@ -84,7 +93,8 @@ pub fn build_plan(
 ///
 /// Contract: given a package name, its entry module, and its output directory,
 /// either produce the artifact or return the compiler's diagnostic verbatim.
-pub type CompileFn<'a> = &'a dyn Fn(&str, &Path, &Path) -> std::result::Result<BuiltArtifact, String>;
+pub type CompileFn<'a> =
+    &'a dyn Fn(&str, &Path, &Path) -> std::result::Result<BuiltArtifact, String>;
 
 /// What a compiled step produced, for reporting.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -131,19 +141,13 @@ pub fn execute_build(steps: &[BuildStep], compile: CompileFn<'_>) -> Result<Vec<
     for step in steps {
         std::fs::create_dir_all(&step.output_dir).map_err(|e| PkgError::io(&step.output_dir, e))?;
 
-        // A step with no src/ directory contributes nothing to build. This is
-        // NOT a silent pass for a broken package: `entry_module` below is what
-        // decides, and it errors when src/ exists but has no entry module.
-        if !step.source_dir.join("src").is_dir() {
-            continue;
-        }
-
         let entry = entry_module(&step.name, &step.source_dir)?;
-        let artifact = compile(&step.name, &entry, &step.output_dir)
-            .map_err(|detail| PkgError::CompileFailed {
+        let artifact = compile(&step.name, &entry, &step.output_dir).map_err(|detail| {
+            PkgError::CompileFailed {
                 package: step.name.clone(),
                 detail,
-            })?;
+            }
+        })?;
         match &artifact.output {
             Some(out) => eprintln!("  Built: {} -> {}", step.name, out.display()),
             None => eprintln!("  Checked: {} (library, no binary emitted)", step.name),
@@ -205,7 +209,8 @@ mod tests {
     struct Tmp(PathBuf);
     impl Tmp {
         fn new(tag: &str) -> Self {
-            let d = std::env::temp_dir().join(format!("riina_pkgbuild_{tag}_{}", std::process::id()));
+            let d =
+                std::env::temp_dir().join(format!("riina_pkgbuild_{tag}_{}", std::process::id()));
             let _ = std::fs::remove_dir_all(&d);
             std::fs::create_dir_all(d.join("src")).unwrap();
             Self(d)
@@ -289,5 +294,41 @@ mod tests {
         })
         .expect_err("must reject a package with no entry module");
         assert!(matches!(err, PkgError::NoEntryPoint { .. }), "got {err:?}");
+    }
+
+    #[test]
+    fn dependency_only_resolution_still_builds_the_project() {
+        let graph = ResolvedGraph {
+            packages: BTreeMap::from([(
+                "leaf".into(),
+                ResolvedPackage {
+                    name: "leaf".into(),
+                    version: Version::new(1, 0, 0),
+                    deps: vec![],
+                },
+            )]),
+        };
+        let project = Tmp::new("with_dependency");
+        let config = BuildConfig::new(&project.0).with_registry(project.0.join("registry"));
+        let steps = build_plan(&graph, &config, "app").unwrap();
+        assert_eq!(
+            steps.iter().map(|s| s.name.as_str()).collect::<Vec<_>>(),
+            ["leaf", "app"]
+        );
+        assert_eq!(steps[1].source_dir, project.0);
+    }
+
+    #[test]
+    fn missing_dependency_directory_cannot_report_a_successful_build() {
+        let project = Tmp::new("missing_dependency");
+        let steps = [BuildStep {
+            name: "missing".into(),
+            source_dir: project.0.join("does-not-exist"),
+            output_dir: project.0.join("out"),
+        }];
+        assert!(matches!(
+            execute_build(&steps, &|_, _, _| panic!("no source to compile")),
+            Err(PkgError::NoEntryPoint { .. })
+        ));
     }
 }

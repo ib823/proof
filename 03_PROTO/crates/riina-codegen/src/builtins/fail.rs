@@ -11,11 +11,12 @@
 //! the networking one: REAL I/O, with the verified model enforced on top.
 //!
 //! Mechanics (path→inode→uid): a thread-local metadata mirror maps each host
-//! path to a verified [`Inode`] on first touch — owned by the CURRENT access
+//! canonical path to a verified [`Inode`] on first touch — owned by the CURRENT access
 //! context's uid (the one `vfs_jadi_pengguna` switches; shared with the
 //! `vfs_*` world via `vfs::current_ctx`), mode 0644 like `vfs_tulis` creates.
 //! Reads require `can_read`, writes/appends `can_write`, delete `can_write`
-//! (and clears the mapping, so a re-created file is owned by its re-creator).
+//! (and clears the mapping after successful removal, so a re-created file is
+//! owned by its re-creator).
 //!
 //! What is REAL vs MODELLED (no overclaiming):
 //!   * The I/O is REAL (std::fs on the host). The ENFORCEMENT is the verified
@@ -27,18 +28,23 @@
 //!     queries the Coq model has no predicate for — deliberately ungated.
 //!   * Byte quotas remain a `vfs_*`-world concern (in-memory store); the host
 //!     gate enforces permissions, not quota.
+//!   * Paths resolve through directory and symlink aliases before lookup.
+//!     This is not a host sandbox: hard links and concurrent external path
+//!     replacements require object-identity/handle-based enforcement beyond
+//!     this session metadata mirror.
 
 use crate::value::Value;
 use crate::{Error, Result};
 use riina_os::vfs::{Inode, Ownership, Permission};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 /// Metadata-only mirror: path → verified inode. Content lives on the host FS;
 /// ONLY the access-control metadata (the part the Coq theorems govern) is
 /// mirrored here.
 struct HostGate {
-    inodes: HashMap<String, Inode>,
+    inodes: HashMap<PathBuf, Inode>,
     next_id: u64,
 }
 
@@ -57,12 +63,33 @@ fn denied(op: &str, path: &str, pred: &str) -> Error {
 
 /// Look up (or first-touch register) the path's inode and check `pred` under
 /// the current shared access context.
-fn gate(path: &str, pred: impl Fn(&Inode, &riina_os::vfs::AccessContext) -> bool) -> bool {
+fn path_key(path: &str) -> Result<PathBuf> {
+    let input = Path::new(path);
+    let resolved = input.canonicalize().or_else(|original| {
+        if original.kind() != std::io::ErrorKind::NotFound {
+            return Err(original);
+        }
+        // A dangling symlink must not acquire a new owner under its alias.
+        if std::fs::symlink_metadata(input).is_ok() {
+            return Err(original);
+        }
+        // Creation may target a missing leaf, but its existing parent must
+        // still resolve through the same directory/symlink aliases.
+        let Some(leaf) = input.file_name() else { return Err(original) };
+        let parent = input.parent().filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."));
+        Ok(parent.canonicalize()?.join(leaf))
+    });
+    resolved.map_err(|e| Error::InvalidOperation(format!("file access: cannot resolve '{path}': {e}")))
+}
+
+fn gate(path: &str, pred: impl Fn(&Inode, &riina_os::vfs::AccessContext) -> bool) -> Result<bool> {
+    let key = path_key(path)?;
     let ctx = super::vfs::current_ctx();
-    GATE.with(|g| {
+    Ok(GATE.with(|g| {
         let st = &mut *g.borrow_mut();
         let next = st.next_id;
-        let inode = st.inodes.entry(path.to_string()).or_insert_with(|| {
+        let inode = st.inodes.entry(key).or_insert_with(|| {
             // First touch: owned by the current uid, mode 0644 — the same
             // modes vfs_tulis creates with (owner rw, group/other r).
             Inode {
@@ -82,13 +109,13 @@ fn gate(path: &str, pred: impl Fn(&Inode, &riina_os::vfs::AccessContext) -> bool
             st.next_id += 1;
         }
         pred(inode, &ctx)
-    })
+    }))
 }
 
 /// Gate a read op — Coq `can_read`. Exposed for the `file_*_safe` twins in
 /// `builtins::keselamatan`, which perform the same host I/O.
 pub(crate) fn gate_read(op: &str, path: &str) -> Result<()> {
-    if gate(path, |i, c| i.can_read(c)) {
+    if gate(path, |i, c| i.can_read(c))? {
         Ok(())
     } else {
         Err(denied(op, path, "can_read"))
@@ -97,20 +124,23 @@ pub(crate) fn gate_read(op: &str, path: &str) -> Result<()> {
 
 /// Gate a write/append op — Coq `can_write`.
 pub(crate) fn gate_write(op: &str, path: &str) -> Result<()> {
-    if gate(path, |i, c| i.can_write(c)) {
+    if gate(path, |i, c| i.can_write(c))? {
         Ok(())
     } else {
         Err(denied(op, path, "can_write"))
     }
 }
 
-/// Gate a delete — Coq `can_write` — and clear the mapping on success so a
-/// re-created file is owned by whoever re-creates it (matching VFS
-/// delete-then-create semantics).
-pub(crate) fn gate_delete(op: &str, path: &str) -> Result<()> {
+/// Delete only after the Coq `can_write` gate. Retain ownership if the OS
+/// rejects deletion, or deletion only removes a symlink to a live target.
+pub(crate) fn delete_file(op: &str, path: &str) -> Result<bool> {
+    let key = path_key(path)?;
     gate_write(op, path)?;
-    GATE.with(|g| g.borrow_mut().inodes.remove(path));
-    Ok(())
+    let deleted = std::fs::remove_file(path).is_ok();
+    if deleted && !key.exists() {
+        GATE.with(|g| g.borrow_mut().inodes.remove(&key));
+    }
+    Ok(deleted)
 }
 
 /// (BM name, EN alias, canonical name)
@@ -169,8 +199,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         "fail_buang" => {
             // Teks -> Bool
             let path = extract_string(arg, "fail_buang")?;
-            gate_delete("fail_buang", &path)?;
-            let ok = std::fs::remove_file(&path).is_ok();
+            let ok = delete_file("fail_buang", &path)?;
             Ok(Some(Value::Bool(ok)))
         }
         "fail_panjang" => {
@@ -445,6 +474,79 @@ mod tests {
             "safe twin must be denied via the shared gate, got {res:?}"
         );
         as_uid(1000);
-        GATE.with(|g| g.borrow_mut().inodes.remove(&path));
+        GATE.with(|g| g.borrow_mut().inodes.remove(&path_key(&path).unwrap()));
+    }
+
+    #[test]
+    fn path_aliases_do_not_reset_ownership() {
+        let dir = std::env::temp_dir().join(format!("riina_gate_alias_{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("child")).unwrap();
+        let path = dir.join("owned.txt").to_string_lossy().into_owned();
+        as_uid(1000);
+        apply("fail_tulis", &Value::Pair(
+            Box::new(Value::String(path.clone())),
+            Box::new(Value::String("owner data".into())),
+        )).unwrap();
+        let aliases = vec![dir.join(".").join("owned.txt"), dir.join("child").join("..").join("owned.txt")];
+        #[cfg(windows)]
+        let aliases = {
+            let mut aliases = aliases;
+            aliases.push(PathBuf::from(path.to_uppercase()));
+            aliases
+        };
+        as_uid(2000);
+        for alias in aliases {
+            let alias = alias.to_string_lossy().into_owned();
+            assert!(matches!(gate_write("test", &alias), Err(Error::InvalidOperation(m)) if m.contains("permission denied")), "alias {alias}");
+            assert!(super::super::keselamatan::apply("file_delete_safe", &Value::String(alias)).is_err());
+        }
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "owner data");
+        as_uid(1000);
+        delete_file("test", &path).unwrap();
+        std::fs::remove_dir(dir.join("child")).unwrap();
+        std::fs::remove_dir(dir).unwrap();
+    }
+
+    #[test]
+    fn failed_delete_preserves_owner_for_both_surfaces() {
+        for op in ["fail_buang", "file_delete_safe"] {
+            let dir = std::env::temp_dir().join(format!("riina_gate_failed_delete_{op}_{}", std::process::id()));
+            std::fs::create_dir_all(&dir).unwrap();
+            let path = dir.to_string_lossy().into_owned();
+            as_uid(1000);
+            gate_write("test", &path).unwrap();
+            let result = if op == "fail_buang" {
+                apply(op, &Value::String(path.clone()))
+            } else {
+                super::super::keselamatan::apply(op, &Value::String(path.clone()))
+            };
+            assert_eq!(result.unwrap(), Some(Value::Bool(false)));
+            as_uid(2000);
+            assert!(matches!(gate_write("test", &path), Err(Error::InvalidOperation(m)) if m.contains("permission denied")));
+            as_uid(1000);
+            std::fs::remove_dir(dir).unwrap();
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn symlink_alias_shares_ownership_even_after_link_deletion() {
+        let dir = std::env::temp_dir().join(format!("riina_gate_symlink_{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let target = dir.join("target");
+        let alias = dir.join("alias");
+        std::fs::write(&target, "owner data").unwrap();
+        std::os::unix::fs::symlink(&target, &alias).unwrap();
+        as_uid(1000);
+        gate_write("test", target.to_str().unwrap()).unwrap();
+        as_uid(2000);
+        assert!(gate_write("test", alias.to_str().unwrap()).is_err());
+        as_uid(1000);
+        assert!(delete_file("test", alias.to_str().unwrap()).unwrap());
+        as_uid(2000);
+        assert!(gate_write("test", target.to_str().unwrap()).is_err());
+        as_uid(1000);
+        delete_file("test", target.to_str().unwrap()).unwrap();
+        std::fs::remove_dir(dir).unwrap();
     }
 }

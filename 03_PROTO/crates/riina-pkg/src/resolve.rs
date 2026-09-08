@@ -6,7 +6,7 @@
 use crate::error::{PkgError, Result};
 use crate::registry::Registry;
 use crate::version::{Version, VersionReq};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 
 /// A resolved dependency graph.
 #[derive(Debug, Clone)]
@@ -35,81 +35,69 @@ pub fn resolve(
     root_deps: &BTreeMap<String, VersionReq>,
     registry: &dyn Registry,
 ) -> Result<ResolvedGraph> {
-    let mut resolved: BTreeMap<String, ResolvedPackage> = BTreeMap::new();
-    let mut constraints: BTreeMap<String, VersionReq> = BTreeMap::new();
-    let mut visiting: HashSet<String> = HashSet::new();
+    resolve_candidates(BTreeMap::new(), root_deps.clone(), registry)
+}
 
-    // Initialize constraints from root
-    for (name, req) in root_deps {
-        constraints.insert(name.clone(), req.clone());
-    }
-
-    // Process queue
-    let mut queue: Vec<String> = root_deps.keys().cloned().collect();
-
-    while let Some(name) = queue.pop() {
-        if resolved.contains_key(&name) {
-            continue;
-        }
-
-        // Cycle detection
-        if visiting.contains(&name) {
-            return Err(PkgError::CycleDetected(visiting.iter().cloned().collect()));
-        }
-        visiting.insert(name.clone());
-
-        let req = constraints
-            .get(&name)
-            .cloned()
-            .unwrap_or_else(|| VersionReq::parse("*").unwrap());
-
-        // Find highest matching version
-        let versions = registry.list_versions(&name)?;
-        let chosen = versions
-            .iter()
-            .rev()
-            .find(|v| req.matches(v))
-            .cloned()
-            .ok_or_else(|| PkgError::DependencyNotFound {
+fn resolve_candidates(
+    resolved: BTreeMap<String, ResolvedPackage>,
+    constraints: BTreeMap<String, VersionReq>,
+    registry: &dyn Registry,
+) -> Result<ResolvedGraph> {
+    // A later dependency can constrain a version selected earlier. Revisit
+    // that choice instead of silently returning an inconsistent graph.
+    for (name, pkg) in &resolved {
+        if !constraints[name].matches(&pkg.version) {
+            return Err(PkgError::VersionConflict {
                 name: name.clone(),
-                req: req.to_string(),
-            })?;
-
-        // Get manifest for chosen version
-        let manifest = registry.get_manifest(&name, &chosen)?;
-
-        // Process transitive deps
-        let mut dep_names = Vec::new();
-        for (dep_name, dep_req_str) in &manifest.dependencies {
-            let dep_req = VersionReq::parse(dep_req_str)?;
-            dep_names.push(dep_name.clone());
-
-            // Merge constraints (intersect)
-            if let Some(existing) = constraints.get(dep_name) {
-                let merged = existing.intersect(&dep_req);
-                constraints.insert(dep_name.clone(), merged);
-            } else {
-                constraints.insert(dep_name.clone(), dep_req);
-            }
-
-            if !resolved.contains_key(dep_name) {
-                queue.push(dep_name.clone());
-            }
+                constraints: vec![constraints[name].to_string()],
+            });
         }
-
-        resolved.insert(
+    }
+    let Some((name, req)) = constraints
+        .iter()
+        .find(|(name, _)| !resolved.contains_key(*name))
+    else {
+        let graph = ResolvedGraph { packages: resolved };
+        graph.topological_order()?;
+        return Ok(graph);
+    };
+    crate::registry::validate_package_name(name)?;
+    let mut versions = registry.list_versions(name)?;
+    versions.sort();
+    let mut failure = PkgError::DependencyNotFound {
+        name: name.clone(),
+        req: req.to_string(),
+    };
+    for chosen in versions.into_iter().rev().filter(|v| req.matches(v)) {
+        let manifest = registry.get_manifest(name, &chosen)?;
+        crate::registry::validate_package_identity(&manifest, name, &chosen)?;
+        let mut next_constraints = constraints.clone();
+        for (dep_name, dep_req) in manifest.dep_reqs()? {
+            next_constraints
+                .entry(dep_name)
+                .and_modify(|existing| *existing = existing.intersect(&dep_req))
+                .or_insert(dep_req);
+        }
+        let mut next_resolved = resolved.clone();
+        next_resolved.insert(
             name.clone(),
             ResolvedPackage {
                 name: name.clone(),
                 version: chosen,
-                deps: dep_names,
+                deps: manifest.dependencies.keys().cloned().collect(),
             },
         );
-
-        visiting.remove(&name);
+        match resolve_candidates(next_resolved, next_constraints, registry) {
+            Ok(graph) => return Ok(graph),
+            Err(
+                e @ (PkgError::VersionConflict { .. }
+                | PkgError::DependencyNotFound { .. }
+                | PkgError::CycleDetected(_)),
+            ) => failure = e,
+            Err(e) => return Err(e),
+        }
     }
-
-    Ok(ResolvedGraph { packages: resolved })
+    Err(failure)
 }
 
 /// Topological sort using Kahn's algorithm.
@@ -275,6 +263,43 @@ mod tests {
         let mut root = BTreeMap::new();
         root.insert("missing".to_string(), VersionReq::parse("^1.0.0").unwrap());
         assert!(resolve(&root, &reg).is_err());
+    }
+
+    #[test]
+    fn later_constraints_backtrack_and_discard_obsolete_dependencies() {
+        let mut reg = MemRegistry::new();
+        reg.add(make_manifest("a", "1.0.0", &[]));
+        reg.add(make_manifest("a", "1.1.0", &[("obsolete", "*")]));
+        reg.add(make_manifest("obsolete", "1.0.0", &[]));
+        reg.add(make_manifest("z", "1.0.0", &[("a", "=1.0.0")]));
+        let root = BTreeMap::from([
+            ("a".into(), VersionReq::parse("*").unwrap()),
+            ("z".into(), VersionReq::parse("*").unwrap()),
+        ]);
+        let graph = resolve(&root, &reg).unwrap();
+        assert_eq!(graph.packages["a"].version, Version::new(1, 0, 0));
+        assert!(!graph.packages.contains_key("obsolete"));
+    }
+
+    #[test]
+    fn conflicting_late_constraints_and_cycles_are_rejected() {
+        let mut reg = MemRegistry::new();
+        reg.add(make_manifest("a", "1.0.0", &[]));
+        reg.add(make_manifest("z", "1.0.0", &[("a", "=2.0.0")]));
+        let root = BTreeMap::from([
+            ("a".into(), VersionReq::parse("=1.0.0").unwrap()),
+            ("z".into(), VersionReq::parse("*").unwrap()),
+        ]);
+        assert!(matches!(
+            resolve(&root, &reg),
+            Err(PkgError::VersionConflict { .. })
+        ));
+        reg.add(make_manifest("a", "1.0.0", &[("z", "*")]));
+        reg.add(make_manifest("z", "1.0.0", &[("a", "*")]));
+        assert!(matches!(
+            resolve(&root, &reg),
+            Err(PkgError::CycleDetected(_))
+        ));
     }
 
     #[test]

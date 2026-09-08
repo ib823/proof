@@ -263,8 +263,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         "file_delete_safe" => {
             let path = as_str(arg, name)?;
             // Same verified can_write delete gate as fail_buang.
-            crate::builtins::fail::gate_delete("file_delete_safe", &path)?;
-            Value::Bool(std::fs::remove_file(&path).is_ok())
+            Value::Bool(crate::builtins::fail::delete_file("file_delete_safe", &path)?)
         }
 
         // ── Safe parsers ──

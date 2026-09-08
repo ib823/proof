@@ -549,7 +549,9 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                     body_ctx = body_ctx.with_grant(*e);
                 }
 
+                body_ctx.return_types = Default::default();
                 let (body_ty, body_eff) = type_check_full(&mut body_ctx, body)?;
+                let body_ty = crate::function_result_type(body_ty, &body_ctx.return_types.borrow())?;
                 if !types_compatible(return_ty, &body_ty) {
                     return Err(TypeError::AnnotationMismatch {
                         expected: return_ty.clone(),
@@ -874,5 +876,67 @@ mod tests {
         let err =
             check_program(&parse_program("fungsi bad(x: u8) -> u16 { x }\nbad(5)")).unwrap_err();
         assert!(matches!(err, TypeError::AnnotationMismatch { .. }));
+    }
+
+    #[test]
+    fn early_return_values_must_match_the_declared_result() {
+        for body in [
+            "pulang \"wrong\";",
+            "kalau betul { pulang \"wrong\"; } lain { 0 }",
+            "pulang sulit 7;",
+        ] {
+            let source = format!("fungsi f() -> Nombor {{ {body} }}\nf()");
+            assert!(check_program(&parse_program(&source)).is_err(), "accepted {source}");
+        }
+    }
+
+    #[test]
+    fn early_return_values_do_not_escape_a_nested_function_scope() {
+        for source in [
+            "fungsi f() -> Nombor { pulang 7; }\nf()",
+            "fungsi f() -> Nombor { kalau betul { pulang 7; } lain { 8 } }\nf()",
+            "fungsi beri_teks() -> Teks { pulang \"ok\"; }\nfungsi f() -> Nombor { biar s = beri_teks(); pulang 7; }\nf()",
+        ] {
+            let (_, ty, _) = check_program(&parse_program(source)).unwrap();
+            assert_eq!(ty, Ty::Int);
+        }
+    }
+
+    #[test]
+    fn secret_flow_checks_survive_aliases_and_control_flow() {
+        for body in [
+            "biar out = cetak; out(sulit 7); 0",
+            "biar convert = ke_teks; cetak(convert(sulit 7)); 0",
+            "biar bit = kalau sulit betul { 1 } lain { 0 }; cetak(bit); 0",
+            "kalau sulit betul { cetak(1); } lain { cetak(0); } 0",
+            "biar ubah x = 0; x = sulit 7; x",
+            "biar ubah x = 0; kalau sulit betul { x = 1; } x",
+        ] {
+            let source = format!("fungsi utama() -> Nombor kesan Tulis {{ {body} }}");
+            assert!(check_program(&parse_program(&source)).is_err(), "accepted {source}");
+        }
+    }
+
+    #[test]
+    fn public_aliases_and_mutable_locals_remain_usable() {
+        let source = "fungsi utama() -> Nombor kesan Tulis { biar out = cetak; biar convert = ke_teks; biar ubah x = 0; x = 7; out(convert(x)); x }";
+        check_program(&parse_program(source)).unwrap();
+    }
+
+    #[test]
+    fn for_returns_use_the_enclosing_function_and_element_type() {
+        for source in [
+            "fungsi f() -> Nombor { untuk x dalam [1, 2] { pulang x; } 0 }\nf()",
+            "fungsi f() -> Nombor { untuk (a, b) dalam [(1, 2)] { pulang a + b; } 0 }\nf()",
+        ] {
+            check_program(&parse_program(source)).expect("loop return must reach its function");
+        }
+        for source in [
+            "fungsi f() -> Nombor { untuk x dalam [\"wrong\"] { pulang x; } 0 }\nf()",
+            "fungsi f() -> Nombor { untuk x dalam [1] { pulang \"wrong\"; } 0 }\nf()",
+            "fungsi f() -> Nombor { untuk x dalam 7 { pulang x; } 0 }\nf()",
+        ] {
+            assert!(check_program(&parse_program(source)).is_err(), "accepted {source}");
+        }
     }
 }

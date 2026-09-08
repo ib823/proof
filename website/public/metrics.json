@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-03T07:39:15Z",
-  "generatedHuman": "September 03, 2026 at 07:39 UTC",
+  "generated": "2026-09-08T04:05:34Z",
+  "generatedHuman": "September 08, 2026 at 04:05 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "346b48137",
-    "branch": "main"
+    "commit": "0554914c",
+    "branch": "codex/codespaces-remediation-p0"
   },
   "proofs": {
     "qedActive": 12678,
@@ -195,10 +195,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3342,
-    "testsVerified": 3342,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 3376,
+    "testsVerified": 3376,
+    "testsEstimated": 3372,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 172,

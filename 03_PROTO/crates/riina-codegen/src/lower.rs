@@ -78,6 +78,9 @@ use std::collections::{HashMap, HashSet};
 pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // I/O
     match name {
+        "$guard_fail" => return Some("riina_guard_fail"),
+        "$for_len" => return Some("senarai_panjang"),
+        "$for_get" => return Some("senarai_dapat"),
         "cetak" | "print" => return Some("cetak"),
         // `cetak_baris` is a third spelling of `cetakln` — the interpreter binds
         // all three to the same `Value::Builtin("cetakln")`. Only this gate did

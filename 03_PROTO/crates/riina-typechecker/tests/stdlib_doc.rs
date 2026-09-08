@@ -290,7 +290,7 @@ fn stdlib_doc_is_up_to_date() {
         )
     });
     assert_eq!(
-        committed, generated,
+        committed.replace("\r\n", "\n"), generated,
         "docs/api/STDLIB.md is stale — the builtin registry changed. Regenerate: \
          REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc"
     );

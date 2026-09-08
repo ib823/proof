@@ -316,6 +316,32 @@ fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::Effect, filename
 }
 
 fn main() {
+    // Parsing and checking use recursive AST walks. Windows' executable stack
+    // is smaller than the Unix default and overflowed on repository examples.
+    // An explicit compiler stack also applies to the REPL/LSP entry points.
+    #[cfg(windows)]
+    {
+        match std::thread::Builder::new()
+            .name("riinac".into())
+            .stack_size(16 * 1024 * 1024)
+            .spawn(run)
+        {
+            Ok(worker) => {
+                if let Err(panic) = worker.join() {
+                    std::panic::resume_unwind(panic);
+                }
+            }
+            Err(error) => {
+                eprintln!("Cannot start compiler: {error}");
+                process::exit(1);
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    run();
+}
+
+fn run() {
     let (command, input, opts) = parse_args();
 
     if let Command::ListCompliance = command {

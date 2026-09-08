@@ -276,10 +276,8 @@ pub struct Parser<'a> {
     /// instead of a silently-ignored statement (which is what they were until
     /// 2026-08 — both desugared to `()`).
     ///
-    /// A `untuk` body deliberately does NOT raise this. `untuk` desugars to
-    /// `senarai_peta` over a closure, and neither the interpreter's builtin nor
-    /// the C runtime's can honour a break or a continue raised inside it — so
-    /// `putus` there is rejected rather than accepted and ignored.
+    /// `untuk` also raises this: it lowers to a real `While`, preserving the
+    /// enclosing function's return boundary and the innermost loop's control.
     loop_depth: usize,
 }
 
@@ -1516,7 +1514,8 @@ impl<'a> Parser<'a> {
 
     /// Parse for-in loop:
     ///   untuk x dalam iter { body }
-    /// Desugars to: map (fn(x: Any) body) iter
+    /// Desugars to an indexed while loop. A synthesized closure would capture
+    /// `pulang` and return from the iteration instead of the enclosing function.
     fn parse_for_in(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwFor)?;
         // Loop variable: a single name, or a tuple pattern `(a, b, ...)` for
@@ -1540,31 +1539,40 @@ impl<'a> Parser<'a> {
         // The loop variable shadows any outer `biar ubah` of the same name.
         let scope: Vec<(Ident, bool)> =
             pattern_names.iter().map(|n| (n.clone(), false)).collect();
-        let body = self.with_bindings(&scope, Self::parse_expr)?;
+        let body = self.with_bindings(&scope, Self::parse_loop_body)?;
         self.consume(TokenKind::RBrace)?;
-        // Desugar `untuk x dalam iter { body }` to a list map over the iterable,
-        // applying the body as a per-element closure:
-        //   senarai_peta((iter, fungsi(x) body))
-        // `senarai_peta` (list_map) is the higher-order builtin that iterates a
-        // list and evaluates the closure for each element (running its effects).
-        // For a tuple pattern `(a, b, ...)` the closure binds a fresh element and
-        // projects each name from it via Fst/Snd.
-        let lam = if pattern_names.len() == 1 {
-            Expr::Lam(pattern_names.into_iter().next().unwrap(), Ty::Any, Box::new(body))
+        // Evaluate the iterable once and use source-illegal names for both the
+        // temporaries and primitive operations, so user bindings cannot capture
+        // the desugaring. Increment before the body so `lanjut` still advances.
+        let list = self.fresh_var("forList");
+        let index = self.fresh_var("forIndex");
+        let elem = self.fresh_var("forElem");
+        let bound = if pattern_names.len() == 1 {
+            Expr::Let(pattern_names.into_iter().next().unwrap(), None,
+                Box::new(Expr::Var(elem.clone())), Box::new(body))
         } else {
-            let elem = self.fresh_var("forElem");
             let n = pattern_names.len();
             let mut bound = body;
             for (i, nm) in pattern_names.iter().enumerate().rev() {
                 let proj = self.tuple_proj(&elem, i, n);
                 bound = Expr::Let(nm.clone(), None, Box::new(proj), Box::new(bound));
             }
-            Expr::Lam(elem, Ty::Any, Box::new(bound))
+            bound
         };
-        Ok(Expr::App(
-            Box::new(Expr::Var("senarai_peta".into())),
-            Box::new(Expr::Pair(Box::new(iter), Box::new(lam))),
-        ))
+        let condition = Expr::BinOp(BinOp::Lt, Box::new(Expr::SlotGet(index.clone())),
+            Box::new(Expr::App(Box::new(Expr::Var("$for_len".into())),
+                Box::new(Expr::Var(list.clone())))));
+        let next_element = Expr::App(Box::new(Expr::Var("$for_get".into())),
+            Box::new(Expr::Pair(Box::new(Expr::Var(list.clone())),
+                Box::new(Expr::SlotGet(index.clone())))));
+        let advance = Expr::SlotSet(index.clone(), Box::new(Expr::BinOp(BinOp::Add,
+            Box::new(Expr::SlotGet(index.clone())), Box::new(Expr::Int(1)))));
+        let iteration = Expr::Let(elem, None, Box::new(next_element),
+            Box::new(Expr::Let(self.fresh_var("forAdvance"), None,
+                Box::new(advance), Box::new(bound))));
+        Ok(Expr::Let(list, None, Box::new(iter),
+            Box::new(Expr::LetMut(index, Box::new(Expr::Int(0)),
+                Box::new(Expr::While(Box::new(condition), Box::new(iteration)))))))
     }
 
     /// Parse while loop:
@@ -1616,9 +1624,8 @@ impl<'a> Parser<'a> {
         //   1. `pastikan cond lain { else_body }; rest`  (Swift-style guard)
         //   2. `pastikan cond ["message"]; rest`         (assertion guard)
         // Both desugar to `kalau cond { rest } lain { else }`: execution proceeds
-        // to `rest` when the condition holds. Form 2 has no false-branch action
-        // (RIINA has no panic yet), so its else-branch is Unit — making the guard
-        // a proceed-iff-precondition-holds check.
+        // to `rest` when the condition holds. Form 2 fails execution on a false
+        // condition rather than returning a Unit from an arbitrarily typed function.
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwElse)) {
             self.consume(TokenKind::KwElse)?;
             self.consume(TokenKind::LBrace)?;
@@ -1643,14 +1650,13 @@ impl<'a> Parser<'a> {
         } else {
             self.parse_stmt_sequence()?
         };
-        // On guard failure, abort by returning (RIINA has no panic). Modeling the
-        // else-branch as an early `pulang` gives it type `Any`, so the whole `If`
-        // takes the continuation's (true-branch) type rather than collapsing to
-        // Unit — important when the enclosing function returns a non-Unit value.
+        // This compiler-internal name cannot be declared in surface syntax
+        // (`$` is not an identifier character), so it cannot be shadowed.
+        // It never returns: interpreter error, C abort, WASM trap.
         Ok(Expr::If(
             Box::new(cond),
             Box::new(continuation),
-            Box::new(Expr::Return(Box::new(Expr::Unit))),
+            Box::new(Expr::App(Box::new(Expr::Var("$guard_fail".into())), Box::new(Expr::Unit))),
         ))
     }
 
@@ -2372,6 +2378,9 @@ impl<'a> Parser<'a> {
         // Body: a `{ ... }` block or a bare control-flow expression. As for a
         // named function, parameters shadow an outer `biar ubah` of the same name.
         let scope: Vec<(Ident, bool)> = params.iter().map(|(n, _)| (n.clone(), false)).collect();
+        // A closure cannot break or continue a loop in its caller.
+        let outer_loop_depth = self.loop_depth;
+        self.loop_depth = 0;
         let body = self.with_bindings(&scope, |p| {
             if matches!(p.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
                 p.consume(TokenKind::LBrace)?;
@@ -2381,7 +2390,9 @@ impl<'a> Parser<'a> {
             } else {
                 p.parse_control_flow()
             }
-        })?;
+        });
+        self.loop_depth = outer_loop_depth;
+        let body = body?;
         // Curry parameters into nested lambdas (right-fold). A no-parameter
         // `fungsi()` becomes a single Unit-typed parameter (a thunk).
         if params.is_empty() {
