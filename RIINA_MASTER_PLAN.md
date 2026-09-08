@@ -4595,6 +4595,20 @@ and [normalized validation logs (gzip)](reports/codespaces_remediation_validatio
 The raw installation and verification logs are retained separately for desktop
 review. Merge and public sync remain outside this validation handoff.
 
+### Deployment authorization — 2026-09-08
+
+The owner authorized merge, public sync, and website deployment after desktop
+review. PR #88 merged as `75a9afcc`; its required local gates, normal hooks, and
+all CI checks passed. The deployment follow-up corrects stale website language
+that called SMT generated alongside its mechanized scoped-lane badge, and
+clarifies that generated assertion totals are not verified counts. The historical
+SMT smoke metric is explicitly distinguished from the current scoped gate.
+The follow-up production build and browser preview pass, with no browser errors;
+SMT rechecks 37/37 unsat, and the full metrics refresh remeasures 3,376 compiler
+tests. The rebuilt playground WASM is included for public clones.
+Public sync uses an isolated checkout to preserve the installed toolchains and
+original patch. Gate C and REQ-83 remain open; publishing does not close them.
+
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
 **Owner directive (2026-08-06):** make RIINA an indisputable, disruptive, unparalleled innovation,
