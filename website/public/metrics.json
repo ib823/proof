@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-08T04:05:34Z",
-  "generatedHuman": "September 08, 2026 at 04:05 UTC",
+  "generated": "2026-09-08T05:22:53Z",
+  "generatedHuman": "September 08, 2026 at 05:22 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "0554914c",
-    "branch": "codex/codespaces-remediation-p0"
+    "commit": "75a9afcc",
+    "branch": "main"
   },
   "proofs": {
     "qedActive": 12678,
@@ -100,7 +100,7 @@
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "assertionsRaw is the corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
+    "smokeNote": "assertionsRaw is the generated corpus-wide assert count, not a verified total. compiledAssertions records the historical lattice smoke check; scripts/verify-smt.sh verifies the current separately scoped set.",
     "quarantined": false,
     "files": 318,
     "prover": "Z3/CVC5 (SMT-LIB)"
@@ -197,8 +197,8 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 3372,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 18
   },
   "examples": 172,

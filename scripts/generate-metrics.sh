@@ -1306,7 +1306,7 @@ cat > "$OUTPUT_FILE" << EOF
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "assertionsRaw is the corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
+    "smokeNote": "assertionsRaw is the generated corpus-wide assert count, not a verified total. compiledAssertions records the historical lattice smoke check; scripts/verify-smt.sh verifies the current separately scoped set.",
     "quarantined": $SMT_QUARANTINED,
     "files": $SMT_FILES,
     "prover": "Z3/CVC5 (SMT-LIB)"

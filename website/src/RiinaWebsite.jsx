@@ -512,7 +512,7 @@ function Home({ go, metrics }) {
             <MonoLabel style={{ marginBottom: 18 }}>Scope of the claim</MonoLabel>
             <h2 className="serif-h2" style={{ marginBottom: 16, fontSize: 'clamp(29px, 3.2vw, 40px)' }}>We will tell you what is not proven, too.</h2>
             <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.7, color: '#4a453d' }}>
-              The repository carries ten prover lanes. One is mechanized. Two &mdash; Isabelle/HOL and F* &mdash; have been retired by owner decision rather than left presenting generated figures. The rest are generated from the Coq sources and have not been independently re-verified &mdash; so we grade every lane publicly and never count any of them toward the headline figure.
+              The repository carries ten prover lanes. Coq supplies the machine-checked headline proofs. The SMT lane also verifies a scoped set of obligations; its generated corpus is not counted as verified. Isabelle/HOL and F* are retired by owner decision. Other lanes remain generated, with limited smoke checks where documented. Every lane is graded separately, and only Coq contributes to the headline figure.
             </p>
           </div>
           <div style={{ borderTop: '1px solid #14120f' }}>
@@ -525,6 +525,7 @@ function Home({ go, metrics }) {
               ['Lean 4', metrics.lean?.theorems, metrics.claimLevels?.lean],
               ['Isabelle/HOL', metrics.isabelle?.lemmas, metrics.claimLevels?.isabelle],
               ['F*', metrics.fstar?.lemmas, metrics.claimLevels?.fstar],
+              ['SMT (generated assertions; verification is scoped)', metrics.smt?.assertions, metrics.claimLevels?.smt],
             ].map(([name, count, level]) => (
               <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '15px 0', borderBottom: '1px solid #e6e1d6' }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: '#6b6559' }}>{name}</span>
@@ -533,7 +534,7 @@ function Home({ go, metrics }) {
               </div>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '15px 0', borderBottom: '1px solid #e6e1d6' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: '#6b6559', lineHeight: 1.5 }}>Z3/CVC5 &middot; TLA+ &middot; Alloy &middot; Verus &middot; Kani &middot; TV</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: '#6b6559', lineHeight: 1.5 }}>TLA+ &middot; Alloy &middot; Verus &middot; Kani &middot; TV</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid #c9c3b4', color: '#6b6559', padding: '3px 8px', whiteSpace: 'nowrap' }}>generated</span>
             </div>
             <div style={{ padding: '15px 0', fontSize: 13.5, lineHeight: 1.6, color: '#6b6559' }}>
@@ -835,7 +836,7 @@ function Architecture({ metrics }) {
     { prover: metrics.coq?.prover || 'Coq / Rocq 9.1.1', count: `${fmt(metrics.proofs?.qedActive || 0)} Qed`, level: metrics.claimLevels?.coq || 'mechanized', role: 'Primary proof engine' },
     { prover: 'Lean 4', count: `${fmt(metrics.lean?.theorems || 0)} decl`, level: metrics.claimLevels?.lean || 'generated', role: 'Generated port' },
     { prover: 'Isabelle/HOL', count: `${fmt(metrics.isabelle?.lemmas || 0)} lemmas`, level: metrics.claimLevels?.isabelle || 'generated', role: 'Retired (owner decision, 2026-08-06)' },
-    { prover: 'Z3 / CVC5', count: `${fmt(metrics.smt?.assertions || 0)} asserts`, level: metrics.claimLevels?.smt || 'generated', role: 'SMT lane' },
+    { prover: 'Z3 / CVC5', count: `${fmt(metrics.smt?.assertions || 0)} generated asserts`, level: metrics.claimLevels?.smt || 'generated', role: 'Scoped SMT verification; corpus total is not a verified count' },
     { prover: 'TLA+', count: `${fmt(metrics.tlaplus?.theorems || 0)} theorems`, level: metrics.claimLevels?.tlaplus || 'generated', role: 'Model-checking lane' },
     { prover: 'F*', count: `${fmt(metrics.fstar?.lemmas || 0)} lemmas`, level: metrics.claimLevels?.fstar || 'generated', role: 'Retired (owner decision, 2026-08-06)' },
     { prover: 'Alloy 6', count: `${fmt(metrics.alloy?.assertions || 0)} asserts`, level: metrics.claimLevels?.alloy || 'generated', role: 'Relational-logic lane' },
@@ -869,9 +870,9 @@ function Architecture({ metrics }) {
 
       <div style={{ borderTop: '1px solid #d8d3c7', background: '#efece4' }}>
         <div className="shell" style={{ paddingTop: 'clamp(46px, 5.5vw, 70px)', paddingBottom: 'clamp(46px, 5.5vw, 70px)' }}>
-          <MonoLabel style={{ marginBottom: 18 }}>Ten lanes, one mechanized</MonoLabel>
+          <MonoLabel style={{ marginBottom: 18 }}>Ten lanes, explicitly scoped claims</MonoLabel>
           <p style={{ margin: '0 0 28px', fontSize: 15.5, lineHeight: 1.7, color: '#4a453d', maxWidth: 760 }}>
-            The core type and effect system is machine-checked in Coq. The other prover trees in the repository are machine-generated from those sources; they exist, they are graded, and they are not independent re-verification. No external audit has been published.
+            The core type and effect system is machine-checked in Coq. SMT checks cover a scoped set of obligations, not every generated assertion. The remaining lanes are generated or retired, with limited smoke checks where documented. No external audit has been published.
           </p>
           <div className="noscroll" style={{ overflowX: 'auto', border: '1px solid #c9c3b4', background: '#fffdf8' }}>
             <div style={{ minWidth: 620 }}>
