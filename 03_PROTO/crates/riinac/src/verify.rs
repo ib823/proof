@@ -985,7 +985,6 @@ fn active_coq_files(coq_dir: &Path) -> Vec<PathBuf> {
             .map(|l| l.trim())
             .filter(|l| l.ends_with(".v") && !l.starts_with('#') && !l.starts_with('-'))
             .map(|l| coq_dir.join(l))
-            .filter(|p| p.exists())
             .collect();
     }
     glob_v_files(coq_dir).unwrap_or_default()
@@ -997,46 +996,36 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
 
     let mut admit_count = 0u32;
     let mut axiom_count = 0u32;
+    let mut abort_count = 0u32;
     let mut explicit_step_up_assumption_count = 0u32;
 
     {
         let entries = active_coq_files(coq_dir);
         for path in entries {
             if let Ok(content) = fs::read_to_string(&path) {
-                let mut in_comment = false;
-                for line in content.lines() {
-                    let trimmed = line.trim();
-                    // Track block comments (simple heuristic)
-                    if trimmed.contains("(*") {
-                        in_comment = true;
-                    }
-                    if trimmed.contains("*)") {
-                        in_comment = false;
-                        continue;
-                    }
-                    if in_comment || trimmed.starts_with("(*") {
-                        continue;
-                    }
-                    if trimmed == "Admitted." || trimmed.ends_with(" Admitted.") {
-                        admit_count += 1;
-                    }
-                    if trimmed.contains("admit.") {
-                        admit_count += 1;
-                    }
-                    if trimmed.starts_with("Axiom ") {
-                        axiom_count += 1;
-                    }
-                    if trimmed.starts_with("Parameter val_rel_n_step_up ") {
-                        explicit_step_up_assumption_count += 1;
+                let tokens = coq_code_tokens(&content);
+                for token in &tokens {
+                    match token.as_str() {
+                        "Admitted" | "admit" => admit_count += 1,
+                        "Axiom" | "Axioms" => axiom_count += 1,
+                        "Abort" => abort_count += 1,
+                        _ => {}
                     }
                 }
+                explicit_step_up_assumption_count += tokens.windows(2)
+                    .filter(|t| t[0] == "Parameter" && t[1] == "val_rel_n_step_up").count() as u32;
+            } else {
+                results.push(CheckResult {
+                    name: "Coq Source Read".into(), passed: false, blocking: true,
+                    details: format!("cannot read {}", path.display()),
+                });
             }
         }
     }
 
-    // 1 Admitted allowed: combined_step_up_all in NonInterference_v2.v
-    // (HO step-up at n=1 for TFn — requires restructuring mutual induction to eliminate)
-    let admit_target = 1;
+    // Active RIINA sources must introduce no unproved declarations. Imported
+    // stdlib assumptions are checked separately by kernel attestation.
+    let admit_target = 0;
     results.push(CheckResult {
         name: "Coq Admits".into(),
         passed: admit_count <= admit_target,
@@ -1046,9 +1035,16 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
 
     results.push(CheckResult {
         name: "Coq Axioms".into(),
-        passed: true, // axioms are informational
+        passed: axiom_count == 0,
         blocking: true,
-        details: format!("{axiom_count} (informational; explicit assumptions tracked separately)"),
+        details: format!("{axiom_count} (target: 0)"),
+    });
+
+    results.push(CheckResult {
+        name: "Coq Aborts".into(),
+        passed: abort_count == 0,
+        blocking: true,
+        details: format!("{abort_count} (target: 0)"),
     });
 
     results.push(CheckResult {
@@ -1061,6 +1057,39 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     });
 
     results
+}
+
+/// Lex identifiers outside Coq's nested comments and double-quoted strings.
+/// An inline comment must not hide code before or after it from the gate.
+fn coq_code_tokens(source: &str) -> Vec<String> {
+    let bytes = source.as_bytes();
+    let mut i = 0;
+    let mut depth = 0usize;
+    let mut tokens = Vec::new();
+    while i < bytes.len() {
+        if bytes.get(i..i + 2) == Some(b"(*") {
+            depth += 1;
+            i += 2;
+        } else if depth > 0 {
+            if bytes.get(i..i + 2) == Some(b"*)") { depth -= 1; i += 2; }
+            else { i += 1; }
+        } else if bytes[i] == b'"' {
+            i += 1;
+            while i < bytes.len() {
+                if bytes[i] == b'"' {
+                    i += 1;
+                    if bytes.get(i) == Some(&b'"') { i += 1; }
+                    else { break; }
+                } else { i += 1; }
+            }
+        } else if bytes[i].is_ascii_alphabetic() || bytes[i] == b'_' {
+            let start = i;
+            i += 1;
+            while i < bytes.len() && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_' || bytes[i] == b'\'') { i += 1; }
+            tokens.push(source[start..i].to_string());
+        } else { i += 1; }
+    }
+    tokens
 }
 
 
@@ -1290,7 +1319,7 @@ fn verify_coqproject_completeness(coq_dir: &Path) -> CheckResult {
         }
         // Convert to relative path from coq_dir
         if let Ok(rel) = path.strip_prefix(coq_dir) {
-            let rel_str = rel.to_string_lossy().to_string();
+            let rel_str = rel.to_string_lossy().replace('\\', "/");
             if !project_entries.contains(&rel_str) {
                 missing.push(rel_str);
             }
@@ -1993,11 +2022,16 @@ fn verify_metrics_accuracy(
             "Isabelle: json={json_isabelle} live={live_isabelle}"
         ));
     }
-    // 1 Admitted allowed: combined_step_up_all in NonInterference_v2.v
-    if json_admitted > 1 {
+    if json_admitted != 0 {
         drifts.push(format!(
-            "Admitted in metrics.json: {json_admitted} (must be <= 1)"
+            "Admitted in metrics.json: {json_admitted} (must be 0)"
         ));
+    }
+    if json_axioms != 0 {
+        drifts.push(format!("Axioms in metrics.json: {json_axioms} (must be 0)"));
+    }
+    for check in scan_coq(coq_dir).into_iter().filter(|check| !check.passed) {
+        drifts.push(format!("{}: {}", check.name, check.details));
     }
 
     if drifts.is_empty() {
@@ -3700,6 +3734,44 @@ pub fn run(mode: Mode) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn coq_project_paths_match_native_nested_paths() {
+        let dir = std::env::temp_dir().join(format!("riina_coq_paths_{}", std::process::id()));
+        fs::create_dir_all(dir.join("nested")).unwrap();
+        fs::write(dir.join("_CoqProject"), "nested/probe.v\n").unwrap();
+        fs::write(dir.join("nested/probe.v"), "Lemma p : True. Proof. exact I. Qed.").unwrap();
+        assert!(verify_coqproject_completeness(&dir).passed);
+        fs::write(dir.join("nested/unlisted.v"), "Lemma q : True. Admitted.").unwrap();
+        assert!(!verify_coqproject_completeness(&dir).passed);
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn coq_gate_rejects_one_admit_and_inline_axioms() {
+        let dir = std::env::temp_dir().join(format!("riina_coq_scan_{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("_CoqProject"), "probe.v\n").unwrap();
+        for source in [
+            "Lemma p : True. Admitted.",
+            "(* comment *) Axiom p : True.",
+            "Axiom (* inline *) p : True.",
+            "(* outer (* inner *) end *) Axioms p q : True.",
+            "Lemma p : True. Proof. admit. Qed.",
+            "Lemma p : True. Proof. Abort.",
+        ] {
+            fs::write(dir.join("probe.v"), source).unwrap();
+            assert!(scan_coq(&dir).iter().any(|c| c.blocking && !c.passed), "accepted {source}");
+        }
+        fs::write(dir.join("probe.v"),
+            "(* Admitted. (* Axiom p : False. *) *)\nDefinition text := \"Axiom and Admitted.\".\nLemma p : True. Proof. exact I. Qed."
+        ).unwrap();
+        assert!(scan_coq(&dir).iter().all(|c| c.passed));
+        fs::remove_file(dir.join("probe.v")).unwrap();
+        assert!(scan_coq(&dir).iter().any(|c| c.blocking && !c.passed),
+            "missing active sources must fail verification");
+        fs::remove_dir_all(&dir).unwrap();
+    }
 
 
     // =======================================================================

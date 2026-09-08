@@ -4,7 +4,7 @@
 
 use crate::effects::EffectPermissions;
 use crate::error::{PkgError, Result};
-use crate::integrity::sha256_hex;
+use crate::integrity::package_checksum;
 use crate::layout::{self, Layout};
 use crate::lockfile::{LockedPackage, Lockfile};
 use crate::manifest::Manifest;
@@ -223,13 +223,12 @@ fn cmd_lock(registry_url: Option<&str>) -> Result<()> {
     let order = graph.topological_order()?;
     for name in &order {
         let pkg = &graph.packages[name];
-        let pkg_path = reg.package_path(name, &pkg.version);
-        let checksum = if pkg_path.join("riina.toml").is_file() {
-            let data = std::fs::read(pkg_path.join("riina.toml")).unwrap_or_default();
-            sha256_hex(&data)
-        } else {
-            String::new()
-        };
+        let pkg_path = reg.fetch_package(name, &pkg.version)?;
+        validate_resolved_dependencies(
+            &Manifest::from_file(&pkg_path.join("riina.toml"))?,
+            &graph,
+        )?;
+        let checksum = package_checksum(&pkg_path)?;
         let dep_strs: Vec<String> = pkg
             .deps
             .iter()
@@ -257,6 +256,7 @@ fn cmd_lock(registry_url: Option<&str>) -> Result<()> {
 fn cmd_build(registry_url: Option<&str>, compile: crate::build::CompileFn<'_>) -> Result<()> {
     let root = find_project_root()?;
     let manifest = Manifest::from_file(&root.join("riina.toml"))?;
+    crate::registry::validate_package_name(&manifest.package.name)?;
     let deps = manifest.dep_reqs()?;
 
     if deps.is_empty() {
@@ -278,14 +278,118 @@ fn cmd_build(registry_url: Option<&str>, compile: crate::build::CompileFn<'_>) -
         crate::build::execute_build(&steps, compile)?;
     } else {
         let reg = make_registry(registry_url, Some(&manifest));
-        let graph = resolve::resolve(&deps, reg.as_ref())?;
+        let lock_path = root.join("riina.lock");
+        let graph = if lock_path.exists() {
+            resolve_locked(&deps, &Lockfile::from_file(&lock_path)?, reg.as_ref())?
+        } else {
+            resolve::resolve(&deps, reg.as_ref())?
+        };
+        if graph.packages.contains_key(&manifest.package.name) {
+            return Err(PkgError::CycleDetected(vec![manifest.package.name.clone()]));
+        }
         let config = crate::build::BuildConfig::new(&root).with_registry(registry_root());
-        let steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
+        let mut steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
+        let root_perms = EffectPermissions::from_allowed(&manifest.allowed_effects);
+        for step in &mut steps {
+            if let Some(pkg) = graph.packages.get(&step.name) {
+                step.source_dir = reg.fetch_package(&pkg.name, &pkg.version)?;
+                let source_manifest = Manifest::from_file(&step.source_dir.join("riina.toml"))?;
+                root_perms.check_escalation(
+                    &pkg.name,
+                    &EffectPermissions::from_allowed(&source_manifest.allowed_effects),
+                )?;
+                validate_resolved_dependencies(&source_manifest, &graph)?;
+            }
+        }
         crate::build::execute_build(&steps, compile)?;
     }
 
     eprintln!("Build complete.");
     Ok(())
+}
+
+fn validate_resolved_dependencies(
+    manifest: &Manifest,
+    graph: &resolve::ResolvedGraph,
+) -> Result<()> {
+    let actual_names: Vec<_> = manifest.dependencies.keys().cloned().collect();
+    if graph.packages[&manifest.package.name].deps != actual_names {
+        return Err(PkgError::Other(format!(
+            "registry metadata disagrees with source dependencies for {}",
+            manifest.package.name
+        )));
+    }
+    for (name, req) in manifest.dep_reqs()? {
+        if !graph
+            .packages
+            .get(&name)
+            .is_some_and(|pkg| req.matches(&pkg.version))
+        {
+            return Err(PkgError::VersionConflict {
+                name,
+                constraints: vec![req.to_string()],
+            });
+        }
+    }
+    Ok(())
+}
+
+/// Resolve exclusively from pinned, verified package contents. A build must
+/// not upgrade versions or silently trust an obsolete manifest-only checksum.
+fn resolve_locked(
+    deps: &std::collections::BTreeMap<String, crate::version::VersionReq>,
+    lock: &Lockfile,
+    registry: &dyn Registry,
+) -> Result<resolve::ResolvedGraph> {
+    let mut pinned = crate::registry::MemRegistry::new();
+    let mut names = std::collections::BTreeSet::new();
+    for package in &lock.packages {
+        if !names.insert(&package.name) {
+            return Err(PkgError::Other(format!(
+                "duplicate locked package: {}",
+                package.name
+            )));
+        }
+        if !package.checksum.starts_with("sha256-tree:") {
+            return Err(PkgError::Other(format!(
+                "package {} has a legacy or missing checksum; run `riinac pkg lock`",
+                package.name
+            )));
+        }
+        let path = registry.fetch_package(&package.name, &package.version)?;
+        let actual = package_checksum(&path)?;
+        if actual != package.checksum {
+            return Err(PkgError::IntegrityMismatch {
+                name: package.name.clone(),
+                expected: package.checksum.clone(),
+                actual,
+            });
+        }
+        pinned.add(Manifest::from_file(&path.join("riina.toml"))?);
+    }
+    let graph = resolve::resolve(deps, &pinned)?;
+    if graph.packages.len() != lock.packages.len() {
+        return Err(PkgError::Other(
+            "riina.lock is stale; run `riinac pkg lock`".into(),
+        ));
+    }
+    for package in &lock.packages {
+        let mut expected: Vec<_> = graph.packages[&package.name]
+            .deps
+            .iter()
+            .map(|name| format!("{name} {}", graph.packages[name].version))
+            .collect();
+        let mut locked = package.dependencies.clone();
+        expected.sort();
+        locked.sort();
+        if expected != locked {
+            return Err(PkgError::Other(format!(
+                "locked dependencies disagree for {}",
+                package.name
+            )));
+        }
+    }
+    Ok(graph)
 }
 
 fn cmd_publish(registry_url: Option<&str>) -> Result<()> {
@@ -377,4 +481,92 @@ fn cmd_clean() -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::version::{Version, VersionReq};
+    use std::collections::BTreeMap;
+
+    struct Scratch(PathBuf);
+    impl Scratch {
+        fn new(tag: &str) -> Self {
+            let path =
+                std::env::temp_dir().join(format!("riina_locked_{tag}_{}", std::process::id()));
+            std::fs::create_dir_all(&path).unwrap();
+            Self(path)
+        }
+        fn package(&self, version: &str) -> PathBuf {
+            let path = self.0.join("foo").join(version);
+            std::fs::create_dir_all(path.join("src")).unwrap();
+            std::fs::write(
+                path.join("riina.toml"),
+                format!("[pakej]\nnama = \"foo\"\nversi = \"{version}\"\n"),
+            )
+            .unwrap();
+            std::fs::write(
+                path.join("src/lib.rii"),
+                "fungsi nilai() -> Nombor { pulang 1; }",
+            )
+            .unwrap();
+            path
+        }
+    }
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn locked_build_uses_exact_version_and_checks_source_contents() {
+        let tmp = Scratch::new("version_content");
+        let path = tmp.package("1.0.0");
+        tmp.package("1.1.0");
+        let registry = FsRegistry::new(&tmp.0);
+        let lock = Lockfile {
+            packages: vec![LockedPackage {
+                name: "foo".into(),
+                version: Version::new(1, 0, 0),
+                checksum: package_checksum(&path).unwrap(),
+                dependencies: vec![],
+            }],
+        };
+        let deps = BTreeMap::from([("foo".into(), VersionReq::parse("^1.0.0").unwrap())]);
+        let graph = resolve_locked(&deps, &lock, &registry).unwrap();
+        assert_eq!(graph.packages["foo"].version, Version::new(1, 0, 0));
+        std::fs::write(
+            path.join("src/lib.rii"),
+            "fungsi nilai() -> Nombor { pulang 99; }",
+        )
+        .unwrap();
+        assert!(matches!(
+            resolve_locked(&deps, &lock, &registry),
+            Err(PkgError::IntegrityMismatch { .. })
+        ));
+    }
+
+    #[test]
+    fn locked_build_rejects_stale_versions_missing_hashes_and_forged_edges() {
+        let tmp = Scratch::new("stale");
+        let path = tmp.package("1.0.0");
+        let registry = FsRegistry::new(&tmp.0);
+        let mut lock = Lockfile {
+            packages: vec![LockedPackage {
+                name: "foo".into(),
+                version: Version::new(1, 0, 0),
+                checksum: package_checksum(&path).unwrap(),
+                dependencies: vec![],
+            }],
+        };
+        let deps = BTreeMap::from([("foo".into(), VersionReq::parse("^2.0.0").unwrap())]);
+        assert!(resolve_locked(&deps, &lock, &registry).is_err());
+        let deps = BTreeMap::from([("foo".into(), VersionReq::parse("*").unwrap())]);
+        lock.packages[0].dependencies = vec!["missing 1.0.0".into()];
+        assert!(resolve_locked(&deps, &lock, &registry).is_err());
+        lock.packages[0].dependencies.clear();
+        lock.packages[0].checksum.clear();
+        assert!(resolve_locked(&deps, &lock, &registry).is_err());
+    }
 }

@@ -16,6 +16,7 @@ pub static BUILTINS: &[(&str, &str, &str)] = &[
 
 pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
     match name {
+        "riina_guard_fail" => Err(Error::InvalidOperation("guard assertion failed".to_string())),
         "tegaskan" | "tegaskan_betul" => match arg {
             Value::Bool(true) => Ok(Some(Value::Unit)),
             Value::Bool(false) => Err(Error::InvalidOperation("assertion failed".to_string())),

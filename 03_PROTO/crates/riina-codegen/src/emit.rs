@@ -2497,6 +2497,9 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         // tegaskan (assert)
+        self.writeln("static riina_value_t* riina_builtin_riina_guard_fail(riina_value_t* arg) {");
+        self.writeln("    (void)arg; abort();");
+        self.writeln("}");
         self.writeln("static riina_value_t* riina_builtin_tegaskan(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_BOOL || !arg->data.bool_val) {");
         self.writeln("        fprintf(stderr, \"RIINA: assertion failed\\n\"); abort();");
@@ -5721,7 +5724,9 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
     fn emit_block_with_phi(&mut self, block: &BasicBlock, phi_map: &PhiMap) -> Result<()> {
         // Block label
         self.dedent();
-        self.writeln(&format!("{}:", self.block_name(&block.id)));
+        // A label must precede a statement in C11, even when the block's
+        // first instruction declares a temporary (for example an empty list).
+        self.writeln(&format!("{}: ;", self.block_name(&block.id)));
         self.indent();
 
         // Instructions

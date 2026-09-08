@@ -19,8 +19,41 @@ pub trait Registry {
     /// Get the root path for an installed package version.
     fn package_path(&self, name: &str, version: &Version) -> PathBuf;
 
+    /// Fetch a complete package, propagating download and extraction failures.
+    fn fetch_package(&self, name: &str, version: &Version) -> Result<PathBuf> {
+        validate_package_name(name)?;
+        let path = self.package_path(name, version);
+        let manifest = Manifest::from_file(&path.join("riina.toml"))?;
+        validate_package_identity(&manifest, name, version)?;
+        Ok(path)
+    }
+
     /// Check if a package version exists.
     fn exists(&self, name: &str, version: &Version) -> bool;
+}
+
+pub(crate) fn validate_package_name(name: &str) -> Result<()> {
+    if name.is_empty()
+        || !name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err(PkgError::Other(format!("invalid package name: {name}")));
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_package_identity(
+    manifest: &Manifest,
+    name: &str,
+    version: &Version,
+) -> Result<()> {
+    if manifest.package.name != name || &manifest.package.version != version {
+        return Err(PkgError::Other(format!(
+            "package manifest identity does not match {name} {version}"
+        )));
+    }
+    Ok(())
 }
 
 /// Filesystem-based registry.
@@ -41,6 +74,7 @@ impl FsRegistry {
 
     /// Publish a package directory to the registry.
     pub fn publish(&self, name: &str, version: &Version, source_dir: &Path) -> Result<()> {
+        validate_package_name(name)?;
         let dest = self.package_path(name, version);
         if dest.exists() {
             return Err(PkgError::AlreadyPublished {
@@ -55,6 +89,7 @@ impl FsRegistry {
 
 impl Registry for FsRegistry {
     fn list_versions(&self, name: &str) -> Result<Vec<Version>> {
+        validate_package_name(name)?;
         let pkg_dir = self.root.join(name);
         if !pkg_dir.is_dir() {
             return Ok(Vec::new());
@@ -76,6 +111,7 @@ impl Registry for FsRegistry {
     }
 
     fn get_manifest(&self, name: &str, version: &Version) -> Result<Manifest> {
+        validate_package_name(name)?;
         let path = self.package_path(name, version).join("riina.toml");
         Manifest::from_file(&path)
     }
@@ -85,6 +121,9 @@ impl Registry for FsRegistry {
     }
 
     fn exists(&self, name: &str, version: &Version) -> bool {
+        if validate_package_name(name).is_err() {
+            return false;
+        }
         self.package_path(name, version)
             .join("riina.toml")
             .is_file()
@@ -141,6 +180,7 @@ impl HttpRegistry {
 
     /// Publish a package to the remote registry.
     pub fn publish(&self, name: &str, version: &Version, source_dir: &Path) -> Result<()> {
+        validate_package_name(name)?;
         let archive = crate::tarball::pack(source_dir)?;
         let url = format!(
             "{}/api/v1/crates/new?name={}&version={}",
@@ -161,6 +201,7 @@ impl HttpRegistry {
 
 impl Registry for HttpRegistry {
     fn list_versions(&self, name: &str) -> Result<Vec<Version>> {
+        validate_package_name(name)?;
         let url = format!("{}/api/v1/crates/{}/versions", self.base_url, name);
         let resp = crate::http::get(&url)?;
 
@@ -186,6 +227,7 @@ impl Registry for HttpRegistry {
     }
 
     fn get_manifest(&self, name: &str, version: &Version) -> Result<Manifest> {
+        validate_package_name(name)?;
         let url = format!(
             "{}/api/v1/crates/{}/{}/manifest",
             self.base_url, name, version,
@@ -206,19 +248,31 @@ impl Registry for HttpRegistry {
     }
 
     fn package_path(&self, name: &str, version: &Version) -> PathBuf {
-        let local = self.cache_dir.join(name).join(version.to_string());
+        // A new leaf distinguishes atomically installed packages from caches
+        // created by older clients, which could contain partial extractions.
+        self.cache_dir
+            .join(name)
+            .join(version.to_string())
+            .join("package")
+    }
+
+    fn fetch_package(&self, name: &str, version: &Version) -> Result<PathBuf> {
+        validate_package_name(name)?;
+        let local = self.package_path(name, version);
         if !local.exists() {
-            // Attempt to download and cache
-            if let Ok(()) = self.download_to_cache(name, version, &local) {
-                // cached
-            }
+            self.download_to_cache(name, version, &local)?;
         }
-        local
+        let manifest = Manifest::from_file(&local.join("riina.toml"))?;
+        validate_package_identity(&manifest, name, version)?;
+        Ok(local)
     }
 
     fn exists(&self, name: &str, version: &Version) -> bool {
         // Check local cache first
-        let local = self.cache_dir.join(name).join(version.to_string());
+        if validate_package_name(name).is_err() {
+            return false;
+        }
+        let local = self.package_path(name, version);
         if local.join("riina.toml").is_file() {
             return true;
         }
@@ -250,7 +304,44 @@ impl HttpRegistry {
             });
         }
 
-        crate::tarball::unpack(&resp.body, dest)
+        self.install_archive(name, version, &resp.body, dest)
+    }
+
+    fn install_archive(
+        &self,
+        name: &str,
+        version: &Version,
+        archive: &[u8],
+        dest: &Path,
+    ) -> Result<()> {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let parent = dest
+            .parent()
+            .ok_or_else(|| PkgError::Other("cache destination has no parent".into()))?;
+        std::fs::create_dir_all(parent).map_err(|e| PkgError::io(parent, e))?;
+        let stage = loop {
+            let candidate = parent.join(format!(
+                ".partial-{}-{}",
+                std::process::id(),
+                NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            ));
+            match std::fs::create_dir(&candidate) {
+                Ok(()) => break candidate,
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(e) => return Err(PkgError::io(&candidate, e)),
+            }
+        };
+        let installed = (|| {
+            crate::tarball::unpack(archive, &stage)?;
+            let manifest = Manifest::from_file(&stage.join("riina.toml"))?;
+            validate_package_identity(&manifest, name, version)?;
+            std::fs::rename(&stage, dest).map_err(|e| PkgError::io(dest, e))
+        })();
+        if installed.is_err() {
+            // This directory was just created exclusively by this invocation.
+            let _ = std::fs::remove_dir_all(&stage);
+        }
+        installed
     }
 }
 
@@ -417,5 +508,55 @@ mod tests {
         let v = Version::parse("1.0.0").unwrap();
         let p = reg.cache_dir.join("foo").join(v.to_string());
         assert_eq!(p, PathBuf::from("/tmp/test_cache/foo/1.0.0"));
+    }
+
+    #[test]
+    fn failed_extraction_never_publishes_a_partial_cache() {
+        let tmp = std::env::temp_dir().join(format!("riina_atomic_cache_{}", std::process::id()));
+        std::fs::create_dir_all(tmp.join("source/src")).unwrap();
+        std::fs::write(
+            tmp.join("source/riina.toml"),
+            "[pakej]\nnama = \"foo\"\nversi = \"1.0.0\"\n",
+        )
+        .unwrap();
+        std::fs::write(tmp.join("source/src/lib.rii"), "pulang 0;").unwrap();
+        let reg = HttpRegistry::new("http://127.0.0.1:1", tmp.join("cache"));
+        let version = Version::new(1, 0, 0);
+        let dest = reg.package_path("foo", &version);
+        let archive = crate::tarball::pack(&tmp.join("source")).unwrap();
+        let wrong_identity = dest.with_file_name("wrong-identity");
+        assert!(reg
+            .install_archive("other", &version, &archive, &wrong_identity)
+            .is_err());
+        assert!(!wrong_identity.exists());
+        let truncated = &archive[..archive.len() - 1024];
+        assert!(reg
+            .install_archive("foo", &version, truncated, &dest)
+            .is_err());
+        assert!(!dest.exists());
+        assert_eq!(
+            std::fs::read_dir(dest.parent().unwrap()).unwrap().count(),
+            0
+        );
+        reg.install_archive("foo", &version, &archive, &dest)
+            .unwrap();
+        assert_eq!(reg.fetch_package("foo", &version).unwrap(), dest);
+        assert!(dest.join("src/lib.rii").is_file());
+        std::fs::remove_dir_all(tmp).unwrap();
+    }
+
+    #[test]
+    fn fetch_propagates_download_failure_and_rejects_package_paths() {
+        let reg = HttpRegistry::new(
+            "https://unsupported.invalid",
+            std::env::temp_dir().join("riina_missing_cache"),
+        );
+        assert!(reg.fetch_package("foo", &Version::new(1, 0, 0)).is_err());
+        for name in ["../outside", "/absolute", "C:drive", "bad\\path"] {
+            assert!(reg.fetch_package(name, &Version::new(1, 0, 0)).is_err());
+        }
+        for version in ["1.0.0-../../outside", "1.0.0-a/b", "1.0.0-a\\b"] {
+            assert!(Version::parse(version).is_err());
+        }
     }
 }

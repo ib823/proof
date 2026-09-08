@@ -221,6 +221,39 @@ fn guard_clause_returns_early() {
     );
 }
 
+/// Iteration used to introduce an invisible closure that swallowed `pulang`.
+/// Collections remain native-only; exercise the two supported runtimes.
+#[test]
+fn for_loop_returns_from_its_enclosing_function() {
+    if !require_backend_tools(&["cc"]) { return; }
+    let sb = Sandbox::new("for_return");
+    let src = sb.src("fungsi f() -> Nombor { untuk x dalam [1, 7, 9] { kalau x > 2 { pulang x; } } 99 }\nfungsi utama() -> Nombor kesan Tulis { cetakln(ke_teks(f())); 0 }");
+    let interpreted = run_interp(&src);
+    assert_eq!(interpreted, "7\n");
+    assert_eq!(run_native(&sb, &src), interpreted);
+}
+
+#[test]
+fn assertion_guard_traps_in_wasm() {
+    if !require_backend_tools(&["wasmtime"]) { return; }
+    for (condition, succeeds) in [("betul", true), ("salah", false)] {
+        let sb = Sandbox::new(&format!("assert_guard_{condition}"));
+        let src = sb.src(&format!("fungsi f() -> Nombor {{ pastikan {condition}; pulang 7; }}\nfungsi utama() -> Nombor kesan Tulis {{ cetakln(ke_teks(f())); 0 }}"));
+        let build = Command::new(env!("CARGO_BIN_EXE_riinac"))
+            .args(["build", "--target", "wasm32"]).arg(&src).output().unwrap();
+        assert!(build.status.success(), "{}", String::from_utf8_lossy(&build.stderr));
+        let run = Command::new("wasmtime").arg("run")
+            .arg(sb.dir.join(format!("{}.wasm", sb.stem))).output().unwrap();
+        assert_eq!(run.status.success(), succeeds, "{}", String::from_utf8_lossy(&run.stderr));
+        if succeeds {
+            assert_eq!(String::from_utf8_lossy(&run.stdout), "7\n");
+        } else {
+            assert!(run.stdout.is_empty(), "failed guard reached the print");
+            assert!(String::from_utf8_lossy(&run.stderr).contains("unreachable"));
+        }
+    }
+}
+
 /// THE REQ-80 crash regression: without the early return the base case is never
 /// reached and this recursed until the stack died (SIGSEGV, exit 139).
 #[test]

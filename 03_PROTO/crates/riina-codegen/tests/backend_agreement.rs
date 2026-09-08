@@ -21,6 +21,43 @@ use riina_codegen::{backend_for_target, Target};
 use riina_parser::Parser;
 use riina_typechecker::check_program;
 
+#[test]
+fn failed_guard_never_returns_a_value() {
+    for (condition, succeeds) in [("betul", true), ("salah", false)] {
+        let source = format!("fungsi f() -> Nombor {{ pastikan {condition}; pulang 7; }}\nf()");
+        let program = Parser::new(&source).parse_program().unwrap();
+        let (expr, _, _) = check_program(&program).unwrap();
+        let result = riina_codegen::eval_with_builtins(&expr);
+        if succeeds {
+            assert_eq!(result.unwrap(), riina_codegen::Value::Int(7));
+        } else {
+            assert!(result.unwrap_err().to_string().contains("guard assertion failed"));
+        }
+        let ir = riina_codegen::compile(&expr).unwrap();
+        assert!(ir.to_string().contains("riina_guard_fail"));
+        for target in [Target::Native, Target::Wasm32] {
+            backend_for_target(target).emit(&ir).unwrap();
+        }
+    }
+}
+
+#[test]
+fn for_loop_control_reaches_the_correct_boundary() {
+    for (source, expected) in [
+        ("fungsi f() -> Nombor { untuk x dalam [1, 7, 9] { kalau x > 2 { pulang x; } } 99 }\nf()", 7),
+        ("fungsi f() -> Nombor { biar ubah total = 0; untuk x dalam [1, 2, 3, 4] { kalau x == 2 { lanjut; } kalau x == 4 { putus; } total = total + x; } total }\nf()", 4),
+        ("fungsi f() -> Nombor { biar senarai_dapat = 0; biar senarai_panjang = 0; untuk (a, b) dalam [(3, 4)] { pulang a + b; } 99 }\nf()", 7),
+        ("fungsi f() -> Nombor { biar ubah total = 0; untuk x dalam [1, 2] { untuk y dalam [3, 4] { kalau y == 4 { putus; } total = total + x + y; } } total }\nf()", 9),
+    ] {
+        let program = Parser::new(source).parse_program().unwrap();
+        let (expr, _, _) = check_program(&program).unwrap();
+        assert_eq!(riina_codegen::eval_with_builtins(&expr).unwrap(),
+            riina_codegen::Value::Int(expected), "{source}");
+        let ir = riina_codegen::compile(&expr).unwrap();
+        backend_for_target(Target::Native).emit(&ir).unwrap();
+    }
+}
+
 /// Lower and emit `source` for the native target; `Err` carries the diagnostic.
 fn emit_native(source: &str) -> Result<String, String> {
     let mut parser = Parser::new(source);

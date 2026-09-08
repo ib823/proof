@@ -4060,7 +4060,7 @@ mod tests {
         // fail_tulis is rejected by the verified can_write, while fail_baca
         // still succeeds (other = r).
         let dir = std::env::temp_dir().join("riina_interp_gate.txt");
-        let path = dir.to_str().unwrap();
+        let path = dir.to_str().unwrap().replace('\\', "\\\\").replace('"', "\\\"");
         let src = format!(
             "biar a = vfs_jadi_pengguna(1000); \
              biar b = fail_tulis((\"{path}\", \"milik 1000\")); \

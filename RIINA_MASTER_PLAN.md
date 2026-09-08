@@ -219,7 +219,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-06-04 (Rust workspaces re-run this session); Coq build machine-checked 2026-06-03 in-container on Rocq 9.2 (see Compilation row). Run the commands listed in Part 0 to re-verify.**
+**Last verified: 2026-09-08 in Codespaces on Rust 1.94.1 and pinned Rocq 9.1.1 / stdlib 9.1.0. Both Rust workspaces, the full Coq build, independent kernel recheck, and `make verify-all` passed. See the Part 11 Codespaces validation entry for evidence and secondary-lane limitations.**
 
 ### Coq (Primary Prover)
 
@@ -230,11 +230,11 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | Parameter (active build) | 30 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, an opaque *function* not a proposition; implementation in `riina-core`, TCB until Verus harness). The former 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos`) were eliminated: `NANOS_PER_SEC` is now a concrete `Definition` (`1000*1000*1000`, sealed `Opaque` for proof performance) and `NANOS_PER_SEC_pos` a proved `Qed` lemma — removed from the TCB. All 30 remaining are part of the TCB. Audit-docs.sh pins this count. |
-| .v files (active) | 325 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
+| .v files (active) | 331 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
 | Qed (archive) | 758 | Total 13,436 minus active 12,678 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
 | Kernel-level assumption audit (`Print Assumptions`, 2026-08-05) | see note | The grep-level "0 Axiom" is accurate **per its stated methodology** (axioms *declared in RIINA's own active sources*), and the kernel confirms the strongest form for the core: **`type_safety` is `Closed under the global context`** — zero axioms, zero parameters, nothing assumed. Two qualifications the grep cannot see, disclosed here: (1) **`well_typed_SN` (and the SN/logical-relations development generally) depends on the Rocq stdlib axiom `functional_extensionality_dep`** — 30 active files import `Logic.FunctionalExtensionality`. This is the standard, widely-accepted extensionality axiom (consistent with the calculus; used across the Coq ecosystem incl. CompCert-adjacent work), but it IS an axiom and belongs in the TCB statement alongside the 30 Parameters. (2) The 4 `Hypothesis` declarations in `termination/ReducibilityFull.v` sections are honest **explicit premises** — `Print Assumptions well_typed_SN` lists none of them (only funext), confirming they discharge into theorem statements rather than hide as assumptions. REQ-48's `accepts_uses_only_current` is also fully closed. Re-derive with: `Print Assumptions <thm>` in a scratch `.v` importing the module. |
-| Compilation | PASSES | `make -C 02_FORMAL/coq` — **machine-checked in-container 2026-06-06 on Rocq 9.1.1** (opam switch): 324 `.vo` compiled under `riinac verify --full` (incl. `foundations/BigIntModel.v`), 0 Admitted / 0 Axiom. (The `coqc`→`rocq` rename is handled: `riinac verify` detects the `rocq` binary.) |
+| Compilation | PASSES | 2026-09-08: all 331 active modules compiled on Rocq 9.1.1, zero warnings (budget 2); `rocq check -bytecode-compiler yes` rechecked all active modules and their dependencies; `make verify-all` rebuilt all 331 and attested the five capstones against the existing functional-extensionality whitelist. Source counts remain 12,678 Qed / 0 Admitted / 0 declared Axiom / 0 Abort. |
 
 **Quality tiers (honest):**
 
@@ -322,14 +322,18 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 ### Rust Prototype
 
+Measured 2026-09-08 on Rust 1.94.1 in Codespaces. Full workspace test logs and
+Clippy logs are retained for the REQ-83 review; no backend-tool opt-out was set.
+
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 2,816 passing, 0 failed, 3 ignored (2026-06-06: +35 security-builtin runtime lane `keselamatan.rs`; +18 numeric-tower BigInt `bigint.rs`; +14 numeric-tower decimal `decimal.rs`; +7 VirtualFs `vfs_*` builtins; +4 NFC normalization (UAX#15); +5 UTS#39 confusables; +2 BigInt C-codegen (emit-test + cc differential); +1 Coq⇄Rust BigInt-model bridge; re-run by command this session) |
-| Tests (05_TOOLING/) | 285 passing, 0 failed, 0 ignored (incl. the ML-KEM-768/ML-DSA-65 NIST ACVP KAT sweeps + ML-DSA interface tests; `kat_audit` 23/0-ignored; +5 from the 2026-06-04 Ed25519/X25519 deep-pass: RFC 8032 §5.1.3 strict-decode + s<L malleability + X25519 contributory-rejection) |
-| Crates (03_PROTO) | 19 |
-| Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
-| Clippy | Clean |
-| Example .rii files | 158 |
+| Tests (03_PROTO/) | 3,376 passing, 0 failed, 2 ignored documentation examples |
+| Tests (05_TOOLING/) | 323 passing, 0 failed, 0 ignored |
+| Crates (03_PROTO) | 18 workspace members, derived with `cargo metadata --no-deps` |
+| Crates (05_TOOLING) | 8 workspace members (4 crates and 4 tools), derived with `cargo metadata --no-deps` |
+| Clippy | Both workspaces clean with `--all --all-targets -- -D warnings` |
+| Frontend line coverage | 83.12%, measured by `bash scripts/coverage-check.sh 80` |
+| Example .rii files | 172 |
 
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords
@@ -448,6 +452,8 @@ research source, and detailed description.
 | REQ-80 | **C backend diverges from the interpreter on three `00_basics` examples (found 2026-08-11 during REQ-79 verification; PRE-EXISTING — reproduced identically before the REQ-79 change).** `recursion.rii` → **SIGSEGV (exit 139)**, `guard_clauses.rii` and `pipe_operator.rii` → `RIINA: call on non-closure` + SIGABRT (exit 134). **The original diagnosis in this row — "closures" — was WRONG, and so was "correct interpreter output in all three cases": the interpreter also REFUSES `guard_clauses.rii` and `pipe_operator.rii`** (`Runtime Error: type mismatch in field access: expected record, found List`), because both use `xs.tapis(…)`/`t.panjang()` **method syntax that RIINA does not have**. Investigating turned up four distinct defects, none of them in the calling convention, all now **FIXED** (2026-08-12): **(1) collection tag collision** — `RIINA_TAG_LIST`/`MAP`/`SET` were `#define`d as 12/13/14, exactly `RIINA_TAG_BIGINT`/`DECIMAL`/`FIXED` in the `riina_tag_t` enum, so a list reached `riina_bigint_add` and was read through the wrong union member (SEGFAULT); moved to 16/17/18 with a `_Static_assert(RIINA_TAG_FIXEDBIN < RIINA_TAG_LIST)` in the emitted C so the enum cannot grow into the range again. **(2) `+` on two lists** — the interpreter concatenates, the C `riina_binop_add` had no list case and fell through to the bigint branch (crash via defect 1); now dispatches lists first through a new `riina_list_concat`. **(3) builtins were not shadowable** — the `App` lowering arm consulted `builtin_canonical` without checking the environment, so a program defining its own `kuasa` had its calls silently rerouted to the BUILTIN (a wrong-answer, not a crash); `App` now checks the environment first, matching what the `Var` arm always did. **(4) unresolvable field access silently lowered to the BASE expression**, turning `t.panjang()` into `t` and then aborting at the call with `RIINA: call on non-closure`; now refused at compile time with an error that says RIINA has no methods and suggests `panjang(x)` — so `guard_clauses.rii`/`pipe_operator.rii` are **correctly rejected by both backends** instead of diverging. Pinned by 7 tests in `riina-codegen/tests/backend_agreement.rs` (including two negatives: an unshadowed builtin still routes to the builtin, and real record `.field` projection still lowers). **(5) early return is now implemented (2026-08-12).** `Expr::Return(e)` lowered to just `e`, discarding the control flow the interpreter implements as real unwinding: `kalau n <= 1 { pulang 1; } pulang 99;` fell through to 99 (a silent wrong answer) and `faktorial` never reached its base case, so `recursion.rii` recursed until the stack died (**SIGSEGV, exit 139**). `pulang` now terminates its block with `Terminator::Return` and continues into a fresh block for the dead continuation; region closers use a new `terminate_if_open` so the enclosing `kalau` cannot overwrite the return and restore the fall-through. **The earlier note in this row — "blocked on teaching the relooper about early exits" — was based on a wrong diagnosis, and is corrected here.** Two distinct defects were actually in the way. First, the previous attempt returned from the CALLER: a ZERO-PARAMETER `fungsi` is not an IR function at all (`build_lambda` with no params returns the body unchanged, so the body is spliced into its definition site), and a `pulang 42` in a zero-arg helper made `utama` itself return 42 and skip its own output. Honouring is therefore scoped to real function bodies — enabled while lowering an `Expr::Lam` body, suppressed across a `LetRec` binding (the declaration position). Note the discriminator matters: statement sequencing ALSO desugars to `Expr::Let`, so suppressing there suppressed exactly the non-tail returns that need honouring — measured, and corrected. Second, once returns were honoured the WASM emitter broke on a genuinely new shape: when BOTH arms of an `if` end in a return, nothing rejoins, so there is no merge block and the `if`'s `(result i64)` was left on the operand stack with no phi local to receive it — `wasmtime` rejected the module with *"values remaining on stack at end of block"*. That arm was effectively dead before this change (no branch could end in a return), and now emits `unreachable`, which is both true and what makes the frame validate. Verified: `recursion.rii` **SIGSEGV → runs to completion**, agreeing with the interpreter on every line except the boolean rendering below; the whole `00_basics` corpus re-measured interp-vs-C before and after with **no other change** (13 agree, 1 build-refused, 9 interpreter-fail, 4 diverge — recursion moves from CRASH to that diverge set); 7 three-way (interp/C/WASM byte-equal) tests in `riinac/tests/early_return_differential.rs`, of which 3 fail without the fix. **(a) a `pulang` in a zero-parameter function — CLOSED 2026-08-12 by REQ-81**, which made a zero-arg `fungsi` a real `Unit -> T` function; investigating it also showed those functions were never functions at all (their bodies ran once, eagerly, before `utama`). (b) **boolean rendering — CLOSED 2026-08-12.** `ke_teks(betul)` gave `true` under the interpreter and `betul` under C. Resolved in favour of **Bahasa Melayu**: a program written in BM printing `true` is the inconsistency, and the C backend's `riina_format` had emitted `betul`/`salah` all along. The interpreter's `format_value` now matches, so `cetak`/`cetakln`/`ke_teks` agree across all three backends. **Aligning the first two exposed a third divergence and a surviving silent stub:** `ke_teks` of a Bool on WASM printed NOTHING, because the `ke_teks` type dispatch ended in `_ => wasm_i64c(code, 0)` — a null string pointer, i.e. an empty render rather than a failure. REQ-78 removed the silent stubs from the *builtin* dispatch but missed this one inside `ke_teks`'s own type dispatch. WASM now emits the `betul`/`salah` heap string (both interned unconditionally, 18 bytes) and the fallback **fails closed** with the REQ-78 diagnostic. Verified `betul`/`salah`/`1 > 0` byte-identical on interpreter, C and WASM; `07_EXAMPLES/00_basics/recursion.rii` moves DIVERGE → **AGREE**, the last divergence in that file | P0 | DONE (all 6: 4 C-backend fixes, early return, boolean rendering; the zero-arg `pulang` half was closed by REQ-68) | Gate C (REQ-70 family routing) |
 | REQ-81 | **RETIRED 2026-08-12 — a DUPLICATE of REQ-68, filed without finding it first.** REQ-81 was opened for the zero-parameter-function defect while closing REQ-80's remaining item. REQ-68 had tracked the same defect since 2026-08-06 and had already prescribed the same fix ("desugar zero-param `fungsi` to a unit-lambda `Lam(_, Unit, body)` with type `Fn(Unit, ret, eff)`, make zero-arg call sites apply `Unit`, align the driver's `utama` invocation and the typechecker's two-pass signature pre-bind"). Two rows describing one defect is exactly what Prime Directive 3 (One Plan) exists to prevent; the failure was not searching the registry before opening a row. **All content and verification evidence now lives in REQ-68, which is DONE.** The row is retired rather than deleted because commit `c7e411d` and several source comments reference the number; those comments have been retargeted to REQ-68 | — | RETIRED (see REQ-68) | Phase 2 / Gate C |
 | REQ-82 | **A `modul` block with a CAPITALIZED name defines functions nobody can call: the definition and the call site disagree (found 2026-08-12 while closing REQ-68; PRE-EXISTING).** `modul Name { fungsi f }` is FLATTENED to a top-level `Name_f` (parser, `KwMod` arm), and the comment there states this exists "so the existing `name::f` -> `name_f` qualified-call resolution (`parse_module_path`) finds the user definition". It does not. `parse_module_path` drops the module prefix entirely when the first segment starts with an uppercase letter and returns only the final segment — that branch exists so `std::teks`-style paths reach the BUILTIN namespace, but it applies to user `modul` blocks too. So the two halves line up **only for lowercase module names**, and the comment claiming they line up is wrong. Measured, both cases: `modul Masa { fungsi masa_unix() }` + `Masa::masa_unix()` resolves to the **builtin** `masa_unix` (`Effect violation: allowed Write, found Time` — the local definition is invisible); `modul Kira { fungsi tokokan() }` + `Kira::tokokan()` gives `Variable not found: tokokan`. Compounding it, the flattened name is unusable directly as well: `Kira_tokokan()` starts uppercase, so the parser reads it as a **nullary nominal-enum constructor** and the call evaluates to the tuple `(Kira_tokokan, ())` rather than calling anything. Not introduced by REQ-68, but newly VISIBLE because a zero-arg call now incurs the callee's effect — the `Masa` case previously incurred none and passed silently. Scope: make user `modul` resolution and `modul` flattening agree for any module name (either flatten case-insensitively to `Name_f` and have `parse_module_path` prefer a user definition over the builtin namespace, or reject a capitalized `modul` name outright — the second is cheaper and loses nothing, since the corpus uses it only to imitate builtin namespaces); and decide whether an uppercase flat identifier should ever be readable as an enum constructor at a CALL position. Land with tests covering both the lowercase and capitalized module cases, and a case where the local name collides with a builtin **RESOLVED 2026-08-23 (both halves).** Decision: the CALL side is the one the corpus actually uses (185 capitalized call sites across `Masa`, `SistemFail`, `Kripto`, `Rangkaian`, `Parser`, `CEmitter`, `Lexer`, `Vec`), so it was left exactly as it was and the DECLARATION gives way. (1) `modul <Capitalized>` is now a parse error (P0012 — renumbered from P0010 on 2026-08-24 when the divergent riina work was merged back, since its loop-control and linearity codes were already published as P0010/P0011 in `07_EXAMPLES/README.md` and `docs/guide/MUTABLE_STATE.md`) naming three ways out, the first of which is the migration the corpus was rewritten to use: `fungsi Ns::f(...)` — which ALREADY worked and already routes through the same `parse_module_path` as the call, so definition and call agree by construction rather than by coincidence. (2) A function whose RESOLVED name starts uppercase is a parse error (P0013); the check sits AFTER `::` resolution so `fungsi Masa::dapat_bulan` (uppercase first segment, lowercase resolved name) keeps working. The second half fixed a SILENT WRONG ANSWER, not a diagnostic gap: `fungsi Kira_tokokan(x)` parsed, and `Kira_tokokan(1)` then evaluated to the tuple `(Kira_tokokan, 1)` with no error anywhere — verified by running it. Corpus rewrite: all 14 capitalized `modul Masa` blocks removed across 7 files. The rule applied was uniform and derived from the registry, not chosen per file — a stub that merely restates a builtin is DEAD and was dropped (11 × `masa_unix`, which already lost to the builtin, so removal is behaviour-preserving), and a function with no builtin behind it was rewritten to the qualified form (6 × `Masa::dapat_bulan` / `dapat_tahun` / `dapat_hari_bulan`, which previously resolved to nothing at all). Measured before and after: corpus holds at 94/169 with no file newly failing on P0010 or P0011, 3288 Rust tests (+6), clippy clean. Negative-controlled: removing the `modul` guard makes `capitalized_modul_declaration_is_rejected` fail with the unreachable `Kira_tokokan` back in the AST; removing the `fungsi` guard fails `capitalized_function_name_is_rejected`. One non-finding worth recording so it is not rediscovered: `Kripto::cincang` does not parse, but the cause is `cincang` being a keyword, NOT the namespace — all 41 distinct capitalized paths the corpus actually uses parse, checked by sweeping them | P1 | RESOLVED | Gate C (REQ-70 family routing) |
+
+| REQ-83 | **Audit remediation (2026-09-08):** harden package extraction, locked builds, dependency resolution/cache publication, return/IFC enforcement, loop control, verification gates, TLS state/record bounds, and canonical host permission paths. **Linux mandatory validation PASS** on `codex/codespaces-remediation-p0`: 3,376 prototype tests + 323 tooling tests, both Clippy workspaces, 83.12% frontend line coverage, all 331 Coq modules built and independently kernel-rechecked, five capstones attested, and `make verify-all` passed. Codespaces follow-ups fix C11 labels before declarations, activate the pinned Rocq switch in pre-push, and bound stdlib provisioning parallelism. Secondary generated/retired-lane warnings and the Windows/native, hard-link/TOCTOU, and anonymous-return-annotation limits remain disclosed. See Part 11 for review evidence; this does not close Gate C or grant release approval. | P0 | IN PROGRESS | Gate C / compiler enforcement parity |
 
 ### Extension Protocol
 
@@ -4468,6 +4474,126 @@ shows" has ~85% of its work unblocked today and is the honest reading of "comple
 *Last updated: 2026-05-16 (Version 2.3.0 — added Part 11 Production-Readiness Discipline, REQ-21..36)*
 
 ---
+
+### Audit remediation checkpoint — 2026-09-08 (initial Windows audit)
+
+Original Windows work branch: `codex/remediation-p0`, based on `0554914cc3735fb3f1829718faa86cecb1741582`.
+This is an **uncommitted, unmerged remediation batch**, not a closure of Gate C or the roadmap.
+
+Implemented: package extraction rejects traversal, absolute/platform-ambiguous names,
+symlink/reparse parents and existing destination files; checked lengths reject truncated
+archives. Dependency build plans include the root and fail on missing source rather than
+silently skipping it. Builds honor locked versions and verify full package-tree checksums;
+legacy manifest-only checksums require `riinac pkg lock`. The resolver backtracks for later
+constraints and rejects cycles; downloads publish cache entries atomically only after
+extraction and manifest-identity validation. Return operands now
+constrain function results, including their secrecy; alias calls, branch results, while
+conditions and mutable assignments preserve/enforce secrecy. A failed assertion-style
+`pastikan` uses a compiler-internal nonreturning operation: interpreter error, C abort,
+WASM trap. `untuk` lowers to an indexed while loop, preserving enclosing-function returns,
+break/continue and tuple iteration; a Windows compiler worker reserves a 16 MiB stack.
+Actual Coq sources and metrics require zero admitted proofs and axioms;
+coverage minimums and missing/empty fuzz targets fail verification. Low-core machines
+no longer downgrade pre-push verification to fast mode. The Rust scanner and documentation
+audit recognize inline declarations outside nested comments/strings and reject missing,
+unlisted or aborted active proofs. Coq project paths compare portably on Windows.
+TLS application frames are bounded before allocation, plaintext is limited to 16 KiB,
+sequence exhaustion and manual key reinstallation fail, and failed handshakes/closed
+connections cannot preserve authentication. Canonical host paths share permission metadata;
+failed deletion and deletion through a symlink preserve the live target's ownership.
+
+Measured on Windows with Rust 1.94.1 GNU: parser **349/349**, package manager **71/71**,
+typechecker **383/383**, compiler-driver unit tests **77/77**, backend agreement
+**14/14**, tooling workspace **323/323**. The stdlib documentation comparison passes after
+normalizing checkout CRLF. The host filesystem suite passes **10/10**, and its interpreter
+integration passes after escaping Windows paths in the source fixture. Network tests are
+**21 passed / 4 failed**; all five new TLS regressions pass. Wasmtime 27.0.0 executes the guard
+regression successfully: true prints 7, false traps before printing. The Coq audit helper's
+two positive/negative tests pass, and live forbidden-token count is zero.
+Clippy with `--all-targets -- -D warnings` passes for the parser, typechecker, package
+manager, code generator and compiler driver.
+Changed shell gates pass Bash syntax checks; local hooks are installed. The complete
+`audit-docs.sh --quick` run exits 0 using the bundled Python interpreter. Final full
+verification confirms all 331 active Coq files are listed, zero admits/axioms/Abort,
+matching published proof metrics, and zero Clippy warnings. Its two blocking results
+are Rust Tests and Primary Verifier (Coq) Present; exit status remains 1. The existing
+tracked verification manifest is unchanged because this environment-incomplete run
+cannot supersede its prior attestation.
+
+**Approval withheld:** `riinac verify --full` exits 1. Mandatory Rocq/Coq compilation and
+kernel attestation cannot execute here; Windows has no Rocq toolchain or installed WSL.
+The Rust suite still fails on `/dev/urandom`-dependent TLS tests. Portable GCC 16.2 and
+Wasmtime 27 were installed only in the audit tools folder; the generated native C still
+requires POSIX `fsync`/`sys/socket.h`. This native failure was independently reproduced at
+the untouched baseline with a minimal program. All eight attempted early-return native
+differentials fail at C compilation; package-build integration is **6 passed / 2 failed**
+for the same cause. No native backend pass, full proof pass or release approval is claimed.
+
+An independent check of all 172 examples on the same Windows host measures **91**
+passing at the untouched baseline and **97** in the candidate, with **zero regressions**.
+The official unchanged **97/172** corpus gate passes. The original six return-check
+regressions are fixed by the loop lowering, and the Windows stack change recovers baseline
+failures too. The corpus floor has **not** been lowered, and release metrics are unchanged.
+
+Further audit items remain: Windows entropy/native backend support; host permission
+enforcement for distinct hardlinks and concurrent external filesystem replacement (the
+metadata mirror is not a host sandbox); and ignored anonymous-function return annotations.
+External audit, owner decisions and other existing roadmap requirements are not closed
+by these patches. Complete the remaining validation and required
+verification before committing, pushing, merging or running public sync. The failed
+verification manifest produced during setup was retained outside the repository; its
+automatic staged rewrite was restored to the original tracked manifest.
+
+### Codespaces remediation validation — 2026-09-08
+
+User-assigned branch: `codex/codespaces-remediation-p0`, preserving the original
+32-file remediation batch. The current gate remains **C — Standard Library
+Hardening / Deployability**. This is validation for desktop PR review, not a
+closure of Gate C, REQ-83, external audit, or owner-controlled release decisions.
+
+Three Codespaces follow-ups were required: C block labels now precede an empty
+statement so declarations at block entry compile under C11/GCC 9 (the existing
+empty-list differential exposed this); pre-push activates `rocq` instead of the
+obsolete `coq820` switch; and provisioning defaults `ROCQMAKEOPTIONS` to `-j2`
+because the upstream stdlib Makefile's unconditional `make -j` discards opam's
+job limit. The first stdlib attempt terminated on `Strings/Byte.vo` with error
+143; the bounded retry installed the same pins and the pin check passed.
+
+Measured Linux results: **3,376 prototype tests passed, 0 failed, 2 existing doc
+examples ignored; 323 tooling tests passed, 0 failed, 0 ignored**. No backend-tool
+opt-out was set. Both workspaces pass Clippy with `--all --all-targets -- -D
+warnings`. Frontend line coverage is **83.12%**, above the unchanged 80% gate.
+The existing 97/172 corpus gate, C/WASM corpus differential, and all nine
+return/guard differential tests pass. The five structural constant-time targets
+are clean and the harness detects its positive control. SMT checks **37/37 unsat**
+across the two scoped files. SBOM, documentation, proof-ledger, security, and public
+quality gates pass. The playground compiles to a real WASM module and the Vite
+production build passes after the metrics and WASM prebuild steps.
+
+Pinned **Rocq 9.1.1 + stdlib 9.1.0 on OCaml 4.14.2** compiled all **331** active
+modules, with **0 warnings** against budget 2. The independent command `rocq check
+-bytecode-compiler yes -Q . RIINA <all active modules>` checked every active module
+and its dependencies, without admission flags, and exited 0. The initial
+interpreter-reducer run was interrupted for performance and is not counted as a
+pass. **`make verify-all` passed**, including a fresh 331-module rebuild and
+`Print Assumptions` on all five capstones; the existing reviewed funext allowance
+is unchanged. Active source counts are **12,678 Qed, 0 Admitted, 0 declared Axiom,
+0 Abort**. Generated machine-specific Rocq configuration and verifier-manifest
+paths are excluded from the commit.
+
+Secondary-lane results remain informational and must not inflate proof claims:
+Lean's shim builds but its type-system canary still has **187 errors**; the native
+Isabelle `RIINA/Core` smoke build passes, while the verifier's separate generated
+`TypeSystem` session fails lexical/proposition parsing; the retired F* binary's
+loader fails because it needs glibc 2.35 and this host has 2.31. TLA+ and Alloy smoke
+checks pass. These observations do not upgrade generated or retired lanes.
+Windows native support, hard-link/concurrent-replacement enforcement in the host
+permission mirror, and anonymous-function return annotations remain follow-ups.
+
+Review evidence: [machine-readable summary](reports/codespaces_remediation_validation.json)
+and [normalized validation logs (gzip)](reports/codespaces_remediation_validation.txt.gz).
+The raw installation and verification logs are retained separately for desktop
+review. Merge and public sync remain outside this validation handoff.
 
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 

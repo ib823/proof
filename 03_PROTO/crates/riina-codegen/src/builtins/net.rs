@@ -77,6 +77,9 @@ use riina_tls::{wire, HashAlg, RecordKeys};
 /// hash parameterisation this was hard-wired to SHA-256, which paired with
 /// AES-256-GCM corresponds to NO registered suite.
 const TLS_HASH: HashAlg = HashAlg::Sha384;
+// Application frames contain at most one TLS-sized plaintext plus its GCM tag.
+const TLS_TAG_LEN: usize = 16;
+const MAX_APPLICATION_RECORD: usize = wire::MAX_PLAINTEXT + TLS_TAG_LEN;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -195,6 +198,9 @@ struct Conn {
     /// True only after an AUTHENTICATED handshake — i.e. the full Coq
     /// `tls_connected` conjunction holds for this connection.
     authenticated: bool,
+    /// Never reset: installing caller keys twice could reuse a GCM nonce even
+    /// after a failed handshake has discarded the active TLS state.
+    tls_started: bool,
 }
 
 /// One tracked listener: the enforcing machine held in LISTEN plus the real
@@ -298,6 +304,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                         is_client: true,
                         tls: None,
                         authenticated: false,
+                        tls_started: false,
                     },
                 );
                 Value::Int(id)
@@ -380,6 +387,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .on_event(TcpEvent::Close)
                     .map_err(|_| err("jaring: not established"))?;
                 drop(conn.stream.take());
+                conn.tls = None;
+                conn.authenticated = false;
                 for ev in [TcpEvent::AckReceived, TcpEvent::FinReceived, TcpEvent::Timeout] {
                     conn.machine
                         .on_event(ev)
@@ -484,6 +493,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                         is_client: false,
                         tls: None,
                         authenticated: false,
+                        tls_started: false,
                     },
                 );
                 Value::Int(id)
@@ -544,6 +554,11 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 if conn.machine.state() != TcpState::Established {
                     return Err(err("jaring: not established"));
                 }
+                // Reinstalling the same caller secret would restart its GCM
+                // nonce sequence. Require a fresh connection for manual keys.
+                if conn.tls_started {
+                    return Err(err("jaring_tls: keys already installed; open a new connection"));
+                }
                 let (send, recv) = if conn.is_client {
                     (c_keys, s_keys)
                 } else {
@@ -555,6 +570,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     recv,
                     recv_seq: 0,
                 });
+                conn.authenticated = false;
+                conn.tls_started = true;
                 Ok(Value::Bool(true))
             })?
         }
@@ -589,7 +606,11 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .conns
                     .get(&id)
                     .ok_or_else(|| err("jaring: unknown connection"))?;
-                Ok(Value::Bool(conn.authenticated && conn.tls.is_some()))
+                Ok(Value::Bool(
+                    conn.authenticated
+                        && conn.tls.is_some()
+                        && conn.machine.state() == TcpState::Established,
+                ))
             })?
         }
         // AUTHENTICATED handshake: as `jaring_tls_jabat`, plus RFC 7250
@@ -601,10 +622,10 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         "jaring_tls_jabat_sah" => {
             let id = as_int(arg, name)?;
             let (mut stream, is_client) = NET.with(|n| -> Result<_> {
-                let st = &*n.borrow();
+                let st = &mut *n.borrow_mut();
                 let conn = st
                     .conns
-                    .get(&id)
+                    .get_mut(&id)
                     .ok_or_else(|| err("jaring: unknown connection"))?;
                 if conn.machine.state() != TcpState::Established {
                     return Err(err("jaring: not established"));
@@ -615,6 +636,11 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .ok_or_else(|| err("jaring: not established"))?
                     .try_clone()
                     .map_err(|e| err(format!("jaring_tls: jabat: {e}")))?;
+                // A new handshake invalidates old channel evidence even if
+                // entropy, I/O, or peer verification subsequently fails.
+                conn.tls = None;
+                conn.authenticated = false;
+                conn.tls_started = true;
                 Ok((s, conn.is_client))
             })?;
 
@@ -698,10 +724,10 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             let id = as_int(arg, name)?;
             // Take the socket out of the borrow: the handshake blocks on I/O.
             let (mut stream, is_client) = NET.with(|n| -> Result<_> {
-                let st = &*n.borrow();
+                let st = &mut *n.borrow_mut();
                 let conn = st
                     .conns
-                    .get(&id)
+                    .get_mut(&id)
                     .ok_or_else(|| err("jaring: unknown connection"))?;
                 if conn.machine.state() != TcpState::Established {
                     return Err(err("jaring: not established"));
@@ -712,6 +738,9 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .ok_or_else(|| err("jaring: not established"))?
                     .try_clone()
                     .map_err(|e| err(format!("jaring_tls: jabat: {e}")))?;
+                conn.tls = None;
+                conn.authenticated = false;
+                conn.tls_started = true;
                 Ok((s, conn.is_client))
             })?;
 
@@ -773,6 +802,9 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 )));
             };
             let (id, data) = as_pair_int_str(arg, name)?;
+            if data.len() > wire::MAX_PLAINTEXT {
+                return Err(err("jaring_tls: record too large"));
+            }
             NET.with(|n| -> Result<Value> {
                 let st = &mut *n.borrow_mut();
                 let conn = st
@@ -786,11 +818,13 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .tls
                     .as_mut()
                     .ok_or_else(|| err("jaring_tls: no keys installed"))?;
+                let next_seq = tls.send_seq.checked_add(1)
+                    .ok_or_else(|| err("jaring_tls: send sequence exhausted"))?;
                 let sealed = tls
                     .send
                     .protect(tls.send_seq, &[], data.as_bytes())
                     .map_err(|_| err("jaring_tls: seal failed"))?;
-                tls.send_seq += 1;
+                tls.send_seq = next_seq;
                 let stream = conn
                     .stream
                     .as_mut()
@@ -823,6 +857,8 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .tls
                     .as_mut()
                     .ok_or_else(|| err("jaring_tls: no keys installed"))?;
+                let next_seq = tls.recv_seq.checked_add(1)
+                    .ok_or_else(|| err("jaring_tls: receive sequence exhausted"))?;
                 let stream = conn
                     .stream
                     .as_mut()
@@ -832,6 +868,13 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .read_exact(&mut len_buf)
                     .map_err(|e| err(format!("jaring_tls: terima: {e}")))?;
                 let len = u32::from_be_bytes(len_buf) as usize;
+                if !(TLS_TAG_LEN..=MAX_APPLICATION_RECORD).contains(&len) {
+                    // Reject before allocating or reading attacker-sized data.
+                    // Framing is lost, so this TLS session cannot be reused.
+                    conn.tls = None;
+                    conn.authenticated = false;
+                    return Err(err("jaring_tls: record length out of range"));
+                }
                 let mut sealed = vec![0u8; len];
                 stream
                     .read_exact(&mut sealed)
@@ -840,7 +883,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     .recv
                     .unprotect(tls.recv_seq, &[], &sealed)
                     .map_err(|_| err("jaring_tls: record authentication failed"))?;
-                tls.recv_seq += 1;
+                tls.recv_seq = next_seq;
                 Ok(Value::String(String::from_utf8_lossy(&plain).into_owned()))
             })?
         }
@@ -1111,6 +1154,108 @@ mod tests {
             matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("not established")),
             "keying a closed connection must be rejected, got {res:?}"
         );
+    }
+
+    #[test]
+    fn tls_rejects_invalid_lengths_before_payload_reads() {
+        for length in [0, 15, MAX_APPLICATION_RECORD as u32 + 1, u32::MAX] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let addr = listener.local_addr().unwrap();
+            let peer = std::thread::spawn(move || {
+                let (mut socket, _) = listener.accept().unwrap();
+                socket.write_all(&length.to_be_bytes()).unwrap();
+                // No payload is supplied. A payload read would return EOF
+                // instead of the required bounds error.
+            });
+            let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
+            apply("jaring_tls_kunci", &pair(Value::Int(id), s("test record material"))).unwrap();
+            let result = apply("jaring_tls_terima", &Value::Int(id));
+            assert!(matches!(&result, Err(Error::InvalidOperation(m)) if m.contains("record length out of range")), "{length}: {result:?}");
+            assert_eq!(apply("jaring_tls_disahkan", &Value::Int(id)).unwrap(), Some(Value::Bool(false)));
+            assert!(apply("jaring_tls_hantar", &pair(Value::Int(id), s("x"))).is_err());
+            apply("jaring_tutup", &Value::Int(id)).unwrap();
+            peer.join().unwrap();
+        }
+    }
+
+    #[test]
+    fn tls_receive_accepts_empty_and_maximum_plaintext() {
+        for size in [0, wire::MAX_PLAINTEXT] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let addr = listener.local_addr().unwrap();
+            const MATERIAL: &str = "test boundary material";
+            let peer = std::thread::spawn(move || {
+                let (mut socket, _) = listener.accept().unwrap();
+                let traffic = riina_tls::derive_secret(TLS_HASH, MATERIAL.as_bytes(), b"s ap traffic", &[]).unwrap();
+                let keys = RecordKeys::derive(TLS_HASH, &traffic).unwrap();
+                let sealed = keys.protect(0, &[], &vec![b'x'; size]).unwrap();
+                socket.write_all(&(sealed.len() as u32).to_be_bytes()).unwrap();
+                socket.write_all(&sealed).unwrap();
+            });
+            let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
+            apply("jaring_tls_kunci", &pair(Value::Int(id), s(MATERIAL))).unwrap();
+            assert_eq!(apply("jaring_tls_terima", &Value::Int(id)).unwrap(), Some(Value::String("x".repeat(size))));
+            apply("jaring_tutup", &Value::Int(id)).unwrap();
+            peer.join().unwrap();
+        }
+    }
+
+    #[test]
+    fn tls_manual_keys_cannot_restart_nonce_sequences() {
+        let addr = spawn_echo();
+        let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
+        let key_arg = pair(Value::Int(id), s("test manual material"));
+        apply("jaring_tls_kunci", &key_arg).unwrap();
+        NET.with(|n| {
+            let mut state = n.borrow_mut();
+            let conn = state.conns.get_mut(&id).unwrap();
+            conn.tls.as_mut().unwrap().send_seq = 7;
+            conn.authenticated = true;
+        });
+        assert!(apply("jaring_tls_kunci", &key_arg).is_err());
+        assert_eq!(NET.with(|n| n.borrow().conns[&id].tls.as_ref().unwrap().send_seq), 7);
+        apply("jaring_tutup", &Value::Int(id)).unwrap();
+        assert_eq!(apply("jaring_tls_disahkan", &Value::Int(id)).unwrap(), Some(Value::Bool(false)));
+    }
+
+    #[test]
+    fn tls_failed_handshakes_discard_previous_authentication() {
+        for op in ["jaring_tls_jabat", "jaring_tls_jabat_sah"] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let addr = listener.local_addr().unwrap();
+            let peer = std::thread::spawn(move || {
+                let (socket, _) = listener.accept().unwrap();
+                socket.shutdown(std::net::Shutdown::Both).unwrap();
+            });
+            let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
+            apply("jaring_tls_kunci", &pair(Value::Int(id), s("test handshake material"))).unwrap();
+            NET.with(|n| n.borrow_mut().conns.get_mut(&id).unwrap().authenticated = true);
+            assert!(apply(op, &Value::Int(id)).is_err());
+            assert_eq!(apply("jaring_tls_disahkan", &Value::Int(id)).unwrap(), Some(Value::Bool(false)));
+            assert!(NET.with(|n| n.borrow().conns[&id].tls.is_none()));
+            assert!(apply("jaring_tls_kunci", &pair(Value::Int(id), s("test handshake material"))).is_err());
+            apply("jaring_tutup", &Value::Int(id)).unwrap();
+            peer.join().unwrap();
+        }
+    }
+
+    #[test]
+    fn tls_send_limits_and_sequence_exhaustion_fail_closed() {
+        let addr = spawn_echo();
+        let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
+        apply("jaring_tls_kunci", &pair(Value::Int(id), s("test sequence material"))).unwrap();
+        let huge = "x".repeat(wire::MAX_PLAINTEXT + 1);
+        assert!(matches!(apply("jaring_tls_hantar", &pair(Value::Int(id), s(&huge))), Err(Error::InvalidOperation(m)) if m.contains("record too large")));
+        NET.with(|n| {
+            let mut state = n.borrow_mut();
+            let tls = state.conns.get_mut(&id).unwrap().tls.as_mut().unwrap();
+            assert_eq!(tls.send_seq, 0);
+            tls.send_seq = u64::MAX;
+            tls.recv_seq = u64::MAX;
+        });
+        assert!(matches!(apply("jaring_tls_hantar", &pair(Value::Int(id), s("x"))), Err(Error::InvalidOperation(m)) if m.contains("sequence exhausted")));
+        assert!(matches!(apply("jaring_tls_terima", &Value::Int(id)), Err(Error::InvalidOperation(m)) if m.contains("sequence exhausted")));
+        apply("jaring_tutup", &Value::Int(id)).unwrap();
     }
 
     #[test]

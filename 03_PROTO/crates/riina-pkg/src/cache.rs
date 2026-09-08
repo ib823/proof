@@ -36,11 +36,13 @@ impl Cache {
 
     /// Check if a package is cached.
     pub fn has(&self, name: &str, version: &Version) -> bool {
-        self.package_path(name, version).is_dir()
+        crate::registry::validate_package_name(name).is_ok()
+            && self.package_path(name, version).is_dir()
     }
 
     /// Store a package directory in cache.
     pub fn put(&self, name: &str, version: &Version, source: &Path) -> Result<()> {
+        crate::registry::validate_package_name(name)?;
         let dest = self.package_path(name, version);
         if dest.exists() {
             return Ok(()); // already cached
@@ -50,6 +52,7 @@ impl Cache {
 
     /// Remove a specific cached version.
     pub fn remove(&self, name: &str, version: &Version) -> Result<()> {
+        crate::registry::validate_package_name(name)?;
         let path = self.package_path(name, version);
         if path.exists() {
             std::fs::remove_dir_all(&path).map_err(|e| PkgError::io(&path, e))?;
@@ -142,6 +145,8 @@ mod tests {
 
         cache.remove("foo", &v).unwrap();
         assert!(!cache.has("foo", &v));
+        assert!(cache.remove("../outside", &v).is_err());
+        assert!(cache.put("../outside", &v, &src).is_err());
 
         let _ = std::fs::remove_dir_all(&tmp);
     }

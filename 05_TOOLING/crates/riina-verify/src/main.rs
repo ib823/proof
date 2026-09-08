@@ -726,7 +726,8 @@ fn verify_coverage(ctx: &mut VerifyContext, minimum: u8, html: bool) -> Result<(
         return Err(VerifyError::ToolNotFound("cargo-llvm-cov".to_string()));
     }
 
-    let mut args = vec!["llvm-cov", "--all-features"];
+    let minimum_arg = minimum.to_string();
+    let mut args = vec!["llvm-cov", "--all-features", "--fail-under-lines", &minimum_arg];
     if html {
         args.push("--html");
     }
@@ -752,8 +753,7 @@ fn run_fuzzing(
     ctx.log(&format!("Running fuzzing for {duration} seconds"));
 
     if !check_tool("cargo-fuzz") {
-        ctx.log("⚠ cargo-fuzz not available");
-        return Ok(());
+        return Err(VerifyError::ToolNotFound("cargo-fuzz".to_string()));
     }
 
     // List fuzz targets
@@ -761,6 +761,11 @@ fn run_fuzzing(
         .args(["+nightly", "fuzz", "list"])
         .current_dir(&ctx.root)
         .output()?;
+    if !output.status.success() {
+        return Err(VerifyError::VerificationFailed(format!(
+            "Cannot list fuzz targets: {}", String::from_utf8_lossy(&output.stderr)
+        )));
+    }
 
     let targets: Vec<String> = String::from_utf8_lossy(&output.stdout)
         .lines()
@@ -768,8 +773,7 @@ fn run_fuzzing(
         .collect();
 
     if targets.is_empty() {
-        ctx.log("No fuzz targets found");
-        return Ok(());
+        return Err(VerifyError::VerificationFailed("No fuzz targets found".into()));
     }
 
     let targets_to_run: Vec<&str> = if let Some(t) = target {
@@ -782,7 +786,6 @@ fn run_fuzzing(
         ctx.log(&format!("Fuzzing: {target}"));
         let start = Instant::now();
 
-        let duration_str = duration.to_string();
         let max_time = format!("-max_total_time={duration}");
 
         let passed = run_cargo(ctx, &["+nightly", "fuzz", "run", target, "--", &max_time])?;
