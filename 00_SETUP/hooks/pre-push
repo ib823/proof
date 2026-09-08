@@ -13,7 +13,7 @@ fi
 # Source opam environment if available
 # (needed for Coq compilation via riinac verify --full)
 if command -v opam &> /dev/null; then
-    eval $(opam env --switch=coq820 2>/dev/null) || true
+    eval "$(opam env --switch=rocq 2>/dev/null)"
 fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -55,16 +55,10 @@ if [ -z "$RIINAC" ] || [ "$REBUILD_NEEDED" -eq 1 ]; then
 fi
 
 # ── Step 2: Run riinac verify ─────────────────────────────────────
-# On resource-constrained machines (<=2 cores), use --fast to avoid OOM/crash
-# from compiling 250+ Coq files. Pre-commit hook already validates Coq individually.
-CORES=$(nproc 2>/dev/null || echo 4)
-if [ "$CORES" -le 2 ]; then
-    VERIFY_MODE="--fast"
-    echo "[1/4] Running riinac verify --fast (${CORES}-core machine; Coq verified at commit time)..."
-else
-    VERIFY_MODE="--full"
-    echo "[1/4] Running riinac verify --full..."
-fi
+# CPU count may limit parallelism, but must never remove proof verification.
+# Pre-commit runs the fast Rust checks and does not compile the Coq corpus.
+VERIFY_MODE="--full"
+echo "[1/4] Running riinac verify --full..."
 "$RIINAC" verify $VERIFY_MODE || {
     echo "BLOCKED: riinac verify $VERIFY_MODE failed"
     exit 1

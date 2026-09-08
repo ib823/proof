@@ -31,6 +31,13 @@ impl Version {
         } else {
             (s, None)
         };
+        if pre.as_ref().is_some_and(|pre| {
+            pre.split('.').any(|part| {
+                part.is_empty() || !part.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+            })
+        }) {
+            return Err(PkgError::InvalidVersion(s.to_string()));
+        }
         let parts: Vec<&str> = ver_part.split('.').collect();
         if parts.len() != 3 {
             return Err(PkgError::InvalidVersion(s.to_string()));

@@ -6331,7 +6331,10 @@ impl WasmBackend {
             }
             Instruction::BuiltinCall { name, arg } => {
                 // Route builtins: cetakln/cetak → WASI fd_write(stdout)
-                if name == "cetakln" || name == "cetak" {
+                if name == "riina_guard_fail" {
+                    code.push(0x00); // unreachable: failed guard never returns
+                    wasm_i64c(code, 0);
+                } else if name == "cetakln" || name == "cetak" {
                     if matches!(
                         ctx.var_to_ty.get(arg),
                         Some(Ty::Int) | Some(Ty::CInt) | Some(Ty::IntN { .. })

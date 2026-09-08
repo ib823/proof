@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-09-08T04:05:33.894376+00:00",
+  "scope": "REQ-83 remediation validation; Gate C remains open",
+  "branch": "codex/codespaces-remediation-p0",
+  "baseCommit": "0554914cc3735fb3f1829718faa86cecb1741582",
+  "platform": "Ubuntu 20.04, Linux x86_64",
+  "toolchains": {
+    "rust": "1.94.1",
+    "rocqCore": "9.1.1",
+    "rocqStdlib": "9.1.0",
+    "ocaml": "4.14.2",
+    "wasmtime": "27.0.0"
+  },
+  "tests": {
+    "proto": {
+      "passed": 3376,
+      "failed": 0,
+      "ignored": 2
+    },
+    "tooling": {
+      "passed": 323,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "frontendLineCoverage": {
+    "percent": 83.12,
+    "minimumPercent": 80
+  },
+  "coq": {
+    "activeModules": 331,
+    "qed": 12678,
+    "admitted": 0,
+    "declaredAxioms": 0,
+    "abort": 0,
+    "warnings": 0,
+    "allModuleKernelRecheckExit": 0,
+    "capstoneAssumptionGate": "PASS"
+  },
+  "kernelRecheckCommand": "rocq check -bytecode-compiler yes -Q . RIINA <all active modules>; no dependency admissions",
+  "playgroundWasmBytes": 1544535,
+  "websiteBuild": "vite build passed; generate-metrics.sh and build-wasm.sh prebuild steps ran separately, and the WASM artifact was checked to be non-stub",
+  "requiredChecks": "PASS; see complete command output in the evidence file",
+  "knownLimitations": [
+    "Two existing prototype documentation examples remain ignored; no missing-backend-tool opt-out was set.",
+    "Lean remains generated: the default shim builds but the core canary does not elaborate.",
+    "The Isabelle RIINA/Core smoke passes, but the separate generated TypeSystem session checked by the full verifier fails lexical/proposition parsing. The lane remains retired.",
+    "Retired F* smoke provisioning failed: the pinned binary requires glibc 2.35; this host has glibc 2.31. The loader error is retained, not counted as a proof pass.",
+    "This validates the Linux remediation batch, not Windows native support or closure of Gate C, external audits, or owner decisions.",
+    "The host permission metadata mirror is not a sandbox against hard links or concurrent external replacement; anonymous-function return annotations remain an audit follow-up."
+  ],
+  "sourceSha256": {
+    "00_SETUP/hooks/pre-push": "b06dfb9b48609c72c7c6056b3d832e8c8b7fbfe99b5675dc2f056a7cca424c9f",
+    "03_PROTO/crates/riina-codegen/src/builtins/fail.rs": "294553af41930101753b67174ed62cb2cd5ad4629c9fa2a2512ee17b065a548c",
+    "03_PROTO/crates/riina-codegen/src/builtins/keselamatan.rs": "9d819814f2510f7dd8bcd737776fcce0ffc92cd32e84c0dd67d0291185e478ed",
+    "03_PROTO/crates/riina-codegen/src/builtins/mod.rs": "f2e4a5e78c1bbdf8839dd8be657b2985d2e2a97b47c334a59bc145fd430ef190",
+    "03_PROTO/crates/riina-codegen/src/builtins/net.rs": "a1ff7c141072162f8ea5587eeb47418d3ccc1a15fba17c4d26bd64d25f3ce1ab",
+    "03_PROTO/crates/riina-codegen/src/builtins/ujian.rs": "37f1051bbc44f3b456ea364363df185b878302d622951af86a9b9256945d44de",
+    "03_PROTO/crates/riina-codegen/src/emit.rs": "e58ab4f770eef3be53494f06417c31923d86a001d953fa370f096492efed90e2",
+    "03_PROTO/crates/riina-codegen/src/interp.rs": "6402106a01e8ce2485f9500ddeee5e3e6736aa5e078263d6fe8bb37e6f3288f0",
+    "03_PROTO/crates/riina-codegen/src/lower.rs": "637ba9bb009040637d7c0ff4974d34f65e8ae75ab15e95793b910a452f3ce9a9",
+    "03_PROTO/crates/riina-codegen/src/wasm.rs": "4f46e59ed92b5db05693c9c12a7d7fd428b26bbe8e3705142a76397b277e2abc",
+    "03_PROTO/crates/riina-codegen/tests/backend_agreement.rs": "df580c00273258b5b9e69a6b9a244b02b7c338c7d7d3c0d91396719e4ee238b4",
+    "03_PROTO/crates/riina-parser/src/lib.rs": "fa22984d08802966d2238b7b6b3f0688ec686ed46d5f1ac5fe00cae408b8dd90",
+    "03_PROTO/crates/riina-parser/src/tests.rs": "cfd083366a3adeb0eafee747adf682305cb5ff7968cd4a508ac3f3fb4d83ba5d",
+    "03_PROTO/crates/riina-pkg/src/build.rs": "dcf68b1b8fddcf7bac20a031775f608967c0e2e98e014dbe26f47adc07414367",
+    "03_PROTO/crates/riina-pkg/src/cache.rs": "d5d79bf1765e180956762f5f0a31f8944fbfbaf029d63e4891ff41fd769d26de",
+    "03_PROTO/crates/riina-pkg/src/cli.rs": "d690782f11ba8a4f100d1e7bd97dee1766a42b8c7f4319d092b7b797a89bcb49",
+    "03_PROTO/crates/riina-pkg/src/integrity.rs": "29f5bba5ea3daa76fb26ad04eac41c2f69fb2d1c5c4581ea8d23fdfe9a55f900",
+    "03_PROTO/crates/riina-pkg/src/registry.rs": "967a8a7fe6bbdd2286520a5a67d5f117b29fde06aeaaa417678a67379a9c369a",
+    "03_PROTO/crates/riina-pkg/src/resolve.rs": "3c0eb41e1c96585417291fdce1743c2067cf84484dd90f8465fd547857012888",
+    "03_PROTO/crates/riina-pkg/src/tarball.rs": "e6f69d31292c759dfb8b994e5faccd4e64898e8272a3d23803b5943b14eacbbd",
+    "03_PROTO/crates/riina-pkg/src/version.rs": "ef0324f709779425779c632201a9a633906e41fdd7db7c4a96e76c2c72f1173b",
+    "03_PROTO/crates/riina-typechecker/src/lib.rs": "4e79231f959db6bb4ceaa1fa8ed7f6df76a2418f29224d9d4c26a30d36e24621",
+    "03_PROTO/crates/riina-typechecker/src/program.rs": "aeea88168a198017f09660209168a277d855fe671bd5e71c732dfe751c9160f9",
+    "03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs": "726b7c5b4c0665845fd4b2898edb1ffb92455ea5671822dd4d2d6e91fcb2f4e7",
+    "03_PROTO/crates/riinac/src/main.rs": "764c0cc76f6ef42811ebdee1804d3cef7d890f1feb0186ed004ab447c37cbb8f",
+    "03_PROTO/crates/riinac/src/verify.rs": "9eb85573e5e54f249bc15ce42e0ebaadadacfa9156135791fa42e632fb6aa2e7",
+    "03_PROTO/crates/riinac/tests/early_return_differential.rs": "61636e15c548fecfd937fba5b50676e7a58e7c6e0cd09ce8cf60fe9640d2c75d",
+    "05_TOOLING/crates/riina-verify/src/main.rs": "f7b29aaba6108b60136ea11a9618d76399658988a3bb249044ed8bedad196dc7",
+    "scripts/audit-docs.sh": "2a02bf93ed4142e148aeee94cbabe32e7afa6ef3df2cfa458a06f531a696a6a3",
+    "scripts/coq-source-counts.py": "ccaf20a2f0d34aaaaa62b95fd95646167396e565501c1c4d51c2005ab912c6be",
+    "scripts/provision-coq.sh": "af93aea090368b7a5545d57bcc0362a67cf444bf9fdbfd5fb324e33faa709f2e",
+    "scripts/test-coq-source-counts.py": "81a266b8beb0a99340fc0a1b6535e07e54b9eb7ed13c3133b284ad41a4b06cc5"
+  },
+  "evidenceFile": "reports/codespaces_remediation_validation.txt.gz",
+  "evidenceEncoding": "gzip-compressed UTF-8 text; machine paths normalized",
+  "evidenceSha256": "44be17395ff5b1cc3a1c36304592934bd5edf18d490d2efc21935102da38522a"
+}

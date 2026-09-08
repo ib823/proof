@@ -35,6 +35,7 @@
 #   RIINA_COQ_USE_CURRENT_SWITCH=1   install into the ACTIVE switch instead of
 #                                    creating one (used by CI, where
 #                                    ocaml/setup-ocaml has already made a switch)
+#   ROCQMAKEOPTIONS                 stdlib make options (default: -j2)
 # ============================================================================
 
 set -euo pipefail
@@ -176,6 +177,10 @@ fi
 opam update "$ROCQ_REPO_NAME" >/dev/null 2>&1 || opam update >/dev/null 2>&1 || true
 
 info "installing the pinned prover (NO unpinned fallback — fails closed)..."
+# The stdlib's outer Makefile invokes `make -j`, discarding opam's job limit.
+# Bound its inner build explicitly so small Codespaces do not launch an
+# unbounded number of proof compiler processes. This changes parallelism only.
+export ROCQMAKEOPTIONS="${ROCQMAKEOPTIONS:--j2}"
 # Deliberately NO `|| opam install rocq-core rocq-stdlib`. An unpinned fallback
 # is what let CI report green on an unknown toolchain; if the pin is
 # unavailable, that is a real problem and must surface, not be papered over.

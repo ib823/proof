@@ -51,26 +51,16 @@ count_qed_active() {
 }
 
 count_admitted_active() {
-    local total=0
-    while IFS= read -r f; do
-        local count=$(grep -cP '^\s*Admitted\.' "$f" 2>/dev/null || true)
-        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-            total=$((total + count))
-        fi
-    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
-    echo "$total"
+    python3 "$REPO_ROOT/scripts/coq-source-counts.py" "$REPO_ROOT/02_FORMAL/coq" Admitted admit
+}
+
+count_axioms_active() {
+    python3 "$REPO_ROOT/scripts/coq-source-counts.py" "$REPO_ROOT/02_FORMAL/coq" Axiom Axioms
 }
 
 # REQ-21 durability: active-scope Coq Abort count. Must stay 0 forever.
 count_abort_active() {
-    local total=0
-    while IFS= read -r f; do
-        local count=$(grep -cP '^\s*Abort\.' "$f" 2>/dev/null || true)
-        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-            total=$((total + count))
-        fi
-    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
-    echo "$total"
+    python3 "$REPO_ROOT/scripts/coq-source-counts.py" "$REPO_ROOT/02_FORMAL/coq" Abort
 }
 
 # REQ-23 durability: active-scope Coq Parameter declarations.
@@ -855,6 +845,13 @@ if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo -e "${CYAN}Checking Gate A invariants...${NC}"
+fi
+
+# REQ-05: the former admitted count was printed but never gated.
+ACTUAL_AXIOMS=$(count_axioms_active)
+if [ "$ACTUAL_ADMITTED" -ne 0 ] || [ "$ACTUAL_AXIOMS" -ne 0 ]; then
+    echo -e "${RED}[ERROR]${NC} Coq active scope: $ACTUAL_ADMITTED Admitted, $ACTUAL_AXIOMS Axiom declarations (both must be 0; REQ-05)"
+    DISCREPANCIES=$((DISCREPANCIES + 1))
 fi
 
 # REQ-21: Coq Abort must remain 0 in active scope

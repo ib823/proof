@@ -11,6 +11,8 @@ use riina_types::{
     BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage,
 };
 use std::collections::{HashMap, HashSet};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub mod multiparty;
 pub mod program;
@@ -588,6 +590,8 @@ pub struct TypingContext {
     /// Granted capabilities: effects authorized by enclosing Grant expressions
     /// Matches Coq T_Grant/T_Require (Typing.v:209-215)
     pub granted: HashSet<Effect>,
+    /// Returns collected in the current function, shared across lexical scopes.
+    pub return_types: Rc<RefCell<Vec<Ty>>>,
 }
 
 impl Default for TypingContext {
@@ -603,6 +607,7 @@ impl TypingContext {
             sigma: StoreTy::new(),
             delta: SecurityLevel::Public,
             granted: HashSet::new(),
+            return_types: Rc::default(),
         }
     }
 
@@ -613,6 +618,7 @@ impl TypingContext {
             sigma: StoreTy::new(),
             delta,
             granted: HashSet::new(),
+            return_types: Rc::default(),
         }
     }
 
@@ -623,6 +629,7 @@ impl TypingContext {
             sigma: self.sigma.clone(),
             delta: self.delta,
             granted: self.granted.clone(),
+            return_types: self.return_types.clone(),
         }
     }
 
@@ -634,6 +641,7 @@ impl TypingContext {
             sigma: self.sigma.clone(),
             delta: self.delta,
             granted: self.granted.clone(),
+            return_types: self.return_types.clone(),
         }
     }
 
@@ -646,6 +654,7 @@ impl TypingContext {
             sigma: self.sigma.clone(),
             delta: self.delta,
             granted,
+            return_types: self.return_types.clone(),
         }
     }
 
@@ -671,6 +680,7 @@ impl TypingContext {
 pub struct Context {
     vars: HashMap<Ident, Ty>,
     level: SecurityLevel,
+    return_types: Rc<RefCell<Vec<Ty>>>,
 }
 
 impl Default for Context {
@@ -684,6 +694,7 @@ impl Context {
         Self {
             vars: HashMap::new(),
             level: SecurityLevel::Public,
+            return_types: Rc::default(),
         }
     }
 
@@ -693,6 +704,7 @@ impl Context {
         Self {
             vars: new_vars,
             level: self.level,
+            return_types: self.return_types.clone(),
         }
     }
 
@@ -717,6 +729,7 @@ impl Context {
             sigma: StoreTy::new(),
             delta: self.level,
             granted: HashSet::new(),
+            return_types: self.return_types.clone(),
         }
     }
 }
@@ -2796,6 +2809,82 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 /// is `Any` (RIINA's wildcard, produced for example by unannotated
 /// Option/Result payloads), the other more concrete type is used; otherwise the
 /// first is returned (they are compatible, so either is acceptable).
+/// A return never falls through, but its value still constrains its function.
+fn function_result_type(mut tail: Ty, returns: &[Ty]) -> Result<Ty, TypeError> {
+    for returned in returns {
+        if !types_compatible(&tail, returned) {
+            return Err(TypeError::TypeMismatch { expected: tail, found: returned.clone() });
+        }
+        tail = join_branch_types(tail, returned.clone());
+    }
+    Ok(tail)
+}
+
+fn label_at_level(ty: Ty, level: SecurityLevel) -> Ty {
+    if level.leq(ty_secrecy_level(&ty).unwrap_or(SecurityLevel::Public)) { ty }
+    else if level == SecurityLevel::Secret { Ty::Secret(Box::new(ty)) }
+    else { Ty::Labeled(Box::new(ty), level) }
+}
+
+/// Parser-generated iteration primitives cannot be shadowed by source names.
+fn internal_primitive_type(name: &str) -> Option<Ty> {
+    let (arg, result) = match name {
+        "$guard_fail" => (Ty::Unit, Ty::Any),
+        "$for_len" => (Ty::Any, Ty::Int),
+        "$for_get" => (Ty::Any, Ty::Any),
+        _ => return None,
+    };
+    Some(Ty::Fn(Box::new(arg), Box::new(result), Effect::Pure))
+}
+
+/// Preserve an iterable's element type through lowering, so a return from a
+/// `untuk` body is checked against the enclosing function's declared result.
+fn internal_primitive_result(callee: &Expr, argument: &Ty, fallback: Ty) -> Result<Ty, TypeError> {
+    let Expr::Var(name) = callee else { return Ok(fallback) };
+    let (argument, _) = strip_label(argument);
+    let list = match (name.as_str(), argument) {
+        ("$for_len", list) => list,
+        ("$for_get", Ty::Prod(list, _)) => list.as_ref(),
+        ("$for_get", Ty::Any) => return Ok(Ty::Any),
+        _ => return Ok(fallback),
+    };
+    let (list, level) = strip_label(list);
+    match list {
+        Ty::List(element) => Ok(if name == "$for_get" {
+            label_at_level(*element.clone(), level)
+        } else { Ty::Int }),
+        Ty::Any => Ok(fallback),
+        _ => Err(TypeError::TypeMismatch {
+            expected: Ty::List(Box::new(Ty::Any)), found: list.clone(),
+        }),
+    }
+}
+
+/// Secrecy erased by a wildcard parameter must be enforced at every call,
+/// including aliases and higher-order arguments, not just named builtins.
+fn wildcard_argument_level(expected: &Ty, found: &Ty) -> SecurityLevel {
+    match (expected, found) {
+        (Ty::Any, found) => ty_secrecy_level(found).unwrap_or(SecurityLevel::Public),
+        (Ty::Prod(a, b), Ty::Prod(c, d)) | (Ty::Sum(a, b), Ty::Sum(c, d)) =>
+            wildcard_argument_level(a, c).join(wildcard_argument_level(b, d)),
+        (Ty::List(a), Ty::List(b)) | (Ty::Option(a), Ty::Option(b)) => wildcard_argument_level(a, b),
+        _ => SecurityLevel::Public,
+    }
+}
+
+fn check_call_secrecy(expected: &Ty, found: &Ty, result: Ty, effect: Effect,
+    pc: SecurityLevel) -> Result<Ty, TypeError> {
+    let erased = wildcard_argument_level(expected, found);
+    let observable_level = pc.join(erased);
+    if effect != Effect::Pure && observable_level != SecurityLevel::Public {
+        return Err(TypeError::SecurityViolation {
+            found: observable_level, expected: SecurityLevel::Public,
+            context: "effectful call (including aliases)",
+        });
+    }
+    Ok(label_at_level(result, erased))
+}
+
 fn join_branch_types(t1: Ty, t2: Ty) -> Ty {
     match (&t1, &t2) {
         (Ty::Any, _) => t2,
@@ -3589,6 +3678,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
         // T_Var: Γ(x) = T → has_type Γ Σ Δ (EVar x) T EffectPure
         Expr::Var(x) => {
+            if let Some(ty) = internal_primitive_type(x) {
+                return Ok((ty, Effect::Pure));
+            }
             let ty = ctx
                 .lookup_var(x)
                 .cloned()
@@ -3607,7 +3699,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::Lam(x, t1, body) => {
             let new_ctx = ctx.extend_gamma(x.clone(), t1.clone());
             let mut new_ctx_mut = new_ctx;
+            new_ctx_mut.return_types = Rc::default();
             let (t2, eff) = type_check_full(&mut new_ctx_mut, body)?;
+            let t2 = function_result_type(t2, &new_ctx_mut.return_types.borrow())?;
             Ok((
                 Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff),
                 Effect::Pure,
@@ -3675,7 +3769,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     // REQ-27: a pure data-transforming builtin re-carries its
                     // argument's secrecy (laundering fix — see
                     // propagate_secrecy_through_builtin).
-                    let ret_ty = propagate_secrecy_through_builtin(e1, &t2, *ret_ty);
+                    let ret_ty = internal_primitive_result(e1, &t2, *ret_ty)?;
+                    let ret_ty = check_call_secrecy(&arg_ty, &t2, ret_ty, fn_eff, ctx.delta)?;
+                    let ret_ty = propagate_secrecy_through_builtin(e1, &t2, ret_ty);
                     Ok((ret_ty, total_eff))
                 }
                 // Applying an `Any`-typed callee (e.g. a closure passed as an
@@ -3775,6 +3871,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         sigma: ctx.sigma.clone(),
                         delta: branch_delta,
                         granted: ctx.granted.clone(),
+                        return_types: ctx.return_types.clone(),
                     };
                     let (t1, eff1) = type_check_full(&mut ctx1, e1)?;
 
@@ -3783,6 +3880,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         sigma: ctx.sigma.clone(),
                         delta: branch_delta,
                         granted: ctx.granted.clone(),
+                        return_types: ctx.return_types.clone(),
                     };
                     let (t2, eff2) = type_check_full(&mut ctx2, e2)?;
 
@@ -3796,7 +3894,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                             found: t2,
                         });
                     }
-                    let result_ty = join_branch_types(t1, t2);
+                    let result_ty = label_at_level(join_branch_types(t1, t2), branch_delta);
 
                     Ok((result_ty, eff.join(eff1).join(eff2)))
                 }
@@ -3853,6 +3951,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 sigma: ctx.sigma.clone(),
                 delta: branch_delta,
                 granted: ctx.granted.clone(),
+                return_types: ctx.return_types.clone(),
             };
 
             let (t2, eff2) = type_check_full(&mut branch_ctx, e2)?;
@@ -3861,6 +3960,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 sigma: ctx.sigma.clone(),
                 delta: branch_delta,
                 granted: ctx.granted.clone(),
+                return_types: ctx.return_types.clone(),
             };
             let (t3, eff3) = type_check_full(&mut branch_ctx2, e3)?;
 
@@ -3873,7 +3973,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     found: t3,
                 });
             }
-            let result_ty = join_branch_types(t2, t3);
+            let result_ty = label_at_level(join_branch_types(t2, t3), branch_delta);
 
             Ok((result_ty, eff1.join(eff2).join(eff3)))
         }
@@ -3888,14 +3988,16 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // times it runs.
         Expr::While(cond, body) => {
             let (t_cond, eff_cond) = type_check_full(ctx, cond)?;
-            let (inner_cond, _) = strip_label(&t_cond);
+            let (inner_cond, cond_level) = strip_label(&t_cond);
             if !matches!(inner_cond, Ty::Bool | Ty::Any) {
                 return Err(TypeError::TypeMismatch {
                     expected: Ty::Bool,
                     found: t_cond,
                 });
             }
-            let (_t_body, eff_body) = type_check_full(ctx, body)?;
+            let mut body_ctx = ctx.clone();
+            body_ctx.delta = ctx.delta.join(cond_level);
+            let (_t_body, eff_body) = type_check_full(&mut body_ctx, body)?;
             Ok((Ty::Unit, eff_cond.join(eff_body)))
         }
         // `putus` / `lanjut` never yield to their evaluation context, so — like
@@ -3934,9 +4036,16 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 .lookup_var(x)
                 .cloned()
                 .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
-            if let Ty::Ref(inner, _) = slot_ty {
+            if let Ty::Ref(inner, slot_level) = slot_ty {
+                let level = ctx.delta.join(ty_secrecy_level(&t_val).unwrap_or(SecurityLevel::Public));
+                let target = slot_level.join(ty_secrecy_level(&inner).unwrap_or(SecurityLevel::Public));
+                if !level.leq(target) {
+                    return Err(TypeError::SecurityViolation { found: level, expected: target,
+                        context: "mutable local assignment" });
+                }
                 let (assigned, _) = strip_label(&t_val);
-                if !types_compatible(&inner, assigned) {
+                let (expected, _) = strip_label(&inner);
+                if !types_compatible(expected, assigned) {
                     return Err(TypeError::TypeMismatch {
                         expected: *inner,
                         found: assigned.clone(),
@@ -3963,7 +4072,8 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // evaluation context, so it has type `Any` (unifies with any sibling
         // branch/sequence type via `types_compatible`).
         Expr::Return(e) => {
-            let (_t, eff) = type_check_full(ctx, e)?;
+            let (t, eff) = type_check_full(ctx, e)?;
+            ctx.return_types.borrow_mut().push(label_at_level(t, ctx.delta));
             Ok((Ty::Any, eff))
         }
         Expr::LetRec(x, ty_ann, e1, e2) => {
@@ -4745,6 +4855,9 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             Ok((Ty::Any, eff))
         }
         Expr::Var(x) => {
+            if let Some(ty) = internal_primitive_type(x) {
+                return Ok((ty, Effect::Pure));
+            }
             let ty = ctx
                 .lookup(x)
                 .cloned()
@@ -4754,8 +4867,10 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
 
         // VERIFIED: Functions
         Expr::Lam(x, t1, body) => {
-            let new_ctx = ctx.extend(x.clone(), t1.clone());
+            let mut new_ctx = ctx.extend(x.clone(), t1.clone());
+            new_ctx.return_types = Rc::default();
             let (t2, eff) = type_check(&new_ctx, body)?;
+            let t2 = function_result_type(t2, &new_ctx.return_types.borrow())?;
             Ok((
                 Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff),
                 Effect::Pure,
@@ -4785,7 +4900,9 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     // REQ-27: a pure data-transforming builtin re-carries its
                     // argument's secrecy (laundering fix — see
                     // propagate_secrecy_through_builtin).
-                    let ret_ty = propagate_secrecy_through_builtin(e1, &t2, *ret_ty);
+                    let ret_ty = internal_primitive_result(e1, &t2, *ret_ty)?;
+                    let ret_ty = check_call_secrecy(&arg_ty, &t2, ret_ty, fn_eff, ctx.level)?;
+                    let ret_ty = propagate_secrecy_through_builtin(e1, &t2, ret_ty);
                     Ok((ret_ty, total_eff))
                 }
                 Ty::Any => Ok((Ty::Any, eff1.join(eff2))),
@@ -4934,10 +5051,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 other => Ok((other, Effect::Pure)),
             }
         }
-        Expr::SlotSet(_x, e) => {
-            let (_t, eff) = type_check(ctx, e)?;
-            Ok((Ty::Unit, eff))
-        }
+        Expr::SlotSet(_, _) => type_check_full(&mut ctx.to_typing_context(), expr),
         Expr::Let(x, _, e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let ctx_new = ctx.extend(x.clone(), t1);
@@ -4946,7 +5060,8 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         }
         // `pulang e` — early return; type `Any` (see type_check_full).
         Expr::Return(e) => {
-            let (_t, eff) = type_check(ctx, e)?;
+            let (t, eff) = type_check(ctx, e)?;
+            ctx.return_types.borrow_mut().push(label_at_level(t, ctx.level));
             Ok((Ty::Any, eff))
         }
         Expr::LetRec(x, ty_ann, e1, e2) => {

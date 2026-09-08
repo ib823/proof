@@ -114,6 +114,68 @@ pub fn sha256_file(path: &std::path::Path) -> crate::error::Result<String> {
     Ok(sha256_hex(&data))
 }
 
+/// Hash the entire package tree with length-prefixed paths and file contents.
+/// The prefix distinguishes this from legacy manifest-only lock checksums.
+pub fn package_checksum(root: &std::path::Path) -> crate::error::Result<String> {
+    use crate::error::PkgError;
+    fn append(
+        root: &std::path::Path,
+        path: &std::path::Path,
+        bytes: &mut Vec<u8>,
+    ) -> crate::error::Result<()> {
+        let meta = std::fs::symlink_metadata(path).map_err(|e| PkgError::io(path, e))?;
+        let linked = meta.file_type().is_symlink();
+        #[cfg(windows)]
+        let linked = {
+            use std::os::windows::fs::MetadataExt;
+            linked || meta.file_attributes() & 0x400 != 0
+        };
+        if linked || (!meta.is_file() && !meta.is_dir()) {
+            return Err(PkgError::Other(format!(
+                "unsupported package link or special file: {}",
+                path.display()
+            )));
+        }
+        let relative = path
+            .strip_prefix(root)
+            .map_err(|e| PkgError::Other(e.to_string()))?;
+        let parts = relative
+            .components()
+            .map(|component| {
+                component
+                    .as_os_str()
+                    .to_str()
+                    .ok_or_else(|| PkgError::Other("non-UTF-8 package path".into()))
+            })
+            .collect::<crate::error::Result<Vec<_>>>()?;
+        if parts.iter().any(|part| part.contains('\\')) {
+            return Err(PkgError::Other("backslash in package path".into()));
+        }
+        let name = parts.join("/");
+        bytes.push(if meta.is_dir() { b'd' } else { b'f' });
+        bytes.extend_from_slice(&(name.len() as u64).to_be_bytes());
+        bytes.extend_from_slice(name.as_bytes());
+        if meta.is_dir() {
+            let mut entries = std::fs::read_dir(path)
+                .map_err(|e| PkgError::io(path, e))?
+                .collect::<std::io::Result<Vec<_>>>()
+                .map_err(|e| PkgError::io(path, e))?;
+            entries.sort_by_key(|entry| entry.file_name().to_string_lossy().into_owned());
+            for entry in entries {
+                append(root, &entry.path(), bytes)?;
+            }
+        } else {
+            let data = std::fs::read(path).map_err(|e| PkgError::io(path, e))?;
+            bytes.extend_from_slice(&(data.len() as u64).to_be_bytes());
+            bytes.extend_from_slice(&data);
+        }
+        Ok(())
+    }
+    let mut bytes = Vec::new();
+    append(root, root, &mut bytes)?;
+    Ok(format!("sha256-tree:{}", sha256_hex(&bytes)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

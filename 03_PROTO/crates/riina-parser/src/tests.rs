@@ -3449,6 +3449,17 @@ fn test_putus_outside_a_loop_is_rejected() {
 }
 
 #[test]
+fn test_closure_cannot_control_its_callers_loop() {
+    for source in [
+        "untuk x dalam [1] { biar f = fungsi() { putus; }; f(); }",
+        "selagi betul { biar f = fungsi() { lanjut; }; f(); }",
+    ] {
+        let err = Parser::new(source).parse_expr().unwrap_err();
+        assert!(matches!(err.kind, ParseErrorKind::LoopControlOutsideLoop(_)));
+    }
+}
+
+#[test]
 fn test_parse_multi_effect_annotation() {
     // `kesan (E1, E2)` parses; effects are joined into the dominant one.
     let mut p = Parser::new("fungsi f() -> Nombor kesan (Kripto, MasaTetap) {\n  0\n}\n0");
@@ -4007,12 +4018,11 @@ fn test_parse_range_inclusive() {
 }
 
 #[test]
-fn test_parse_for_over_range_uses_list_map() {
-    // `untuk i dalam 0..n { .. }` -> senarai_peta((0..n, fn)).
+fn test_parse_for_over_range_keeps_function_control_flow() {
     let mut p = Parser::new("untuk i dalam 0..3 { i }");
     match p.parse_expr().unwrap() {
-        Expr::App(f, _) => assert_eq!(*f, Expr::Var("senarai_peta".to_string())),
-        other => panic!("expected App(senarai_peta), got {other:?}"),
+        Expr::Let(_, _, _, body) => assert!(matches!(*body, Expr::LetMut(_, _, _))),
+        other => panic!("expected scoped while loop, got {other:?}"),
     }
 }
 
@@ -4107,8 +4117,8 @@ fn test_parse_for_tuple_pattern() {
     // `untuk (a, b) dalam iter { .. }` destructures each element.
     let mut p = Parser::new("untuk (a, b) dalam xs { a }");
     match p.parse_expr().unwrap() {
-        Expr::App(f, _) => assert_eq!(*f, Expr::Var("senarai_peta".to_string())),
-        other => panic!("expected App(senarai_peta), got {other:?}"),
+        Expr::Let(_, _, _, body) => assert!(matches!(*body, Expr::LetMut(_, _, _))),
+        other => panic!("expected scoped while loop, got {other:?}"),
     }
 }
 
