@@ -6,8 +6,8 @@ This directory contains 172 `.rii` example files across 20 category directories.
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **97 of the 172 examples pass
-`riinac check`** end-to-end (re-measured 2026-08-23; and all 28 of `00_basics/`), and closing the
+of the examples assume. As of this writing, **98 of the 172 examples pass
+`riinac check`** end-to-end (re-measured 2026-10-11; and all 28 of `00_basics/`), and closing the
 remaining gap is active work (`RIINA_MASTER_PLAN.md` Gate B).
 
 Separately, passing `riinac check` does **not** imply the example can be

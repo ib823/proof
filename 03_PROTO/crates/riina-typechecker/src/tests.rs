@@ -6487,3 +6487,546 @@ mod gate_b_parity {
         ));
     }
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// Soundness-audit regressions (2026-10, findings H1–H4, M1–M3)
+// ════════════════════════════════════════════════════════════════════════════
+//
+// Every `rejects_*` program below type-checked before the fix (each was a
+// verified exploit: a secret printed, a `kesan Bersih` program performing I/O,
+// a `sekali` value used three times, ...). Every `accepts_*` program is a
+// legitimate neighbour that must keep type-checking, so the fix is not just
+// "reject more". All go through `check_program`, the path `riinac check`,
+// the LSP and the WASM playground share.
+#[cfg(test)]
+mod audit_soundness {
+    use crate::{check_program, TypeError};
+    use riina_parser::Parser;
+    use riina_types::{Effect, Linearity, SecurityLevel};
+
+    fn check(src: &str) -> Result<(), TypeError> {
+        let mut parser = Parser::new(src);
+        let program = parser.parse_program().expect("program should parse");
+        check_program(&program).map(|_| ())
+    }
+
+    fn accepts(src: &str) {
+        if let Err(e) = check(src) {
+            panic!("expected the program to type-check, got {e:?}\n---\n{src}");
+        }
+    }
+
+    fn rejects(src: &str) -> TypeError {
+        match check(src) {
+            Ok(()) => panic!("expected a type error, but the program was accepted\n---\n{src}"),
+            Err(e) => e,
+        }
+    }
+
+    fn assert_secret_violation(e: TypeError) {
+        match e {
+            TypeError::SecurityViolation { found, .. } => assert_eq!(found, SecurityLevel::Secret),
+            other => panic!("expected SecurityViolation(Secret), got {other:?}"),
+        }
+    }
+
+    // ── H1: secrecy / taint must survive `Any`-typed values ─────────────────
+
+    #[test]
+    fn h1_rejects_secret_record_field_at_print_sink() {
+        assert_secret_violation(rejects(
+            "jenis Kotak { isi: Nombor, }\n\
+             fungsi utama() -> Unit kesan Tulis { biar pin = sulit 1234; cetak(Kotak { isi: pin }.isi) }",
+        ));
+        // Same through a top-level binding (the `h1.rii` reproducer).
+        assert_secret_violation(rejects(
+            "jenis Kotak { isi: Nombor, }\nbiar pin = sulit 1234;\ncetak(Kotak { isi: pin }.isi)",
+        ));
+    }
+
+    #[test]
+    fn h1_rejects_generic_result_hiding_a_secret() {
+        assert_secret_violation(rejects(
+            "fungsi buka<T>(s: Rahsia<Nombor>) -> T kesan Bersih { s }\n\
+             fungsi utama() -> Unit kesan Tulis { biar pin = sulit 1234; cetak(buka(pin)) }",
+        ));
+    }
+
+    #[test]
+    fn h1_rejects_secret_behind_an_any_list_element() {
+        assert_secret_violation(rejects(
+            "fungsi utama() -> Unit kesan Tulis { biar pin = sulit 1234; cetak([senarai_baru(()), pin]) }",
+        ));
+    }
+
+    #[test]
+    fn h1_rejects_secret_closure_result_through_higher_order_builtin() {
+        assert_secret_violation(rejects(
+            "fungsi utama() -> Unit kesan Tulis { biar pin = sulit 1234; \
+             cetak(senarai_peta(([0], fungsi(x: Nombor) -> Rahsia<Nombor> { pin }))) }",
+        ));
+    }
+
+    #[test]
+    fn h1_rejects_secret_closure_result_hidden_by_a_branch_join() {
+        assert_secret_violation(rejects(
+            "fungsi utama() -> Unit kesan Tulis { biar pin = sulit 1234; \
+             biar f = kalau betul { fungsi(x: Nombor) { senarai_baru(()) } } lain { fungsi(x: Nombor) { pin } }; \
+             cetak(f(0)) }",
+        ));
+    }
+
+    #[test]
+    fn h1_rejects_tainted_record_field_at_sql_sink() {
+        // `sql_execute(read_line(()))` was already rejected; routing the
+        // tainted input through a record field used to bypass it.
+        let direct = rejects(
+            "fungsi utama() -> Unit kesan (Baca, Sistem) { biar r = sql_execute(read_line(())); () }",
+        );
+        assert!(matches!(direct, TypeError::TaintViolation { .. }), "{direct:?}");
+        let via_record = rejects(
+            "jenis Kotak { q: Teks, }\n\
+             fungsi utama() -> Unit kesan (Baca, Sistem) { biar r = sql_execute(Kotak { q: read_line(()) }.q); () }",
+        );
+        assert!(matches!(via_record, TypeError::TaintViolation { .. }), "{via_record:?}");
+    }
+
+    #[test]
+    fn h1_rejects_taint_returned_through_a_record_result_type() {
+        let e = rejects(
+            "jenis Data { nilai: Teks, }\n\
+             fungsi muat(p: Teks) -> Data kesan SistemFail { Data { nilai: fail_baca(p) } }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        );
+        assert!(matches!(e, TypeError::AnnotationMismatch { .. }), "{e:?}");
+        // Declaring the taint in the result type is the supported spelling.
+        accepts(
+            "jenis Data { nilai: Teks, }\n\
+             fungsi muat(p: Teks) -> Tercemar<Data, FileSystem> kesan SistemFail { Data { nilai: fail_baca(p) } }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        );
+    }
+
+    #[test]
+    fn h1_accepts_public_records_generics_and_declared_secret_results() {
+        accepts(
+            "jenis Kotak { isi: Nombor, }\n\
+             fungsi utama() -> Unit kesan Tulis { biar k = Kotak { isi: 5 }; cetak(k.isi) }",
+        );
+        accepts(
+            "fungsi id<T>(x: T) -> T kesan Bersih { x }\n\
+             fungsi buka<T>(s: Rahsia<Nombor>) -> Rahsia<T> kesan Bersih { s }\n\
+             fungsi utama() -> Unit kesan Tulis { cetak(id(5)); biar t = buka(sulit 1); cetak([senarai_baru(()), 1]) }",
+        );
+        accepts(
+            "fungsi utama() -> Unit kesan Tulis { cetak(senarai_peta(([0], fungsi(x: Nombor) { x + 1 }))) }",
+        );
+    }
+
+    #[test]
+    fn h1_secret_record_is_still_usable_without_reaching_a_sink() {
+        // The label travels with the record; pure computation on it is fine
+        // and its result is labeled (so only the SINK is rejected).
+        accepts(
+            "jenis Kotak { isi: Nombor, }\n\
+             fungsi utama() -> Nombor kesan Bersih { biar k = Kotak { isi: sulit 1 }; biar n = k.isi + 1; 0 }",
+        );
+    }
+
+    // ── H2: implicit flows through closures and non-local control flow ──────
+
+    #[test]
+    fn h2_rejects_slot_writing_closure_called_under_secret_pc() {
+        assert_secret_violation(rejects(
+            "fungsi bocor(s: Rahsia<Benar>) -> Nombor kesan Ubah {\n\
+                 biar ubah keluar = 0;\n\
+                 biar tetapkan = fungsi(u: Unit) { keluar = 1; };\n\
+                 kalau s { tetapkan(()) } lain { () };\n\
+                 keluar\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        ));
+    }
+
+    #[test]
+    fn h2_rejects_write_after_secret_break() {
+        assert_secret_violation(rejects(
+            "fungsi bocor(s: Rahsia<Benar>) -> Nombor kesan Bersih {\n\
+                 biar ubah keluar = 0;\n\
+                 selagi betul { kalau s { putus } lain { () }; keluar = 1; putus };\n\
+                 keluar\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        ));
+    }
+
+    #[test]
+    fn h2_rejects_write_before_secret_break_in_a_later_iteration() {
+        // The write precedes the break textually, but the SECOND iteration
+        // only runs if the secret did not break the first.
+        assert_secret_violation(rejects(
+            "fungsi bocor(s: Rahsia<Benar>) -> Nombor kesan Bersih {\n\
+                 biar ubah keluar = 0;\n\
+                 biar ubah i = 0;\n\
+                 selagi i < 2 { keluar = keluar + 1; kalau s { putus } lain { () }; i = i + 1; };\n\
+                 keluar\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        ));
+    }
+
+    #[test]
+    fn h2_rejects_effect_after_secret_return() {
+        assert_secret_violation(rejects(
+            "fungsi bocor(s: Rahsia<Benar>) -> Rahsia<Unit> kesan Tulis {\n\
+                 kalau s { pulang sulit (); } lain { () };\n\
+                 cetak(\"rahsia ialah salah\");\n\
+                 pulang sulit ();\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        ));
+    }
+
+    #[test]
+    fn h2_rejects_bersih_function_writing_a_global_slot() {
+        match rejects(
+            "biar ubah g: Nombor = 0;\n\
+             fungsi pasang(u: Unit) -> Unit kesan Bersih { g = 1; }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        ) {
+            TypeError::EffectViolation { allowed, found } => {
+                assert_eq!(allowed, Effect::Pure);
+                assert_eq!(found, Effect::Mut);
+            }
+            other => panic!("expected EffectViolation(Mut), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn h2_accepts_stateful_closures_and_control_flow_at_public_pc() {
+        accepts(
+            "fungsi utama() -> Nombor kesan Ubah {\n\
+                 biar ubah n = 0;\n\
+                 biar inc = fungsi(u: Unit) { n = n + 1; };\n\
+                 inc(()); inc(()); n\n\
+             }",
+        );
+        accepts(
+            "biar ubah g: Nombor = 0;\n\
+             fungsi pasang(u: Unit) -> Unit kesan Ubah { g = 1; }\n\
+             fungsi utama() -> Nombor kesan Ubah { pasang(()); g }",
+        );
+        accepts(
+            "fungsi cari(xs: Senarai<Nombor>) -> Nombor kesan Bersih {\n\
+                 biar ubah jumpa = 0;\n\
+                 untuk x dalam xs { kalau x > 2 { jumpa = x; putus } lain { () } };\n\
+                 kalau jumpa == 0 { pulang 0; } lain { () };\n\
+                 jumpa\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { cari([1, 2, 3]) }",
+        );
+        // A local counter is still `kesan Bersih` (a slot is not first class).
+        accepts(
+            "fungsi kira() -> Nombor kesan Bersih { biar ubah n = 0; n = n + 1; n }\n\
+             fungsi utama() -> Nombor kesan Bersih { kira() }",
+        );
+        // ...and so is a local helper closure that only mutates the
+        // function's OWN slot: nothing outside the function can observe it.
+        accepts(
+            "fungsi jumlah(xs: Senarai<Nombor>) -> Nombor kesan Bersih {\n\
+                 biar ubah s = 0;\n\
+                 biar tambah = fungsi(x: Nombor) { s = s + x; };\n\
+                 untuk x dalam xs { tambah(x) };\n\
+                 s\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { jumlah([1, 2]) }",
+        );
+    }
+
+    #[test]
+    fn h2_local_closure_writing_a_global_slot_is_not_bersih() {
+        // Attribution is by slot IDENTITY: a local slot that reuses the global
+        // slot's name does not make the closure's global write local.
+        for body in [
+            "biar f = fungsi(u: Unit) { g = 1; }; f(()); 0",
+            "biar f = fungsi(u: Unit) { g = 1; }; biar ubah g = 5; f(()); g",
+        ] {
+            let src = format!(
+                "biar ubah g: Nombor = 0;\n\
+                 fungsi pasang(u: Unit) -> Nombor kesan Bersih {{ {body} }}\n\
+                 fungsi utama() -> Nombor kesan Bersih {{ 0 }}"
+            );
+            match rejects(&src) {
+                TypeError::EffectViolation { allowed, found } => {
+                    assert_eq!(allowed, Effect::Pure);
+                    assert_eq!(found, Effect::Mut);
+                }
+                other => panic!("expected EffectViolation(Mut) for {body}, got {other:?}"),
+            }
+        }
+    }
+
+    // ── H3: assignment keeps the value's label (Coq T_Assign) ──────────────
+
+    #[test]
+    fn h3_rejects_secret_assigned_into_public_reference() {
+        match rejects(
+            "fungsi utama() -> Nombor kesan Tulis {\n\
+                 biar r = ruj 0 @ Awam;\n\
+                 r := sulit 42;\n\
+                 cetak(!r);\n\
+                 0\n\
+             }",
+        ) {
+            TypeError::SecurityViolation { found, expected, context } => {
+                assert_eq!(found, SecurityLevel::Secret);
+                assert_eq!(expected, SecurityLevel::Public);
+                assert_eq!(context, "assignment");
+            }
+            other => panic!("expected SecurityViolation in assignment, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn h3_accepts_public_assignment_and_secret_into_secret_reference() {
+        accepts(
+            "fungsi utama() -> Unit kesan (Baca, Tulis) { biar r = ruj 0 @ Awam; r := 42; cetak(!r) }",
+        );
+        accepts(
+            "fungsi utama() -> Unit kesan Tulis { biar r = ruj 0 @ Rahsia; r := sulit 42; () }",
+        );
+    }
+
+    // ── H4: an `Any`-typed callee may not drop its effect ───────────────────
+
+    #[test]
+    fn h4_rejects_effectful_closure_through_generic_parameter_in_pure_program() {
+        match rejects(
+            "fungsi panggil<T>(f: T) -> Nombor kesan Bersih { f(0); 0 }\n\
+             fungsi utama() -> Nombor kesan Bersih {\n\
+                 panggil(fungsi(x: Nombor) { fail_tulis((\"/tmp/riina-h4\", \"x\")) })\n\
+             }",
+        ) {
+            TypeError::EffectViolation { allowed, found } => {
+                assert_eq!(allowed, Effect::Pure);
+                assert_eq!(found, Effect::FileSystem);
+            }
+            other => panic!("expected EffectViolation(FileSystem), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn h4_rejects_effectful_closure_through_higher_order_builtin() {
+        let e = rejects(
+            "fungsi tulen(x: Nombor) -> Nombor kesan Bersih {\n\
+                 biar _ = senarai_peta(([x], fungsi(y: Nombor) { beri Rangkaian jaring_sambung(\"127.0.0.1:1\") }));\n\
+                 x\n\
+             }\n\
+             fungsi utama() -> Nombor kesan Bersih { tulen(7) }",
+        );
+        assert!(
+            matches!(
+                e,
+                TypeError::EffectViolation { found: Effect::Network, .. }
+                    | TypeError::CapabilityViolation { required: Effect::Network, .. }
+            ),
+            "{e:?}"
+        );
+    }
+
+    #[test]
+    fn h4_accepts_pure_closures_and_declared_effects() {
+        accepts(
+            "fungsi tulen(x: Nombor) -> Nombor kesan Bersih { biar l = senarai_peta(([x], fungsi(y: Nombor) { y + 1 })); x }\n\
+             fungsi utama() -> Unit kesan Tulis { cetak(tulen(7)) }",
+        );
+        accepts(
+            "fungsi panggil<T>(f: T) -> Nombor kesan Bersih { f(0); 0 }\n\
+             fungsi utama() -> Nombor kesan Tulis { panggil(fungsi(x: Nombor) { cetak(x) }) }",
+        );
+    }
+
+    // ── M1: capability gate ─────────────────────────────────────────────────
+
+    #[test]
+    fn m1_rejects_top_level_network_authorized_only_by_an_unrelated_declaration() {
+        match rejects(
+            "biar sambungan = jaring_sambung(\"127.0.0.1:1\");\n\
+             fungsi tidak_dipanggil(x: Nombor) -> Nombor kesan Rangkaian { x }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        ) {
+            TypeError::CapabilityViolation { required, .. } => assert_eq!(required, Effect::Network),
+            other => panic!("expected CapabilityViolation(Network), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn m1_local_function_grant_does_not_leak_into_the_enclosing_block() {
+        match rejects(
+            "fungsi utama() -> Nombor kesan Masa {\n\
+                 fungsi lain_lain(x: Nombor) -> Nombor kesan Rangkaian { x }\n\
+                 biar s = jaring_sambung(\"127.0.0.1:1\");\n\
+                 0\n\
+             }",
+        ) {
+            TypeError::CapabilityViolation { required, .. } => assert_eq!(required, Effect::Network),
+            other => panic!("expected CapabilityViolation(Network), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn m1_accepts_explicit_grants_and_declared_entry_points() {
+        accepts(
+            "biar sambungan = beri Rangkaian jaring_sambung(\"127.0.0.1:1\");\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        );
+        accepts(
+            "fungsi bantu(x: Nombor) -> Nombor kesan Bersih { x }\n\
+             fungsi utama() -> Nombor kesan Rangkaian { biar l = jaring_dengar(\"127.0.0.1:1\"); 0 }",
+        );
+        accepts(
+            "fungsi utama() -> Nombor kesan Rangkaian { biar l = jaring_dengar(\"127.0.0.1:1\"); 0 }\nutama()",
+        );
+    }
+
+    // ── M2: linear (`sekali`) discipline ────────────────────────────────────
+
+    fn assert_linearity_violation(e: TypeError, var_name: &str, needle: &str) {
+        match e {
+            TypeError::LinearityViolation { var, linearity, message, .. } => {
+                assert_eq!(var, var_name);
+                assert_eq!(linearity, Linearity::Linear);
+                assert!(message.contains(needle), "message {message:?} lacks {needle:?}");
+            }
+            other => panic!("expected LinearityViolation, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn m2_rejects_linear_variable_captured_by_reusable_closure() {
+        // `t_lin5.rii`: accepted before, printed 15 (kunci used three times).
+        assert_linearity_violation(
+            rejects(
+                "fungsi utama() -> Unit kesan Tulis {\n\
+                     biar sekali kunci = 5;\n\
+                     biar p = (fungsi(u: Nombor) -> Nombor { kunci }, kunci);\n\
+                     cetak((pertama p)(0) + (pertama p)(0) + kedua p)\n\
+                 }",
+            ),
+            "kunci",
+            "closure",
+        );
+    }
+
+    #[test]
+    fn m2_rejects_linear_variable_used_in_only_one_branch() {
+        assert_linearity_violation(
+            rejects(
+                "fungsi utama() -> Nombor kesan Bersih {\n\
+                     biar sekali kunci = 5;\n\
+                     biar a = kalau betul { kunci } lain { 0 };\n\
+                     a + kunci\n\
+                 }",
+            ),
+            "kunci",
+            "branch",
+        );
+    }
+
+    #[test]
+    fn m2_rejects_reuse_after_use_inside_nested_biar_bodies() {
+        assert_linearity_violation(
+            rejects(
+                "fungsi utama() -> Nombor kesan Bersih {\n\
+                     biar sekali kunci = 5;\n\
+                     biar a = kalau betul { biar b = 1; kunci } lain { biar c = 2; kunci };\n\
+                     a + kunci\n\
+                 }",
+            ),
+            "kunci",
+            "more than once",
+        );
+    }
+
+    #[test]
+    fn m2_rejects_use_inside_a_loop_with_a_clear_message() {
+        // Used to be the misleading "must be used exactly once, but was used Zero".
+        assert_linearity_violation(
+            rejects(
+                "fungsi utama() -> Nombor kesan Bersih {\n\
+                     biar sekali kunci = 5;\n\
+                     biar ubah n = 0;\n\
+                     selagi n < 1 { n = kunci; };\n\
+                     n\n\
+                 }",
+            ),
+            "kunci",
+            "loop",
+        );
+    }
+
+    #[test]
+    fn m2_rejects_copying_a_closure_that_captured_a_linear_variable() {
+        assert_linearity_violation(
+            rejects(
+                "fungsi utama() -> Nombor kesan Bersih {\n\
+                     biar sekali kunci = 5;\n\
+                     biar sekali f = fungsi(u: Unit) { kunci };\n\
+                     biar g = f;\n\
+                     g(()) + g(())\n\
+                 }",
+            ),
+            "f",
+            "called directly",
+        );
+    }
+
+    #[test]
+    fn m2_accepts_linear_use_patterns() {
+        // Exactly once through nested `biar` bodies (was a false "used Zero").
+        accepts(
+            "fungsi f() -> Nombor kesan Bersih { biar linear a = 1; biar affine b = 2; biar relevant c = 3; pulang a + c; }\n\
+             fungsi utama() -> Nombor kesan Bersih { f() }",
+        );
+        // Consumed by every branch.
+        accepts("fungsi utama() -> Nombor kesan Bersih { biar sekali k = 5; kalau betul { k } lain { k + 1 } }");
+        // A closure bound linearly may capture a linear variable and be called once.
+        accepts(
+            "fungsi utama() -> Nombor kesan Bersih { biar sekali k = 5; biar sekali f = fungsi(u: Unit) { k }; f(()) }",
+        );
+        // Affine may be dropped in one branch.
+        accepts("fungsi utama() -> Nombor kesan Bersih { biar paling k = 5; kalau betul { k } lain { 0 } }");
+    }
+
+    // ── M3: constant-time discipline ────────────────────────────────────────
+
+    #[test]
+    fn m3_rejects_ct_branch_through_generic_identity() {
+        let e = rejects(
+            "fungsi id<T>(x: T) -> T kesan Bersih { x }\n\
+             fungsi f(a: MasaTetap<Nombor>) -> Nombor kesan Bersih { kalau id(a == 0) { 1 } lain { 0 } }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        );
+        assert!(matches!(e, TypeError::ConstantTimeViolation { context: "branch condition" }), "{e:?}");
+    }
+
+    #[test]
+    fn m3_rejects_ct_value_as_collection_index() {
+        for body in ["senarai_dapat(([10, 20, 30], a))", "[10, 20, 30][a]"] {
+            let src = format!(
+                "fungsi f(a: MasaTetap<Nombor>) -> Nombor kesan Bersih {{ biar x = {body}; 0 }}\n\
+                 fungsi utama() -> Nombor kesan Bersih {{ 0 }}"
+            );
+            let e = rejects(&src);
+            assert!(matches!(e, TypeError::ConstantTimeViolation { .. }), "{body}: {e:?}");
+        }
+    }
+
+    #[test]
+    fn m3_accepts_public_index_into_ct_data() {
+        accepts(
+            "fungsi f(a: MasaTetap<Nombor>) -> Nombor kesan Bersih { biar x = senarai_dapat(([a, a], 0)); biar y = a + 1; 0 }\n\
+             fungsi utama() -> Nombor kesan Bersih { 0 }",
+        );
+    }
+}
