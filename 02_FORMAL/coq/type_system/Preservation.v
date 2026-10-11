@@ -1350,3 +1350,684 @@ Proof.
 Qed.
 
 (** End of Preservation.v *)
+
+
+(** ** Dynamic effect soundness (REQ-87, 2026-10-11)
+
+    [preservation] lets the effect change across a step and says nothing about
+    how: it existentially picks a fresh [ε']. The theorems below close that gap
+    — a step never RAISES the effect bound: the stepped term is typed at an
+    effect no higher than the declared one. (The effect lattice is a total
+    order by [effect_level], with [effect_join] its maximum.) Together with the
+    static [EffectSystem.effect_safety] this gives the dynamic statement: every
+    configuration reached from a term typed at [ε] is typed at some [ε' ⊑ ε].
+
+    The proof is the [preservation_helper] case analysis with the bound carried
+    through each case; congruence cases use the IH's bound, redex cases select a
+    component of a join (or a pure value). *)
+From Stdlib Require Import Lia.
+
+Lemma effect_level_join : forall a b,
+  effect_level (effect_join a b) = Nat.max (effect_level a) (effect_level b).
+Proof.
+  intros a b. unfold effect_join.
+  destruct (Nat.ltb (effect_level a) (effect_level b)) eqn:Hlt.
+  - apply Nat.ltb_lt in Hlt. lia.
+  - apply Nat.ltb_ge in Hlt. lia.
+Qed.
+
+Ltac effect_bound_tac :=
+  repeat rewrite effect_level_join in *;
+  unfold EffectPure, EffectRead, EffectWrite in *;
+  simpl effect_level in *;
+  lia.
+
+Lemma preservation_effect_helper : forall cfg1 cfg2,
+  cfg1 --> cfg2 ->
+  forall e st ctx e' st' ctx' T ε Σ,
+    cfg1 = (e, st, ctx) ->
+    cfg2 = (e', st', ctx') ->
+    has_type nil Σ Public e T ε ->
+    store_wf Σ st ->
+    exists Σ' ε',
+      (store_ty_extends Σ Σ' /\
+       store_wf Σ' st' /\
+       has_type nil Σ' Public e' T ε') /\
+      effect_level ε' <= effect_level ε.
+Proof.
+  intros cfg1 cfg2 Hstep.
+  induction Hstep; intros e0 st0 ctx0 e0' st0' ctx0' T0 ε0 Σ Heq1 Heq2 Hty Hwf;
+    inversion Heq1; inversion Heq2; subst.
+  (* ST_AppAbs: beta reduction for function application *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (ELam _ _ _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply substitution_preserves_typing.
+        -- eassumption.
+        -- eapply value_has_pure_effect; eassumption.
+        -- eassumption.
+    }
+    effect_bound_tac.
+  (* ST_App1: congruence for application (left) *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty1']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_App.
+        -- exact Hty1'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+    }
+    effect_bound_tac.
+  (* ST_App2: congruence for application (right) *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty2']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_App.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- exact Hty2'.
+    }
+    effect_bound_tac.
+  (* ST_Pair1: congruence for pairs (left) *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty1']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Pair.
+        -- exact Hty1'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+    }
+    effect_bound_tac.
+  (* ST_Pair2: congruence for pairs (right) *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty2']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Pair.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- exact Hty2'.
+    }
+    effect_bound_tac.
+  (* ST_Fst: projection from pair (left) *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EPair _ _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_Snd: projection from pair (right) *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EPair _ _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_FstStep: congruence for fst *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Fst. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_SndStep: congruence for snd *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Snd. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_CaseInl: case analysis on Inl *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EInl _ _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply substitution_preserves_typing.
+        -- eassumption.
+        -- eapply value_has_pure_effect; eassumption.
+        -- eassumption.
+    }
+    effect_bound_tac.
+  (* ST_CaseInr: case analysis on Inr *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EInr _ _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply substitution_preserves_typing.
+        -- eassumption.
+        -- eapply value_has_pure_effect; eassumption.
+        -- eassumption.
+    }
+    effect_bound_tac.
+  (* ST_CaseStep: congruence for case *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Case.
+        -- exact Hty'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+    }
+    effect_bound_tac.
+  (* ST_InlStep: congruence for Inl *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Inl. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_InrStep: congruence for Inr *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Inr. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_IfTrue: if-then-else with true *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_IfFalse: if-then-else with false *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_IfStep: congruence for if *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_If.
+        -- exact Hty'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+    }
+    effect_bound_tac.
+  (* ST_LetValue: let binding with value *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply substitution_preserves_typing.
+        -- eassumption.
+        -- eapply value_has_pure_effect; eassumption.
+        -- eassumption.
+    }
+    effect_bound_tac.
+  (* ST_LetStep: congruence for let *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Let.
+        -- exact Hty'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+    }
+    effect_bound_tac.
+  (* ST_PerformStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Perform. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_PerformValue *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_HandleStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Handle.
+        -- exact Hty'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+    }
+    effect_bound_tac.
+  (* ST_HandleValue *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply substitution_preserves_typing.
+        -- eassumption.
+        -- eapply value_has_pure_effect; eassumption.
+        -- eassumption.
+    }
+    effect_bound_tac.
+  (* ST_RefStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Ref. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_RefValue *)
+  - inversion Hty; subst.
+    assert (has_type nil Σ Public v T EffectPure) as Hvty.
+    { eapply value_has_pure_effect; eassumption. }
+    assert (store_ty_lookup (fresh_loc st0) Σ = None) as Hfresh_none.
+    { apply store_ty_lookup_fresh_none. exact Hwf. }
+    set (Σ' := store_ty_update (fresh_loc st0) T sl Σ).
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + subst Σ'. apply store_ty_extends_update_fresh. exact Hfresh_none.
+    + split.
+      * subst Σ'. eapply store_wf_update_fresh; eauto.
+        -- apply store_lookup_fresh.
+      * subst Σ'. apply T_Loc. apply store_ty_lookup_update_eq.
+    }
+    effect_bound_tac.
+  (* ST_DerefStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Deref.
+        -- exact Hty'.
+        -- assumption.
+    }
+    effect_bound_tac.
+  (* ST_DerefLoc *)
+  - inversion Hty; subst.
+    destruct Hwf as [HΣtoSt HSttoΣ].
+    destruct (HSttoΣ l e0' H) as [T1 [sl1 [Hlookup [Hvalv Htyv]]]].
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact (conj HΣtoSt HSttoΣ).
+      * match goal with
+        | Hsub : has_type _ _ _ _ (TRef _ _) _ |- _ =>
+            inversion Hsub; subst
+        end.
+        match goal with
+        | Hloc : store_ty_lookup l Σ = Some (T0, ?sl0) |- _ =>
+            rewrite Hloc in Hlookup; inversion Hlookup; subst; exact Htyv
+        end.
+    }
+    effect_bound_tac.
+  (* ST_Assign1 *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Assign.
+        -- exact Hty'.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- assumption.
+    }
+    effect_bound_tac.
+  (* ST_Assign2 *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty2']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Assign.
+        -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- exact Hty2'.
+        -- assumption.
+    }
+    effect_bound_tac.
+  (* ST_AssignLoc *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (ELoc _) _ _ |- _ ] => inversion H; subst
+    end.
+    assert (has_type nil Σ Public v2 T EffectPure) as Hvty.
+    { eapply value_has_pure_effect; eassumption. }
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * eapply store_wf_update_existing; eauto.
+      * constructor.
+    }
+    effect_bound_tac.
+  (* ST_ClassifyStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Classify. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_Declassify1 *)
+  - inversion Hty; subst.
+    match goal with
+    | Hdeclass : declass_ok _ _ |- _ =>
+        destruct Hdeclass as [v0 [Hv0 [He1 He2]]]; subst
+    end.
+    exfalso.
+    pose proof (value_not_step (EClassify v0) st0 ctx0 (e1', st0', ctx0')
+                  (VClassify v0 Hv0)) as Hns.
+    exact (Hns Hstep).
+  (* ST_Declassify2 *)
+  - inversion Hty; subst.
+    match goal with
+    | Hdeclass : declass_ok _ _ |- _ =>
+        destruct Hdeclass as [v0 [Hv0 [He1 He2]]]; subst
+    end.
+    exfalso.
+    pose proof (value_not_step (EProve (EClassify v0)) st0 ctx0 (e2', st0', ctx0')
+                  (VProve (EClassify v0) (VClassify v0 Hv0))) as Hns.
+    exact (Hns Hstep).
+  (* ST_DeclassifyValue *)
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EClassify _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_ProveStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Prove. exact Hty'.
+  (* ST_AppFix: unrolling [fix w] to [w (fix w)] preserves typing.
+     From T_App + T_Fix inversion: w : (A->B) -> (A->B) purely, and
+     EFix w : A->B purely. So [EApp w (EFix w)] : A->B, and applying it to the
+     argument reproduces the original result type. *)
+    }
+    effect_bound_tac.
+  - inversion Hty; subst.
+    match goal with
+    | [ H : has_type _ _ _ (EFix _) _ _ |- _ ] => inversion H; subst
+    end.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eapply T_App; [ eapply T_App; eassumption | eassumption ].
+    }
+    effect_bound_tac.
+  (* ST_RequireStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Require. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_RequireValue *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+  (* ST_GrantStep *)
+  - inversion Hty; subst.
+    edestruct IHHstep as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]]; try reflexivity; eauto.
+    exists Σ'. eexists.
+    apply conj.
+    {
+    split.
+    + exact Hext.
+    + split.
+      * exact Hwf'.
+      * eapply T_Grant. exact Hty'.
+    }
+    effect_bound_tac.
+  (* ST_GrantValue *)
+  - inversion Hty; subst.
+    exists Σ. eexists.
+    apply conj.
+    {
+    split.
+    + apply store_ty_extends_refl.
+    + split.
+      * exact Hwf.
+      * eassumption.
+    }
+    effect_bound_tac.
+Qed.
+
+(** Single step: the reached term is typed at an effect no higher than [ε]. *)
+Theorem preservation_effect : forall e e' T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) --> (e', st', ctx') ->
+  exists Σ' ε',
+    store_ty_extends Σ Σ' /\
+    store_wf Σ' st' /\
+    has_type nil Σ' Public e' T ε' /\
+    effect_level ε' <= effect_level ε.
+Proof.
+  intros e e' T ε st st' ctx ctx' Σ Hty Hwf Hstep.
+  destruct (preservation_effect_helper _ _ Hstep e st ctx e' st' ctx' T ε Σ
+              eq_refl eq_refl Hty Hwf) as [Σ' [ε' [[Hext [Hwf' Hty']] Hle]]].
+  exists Σ', ε'.
+  split; [exact Hext | split; [exact Hwf' | split; [exact Hty' | exact Hle]]].
+Qed.
+
+(** Any number of steps: every reachable configuration stays within [ε]. *)
+Theorem multi_step_preservation_effect : forall cfg cfg',
+  cfg -->* cfg' ->
+  forall e e' T ε st st' ctx ctx' Σ,
+  cfg = (e, st, ctx) ->
+  cfg' = (e', st', ctx') ->
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  exists Σ' ε',
+    store_ty_extends Σ Σ' /\
+    store_wf Σ' st' /\
+    has_type nil Σ' Public e' T ε' /\
+    effect_level ε' <= effect_level ε.
+Proof.
+  intros cfg cfg' Hmulti.
+  induction Hmulti as [cfg0 | cfg1 cfg2 cfg3 Hstep Hmulti' IH].
+  - intros e e' T ε st st' ctx ctx' Σ Heq Heq' Hty Hwf.
+    rewrite Heq in Heq'. injection Heq' as He Hst Hctx. subst.
+    exists Σ, ε.
+    split; [apply store_ty_extends_refl | split; [exact Hwf | split; [exact Hty | lia]]].
+  - intros e e' T ε st st' ctx ctx' Σ Heq1 Heq3 Hty Hwf.
+    subst cfg1 cfg3.
+    destruct cfg2 as [[e2 st2] ctx2].
+    destruct (preservation_effect e e2 T ε st st2 ctx ctx2 Σ Hty Hwf Hstep)
+      as [Σ2 [ε2 [Hext2 [Hwf2 [Hty2 Hle2]]]]].
+    destruct (IH e2 e' T ε2 st2 st' ctx2 ctx' Σ2 eq_refl eq_refl Hty2 Hwf2)
+      as [Σ3 [ε3 [Hext3 [Hwf3 [Hty3 Hle3]]]]].
+    exists Σ3, ε3.
+    split; [apply store_ty_extends_trans with Σ2; assumption
+           | split; [exact Hwf3 | split; [exact Hty3 | lia]]].
+Qed.

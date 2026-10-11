@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,682 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-10-11 — Full audit remediation (REQ-84..REQ-89, PR #89)
+
+### Security (proof kernel)
+- **Two active Coq files let `False` be proven.** `domains/AlgebraicEffects.v` used
+  `Unset Positivity Checking` on a type with a negative occurrence; `domains/PhysicalSecurity.v`
+  declared a jointly unsatisfiable `Parameter` interface. Both rebuilt (first-order
+  resumptions; an opaque PUF function plus a satisfiability witness). Parameter pin 30 → 29.
+- `riinac verify` / `audit-docs.sh` now gate kernel-weakening constructs (`Conjecture`,
+  `give_up`, `Admit Obligations`, `bypass_check`, `Unset Guard/Positivity/Universe Checking`),
+  lex Coq strings inside comments (a hidden `Admitted` slipped past both scanners), report
+  capstones stated under section premises as CONDITIONAL, and pin nine capstones as
+  axiom-free (`Print Assumptions` must report "Closed under the global context").
+
+### Added (machine-checked, kernel-closed)
+- `effect_sound_multi_step_declared` (REQ-87): evaluation stays within the DECLARED effect.
+- `reachable_effects_from_program_text`: set-based — no reachable configuration contains a
+  perform/require/grant label absent from the program text and initial store.
+- `ref_free_well_typed_SN` (REQ-84): premise-free strong normalization for the
+  reference-free, `fix`-free core; `well_typed_SN_conclusion_is_false` proves the old
+  full-calculus statement false (Landin's knot through a higher-order reference).
+- `ref_free_noninterference` (REQ-85) and `ref_free_constant_time` (REQ-86, timing
+  contract: reduction count) for the same core, with a non-vacuity witness.
+
+### Retracted / corrected claims
+- "Non-interference proven" (README, website, master plan): the active build had no NI
+  theorem; NI is now proven for the reference-free, `fix`-free core only (REQ-89 tracks the rest).
+- "Strong normalization proven": `well_typed_SN` rested on refutable section premises and its
+  conclusion is false for the calculus; superseded by `ref_free_well_typed_SN`.
+- The 0.3.0 (Phase 7) entry "Backend composition Coq proofs: NI preservation through compiled
+  backends (BackendComposition.v)" was vacuous: its `ni_secure` concluded `f pub = f pub`.
+  The definition now states real NI over an abstract backend model (still not a proof
+  about the C/WASM output), with `ni_secure_nonvacuous`.
+- Effect soundness was static only (now dynamic, REQ-87); constant time had no formal
+  statement (now REQ-86, abstract-machine time — compiled code relies on the checker CT
+  rule and `ct_verify.rs`); the tooling SBOM is not dependency-free (it lists 122
+  third-party components; the compiler SBOM is); README's example and crypto claims fixed.
+
+### Fixed (gates and supply chain)
+- Commit-accurate pre-commit/pre-push hooks; history-wide secret scan and byte-level
+  Trojan-source scan; sync-public refuses untracked files; SHA-pinned CI actions,
+  checksum-verified toolchain installers, digest-pinned non-root Docker images; committed
+  web lockfiles; VS Code extension safe in untrusted workspaces; proof-vacuity ratchet.
 
 ### 2026-08-08 — Gate C: rendering parity, `pelaku` rename, verified listener close
 
@@ -861,7 +904,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,682 Qed proofs
+- Active Coq build now at 12,819 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

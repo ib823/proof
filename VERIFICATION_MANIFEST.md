@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-11T12:17:08Z
-**Git SHA:** cba3cde
+**Generated:** 2026-10-11T12:43:54Z
+**Git SHA:** 894a774
 **Mode:** full
 **Status:** PASS
 
@@ -11,7 +11,7 @@
 | Rust Tests | PASS | 3383 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 237s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 331 .vo files compiled in 254s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 5 capstones attested (4 unconditional); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable — the theorem is vacuous until they are restated over well-formed stores and discharged) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
@@ -32,7 +32,7 @@
 | Verus admit Scan | PASS | 0 admit in 323 files (6395 proof fns) |
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
-| Cross-Prover Validation (10 provers) | PASS | Grand total: 104571 | Coq: 12682 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12284 | Alloy: 11627 | SMT: 12433 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
+| Prover Corpus Inventory (raw counts, not verification) | PASS | Raw declaration counts; only Coq is mechanized. Sum: 104571 | Coq: 12682 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12284 | Alloy: 11627 | SMT: 12433 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
 | Transpiler Staleness | WARN | 1 prover(s) may be stale: SMT — run `python3 scripts/generate-full-stack.py` (checked: SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Alloy, Verus, Kani, TV) |
 | Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12682, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |

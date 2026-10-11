@@ -7,17 +7,25 @@ Bahasa Melayu keywords and compile-time security enforcement. RIINA combines a
 standard simply-typed lambda calculus core with an information flow control (IFC)
 security lattice, algebraic effects, and linear types. We prove progress and
 preservation for the full language, including security label interactions, effect
-annotations, and substructural typing. All proofs are mechanized in Coq (Rocq 9.2).
+annotations, and substructural typing. All proofs are mechanized in Coq (Rocq 9.1.1, the pinned prover).
 
 ## Key Results
 
 - **Theorem: Progress** — Well-typed programs either are values or can take a step.
-  Coq reference: `value_terminates`, `if_typed_steps_once`, `app_typed_steps_once`
+  Coq reference: `progress` (`type_system/Progress.v`); with preservation it gives
+  `type_safety` (`type_system/TypeSafety.v`), closed under the global context.
 - **Theorem: Preservation** — If a well-typed term steps, the result is well-typed
-  at the same type. Coq reference: `fst_typed_steps_to_value`
-- **Theorem: Strong Normalization (recursion-free core)** — all well-typed terms
-  *in the recursion-free core calculus* terminate.
-  Coq reference: `SN_value_irreducible`, `terminates_step`.
+  at the same type. Coq reference: `preservation` (`type_system/Preservation.v`);
+  `preservation_effect` additionally bounds the result's effect by the declared one,
+  giving dynamic effect soundness (`effect_sound_multi_step_declared`).
+- **Theorem: Strong Normalization (reference-free, `fix`-free core)** — every
+  well-typed term of that core terminates in every store and is strongly
+  normalizing, with no premises. Coq reference: `ref_free_well_typed_SN`,
+  `ref_free_terminates` (`termination/StrongNormRefFree.v`, closed under the
+  global context). References are excluded for a reason: with higher-order
+  references a well-typed term can diverge through Landin's knot, which Coq proves
+  (`well_typed_SN_conclusion_is_false`), so the older `well_typed_SN` statement
+  for the full calculus is false and is vacuous (REQ-84).
   **Scope (REQ-44, Option A):** general recursion (`fungsi`/`fix`, which the
   implementation desugars to `LetRec`) is Turing-complete and **intentionally not
   strongly normalizing** — its guarantee is *type safety* (progress + preservation,

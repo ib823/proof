@@ -1,5 +1,11 @@
 # Domain Audit Review: O_RUNTIME_EXECUTION
 
+> **Correction (2026-10-11 audit):** the G9 upgrade below rests on `riina-receipt`'s tamper tests, but the receipt
+> chain is UNKEYED (64-bit FNV-1a over public fields), so an adversary can edit a receipt and recompute the chain
+> and `verify()` still passes. Those tests detect accidental corruption, not adversarial tampering; G9 should not
+> be read as adversarial tamper coverage. Tamper-evidence needs a keyed MAC or signature (see master plan REQ-88).
+
+
 ## Verdict
 **reject**
 

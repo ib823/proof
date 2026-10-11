@@ -564,6 +564,34 @@ for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.
 done
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
+# ── Proof-vacuity ratchet ─────────────────────────────────────────────
+# scripts/detect-vacuous-proofs.py flags theorems that conclude True, are
+# reflexivity on hard-coded records, rest on `:= False` definitions, or are
+# definitional tautologies. It existed but gated nothing, so the count could
+# only grow (2026-10-11 audit: 1,316 recorded -> 1,318). The committed baseline
+# in reports/vacuity_scan_report.json may only go DOWN: regenerate it with
+#   python3 scripts/detect-vacuous-proofs.py --json > reports/vacuity_scan_report.json
+# in the same commit that removes findings.
+VACUITY_BASELINE_FILE="$REPO_ROOT/reports/vacuity_scan_report.json"
+if [ -f "$VACUITY_BASELINE_FILE" ]; then
+    VACUITY_NOW=$(cd "$REPO_ROOT" && python3 scripts/detect-vacuous-proofs.py --json 2>/dev/null \
+        | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])' 2>/dev/null || echo "")
+    VACUITY_BASE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["total_findings"])' "$VACUITY_BASELINE_FILE" 2>/dev/null || echo "")
+    if [ -z "$VACUITY_NOW" ] || [ -z "$VACUITY_BASE" ]; then
+        echo -e "${RED}[ERROR]${NC} proof-vacuity scan could not run (now='$VACUITY_NOW', baseline='$VACUITY_BASE')"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$VACUITY_NOW" -gt "$VACUITY_BASE" ]; then
+        echo -e "${RED}[ERROR]${NC} proof-vacuity findings rose: $VACUITY_NOW > baseline $VACUITY_BASE (new vacuous theorems — see scripts/detect-vacuous-proofs.py)"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} proof-vacuity findings: $VACUITY_NOW (baseline $VACUITY_BASE; may only decrease)"
+    fi
+else
+    echo -e "${RED}[ERROR]${NC} proof-vacuity baseline missing: reports/vacuity_scan_report.json"
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
 # ── Check SECURITY.md ────────────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
@@ -1076,7 +1104,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     # verification banners". A doc audit must look at docs.
     done < <(grep -rlE "^\*\*(Audit Update|Verification):\*\*" "$REPO_ROOT" \
         --include='*.md' \
-        --exclude-dir=target --exclude-dir=.git \
+        --exclude-dir=target --exclude-dir=.git --exclude-dir=.claude \
         --exclude-dir=node_modules --exclude-dir=dist 2>/dev/null || true)
 
     if [ "$STALE_BANNERS" -gt 0 ]; then

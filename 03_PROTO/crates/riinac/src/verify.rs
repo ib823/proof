@@ -1199,6 +1199,33 @@ const KERNEL_CAPSTONES: &[(&str, &str)] = &[
     ("type_system.Preservation", "preservation"),
     ("termination.ReducibilityFull", "well_typed_SN"),
     ("crypto.AlgorithmPolicy", "accepts_uses_only_current"),
+    // REQ-87: evaluation stays within the DECLARED effect bound.
+    ("effects.EffectGate", "effect_sound_multi_step_declared"),
+    // Set-based: evaluation adds no effect site absent from program + store.
+    ("effects.EffectContainment", "reachable_effects_from_program_text"),
+    // REQ-84 successor: premise-free SN for the reference-free core.
+    ("termination.StrongNormRefFree", "ref_free_well_typed_SN"),
+    // REQ-85 / REQ-86: non-interference and constant time (timing contract)
+    // for the reference-free core.
+    ("properties.NonInterferenceRefFree", "ref_free_noninterference"),
+    ("properties.NonInterferenceRefFree", "ref_free_constant_time"),
+];
+
+/// Capstones the documentation describes as "closed under the global
+/// context": the kernel must report NO axiom at all for them — not even a
+/// whitelisted one. Pinned so a new stdlib dependency (e.g. funext) on a
+/// load-bearing theorem cannot slip in behind the whitelist while the docs
+/// keep saying "zero assumptions".
+const AXIOM_FREE_CAPSTONES: &[&str] = &[
+    "type_safety",
+    "progress",
+    "preservation",
+    "accepts_uses_only_current",
+    "effect_sound_multi_step_declared",
+    "reachable_effects_from_program_text",
+    "ref_free_well_typed_SN",
+    "ref_free_noninterference",
+    "ref_free_constant_time",
 ];
 
 /// Capstones whose statements carry SECTION-HYPOTHESIS PREMISES. Closing a
@@ -1212,7 +1239,7 @@ const KERNEL_CAPSTONES: &[(&str, &str)] = &[
 /// an unconditional guarantee. An entry whose capstone no longer has premises
 /// is stale and fails, so this list cannot silently drift.
 const CONDITIONAL_CAPSTONES: &[(&str, &str)] = &[
-    ("well_typed_SN", "REQ-84: section premises are refutable — the theorem is vacuous until they are restated over well-formed stores and discharged"),
+    ("well_typed_SN", "REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN"),
 ];
 
 /// Section `Hypothesis`/`Hypotheses` declarations that are in scope (in an
@@ -1265,17 +1292,26 @@ const ALLOWED_KERNEL_AXIOMS: &[&str] = &[
 /// following lines. The block count must match the number of capstones queried
 /// — fewer means the scratch file did not get through all of them, and that is
 /// a FAILURE, not a pass (a gate that silently checked nothing would be green).
+/// Flattened view (block count, all axioms) used by the parser's unit tests.
+#[cfg(test)]
 fn parse_print_assumptions(output: &str) -> (usize, Vec<String>) {
-    let mut blocks = 0usize;
-    let mut axioms = Vec::new();
+    let per_block = parse_print_assumptions_blocks(output);
+    let axioms = per_block.iter().flatten().cloned().collect();
+    (per_block.len(), axioms)
+}
+
+/// One entry per `Print Assumptions` block, in output order: the axioms that
+/// block lists (empty for "Closed under the global context").
+fn parse_print_assumptions_blocks(output: &str) -> Vec<Vec<String>> {
+    let mut blocks: Vec<Vec<String>> = Vec::new();
     let mut in_axioms = false;
     for line in output.lines() {
         let trimmed = line.trim_end();
         if trimmed == "Closed under the global context" {
-            blocks += 1;
+            blocks.push(Vec::new());
             in_axioms = false;
         } else if trimmed == "Axioms:" {
-            blocks += 1;
+            blocks.push(Vec::new());
             in_axioms = true;
         } else if in_axioms {
             // Axiom names are flush-left; continuation/type lines are indented.
@@ -1285,13 +1321,13 @@ fn parse_print_assumptions(output: &str) -> (usize, Vec<String>) {
             // `Name : ...` or `Name :` — take the token before the colon.
             if let Some(name) = trimmed.split(':').next() {
                 let name = name.trim();
-                if !name.is_empty() {
-                    axioms.push(name.to_string());
+                if let (false, Some(cur)) = (name.is_empty(), blocks.last_mut()) {
+                    cur.push(name.to_string());
                 }
             }
         }
     }
-    (blocks, axioms)
+    blocks
 }
 
 /// Ask the kernel what the capstone theorems depend on, and fail on any axiom
@@ -1374,8 +1410,10 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
     for (module, _) in KERNEL_CAPSTONES {
         scratch.push_str(&format!("From RIINA Require Import {module}.\n"));
     }
-    for (_, theorem) in KERNEL_CAPSTONES {
-        scratch.push_str(&format!("Print Assumptions {theorem}.\n"));
+    // Fully qualified: several modules are imported into one scratch file, and
+    // a later import could otherwise shadow a capstone name.
+    for (module, theorem) in KERNEL_CAPSTONES {
+        scratch.push_str(&format!("Print Assumptions RIINA.{module}.{theorem}.\n"));
     }
     // A fresh private directory, not a fixed /tmp name: a pre-planted symlink at
     // a predictable path would redirect the write (2026-10-11 audit).
@@ -1445,7 +1483,9 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
         };
     }
 
-    let (blocks, axioms) = parse_print_assumptions(&text);
+    let per_block = parse_print_assumptions_blocks(&text);
+    let blocks = per_block.len();
+    let axioms: Vec<String> = per_block.iter().flatten().cloned().collect();
     let unexpected: Vec<&String> = axioms
         .iter()
         .filter(|a| !ALLOWED_KERNEL_AXIOMS.contains(&a.as_str()))
@@ -1461,6 +1501,24 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
                  theorem, refusing to report a pass on a partial attestation",
                 KERNEL_CAPSTONES.len()
             ),
+        };
+    }
+    let not_closed: Vec<String> = KERNEL_CAPSTONES
+        .iter()
+        .zip(per_block.iter())
+        .filter(|((_, t), ax)| AXIOM_FREE_CAPSTONES.contains(t) && !ax.is_empty())
+        .map(|((_, t), ax)| format!("{t} depends on {ax:?}"))
+        .collect();
+    if !not_closed.is_empty() {
+        return CheckResult {
+            name: "Coq Kernel Assumptions".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "capstone(s) documented as closed under the global context now depend on \
+                 axioms: {} — eliminate the dependency or move the theorem out of \
+                 AXIOM_FREE_CAPSTONES and correct every doc that calls it axiom-free",
+                not_closed.join("; ")),
         };
     }
     if !unexpected.is_empty() {
@@ -1482,10 +1540,11 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
         passed: true,
         blocking: true,
         details: format!(
-            "{} capstones attested ({} unconditional); axioms within reviewed whitelist \
-             ({} allowed: funext){}",
+            "{} capstones attested ({} unconditional, {} axiom-free); axioms within reviewed \
+             whitelist ({} allowed: funext){}",
             KERNEL_CAPSTONES.len(),
             KERNEL_CAPSTONES.len() - conditional.len(),
+            AXIOM_FREE_CAPSTONES.len(),
             ALLOWED_KERNEL_AXIOMS.len(),
             if conditional.is_empty() { String::new() } else { format!("; {}", conditional.join("; ")) }
         ),
@@ -4453,12 +4512,33 @@ mod tests {
 
     #[test]
     fn kernel_capstones_cover_the_load_bearing_theorems() {
-        // The gate is only as strong as this list. Pin the current five so a
-        // removal is a conscious edit here, not a silent narrowing.
+        // The gate is only as strong as this list. Pin the load-bearing set so
+        // a removal is a conscious edit here, not a silent narrowing.
         let names: Vec<&str> = KERNEL_CAPSTONES.iter().map(|(_, t)| *t).collect();
-        for required in ["type_safety", "progress", "preservation", "well_typed_SN"] {
+        for required in [
+            "type_safety", "progress", "preservation", "well_typed_SN",
+            "effect_sound_multi_step_declared", "reachable_effects_from_program_text",
+            "ref_free_well_typed_SN",
+            "ref_free_noninterference", "ref_free_constant_time",
+        ] {
             assert!(names.contains(&required), "{required} missing from KERNEL_CAPSTONES");
         }
+        // Every axiom-free pin names a real capstone, and the one capstone that
+        // legitimately uses funext is not pinned axiom-free.
+        for t in AXIOM_FREE_CAPSTONES {
+            assert!(names.contains(t), "{t} pinned axiom-free but not a capstone");
+        }
+        assert!(!AXIOM_FREE_CAPSTONES.contains(&"well_typed_SN"));
+    }
+
+    #[test]
+    fn print_assumptions_blocks_are_attributed_in_order() {
+        let out = "Closed under the global context\nAxioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall A, A\nClosed under the global context\n";
+        let blocks = parse_print_assumptions_blocks(out);
+        assert_eq!(blocks.len(), 3);
+        assert!(blocks[0].is_empty());
+        assert_eq!(blocks[1], vec!["FunctionalExtensionality.functional_extensionality_dep".to_string()]);
+        assert!(blocks[2].is_empty());
     }
 
     // -- Existing tests (unchanged) --

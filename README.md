@@ -54,11 +54,11 @@ Most languages ask you to *trust* that your code is secure. RIINA asks you to *v
 
 | What RIINA has today | Current status |
 |---|---|
-| Type safety theorems | Machine-checked in Coq; Rust checker active |
-| Effect algebra and gate model | Machine-checked in Coq; compiler tracks effects |
-| Information-flow / non-interference development | Machine-checked in Coq; compiler enforcement partial |
+| Type safety theorems | Machine-checked in Coq (`type_safety` is closed under the global context: no axioms, no premises); Rust checker active |
+| Effect algebra and gate model | Machine-checked in Coq, kernel-closed: every `perform` site of a well-typed term lies within its effect bound, and **every configuration reachable by evaluation stays within the *declared* effect** (`effect_sound_multi_step_declared`, via preservation with `ε' ⊑ ε`). In the Coq model the typing bound orders effects by a single level (a total order); independently of that order, `reachable_effects_from_program_text` proves evaluation never produces an effect site absent from the program text and initial store. Compiler tracks and enforces declared effects |
+| Information-flow / non-interference | **Proven, kernel-closed, for the reference-free, `fix`-free core** (`ref_free_noninterference`): two runs that differ only in `TSecret` inputs return the same observable result. Not yet proven with references or general recursion (REQ-89); the earlier full-calculus NI proofs remain archived. Compiler enforces IFC on its typing rules |
 | Declassification model | Machine-checked in Coq; shipped compiler/runtime alignment still in progress |
-| Termination and memory models | Formalized in the Coq corpus |
+| Termination and constant time | **Proven, kernel-closed, for the same core:** every well-typed program terminates and is strongly normalizing with no premises (`ref_free_well_typed_SN`), and its execution time (reduction count) does not depend on secret inputs (`ref_free_constant_time`). With higher-order references the SN conclusion is **false** (Landin's knot, proven: `well_typed_SN_conclusion_is_false`), so the older `well_typed_SN` is vacuous and kept only as a recorded counterexample |
 
 These are real formal artifacts that compile today, but not every theorem is wired end-to-end into the shipped compiler yet.
 
@@ -84,7 +84,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes — 12,682 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
+| Formal proof corpus in repo | Yes — 12,819 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
 | Multi-prover work | Coq mechanized; 9 other lanes are generated/smoke-only (not independent verification) | No | No | No |
 | Session-typed actors | Yes (JALINAN: pelaku, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
@@ -232,7 +232,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | What is actually proven | Notes |
 |--------|-------------------------|-------|
-| **Rocq 9.1.1** (Primary) | 12,682 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **30 `Parameter` declarations** (logically equivalent to axioms in Coq), the propositional ones modelling the trusted hardware interface — see `PROOF_STATUS.md` |
+| **Rocq 9.1.1** (Primary) | 12,819 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **29 `Parameter` declarations** (logically equivalent to axioms in Coq), the propositional ones modelling the trusted hardware interface — see `PROOF_STATUS.md` |
 | **Lean 4** | **215 theorems across 7 files** actually elaborate (measured 2026-06-01, Lean 4.16.0; self-contained `Domains/Verified*` files — the core type-safety files do **not** compile) | The other ~12,360 declarations are transpiler-generated with placeholder tactics (`simp_all [Bool.and_eq_true]`, in 304 files) that do **not** prove their goals; `lake build RIINA` passes only because its default target is a 0-theorem shim. See `02_FORMAL/lean/COMPILATION_STATUS.md`. Claim level: **generated**, not mechanized |
 | **Isabelle/HOL** | `RIINA_CORE` smoke session — **unverified** (`smokeBuildOk:false`; toolchain download 403 here) | 368 `.thy` files total, machine-generated from Coq; remainder unverified generated corpora |
 | **F\*** | Effectively nothing | 315 `.fst` files, but **`admit()` appears ~12,010 times** — nearly every lemma body is `admit ()`. Generated, not proven |
@@ -240,9 +240,10 @@ This is not a whitepaper. This is working software.
 | **Verus / Kani / TV** | None | Explicitly quarantined (`quarantined: true` in metrics.json); generated stubs |
 
 **Honest scope:**
-- **Only the Coq active lane constitutes real machine-checked verification** (and even it rests on 30 `Parameter` assumptions).
+- **Only the Coq active lane constitutes real machine-checked verification** (and even it rests on 29 `Parameter` assumptions — the trusted hardware/crypto interface, proved jointly satisfiable in the build).
 - The Lean, Isabelle, F\*, TLA+, Alloy, SMT, Verus, Kani, and TV trees were produced by `scripts/generate-full-stack.py` / `generate-multiprover.py` fanning the Coq tree into other syntaxes. They inflate file/theorem counts but are stubbed (`admit`/placeholder tactics) or are single small smoke artifacts — **not** nine additional independent verifications.
-- Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination. Many *domain* Coq files are formal models/specifications, not compiler-enforced guarantees.
+- Core Coq theorems cover foundations, type safety (closed), dynamic effect soundness against the declared effect, declassification lemmas, and — for the reference-free, `fix`-free core — strong normalization, non-interference and constant time (reduction count), all closed under the global context. Those three are **fragment** results: references and general recursion are not covered (REQ-89), and with higher-order references SN is provably false.
+- Most *domain* Coq files are formal models/specifications checked against their own definitions, not verified systems and not compiler-enforced: `scripts/detect-vacuous-proofs.py` flags 1,318 vacuity patterns (theorems concluding `True`, reflexivity on hard-coded records, definitional tautologies), ratcheted so the number can only fall.
 - See `website/public/metrics.json` for per-lane claim levels (the authoritative source of truth).
 
 ### Compiler & Toolchain (Rust)
@@ -293,16 +294,16 @@ This is not a whitepaper. This is working software.
 
 155 example `.rii` files across 18 category directories (security, effects, compliance, design patterns, FFI, AI context, JALINAN, showcase, and more).
 
-> **Parser-support caveat (honest):** Many of these examples — including most of `00_basics/` — use a multi-statement block-body function form that the *shipped* parser does not yet accept; only ~19 currently pass `riinac check`. They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
+> **Parser-support caveat (honest):** Many of these examples — including most of `00_basics/` — use a multi-statement block-body function form that the *shipped* parser does not yet accept; 97 of the 172 currently pass `riinac check` (measured 2026-10-11). They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
 
 ### Cryptographic Tooling
 
-The `05_TOOLING/` workspace contains 35,000+ lines of hand-written cryptographic primitives:
+The `riina-core` crate in `05_TOOLING/` contains ~16,500 lines of hand-written cryptographic primitives (the whole `05_TOOLING` workspace is ~23,000 lines of Rust):
 
-- **Symmetric:** AES-256, SHA-256 (FIPS 180-4), HMAC, ChaCha20-Poly1305
-- **Asymmetric:** X25519, Ed25519 (interfaces + partial implementations)
-- **Post-quantum:** **ML-KEM-768 — ✅ FIPS 203 compliant** (byte-exact vs authentic NIST ACVP keyGen + encapDecap) and **ML-DSA-65 — ✅ FIPS 204 compliant** (byte/behaviour-exact vs NIST ACVP keyGen + sigGen + sigVer). Hand-rolled, zero external crypto deps — see `reports/precrypto_audit_secondmodel.md`
-- **Zero external crypto dependencies** — everything auditable from source
+- **Symmetric / hashing:** AES-256 and AES-256-GCM, SHA-256/384/512 (FIPS 180-4), SHA3-256/512 and SHAKE128/256 (FIPS 202), HMAC (RFC 2104/4231), HKDF (RFC 5869). ChaCha20-Poly1305 is a recognised algorithm *name* in the crypto-agility policy but is **not implemented**.
+- **Asymmetric:** X25519 (RFC 7748) and Ed25519 (RFC 8032), checked against the RFC test vectors.
+- **Post-quantum:** ML-KEM-768 and ML-DSA-65, **conformance-tested** byte-exact against NIST ACVP vectors and interoperable with OpenSSL — see `reports/precrypto_audit_secondmodel.md`. This is self-testing, not CMVP/CAVP validation; nothing here is a FIPS-validated module.
+- **Zero external dependencies in the crypto library** (`riina-core`) — everything auditable from source. (Some release/dev tools in `05_TOOLING` do use third-party crates; see `SECURITY.md`.)
 
 ---
 
@@ -313,7 +314,7 @@ riina/
 ├── 02_FORMAL/coq/         317 Coq proof files (277 active)
 │   ├── foundations/        Core language semantics
 │   ├── type_system/        Progress, Preservation, Type Safety
-│   ├── properties/         Non-Interference, Declassification, Composition
+│   ├── properties/         Logical relations (NI building blocks), Declassification, Composition
 │   ├── effects/            Effect algebra and gate proofs
 │   ├── domains/            201 domain-specific proofs (R-Z, Σ, compliance)
 │   ├── termination/        Strong normalization, sized types
@@ -359,53 +360,53 @@ riina/
 
 ## Research Scope
 
-Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek letter tracks) has corresponding Coq proofs in the active build. 100% coverage, verified by audit.
+Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek letter tracks) has a corresponding Coq file in the active build, and every one compiles with 0 `Admitted` / 0 `Axiom`. That is all "Modelled" below claims: the theorems are about each file's own definitions of the domain, not a verification of the named real-world system (a 500-line file is a model of Raft/BFT/CRDT properties, not a verified distributed system), and they are not enforced by the compiler. Many are definitional — see the vacuity count above. Only the rows marked otherwise carry a stronger claim.
 
 | Track | Domain | Coq Proofs | Status |
 |-------|--------|-----------|--------|
-| A | Core type system, non-interference | 55 files (38K lines) | Proven |
-| R | Certified compilation (translation validation) | 1 file (955 lines) | Proven |
-| S | Hardware contracts (CPU side-channel models) | 1 file (560 lines) | Proven |
-| T | Hermetic build (binary bootstrap verification) | 1 file (502 lines) | Proven |
-| U | Runtime guardian (verified micro-hypervisor) | 1 file (604 lines) | Proven |
-| V | Termination guarantees (strong normalization — recursion-free core; general recursion is type-safe but not normalizing, REQ-44) | 6 files (3K lines) | Proven (scoped) |
-| W | Verified memory (separation logic) | 1 file (739 lines) | Proven |
-| X | Concurrency (session types, data-race freedom) | 1 file (750 lines) | Proven |
-| Y | Verified standard library | 1 file (780 lines) | Proven |
-| Z | Declassification policy (budgets, robust) | 1 file (665 lines) | Proven |
-| Σ | Verified persistent storage | 1 file (712 lines) | Proven |
-| — | Industry compliance (15 jurisdictions) | 15 files (2K lines) | Proven |
-| — | Domain security (timing, protocols, hardware, ...) | 183 files (76K lines) | Proven |
-| Π | Verified performance (WCET, SIMD, lock-free) | 1 file (470 lines) | Proven |
-| Δ | Verified distribution (Raft, BFT, CRDTs) | 1 file (500 lines) | Proven |
-| Ω | Network defense (rate limiting, SYN cookies) | 1 file (530 lines) | Proven |
-| Ψ | Operational security (Shamir, duress, dead man) | 1 file (560 lines) | Proven |
-| L | FFI boundary safety, attack surface research | 1 file (17 Qed) | Proven |
-| — | Mobile OS security (27 subsystems) | 27 files | Proven |
-| — | Security foundations (boot, IOMMU, crypto) | 11 files | Proven |
-| — | UI/UX accessibility and safety | 7 files | Proven |
-| — | Capital markets (order matching, settlement) | 1 file (15 Qed) | Proven |
-| — | Physical systems security (sensors, timing) | 1 file (16 Qed) | Proven |
+| A | Core type system, non-interference | 55 files (38K lines) | Type safety proven (closed); non-interference proven for the reference-free, `fix`-free core (REQ-85), not yet with references (REQ-89) |
+| R | Certified compilation (translation validation) | 1 file (955 lines) | Modelled |
+| S | Hardware contracts (CPU side-channel models) | 1 file (560 lines) | Modelled |
+| T | Hermetic build (binary bootstrap verification) | 1 file (502 lines) | Modelled |
+| U | Runtime guardian (verified micro-hypervisor) | 1 file (604 lines) | Modelled |
+| V | Termination guarantees (strong normalization — reference-free, `fix`-free core; general recursion is type-safe but not normalizing, REQ-44) | 6 files (3K lines) | Proven premise-free for that core (`ref_free_well_typed_SN`); false with higher-order references (Landin's knot, proven) |
+| W | Verified memory (separation logic) | 1 file (739 lines) | Modelled |
+| X | Concurrency (session types, data-race freedom) | 1 file (750 lines) | Modelled |
+| Y | Verified standard library | 1 file (780 lines) | Modelled |
+| Z | Declassification policy (budgets, robust) | 1 file (665 lines) | Modelled |
+| Σ | Verified persistent storage | 1 file (712 lines) | Modelled |
+| — | Industry compliance (15 jurisdictions) | 15 files (2K lines) | Modelled |
+| — | Domain security (timing, protocols, hardware, ...) | 183 files (76K lines) | Modelled |
+| Π | Verified performance (WCET, SIMD, lock-free) | 1 file (470 lines) | Modelled |
+| Δ | Verified distribution (Raft, BFT, CRDTs) | 1 file (500 lines) | Modelled |
+| Ω | Network defense (rate limiting, SYN cookies) | 1 file (530 lines) | Modelled |
+| Ψ | Operational security (Shamir, duress, dead man) | 1 file (560 lines) | Modelled |
+| L | FFI boundary safety, attack surface research | 1 file (17 Qed) | Modelled |
+| — | Mobile OS security (27 subsystems) | 27 files | Modelled |
+| — | Security foundations (boot, IOMMU, crypto) | 11 files | Modelled |
+| — | UI/UX accessibility and safety | 7 files | Modelled |
+| — | Capital markets (order matching, settlement) | 1 file (15 Qed) | Modelled |
+| — | Physical systems security (sensors, timing) | 1 file (16 Qed) | Modelled |
 
 ---
 
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,682 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 | Area | Status |
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 2,727 tests; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | **Coq active lane is the only real machine-checked verification** (0 admit/0 axiom, modulo 30 `Parameter` assumptions). Lean/Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV are generated from Coq and are stubbed or single smoke artifacts — see `02_FORMAL/lean/COMPILATION_STATUS.md` and `metrics.json` |
+| Formal verification | **Coq active lane is the only real machine-checked verification** (0 admit/0 axiom, modulo 29 `Parameter` assumptions). Lean/Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV are generated from Coq and are stubbed or single smoke artifacts — see `02_FORMAL/lean/COMPILATION_STATUS.md` and `metrics.json` |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
 | Example programs | Many `.rii` examples use a block-statement syntax the shipped parser does not yet accept; see `07_EXAMPLES/README.md` for which forms currently compile |
 
 ### What's next
 
 - **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
-- **Axiom status:** Active Coq build has `Axiom = 0` and `Admitted = 0`, but carries **30 `Parameter` declarations** that are axioms in all but name (the propositional ones model the trusted hardware interface). These are the de-facto trusted assumptions; see `PROOF_STATUS.md`.
+- **Axiom status:** Active Coq build has `Axiom = 0` and `Admitted = 0`, but carries **29 `Parameter` declarations** that are axioms in all but name (the propositional ones model the trusted hardware interface). These are the de-facto trusted assumptions; see `PROOF_STATUS.md`.
 - **Multi-prover honesty (Gate D):** The 9 non-Coq prover trees are generated/stubbed. The roadmap is to either industrialize them or retract the "multi-prover" framing — tracked as REQ-29.
 - **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 

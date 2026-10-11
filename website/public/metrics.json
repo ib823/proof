@@ -1,16 +1,16 @@
 {
-  "generated": "2026-10-11T12:23:36Z",
-  "generatedHuman": "October 11, 2026 at 12:23 UTC",
+  "generated": "2026-10-11T13:36:55Z",
+  "generatedHuman": "October 11, 2026 at 13:36 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "cba3cde",
+    "commit": "894a774",
     "branch": "ccr-db4b5499-udxc4o"
   },
   "proofs": {
-    "qedActive": 12682,
+    "qedActive": 12819,
     "qedDeprecated": 758,
-    "qedTotal": 13440,
+    "qedTotal": 13577,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
@@ -20,11 +20,13 @@
     "sectionHypotheses": 4,
     "sectionHypothesesNote": "Section Hypothesis declarations; they become premises of exported theorems. All are premises of termination/ReducibilityFull.v well_typed_SN, which are refutable (REQ-84) - the theorem is conditional/vacuous, not a termination guarantee",
     "kernelWeakeningConstructs": 0,
+    "vacuityFindings": 1318,
+    "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 371,
-    "filesActive": 331,
+    "filesTotal": 374,
+    "filesActive": 334,
     "domains": 252,
     "prover": "Rocq 9.1.1"
   },
@@ -134,7 +136,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 10745,
-    "totalProofsAllProvers": 62276,
+    "totalProofsAllProvers": 62413,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -146,16 +148,16 @@
     "isabelleCompiled": false,
     "fstarStatus": "retired",
     "tlaplusStatus": "generated",
-    "alloyStatus": "generated",
+    "alloyStatus": "compiled",
     "smtStatus": "mechanized",
     "verusStatus": "generated",
     "kaniStatus": "generated",
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": true,
+      "reportFresh": false,
       "overallMechanized": false,
-      "source": "strict_report",
+      "source": "cached_metrics",
       "pending": {
         "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
         "isabelle": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at ./05_TOOLING/tools/isabelle/current/bin/isabelle. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-isabelle.sh)",
@@ -179,8 +181,8 @@
       }
     },
     "coqTiers": {
-      "core": 1828,
-      "domain": 10854,
+      "core": 1964,
+      "domain": 10855,
       "domainTrivial": 1951
     }
   },
@@ -193,7 +195,7 @@
     "isabelle": "retired",
     "fstar": "retired",
     "tlaplus": "generated",
-    "alloy": "generated",
+    "alloy": "compiled",
     "smt": "mechanized",
     "verus": "generated",
     "kani": "generated",
@@ -203,7 +205,7 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 3379,
+    "testsEstimated": 3380,
     "testsSource": "cached_verified",
     "crates": 18
   },

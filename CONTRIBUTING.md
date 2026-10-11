@@ -1,6 +1,6 @@
 # Contributing to RIINA™
 
-**Verification:** 12,682 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 

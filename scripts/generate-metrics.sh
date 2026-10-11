@@ -388,6 +388,11 @@ PARAMETERS=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Parameter Parameters)
     echo "ERROR: Coq source scan failed" >&2; exit 1; }
 SECTION_HYPOTHESES=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Hypothesis Hypotheses) || {
     echo "ERROR: Coq source scan failed" >&2; exit 1; }
+# Proof-vacuity findings (scripts/detect-vacuous-proofs.py) — published so the
+# Qed headline is read next to how many of those Qed are vacuous patterns.
+VACUITY_FINDINGS=$(cd "$ROOT_DIR" && python3 scripts/detect-vacuous-proofs.py --json 2>/dev/null \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])') || {
+    echo "ERROR: proof-vacuity scan failed" >&2; exit 1; }
 KERNEL_WEAKENING=$(python3 "$COQ_SCAN" --forbidden "$ROOT_DIR/02_FORMAL/coq" | awk -F'\t' '{s += $2} END {print s + 0}') || {
     echo "ERROR: Coq forbidden-construct scan failed" >&2; exit 1; }
 
@@ -1242,6 +1247,8 @@ cat > "$OUTPUT_FILE" << EOF
     "sectionHypotheses": $SECTION_HYPOTHESES,
     "sectionHypothesesNote": "Section Hypothesis declarations; they become premises of exported theorems. All are premises of termination/ReducibilityFull.v well_typed_SN, which are refutable (REQ-84) - the theorem is conditional/vacuous, not a termination guarantee",
     "kernelWeakeningConstructs": $KERNEL_WEAKENING,
+    "vacuityFindings": $VACUITY_FINDINGS,
+    "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
     "axiomsJustified": true
   },
   "coq": {

@@ -36,8 +36,8 @@ Every country needs a constitution — the foundational law that all other laws 
 
 **What it contains:**
 - **Type Safety** — Every value in a RIINA program has a guaranteed type. You cannot accidentally treat a number as a password or a password as a public message. This is proven as a mathematical theorem, not enforced by a runtime check.
-- **Non-Interference** — Secret data cannot flow to public outputs. If a variable is marked as secret, no sequence of operations — no matter how clever — can cause its value to appear in a public channel. This is the mathematical equivalent of "classified information cannot leak."
-- **Effect Safety** — Every side effect (reading a file, sending a network request, accessing the clock) must be declared. A function that claims to be pure (no side effects) is proven to actually be pure. You cannot hide a network call inside a math function.
+- **Non-Interference (proven for the core without references)** — Secret data should not flow to public outputs. For the reference-free, `fix`-free core, Coq proves it (`ref_free_noninterference`, closed under the global context): two runs that differ only in their secret inputs return the same observable result, and take the same number of evaluation steps (`ref_free_constant_time`). With references or general recursion it is not yet a theorem (REQ-89); the compiler's information-flow rules enforce it on its typing rules today.
+- **Effect Safety** — Every side effect (reading a file, sending a network request, accessing the clock) must be declared, and the compiler rejects a function that performs an undeclared one. In Coq, every configuration reachable by evaluating a well-typed term performs only effects within its *declared* effect (`effect_sound_multi_step_declared`). That bound orders effects by a single level (a total order); separately, Coq proves a set-based fact that needs no ordering: evaluation never produces an effect that is not written somewhere in the program or its initial store (`reachable_effects_from_program_text`).
 - **Declassification Correctness** — When secrets do need to be revealed (e.g., showing the last 4 digits of a credit card), this can only happen through an explicit, auditable process with a proof that the policy is followed.
 
 **Current state:** 7,740 completed proofs (Qed), 0 incomplete proofs (admits), 0 active axioms, 244 active proof files.
@@ -76,7 +76,7 @@ Every country needs infrastructure — roads, utilities, communication networks.
 
 **What it contains:**
 - Build orchestrator, verification orchestrator
-- Cryptographic primitives (HMAC-SHA256, AES-256-GCM, ChaCha20-Poly1305 — all implemented without third-party dependencies)
+- Cryptographic primitives (HMAC-SHA256, AES-256-GCM, SHA-2/SHA-3, X25519, Ed25519, ML-KEM-768, ML-DSA-65 — all implemented without third-party dependencies; ChaCha20-Poly1305 is not implemented)
 - Release system (versioning, changelog, deployment scripts)
 - Docker and Nix packaging
 
@@ -126,7 +126,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track V — The Termination Office
 
-**What it proves:** Strong normalization for the **recursion-free core** — those programs always finish. Programs using general recursion (`fungsi`/`fix`) are Turing-complete and *can* loop by design; for them the guarantee is **type safety** (they never crash or get stuck — progress + preservation, mechanized for `fix`), not termination. Structurally-decreasing recursion is covered by **sized types**. Techniques: reducibility/strong-normalization + sized types.
+**What it proves:** Strong normalization for the **reference-free, `fix`-free core** — every well-typed program there finishes, with no premises (`ref_free_well_typed_SN`). References had to be excluded: a function stored in a reference can call itself through that reference (Landin's knot), and Coq proves that such a well-typed program diverges, so the older `well_typed_SN` statement for the full calculus is false (REQ-84). Programs using general recursion (`fungsi`/`fix`) are Turing-complete and *can* loop by design; for them the guarantee is **type safety** (they never crash or get stuck — progress + preservation, mechanized for `fix`), not termination. Structurally-decreasing recursion is covered by **sized types**. Techniques: a Tait-style logical relation with closed-value substitution + sized types.
 
 ### Track W — The Memory Authority
 
@@ -144,7 +144,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 **What it proves:** When secrets must be partially revealed (e.g., showing a masked credit card number), the revelation follows a strict, auditable policy with mathematical budget constraints on how much information can be released.
 
-**Current state for V-Z:** Research foundations complete. Core properties (type safety, non-interference, effect safety) are fully proven in the active build. Extended properties are Phase 8 work.
+**Current state for V-Z:** Research foundations complete. Type safety and dynamic effect soundness are fully proven in the active build; strong normalization, non-interference and constant time (reduction count) are proven for the reference-free, `fix`-free core. Extending them to references and recursion is REQ-89. Extended properties are Phase 8 work.
 
 ---
 

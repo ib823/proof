@@ -54,16 +54,21 @@ Definition Backend := Program -> Binary.
 Definition low_equiv (v1 v2 : LValue) : Prop :=
   lv_label v1 = Lo -> lv_label v2 = Lo -> lv_val v1 = lv_val v2.
 
-(* Non-interference for a function: varying high inputs doesn't change low output *)
+(* Non-interference for a function: varying the SECRET input cannot change a
+   PUBLIC output. (Corrected 2026-10-11 audit: this previously concluded
+   [f pub = f pub], a reflexivity that every function satisfies, so every
+   "NI preserved" theorem below was vacuous. [ni_secure_nonvacuous] now pins
+   that a leaking program FAILS the definition.) *)
 Definition ni_secure (f : LValue -> LValue) : Prop :=
   forall (in1 in2 : LValue),
     lv_label in1 = Hi ->
     lv_label in2 = Hi ->
-    forall (pub : LValue),
-      lv_label pub = Lo ->
-      f pub = f pub.  (* public input → same output regardless of secret context *)
+    lv_label (f in1) = Lo ->
+    lv_label (f in2) = Lo ->
+    lv_val (f in1) = lv_val (f in2).
 
-(* Stronger NI: if we fix public inputs, secret inputs don't affect public outputs *)
+(* Determinism on equal PUBLIC inputs. Not a non-interference property (no
+   secret input varies); kept because the composition lemmas below use it. *)
 Definition ni_strong (f : LValue -> LValue) : Prop :=
   forall in1 in2 : LValue,
     lv_label in1 = Lo ->
@@ -108,7 +113,25 @@ Theorem ni_secure_binary : forall (p : Program) (b : Backend),
   semantics_preserving b ->
   ni_secure (b p).
 Proof.
-  unfold ni_secure. intros. reflexivity.
+  unfold ni_secure. intros p b Hni Hsem in1 in2 Hh1 Hh2 Hlo1 Hlo2.
+  destruct (Hsem p in1) as [Hv1 Hlbl1].
+  destruct (Hsem p in2) as [Hv2 Hlbl2].
+  rewrite Hv1, Hv2.
+  apply Hni; auto; [rewrite <- Hlbl1 | rewrite <- Hlbl2]; assumption.
+Qed.
+
+(* Non-vacuity: the definition separates programs. A program that copies its
+   (secret) input to a public output is NOT [ni_secure]; a constant one is. *)
+Definition leak_program : Program := fun x => mkLV (lv_val x) Lo.
+Definition const_program : Program := fun _ => mkLV (VNat 0) Lo.
+
+Theorem ni_secure_nonvacuous : ~ ni_secure leak_program /\ ni_secure const_program.
+Proof.
+  split.
+  - intros H.
+    specialize (H (mkLV (VNat 0) Hi) (mkLV (VNat 1) Hi) eq_refl eq_refl eq_refl eq_refl).
+    simpl in H. discriminate H.
+  - intros in1 in2 _ _ _ _. reflexivity.
 Qed.
 
 (* THEOREM 2: Strong NI source + semantics-preserving backend → Strong NI binary *)
