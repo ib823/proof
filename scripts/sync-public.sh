@@ -53,6 +53,19 @@ INTERNAL_PATHS=(
     "riina-website.jsx"
     "AUDIT_REPORT_2026_02_06.md"
     "PRESERVATION_SORRY_PROMPT.md"
+    "CODEX_SORRY_PROMPT.md"
+    "NEXT_SESSION.md"
+
+    # --- Internal proof-attempt artefacts (2026-10-11 audit: these were
+    #     published although they are session logs / superseded audit dumps;
+    #     the status JSONs the public gates read, the crypto audit linked from
+    #     README, and the vacuity scan stay public) ---
+    "patches/"
+    "reports/AX1*"
+    "reports/AX2_STRICT*"
+    "reports/axiom_sorry_admit_*"
+    "reports/val_rel_n_step_up_*"
+    "reports/codespaces_remediation_validation*"
 
     # --- Internal worker/delegation reports + AI-review harness + machine-local
     #     diagnostics (carry container-absolute paths; flagged by verify-public
@@ -185,8 +198,9 @@ strip_internals() {
     local pattern glob MATCHED
     for pattern in "${INTERNAL_PATHS[@]}"; do
         git rm -rf --quiet --ignore-unmatch "$pattern" 2>/dev/null || true
-        if ls $REPO_ROOT/$pattern 1>/dev/null 2>&1; then
-            rm -rf $REPO_ROOT/$pattern 2>/dev/null || true
+        # shellcheck disable=SC2086  # $pattern may be a glob by design
+        if ls "$REPO_ROOT"/$pattern 1>/dev/null 2>&1; then
+            rm -rf "$REPO_ROOT"/$pattern 2>/dev/null || true
         fi
     done
     for glob in "${INTERNAL_GLOBS[@]}"; do
@@ -260,6 +274,16 @@ DIRTY_FILES=$(git diff --name-only HEAD | grep -Ev "^(VERIFICATION_MANIFEST.md|r
 if [ -n "$DIRTY_FILES" ]; then
     echo -e "${RED}ERROR: Uncommitted changes on main. Commit or stash first.${NC}"
     echo "$DIRTY_FILES"
+    exit 1
+fi
+# Untracked (non-ignored) files are NOT covered by `git diff`, yet the old
+# `git add -A` on the public branch would have committed and pushed them — a
+# stray `*.priv` from `riina-artifact-sign keygen`, an `.env`, local notes.
+# Refuse instead of guessing which of them are meant to be published.
+UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
+if [ -n "$UNTRACKED_FILES" ]; then
+    echo -e "${RED}ERROR: Untracked files in the working tree. Commit, delete, or .gitignore them first.${NC}"
+    echo "$UNTRACKED_FILES" | head -20
     exit 1
 fi
 # Restore auto-generated files if modified by hooks/gates
@@ -366,7 +390,10 @@ if [ "${1:-}" = "--reconcile" ]; then
     # Ledgers must be reproducible from the public tree itself.
     regen_public_ledgers
 
-    git add -A
+    # Stage updates/deletions of TRACKED files only. `git checkout main --`
+    # above already staged the synced content; `-A` would also sweep in any
+    # untracked working-tree file and publish it.
+    git add -u
 
     # Contamination self-check on exactly what this commit would publish
     # (added lines only — removing a leaked file must not trip the check).
@@ -510,8 +537,10 @@ sync_one_commit() {
     # Strip internals, regenerate tree-derived ledgers, stage everything.
     strip_internals
     regen_public_ledgers
-    git add -A
-    strip_internals   # git add -A may have re-added internal working-tree files
+    # Tracked files only: the cherry-pick already staged the commit's own new
+    # files; `-A` would also publish untracked working-tree files.
+    git add -u
+    strip_internals
 
     if git diff --cached --quiet; then
         echo -e "${YELLOW}    SKIP $short — no public-destined changes (internal-only or already applied)${NC}"

@@ -5,9 +5,15 @@
 # website/public/metrics.json and PROOF_STATUS.md cannot silently drift.
 #
 # Jobs are independent; each maps to a gate-relevant invariant:
-#   rust-proto / rust-tooling -> "build: passing" + the 2,579-test claim
-#   docs-audit                -> scripts/audit-docs.sh (metrics vs docs parity)
-#   coq                       -> Admitted=0 / Axiom=0 in the active _CoqProject set
+#   rust-proto / rust-tooling -> "build: passing" + the published test counts;
+#                                rust-proto installs cc + wasmtime, so every
+#                                C/WASM backend differential actually runs
+#   docs-audit                -> scripts/audit-docs.sh (metrics vs docs parity,
+#                                0 Admitted / Axiom / Abort / kernel-weakening
+#                                constructs, Parameter pin)
+#   coq                       -> riinac verify --coq: the active _CoqProject set
+#                                compiles within the warning budget, capstone
+#                                assumptions attested by the kernel
 #
 # NOTE: CLAUDE.md historically forbade external CI ("RIINA uses `riinac verify`
 # internally"). This workflow was added at the repository owner's explicit
@@ -54,7 +60,7 @@ jobs:
     outputs:
       coq: ${{ steps.filter.outputs.coq }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
       - id: filter
@@ -72,7 +78,7 @@ jobs:
           # Anything that can change the proof corpus, the active file set, the
           # ledger/warning gates, or this workflow itself forces a rebuild.
           if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qE \
-               '^02_FORMAL/coq/|^scripts/(update-proof-ledger|audit-coq-warnings)|^\.github/workflows/'; then
+               '^02_FORMAL/coq/|^scripts/(update-proof-ledger|audit-coq-warnings|provision-coq)|^03_PROTO/crates/riinac/src/verify\.rs$|^reports/coq_warning_budget\.json$|^\.github/workflows/'; then
             echo "Coq-affecting paths changed — building."
             echo "coq=true" >> "$GITHUB_OUTPUT"
           else
@@ -84,30 +90,32 @@ jobs:
     name: Rust tests (03_PROTO)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: "03_PROTO -> target"
+      # The C/WASM backend differentials need `cc` + `wasmtime`. They used to be
+      # skipped here via RIINA_ALLOW_MISSING_BACKEND_TOOLS=1 on the theory that
+      # the `differential` job owned them — but that job runs only
+      # `corpus_differential`, so 14 other wasmtime-dependent tests (loops,
+      # early-return, backend-parity, wasm_c, zero-arg) never ran in CI
+      # (2026-10-11 audit). Install the tools and run the whole suite without
+      # the opt-out.
+      - name: Install wasmtime (pinned v27.0.0, checksum-verified)
+        run: bash scripts/ci-install-wasmtime.sh
+      - name: Toolchain present (cc + wasmtime)
+        run: cc --version && wasmtime --version
       - name: cargo test --all
-        # The C/WASM backend differentials need `cc` + `wasmtime`, which this
-        # job deliberately does not install — the dedicated `differential` job
-        # below owns that coverage and DOES install them. Those tests now FAIL
-        # rather than silently self-skip (a silent skip is how a real codegen
-        # regression reached main on 2026-08-04 while counting as a pass), so
-        # this job must opt out EXPLICITLY. The opt-out is loud in the log and
-        # is set on exactly one job, so the coverage cannot go quietly missing.
-        env:
-          RIINA_ALLOW_MISSING_BACKEND_TOOLS: "1"
         run: cargo test --all --manifest-path 03_PROTO/Cargo.toml
 
   rust-tooling:
     name: Rust tests (05_TOOLING)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: "05_TOOLING -> target"
       - name: cargo test --all
@@ -117,9 +125,9 @@ jobs:
     name: Fuzz robustness (REQ-30 harness)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: "03_PROTO -> target"
       # Thin wrapper over the in-repo REQ-30 harness
@@ -134,15 +142,15 @@ jobs:
     name: Frontend coverage gate (REQ-30, >=80% lines)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
         with:
           components: llvm-tools-preview
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: "03_PROTO -> target"
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@be76f545a6a2f94fb131c5bb748ebed32edb5760 # cargo-llvm-cov
       # Thin wrapper over the in-repo gate (scripts/coverage-check.sh): line
       # coverage of the untrusted-input frontend (lexer+parser+typechecker, the
       # REQ-30 fuzz target) must stay >=80%. The script is the source of truth;
@@ -154,8 +162,8 @@ jobs:
     name: SBOM freshness (REQ-31)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
       # Thin wrapper over the repo's own drift guard: regenerates the
       # CycloneDX SBOMs from cargo metadata and fails if sbom/*.cdx.json is
       # stale (the shipped-compiler SBOM is the machine-checkable proof of
@@ -167,7 +175,7 @@ jobs:
     name: SMT scoped set (REQ-67a)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install z3
         run: sudo apt-get update -qq && sudo apt-get install -y -qq z3
       # Thin wrapper over the repo's own gate: runs Z3 on exactly the files
@@ -180,7 +188,7 @@ jobs:
     name: Docs / metrics parity (audit-docs.sh)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0 # audit-docs.sh uses git history
       - name: scripts/audit-docs.sh
@@ -192,7 +200,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.coq == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       # NOT CACHED, deliberately. Measured 2026-08-02: of this job's ~13m,
       # `opam install rocq` is ~4m35s of pinned-toolchain reinstall that looks
       # like an obvious cache target. Two attempts (an `actions/cache` on
@@ -202,7 +210,7 @@ jobs:
       # `changes` gate above is the bigger win anyway: it skips this whole job.
       # If you retry, verify with a WARM cache (a populate run proves nothing)
       # and confirm `opam var root` actually points at what you cached.
-      - uses: ocaml/setup-ocaml@v3
+      - uses: ocaml/setup-ocaml@93303b622b2522e4411e295f9e77411a24912ac7 # v3
         with:
           # Matches the documented/local toolchain. This said "5.2" while
           # CLAUDE.md and every local install used 4.14.2 — CI and local were
@@ -224,16 +232,25 @@ jobs:
         run: RIINA_COQ_USE_CURRENT_SWITCH=1 bash scripts/provision-coq.sh
       - name: Verify the toolchain actually matches the pin
         run: RIINA_COQ_USE_CURRENT_SWITCH=1 bash scripts/provision-coq.sh --check
-      - name: make (active _CoqProject set)
-        run: opam exec -- make -C 02_FORMAL/coq
+      # Not a bare `make`: `riinac verify --coq` runs the SAME Coq checks as the
+      # pre-push `verify --full` (one shared function) — compilation with the
+      # warning budget enforced, kernel `Print Assumptions` attestation of the
+      # capstones (incl. section-premise detection), and the static scan for
+      # Admitted/Axiom/Abort/kernel-weakening constructs. `make` alone accepts
+      # Admitted and never looks at assumptions (2026-10-11 audit).
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      - name: Build riinac
+        run: cargo build -p riinac --manifest-path 03_PROTO/Cargo.toml
+      - name: riinac verify --coq (compile + kernel attestation + scan)
+        run: opam exec -- 03_PROTO/target/debug/riinac verify --coq
 
   differential:
     name: WASM/C differential (byte-equality)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: "03_PROTO -> target"
       # `cc` ships on ubuntu-latest; `wasmtime` is the WASM runtime the
@@ -252,14 +269,8 @@ jobs:
       # name. The differential's verdict is known to be version-independent
       # (recorded identical under wasmtime 27.0.0 and 45.0.0), so pinning
       # costs no coverage.
-      - name: Install wasmtime (pinned v27.0.0)
-        run: |
-          curl -sSfL -o /tmp/wasmtime.tar.xz \
-            https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-x86_64-linux.tar.xz
-          tar xf /tmp/wasmtime.tar.xz -C /tmp
-          mkdir -p "$HOME/.wasmtime/bin"
-          cp /tmp/wasmtime-v27.0.0-x86_64-linux/wasmtime "$HOME/.wasmtime/bin/"
-          echo "$HOME/.wasmtime/bin" >> "$GITHUB_PATH"
+      - name: Install wasmtime (pinned v27.0.0, checksum-verified)
+        run: bash scripts/ci-install-wasmtime.sh
       - name: Toolchain present (cc + wasmtime)
         run: cc --version && wasmtime --version
       - name: corpus_differential (C vs WASM stdout)
@@ -269,9 +280,9 @@ jobs:
     name: Constant-time structural (ctgrind / valgrind)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: "05_TOOLING -> target"
       # The structural CT check is DETERMINISTIC (valgrind secret-poisoning, not

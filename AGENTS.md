@@ -142,7 +142,7 @@ cd website && npm run build && deploy to gh-pages
 eval $(opam env --switch=rocq) && cd 02_FORMAL/coq && make -j$(nproc)
 
 # Lean
-cd 02_FORMAL/lean && /home/codespace/.elan/bin/lake build RIINA
+cd 02_FORMAL/lean && PATH="$HOME/.elan/bin:$PATH" lake build RIINA
 
 # Rust
 export PATH="$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:$PATH"

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "bash ../scripts/generate-metrics.sh && (bash ../scripts/build-wasm.sh || true)",
+    "prebuild": "bash ../scripts/generate-metrics.sh && (bash ../scripts/build-wasm.sh || echo 'WARNING: WASM build failed - this local build serves the previous riina_wasm.wasm (deploy-website.sh refuses to deploy in this state)' >&2)",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "bash ../scripts/deploy-website.sh"

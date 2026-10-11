@@ -40,8 +40,8 @@ jobs:
     # Register a self-hosted runner with the `ct-metal` label on your prepared box.
     runs-on: [self-hosted, ct-metal]
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
       - name: Certify (grades the host, then measures; fails if INDICATIVE-unclean or a primitive flags)
         env:
           CT_CORE: ${{ github.event.inputs.core }}
@@ -49,7 +49,7 @@ jobs:
         run: bash scripts/ct-timing-certify.sh
       - name: Upload timing evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ct-timing-evidence
           path: reports/ct_evidence/

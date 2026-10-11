@@ -81,7 +81,7 @@ fn usage() -> ! {
     eprintln!("  lsp      Start LSP server (stdio)");
     eprintln!("  mcp      Start MCP server for AI agents (stdio)");
     eprintln!("  repl     Interactive read-eval-print loop");
-    eprintln!("  verify   Run verification gate [--fast|--full]");
+    eprintln!("  verify   Run verification gate [--fast|--full|--coq]");
     eprintln!("  pkg      Package manager (init/add/remove/lock/build/...)");
     eprintln!();
     eprintln!("Options:");
@@ -111,6 +111,7 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
             match args[2].as_str() {
                 "--fast" => verify::Mode::Fast,
                 "--full" => verify::Mode::Full,
+                "--coq" => verify::Mode::Coq,
                 other => {
                     eprintln!("Unknown verify flag: {other}");
                     usage();

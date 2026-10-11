@@ -3,11 +3,14 @@
 import json
 import subprocess
 import sys
-import tempfile
 import os
 
-RIINAC = "/workspaces/proof/03_PROTO/target/debug/riinac"
-JSONL_PATH = "/workspaces/proof/07_EXAMPLES/08_ai_training/vuln_to_safe.jsonl"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
+RIINAC = os.environ.get(
+    "RIINAC", os.path.join(REPO_ROOT, "03_PROTO", "target", "debug", "riinac")
+)
+JSONL_PATH = os.path.join(SCRIPT_DIR, "vuln_to_safe.jsonl")
 
 passed = 0
 failed = 0
@@ -29,24 +32,17 @@ with open(JSONL_PATH, 'r') as f:
         code = entry.get("riina_safe_code", "")
         vuln = entry.get("vulnerability", "unknown")
 
-        # Write code to temp file and use bash echo pipe to riinac
-        # This avoids Python subprocess stdin encoding issues
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.rii', delete=False, dir='/tmp') as tf:
-            tf.write(code)
-            tf.write('\n')
-            tmppath = tf.name
-
+        # Feed the source as UTF-8 bytes on stdin (no shell, no temp file).
         try:
-            # Use bash -c with cat pipe; CWD must be /workspaces/proof
             result = subprocess.run(
-                ['bash', '-c', f'cd /workspaces/proof && cat "{tmppath}" | {RIINAC} check --stdin 2>&1'],
-                capture_output=True, text=True, timeout=10
+                [RIINAC, 'check', '--stdin'],
+                input=(code + '\n').encode('utf-8'),
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                cwd=REPO_ROOT, timeout=10,
             )
-            output = result.stdout.strip()
+            output = result.stdout.decode('utf-8', errors='replace').strip()
         except subprocess.TimeoutExpired:
             output = "TIMEOUT"
-        finally:
-            os.unlink(tmppath)
 
         if "Success!" in output:
             passed += 1

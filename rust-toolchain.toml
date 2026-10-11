@@ -1,0 +1,9 @@
+# Repository-wide Rust pin. rustup resolves the toolchain from the directory a
+# command runs in (searching parents), so this covers 03_PROTO and every
+# `cargo --manifest-path ...` run from the repo root, as CLAUDE.md documents.
+# 05_TOOLING/rust-toolchain.toml pins the same version with extra components.
+# Keep in sync with `rust-version` in both workspaces' Cargo.toml.
+[toolchain]
+channel = "1.94.1"
+profile = "minimal"
+components = ["clippy", "rustfmt"]

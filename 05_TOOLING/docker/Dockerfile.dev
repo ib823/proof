@@ -13,7 +13,7 @@
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
-FROM ubuntu:24.04 AS base
+FROM ubuntu:24.04@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55 AS base
 
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -58,13 +58,23 @@ RUN apt-get update && apt-get install -y \
 # RUST INSTALLATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Install Rust (pinned version)
+# Install Rust (pinned version — must match 05_TOOLING/rust-toolchain.toml and
+# the workspaces' rust-version; this said 1.84.0, which cannot build them).
+# rustup-init is fetched as a pinned, checksum-verified binary instead of
+# piping a script from the network into sh. (x86_64 host image.)
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.84.0
+    RUST_VERSION=1.94.1 \
+    RUSTUP_INIT_VERSION=1.29.1 \
+    RUSTUP_INIT_SHA256=dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71 \
+    RUST_NIGHTLY=nightly-2026-03-26
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- \
+RUN curl --proto '=https' --tlsv1.2 -sSfL -o /tmp/rustup-init \
+        "https://static.rust-lang.org/rustup/archive/${RUSTUP_INIT_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
+    && echo "${RUSTUP_INIT_SHA256}  /tmp/rustup-init" | sha256sum -c - \
+    && chmod +x /tmp/rustup-init \
+    && /tmp/rustup-init \
     -y \
     --default-toolchain ${RUST_VERSION} \
     --profile complete \
@@ -79,16 +89,17 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- \
         llvm-tools \
         rust-analyzer
 
-# Install nightly (for miri, fuzzing)
-RUN rustup toolchain install nightly --profile minimal \
-    && rustup +nightly component add miri rust-src
+# Install a DATED nightly (for miri, fuzzing) — `nightly` floats daily
+RUN rm -f /tmp/rustup-init \
+    && rustup toolchain install ${RUST_NIGHTLY} --profile minimal \
+    && rustup +${RUST_NIGHTLY} component add miri rust-src
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CARGO TOOLS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Essential cargo tools
-RUN cargo install \
+RUN cargo install --locked \
     cargo-audit \
     cargo-deny \
     cargo-llvm-cov \
@@ -105,7 +116,7 @@ RUN cargo install \
     tokei
 
 # Fuzzing tools (nightly)
-RUN cargo +nightly install cargo-fuzz afl
+RUN cargo +${RUST_NIGHTLY} install --locked cargo-fuzz afl
 
 # Optional: Verification tools (these can be large)
 # Uncomment to include:

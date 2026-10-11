@@ -25,6 +25,36 @@ class CoqSourceCounts(unittest.TestCase):
         for name in ['Axiom', 'Admitted', 'admit', 'Abort']:
             self.assertEqual(tokens.count(name), 1, name)
 
+    def test_strings_inside_comments_do_not_change_nesting(self):
+        # Coq lexes "..." inside comments: this comment CLOSES, so the
+        # Admitted is real code and must be counted (2026-10-11 audit bypass).
+        tokens = list(scanner.identifiers('Lemma p : False. Proof. (* "(*" *) Admitted.'))
+        self.assertEqual(tokens.count('Admitted'), 1)
+        # ... and a "*)" inside a string does not close the comment early.
+        tokens = list(scanner.identifiers('(* "*)" Axiom hidden : False. *) Lemma t : True.'))
+        self.assertEqual(tokens.count('Axiom'), 0)
+        self.assertEqual(tokens.count('Lemma'), 1)
+
+    def test_forbidden_kernel_weakening_constructs(self):
+        source = '''Conjecture c : False.
+        #[bypass_check(guard)] Fixpoint f (n : nat) : nat := f n.
+        Unset Positivity Checking.
+        Unset   Guard
+          Checking.
+        Admit Obligations.
+        Lemma l : True. Proof. give_up. Defined.
+        (* Unset Universe Checking. Conjecture in a comment. *)
+        Definition s := "Unset Universe Checking".
+        '''
+        counts = scanner.forbidden_counts(list(scanner.identifiers(source)))
+        self.assertEqual(counts['Conjecture'], 1)
+        self.assertEqual(counts['bypass_check'], 1)
+        self.assertEqual(counts['Unset Positivity Checking'], 1)
+        self.assertEqual(counts['Unset Guard Checking'], 1)
+        self.assertEqual(counts['Unset Universe Checking'], 0)
+        self.assertEqual(counts['Admit Obligations'], 1)
+        self.assertEqual(counts['give_up'], 1)
+
     def test_active_sources_and_missing_files(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

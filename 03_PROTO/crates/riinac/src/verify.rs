@@ -37,6 +37,12 @@ const ALLOY_TIMEOUT: Duration = Duration::from_secs(5 * 60); // 5 min
 pub enum Mode {
     Fast,
     Full,
+    /// Only the primary proof lane: `_CoqProject` completeness, compilation
+    /// (with the warning budget), kernel assumption attestation and the static
+    /// scan — exactly the Coq checks `Full` runs, via the same function. Used by
+    /// CI's `coq` job so CI wraps this gate instead of a bare `make`. Does not
+    /// write the verification manifest.
+    Coq,
 }
 
 #[derive(Debug)]
@@ -942,8 +948,10 @@ pub fn parse_test_count(output: &str) -> u32 {
 
 /// Run clippy in the given dir.
 fn run_clippy(proto_dir: &Path) -> CheckResult {
+    // Same invocation CLAUDE.md and CI require: all targets, warnings denied.
+    // Without `-D warnings` clippy exits 0 on warnings and the gate passed them.
     let output = Command::new("cargo")
-        .args(["clippy", "--all"])
+        .args(["clippy", "--all", "--all-targets", "--", "-D", "warnings"])
         .current_dir(proto_dir)
         .output();
 
@@ -976,6 +984,31 @@ fn run_clippy(proto_dir: &Path) -> CheckResult {
 // Coq: active file list + static scan + compilation
 // ---------------------------------------------------------------------------
 
+/// Create a fresh, private (0700 on unix) directory under the system temp dir.
+/// `create_dir` fails if the path already exists — including as a symlink — so
+/// a pre-planted path cannot redirect what is written inside it.
+fn private_temp_dir(prefix: &str) -> std::io::Result<PathBuf> {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    for _ in 0..64 {
+        let nanos = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+        let n = COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!("{prefix}_{}_{nanos}_{n}", std::process::id()));
+        let mut builder = fs::DirBuilder::new();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::DirBuilderExt;
+            builder.mode(0o700);
+        }
+        match builder.create(&dir) {
+            Ok(()) => return Ok(dir),
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(e),
+        }
+    }
+    Err(std::io::Error::other("could not create a unique temp dir"))
+}
+
 /// Read active .v files from _CoqProject, falling back to recursive scan.
 fn active_coq_files(coq_dir: &Path) -> Vec<PathBuf> {
     let project_file = coq_dir.join("_CoqProject");
@@ -998,6 +1031,7 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     let mut axiom_count = 0u32;
     let mut abort_count = 0u32;
     let mut explicit_step_up_assumption_count = 0u32;
+    let mut weakening: Vec<String> = Vec::new();
 
     {
         let entries = active_coq_files(coq_dir);
@@ -1014,6 +1048,9 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
                 }
                 explicit_step_up_assumption_count += tokens.windows(2)
                     .filter(|t| t[0] == "Parameter" && t[1] == "val_rel_n_step_up").count() as u32;
+                let rel = path.strip_prefix(coq_dir).unwrap_or(&path).display().to_string();
+                weakening.extend(kernel_weakening_constructs(&tokens)
+                    .into_iter().map(|c| format!("{rel}: {c}")));
             } else {
                 results.push(CheckResult {
                     name: "Coq Source Read".into(), passed: false, blocking: true,
@@ -1047,6 +1084,19 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
         details: format!("{abort_count} (target: 0)"),
     });
 
+    // `Unset Positivity Checking` sat in the active build until 2026-10-11 and
+    // False was provable under it; none of the counts above could see it.
+    results.push(CheckResult {
+        name: "Coq Kernel-Weakening Constructs".into(),
+        passed: weakening.is_empty(),
+        blocking: true,
+        details: if weakening.is_empty() {
+            "0 (Conjecture, give_up, Admit Obligations, bypass_check, Unset Guard/Positivity/Universe Checking)".into()
+        } else {
+            format!("{} found: {}", weakening.len(), weakening.join("; "))
+        },
+    });
+
     results.push(CheckResult {
         name: "Coq Explicit Step-Up Assumption".into(),
         passed: explicit_step_up_assumption_count == 0,
@@ -1061,6 +1111,42 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
 
 /// Lex identifiers outside Coq's nested comments and double-quoted strings.
 /// An inline comment must not hide code before or after it from the gate.
+/// Skip a Coq string literal starting at `bytes[i] == b'"'` (`""` escapes).
+fn skip_coq_string(bytes: &[u8], mut i: usize) -> usize {
+    i += 1;
+    while i < bytes.len() {
+        if bytes[i] == b'"' {
+            i += 1;
+            if bytes.get(i) == Some(&b'"') { i += 1; } else { return i; }
+        } else {
+            i += 1;
+        }
+    }
+    i
+}
+
+/// Kernel-weakening constructs found in a token stream (comment/string-free):
+/// each one either assumes a statement without proof or switches off a kernel
+/// check. All must be absent from the active build.
+fn kernel_weakening_constructs(tokens: &[String]) -> Vec<String> {
+    let mut found = Vec::new();
+    for (k, tok) in tokens.iter().enumerate() {
+        match tok.as_str() {
+            "Conjecture" | "Conjectures" | "give_up" | "bypass_check" => found.push(tok.clone()),
+            "Admit" if tokens.get(k + 1).map(String::as_str) == Some("Obligations") => {
+                found.push("Admit Obligations".into());
+            }
+            "Unset" if matches!(tokens.get(k + 1).map(String::as_str),
+                                Some("Guard" | "Positivity" | "Universe"))
+                && tokens.get(k + 2).map(String::as_str) == Some("Checking") => {
+                found.push(format!("Unset {} Checking", tokens[k + 1]));
+            }
+            _ => {}
+        }
+    }
+    found
+}
+
 fn coq_code_tokens(source: &str) -> Vec<String> {
     let bytes = source.as_bytes();
     let mut i = 0;
@@ -1072,6 +1158,10 @@ fn coq_code_tokens(source: &str) -> Vec<String> {
             i += 2;
         } else if depth > 0 {
             if bytes.get(i..i + 2) == Some(b"*)") { depth -= 1; i += 2; }
+            // Coq lexes string literals inside comments too, so a "(*" or "*)"
+            // within one does not change the nesting. Missing this let
+            // `Proof. (* "(*" *) Admitted.` hide a real Admitted (2026-10-11).
+            else if bytes[i] == b'"' { i = skip_coq_string(bytes, i); }
             else { i += 1; }
         } else if bytes[i] == b'"' {
             i += 1;
@@ -1110,6 +1200,54 @@ const KERNEL_CAPSTONES: &[(&str, &str)] = &[
     ("termination.ReducibilityFull", "well_typed_SN"),
     ("crypto.AlgorithmPolicy", "accepts_uses_only_current"),
 ];
+
+/// Capstones whose statements carry SECTION-HYPOTHESIS PREMISES. Closing a
+/// Section turns each `Hypothesis` used by a theorem into a leading premise of
+/// its exported statement; `Print Assumptions` does not list premises (they
+/// are not axioms), so a capstone could attest "funext only" while resting on
+/// premises that can never all hold — exactly what happened with
+/// `well_typed_SN` (2026-10-11 audit: one premise is refuted in the build).
+/// A capstone with such premises must be listed here, with the requirement
+/// that tracks discharging them; it is then reported as CONDITIONAL, never as
+/// an unconditional guarantee. An entry whose capstone no longer has premises
+/// is stale and fails, so this list cannot silently drift.
+const CONDITIONAL_CAPSTONES: &[(&str, &str)] = &[
+    ("well_typed_SN", "REQ-84: section premises are refutable — the theorem is vacuous until they are restated over well-formed stores and discharged"),
+];
+
+/// Section `Hypothesis`/`Hypotheses` declarations that are in scope (in an
+/// enclosing, still-open Section) at the declaration of `theorem`.
+fn section_hypotheses_in_scope(source: &str, theorem: &str) -> Option<Vec<String>> {
+    let tokens = coq_code_tokens(source);
+    // Stack of open sections, each with the hypotheses declared in it.
+    let mut open: Vec<(String, Vec<String>)> = Vec::new();
+    let mut k = 0;
+    while k < tokens.len() {
+        match tokens[k].as_str() {
+            "Section" => {
+                if let Some(name) = tokens.get(k + 1) { open.push((name.clone(), Vec::new())); }
+            }
+            "End" => {
+                if let Some(name) = tokens.get(k + 1) {
+                    if open.last().map(|(n, _)| n == name).unwrap_or(false) { open.pop(); }
+                }
+            }
+            "Hypothesis" | "Hypotheses" => {
+                if let (Some(top), Some(name)) = (open.last_mut(), tokens.get(k + 1)) {
+                    top.1.push(name.clone());
+                }
+            }
+            "Theorem" | "Lemma" | "Corollary" | "Proposition" | "Fact" | "Remark"
+                if tokens.get(k + 1).map(String::as_str) == Some(theorem) =>
+            {
+                return Some(open.iter().flat_map(|(_, h)| h.iter().cloned()).collect());
+            }
+            _ => {}
+        }
+        k += 1;
+    }
+    None
+}
 
 /// Axioms the capstones are ALLOWED to depend on. Additions require the same
 /// deliberate review as a TCB change: each entry is a named, documented
@@ -1177,6 +1315,61 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
         _ => coqc_path.clone(),
     };
 
+    // Premises the kernel cannot see: section hypotheses abstracted into a
+    // capstone's statement. Unlisted ones fail; listed ones are CONDITIONAL.
+    let mut conditional = Vec::new();
+    for (module, theorem) in KERNEL_CAPSTONES {
+        let file = coq_dir.join(format!("{}.v", module.replace('.', "/")));
+        let source = match fs::read_to_string(&file) {
+            Ok(s) => s,
+            Err(e) => {
+                return CheckResult {
+                    name: "Coq Kernel Assumptions".into(),
+                    passed: false,
+                    blocking: true,
+                    details: format!("cannot read capstone source {}: {e}", file.display()),
+                };
+            }
+        };
+        let Some(hyps) = section_hypotheses_in_scope(&source, theorem) else {
+            return CheckResult {
+                name: "Coq Kernel Assumptions".into(),
+                passed: false,
+                blocking: true,
+                details: format!("capstone `{theorem}` not found in {}", file.display()),
+            };
+        };
+        let listed = CONDITIONAL_CAPSTONES.iter().find(|(t, _)| t == theorem);
+        match (hyps.is_empty(), listed) {
+            (true, None) => {}
+            (false, Some((_, why))) => conditional.push(format!(
+                "{theorem} CONDITIONAL on {} section premise(s) [{}] ({why})",
+                hyps.len(), hyps.join(", "))),
+            (false, None) => {
+                return CheckResult {
+                    name: "Coq Kernel Assumptions".into(),
+                    passed: false,
+                    blocking: true,
+                    details: format!(
+                        "capstone `{theorem}` is stated under section Hypothesis premise(s) [{}] that \
+                         Print Assumptions cannot see — discharge them, or list it in \
+                         CONDITIONAL_CAPSTONES with the requirement tracking them",
+                        hyps.join(", ")),
+                };
+            }
+            (true, Some(_)) => {
+                return CheckResult {
+                    name: "Coq Kernel Assumptions".into(),
+                    passed: false,
+                    blocking: true,
+                    details: format!(
+                        "CONDITIONAL_CAPSTONES lists `{theorem}`, which no longer has section \
+                         premises — remove the stale entry so it is reported as unconditional"),
+                };
+            }
+        }
+    }
+
     let mut scratch = String::new();
     for (module, _) in KERNEL_CAPSTONES {
         scratch.push_str(&format!("From RIINA Require Import {module}.\n"));
@@ -1184,7 +1377,20 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
     for (_, theorem) in KERNEL_CAPSTONES {
         scratch.push_str(&format!("Print Assumptions {theorem}.\n"));
     }
-    let tmp = std::env::temp_dir().join("riina_kernel_assumptions_check.v");
+    // A fresh private directory, not a fixed /tmp name: a pre-planted symlink at
+    // a predictable path would redirect the write (2026-10-11 audit).
+    let tmp_dir = match private_temp_dir("riina_kernel_assumptions") {
+        Ok(d) => d,
+        Err(e) => {
+            return CheckResult {
+                name: "Coq Kernel Assumptions".into(),
+                passed: false,
+                blocking: true,
+                details: format!("cannot create private scratch dir: {e}"),
+            };
+        }
+    };
+    let tmp = tmp_dir.join("riina_kernel_assumptions_check.v");
     if let Err(e) = fs::write(&tmp, &scratch) {
         return CheckResult {
             name: "Coq Kernel Assumptions".into(),
@@ -1209,6 +1415,7 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
         .arg(&tmp)
         .current_dir(coq_dir)
         .output();
+    let _ = fs::remove_dir_all(&tmp_dir);
 
     let output = match output {
         Ok(o) => o,
@@ -1275,9 +1482,12 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
         passed: true,
         blocking: true,
         details: format!(
-            "{} capstones attested; axioms within reviewed whitelist ({} allowed: funext)",
+            "{} capstones attested ({} unconditional); axioms within reviewed whitelist \
+             ({} allowed: funext){}",
             KERNEL_CAPSTONES.len(),
-            ALLOWED_KERNEL_AXIOMS.len()
+            KERNEL_CAPSTONES.len() - conditional.len(),
+            ALLOWED_KERNEL_AXIOMS.len(),
+            if conditional.is_empty() { String::new() } else { format!("; {}", conditional.join("; ")) }
         ),
     }
 }
@@ -1364,6 +1574,22 @@ fn verify_coqproject_completeness(coq_dir: &Path) -> CheckResult {
 }
 
 /// Compile all Coq proofs by running `make -j2` in the Coq directory.
+/// Count compiler warnings in a Coq build log (each starts a `Warning:` line,
+/// as parsed by scripts/audit-coq-warnings.py).
+fn count_coq_warnings(log: &str) -> u64 {
+    log.lines().filter(|l| l.trim_start().starts_with("Warning:")).count() as u64
+}
+
+/// Read a top-level unsigned integer field from a small JSON document without
+/// a JSON dependency: finds `"field"` followed by `:` and digits.
+fn json_u64_field(text: &str, field: &str) -> Option<u64> {
+    let key = format!("\"{field}\"");
+    let rest = &text[text.find(&key)? + key.len()..];
+    let rest = rest.trim_start().strip_prefix(':')?.trim_start();
+    let digits: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+    digits.parse().ok()
+}
+
 fn compile_coq(coq_dir: &Path) -> CheckResult {
     let coqc_path = match detect_coqc() {
         ToolStatus::Found(p) => p,
@@ -1421,13 +1647,40 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
         Ok(o) => {
             if o.status.success() {
                 let vo_count = count_files_with_ext(coq_dir, "vo");
+                // Enforce the warning budget on THIS build's output. The budget
+                // used to be checked only via reports/coq_warning_status.json,
+                // which any Coq change makes stale — and stale only warned, so a
+                // change that added warnings could never fail (2026-10-11 audit).
+                let log = format!(
+                    "{}\n{}",
+                    String::from_utf8_lossy(&o.stdout),
+                    String::from_utf8_lossy(&o.stderr)
+                );
+                let warnings = count_coq_warnings(&log);
+                let budget_path = coq_dir.join("../../reports/coq_warning_budget.json");
+                let budget = fs::read_to_string(&budget_path)
+                    .ok()
+                    .and_then(|text| json_u64_field(&text, "maxTotalWarnings"));
+                let Some(budget) = budget else {
+                    return CheckResult {
+                        name: "Coq Compilation".into(),
+                        passed: false,
+                        blocking: true,
+                        details: format!(
+                            "{vo_count} .vo compiled, but the warning budget ({}) is missing or \
+                             unreadable — refusing to pass an unchecked warning count",
+                            budget_path.display()
+                        ),
+                    };
+                };
                 CheckResult {
                     name: "Coq Compilation".into(),
-                    passed: true,
+                    passed: warnings <= budget,
                     blocking: true,
                     details: format!(
-                        "{vo_count} .vo files compiled in {:.0}s",
-                        elapsed.as_secs_f64()
+                        "{vo_count} .vo files compiled in {:.0}s; {warnings} warning(s) (budget {budget}){}",
+                        elapsed.as_secs_f64(),
+                        if warnings > budget { " — WARNING BUDGET EXCEEDED" } else { "" }
                     ),
                 }
             } else {
@@ -2086,12 +2339,17 @@ fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
     let parity_ok = lean_thm >= threshold && isa_lem >= threshold;
 
     CheckResult {
-        name: "Cross-Prover Validation (10 provers)".into(),
+        // NOT a validation: these are raw declaration counts. Only Coq is a
+        // mechanized lane; the other trees are largely generated corpora
+        // (e.g. ~12k `admit ()` in F*, Lean files that do not elaborate). The
+        // old name "Cross-Prover Validation ... PASS, Grand total" presented
+        // that sum as verification (2026-10-11 audit).
+        name: "Prover Corpus Inventory (raw counts, not verification)".into(),
         passed: parity_ok,
-        // Non-blocking for now — promote to blocking once parity is validated
+        // Informational only.
         blocking: false,
         details: format!(
-            "Grand total: {grand_total} | Coq: {coq_qed} | Lean: {lean_thm} | Isabelle: {isa_lem} | \
+            "Raw declaration counts; only Coq is mechanized. Sum: {grand_total} | Coq: {coq_qed} | Lean: {lean_thm} | Isabelle: {isa_lem} | \
              F*: {fstar_lem} | TLA+: {tla_thm} | Alloy: {alloy_asrt} | SMT: {smt_asrt} | \
              Verus: {verus_pf} | Kani: {kani_pf} | TV: {tv_val} | Parity: {}",
             if parity_ok { "OK" } else { "DRIFT (Lean/Isabelle < 50% of Coq)" }
@@ -2429,7 +2687,8 @@ fn git_sha(repo: &Path) -> String {
 /// (it adds the Coq and other proof lanes), so its manifest is stronger evidence.
 fn mode_rank(mode: Mode) -> u8 {
     match mode {
-        Mode::Fast => 0,
+        // `--coq` never writes a manifest; ranked lowest for completeness.
+        Mode::Coq | Mode::Fast => 0,
         Mode::Full => 1,
     }
 }
@@ -2623,6 +2882,10 @@ fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
             "full",
             "Scope: Rust + primary proof lane (Coq). Fails closed if the Coq \
              toolchain is absent.",
+        ),
+        Mode::Coq => (
+            "coq",
+            "Scope: primary proof lane (Coq) only. No Rust tests.",
         ),
     };
 
@@ -3559,6 +3822,24 @@ fn primary_verifier_result(status: ToolStatus) -> CheckResult {
 }
 
 /// Entry point for `riinac verify`.
+/// The primary-lane (Coq) checks, shared by `--full` and `--coq` so the two can
+/// never diverge.
+fn coq_lane_checks(coq_dir: &Path) -> Vec<CheckResult> {
+    let mut results = vec![];
+    eprintln!("Checking _CoqProject completeness...");
+    results.push(verify_coqproject_completeness(coq_dir));
+
+    eprintln!("Compiling Coq proofs...");
+    results.push(compile_coq(coq_dir));
+
+    eprintln!("Attesting kernel-level assumptions (Print Assumptions)...");
+    results.push(check_kernel_assumptions(coq_dir));
+
+    eprintln!("Scanning Coq proofs...");
+    results.extend(scan_coq(coq_dir));
+    results
+}
+
 pub fn run(mode: Mode) -> i32 {
     let repo = match find_repo_root() {
         Ok(r) => r,
@@ -3570,6 +3851,20 @@ pub fn run(mode: Mode) -> i32 {
 
     eprintln!("RIINA verify ({:?} mode)", mode);
     eprintln!("Repo root: {}", repo.display());
+
+    if mode == Mode::Coq {
+        eprintln!("\n=== Coq Verification ===");
+        let results = coq_lane_checks(&repo.join("02_FORMAL").join("coq"));
+        let all_pass = results.iter().all(|r| r.passed || !r.blocking);
+        eprintln!();
+        for r in &results {
+            let icon = if r.passed { "OK" } else if r.blocking { "FAIL" } else { "WARN" };
+            eprintln!("  [{icon}] {}: {}", r.name, r.details);
+        }
+        eprintln!();
+        eprintln!("Verification (Coq lane): {}", if all_pass { "PASS" } else { "FAIL" });
+        return if all_pass { 0 } else { 1 };
+    }
 
     let proto_dir = repo.join("03_PROTO");
     let mut results = vec![];
@@ -3610,17 +3905,7 @@ pub fn run(mode: Mode) -> i32 {
         // === Coq ===
         eprintln!("\n=== Coq Verification ===");
 
-        eprintln!("Checking _CoqProject completeness...");
-        results.push(verify_coqproject_completeness(&coq_dir));
-
-        eprintln!("Compiling Coq proofs...");
-        results.push(compile_coq(&coq_dir));
-
-        eprintln!("Attesting kernel-level assumptions (Print Assumptions)...");
-        results.push(check_kernel_assumptions(&coq_dir));
-
-        eprintln!("Scanning Coq proofs...");
-        results.extend(scan_coq(&coq_dir));
+        results.extend(coq_lane_checks(&coq_dir));
 
         // === Lean 4 ===
         eprintln!("\n=== Lean 4 Verification ===");
@@ -3680,7 +3965,7 @@ pub fn run(mode: Mode) -> i32 {
         results.extend(scan_tv(&tv_dir));
 
         // === Cross-Prover ===
-        eprintln!("\n=== Cross-Prover Validation (10 provers) ===");
+        eprintln!("\n=== Prover Corpus Inventory (raw counts) ===");
         results.push(cross_validate_provers(&prover_dirs));
 
         // === Transpiler Staleness ===
@@ -3735,6 +4020,13 @@ pub fn run(mode: Mode) -> i32 {
 mod tests {
     use super::*;
 
+    /// A path inside this repository. These tests used hard-coded
+    /// `/workspaces/proof/...` paths guarded by `if path.exists()`, so in any
+    /// other checkout they silently passed without running (2026-10-11 audit).
+    fn repo_path(rel: &str) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..").join(rel)
+    }
+
     #[test]
     fn coq_project_paths_match_native_nested_paths() {
         let dir = std::env::temp_dir().join(format!("riina_coq_paths_{}", std::process::id()));
@@ -3745,6 +4037,93 @@ mod tests {
         fs::write(dir.join("nested/unlisted.v"), "Lemma q : True. Admitted.").unwrap();
         assert!(!verify_coqproject_completeness(&dir).passed);
         fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn coq_tokens_respect_strings_inside_comments() {
+        // Coq closes this comment (the "(*" is inside a string), so Admitted is code.
+        let t = coq_code_tokens("Lemma p : False. Proof. (* \"(*\" *) Admitted.");
+        assert_eq!(t.iter().filter(|x| *x == "Admitted").count(), 1);
+        // A "*)" inside a string does not close the comment early.
+        let t = coq_code_tokens("(* \"*)\" Axiom hidden : False. *) Lemma t : True.");
+        assert_eq!(t.iter().filter(|x| *x == "Axiom").count(), 0);
+        assert_eq!(t.iter().filter(|x| *x == "Lemma").count(), 1);
+    }
+
+    #[test]
+    fn kernel_weakening_constructs_are_detected_outside_comments() {
+        let src = "Conjecture c : False.\n#[bypass_check(guard)] Fixpoint f (n:nat) : nat := f n.\n\
+                   Unset Positivity Checking.\nUnset Guard\n  Checking.\nAdmit Obligations.\n\
+                   Lemma l : True. Proof. give_up. Defined.\n\
+                   (* Unset Universe Checking. *) Definition s := \"Unset Universe Checking\".";
+        let found = kernel_weakening_constructs(&coq_code_tokens(src));
+        for expected in ["Conjecture", "bypass_check", "Unset Positivity Checking",
+                         "Unset Guard Checking", "Admit Obligations", "give_up"] {
+            assert!(found.iter().any(|f| f == expected), "missed {expected}: {found:?}");
+        }
+        assert!(!found.iter().any(|f| f == "Unset Universe Checking"), "{found:?}");
+    }
+
+    #[test]
+    fn scan_rejects_a_positivity_bypass() {
+        let dir = std::env::temp_dir().join(format!("riina_coq_weak_{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("_CoqProject"), "probe.v\n").unwrap();
+        fs::write(dir.join("probe.v"), "Unset Positivity Checking.\nInductive B := C : (B -> False) -> B.").unwrap();
+        assert!(scan_coq(&dir).iter().any(|c| c.name == "Coq Kernel-Weakening Constructs" && !c.passed));
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn section_hypotheses_are_found_only_in_open_sections() {
+        let src = "Section A. Hypothesis h1 : False. Variable n : nat.\n\
+                   Theorem inside : True. Proof. exact I. Qed.\nEnd A.\n\
+                   Theorem outside : True. Proof. exact I. Qed.\n\
+                   (* Hypothesis fake : False. *)";
+        assert_eq!(section_hypotheses_in_scope(src, "inside"), Some(vec!["h1".to_string()]));
+        assert_eq!(section_hypotheses_in_scope(src, "outside"), Some(vec![]));
+        assert_eq!(section_hypotheses_in_scope(src, "missing"), None);
+    }
+
+    #[test]
+    fn capstone_premises_match_the_conditional_list() {
+        // The real corpus: well_typed_SN carries its four refutable section
+        // premises (and is listed as conditional); every other capstone is
+        // premise-free. A new premise on any capstone must fail this test.
+        for (module, theorem) in KERNEL_CAPSTONES {
+            let file = repo_path(&format!("02_FORMAL/coq/{}.v", module.replace('.', "/")));
+            let source = fs::read_to_string(&file).unwrap();
+            let hyps = section_hypotheses_in_scope(&source, theorem)
+                .unwrap_or_else(|| panic!("{theorem} not found in {}", file.display()));
+            let conditional = CONDITIONAL_CAPSTONES.iter().any(|(t, _)| t == theorem);
+            assert_eq!(!hyps.is_empty(), conditional, "{theorem}: premises {hyps:?}");
+        }
+        let src = fs::read_to_string(repo_path("02_FORMAL/coq/termination/ReducibilityFull.v")).unwrap();
+        assert_eq!(section_hypotheses_in_scope(&src, "well_typed_SN").unwrap().len(), 4);
+    }
+
+    #[test]
+    fn warning_budget_helpers() {
+        assert_eq!(json_u64_field("{\n  \"maxTotalWarnings\": 2,\n  \"x\": 9 }", "maxTotalWarnings"), Some(2));
+        assert_eq!(json_u64_field("{}", "maxTotalWarnings"), None);
+        assert_eq!(count_coq_warnings("File \"./a.v\", line 1:\nWarning: x [w]\nok\n  Warning: y"), 2);
+        let budget = fs::read_to_string(repo_path("reports/coq_warning_budget.json")).unwrap();
+        assert!(json_u64_field(&budget, "maxTotalWarnings").is_some());
+    }
+
+    #[test]
+    fn private_temp_dirs_are_fresh_and_distinct() {
+        let a = private_temp_dir("riina_verify_test").unwrap();
+        let b = private_temp_dir("riina_verify_test").unwrap();
+        assert_ne!(a, b);
+        assert!(a.is_dir() && b.is_dir());
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_eq!(fs::metadata(&a).unwrap().permissions().mode() & 0o777, 0o700);
+        }
+        fs::remove_dir_all(a).unwrap();
+        fs::remove_dir_all(b).unwrap();
     }
 
     #[test]
@@ -4175,8 +4554,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
     #[test]
     fn test_count_coq_qed() {
         // Run against the actual repo if available
-        let coq_dir = PathBuf::from("/workspaces/proof/02_FORMAL/coq");
-        if coq_dir.exists() {
+        let coq_dir = repo_path("02_FORMAL/coq");
+        assert!(coq_dir.exists(), "missing {}", coq_dir.display());
+        {
             let count = count_coq_qed(&coq_dir);
             assert!(count > 1000, "Expected >1000 Qed, got {count}");
         }
@@ -4184,8 +4564,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_lean_theorems() {
-        let lean_dir = PathBuf::from("/workspaces/proof/02_FORMAL/lean");
-        if lean_dir.exists() {
+        let lean_dir = repo_path("02_FORMAL/lean");
+        assert!(lean_dir.exists(), "missing {}", lean_dir.display());
+        {
             let count = count_lean_theorems(&lean_dir);
             assert!(
                 count > 3000,
@@ -4196,8 +4577,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_isabelle_lemmas() {
-        let isa_dir = PathBuf::from("/workspaces/proof/02_FORMAL/isabelle/RIINA");
-        if isa_dir.exists() {
+        let isa_dir = repo_path("02_FORMAL/isabelle/RIINA");
+        assert!(isa_dir.exists(), "missing {}", isa_dir.display());
+        {
             let count = count_isabelle_lemmas(&isa_dir);
             assert!(
                 count > 3000,
@@ -4218,8 +4600,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_glob_lean_files_excludes_lakefile_and_wip() {
-        let lean_dir = PathBuf::from("/workspaces/proof/02_FORMAL/lean");
-        if lean_dir.exists() {
+        let lean_dir = repo_path("02_FORMAL/lean");
+        assert!(lean_dir.exists(), "missing {}", lean_dir.display());
+        {
             let files = glob_lean_files(&lean_dir);
             for f in &files {
                 assert_ne!(
@@ -4238,8 +4621,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_glob_thy_files() {
-        let isa_dir = PathBuf::from("/workspaces/proof/02_FORMAL/isabelle/RIINA");
-        if isa_dir.exists() {
+        let isa_dir = repo_path("02_FORMAL/isabelle/RIINA");
+        assert!(isa_dir.exists(), "missing {}", isa_dir.display());
+        {
             let files = glob_thy_files(&isa_dir);
             assert!(
                 files.len() >= 10,
@@ -4251,8 +4635,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_fstar_lemmas() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/fstar");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/fstar");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_fstar_lemmas(&dir);
             assert!(count > 100, "Expected >100 F* lemmas, got {count}");
         }
@@ -4260,8 +4645,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_tla_theorems() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/tlaplus");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/tlaplus");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_tla_theorems(&dir);
             assert!(count > 100, "Expected >100 TLA+ theorems, got {count}");
         }
@@ -4269,10 +4655,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_tlaplus_smoke_theorems() {
-        let file = PathBuf::from(
-            "/workspaces/proof/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla",
-        );
-        if file.exists() {
+        let file = repo_path("02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla");
+        assert!(file.exists(), "missing {}", file.display());
+        {
             let count = count_tlaplus_smoke_theorems(&file);
             assert!(count >= 1, "Expected >=1 TLA+ smoke theorem, got {count}");
         }
@@ -4280,8 +4665,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_alloy_assertions() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/alloy");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/alloy");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_alloy_assertions(&dir);
             assert!(count > 100, "Expected >100 Alloy assertions, got {count}");
         }
@@ -4289,10 +4675,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_alloy_smoke_assertions() {
-        let file = PathBuf::from(
-            "/workspaces/proof/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als",
-        );
-        if file.exists() {
+        let file = repo_path("02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als");
+        assert!(file.exists(), "missing {}", file.display());
+        {
             let count = count_alloy_smoke_assertions(&file);
             assert!(
                 count >= 1,
@@ -4322,8 +4707,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_smt_assertions() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/smt");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/smt");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_smt_assertions(&dir);
             assert!(count > 100, "Expected >100 SMT assertions, got {count}");
         }
@@ -4331,8 +4717,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_verus_proofs() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/verus");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/verus");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_verus_proofs(&dir);
             assert!(count > 100, "Expected >100 Verus proofs, got {count}");
         }
@@ -4340,8 +4727,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_kani_proofs() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/kani");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/kani");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_kani_proofs(&dir);
             assert!(count > 100, "Expected >100 Kani proofs, got {count}");
         }
@@ -4349,8 +4737,9 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_tv_validations() {
-        let dir = PathBuf::from("/workspaces/proof/02_FORMAL/tv");
-        if dir.exists() {
+        let dir = repo_path("02_FORMAL/tv");
+        assert!(dir.exists(), "missing {}", dir.display());
+        {
             let count = count_tv_validations(&dir);
             assert!(count > 100, "Expected >100 TV validations, got {count}");
         }
