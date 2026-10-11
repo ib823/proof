@@ -262,7 +262,7 @@ fn kat_ml_dsa_65_siggen_acvp_fips204() {
     let sk_bytes: [u8; 4032] = hexn(kv(data, "sk"));
     let message = hex(kv(data, "message"));
     let sk = MlDsa65SigningKey::from_bytes(&sk_bytes).expect("sk decode");
-    let sig = sk.sign(&message).expect("ML-DSA-65 sign");
+    let sig = sk.sign_internal(&message).expect("ML-DSA-65 sign_internal");
     assert_eq!(
         sig.to_vec(),
         hex(kv(data, "signature")),
@@ -283,7 +283,7 @@ fn kat_ml_dsa_65_sigver_acvp_fips204() {
         let sig: [u8; 3309] = hexn(kv(data, &format!("{prefix}_signature")));
         let want_ok = kv(data, &format!("{prefix}_pass")) == "1";
         let vk = MlDsa65VerifyingKey::from_bytes(&pk).expect("pk decode");
-        let got_ok = vk.verify(&message, &sig).is_ok();
+        let got_ok = vk.verify_internal(&message, &sig).is_ok();
         assert_eq!(got_ok, want_ok, "sigVer case '{prefix}': got ok={got_ok}, want {want_ok}");
     };
     case("valid");
@@ -313,11 +313,11 @@ fn kat_ml_dsa_65_external_acvp_fips204() {
         .unwrap()
         .verifying_key();
     assert!(vk.verify_with_context(&ext_msg, &ext_ctx, &ext_sig).is_ok(), "external verify must accept");
-    assert!(vk.verify(&ext_msg, &ext_sig).is_err(), "internal verify must reject an external signature");
+    assert!(vk.verify_internal(&ext_msg, &ext_sig).is_err(), "internal verify must reject an external signature");
 
     // Internal hedged signing: the randomizer is supplied by the vector.
     let hedged_sig = sk("hedged_sk")
-        .sign_hedged(&hex(kv(data, "hedged_message")), &hexn::<32>(kv(data, "hedged_rnd")))
+        .sign_hedged_internal(&hex(kv(data, "hedged_message")), &hexn::<32>(kv(data, "hedged_rnd")))
         .expect("hedged sign");
     assert_eq!(hedged_sig.to_vec(), hex(kv(data, "hedged_signature")), "hedged signature mismatch");
 
@@ -395,7 +395,7 @@ fn kat_ml_dsa_65_siggen_sweep_acvp() {
     let mut n = 0;
     for r in sweep_rows(include_str!("vectors/mldsa65_siggen_all.txt")) {
         let sk = MlDsa65SigningKey::from_bytes(&arr::<4032>(r[0])).expect("sk");
-        assert_eq!(sk.sign(&field(r[1])).expect("sign").to_vec(), field(r[2]), "sig case {n}");
+        assert_eq!(sk.sign_internal(&field(r[1])).expect("sign").to_vec(), field(r[2]), "sig case {n}");
         n += 1;
     }
     assert_eq!(n, 15);
@@ -406,7 +406,7 @@ fn kat_ml_dsa_65_sigver_sweep_acvp() {
     let mut n = 0;
     for r in sweep_rows(include_str!("vectors/mldsa65_sigver_all.txt")) {
         let vk = MlDsa65VerifyingKey::from_bytes(&arr::<1952>(r[0])).expect("pk");
-        let got_ok = vk.verify(&field(r[1]), &arr::<3309>(r[2])).is_ok();
+        let got_ok = vk.verify_internal(&field(r[1]), &arr::<3309>(r[2])).is_ok();
         assert_eq!(got_ok, r[3] == "1", "verify case {n} (reason index {})", r[3]);
         n += 1;
     }

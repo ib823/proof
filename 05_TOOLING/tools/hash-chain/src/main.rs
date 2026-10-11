@@ -28,6 +28,27 @@
 //! # Show chain status
 //! riina-hash-chain show --format json
 //! ```
+//!
+//! # What `verify` checks — and what it cannot
+//!
+//! * Links: entry 1 (genesis) may have a null `predecessor`; every later
+//!   entry's `predecessor` MUST equal the previous entry's `sha256`. A null
+//!   predecessor anywhere else is a failure (it used to skip the check, which
+//!   let an entry be spliced in).
+//! * `--deep`: every document must exist under `--base-dir`, be readable and
+//!   hash to its recorded `sha256`. Missing or unreadable documents FAIL
+//!   (they used to be warnings, so deleting a document passed).
+//! * Signatures — the documented rule: this tool does not sign entries and
+//!   cannot verify a signature, so **every entry must be unsigned**
+//!   (`"signature": null`). An entry that carries a signature fails
+//!   verification as *unverifiable* instead of being silently treated as
+//!   checked.
+//! * Consequently the chain is **unauthenticated**: anyone able to rewrite
+//!   the chain file can rewrite it consistently (re-hash the documents and
+//!   re-link the entries). `verify` detects accidental damage and edits made
+//!   without updating the chain; against an adversary it is only meaningful
+//!   relative to a separately trusted copy of the final entry's hash (or a
+//!   signature over the chain file, e.g. `riina-artifact-sign sign`).
 
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
@@ -200,26 +221,69 @@ impl HashChain {
         self.entries.last().map(|e| e.sha256.clone())
     }
 
-    /// Verify chain integrity
+    /// Verify chain integrity.
+    ///
+    /// Rules (see the module docs):
+    ///   * only the FIRST entry may have a null `predecessor`; every later
+    ///     entry must name exactly the previous entry's `sha256` (a null
+    ///     predecessor used to skip the link check, so an entry could be
+    ///     spliced in anywhere);
+    ///   * every `sha256` must be 64 lowercase hex digits;
+    ///   * `signature` must be null — this tool cannot verify signatures, so a
+    ///     present one is reported as unverifiable rather than silently
+    ///     trusted;
+    ///   * with `deep`, every document must exist, be readable and match —
+    ///     a missing or unreadable document FAILS verification (it used to be
+    ///     a warning, so deleting a document passed).
     fn verify(&self, deep: bool, base_dir: Option<&PathBuf>) -> VerificationResult {
         let mut result = VerificationResult::default();
 
+        if self.entries.is_empty() {
+            result.structure_errors.push("chain has no entries".to_string());
+        }
+
         // Check predecessor chain
         for (i, entry) in self.entries.iter().enumerate() {
+            if !is_sha256_hex(&entry.sha256) {
+                result.structure_errors.push(format!(
+                    "Entry {} has a malformed sha256 {:?}",
+                    entry.document_id, entry.sha256
+                ));
+            }
+            if entry.signature.is_some() {
+                result.unverifiable_signatures.push(format!(
+                    "Entry {} carries a signature this tool cannot verify",
+                    entry.document_id
+                ));
+            }
             if i > 0 {
-                let expected_pred = self.entries[i - 1].sha256.clone();
-                if let Some(ref pred) = entry.predecessor {
-                    if pred != &expected_pred {
-                        result.predecessor_errors.push(format!(
-                            "Entry {} has wrong predecessor: expected {}, got {}",
-                            entry.document_id, expected_pred, pred
-                        ));
-                    }
+                let expected_pred = &self.entries[i - 1].sha256;
+                match entry.predecessor {
+                    Some(ref pred) if pred == expected_pred => {}
+                    Some(ref pred) => result.predecessor_errors.push(format!(
+                        "Entry {} has wrong predecessor: expected {}, got {}",
+                        entry.document_id, expected_pred, pred
+                    )),
+                    None => result.predecessor_errors.push(format!(
+                        "Entry {} (position {}) has no predecessor; only the genesis entry may",
+                        entry.document_id,
+                        i + 1
+                    )),
                 }
             }
 
             // Deep verification: check file hashes
             if deep {
+                // The chain file is input: a document id is a bare file name
+                // (that is all `add` ever records), never a path that could
+                // steer the read outside the base directory.
+                if !is_plain_file_name(&entry.document_id) {
+                    result.read_errors.push(format!(
+                        "{}: document id is not a plain file name",
+                        entry.document_id
+                    ));
+                    continue;
+                }
                 let file_path = if let Some(ref base) = base_dir {
                     base.join(&entry.document_id)
                 } else {
@@ -267,11 +331,22 @@ struct VerificationResult {
     read_errors: Vec<String>,
     /// Predecessor chain errors
     predecessor_errors: Vec<String>,
+    /// Malformed chain structure (empty chain, malformed hashes)
+    structure_errors: Vec<String>,
+    /// Entries carrying a signature this tool cannot check
+    unverifiable_signatures: Vec<String>,
 }
 
 impl VerificationResult {
+    /// Fail closed: ANY missing document, read error, mismatch, broken or
+    /// absent link, malformed entry, or unverifiable signature is a failure.
     fn is_success(&self) -> bool {
-        self.hash_mismatches.is_empty() && self.predecessor_errors.is_empty()
+        self.hash_mismatches.is_empty()
+            && self.predecessor_errors.is_empty()
+            && self.missing_files.is_empty()
+            && self.read_errors.is_empty()
+            && self.structure_errors.is_empty()
+            && self.unverifiable_signatures.is_empty()
     }
 
     fn print(&self) {
@@ -283,9 +358,23 @@ impl VerificationResult {
         }
 
         if !self.missing_files.is_empty() {
-            println!("\n⚠ Missing files:");
+            println!("\n✗ Missing files:");
             for f in &self.missing_files {
-                println!("  ⚠ {}", f);
+                println!("  ✗ {}", f);
+            }
+        }
+
+        if !self.structure_errors.is_empty() {
+            println!("\n✗ Malformed chain:");
+            for e in &self.structure_errors {
+                println!("  ✗ {}", e);
+            }
+        }
+
+        if !self.unverifiable_signatures.is_empty() {
+            println!("\n✗ Unverifiable signatures:");
+            for e in &self.unverifiable_signatures {
+                println!("  ✗ {}", e);
             }
         }
 
@@ -310,6 +399,19 @@ impl VerificationResult {
             }
         }
     }
+}
+
+/// 64 lowercase hex digits — the only form `compute_sha256` produces.
+fn is_sha256_hex(s: &str) -> bool {
+    s.len() == 64 && s.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+/// A single path component with no separators or `.`/`..`.
+fn is_plain_file_name(s: &str) -> bool {
+    let p = std::path::Path::new(s);
+    !s.is_empty()
+        && p.components().count() == 1
+        && matches!(p.components().next(), Some(std::path::Component::Normal(_)))
 }
 
 /// Compute SHA-256 hash of a file
@@ -443,6 +545,14 @@ fn main() {
 
             if result.is_success() {
                 println!("\n✓ Hash chain verification PASSED");
+                if !deep {
+                    println!("  NOTE: links only — document contents were NOT checked (use --deep).");
+                }
+                println!(
+                    "  NOTE: the chain is unsigned; it is tamper-evident only relative to a\n        \
+                     trusted copy of the final hash ({}).",
+                    chain.latest_hash().unwrap_or_default()
+                );
             } else {
                 println!("\n✗ Hash chain verification FAILED");
                 std::process::exit(1);
@@ -480,11 +590,11 @@ fn main() {
 
                 for (i, entry) in chain.entries.iter().enumerate() {
                     println!("{}. {} ", i + 1, entry.document_id);
-                    println!("   Hash: {}...", &entry.sha256[..16]);
+                    println!("   Hash: {}...", entry.sha256.get(..16).unwrap_or(&entry.sha256));
                     println!("   Author: {}", entry.author);
                     println!("   Time: {}", entry.timestamp);
                     if let Some(ref pred) = entry.predecessor {
-                        println!("   Predecessor: {}...", &pred[..16]);
+                        println!("   Predecessor: {}...", pred.get(..16).unwrap_or(pred));
                     }
                     println!();
                 }
@@ -588,5 +698,123 @@ mod tests {
 
         assert_eq!(chain.entries.len(), 1);
         assert_eq!(chain.latest_hash(), Some("abc123".to_string()));
+    }
+
+    /// A three-document chain built the way `add` builds it.
+    fn chain_of(dir: &TempDir, docs: &[(&str, &str)]) -> HashChain {
+        let mut chain = HashChain::new("t".to_string());
+        for (name, body) in docs {
+            let path = dir.path().join(name);
+            fs::write(&path, body).unwrap();
+            let pred = chain.latest_hash();
+            chain.add_entry(ChainEntry {
+                document_id: name.to_string(),
+                sha256: compute_sha256(&path).unwrap(),
+                predecessor: pred,
+                timestamp: chrono::Utc::now().to_rfc3339(),
+                author: "t".to_string(),
+                signature: None,
+            });
+        }
+        chain
+    }
+
+    fn base(dir: &TempDir) -> Option<PathBuf> {
+        Some(dir.path().to_path_buf())
+    }
+
+    #[test]
+    fn intact_chain_verifies_deep() {
+        let dir = TempDir::new().unwrap();
+        let chain = chain_of(&dir, &[("a.md", "A"), ("b.md", "B"), ("c.md", "C")]);
+        let r = chain.verify(true, base(&dir).as_ref());
+        assert!(r.is_success(), "{r:?}");
+        assert_eq!(r.verified_files.len(), 3);
+    }
+
+    /// Regression (audit M2): deleting a document used to PASS `--deep`.
+    #[test]
+    fn deleted_document_fails_deep_verification() {
+        let dir = TempDir::new().unwrap();
+        let chain = chain_of(&dir, &[("a.md", "A"), ("b.md", "B")]);
+        fs::remove_file(dir.path().join("b.md")).unwrap();
+        let r = chain.verify(true, base(&dir).as_ref());
+        assert!(!r.is_success(), "a missing document must fail: {r:?}");
+        assert_eq!(r.missing_files, vec!["b.md".to_string()]);
+    }
+
+    #[test]
+    fn unreadable_document_fails_deep_verification() {
+        let dir = TempDir::new().unwrap();
+        let chain = chain_of(&dir, &[("a.md", "A")]);
+        // A directory where the document should be: exists, but cannot be
+        // read as a file.
+        fs::remove_file(dir.path().join("a.md")).unwrap();
+        fs::create_dir(dir.path().join("a.md")).unwrap();
+        let r = chain.verify(true, base(&dir).as_ref());
+        assert!(!r.is_success(), "{r:?}");
+    }
+
+    /// Regression (audit M2): an entry with `predecessor: null` used to skip
+    /// the link check, so a forged entry could be spliced in mid-chain.
+    #[test]
+    fn spliced_entry_with_null_predecessor_fails() {
+        let dir = TempDir::new().unwrap();
+        let mut chain = chain_of(&dir, &[("a.md", "A"), ("b.md", "B"), ("c.md", "C")]);
+        fs::write(dir.path().join("evil.md"), "EVIL").unwrap();
+        let evil = ChainEntry {
+            document_id: "evil.md".to_string(),
+            sha256: compute_sha256(&dir.path().join("evil.md")).unwrap(),
+            predecessor: None,
+            timestamp: chrono::Utc::now().to_rfc3339(),
+            author: "mallory".to_string(),
+            signature: None,
+        };
+        chain.entries.insert(1, evil);
+        // Re-point the following entry at the spliced one so only the null
+        // link is wrong.
+        chain.entries[2].predecessor = Some(chain.entries[1].sha256.clone());
+        let r = chain.verify(true, base(&dir).as_ref());
+        assert!(!r.is_success(), "{r:?}");
+        assert!(r.predecessor_errors.iter().any(|e| e.contains("no predecessor")), "{r:?}");
+
+        // Genesis alone may have a null predecessor.
+        let ok = chain_of(&dir, &[("a.md", "A")]);
+        assert!(ok.verify(true, base(&dir).as_ref()).is_success());
+    }
+
+    #[test]
+    fn modified_document_and_wrong_link_fail() {
+        let dir = TempDir::new().unwrap();
+        let mut chain = chain_of(&dir, &[("a.md", "A"), ("b.md", "B")]);
+        fs::write(dir.path().join("a.md"), "A changed").unwrap();
+        assert!(!chain.verify(true, base(&dir).as_ref()).is_success());
+        fs::write(dir.path().join("a.md"), "A").unwrap();
+        chain.entries[1].predecessor = Some("0".repeat(64));
+        assert!(!chain.verify(false, None).is_success());
+    }
+
+    /// The documented signature rule: this tool cannot verify signatures, so
+    /// a signed entry fails as unverifiable rather than passing silently.
+    #[test]
+    fn signed_entries_are_rejected_as_unverifiable() {
+        let dir = TempDir::new().unwrap();
+        let mut chain = chain_of(&dir, &[("a.md", "A")]);
+        chain.entries[0].signature = Some("deadbeef".to_string());
+        let r = chain.verify(true, base(&dir).as_ref());
+        assert!(!r.is_success());
+        assert_eq!(r.unverifiable_signatures.len(), 1);
+    }
+
+    #[test]
+    fn traversal_document_ids_and_malformed_hashes_fail() {
+        let dir = TempDir::new().unwrap();
+        let mut chain = chain_of(&dir, &[("a.md", "A")]);
+        chain.entries[0].document_id = "../a.md".to_string();
+        assert!(!chain.verify(true, base(&dir).as_ref()).is_success());
+        let mut chain = chain_of(&dir, &[("a.md", "A")]);
+        chain.entries[0].sha256 = "abc123".to_string();
+        assert!(!chain.verify(false, None).is_success());
+        assert!(!HashChain::new("empty".to_string()).verify(false, None).is_success());
     }
 }

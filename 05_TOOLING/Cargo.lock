@@ -554,6 +554,7 @@ version = "0.4.0"
 dependencies = [
  "clap",
  "riina-core",
+ "serde_json",
  "sha2",
 ]
 
@@ -574,9 +575,9 @@ version = "0.4.0"
 dependencies = [
  "chrono",
  "clap",
+ "riina-core",
  "serde",
  "serde_json",
- "sha2",
 ]
 
 [[package]]
