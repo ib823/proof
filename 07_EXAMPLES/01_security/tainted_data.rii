@@ -34,8 +34,10 @@ fungsi tandakan_tercemar_pengguna(nilai: Teks) -> DataTercemar<Teks> kesan Baca 
     }
 }
 
-fungsi tandakan_tercemar_fail(nama_fail: Teks) -> DataTercemar<Teks> kesan SistemFail {
+fungsi tandakan_tercemar_fail(nama_fail: Teks) -> Tercemar<DataTercemar<Teks>, FileSystem> kesan SistemFail {
     /// Tandakan data dari fail sebagai tercemar
+    /// `fail_baca` returns compiler-tracked `Tercemar<Teks, FileSystem>`; a record
+    /// built from it stays tainted, so the result type must say so.
     biar kandungan = fail_baca(nama_fail);
     DataTercemar {
         nilai: kandungan,

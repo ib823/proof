@@ -549,8 +549,11 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                     body_ctx = body_ctx.with_grant(*e);
                 }
 
-                body_ctx.return_types = Default::default();
+                body_ctx.enter_function();
                 let (body_ty, body_eff) = type_check_full(&mut body_ctx, body)?;
+                // A secret-dependent `pulang` makes the fall-through value
+                // secret-dependent too (H2).
+                let body_ty = crate::label_at_level(body_ty, body_ctx.fn_raise.get());
                 let body_ty = crate::function_result_type(body_ty, &body_ctx.return_types.borrow())?;
                 if !types_compatible(return_ty, &body_ty) {
                     return Err(TypeError::AnnotationMismatch {
@@ -558,6 +561,18 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                         found: body_ty,
                     });
                 }
+                // H1/H4/M3: a wildcard (generic/record) result type may not
+                // hide a label, taint or CT tag; closures it hides are charged.
+                let hidden_eff = crate::erased_result_check(return_ty, &body_ty)?;
+                // H2: writing a global `biar ubah` slot is a side effect every
+                // caller observes — the function is not `Bersih`; it must
+                // declare at least `kesan Ubah`.
+                let body_eff = if !body_ctx.outer_writes.borrow().is_empty() {
+                    body_eff.join(Effect::Mut)
+                } else {
+                    body_eff
+                }
+                .join(hidden_eff);
                 if body_eff.level() > effect.level() {
                     return Err(TypeError::EffectViolation {
                         allowed: *effect,
@@ -622,31 +637,32 @@ pub fn check_program(program: &Program) -> Result<(Expr, Ty, Effect), TypeError>
     validate_top_level_decls(program)?;
     let expr = program.clone().desugar();
 
-    // Seed the capability grants with EVERY effect declared by a top-level
-    // function (REQ-77).
+    // Capabilities of TOP-LEVEL code (M1a).
     //
-    // Why this is needed: `Expr::LetRecGroup` recovers grants from each
-    // binding's `Ty::Fn(_, _, eff)` annotation, but a ZERO-PARAMETER function
-    // (`fungsi utama() -> Nombor kesan Rangkaian`) desugars to its bare return
-    // type, not a `Ty::Fn`, so its declared effect is invisible there. The
-    // capability gate is opt-in on "granted set non-empty", so a program whose
-    // `utama` is zero-arg and which has ANY other function had the gate
-    // switched on by that other function while `utama`'s own effect was
-    // missing — rejecting a correct program with
-    // `Capability violation for Network`. A single-function program happened to
-    // work only because nothing switched the gate on.
+    // This used to seed the grants with EVERY effect declared by ANY top-level
+    // function (REQ-77, written when a zero-parameter function desugared to a
+    // bare value and its declared effect was invisible to `LetRecGroup`). That
+    // made the whole program hold the union of all declarations: a top-level
+    // `biar s = jaring_sambung(..)` was authorized merely because an unrelated,
+    // never-called function declared `kesan Rangkaian`.
     //
-    // Over-granting here is the documented design of the LetRecGroup rule: the
-    // real per-function discipline (body effect <= declared effect, with only
-    // that function's own components granted) is enforced above in
-    // `validate_top_level_decls`, so this admits more programs without ever
-    // weakening a function's own check.
+    // Now (zero-parameter functions are real `Unit -> R ! E` functions, so
+    // `LetRecGroup` sees every declared effect):
+    //   * top-level code holds only the capabilities it is explicitly granted
+    //     (`beri`), and the gate is always on for it;
+    //   * a call to a declared top-level function (e.g. the `utama` entry
+    //     point) is authorized by that function's own declaration — its body
+    //     is checked against exactly that declaration in
+    //     `validate_top_level_decls`;
+    //   * the function BODIES of the group are re-checked here with every
+    //     declared effect component granted (over-granting is harmless: the
+    //     authoritative per-function check, with only the function's own
+    //     effect set granted, already ran above).
     let mut ctx = builtin_typing_context();
+    ctx.gate_always = true;
     for decl in &program.decls {
         if let TopLevelDecl::Function { effect_set, .. } = decl {
-            for e in effect_set {
-                ctx = ctx.with_grant(*e);
-            }
+            ctx.body_grants.extend(effect_set.iter().copied());
         }
     }
     let (ty, eff) = type_check_full(&mut ctx, &expr)?;

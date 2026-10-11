@@ -285,7 +285,18 @@ fn examples_root() -> std::path::PathBuf {
 /// the reason this number is trustworthy — it FAILED the moment the back-merge
 /// changed the corpus size, naming the new count rather than letting a silent
 /// drift through.
-const CORPUS_PASSING: usize = 97;
+///
+/// 2026-10-11: 97 -> 98 (typechecker soundness audit). `01_security/
+/// linear_enforcement.rii` now passes: its `biar linear a; biar affine b;
+/// biar relevant c; pulang a + c;` was falsely rejected as "used Zero" because
+/// a use inside nested `biar` bodies was discarded (M2). Two examples failed
+/// closed under the fix and had their DECLARATIONS corrected, not the check
+/// weakened: `00_basics/closures.rii` (closures writing a captured `biar ubah`
+/// were typed pure — now `kesan Ubah`, H2) and `01_security/tainted_data.rii`
+/// (a record built from `fail_baca` dropped its `Tercemar` taint through a
+/// plain record result type — now `Tercemar<DataTercemar<Teks>, FileSystem>`,
+/// H1).
+const CORPUS_PASSING: usize = 98;
 const CORPUS_TOTAL: usize = 172;
 
 #[test]
