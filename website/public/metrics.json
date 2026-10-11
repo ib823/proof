@@ -1,11 +1,11 @@
 {
-  "generated": "2026-10-11T12:49:43Z",
-  "generatedHuman": "October 11, 2026 at 12:49 UTC",
+  "generated": "2026-10-11T13:53:05Z",
+  "generatedHuman": "October 11, 2026 at 13:53 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "583d616",
-    "branch": "audit-fix/runtime-tools"
+    "commit": "fe69d1d",
+    "branch": "audit-fix/receipts-pkg"
   },
   "proofs": {
     "qedActive": 12678,
@@ -197,7 +197,7 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 3397,
+    "testsEstimated": 3401,
     "testsSource": "cached_verified",
     "crates": 18
   },

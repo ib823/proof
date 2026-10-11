@@ -6,7 +6,13 @@ rust-version.workspace = true
 license.workspace = true
 description = "RIINA execution receipts and verifiable effect chains"
 
+# Law 8 (zero third-party RUNTIME deps) holds: the ONLY dependency is the
+# first-party `riina-core` (05_TOOLING) for HMAC-SHA256, constant-time
+# comparison and zeroization — the same edge riina-tls and riina-codegen
+# already have. A path dependency carries no `source`, so the SBOM records it
+# as internal.
 [dependencies]
+riina-core = { path = "../../../05_TOOLING/crates/riina-core" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
