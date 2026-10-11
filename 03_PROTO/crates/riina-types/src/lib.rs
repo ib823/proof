@@ -9,6 +9,8 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
+pub mod persistent;
+
 /// Identifiers are strings.
 pub type Ident = String;
 
@@ -648,10 +650,14 @@ impl std::fmt::Display for Location {
 /// let loc = sigma.extend(Ty::Int, SecurityLevel::Public);
 /// assert_eq!(sigma.lookup(&loc), Some(&(Ty::Int, SecurityLevel::Public)));
 /// ```
+///
+/// The bindings are PERSISTENT ([`persistent::PMap`]): the typechecker clones
+/// its context — Σ included — for every nested scope, so a copied map made a
+/// chain of n `ruj` allocations cost O(n²) memory (5,000: 1.5 GB).
 #[derive(Debug, Clone, Default)]
 pub struct StoreTy {
     /// Bindings from locations to (type, security_level) pairs.
-    bindings: std::collections::HashMap<Location, (Ty, SecurityLevel)>,
+    bindings: persistent::PMap<Location, (Ty, SecurityLevel)>,
     /// Counter for generating fresh locations.
     next_loc: usize,
 }
@@ -687,8 +693,8 @@ impl StoreTy {
     /// This is used for strong updates where the type of a location changes.
     /// Returns `true` if the location existed and was updated.
     pub fn update(&mut self, loc: Location, ty: Ty, sl: SecurityLevel) -> bool {
-        if let std::collections::hash_map::Entry::Occupied(mut e) = self.bindings.entry(loc) {
-            e.insert((ty, sl));
+        if self.bindings.contains_key(&loc) {
+            self.bindings.insert(loc, (ty, sl));
             true
         } else {
             false
@@ -701,16 +707,18 @@ impl StoreTy {
         self.bindings.contains_key(loc)
     }
 
-    /// Get the number of locations in the store typing.
+    /// Get the number of locations in the store typing. Locations are only
+    /// ever added (`extend`, each a fresh one), so this is the allocation
+    /// count.
     #[must_use]
     pub fn len(&self) -> usize {
-        self.bindings.len()
+        self.next_loc
     }
 
     /// Check if the store typing is empty.
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.bindings.is_empty()
+        self.next_loc == 0
     }
 
     /// Iterate over all (location, type, security_level) triples.
@@ -721,7 +729,10 @@ impl StoreTy {
 
 impl PartialEq for StoreTy {
     fn eq(&self, other: &Self) -> bool {
-        self.bindings == other.bindings
+        self.len() == other.len()
+            && self
+                .iter()
+                .all(|(l, t, s)| other.lookup(l).is_some_and(|(t2, s2)| t2 == t && s2 == s))
     }
 }
 

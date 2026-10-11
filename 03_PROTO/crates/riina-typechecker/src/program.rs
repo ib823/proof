@@ -10,7 +10,8 @@ use crate::{
     register_builtin_types, type_check_full, types_compatible, Context, TypeError, TypingContext,
 };
 use riina_types::{Effect, EffectSet, Expr, Program, TopLevelDecl, Ty};
-use std::collections::{HashMap, HashSet};
+use riina_types::persistent::PMap;
+use std::collections::HashSet;
 
 fn builtin_typing_context() -> TypingContext {
     register_builtin_types(&Context::new()).to_typing_context()
@@ -42,7 +43,10 @@ struct ExprSummary {
     callable: Option<CallableSummary>,
 }
 
-type CapabilityEnv = HashMap<String, CallableSummary>;
+/// Persistent: every `biar`/lambda shadows or adds a callable in a CLONE of the
+/// environment, and a copied `HashMap` made a chain of n lambda bindings
+/// O(n²).
+type CapabilityEnv = PMap<String, CallableSummary>;
 
 fn compose_exec(first: &ExecSummary, second: &ExecSummary) -> ExecSummary {
     let mut required = first.required.clone();

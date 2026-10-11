@@ -11,12 +11,13 @@ use riina_types::{
     BinOp, Effect, EffectSet, Expr, Ident, Linearity, Location, SecurityLevel, SessionType,
     StoreTy, Ty, Usage,
 };
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 pub mod multiparty;
 pub mod program;
+pub use riina_types::persistent::{PMap, PSet};
 pub use program::check_program;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -507,12 +508,18 @@ fn usage_rank(u: Usage) -> u8 {
 /// Maps variable names to their types, with optional linearity qualifiers.
 /// Matches Coq `type_env := list (ident * ty)` (basic) and
 /// `LEntry := (nat * LTy * Linearity * Usage)` (linear extension).
+///
+/// Both maps are PERSISTENT ([`PMap`]): `extend` shares structure with the
+/// environment it extends instead of copying it, so cloning an environment is
+/// O(1) and a scope nest of depth n costs O(n log n) memory, not O(n²) (5,000
+/// sequential `biar` used 2.7 GB). Lookups see exactly what the old copied
+/// `HashMap` did: the newest binding of a name shadows older ones.
 #[derive(Clone)]
 pub struct TypeEnv {
-    vars: HashMap<Ident, Ty>,
+    vars: PMap<Ident, Ty>,
     /// Linearity tracking: (linearity qualifier, shared usage counter).
     /// Only populated for variables with non-Unrestricted linearity.
-    linearity: HashMap<Ident, LinearEntry>,
+    linearity: PMap<Ident, LinearEntry>,
 }
 
 impl Default for TypeEnv {
@@ -524,8 +531,8 @@ impl Default for TypeEnv {
 impl TypeEnv {
     pub fn new() -> Self {
         Self {
-            vars: HashMap::new(),
-            linearity: HashMap::new(),
+            vars: PMap::new(),
+            linearity: PMap::new(),
         }
     }
 
@@ -790,11 +797,11 @@ pub struct TypingContext {
     /// `biar ubah` gets a fresh id, so a later slot that reuses a name is a
     /// different slot. (A top-level slot seen by `validate_top_level_decls`
     /// has no id: it is always outside the function being checked.)
-    pub slot_ids: HashMap<Ident, u64>,
+    pub slot_ids: PMap<Ident, u64>,
     /// Ids of the slots bound inside the current function or closure. A write
     /// to any OTHER slot is a side effect visible to the caller (H2), so the
     /// closure's latent effect becomes `Mut`.
-    pub fn_slot_ids: HashSet<u64>,
+    pub fn_slot_ids: PSet<u64>,
     /// Slots outside the current function/closure that it writes, directly or
     /// by calling a known local closure.
     pub outer_writes: Rc<RefCell<SlotWrites>>,
@@ -803,7 +810,7 @@ pub struct TypingContext {
     /// such a closure writing only the CALLER's own slots is, like a direct
     /// slot write, unobservable outside the caller — so it is not charged
     /// `Mut` to the caller (the secret-pc check at the call still applies).
-    pub closure_writes: HashMap<Ident, Rc<SlotWrites>>,
+    pub closure_writes: PMap<Ident, Rc<SlotWrites>>,
     /// The outer writes of the lambda most recently checked in this context,
     /// read by the binding that the lambda is directly bound to.
     pub last_closure_writes: Option<Rc<SlotWrites>>,
@@ -830,7 +837,7 @@ pub struct TypingContext {
     /// to one is authorized by the callee's own effect declaration — its body
     /// is checked against exactly that declaration — whereas a builtin gated
     /// operation needs an explicit grant.
-    pub declared_fns: HashSet<Ident>,
+    pub declared_fns: PSet<Ident>,
 }
 
 impl Default for TypingContext {
@@ -854,15 +861,15 @@ impl TypingContext {
             return_types: Rc::default(),
             fn_raise: Rc::new(Cell::new(SecurityLevel::Public)),
             loop_raises: Vec::new(),
-            slot_ids: HashMap::new(),
-            fn_slot_ids: HashSet::new(),
+            slot_ids: PMap::new(),
+            fn_slot_ids: PSet::new(),
             outer_writes: Rc::default(),
-            closure_writes: HashMap::new(),
+            closure_writes: PMap::new(),
             last_closure_writes: None,
             closure_linearity: None,
             gate_always: false,
             grant_ceiling: None,
-            declared_fns: HashSet::new(),
+            declared_fns: PSet::new(),
         }
     }
 
@@ -889,7 +896,7 @@ impl TypingContext {
         self.return_types = Rc::default();
         self.fn_raise = Rc::new(Cell::new(SecurityLevel::Public));
         self.loop_raises = Vec::new();
-        self.fn_slot_ids = HashSet::new();
+        self.fn_slot_ids = PSet::new();
         self.outer_writes = Rc::default();
         self.last_closure_writes = None;
         self.closure_linearity = None;
@@ -972,9 +979,12 @@ impl TypingContext {
 
 /// Legacy context for backward compatibility
 /// DEPRECATED: Use TypingContext for new code
+///
+/// `vars` is persistent ([`PMap`]) for the same reason as [`TypeEnv`]: the
+/// builtin registry alone is ~600 sequential `extend`s.
 #[derive(Clone)]
 pub struct Context {
-    vars: HashMap<Ident, Ty>,
+    vars: PMap<Ident, Ty>,
     level: SecurityLevel,
     return_types: Rc<RefCell<Vec<Ty>>>,
 }
@@ -988,7 +998,7 @@ impl Default for Context {
 impl Context {
     pub fn new() -> Self {
         Self {
-            vars: HashMap::new(),
+            vars: PMap::new(),
             level: SecurityLevel::Public,
             return_types: Rc::default(),
         }
@@ -1016,10 +1026,12 @@ impl Context {
 
     /// Convert to new TypingContext
     pub fn to_typing_context(&self) -> TypingContext {
-        let mut gamma = TypeEnv::new();
-        for (k, v) in &self.vars {
-            gamma = gamma.extend(k.clone(), v.clone());
-        }
+        // Every binding is unrestricted, so the environment is exactly these
+        // bindings — shared, not copied.
+        let gamma = TypeEnv {
+            vars: self.vars.clone(),
+            linearity: PMap::new(),
+        };
         let mut ctx = TypingContext::with_level(self.level);
         ctx.gamma = gamma;
         ctx.return_types = self.return_types.clone();

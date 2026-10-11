@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-11T14:17:57Z",
-  "generatedHuman": "October 11, 2026 at 14:17 UTC",
+  "generated": "2026-10-11T14:42:11Z",
+  "generatedHuman": "October 11, 2026 at 14:42 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "4147e5b",
+    "commit": "63cffa0",
     "branch": "audit-fix/effects"
   },
   "proofs": {
@@ -197,7 +197,7 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 3419,
+    "testsEstimated": 3424,
     "testsSource": "cached_verified",
     "crates": 18
   },
