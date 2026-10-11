@@ -46,6 +46,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rule and `ct_verify.rs`); the tooling SBOM is not dependency-free (it lists 122
   third-party components; the compiler SBOM is); README's example and crypto claims fixed.
 
+### Fixed (runtime, tools, supply chain — audit-fix/runtime-tools, audit-fix/receipts-pkg)
+- `csrf_generate` returns 128 bits from the OS RNG (was clock + counter); TLS-kunci keys are
+  derived per connection from both peers' randoms (the same secret no longer reuses keys);
+  server-side `jaring_tls_disahkan` no longer claims an unauthenticated peer is authenticated.
+- `build-manifest verify/diff`, `artifact-sign verify-manifest`, `hash-chain verify` and
+  `runtime-proof-verify` now fail closed (real SHA-256, exit non-zero on mismatch/missing/
+  empty input; proof bundles bind a program hash and gain an HMAC-authenticated mode).
+- ML-DSA `sign`/`verify` (and hybrid, artifact-sign, the `kripto` builtin) are FIPS 204 *pure*
+  ML-DSA, interoperable with OpenSSL; **old artifact-sign ML-DSA/hybrid signatures no longer verify**.
+- `riinac mcp` runs only `Pure` programs by default, without host-effect builtins, under step,
+  depth and wall-clock budgets; `--allow-effects` opts back in.
+- Execution receipts are HMAC-SHA256-chained and sealed (the FNV-1a chain was forgeable).
+- `riina-pkg`: Ed25519 publisher signatures for remote registries (`pkg keygen`, `pkg publish
+  --key`, trusted publishers in `riina.toml` / `~/.riina/trusted-publishers`, signer pinned in
+  `riina.lock`); unsigned or untrusted packages are refused unless `--insecure-allow-unsigned`;
+  remote plain-http registries refused except loopback. Existing remote `riina.lock` files fail
+  closed until re-locked.
+- Stricter URL/referer validation in both backends; checked HTTP body arithmetic; key files
+  created 0600 and never silently overwritten; secret scrubbing in X25519/Ed25519/HMAC/TLS.
+
 ### Fixed (gates and supply chain)
 - Commit-accurate pre-commit/pre-push hooks; history-wide secret scan and byte-level
   Trojan-source scan; sync-public refuses untracked files; SHA-pinned CI actions,

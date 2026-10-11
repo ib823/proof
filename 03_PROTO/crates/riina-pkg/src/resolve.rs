@@ -216,6 +216,7 @@ mod tests {
             allowed_effects: AllowedEffects::default(),
             workspace: None,
             registry: None,
+            trusted_publishers: vec![],
         }
     }
 

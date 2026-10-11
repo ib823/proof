@@ -22,6 +22,11 @@ pub struct Manifest {
     pub workspace: Option<WorkspaceConfig>,
     /// Optional remote registry configuration.
     pub registry: Option<RegistryConfig>,
+    /// Publisher key ids (`ed25519:<hex>`) trusted to sign packages from a
+    /// remote registry: `[registry] trusted-publishers = [...]`. Only the
+    /// ROOT project's list is ever consulted (see [`crate::signing`]); a
+    /// dependency's own list is parsed but ignored.
+    pub trusted_publishers: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -110,6 +115,7 @@ impl<'a> TomlParser<'a> {
         let mut effects = AllowedEffects::default();
         let mut workspace = None::<WorkspaceConfig>;
         let mut registry = None::<RegistryConfig>;
+        let mut trusted_publishers = Vec::new();
 
         let mut current_table = TableKind::Unknown;
         // temp storage for [pakej]
@@ -176,6 +182,8 @@ impl<'a> TomlParser<'a> {
                     if key == "url" {
                         let url = value.as_str(line_idx + 1, &self.file)?;
                         registry = Some(RegistryConfig { url });
+                    } else if key == "trusted-publishers" {
+                        trusted_publishers = value.as_string_array(line_idx + 1, &self.file)?;
                     }
                 }
                 TableKind::Unknown => {}
@@ -199,6 +207,7 @@ impl<'a> TomlParser<'a> {
             allowed_effects: effects,
             workspace,
             registry,
+            trusted_publishers,
         })
     }
 

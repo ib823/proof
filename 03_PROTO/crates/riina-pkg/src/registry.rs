@@ -4,7 +4,9 @@
 
 use crate::error::{PkgError, Result};
 use crate::manifest::Manifest;
+use crate::signing::{Provenance, PublisherSigningKey, TrustPolicy};
 use crate::version::Version;
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -19,13 +21,17 @@ pub trait Registry {
     /// Get the root path for an installed package version.
     fn package_path(&self, name: &str, version: &Version) -> PathBuf;
 
-    /// Fetch a complete package, propagating download and extraction failures.
+    /// Fetch a complete package and report who vouches for its bytes.
+    ///
+    /// Deliberately has no default: a REMOTE implementation must enforce its
+    /// publisher-signature policy here (see [`crate::signing`]) and must not
+    /// inherit a local, unchecked fetch by accident.
+    fn fetch_verified(&self, name: &str, version: &Version) -> Result<(PathBuf, Provenance)>;
+
+    /// Fetch a complete package, propagating download, extraction and
+    /// signature-policy failures.
     fn fetch_package(&self, name: &str, version: &Version) -> Result<PathBuf> {
-        validate_package_name(name)?;
-        let path = self.package_path(name, version);
-        let manifest = Manifest::from_file(&path.join("riina.toml"))?;
-        validate_package_identity(&manifest, name, version)?;
-        Ok(path)
+        self.fetch_verified(name, version).map(|(path, _)| path)
     }
 
     /// Check if a package version exists.
@@ -41,6 +47,20 @@ pub(crate) fn validate_package_name(name: &str) -> Result<()> {
         return Err(PkgError::Other(format!("invalid package name: {name}")));
     }
     Ok(())
+}
+
+/// Fetch from a registry whose packages are local files: check the name and
+/// the manifest identity. No publisher signature applies.
+fn fetch_local(
+    registry: &dyn Registry,
+    name: &str,
+    version: &Version,
+) -> Result<(PathBuf, Provenance)> {
+    validate_package_name(name)?;
+    let path = registry.package_path(name, version);
+    let manifest = Manifest::from_file(&path.join("riina.toml"))?;
+    validate_package_identity(&manifest, name, version)?;
+    Ok((path, Provenance::Local))
 }
 
 pub(crate) fn validate_package_identity(
@@ -120,6 +140,10 @@ impl Registry for FsRegistry {
         self.root.join(name).join(version.to_string())
     }
 
+    fn fetch_verified(&self, name: &str, version: &Version) -> Result<(PathBuf, Provenance)> {
+        fetch_local(self, name, version)
+    }
+
     fn exists(&self, name: &str, version: &Version) -> bool {
         if validate_package_name(name).is_err() {
             return false;
@@ -154,15 +178,31 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<()> {
 /// **HTTPS is not supported** — deploy the registry server behind a
 /// TLS-terminating reverse proxy for encrypted transport.
 ///
+/// Every package fetched from it must pass the [`TrustPolicy`] (a valid
+/// Ed25519 signature by a trusted publisher, see [`crate::signing`]). The
+/// default policy trusts nothing, so an unconfigured `HttpRegistry` refuses
+/// every package.
+///
 /// API endpoints:
 /// - `GET  /api/v1/crates/{name}/versions`         → JSON version list
 /// - `GET  /api/v1/crates/{name}/{version}/manifest` → TOML manifest
 /// - `GET  /api/v1/crates/{name}/{version}/download`  → tar archive
+/// - `GET  /api/v1/crates/{name}/{version}/signature` → signature document
+///   (`404` = unsigned)
 /// - `HEAD /api/v1/crates/{name}/{version}/manifest` → existence check
-/// - `POST /api/v1/crates/new`                       → publish tarball
+/// - `POST /api/v1/crates/new?name=&version=[&sha256=&signer=&signature=]`
+///   → publish tarball; the optional parameters carry the publisher
+///   signature (`sha256` and `signature` in lowercase hex, `signer` a key
+///   id), from which the registry serves the signature document.
+///
+/// Cache layout: `<cache>/<name>/<version>/verified/{package/,provenance}`,
+/// installed by one atomic rename, so a package is never visible without the
+/// record of who signed it.
 pub struct HttpRegistry {
     base_url: String,
     cache_dir: PathBuf,
+    policy: TrustPolicy,
+    warnings: RefCell<Vec<String>>,
 }
 
 impl HttpRegistry {
@@ -175,17 +215,50 @@ impl HttpRegistry {
         Self {
             base_url: url,
             cache_dir: cache_dir.into(),
+            policy: TrustPolicy::default(),
+            warnings: RefCell::new(Vec::new()),
         }
     }
 
-    /// Publish a package to the remote registry.
-    pub fn publish(&self, name: &str, version: &Version, source_dir: &Path) -> Result<()> {
+    /// Use `policy` to decide which packages to accept.
+    #[must_use]
+    pub fn with_trust_policy(mut self, policy: TrustPolicy) -> Self {
+        self.policy = policy;
+        self
+    }
+
+    /// Insecure-opt-out warnings issued so far (each is also printed to
+    /// stderr when issued).
+    pub fn warnings(&self) -> Vec<String> {
+        self.warnings.borrow().clone()
+    }
+
+    /// Publish a package to the remote registry, signed with `key` when given
+    /// (the CLI only publishes unsigned under `--insecure-allow-unsigned`).
+    pub fn publish(
+        &self,
+        name: &str,
+        version: &Version,
+        source_dir: &Path,
+        key: Option<&PublisherSigningKey>,
+    ) -> Result<()> {
         validate_package_name(name)?;
         let archive = crate::tarball::pack(source_dir)?;
-        let url = format!(
+        let mut url = format!(
             "{}/api/v1/crates/new?name={}&version={}",
             self.base_url, name, version,
         );
+        if let Some(key) = key {
+            let signed = key.sign_archive(name, version, &archive);
+            // Self-check before anything leaves the machine.
+            signed.verify(name, version, &archive)?;
+            url.push_str(&format!(
+                "&sha256={}&signer={}&signature={}",
+                crate::integrity::hex_encode(&signed.archive_sha256),
+                signed.signer.id(),
+                crate::integrity::hex_encode(&signed.signature),
+            ));
+        }
         let resp = crate::http::post(&url, "application/x-tar", &archive)?;
 
         if resp.status >= 400 {
@@ -248,23 +321,34 @@ impl Registry for HttpRegistry {
     }
 
     fn package_path(&self, name: &str, version: &Version) -> PathBuf {
-        // A new leaf distinguishes atomically installed packages from caches
-        // created by older clients, which could contain partial extractions.
-        self.cache_dir
-            .join(name)
-            .join(version.to_string())
-            .join("package")
+        self.entry_dir(name, version).join("package")
     }
 
-    fn fetch_package(&self, name: &str, version: &Version) -> Result<PathBuf> {
+    fn fetch_verified(&self, name: &str, version: &Version) -> Result<(PathBuf, Provenance)> {
         validate_package_name(name)?;
-        let local = self.package_path(name, version);
-        if !local.exists() {
-            self.download_to_cache(name, version, &local)?;
+        let entry = self.entry_dir(name, version);
+        let local = entry.join("package");
+        let verdict = if local.exists() {
+            // Verified when it was installed; re-apply today's policy (the
+            // trust list or the opt-out may have changed since).
+            let recorded = read_provenance(&entry.join("provenance"))?;
+            self.policy.check_recorded(name, version, &recorded)?
+        } else {
+            let (archive, signature) = self.download(name, version)?;
+            // The signature is checked BEFORE a single byte is unpacked.
+            let verdict =
+                self.policy
+                    .check_download(name, version, &archive, signature.as_deref())?;
+            self.install_archive(name, version, &archive, &verdict.provenance, &entry)?;
+            verdict
+        };
+        if let Some(warning) = verdict.warning {
+            eprintln!("{warning}");
+            self.warnings.borrow_mut().push(warning);
         }
         let manifest = Manifest::from_file(&local.join("riina.toml"))?;
         validate_package_identity(&manifest, name, version)?;
-        Ok(local)
+        Ok((local, verdict.provenance))
     }
 
     fn exists(&self, name: &str, version: &Version) -> bool {
@@ -288,14 +372,24 @@ impl Registry for HttpRegistry {
 }
 
 impl HttpRegistry {
-    /// Download a package tarball and unpack it to the cache directory.
-    fn download_to_cache(&self, name: &str, version: &Version, dest: &Path) -> Result<()> {
+    /// Cache entry for one package version. The `verified` leaf distinguishes
+    /// signature-checked installs from caches written by older clients
+    /// (`.../package`), which are never trusted.
+    fn entry_dir(&self, name: &str, version: &Version) -> PathBuf {
+        self.cache_dir
+            .join(name)
+            .join(version.to_string())
+            .join("verified")
+    }
+
+    /// Download a package archive and its signature document (`None` when the
+    /// registry answers 404 for the signature).
+    fn download(&self, name: &str, version: &Version) -> Result<(Vec<u8>, Option<Vec<u8>>)> {
         let url = format!(
             "{}/api/v1/crates/{}/{}/download",
             self.base_url, name, version,
         );
         let resp = crate::http::get(&url)?;
-
         if resp.status >= 400 {
             return Err(PkgError::Http {
                 url,
@@ -303,19 +397,43 @@ impl HttpRegistry {
                 message: String::from_utf8_lossy(&resp.body).into_owned(),
             });
         }
+        let archive = resp.body;
 
-        self.install_archive(name, version, &resp.body, dest)
+        let url = format!(
+            "{}/api/v1/crates/{}/{}/signature",
+            self.base_url, name, version,
+        );
+        let resp = crate::http::get(&url)?;
+        let signature = match resp.status {
+            404 => None,
+            200 => Some(resp.body),
+            status => {
+                // Not "unsigned": an error must not downgrade to the opt-out path.
+                return Err(PkgError::Http {
+                    url,
+                    status,
+                    message: String::from_utf8_lossy(&resp.body).into_owned(),
+                });
+            }
+        };
+        Ok((archive, signature))
     }
 
+    /// Unpack `archive` and record `provenance` in a private staging
+    /// directory, then publish both with one rename to `entry`.
     fn install_archive(
         &self,
         name: &str,
         version: &Version,
         archive: &[u8],
-        dest: &Path,
+        provenance: &Provenance,
+        entry: &Path,
     ) -> Result<()> {
         static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        let parent = dest
+        let recorded = provenance.lock_value().ok_or_else(|| {
+            PkgError::Other("a remote package must have a recorded provenance".into())
+        })?;
+        let parent = entry
             .parent()
             .ok_or_else(|| PkgError::Other("cache destination has no parent".into()))?;
         std::fs::create_dir_all(parent).map_err(|e| PkgError::io(parent, e))?;
@@ -332,10 +450,14 @@ impl HttpRegistry {
             }
         };
         let installed = (|| {
-            crate::tarball::unpack(archive, &stage)?;
-            let manifest = Manifest::from_file(&stage.join("riina.toml"))?;
+            let package = stage.join("package");
+            crate::tarball::unpack(archive, &package)?;
+            let manifest = Manifest::from_file(&package.join("riina.toml"))?;
             validate_package_identity(&manifest, name, version)?;
-            std::fs::rename(&stage, dest).map_err(|e| PkgError::io(dest, e))
+            let record = stage.join("provenance");
+            std::fs::write(&record, format!("{recorded}\n"))
+                .map_err(|e| PkgError::io(&record, e))?;
+            std::fs::rename(&stage, entry).map_err(|e| PkgError::io(entry, e))
         })();
         if installed.is_err() {
             // This directory was just created exclusively by this invocation.
@@ -343,6 +465,17 @@ impl HttpRegistry {
         }
         installed
     }
+}
+
+/// Read the provenance recorded beside a cached remote package.
+fn read_provenance(path: &Path) -> Result<Provenance> {
+    let text = std::fs::read_to_string(path).map_err(|e| PkgError::io(path, e))?;
+    Provenance::from_recorded(text.trim_end_matches('\n')).map_err(|e| {
+        PkgError::Other(format!(
+            "{}: corrupt cache provenance ({e}); run `riinac pkg clean`",
+            path.display()
+        ))
+    })
 }
 
 /// Parse a minimal JSON response of the form `{"versions":["1.0.0","1.1.0"]}`.
@@ -431,6 +564,10 @@ impl Registry for MemRegistry {
         PathBuf::from(format!("/mem/{name}/{version}"))
     }
 
+    fn fetch_verified(&self, name: &str, version: &Version) -> Result<(PathBuf, Provenance)> {
+        fetch_local(self, name, version)
+    }
+
     fn exists(&self, name: &str, version: &Version) -> bool {
         self.packages
             .get(name)
@@ -439,9 +576,10 @@ impl Registry for MemRegistry {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::manifest::{AllowedEffects, PackageMeta};
+    use crate::signing::{PackageSignature, Provenance, PublisherSigningKey, TrustPolicy};
 
     fn dummy_manifest(name: &str, ver: &str) -> Manifest {
         Manifest {
@@ -459,6 +597,7 @@ mod tests {
             allowed_effects: AllowedEffects::default(),
             workspace: None,
             registry: None,
+            trusted_publishers: vec![],
         }
     }
 
@@ -520,29 +659,360 @@ mod tests {
         )
         .unwrap();
         std::fs::write(tmp.join("source/src/lib.rii"), "pulang 0;").unwrap();
-        let reg = HttpRegistry::new("http://127.0.0.1:1", tmp.join("cache"));
+        let key = PublisherSigningKey::from_seed(&[1; 32]);
+        let signed = Provenance::Signed(key.public_key());
+        let reg = HttpRegistry::new("http://127.0.0.1:1", tmp.join("cache"))
+            .with_trust_policy(TrustPolicy::new([key.public_key()], false));
         let version = Version::new(1, 0, 0);
+        let entry = reg.entry_dir("foo", &version);
         let dest = reg.package_path("foo", &version);
         let archive = crate::tarball::pack(&tmp.join("source")).unwrap();
-        let wrong_identity = dest.with_file_name("wrong-identity");
+        let wrong_identity = entry.with_file_name("wrong-identity");
         assert!(reg
-            .install_archive("other", &version, &archive, &wrong_identity)
+            .install_archive("other", &version, &archive, &signed, &wrong_identity)
             .is_err());
         assert!(!wrong_identity.exists());
         let truncated = &archive[..archive.len() - 1024];
         assert!(reg
-            .install_archive("foo", &version, truncated, &dest)
+            .install_archive("foo", &version, truncated, &signed, &entry)
             .is_err());
-        assert!(!dest.exists());
+        assert!(!entry.exists());
+        // A remote install must record who vouched for it.
+        assert!(reg
+            .install_archive("foo", &version, &archive, &Provenance::Local, &entry)
+            .is_err());
         assert_eq!(
-            std::fs::read_dir(dest.parent().unwrap()).unwrap().count(),
+            std::fs::read_dir(entry.parent().unwrap()).unwrap().count(),
             0
         );
-        reg.install_archive("foo", &version, &archive, &dest)
+        reg.install_archive("foo", &version, &archive, &signed, &entry)
             .unwrap();
-        assert_eq!(reg.fetch_package("foo", &version).unwrap(), dest);
+        assert_eq!(
+            reg.fetch_verified("foo", &version).unwrap(),
+            (dest.clone(), signed)
+        );
         assert!(dest.join("src/lib.rii").is_file());
         std::fs::remove_dir_all(tmp).unwrap();
+    }
+
+    // ── End-to-end signature enforcement against a loopback registry ─────
+
+    /// Serve fixed `(path, status, body)` routes on 127.0.0.1; anything else
+    /// is 404. The thread lives until the test process exits.
+    pub(crate) fn serve(routes: Vec<(String, u16, Vec<u8>)>) -> String {
+        use std::io::{BufRead, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let Ok(mut stream) = stream else { continue };
+                let Ok(clone) = stream.try_clone() else {
+                    continue;
+                };
+                let mut reader = std::io::BufReader::new(clone);
+                let mut request_line = String::new();
+                if reader.read_line(&mut request_line).is_err() {
+                    continue;
+                }
+                loop {
+                    let mut line = String::new();
+                    if reader.read_line(&mut line).unwrap_or(0) <= 2 {
+                        break;
+                    }
+                }
+                let path = request_line.split_whitespace().nth(1).unwrap_or("");
+                let (status, body) = routes
+                    .iter()
+                    .find(|(p, _, _)| p == path)
+                    .map(|(_, s, b)| (*s, b.clone()))
+                    .unwrap_or((404, b"not found".to_vec()));
+                let head = format!(
+                    "HTTP/1.1 {status} X\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                    body.len()
+                );
+                let _ = stream.write_all(head.as_bytes());
+                let _ = stream.write_all(&body);
+            }
+        });
+        format!("http://{addr}")
+    }
+
+    pub(crate) struct Fixture {
+        pub(crate) tmp: PathBuf,
+    }
+
+    impl Fixture {
+        pub(crate) fn new(tag: &str) -> Self {
+            let tmp =
+                std::env::temp_dir().join(format!("riina_sigreg_{tag}_{}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&tmp);
+            std::fs::create_dir_all(&tmp).unwrap();
+            Self { tmp }
+        }
+
+        /// A packed `name` 1.0.0 whose library returns `value`.
+        pub(crate) fn archive(&self, name: &str, value: u32) -> Vec<u8> {
+            let dir = self.tmp.join(format!("src-{name}-{value}"));
+            std::fs::create_dir_all(dir.join("src")).unwrap();
+            std::fs::write(
+                dir.join("riina.toml"),
+                format!("[pakej]\nnama = \"{name}\"\nversi = \"1.0.0\"\n"),
+            )
+            .unwrap();
+            std::fs::write(
+                dir.join("src/lib.rii"),
+                format!("fungsi nilai() -> Nombor {{ pulang {value}; }}"),
+            )
+            .unwrap();
+            crate::tarball::pack(&dir).unwrap()
+        }
+
+        pub(crate) fn registry(&self, url: &str, cache: &str, policy: TrustPolicy) -> HttpRegistry {
+            HttpRegistry::new(url, self.tmp.join(cache)).with_trust_policy(policy)
+        }
+    }
+
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.tmp);
+        }
+    }
+
+    /// Registry routes for `name` 1.0.0: version list, manifest metadata,
+    /// archive, and (optionally) a signature response.
+    pub(crate) fn routes(
+        name: &str,
+        archive: Vec<u8>,
+        signature: Option<(u16, Vec<u8>)>,
+    ) -> Vec<(String, u16, Vec<u8>)> {
+        let mut out = vec![
+            (
+                format!("/api/v1/crates/{name}/versions"),
+                200,
+                br#"{"versions":["1.0.0"]}"#.to_vec(),
+            ),
+            (
+                format!("/api/v1/crates/{name}/1.0.0/manifest"),
+                200,
+                format!("[pakej]\nnama = \"{name}\"\nversi = \"1.0.0\"\n").into_bytes(),
+            ),
+            (
+                format!("/api/v1/crates/{name}/1.0.0/download"),
+                200,
+                archive,
+            ),
+        ];
+        if let Some((status, body)) = signature {
+            out.push((
+                format!("/api/v1/crates/{name}/1.0.0/signature"),
+                status,
+                body,
+            ));
+        }
+        out
+    }
+
+    #[test]
+    fn remote_fetch_enforces_publisher_signatures() {
+        let fx = Fixture::new("enforce");
+        let publisher = PublisherSigningKey::from_seed(&[1; 32]);
+        let attacker = PublisherSigningKey::from_seed(&[2; 32]);
+        let v1 = Version::new(1, 0, 0);
+        let sign = |key: &PublisherSigningKey, name: &str, archive: &[u8]| {
+            key.sign_archive(name, &v1, archive).render().into_bytes()
+        };
+
+        let good = fx.archive("good", 1);
+        let tampered_orig = fx.archive("tampered", 1);
+        let tampered = fx.archive("tampered", 666);
+        let unsigned = fx.archive("unsigned", 1);
+        let untrusted = fx.archive("untrusted", 1);
+        let broken = fx.archive("broken", 1);
+        let mut all = Vec::new();
+        all.extend(routes(
+            "good",
+            good.clone(),
+            Some((200, sign(&publisher, "good", &good))),
+        ));
+        // The registry serves different bytes than the publisher signed.
+        all.extend(routes(
+            "tampered",
+            tampered,
+            Some((200, sign(&publisher, "tampered", &tampered_orig))),
+        ));
+        all.extend(routes("unsigned", unsigned, None));
+        all.extend(routes(
+            "untrusted",
+            untrusted.clone(),
+            Some((200, sign(&attacker, "untrusted", &untrusted))),
+        ));
+        // A server error on the signature must not read as "unsigned".
+        all.extend(routes("broken", broken, Some((500, b"oops".to_vec()))));
+        let url = serve(all);
+        let trust = || TrustPolicy::new([publisher.public_key()], false);
+
+        // Valid signature by a trusted key: accepted, provenance recorded.
+        let reg = fx.registry(&url, "strict", trust());
+        let (path, provenance) = reg.fetch_verified("good", &v1).unwrap();
+        assert_eq!(provenance, Provenance::Signed(publisher.public_key()));
+        assert!(path.join("src/lib.rii").is_file());
+        assert!(reg.warnings().is_empty());
+        // Cached: the recorded signer is re-checked against today's policy.
+        assert!(fx
+            .registry(&url, "strict", TrustPolicy::default())
+            .fetch_package("good", &v1)
+            .is_err());
+        assert!(reg.fetch_package("good", &v1).is_ok());
+
+        // Tampered archive, untrusted key, missing signature, server error:
+        // all refused, and nothing is cached.
+        for name in ["tampered", "untrusted", "unsigned", "broken"] {
+            let res = reg.fetch_verified(name, &v1);
+            assert!(res.is_err(), "{name} must be refused");
+            assert!(
+                !reg.entry_dir(name, &v1).exists(),
+                "{name} must not be cached"
+            );
+        }
+        assert!(matches!(
+            reg.fetch_verified("tampered", &v1),
+            Err(PkgError::SignatureRejected { .. })
+        ));
+        assert!(matches!(
+            reg.fetch_verified("broken", &v1),
+            Err(PkgError::Http { status: 500, .. })
+        ));
+
+        // Opt-out: unsigned and untrusted are accepted WITH warnings; a
+        // tampered archive and a server error are still refused.
+        let insecure = fx.registry(
+            &url,
+            "insecure",
+            TrustPolicy::new([publisher.public_key()], true),
+        );
+        let (_, provenance) = insecure.fetch_verified("unsigned", &v1).unwrap();
+        assert_eq!(provenance, Provenance::Unsigned);
+        let (_, provenance) = insecure.fetch_verified("untrusted", &v1).unwrap();
+        assert_eq!(provenance, Provenance::Signed(attacker.public_key()));
+        let warnings = insecure.warnings();
+        assert_eq!(warnings.len(), 2, "{warnings:?}");
+        assert!(warnings[0].contains("INSECURE") && warnings[0].contains("UNSIGNED"));
+        assert!(warnings[1].contains("UNTRUSTED"));
+        assert!(insecure.fetch_verified("tampered", &v1).is_err());
+        assert!(insecure.fetch_verified("broken", &v1).is_err());
+        // A package cached under the opt-out is refused without it.
+        assert!(fx
+            .registry(&url, "insecure", trust())
+            .fetch_package("unsigned", &v1)
+            .is_err());
+        // ... and warns again on every use with it.
+        insecure.fetch_package("unsigned", &v1).unwrap();
+        assert_eq!(insecure.warnings().len(), 3);
+    }
+
+    /// `publish` with a key sends the archive plus a signature a client can
+    /// verify; without a key it sends no signature parameters.
+    #[test]
+    fn publish_sends_a_verifiable_signature() {
+        use std::io::{BufRead, Read, Write};
+        let fx = Fixture::new("publish");
+        let source = fx.tmp.join("pkg");
+        std::fs::create_dir_all(source.join("src")).unwrap();
+        std::fs::write(
+            source.join("riina.toml"),
+            "[pakej]\nnama = \"foo\"\nversi = \"1.2.3\"\n",
+        )
+        .unwrap();
+        std::fs::write(source.join("src/lib.rii"), "pulang 0;").unwrap();
+
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let (tx, rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            for stream in listener.incoming().take(2) {
+                let mut stream = stream.unwrap();
+                let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
+                let mut request_line = String::new();
+                reader.read_line(&mut request_line).unwrap();
+                let mut length = 0;
+                loop {
+                    let mut line = String::new();
+                    reader.read_line(&mut line).unwrap();
+                    if line.trim().is_empty() {
+                        break;
+                    }
+                    if let Some(v) = line.to_ascii_lowercase().strip_prefix("content-length:") {
+                        length = v.trim().parse().unwrap();
+                    }
+                }
+                let mut body = vec![0; length];
+                reader.read_exact(&mut body).unwrap();
+                stream
+                    .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+                    .unwrap();
+                tx.send((request_line, body)).unwrap();
+            }
+        });
+
+        let key = PublisherSigningKey::from_seed(&[5; 32]);
+        let reg = HttpRegistry::new(&url, fx.tmp.join("cache"));
+        let version = Version::new(1, 2, 3);
+        reg.publish("foo", &version, &source, Some(&key)).unwrap();
+        let (request_line, archive) = rx.recv().unwrap();
+        let target = request_line.split_whitespace().nth(1).unwrap();
+        let query: BTreeMap<&str, &str> = target
+            .split_once('?')
+            .unwrap()
+            .1
+            .split('&')
+            .filter_map(|kv| kv.split_once('='))
+            .collect();
+        // Rebuild the signature document a registry would serve from the
+        // parameters, and check it as a client would.
+        let document = format!(
+            "{}\nnama = \"foo\"\nversi = \"1.2.3\"\narkib-sha256 = \"{}\"\n\
+             penandatangan = \"{}\"\ntandatangan = \"{}\"\n",
+            crate::signing::SIGNATURE_HEADER,
+            query["sha256"],
+            query["signer"],
+            query["signature"],
+        );
+        let signature = PackageSignature::parse(document.as_bytes()).unwrap();
+        assert_eq!(signature.signer, key.public_key());
+        signature.verify("foo", &version, &archive).unwrap();
+        let verdict = TrustPolicy::new([key.public_key()], false)
+            .check_download("foo", &version, &archive, Some(document.as_bytes()))
+            .unwrap();
+        assert_eq!(verdict.provenance, Provenance::Signed(key.public_key()));
+
+        reg.publish("foo", &version, &source, None).unwrap();
+        let (request_line, _) = rx.recv().unwrap();
+        assert!(!request_line.contains("signature="), "{request_line}");
+    }
+
+    /// Caches written before signing (`<cache>/<name>/<version>/package`) or
+    /// with a corrupt provenance record are never trusted.
+    #[test]
+    fn unverified_cache_entries_are_not_trusted() {
+        let fx = Fixture::new("oldcache");
+        let key = PublisherSigningKey::from_seed(&[1; 32]);
+        let v1 = Version::new(1, 0, 0);
+        // Unreachable registry: anything not trusted from cache must fail.
+        let reg = fx.registry(
+            "http://127.0.0.1:1",
+            "cache",
+            TrustPolicy::new([key.public_key()], true),
+        );
+        let old_leaf = fx.tmp.join("cache/foo/1.0.0/package");
+        crate::tarball::unpack(&fx.archive("foo", 1), &old_leaf).unwrap();
+        assert!(reg.fetch_package("foo", &v1).is_err());
+
+        let entry = reg.entry_dir("foo", &v1);
+        crate::tarball::unpack(&fx.archive("foo", 1), &entry.join("package")).unwrap();
+        std::fs::write(entry.join("provenance"), "trust me\n").unwrap();
+        assert!(reg.fetch_package("foo", &v1).is_err());
+        std::fs::remove_file(entry.join("provenance")).unwrap();
+        assert!(reg.fetch_package("foo", &v1).is_err());
     }
 
     #[test]

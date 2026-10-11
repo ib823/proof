@@ -62,6 +62,19 @@ pub enum PkgError {
     CompileFailed { package: String, detail: String },
     /// A package has no entry module to build.
     NoEntryPoint { package: String, src_dir: PathBuf },
+    /// A remote package was refused by the publisher-signature policy
+    /// (unsigned, untrusted signer, or a signature that does not verify).
+    SignatureRejected {
+        name: String,
+        version: String,
+        reason: String,
+    },
+    /// The package's signer differs from the one pinned in `riina.lock`.
+    SignerMismatch {
+        name: String,
+        locked: String,
+        actual: String,
+    },
     /// Generic error.
     Other(String),
 }
@@ -132,6 +145,21 @@ impl fmt::Display for PkgError {
                  (binary) or `{}/lib.rii` (library)",
                 src_dir.display(),
                 src_dir.display()
+            ),
+            Self::SignatureRejected {
+                name,
+                version,
+                reason,
+            } => write!(f, "refusing package `{name}` {version}: {reason}"),
+            Self::SignerMismatch {
+                name,
+                locked,
+                actual,
+            } => write!(
+                f,
+                "signer of package `{name}` changed: riina.lock pins {locked}, but the package \
+                 now comes signed by {actual}. Refusing it; if the publisher really rotated \
+                 keys, verify that out of band, then re-run `riinac pkg lock` and review the diff"
             ),
             Self::Other(msg) => write!(f, "{msg}"),
         }

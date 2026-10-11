@@ -230,3 +230,72 @@ fn header_lookup_is_case_insensitive() {
     assert!(out.contains("[nilai]"), "case-insensitive lookup: {out}");
     assert!(out.contains("[]"), "absent header should be empty: {out}");
 }
+
+/// Audit L3: `Content-Length: 18446744073709551615` made the framing helper
+/// compute `body_start + len` with overflow — a panic ("attempt to add with
+/// overflow") in a debug `riinac`, a wrapped length in release; the C runtime
+/// wrapped the same sum silently. Both backends must now refuse the response
+/// with the codec's ordinary size error, and agree on it.
+#[test]
+fn huge_content_length_is_refused_cleanly_by_both_backends() {
+    const HUGE: &str = "HTTP/1.1 200 OK\r\nContent-Length: 18446744073709551615\r\n\r\n";
+    let program = |port: u16| {
+        format!(
+            "fungsi utama() -> Teks kesan (Rangkaian | Tulis) {{\n\
+             \x20   http_minta((\"GET\", \"http://127.0.0.1:{port}/\"))\n\
+             }}\n"
+        )
+    };
+
+    // Interpreter.
+    let (port, server) = serve_once(HUGE);
+    let (ok, out) = run_riina("huge_cl", &program(port));
+    let _ = server.join();
+    assert!(!ok, "a 2^64-1 byte body must not be accepted: {out}");
+    assert!(out.contains("body exceeds 8388608 bytes"), "interpreter: {out}");
+    assert!(!out.contains("overflow") && !out.contains("panicked"), "interpreter: {out}");
+
+    // Compiled C. A missing `cc` fails the test (never a silent pass) unless
+    // the skip is requested deliberately.
+    let cc = Command::new("cc")
+        .arg("--version")
+        .output()
+        .is_ok_and(|o| o.status.success());
+    if !cc {
+        assert!(
+            std::env::var("RIINA_ALLOW_MISSING_BACKEND_TOOLS").is_ok(),
+            "cc is required for the compiled half of this test"
+        );
+        eprintln!("!!! SKIPPED (cc missing) — compiled half NOT exercised.");
+        return;
+    }
+    let dir = std::env::temp_dir().join(format!("riina_huge_cl_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("sandbox");
+    let (port, server) = serve_once(HUGE);
+    let src = dir.join("huge_cl.rii");
+    std::fs::write(&src, program(port)).expect("write program");
+    let build = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .arg("build")
+        .arg(&src)
+        .output()
+        .expect("riinac build");
+    assert!(
+        build.status.success(),
+        "build failed: {}{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+    let run = Command::new(dir.join("huge_cl"))
+        .output()
+        .expect("run compiled");
+    let _ = server.join();
+    let text = format!(
+        "{}{}",
+        String::from_utf8_lossy(&run.stdout),
+        String::from_utf8_lossy(&run.stderr)
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+    assert!(!run.status.success(), "compiled program must fail: {text}");
+    assert!(text.contains("body exceeds 8388608 bytes"), "compiled: {text}");
+}

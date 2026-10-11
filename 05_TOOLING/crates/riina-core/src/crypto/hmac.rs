@@ -11,18 +11,19 @@
 //! - Verification uses constant-time comparison (Law 3)
 //! - No memory allocation during MAC computation
 //!
-//! # Safety
+//! # Zeroization of the inner hash state
 //!
-//! This module uses `unsafe` for `ManuallyDrop::take` in the finalize method.
-//! This is necessary because the struct implements Drop for key zeroization,
-//! but we need to move the inner hash state out during finalization.
-
-#![allow(unsafe_code)]
+//! After absorbing `key ⊕ ipad`, the inner hash state is a key-equivalent
+//! secret (anyone holding it can compute MACs). It is held as a plain field —
+//! not `ManuallyDrop` — so the hasher's own `Drop` scrubs it whether or not
+//! `finalize` is ever called. `finalize` moves it out with `mem::take`,
+//! leaving a fresh (public) state behind, so no `unsafe` is needed. (Until
+//! 2026-10 the field was `ManuallyDrop` and was never scrubbed when an
+//! instance was dropped without finalizing.)
 
 use crate::constant_time::ConstantTimeEq;
 use crate::crypto::sha2::{Sha256, Sha384, BLOCK_SIZE, OUTPUT_SIZE, SHA384_BLOCK_SIZE, SHA384_OUTPUT_SIZE};
 use crate::zeroize::Zeroize;
-use core::mem::ManuallyDrop;
 
 /// HMAC-SHA256 output size in bytes
 pub const HMAC_SHA256_OUTPUT_SIZE: usize = OUTPUT_SIZE;
@@ -33,8 +34,10 @@ pub struct HmacSha256 {
     inner_key: [u8; BLOCK_SIZE],
     /// Outer key (key XOR opad)
     outer_key: [u8; BLOCK_SIZE],
-    /// Inner hash state (wrapped in ManuallyDrop to allow moving out in finalize)
-    inner_hash: ManuallyDrop<Sha256>,
+    /// Inner hash state — key-equivalent once `key ⊕ ipad` is absorbed. A plain
+    /// field, so `Sha256`'s own `Drop` scrubs it even if `finalize` is never
+    /// called.
+    inner_hash: Sha256,
 }
 
 impl HmacSha256 {
@@ -49,8 +52,9 @@ impl HmacSha256 {
 
         if key.len() > BLOCK_SIZE {
             // Hash the key if it's too long
-            let hash = Sha256::hash(key);
+            let mut hash = Sha256::hash(key);
             key_block[..OUTPUT_SIZE].copy_from_slice(&hash);
+            hash.zeroize();
         } else {
             // Zero-pad the key if it's too short
             key_block[..key.len()].copy_from_slice(key);
@@ -75,7 +79,7 @@ impl HmacSha256 {
         Self {
             inner_key,
             outer_key,
-            inner_hash: ManuallyDrop::new(inner_hash),
+            inner_hash,
         }
     }
 
@@ -87,16 +91,17 @@ impl HmacSha256 {
     /// Finalize and return the MAC
     #[must_use]
     pub fn finalize(mut self) -> [u8; HMAC_SHA256_OUTPUT_SIZE] {
-        // Complete inner hash
-        // SAFETY: We take ownership of inner_hash here. The Drop impl will only
-        // zeroize the keys, not the inner_hash (since it's ManuallyDrop).
-        let inner_hash = unsafe { ManuallyDrop::take(&mut self.inner_hash) };
-        let inner_result = inner_hash.finalize();
+        // Complete inner hash. Move the keyed state out, leaving a fresh
+        // (public) state behind: the moved-out hasher is scrubbed by its own
+        // Drop when `finalize` consumes it, and `self`'s Drop scrubs the keys.
+        let inner_hash = core::mem::take(&mut self.inner_hash);
+        let mut inner_result = inner_hash.finalize();
 
         // Compute outer hash: H(outer_key || inner_result)
         let mut outer_hash = Sha256::new();
         outer_hash.update(&self.outer_key);
         outer_hash.update(&inner_result);
+        inner_result.zeroize();
 
         outer_hash.finalize()
     }
@@ -127,7 +132,8 @@ impl HmacSha256 {
 
 impl Drop for HmacSha256 {
     fn drop(&mut self) {
-        // Zeroize keys (Law 4)
+        // Zeroize keys (Law 4). `inner_hash` is then dropped as an ordinary
+        // field, and `Sha256::drop` scrubs its keyed state.
         self.inner_key.zeroize();
         self.outer_key.zeroize();
     }
@@ -146,7 +152,9 @@ pub const HMAC_SHA384_OUTPUT_SIZE: usize = SHA384_OUTPUT_SIZE;
 pub struct HmacSha384 {
     inner_key: [u8; SHA384_BLOCK_SIZE],
     outer_key: [u8; SHA384_BLOCK_SIZE],
-    inner_hash: ManuallyDrop<Sha384>,
+    /// Keyed inner state; a plain field so `Sha384`'s (i.e. `Sha512`'s) Drop
+    /// scrubs it even without `finalize` (see the module note).
+    inner_hash: Sha384,
 }
 
 impl HmacSha384 {
@@ -156,8 +164,9 @@ impl HmacSha384 {
     pub fn new(key: &[u8]) -> Self {
         let mut key_block = [0u8; SHA384_BLOCK_SIZE];
         if key.len() > SHA384_BLOCK_SIZE {
-            let hash = Sha384::hash(key);
+            let mut hash = Sha384::hash(key);
             key_block[..SHA384_OUTPUT_SIZE].copy_from_slice(&hash);
+            hash.zeroize();
         } else {
             key_block[..key.len()].copy_from_slice(key);
         }
@@ -176,7 +185,7 @@ impl HmacSha384 {
         Self {
             inner_key,
             outer_key,
-            inner_hash: ManuallyDrop::new(inner_hash),
+            inner_hash,
         }
     }
 
@@ -188,14 +197,15 @@ impl HmacSha384 {
     /// Finalize: `H(outer_key || H(inner_key || message))`.
     #[must_use]
     pub fn finalize(mut self) -> [u8; HMAC_SHA384_OUTPUT_SIZE] {
-        // SAFETY-free move-out: ManuallyDrop lets us take the hasher by value
-        // without running Drop twice (mirrors HmacSha256 exactly).
-        let inner_hash = unsafe { ManuallyDrop::take(&mut self.inner_hash) };
-        let inner_digest = inner_hash.finalize();
+        // Move the keyed state out (no `unsafe`), leaving a fresh public state
+        // behind; mirrors `HmacSha256::finalize`.
+        let inner_hash = core::mem::take(&mut self.inner_hash);
+        let mut inner_digest = inner_hash.finalize();
 
         let mut outer = Sha384::new();
         outer.update(&self.outer_key);
         outer.update(&inner_digest);
+        inner_digest.zeroize();
         outer.finalize()
     }
 
@@ -225,13 +235,8 @@ impl HmacSha384 {
 
 impl Drop for HmacSha384 {
     fn drop(&mut self) {
-        // Zeroize keys (Law 4).
-        //
-        // Deliberately NOT dropping `inner_hash`: `finalize` moves it out with
-        // `ManuallyDrop::take`, and `self` is still dropped afterwards, so
-        // touching it here would be a double-drop on moved-out memory (UB).
-        // `Sha384` is plain data with no `Drop`, so leaving it is a no-op.
-        // This mirrors `HmacSha256` exactly.
+        // Zeroize keys (Law 4). `inner_hash` is then dropped as an ordinary
+        // field and `Sha512::drop` scrubs its keyed state. Mirrors `HmacSha256`.
         self.inner_key.zeroize();
         self.outer_key.zeroize();
     }
@@ -327,6 +332,34 @@ mod hmac_sha384_tests {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Audit L5: the keyed inner state is an ordinary field with its own
+    /// scrubbing Drop (it was `ManuallyDrop` and leaked when an instance was
+    /// dropped without `finalize`). The scrub is a volatile write and cannot
+    /// be observed after the drop from safe code; this pins the drop glue and
+    /// that the `mem::take`-based finalize still computes correct MACs, both
+    /// for a finalized instance and alongside dropped, un-finalized ones.
+    #[test]
+    fn inner_state_has_scrubbing_drop_and_finalize_is_unchanged() {
+        assert!(core::mem::needs_drop::<Sha256>() && core::mem::needs_drop::<Sha384>());
+        let mut abandoned = HmacSha256::new(b"key");
+        abandoned.update(b"partial");
+        drop(abandoned);
+        let mut abandoned = HmacSha384::new(&[0x42; 200]); // > block: hashed key
+        abandoned.update(b"partial");
+        drop(abandoned);
+
+        let mut h = HmacSha256::new(b"key");
+        h.update(b"The quick brown fox ");
+        h.update(b"jumps over the lazy dog");
+        let mac = h.finalize();
+        let expected: [u8; 32] = [
+            0xf7, 0xbc, 0x83, 0xf4, 0x30, 0x53, 0x84, 0x24, 0xb1, 0x32, 0x98, 0xe6, 0xaa, 0x6f,
+            0xb1, 0x43, 0xef, 0x4d, 0x59, 0xa1, 0x49, 0x46, 0x17, 0x59, 0x97, 0x47, 0x9d, 0xbc,
+            0x2d, 0x1a, 0x3c, 0xd8,
+        ];
+        assert_eq!(mac, expected);
+    }
 
     /// RFC 4231 Test Case 1
     #[test]

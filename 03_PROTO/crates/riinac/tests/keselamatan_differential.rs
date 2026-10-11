@@ -132,17 +132,17 @@ fn feed(cmd: &mut Command, stdin_text: &str) -> String {
 
 /// Feed `input` on stdin to a program that reads one tainted line, applies
 /// `expr` to it, and prints the result. Assert both backends agree.
-fn assert_agree(tag: &str, expr: &str, input: &str) {
-    assert_agree_eff(tag, expr, input, "(Sistem | Tulis)");
+fn assert_agree(tag: &str, expr: &str, input: &str) -> String {
+    assert_agree_eff(tag, expr, input, "(Sistem | Tulis)")
 }
 
 /// As `assert_agree`, with an explicit effect annotation. The HTTP sinks carry
 /// `Rangkaian`, and RIINA's capability discipline rejects the program outright
 /// without it — a useful reminder that the effect system gates these before
 /// either backend runs.
-fn assert_agree_eff(tag: &str, expr: &str, input: &str, eff: &str) {
+fn assert_agree_eff(tag: &str, expr: &str, input: &str, eff: &str) -> String {
     if !require_cc() {
-        return;
+        return String::new();
     }
     let sb = Sandbox::new(tag);
     let src = sb.dir.join(format!("{}.rii", sb.stem));
@@ -190,6 +190,7 @@ fn assert_agree_eff(tag: &str, expr: &str, input: &str, eff: &str) {
         interp, native,
         "interp/C divergence for {tag}\n  input:  {input:?}\n  interp: {interp:?}\n  C:      {native:?}"
     );
+    interp
 }
 
 // ── Sanitizers ─────────────────────────────────────────────────────────────
@@ -268,6 +269,30 @@ fn url_validate_allows_only_the_safe_schemes() {
     assert_agree("u_proto_rel", "sahkan_url(mentah)", "//evil.test/x");
 }
 
+/// Audit L1: browsers drop tab/CR/LF and read `\` as `/`, so each input below
+/// navigates to `//evil.test` — both backends must refuse it, not merely agree.
+/// Trimming is ASCII-space-only in both (the C trim used to eat every byte
+/// <= 0x20 while Rust's `str::trim` ate Unicode whitespace instead).
+#[test]
+fn url_validate_refuses_backslash_and_control_char_redirects() {
+    for (tag, input) in [
+        ("u_bslash", "/\\evil.test/x"),
+        ("u_tab", "/\t/evil.test/x"),
+        ("u_ctrl", "/x\u{1}y"),
+        ("u_lead_ctrl", "\u{1}/x"),
+        ("u_nbsp", "\u{00A0}/x"),
+    ] {
+        let out = assert_agree(tag, "sahkan_url(mentah)", input);
+        if require_cc() {
+            assert_eq!(out, "about:blank\n", "{tag}: {input:?} must be refused");
+        }
+    }
+    let out = assert_agree("u_space", "sahkan_url(mentah)", "  /ok/path  ");
+    if require_cc() {
+        assert_eq!(out, "/ok/path\n");
+    }
+}
+
 #[test]
 fn normalize_unicode_strips_bidi_and_zero_width() {
     // RLO is the classic filename-spoofing character; ZWSP hides token breaks.
@@ -322,9 +347,9 @@ fn taint_source_reads_the_same_line() {
 /// backends agree. Unlike [`assert_agree_eff`] the caller writes the whole body,
 /// which the pair-taking cases need because a single expression cannot show a
 /// predicate answering differently on two inputs.
-fn assert_body_agrees(tag: &str, body: &str, input: &str, eff: &str) {
+fn assert_body_agrees(tag: &str, body: &str, input: &str, eff: &str) -> String {
     if !require_cc() {
-        return;
+        return String::new();
     }
     let sb = Sandbox::new(tag);
     let src = sb.dir.join(format!("{}.rii", sb.stem));
@@ -364,6 +389,7 @@ fn assert_body_agrees(tag: &str, body: &str, input: &str, eff: &str) {
         interp, native,
         "interp/C divergence for {tag}\n  interp: {interp:?}\n  C:      {native:?}"
     );
+    interp
 }
 
 /// The pair-taking members are reached through an EXPLICIT tuple, never a
@@ -431,6 +457,35 @@ fn csrf_predicates_agree_including_the_empty_allowed_origin() {
         "unused",
         "(Sistem | Tulis)",
     );
+}
+
+/// Audit M4: the referer must EQUAL the origin or continue it with `/`, `?`
+/// or `#`. A prefix match (both backends, before the fix) accepted another
+/// host whose name merely starts with the origin's text, a userinfo trick,
+/// and a different port.
+#[test]
+fn csrf_referer_requires_exact_origin_in_both_backends() {
+    let cases = [
+        ("https://bank.example.attacker.net/x", "https://bank.example", "salah"),
+        ("https://bank.example@evil.test/", "https://bank.example", "salah"),
+        ("https://bank.example:8443/", "https://bank.example", "salah"),
+        ("https://bank.examplex", "https://bank.example", "salah"),
+        ("https://bank.example", "https://bank.example", "betul"),
+        ("https://bank.example/p", "https://bank.example", "betul"),
+        ("https://bank.example?q", "https://bank.example", "betul"),
+        ("https://bank.example#f", "https://bank.example", "betul"),
+        ("https://bank.example/p", "https://bank.example/", "betul"),
+        ("https://x/p", "/", "salah"),
+    ];
+    let body: Vec<String> = cases
+        .iter()
+        .map(|(r, o, _)| format!("    cetakln(ke_teks(csrf_semak_referer((\"{r}\", \"{o}\"))));"))
+        .collect();
+    let out = assert_body_agrees("referer_exact", &body.join("\n"), "unused", "(Sistem | Tulis)");
+    if require_cc() {
+        let want: String = cases.iter().map(|(_, _, w)| format!("{w}\n")).collect();
+        assert_eq!(out, want);
+    }
 }
 
 /// `validate_length` counts UNICODE SCALAR VALUES, not bytes, so a multi-byte

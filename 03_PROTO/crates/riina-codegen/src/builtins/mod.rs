@@ -248,6 +248,63 @@ pub fn register_builtins(env: &Env) -> Env {
     e
 }
 
+/// Does the builtin with this CANONICAL name reach the host?
+///
+/// "Host" = anything outside the program's own values: the file system
+/// (`fail_*`, `file_*_safe`), the network (`jaring_*` except the pure
+/// `tls_dasar_ok` policy, `http_minta`), the durable store (`simpan_*`), the
+/// verified VFS (process-global state shared between runs), the process's
+/// stdin/stdout (`baca_*`, `cetak*` — in `riinac mcp` those ARE the protocol
+/// channel), the wall clock and sleeping (`masa_sekarang*`, `masa_tidur`,
+/// `masa_jam`), and randomness (`rawak`, `csrf_generate`).
+///
+/// This is the deny-list behind [`register_pure_builtins`] and the
+/// interpreter's sandbox check. It deliberately errs towards denying: the
+/// modelled sinks (`sql_execute`, `http_get`, ...) open nothing and stay
+/// allowed; pure codecs, crypto handles (caller-supplied randomness) and the
+/// collection/string/maths families stay allowed.
+pub fn is_host_effect_builtin(canonical: &str) -> bool {
+    const EXPLICIT: &[&str] = &[
+        // process I/O
+        "cetak",
+        "cetakln",
+        "baca_garisan",
+        "baca_baris",
+        "read_line",
+        // clock / sleep
+        "masa_sekarang",
+        "masa_sekarang_ms",
+        "masa_tidur",
+        "masa_jam",
+        // randomness
+        "rawak",
+        "csrf_generate",
+        // real file I/O in the security family
+        "file_read_safe",
+        "file_write_safe",
+        "file_delete_safe",
+        // real HTTP request (the other http_* are pure codecs)
+        "http_minta",
+    ];
+    let in_family =
+        |family: &[(&str, &str, &str)]| family.iter().any(|&(_, _, c)| c == canonical);
+    EXPLICIT.contains(&canonical)
+        || in_family(fail::BUILTINS)
+        || in_family(simpan::BUILTINS)
+        || in_family(vfs::BUILTINS)
+        || (in_family(net::BUILTINS) && canonical != "tls_dasar_ok")
+}
+
+/// [`register_builtins`] minus every builtin [`is_host_effect_builtin`]
+/// selects: the environment for running UNTRUSTED code (e.g. `riinac mcp`).
+#[must_use]
+pub fn register_pure_builtins(env: &Env) -> Env {
+    register_builtins(env).without(|_, value| match value {
+        Value::Builtin(canonical) => is_host_effect_builtin(canonical),
+        _ => false,
+    })
+}
+
 /// Apply a built-in function to an argument.
 pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
     // I/O

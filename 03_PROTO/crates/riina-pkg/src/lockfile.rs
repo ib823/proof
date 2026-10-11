@@ -15,8 +15,16 @@
 //! nama = "bar"
 //! versi = "0.1.0"
 //! checksum = "def456..."
+//! penandatangan = "ed25519:<64 hex>"
 //! kebergantungan = ["foo ^1.0.0"]
 //! ```
+//!
+//! `penandatangan` (signer) is present for packages from a REMOTE registry:
+//! the publisher key id whose signature was accepted, or `"unsigned"` for a
+//! package accepted under `--insecure-allow-unsigned`. A locked build fails
+//! closed when a package's current signer differs from the pinned one (see
+//! [`crate::signing`]). Packages from the local filesystem registry carry no
+//! signer.
 
 use crate::error::{PkgError, Result};
 use crate::version::Version;
@@ -33,6 +41,9 @@ pub struct LockedPackage {
     pub version: Version,
     pub checksum: String,
     pub dependencies: Vec<String>,
+    /// Pinned publisher (`ed25519:<hex>` or `unsigned`); `None` for a package
+    /// from the local filesystem registry.
+    pub signer: Option<String>,
 }
 
 impl Lockfile {
@@ -50,6 +61,9 @@ impl Lockfile {
             out.push_str(&format!("nama = \"{}\"\n", pkg.name));
             out.push_str(&format!("versi = \"{}\"\n", pkg.version));
             out.push_str(&format!("checksum = \"{}\"\n", pkg.checksum));
+            if let Some(signer) = &pkg.signer {
+                out.push_str(&format!("penandatangan = \"{signer}\"\n"));
+            }
             if !pkg.dependencies.is_empty() {
                 let deps: Vec<String> = pkg
                     .dependencies
@@ -87,6 +101,13 @@ impl Lockfile {
                         "nama" => builder.name = Some(unquote(val)),
                         "versi" => builder.version = Some(unquote(val)),
                         "checksum" => builder.checksum = Some(unquote(val)),
+                        "penandatangan" => {
+                            if builder.signer.replace(unquote(val)).is_some() {
+                                return Err(PkgError::Other(
+                                    "lockfile: duplicate penandatangan".into(),
+                                ));
+                            }
+                        }
                         "kebergantungan" => {
                             builder.dependencies = parse_string_array(val);
                         }
@@ -131,6 +152,7 @@ struct LockedPackageBuilder {
     version: Option<String>,
     checksum: Option<String>,
     dependencies: Vec<String>,
+    signer: Option<String>,
 }
 
 impl LockedPackageBuilder {
@@ -143,11 +165,17 @@ impl LockedPackageBuilder {
             .ok_or_else(|| PkgError::Other("lockfile: missing versi".into()))?;
         let version = Version::parse(&version_str)?;
         let checksum = self.checksum.unwrap_or_default();
+        if let Some(signer) = &self.signer {
+            crate::signing::Provenance::from_recorded(signer).map_err(|e| {
+                PkgError::Other(format!("lockfile: package {name}: penandatangan: {e}"))
+            })?;
+        }
         Ok(LockedPackage {
             name,
             version,
             checksum,
             dependencies: self.dependencies,
+            signer: self.signer,
         })
     }
 }
@@ -187,12 +215,14 @@ mod tests {
                     version: Version::new(1, 0, 0),
                     checksum: "abc123".into(),
                     dependencies: vec![],
+                    signer: None,
                 },
                 LockedPackage {
                     name: "bar".into(),
                     version: Version::new(0, 1, 0),
                     checksum: "def456".into(),
                     dependencies: vec!["foo ^1.0.0".into()],
+                    signer: Some("unsigned".into()),
                 },
             ],
         };
@@ -202,6 +232,25 @@ mod tests {
         assert_eq!(parsed.packages[0].name, "foo");
         assert_eq!(parsed.packages[1].name, "bar");
         assert_eq!(parsed.packages[1].dependencies, vec!["foo ^1.0.0"]);
+        assert_eq!(parsed.packages[0].signer, None);
+        assert_eq!(parsed.packages[1].signer.as_deref(), Some("unsigned"));
+    }
+
+    #[test]
+    fn signer_is_pinned_and_validated() {
+        let key = "ed25519:ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c";
+        let src = format!(
+            "[[package]]\nnama = \"foo\"\nversi = \"1.0.0\"\nchecksum = \"x\"\npenandatangan = \"{key}\"\n"
+        );
+        let lock = Lockfile::parse(&src).unwrap();
+        assert_eq!(lock.packages[0].signer.as_deref(), Some(key));
+        assert_eq!(
+            Lockfile::parse(&lock.serialize()).unwrap().packages[0].signer,
+            lock.packages[0].signer
+        );
+        // Malformed or duplicated signer entries are errors, not ignored.
+        assert!(Lockfile::parse(&src.replace(key, "ed25519:zz")).is_err());
+        assert!(Lockfile::parse(&format!("{src}penandatangan = \"unsigned\"\n")).is_err());
     }
 
     #[test]
@@ -212,6 +261,7 @@ mod tests {
                 version: Version::new(2, 0, 0),
                 checksum: "aaa".into(),
                 dependencies: vec![],
+                signer: None,
             }],
         };
         assert!(lock.get("x").is_some());

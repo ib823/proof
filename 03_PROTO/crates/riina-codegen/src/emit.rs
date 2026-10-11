@@ -4126,11 +4126,22 @@ static riina_value_t* riina_builtin_sanitize_email(riina_value_t* arg) {
     RIINA_SEC_END()
 }
 
+/* Mirrors `url_validate`: ASCII controls (C0 + DEL) and backslashes ANYWHERE
+   are refused (browsers drop tab/CR/LF and read `\` as `/`, so "/\t/evil" and
+   "/\\evil" are open redirects); only ASCII spaces are trimmed; a relative
+   path whose second byte is '/' or '\' is refused. */
 static riina_value_t* riina_builtin_validate_url(riina_value_t* arg) {
     RIINA_SEC_BEGIN(arg)
+    for (size_t k = 0; k < _slen; k++) {
+        unsigned char c = (unsigned char)_s[k];
+        if (c < 0x20 || c == 0x7F || c == '\\') {
+            riina_sec_puts(&_b, &_n, &_cap, "about:blank");
+            RIINA_SEC_END()
+        }
+    }
     size_t lo = 0, hi = _slen;
-    while (lo < hi && (unsigned char)_s[lo] <= 0x20) lo++;
-    while (hi > lo && (unsigned char)_s[hi-1] <= 0x20) hi--;
+    while (lo < hi && _s[lo] == ' ') lo++;
+    while (hi > lo && _s[hi-1] == ' ') hi--;
     size_t tl = hi - lo;
     char* t = (char*)malloc(tl + 1);
     if (!t) abort();
@@ -4144,7 +4155,7 @@ static riina_value_t* riina_builtin_validate_url(riina_value_t* arg) {
     low[tl] = 0;
     bool ok = strncmp(low, "http://", 7) == 0 || strncmp(low, "https://", 8) == 0
            || strncmp(low, "mailto:", 7) == 0
-           || (tl > 0 && t[0] == '/' && !(tl > 1 && t[1] == '/'));
+           || (tl > 0 && t[0] == '/' && !(tl > 1 && (t[1] == '/' || t[1] == '\\')));
     riina_sec_puts(&_b, &_n, &_cap, ok ? t : "about:blank");
     free(t); free(low);
     RIINA_SEC_END()
@@ -4298,15 +4309,26 @@ static riina_value_t* riina_builtin_csrf_check_origin(riina_value_t* arg) {
     return riina_bool(memcmp(o->data.string_val.data, w->data.string_val.data,
                              w->data.string_val.len) == 0);
 }
+/* Mirrors `referer_matches_origin`: the referer must EQUAL the origin or
+   continue it with '/', '?' or '#' — a bare prefix match accepted
+   "https://bank.example.attacker.net/" for "https://bank.example". One
+   trailing '/' on the configured origin is ignored; an empty origin never
+   matches. */
 static riina_value_t* riina_builtin_csrf_check_referer(riina_value_t* arg) {
     if (arg->tag != RIINA_TAG_PAIR) abort();
     riina_value_t* r = arg->data.pair_val.fst;
     riina_value_t* w = arg->data.pair_val.snd;
     if (r->tag != RIINA_TAG_STRING || w->tag != RIINA_TAG_STRING) abort();
-    if (w->data.string_val.len == 0) return riina_bool(false);
-    if (r->data.string_val.len < w->data.string_val.len) return riina_bool(false);
-    return riina_bool(memcmp(r->data.string_val.data, w->data.string_val.data,
-                             w->data.string_val.len) == 0);
+    size_t wl = w->data.string_val.len;
+    if (wl > 0 && w->data.string_val.data[wl - 1] == '/') wl--;
+    if (wl == 0) return riina_bool(false);
+    size_t rl = r->data.string_val.len;
+    if (rl < wl) return riina_bool(false);
+    if (memcmp(r->data.string_val.data, w->data.string_val.data, wl) != 0)
+        return riina_bool(false);
+    if (rl == wl) return riina_bool(true);
+    char next = r->data.string_val.data[wl];
+    return riina_bool(next == '/' || next == '?' || next == '#');
 }
 
 /* No XML tree exists in-tree, so the interpreter models the parse as identity
@@ -7614,6 +7636,11 @@ static int riina_http_message_complete(const unsigned char* b, size_t n) {
     uint64_t content_length = 0;
     riina_http_parse_headers((const char*)b, (size_t)head_len, 1, &hs, &has_len, &content_length);
     riina_http_hdrs_free(&hs);
+    /* Mirrors the Rust codec's checked arithmetic: a declared body over the
+       limit is refused HERE (same message as extract_body), so the sum below
+       can never wrap and declare an incomplete message complete. */
+    if (has_len && content_length > (uint64_t)RIINA_HTTP_MAX_BODY)
+        riina_http_die("body exceeds 8388608 bytes");
     uint64_t want = (uint64_t)body_start + (has_len ? content_length : 0);
     return (uint64_t)n >= want ? 1 : 0;
 }

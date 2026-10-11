@@ -66,6 +66,7 @@ use crate::auth::{verify_peer, Identity, TrustStore, CREDENTIAL_LEN, SIGNATURE_L
 use crate::wire;
 use crate::{derive_secret, hkdf_expand_label, HashAlg, RecordKeys, TlsError};
 use riina_core::crypto::x25519::X25519KeyPair;
+use riina_core::secret::Secret;
 
 /// Length of an X25519 key share.
 pub const SHARE_LEN: usize = 32;
@@ -218,11 +219,17 @@ impl Transcript {
     }
 }
 
-/// The RFC 8446 §7.1 key schedule, walked to the Master Secret.
+/// A secret byte string scrubbed on drop (Law 4) — riina-core's `Secret`
+/// wrapper over its volatile-write zeroizer. Used for every intermediate of
+/// the key schedule so that early returns (`?`) scrub too.
+type SecretBytes = Secret<Vec<u8>>;
+
+/// The RFC 8446 §7.1 key schedule, walked to the Master Secret. Both secrets
+/// are scrubbed when the schedule is dropped.
 struct KeySchedule {
     alg: HashAlg,
-    handshake_secret: Vec<u8>,
-    master_secret: Vec<u8>,
+    handshake_secret: SecretBytes,
+    master_secret: SecretBytes,
 }
 
 impl KeySchedule {
@@ -236,13 +243,20 @@ impl KeySchedule {
     /// No PSK, so the Early Secret's IKM is all zeros.
     fn new(alg: HashAlg, shared_secret: &[u8]) -> Result<Self, TlsError> {
         let zeros = vec![0u8; alg.hash_len()];
-        let early = alg.hkdf_extract(&[], &zeros);
+        let early = SecretBytes::new(alg.hkdf_extract(&[], &zeros));
         // Derive-Secret with an EMPTY-message transcript hash, per the spec.
         let empty_hash = alg.hash(&[]);
-        let derived1 = derive_secret(alg, &early, b"derived", &empty_hash)?;
-        let handshake_secret = alg.hkdf_extract(&derived1, shared_secret);
-        let derived2 = derive_secret(alg, &handshake_secret, b"derived", &empty_hash)?;
-        let master_secret = alg.hkdf_extract(&derived2, &zeros);
+        let derived1 =
+            SecretBytes::new(derive_secret(alg, early.expose_secret(), b"derived", &empty_hash)?);
+        let handshake_secret =
+            SecretBytes::new(alg.hkdf_extract(derived1.expose_secret(), shared_secret));
+        let derived2 = SecretBytes::new(derive_secret(
+            alg,
+            handshake_secret.expose_secret(),
+            b"derived",
+            &empty_hash,
+        )?);
+        let master_secret = SecretBytes::new(alg.hkdf_extract(derived2.expose_secret(), &zeros));
         Ok(Self {
             alg,
             handshake_secret,
@@ -250,12 +264,12 @@ impl KeySchedule {
         })
     }
 
-    fn handshake_traffic(&self, label: &[u8], th: &[u8]) -> Result<Vec<u8>, TlsError> {
-        derive_secret(self.alg, &self.handshake_secret, label, th)
+    fn handshake_traffic(&self, label: &[u8], th: &[u8]) -> Result<SecretBytes, TlsError> {
+        derive_secret(self.alg, self.handshake_secret.expose_secret(), label, th).map(SecretBytes::new)
     }
 
-    fn application_traffic(&self, label: &[u8], th: &[u8]) -> Result<Vec<u8>, TlsError> {
-        derive_secret(self.alg, &self.master_secret, label, th)
+    fn application_traffic(&self, label: &[u8], th: &[u8]) -> Result<SecretBytes, TlsError> {
+        derive_secret(self.alg, self.master_secret.expose_secret(), label, th).map(SecretBytes::new)
     }
 }
 
@@ -268,8 +282,8 @@ fn finished_mac(
     transcript_hash: &[u8],
 ) -> Result<Vec<u8>, TlsError> {
     let n = u16::try_from(alg.hash_len()).map_err(|_| TlsError::BadLength)?;
-    let fk = hkdf_expand_label(alg, base_key, b"finished", b"", n)?;
-    Ok(alg.hmac(&fk, transcript_hash))
+    let fk = SecretBytes::new(hkdf_expand_label(alg, base_key, b"finished", b"", n)?);
+    Ok(alg.hmac(fk.expose_secret(), transcript_hash))
 }
 
 /// Constant-time Finished check (`HmacSha256::verify` compares in constant
@@ -281,8 +295,8 @@ fn finished_verify(
     got: &[u8],
 ) -> Result<(), TlsError> {
     let n = u16::try_from(alg.hash_len()).map_err(|_| TlsError::BadLength)?;
-    let fk = hkdf_expand_label(alg, base_key, b"finished", b"", n)?;
-    if alg.hmac_verify(&fk, transcript_hash, got) {
+    let fk = SecretBytes::new(hkdf_expand_label(alg, base_key, b"finished", b"", n)?);
+    if alg.hmac_verify(fk.expose_secret(), transcript_hash, got) {
         Ok(())
     } else {
         Err(TlsError::HandshakeFailed)
@@ -315,8 +329,14 @@ pub struct ConnectedEvidence {
     pub forward_secret: bool,
     /// The handshake completed with both peers' Finished accepted.
     pub verified: bool,
-    /// **Always false in this increment**: no certificates are exchanged or
-    /// checked, so the peer is unauthenticated.
+    /// True only when **the PEER** — the other end of this session — proved
+    /// possession of a credential THIS side pinned (RFC 7250 raw public key +
+    /// CertificateVerify; see [`crate::auth`] for the trust model). False for
+    /// an anonymous handshake, and **always false on the server**: there is no
+    /// client authentication yet, so a server knows nothing about who it is
+    /// talking to. (Until 2026-10 the server reported `true` whenever it had
+    /// presented its OWN identity, i.e. "authenticated" described the wrong
+    /// party.)
     pub cert_chain_verified: bool,
 }
 
@@ -348,22 +368,22 @@ fn session_from(
     ks: &KeySchedule,
     th: &[u8],
     transcript_bound: bool,
-    cert_chain_verified: bool,
+    peer_authenticated: bool,
 ) -> Result<Session, TlsError> {
     let c_ap = ks.application_traffic(b"c ap traffic", th)?;
     let s_ap = ks.application_traffic(b"s ap traffic", th)?;
     Ok(Session {
-        client_keys: RecordKeys::derive(ks.alg, &c_ap)?,
-        server_keys: RecordKeys::derive(ks.alg, &s_ap)?,
+        client_keys: RecordKeys::derive(ks.alg, c_ap.expose_secret())?,
+        server_keys: RecordKeys::derive(ks.alg, s_ap.expose_secret())?,
         evidence: ConnectedEvidence {
             version_is_tls13: true,
             transcript_bound,
             forward_secret: true,
             verified: true,
-            // True only when the peer proved possession of a PINNED
-            // credential (increment 3). See `auth`'s trust-model note: this
+            // True only when the PEER proved possession of a credential this
+            // side PINNED (increment 3). See `auth`'s trust-model note: this
             // is raw-public-key pinning, not PKI chain validation.
-            cert_chain_verified,
+            cert_chain_verified: peer_authenticated,
         },
     })
 }
@@ -489,11 +509,13 @@ impl ClientHandshake {
         }
         let server_share = sh.key_share_x25519.ok_or(TlsError::HandshakeFailed)?;
 
-        let shared = self
-            .keypair
-            .diffie_hellman(&server_share)
-            .map_err(|_| TlsError::HandshakeFailed)?;
-        let ks = KeySchedule::new(self.alg, &shared)?;
+        let shared = Secret::new(
+            self.keypair
+                .diffie_hellman(&server_share)
+                .map_err(|_| TlsError::HandshakeFailed)?,
+        );
+        let ks = KeySchedule::new(self.alg, shared.expose_secret())?;
+        drop(shared);
 
         self.transcript.push_message(server_hello_msg);
         let th_hs = self.transcript.hash();
@@ -567,12 +589,14 @@ impl ClientHandshake {
 
         // The server proves it derived the same keys over the same transcript.
         let th_before_server_finished = self.transcript.hash();
-        finished_verify(self.alg, &s_hs, &th_before_server_finished, &body)?;
+        finished_verify(self.alg, s_hs.expose_secret(), &th_before_server_finished, &body)?;
 
         self.transcript.push_message(&whole);
         let th_ap = self.transcript.hash();
-        let client_finished = finished_mac(self.alg, &c_hs, &th_ap)?;
+        let client_finished = finished_mac(self.alg, c_hs.expose_secret(), &th_ap)?;
         let client_finished_msg = wire::encode_finished(&client_finished)?;
+        // On the client, `authenticated` means the SERVER (our peer) proved a
+        // pinned credential — exactly what `cert_chain_verified` reports.
         let session = session_from(&ks, &th_ap, true, authenticated)?;
         Ok((client_finished_msg, session))
     }
@@ -581,10 +605,9 @@ impl ClientHandshake {
 /// Server side of the handshake.
 pub struct ServerHandshake {
     alg: HashAlg,
-    c_hs: Vec<u8>,
+    c_hs: SecretBytes,
     ks: KeySchedule,
     th_ap: Vec<u8>,
-    authenticated: bool,
 }
 
 impl ServerHandshake {
@@ -636,10 +659,13 @@ impl ServerHandshake {
 
         let keypair = X25519KeyPair::generate(&rnd.key_entropy);
         let share = *keypair.public_key();
-        let shared = keypair
-            .diffie_hellman(&client_share)
-            .map_err(|_| TlsError::HandshakeFailed)?;
-        let ks = KeySchedule::new(alg, &shared)?;
+        let shared = Secret::new(
+            keypair
+                .diffie_hellman(&client_share)
+                .map_err(|_| TlsError::HandshakeFailed)?,
+        );
+        let ks = KeySchedule::new(alg, shared.expose_secret())?;
+        drop(shared);
 
         let mut transcript = Transcript::new(alg);
         transcript.push_message(client_hello_msg);
@@ -680,7 +706,7 @@ impl ServerHandshake {
 
         // ---- Finished ----------------------------------------------------
         let th_before_finished = transcript.hash();
-        let server_finished = finished_mac(alg, &s_hs, &th_before_finished)?;
+        let server_finished = finished_mac(alg, s_hs.expose_secret(), &th_before_finished)?;
         let fin_msg = wire::encode_finished(&server_finished)?;
         transcript.push_message(&fin_msg);
         rest.extend_from_slice(&fin_msg);
@@ -693,13 +719,17 @@ impl ServerHandshake {
                 c_hs,
                 ks,
                 th_ap,
-                authenticated: identity.is_some(),
             },
             ServerFlight { server_hello, rest },
         ))
     }
 
     /// Verify the client's Finished message and establish the session.
+    ///
+    /// The session's `evidence.cert_chain_verified` (and so `tls_connected()`)
+    /// is **false** on the server even after `accept_authenticated`: that call
+    /// authenticates the server TO the client, and this crate has no client
+    /// authentication, so the server has no evidence about its peer.
     ///
     /// # Errors
     /// [`TlsError::Decode`] if the message is not a well-formed Finished;
@@ -709,8 +739,10 @@ impl ServerHandshake {
         if m.msg_type != wire::HS_FINISHED || m.consumed != client_finished_msg.len() {
             return Err(TlsError::Decode);
         }
-        finished_verify(self.alg, &self.c_hs, &self.th_ap, m.body)?;
-        session_from(&self.ks, &self.th_ap, true, self.authenticated)
+        finished_verify(self.alg, self.c_hs.expose_secret(), &self.th_ap, m.body)?;
+        // No client authentication exists, so the peer (the client) is never
+        // authenticated from the server's point of view.
+        session_from(&self.ks, &self.th_ap, true, false)
     }
 }
 
@@ -1076,10 +1108,25 @@ mod tests {
     fn key_schedule_depends_on_shared_secret() {
         let a = KeySchedule::new(HashAlg::Sha384, &[1u8; 32]).unwrap();
         let b = KeySchedule::new(HashAlg::Sha384, &[2u8; 32]).unwrap();
-        assert_ne!(a.handshake_secret, b.handshake_secret);
-        assert_ne!(a.master_secret, b.master_secret);
+        assert_ne!(a.handshake_secret.expose_secret(), b.handshake_secret.expose_secret());
+        assert_ne!(a.master_secret.expose_secret(), b.master_secret.expose_secret());
         // …and the two stages must not collapse to the same value.
-        assert_ne!(a.handshake_secret, a.master_secret);
+        assert_ne!(a.handshake_secret.expose_secret(), a.master_secret.expose_secret());
+    }
+
+    /// Law 4 (audit L5): every key-bearing type here scrubs itself on drop.
+    /// The scrub itself is riina-core's volatile zeroizer (not observable from
+    /// safe code after the drop), so this pins the part that CAN regress: that
+    /// each type still has drop glue, and that the zeroizer it relies on
+    /// really clears a live value.
+    #[test]
+    fn key_material_types_scrub_on_drop() {
+        assert!(std::mem::needs_drop::<RecordKeys>(), "RecordKeys must have a Drop");
+        assert!(std::mem::needs_drop::<KeySchedule>(), "KeySchedule must scrub its secrets");
+        assert!(std::mem::needs_drop::<ServerHandshake>());
+        let mut s = SecretBytes::new(vec![0xAB; 48]);
+        riina_core::zeroize::Zeroize::zeroize(s.expose_secret_mut());
+        assert!(s.expose_secret().iter().all(|&b| b == 0));
     }
 
     // -- Authentication --------------------------------------------------
@@ -1100,7 +1147,12 @@ mod tests {
     }
 
     /// With a pinned server key, the full Coq `tls_connected` conjunction
-    /// finally holds.
+    /// holds ON THE CLIENT — the side whose peer proved a pinned credential.
+    ///
+    /// The server's evidence must NOT claim it (audit L2): presenting its own
+    /// identity authenticates the server to the client, not the client to the
+    /// server, and there is no client authentication. This test previously
+    /// asserted `tls_connected()` for both sides, i.e. the old, wrong meaning.
     #[test]
     fn authenticated_handshake_satisfies_tls_connected() {
         let alg = HashAlg::Sha384;
@@ -1114,9 +1166,13 @@ mod tests {
             assert!(e.transcript_bound);
             assert!(e.forward_secret);
             assert!(e.verified);
-            assert!(e.cert_chain_verified, "peer proved a pinned credential");
-            assert!(e.tls_connected(), "all five conjuncts must hold");
         }
+        assert!(c.evidence.cert_chain_verified, "the server (client's peer) proved a pinned credential");
+        assert!(c.evidence.tls_connected(), "all five conjuncts must hold on the client");
+        assert!(
+            !s.evidence.cert_chain_verified && !s.evidence.tls_connected(),
+            "the server has no evidence about its unauthenticated client"
+        );
         let sealed = s.server_keys.protect(0, b"", b"sah").unwrap();
         assert_eq!(c.server_keys.unprotect(0, b"", &sealed).unwrap(), b"sah");
     }
@@ -1311,7 +1367,7 @@ mod tests {
             store.trust(id.credential());
             let (c, s) = authenticated_run(alg, &store, &id).unwrap();
             assert!(c.evidence.tls_connected(), "{alg:?} must authenticate");
-            assert!(s.evidence.tls_connected());
+            assert!(!s.evidence.tls_connected(), "{alg:?}: no client auth, so the server peer is unauthenticated");
         }
     }
 
