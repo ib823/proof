@@ -1075,10 +1075,12 @@ Hypothesis store_values_are_values : forall loc val st,
    quantifies over ALL stores, so the stores evaluation may touch must be
    recursion-free as well. Entered as a Section Hypothesis, it becomes an
    explicit premise of [well_typed_SN]/[SN_app] when the Section closes: the
-   theorems are honestly conditional on evaluating over recursion-free
-   stores. [step_preserves_recursion_free] (foundations/Semantics.v) shows
-   the joint term/store invariant is self-sustaining, so this is a discipline
-   on the INITIAL store, not a hidden axiom about evaluation. *)
+   theorems are conditional on it. [step_preserves_recursion_free]
+   (foundations/Semantics.v) shows the joint term/store invariant is
+   self-sustaining from a recursion-free INITIAL store — but note this
+   hypothesis is quantified over EVERY store, not the initial one, and is
+   therefore false (a store may hold an [EFix]); see the honesty record after
+   the section (REQ-84). *)
 Hypothesis stores_recursion_free : forall st, store_recursion_free st.
 
 (** ========================================================================
@@ -1428,3 +1430,32 @@ Qed.
 *)
 
 End ReducibilityFull.
+
+(** ========================================================================
+    HONESTY RECORD: [well_typed_SN] IS CURRENTLY VACUOUS (2026-10-11 audit)
+    ========================================================================
+
+    Closing the section turned the four [Hypothesis] declarations above into
+    leading premises of [well_typed_SN] (inspect with [About well_typed_SN]):
+    [env_reducible_closed], [lambda_body_SN], [store_values_are_values] and
+    [stores_recursion_free]. Each is stated over EVERY environment, body or
+    store rather than over the program being evaluated, and they are not all
+    satisfiable — the lemma below refutes [store_values_are_values] outright
+    (a store may hold a non-value). A theorem whose premises can never all
+    hold establishes nothing, so [well_typed_SN] / [well_typed_SN_recursion_free]
+    must NOT be cited as a termination guarantee. The kernel's
+    [Print Assumptions] does not see this (premises are not axioms), which is
+    why the vacuity is recorded here, in the build.
+
+    The closure lemmas this development is built from are genuine; the repair
+    is to restate SN over well-formed stores ([store_wf]) and environments and
+    discharge the restated premises — tracked as REQ-84 in
+    RIINA_MASTER_PLAN.md Part 3. *)
+
+Lemma well_typed_SN_premise_store_values_are_values_refutable :
+  ~ (forall loc val st, store_lookup loc st = Some val -> value val).
+Proof.
+  intros H.
+  specialize (H 0 (EApp EUnit EUnit) ((0, EApp EUnit EUnit) :: nil) eq_refl).
+  inversion H.
+Qed.
