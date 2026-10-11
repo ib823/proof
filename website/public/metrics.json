@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-11T13:53:05Z",
-  "generatedHuman": "October 11, 2026 at 13:53 UTC",
+  "generated": "2026-10-11T14:04:13Z",
+  "generatedHuman": "October 11, 2026 at 14:04 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "fe69d1d",
+    "commit": "fdf03e5",
     "branch": "audit-fix/receipts-pkg"
   },
   "proofs": {
@@ -197,7 +197,7 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 3401,
+    "testsEstimated": 3423,
     "testsSource": "cached_verified",
     "crates": 18
   },
