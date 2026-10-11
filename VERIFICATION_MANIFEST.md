@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-11T12:43:54Z
-**Git SHA:** 894a774
+**Generated:** 2026-10-11T13:55:58Z
+**Git SHA:** ece2640
 **Mode:** full
 **Status:** PASS
 
@@ -8,11 +8,11 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3383 tests |
+| Rust Tests | PASS | 3384 tests |
 | Clippy | PASS | 0 warnings |
-| _CoqProject Completeness | PASS | all 331 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 331 .vo files compiled in 254s; 0 warning(s) (budget 2) |
-| Coq Kernel Assumptions | PASS | 5 capstones attested (4 unconditional); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable — the theorem is vacuous until they are restated over well-formed stores and discharged) |
+| _CoqProject Completeness | PASS | all 334 .v files listed in _CoqProject |
+| Coq Compilation | PASS | 334 .vo files compiled in 266s; 0 warning(s) (budget 2) |
+| Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
 | Coq Aborts | PASS | 0 (target: 0) |
@@ -32,7 +32,7 @@
 | Verus admit Scan | PASS | 0 admit in 323 files (6395 proof fns) |
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
-| Prover Corpus Inventory (raw counts, not verification) | PASS | Raw declaration counts; only Coq is mechanized. Sum: 104571 | Coq: 12682 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12284 | Alloy: 11627 | SMT: 12433 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
-| Transpiler Staleness | WARN | 1 prover(s) may be stale: SMT — run `python3 scripts/generate-full-stack.py` (checked: SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Alloy, Verus, Kani, TV) |
-| Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12682, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
+| Prover Corpus Inventory (raw counts, not verification) | PASS | Raw declaration counts; only Coq is mechanized. Sum: 104708 | Coq: 12819 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12284 | Alloy: 11627 | SMT: 12433 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
+| Transpiler Staleness | WARN | 2 prover(s) may be stale: Alloy, SMT — run `python3 scripts/generate-full-stack.py` (checked: Alloy, SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Verus, Kani, TV) |
+| Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12819, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
