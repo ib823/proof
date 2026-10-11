@@ -11,7 +11,7 @@ use crate::manifest::Manifest;
 use crate::registry::{FsRegistry, HttpRegistry, Registry};
 use crate::resolve;
 use crate::workspace::Workspace;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Run a pkg subcommand. Args should be everything after `riinac pkg`.
 ///
@@ -92,22 +92,26 @@ fn usage_string() -> String {
         .to_string()
 }
 
+/// The HTTP registry URL in effect, if any: CLI flag first, then the
+/// manifest's `[registry]` section. `None` means the local filesystem registry.
+fn remote_registry_url(cli_url: Option<&str>, manifest: Option<&Manifest>) -> Option<String> {
+    cli_url
+        .map(str::to_string)
+        .or_else(|| manifest.and_then(|m| m.registry.as_ref().map(|r| r.url.clone())))
+}
+
 /// Create a registry from CLI flag, manifest config, or fall back to FsRegistry.
-fn make_registry(cli_url: Option<&str>, manifest: Option<&Manifest>) -> Box<dyn Registry> {
-    // CLI flag takes precedence
-    if let Some(url) = cli_url {
-        let cache = crate::tarball::cache_dir_for_url(url);
-        return Box::new(HttpRegistry::new(url, cache));
-    }
-    // Then check manifest [registry] section
-    if let Some(m) = manifest {
-        if let Some(ref reg_cfg) = m.registry {
-            let cache = crate::tarball::cache_dir_for_url(&reg_cfg.url);
-            return Box::new(HttpRegistry::new(&reg_cfg.url, cache));
-        }
+///
+/// An HTTP registry URL is validated up front: plain http is refused unless
+/// the host is loopback (see `http::parse_url`).
+fn make_registry(cli_url: Option<&str>, manifest: Option<&Manifest>) -> Result<Box<dyn Registry>> {
+    if let Some(url) = remote_registry_url(cli_url, manifest) {
+        crate::http::validate_registry_url(&url)?;
+        let cache = crate::tarball::cache_dir_for_url(&url);
+        return Ok(Box::new(HttpRegistry::new(&url, cache)));
     }
     // Default: filesystem registry
-    Box::new(FsRegistry::new(registry_root()))
+    Ok(Box::new(FsRegistry::new(registry_root())))
 }
 
 fn find_project_root() -> Result<PathBuf> {
@@ -207,7 +211,7 @@ fn cmd_lock(registry_url: Option<&str>) -> Result<()> {
         return Ok(());
     }
 
-    let reg = make_registry(registry_url, Some(&manifest));
+    let reg = make_registry(registry_url, Some(&manifest))?;
     let graph = resolve::resolve(&deps, reg.as_ref())?;
 
     // Effect escalation check
@@ -277,13 +281,8 @@ fn cmd_build(registry_url: Option<&str>, compile: crate::build::CompileFn<'_>) -
         let steps = crate::build::build_plan(&graph, &config, &manifest.package.name)?;
         crate::build::execute_build(&steps, compile)?;
     } else {
-        let reg = make_registry(registry_url, Some(&manifest));
-        let lock_path = root.join("riina.lock");
-        let graph = if lock_path.exists() {
-            resolve_locked(&deps, &Lockfile::from_file(&lock_path)?, reg.as_ref())?
-        } else {
-            resolve::resolve(&deps, reg.as_ref())?
-        };
+        let reg = make_registry(registry_url, Some(&manifest))?;
+        let graph = resolve_build_graph(&root, &manifest, &deps, registry_url, reg.as_ref())?;
         if graph.packages.contains_key(&manifest.package.name) {
             return Err(PkgError::CycleDetected(vec![manifest.package.name.clone()]));
         }
@@ -332,6 +331,33 @@ fn validate_resolved_dependencies(
         }
     }
     Ok(())
+}
+
+/// The dependency graph a build uses. With a `riina.lock`, only the pinned,
+/// checksum-verified packages ([`resolve_locked`]). Without one, a LOCAL
+/// filesystem registry may be resolved directly, but a REMOTE registry is
+/// refused: its packages are only ever built against checksums pinned in
+/// `riina.lock` — resolving them unpinned would build whatever the registry
+/// serves today (trust on every use).
+fn resolve_build_graph(
+    root: &Path,
+    manifest: &Manifest,
+    deps: &std::collections::BTreeMap<String, crate::version::VersionReq>,
+    registry_url: Option<&str>,
+    reg: &dyn Registry,
+) -> Result<resolve::ResolvedGraph> {
+    let lock_path = root.join("riina.lock");
+    if lock_path.exists() {
+        resolve_locked(deps, &Lockfile::from_file(&lock_path)?, reg)
+    } else if remote_registry_url(registry_url, Some(manifest)).is_some() {
+        Err(PkgError::Other(
+            "dependencies from a remote registry require riina.lock (checksums are \
+             mandatory); run `riinac pkg lock`, review it, and commit it"
+                .into(),
+        ))
+    } else {
+        resolve::resolve(deps, reg)
+    }
 }
 
 /// Resolve exclusively from pinned, verified package contents. A build must
@@ -402,6 +428,7 @@ fn cmd_publish(registry_url: Option<&str>) -> Result<()> {
         .or_else(|| manifest.registry.as_ref().map(|r| r.url.clone()));
 
     if let Some(url) = effective_url {
+        crate::http::validate_registry_url(&url)?;
         let cache = crate::tarball::cache_dir_for_url(&url);
         let reg = HttpRegistry::new(&url, cache);
         reg.publish(&manifest.package.name, &manifest.package.version, &root)?;
@@ -457,7 +484,7 @@ fn cmd_tree(registry_url: Option<&str>) -> Result<()> {
         return Ok(());
     }
 
-    let reg = make_registry(registry_url, Some(&manifest));
+    let reg = make_registry(registry_url, Some(&manifest))?;
     let graph = resolve::resolve(&deps, reg.as_ref())?;
     let root_deps: Vec<String> = manifest.dependencies.keys().cloned().collect();
 
@@ -568,5 +595,56 @@ mod tests {
         lock.packages[0].dependencies.clear();
         lock.packages[0].checksum.clear();
         assert!(resolve_locked(&deps, &lock, &registry).is_err());
+    }
+
+    /// Audit L6: a non-loopback http registry is refused before any request,
+    /// whether it comes from `--registry` or the manifest; the filesystem
+    /// registry and loopback http stay available.
+    #[test]
+    fn make_registry_refuses_remote_plain_http() {
+        assert!(make_registry(Some("http://registry.example/api"), None).is_err());
+        assert!(make_registry(Some("http://127.0.0.1:9/api"), None).is_ok());
+        assert!(make_registry(None, None).is_ok());
+        assert_eq!(remote_registry_url(None, None), None);
+        assert_eq!(
+            remote_registry_url(Some("http://127.0.0.1:9"), None).as_deref(),
+            Some("http://127.0.0.1:9")
+        );
+    }
+
+    /// Audit L6: building remote-registry dependencies without `riina.lock`
+    /// used to resolve whatever the registry served (no checksum at all).
+    /// Now the lockfile — and so its mandatory `sha256-tree:` checksums — is
+    /// required for a remote registry; a local filesystem registry may still
+    /// be resolved directly.
+    #[test]
+    fn remote_registry_builds_require_a_lockfile() {
+        let tmp = Scratch::new("remote_lock");
+        tmp.package("1.0.0");
+        let deps = BTreeMap::from([("foo".into(), VersionReq::parse("^1.0.0").unwrap())]);
+        let fs_reg = FsRegistry::new(&tmp.0);
+        let root = tmp.0.join("app");
+        std::fs::create_dir_all(&root).unwrap();
+
+        let remote = Manifest::parse(
+            "[pakej]\nnama = \"app\"\nversi = \"0.1.0\"\n\n[registry]\nurl = \"http://127.0.0.1:9\"\n",
+            &root.join("riina.toml"),
+        )
+        .unwrap();
+        let res = resolve_build_graph(&root, &remote, &deps, None, &fs_reg);
+        assert!(
+            matches!(&res, Err(PkgError::Other(m)) if m.contains("require riina.lock")),
+            "remote registry without a lockfile must be refused"
+        );
+        let res = resolve_build_graph(&root, &remote, &deps, Some("http://127.0.0.1:9"), &fs_reg);
+        assert!(res.is_err());
+
+        let local = Manifest::parse(
+            "[pakej]\nnama = \"app\"\nversi = \"0.1.0\"\n",
+            &root.join("riina.toml"),
+        )
+        .unwrap();
+        let graph = resolve_build_graph(&root, &local, &deps, None, &fs_reg).unwrap();
+        assert_eq!(graph.packages["foo"].version, Version::new(1, 0, 0));
     }
 }

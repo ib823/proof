@@ -303,6 +303,43 @@ pub struct Interpreter {
     actor_handlers: std::collections::HashMap<u64, Expr>,
     /// Content-addressed store: hash → original value (JALINAN Phase 6 J2)
     content_store: HashMap<u64, Value>,
+    /// Resource/capability limits for UNTRUSTED programs (`None` = the
+    /// ordinary unrestricted interpreter). See [`crate::ExecLimits`].
+    limits: Option<ActiveLimits>,
+}
+
+/// The running state of an [`crate::ExecLimits`] budget.
+struct ActiveLimits {
+    deny_host_effects: bool,
+    steps_left: u64,
+    max_depth: usize,
+    depth: usize,
+    deadline: std::time::Instant,
+}
+
+impl ActiveLimits {
+    /// Charge one evaluation step and enter one level of nesting. The clock is
+    /// sampled every 1024 steps so the check stays cheap.
+    fn enter(&mut self) -> Result<()> {
+        if self.steps_left == 0 {
+            return Err(Error::InvalidOperation(
+                "execution budget exhausted: step limit reached".to_string(),
+            ));
+        }
+        self.steps_left -= 1;
+        if self.steps_left.is_multiple_of(1024) && std::time::Instant::now() >= self.deadline {
+            return Err(Error::InvalidOperation(
+                "execution budget exhausted: wall-clock limit reached".to_string(),
+            ));
+        }
+        if self.depth >= self.max_depth {
+            return Err(Error::InvalidOperation(
+                "execution budget exhausted: nesting depth limit reached".to_string(),
+            ));
+        }
+        self.depth += 1;
+        Ok(())
+    }
 }
 
 impl Interpreter {
@@ -319,6 +356,40 @@ impl Interpreter {
             actor_states: std::collections::HashMap::new(),
             actor_handlers: std::collections::HashMap::new(),
             content_store: HashMap::new(),
+            limits: None,
+        }
+    }
+
+    /// An interpreter for UNTRUSTED programs: a step budget, a nesting-depth
+    /// cap and a wall-clock deadline (measured from now), and — when
+    /// `limits.deny_host_effects` — no builtin that reaches the host (file
+    /// system, network, HTTP, durable store, VFS, process stdin/stdout, clock,
+    /// randomness). Host builtins are both left out of the environment by
+    /// [`Self::eval_with_builtins`] AND refused at application time, so a
+    /// builtin value that reaches a call site some other way still cannot run.
+    #[must_use]
+    pub fn with_limits(limits: crate::ExecLimits) -> Self {
+        let mut interp = Self::new();
+        interp.limits = Some(ActiveLimits {
+            deny_host_effects: limits.deny_host_effects,
+            steps_left: limits.max_steps,
+            max_depth: limits.max_depth,
+            depth: 0,
+            deadline: std::time::Instant::now() + limits.wall_clock,
+        });
+        interp
+    }
+
+    /// Refuse a host-effect builtin when this interpreter is sandboxed.
+    fn check_builtin_allowed(&self, name: &str) -> Result<()> {
+        match &self.limits {
+            Some(l) if l.deny_host_effects && crate::builtins::is_host_effect_builtin(name) => {
+                Err(Error::InvalidOperation(format!(
+                    "builtin `{name}` reaches the host (file/network/process/clock/random) \
+                     and is disabled in this sandbox"
+                )))
+            }
+            _ => Ok(()),
         }
     }
 
@@ -387,9 +458,15 @@ impl Interpreter {
         Self::catch_toplevel_return(self.eval_with_env(&env, expr))
     }
 
-    /// Evaluate with built-in functions pre-registered.
+    /// Evaluate with built-in functions pre-registered. A sandboxed
+    /// interpreter ([`Self::with_limits`] with `deny_host_effects`) gets only
+    /// the builtins that cannot reach the host.
     pub fn eval_with_builtins(&mut self, expr: &Expr) -> Result<Value> {
-        let env = crate::builtins::register_builtins(&Env::new());
+        let env = if self.limits.as_ref().is_some_and(|l| l.deny_host_effects) {
+            crate::builtins::register_pure_builtins(&Env::new())
+        } else {
+            crate::builtins::register_builtins(&Env::new())
+        };
         Self::catch_toplevel_return(self.eval_with_env(&env, expr))
     }
 
@@ -402,11 +479,25 @@ impl Interpreter {
         }
     }
 
+    /// Evaluate with an environment, charging the sandbox budget (if any) for
+    /// every step. Unrestricted interpreters pay one `Option` check.
+    fn eval_with_env(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+        let Some(limits) = self.limits.as_mut() else {
+            return self.eval_with_env_inner(env, expr);
+        };
+        limits.enter()?;
+        let result = self.eval_with_env_inner(env, expr);
+        if let Some(limits) = self.limits.as_mut() {
+            limits.depth = limits.depth.saturating_sub(1);
+        }
+        result
+    }
+
     /// Evaluate with an environment
     ///
     /// This is the core evaluation function. Each match arm corresponds
     /// to a rule in the Coq `eval` relation.
-    fn eval_with_env(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+    fn eval_with_env_inner(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
         match expr {
             // ═══════════════════════════════════════════════════════════════
             // VALUES (E_Unit, E_Bool, E_Int, E_String)
@@ -486,9 +577,13 @@ impl Interpreter {
                                 ))
                             })
                     }
-                    Value::Builtin(name) => crate::builtins::apply_builtin(&name, arg_val),
+                    Value::Builtin(name) => {
+                        self.check_builtin_allowed(&name)?;
+                        crate::builtins::apply_builtin(&name, arg_val)
+                    }
                     // Partially-applied builtin: form pair and complete the call
                     Value::BuiltinPartial(name, first_arg) => {
+                        self.check_builtin_allowed(&name)?;
                         let pair = Value::Pair(first_arg, Box::new(arg_val));
                         crate::builtins::apply_builtin(&name, pair)
                     }
@@ -1990,6 +2085,88 @@ impl Default for Interpreter {
 mod tests {
     use super::*;
     use riina_types::Ty;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SANDBOX (ExecLimits) — the `riinac mcp` defence in depth
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn sandbox() -> Interpreter {
+        Interpreter::with_limits(crate::ExecLimits {
+            deny_host_effects: true,
+            max_steps: 100_000,
+            max_depth: 200,
+            wall_clock: std::time::Duration::from_secs(5),
+        })
+    }
+
+    /// Even if a host builtin VALUE reaches a call site (here: evaluated in
+    /// the full environment, bypassing the pure one), a sandboxed
+    /// interpreter refuses to apply it — and the host is untouched.
+    #[test]
+    fn sandbox_refuses_host_builtins_at_application_time() {
+        let path = std::env::temp_dir().join(format!("riina_sandbox_{}.txt", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        let call = Expr::App(
+            Box::new(Expr::Var("fail_tulis".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String(path.display().to_string())),
+                Box::new(Expr::String("x".to_string())),
+            )),
+        );
+        let full = crate::builtins::register_builtins(&Env::new());
+        let err = sandbox().eval_with_env(&full, &call).unwrap_err();
+        assert!(err.to_string().contains("disabled in this sandbox"), "{err}");
+        assert!(!path.exists());
+        // And the sandbox's own environment does not even bind it.
+        assert!(matches!(
+            sandbox().eval_with_builtins(&call),
+            Err(Error::UnboundVariable(ref n)) if n == "fail_tulis"
+        ));
+        // Pure builtins are unaffected.
+        let pure = Expr::App(
+            Box::new(Expr::Var("panjang".to_string())),
+            Box::new(Expr::String("abc".to_string())),
+        );
+        assert_eq!(sandbox().eval_with_builtins(&pure).unwrap(), Value::Int(3));
+    }
+
+    #[test]
+    fn host_effect_deny_list_covers_every_host_family() {
+        use crate::builtins::is_host_effect_builtin as host;
+        for name in [
+            "cetak", "cetakln", "baca_baris", "fail_tulis", "fail_baca", "jaring_sambung",
+            "jaring_tls_kunci", "http_minta", "simpan_buka", "vfs_tulis", "masa_sekarang",
+            "masa_tidur", "rawak", "csrf_generate", "file_write_safe",
+        ] {
+            assert!(host(name), "{name} must be denied in the sandbox");
+        }
+        for name in ["panjang", "tls_dasar_ok", "sanitize_html", "http_get", "json_urai", "masa_format", "tegaskan"] {
+            assert!(!host(name), "{name} is pure and must stay available");
+        }
+        let pure = crate::builtins::register_pure_builtins(&Env::new());
+        assert!(pure.lookup("fail_tulis").is_none() && pure.lookup("print").is_none());
+        assert!(pure.lookup("panjang").is_some());
+    }
+
+    #[test]
+    fn sandbox_budgets_stop_runaway_evaluation() {
+        // Unbounded recursion: f = λn. f n.
+        let omega = Expr::LetRec(
+            "f".to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam(
+                "n".to_string(),
+                Ty::Int,
+                Box::new(Expr::App(
+                    Box::new(Expr::Var("f".to_string())),
+                    Box::new(Expr::Var("n".to_string())),
+                )),
+            )),
+            Box::new(Expr::App(Box::new(Expr::Var("f".to_string())), Box::new(Expr::Int(0)))),
+        );
+        let err = sandbox().eval_with_builtins(&omega).unwrap_err();
+        assert!(err.to_string().contains("budget exhausted"), "{err}");
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     // VALUE TESTS

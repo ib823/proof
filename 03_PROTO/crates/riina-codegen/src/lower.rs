@@ -211,15 +211,15 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // needing no partial-application machinery costs nothing.
     //
     // NOT ROUTED: `csrf_generate` / `csrf_jana`. It is the one member whose
-    // result is not a function of its input — a token seeded from the clock and
-    // a process-local counter — so the two backends cannot be held to agreement
-    // by a differential, only to a shape. Mirroring it would mean transcribing
-    // Rust's `DefaultHasher` into C to reproduce a generator its own doc comment
-    // already marks as "a *reference* token, not a certified CSPRNG". Spreading
-    // that to a second implementation makes the eventual fix twice the work and
-    // buys nothing: `csrf_validate` takes plain `Teks`, so a compiled program
-    // can still carry tokens minted elsewhere and is not cut off from the
-    // family the way the sanitizers would have been without `baca_baris`.
+    // result is not a function of its input — 128 bits from the OS CSPRNG
+    // (`/dev/urandom`, failing closed; it was clock+counter `DefaultHasher`
+    // output until 2026-10) — so the two backends cannot be held to agreement
+    // by a differential, only to a shape. It stays interpreter-only (compiled
+    // programs fail closed with `unbound variable`) until a C version reads
+    // the OS CSPRNG with the same fail-closed contract. `csrf_validate` takes
+    // plain `Teks`, so a compiled program can still carry tokens minted
+    // elsewhere and is not cut off from the family the way the sanitizers
+    // would have been without `baca_baris`.
     match name {
         // The taint SOURCE. Routed with the sanitizers because it is their only
         // input: `Tainted<Teks, UserInput>` has exactly one producer, so

@@ -1,6 +1,27 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
 //! Execution receipts for effectful RIINA runtime operations.
+//!
+//! # What `ReceiptChain::verify` does and does NOT establish
+//!
+//! Receipts are chained with an **unkeyed, non-cryptographic 64-bit FNV-1a**
+//! hash: each `receipt_id` is `FNV-1a(prev_receipt ‖ effect_type ‖
+//! program_hash)`. [`ReceiptChain::verify`] recomputes that chain, so it
+//! detects **accidental corruption** — a flipped field, a dropped or
+//! reordered receipt, an inconsistent edit made without recomputing the ids.
+//!
+//! It does **not** provide tamper-evidence against an adversary. Anyone who
+//! can modify the chain can recompute every id after editing (the function
+//! is public knowledge and takes no key), and the result still `verify()`s;
+//! FNV-1a is also not collision-resistant. No choice of *unkeyed* hash fixes
+//! that: adversarial tamper-evidence needs a secret (a MAC key), a signature,
+//! or an externally anchored, trusted copy of the head (`root()`). The
+//! `tampered_*` tests below exercise the corruption-detection property only —
+//! they do not show resistance to a forger who re-chains.
+//!
+//! This crate deliberately has no dependencies (Law 8); it does not pull in
+//! `riina-core` for SHA-256/HMAC, and its ids are `u64`, so a keyed or
+//! cryptographic chain would be a format change, not a drop-in fix.
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EffectReceipt {
@@ -63,6 +84,10 @@ impl ReceiptChain {
             .expect("receipt chain must contain the appended receipt")
     }
 
+    /// Recompute the FNV-1a chain. `true` means the chain is internally
+    /// consistent — it detects ACCIDENTAL corruption only. An adversary who
+    /// edits receipts can recompute the ids and still pass (see the crate
+    /// docs); do not treat `true` as evidence of non-tampering.
     #[must_use]
     pub fn verify(&self) -> bool {
         let mut expected_prev = 0;
@@ -211,5 +236,24 @@ mod tests {
         let mut chain = ReceiptChain::new();
         let receipt = chain.append("network_send", 7);
         assert_eq!(receipt.receipt_id, receipt_hash(0, "network_send", 7));
+    }
+
+    /// Pins the DOCUMENTED LIMIT (audit L4): the chain is unkeyed, so an
+    /// adversary who rewrites history and recomputes the ids passes
+    /// `verify()`. The `tampered_*` tests show corruption detection only. If
+    /// this ever starts failing, the chain became keyed — update the docs.
+    #[test]
+    fn rechained_forgery_still_verifies_documented_limit() {
+        let mut chain = ReceiptChain::new();
+        chain.append("network_send", 7);
+        chain.append("fs_write", 7);
+        let honest_root = chain.root();
+
+        let mut forged = ReceiptChain::new();
+        forged.append("network_send", 7);
+        forged.append("nothing_to_see", 7); // the rewritten effect
+        assert!(forged.verify(), "an unkeyed chain cannot detect a re-chained forgery");
+        // Only an externally trusted copy of the head reveals it.
+        assert_ne!(forged.root(), honest_root);
     }
 }

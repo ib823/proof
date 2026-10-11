@@ -47,17 +47,32 @@
 //!     (b) `jaring_tls_jabat` is **ANONYMOUS** — it resists a passive
 //!     eavesdropper but NOT an active MITM, and the Coq `tls_connected`
 //!     conjunction is deliberately NOT satisfied on that path;
-//!     (c) `jaring_tls_kunci` (caller-supplied secret) remains for testing and
-//!     for peers with an out-of-band key.
-//!   * **`jaring_tls_jabat_sah` authenticates the peer** (increment 3):
-//!     `jaring_tls_identiti` sets this peer's signing identity and returns its
-//!     credential; `jaring_tls_percaya` pins a peer credential; the
-//!     authenticated handshake then adds an RFC 7250 raw-public-key
-//!     Certificate + RFC 8446 §4.4.3 CertificateVerify, so a MITM presenting
-//!     an unpinned key is rejected (tested end-to-end over real sockets).
-//!     `jaring_tls_disahkan` reports whether the FULL Coq `tls_connected`
-//!     conjunction holds. Trust is **pinning**, not PKI — no chains, no CA, no
-//!     revocation; see `riina-tls`'s `auth` module for the exact trust model.
+//!     (c) `jaring_tls_kunci` (caller-supplied pre-shared secret) remains for
+//!     peers with an out-of-band key. Both peers exchange a fresh 32-byte
+//!     OS-random value IN-BAND when the keys are installed, and the traffic
+//!     keys are derived from the secret AND both randoms (role-ordered), so
+//!     every connection gets unique keys. (Until 2026-10 the keys depended on
+//!     the secret alone and the sequence restarted at 0 on every connection:
+//!     two connections with the same secret reused the same AES-GCM
+//!     key+nonce sequence — identical keystreams and an exposed GHASH key.)
+//!     This is a RIINA↔RIINA wire step: both ends must call
+//!     `jaring_tls_kunci`. It is not forward secret (learning the secret later
+//!     decrypts recorded traffic) and authenticates the peer only as "knows the
+//!     secret"; prefer `jaring_tls_jabat_sah`.
+//!   * **`jaring_tls_jabat_sah` authenticates the server to the client**
+//!     (increment 3): `jaring_tls_identiti` sets this peer's signing identity
+//!     and returns its credential; `jaring_tls_percaya` pins a peer
+//!     credential; the authenticated handshake then adds an RFC 7250
+//!     raw-public-key Certificate + RFC 8446 §4.4.3 CertificateVerify, so a
+//!     MITM presenting an unpinned key is rejected (tested end-to-end over real
+//!     sockets). `jaring_tls_disahkan` reports whether THE PEER was
+//!     authenticated — the FULL Coq `tls_connected` conjunction from this
+//!     side's point of view. It is therefore `true` only on the client of an
+//!     authenticated handshake: there is no client authentication, so a server
+//!     never has evidence about its peer and reports `false` (it used to report
+//!     `true` merely for having presented its own identity). Trust is
+//!     **pinning**, not PKI — no chains, no CA, no revocation; see
+//!     `riina-tls`'s `auth` module for the exact trust model.
 //!
 //! Interpreter-only: not registered in codegen's `builtin_canonical`, so the
 //! C/WASM backends fail closed (unbound `jaring_*`) rather than miscompiling.
@@ -114,6 +129,69 @@ fn read_handshake_record(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
     let mut body = vec![0u8; len];
     stream.read_exact(&mut body)?;
     Ok(body)
+}
+
+/// Tag that opens a `jaring_tls_kunci` hello, so a peer that is running a
+/// different protocol step (e.g. `jaring_tls_jabat`'s ClientHello) is refused
+/// rather than misread as a random value.
+const KUNCI_MAGIC: &[u8; 8] = b"RIINAKN1";
+/// Length of the fresh per-connection random each `jaring_tls_kunci` peer sends.
+const KUNCI_RANDOM_LEN: usize = 32;
+/// Domain separator for the `jaring_tls_kunci` key-derivation context.
+const KUNCI_CONTEXT: &[u8] = b"riina jaring_tls_kunci v1";
+
+/// The `jaring_tls_kunci` hello: magic tag ‖ 32 fresh random bytes, sent as
+/// one handshake record.
+fn kunci_hello(random: &[u8; KUNCI_RANDOM_LEN]) -> Vec<u8> {
+    let mut msg = Vec::with_capacity(KUNCI_MAGIC.len() + KUNCI_RANDOM_LEN);
+    msg.extend_from_slice(KUNCI_MAGIC);
+    msg.extend_from_slice(random);
+    msg
+}
+
+/// Parse a peer's `jaring_tls_kunci` hello; anything else is refused.
+fn parse_kunci_hello(msg: &[u8]) -> Result<[u8; KUNCI_RANDOM_LEN]> {
+    let random = msg
+        .strip_prefix(KUNCI_MAGIC.as_slice())
+        .filter(|r| r.len() == KUNCI_RANDOM_LEN)
+        .ok_or_else(|| err("jaring_tls_kunci: peer did not send a kunci hello (both ends must call jaring_tls_kunci)"))?;
+    let mut out = [0u8; KUNCI_RANDOM_LEN];
+    out.copy_from_slice(random);
+    Ok(out)
+}
+
+/// Per-connection traffic keys for `jaring_tls_kunci`: returns
+/// `(client→server keys, server→client keys)`.
+///
+/// `prk = HKDF-Extract(salt = H(ctx), IKM = secret)` with
+/// `ctx = "riina jaring_tls_kunci v1" ‖ client_random ‖ server_random`, then
+/// the RFC 8446 `c ap traffic` / `s ap traffic` labels over `H(ctx)`. Because
+/// `ctx` contains this side's fresh random, the keys (and so the GCM nonce
+/// sequence) are unique to the connection even when the secret is reused or
+/// the peer is malicious.
+fn kunci_traffic_keys(
+    secret: &[u8],
+    client_random: &[u8; KUNCI_RANDOM_LEN],
+    server_random: &[u8; KUNCI_RANDOM_LEN],
+) -> Result<(RecordKeys, RecordKeys)> {
+    use riina_core::zeroize::Zeroize;
+    let bad = |_| err("jaring_tls: bad traffic secret");
+    let mut ctx = Vec::with_capacity(KUNCI_CONTEXT.len() + 2 * KUNCI_RANDOM_LEN);
+    ctx.extend_from_slice(KUNCI_CONTEXT);
+    ctx.extend_from_slice(client_random);
+    ctx.extend_from_slice(server_random);
+    let th = TLS_HASH.hash(&ctx);
+    let mut prk = TLS_HASH.hkdf_extract(&th, secret);
+    let c_secret = riina_tls::derive_secret(TLS_HASH, &prk, b"c ap traffic", &th);
+    let s_secret = riina_tls::derive_secret(TLS_HASH, &prk, b"s ap traffic", &th);
+    prk.zeroize();
+    let (mut c_secret, mut s_secret) = (c_secret.map_err(bad)?, s_secret.map_err(bad)?);
+    let keys = RecordKeys::derive(TLS_HASH, &c_secret)
+        .and_then(|c| RecordKeys::derive(TLS_HASH, &s_secret).map(|s| (c, s)))
+        .map_err(bad);
+    c_secret.zeroize();
+    s_secret.zeroize();
+    keys
 }
 
 /// (BM name, EN name, canonical key).
@@ -521,10 +599,12 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             })?
         }
         // Install TLS 1.3 record-protection keys on a connection from a
-        // caller-supplied traffic secret: `(conn, secret)`. RFC 8446 §7.3
-        // derives key+iv from the secret; both direction sequences start at 0.
-        // The secret is the handshake's output — increment 2 will derive it
-        // from a real X25519 exchange instead of the caller.
+        // caller-supplied PRE-SHARED secret: `(conn, secret)`. Both peers must
+        // call it. Each sends a fresh 32-byte OS random in-band (one handshake
+        // record), and the per-direction keys are derived from the secret and
+        // BOTH randoms (see `kunci_traffic_keys`), so no two connections share
+        // a key+nonce sequence even when the secret is reused. Sequences start
+        // at 0 under those fresh keys.
         "jaring_tls_kunci" => {
             let Value::Pair(_, _) = arg else {
                 return Ok(Some(Value::BuiltinPartial(
@@ -533,18 +613,55 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 )));
             };
             let (id, secret) = as_pair_int_str(arg, name)?;
-            // Derive SEPARATE per-direction secrets from the caller's secret
-            // using the RFC 8446 application-traffic labels. Both peers derive
-            // both, then pick send/recv by role — so no key is ever used to
-            // seal in both directions (see TlsState for why that matters).
-            let c_secret = riina_tls::derive_secret(TLS_HASH, secret.as_bytes(), b"c ap traffic", &[])
-                .map_err(|_| err("jaring_tls: bad traffic secret"))?;
-            let s_secret = riina_tls::derive_secret(TLS_HASH, secret.as_bytes(), b"s ap traffic", &[])
-                .map_err(|_| err("jaring_tls: bad traffic secret"))?;
-            let c_keys = RecordKeys::derive(TLS_HASH, &c_secret)
-                .map_err(|_| err("jaring_tls: bad traffic secret"))?;
-            let s_keys = RecordKeys::derive(TLS_HASH, &s_secret)
-                .map_err(|_| err("jaring_tls: bad traffic secret"))?;
+            if secret.is_empty() {
+                return Err(err("jaring_tls_kunci: empty secret"));
+            }
+            // Take the socket out of the borrow (the exchange blocks on I/O)
+            // and mark TLS as started BEFORE any I/O, so a failed exchange can
+            // never be retried into a reused key sequence on this connection.
+            let (mut stream, is_client) = NET.with(|n| -> Result<_> {
+                let st = &mut *n.borrow_mut();
+                let conn = st
+                    .conns
+                    .get_mut(&id)
+                    .ok_or_else(|| err("jaring: unknown connection"))?;
+                if conn.machine.state() != TcpState::Established {
+                    return Err(err("jaring: not established"));
+                }
+                if conn.tls_started {
+                    return Err(err(
+                        "jaring_tls: keys already installed on this connection; re-keying is \
+                         not supported (a new connection derives fresh keys)",
+                    ));
+                }
+                let s = conn
+                    .stream
+                    .as_ref()
+                    .ok_or_else(|| err("jaring: not established"))?
+                    .try_clone()
+                    .map_err(|e| err(format!("jaring_tls_kunci: {e}")))?;
+                conn.tls = None;
+                conn.authenticated = false;
+                conn.tls_started = true;
+                Ok((s, conn.is_client))
+            })?;
+
+            // Fails closed: no CSPRNG means no keys, never a reused sequence.
+            let mine = riina_tls::handshake::os_entropy_32()
+                .map_err(|_| err("jaring_tls: no OS entropy"))?;
+            let io = |e: std::io::Error| err(format!("jaring_tls_kunci: {e}"));
+            // Both ends write first, then read: one small record each way fits
+            // in the socket buffers, so neither side can block the other.
+            write_handshake_record(&mut stream, &kunci_hello(&mine)).map_err(io)?;
+            let theirs = parse_kunci_hello(&read_handshake_record(&mut stream).map_err(io)?)?;
+            if theirs == mine {
+                // Our own value reflected back: not a second peer.
+                return Err(err("jaring_tls_kunci: peer echoed our random — refusing"));
+            }
+            let (client_random, server_random) =
+                if is_client { (&mine, &theirs) } else { (&theirs, &mine) };
+            let (c_keys, s_keys) = kunci_traffic_keys(secret.as_bytes(), client_random, server_random)?;
+
             NET.with(|n| -> Result<Value> {
                 let st = &mut *n.borrow_mut();
                 let conn = st
@@ -554,12 +671,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 if conn.machine.state() != TcpState::Established {
                     return Err(err("jaring: not established"));
                 }
-                // Reinstalling the same caller secret would restart its GCM
-                // nonce sequence. Require a fresh connection for manual keys.
-                if conn.tls_started {
-                    return Err(err("jaring_tls: keys already installed; open a new connection"));
-                }
-                let (send, recv) = if conn.is_client {
+                let (send, recv) = if is_client {
                     (c_keys, s_keys)
                 } else {
                     (s_keys, c_keys)
@@ -571,7 +683,6 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                     recv_seq: 0,
                 });
                 conn.authenticated = false;
-                conn.tls_started = true;
                 Ok(Value::Bool(true))
             })?
         }
@@ -595,9 +706,12 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
             NET.with(|n| n.borrow_mut().trust.trust(cred));
             Value::Bool(true)
         }
-        // Does this connection carry an AUTHENTICATED session — i.e. does the
-        // full Coq `tls_connected` conjunction hold? False for anonymous
-        // handshakes and for connections with no TLS at all.
+        // Was THE PEER of this connection authenticated — i.e. does the full
+        // Coq `tls_connected` conjunction hold from this side's point of view?
+        // False for anonymous handshakes, for `jaring_tls_kunci` keys, for
+        // connections with no TLS, and on the SERVER of `jaring_tls_jabat_sah`
+        // (that handshake authenticates the server to the client; there is no
+        // client authentication).
         "jaring_tls_disahkan" => {
             let id = as_int(arg, name)?;
             NET.with(|n| -> Result<Value> {
@@ -619,6 +733,12 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         // credential to be pinned via `jaring_tls_percaya` AND the signature
         // to verify. A MITM substituting its own key cannot pass. Fails closed
         // if the server has no identity or the client has an empty store.
+        //
+        // Returns (and `jaring_tls_disahkan` then reports) whether THE PEER is
+        // authenticated: `true` on the client once the pinned server proved
+        // its key; `false` on the server, which completed the handshake and
+        // has working keys but holds no evidence about its (unauthenticated)
+        // client.
         "jaring_tls_jabat_sah" => {
             let id = as_int(arg, name)?;
             let (mut stream, is_client) = NET.with(|n| -> Result<_> {
@@ -983,6 +1103,37 @@ mod tests {
         addr
     }
 
+    /// A raw-socket peer completing the `jaring_tls_kunci` exchange in the
+    /// SERVER role, exactly as the builtin does (read the client's hello,
+    /// answer with a fresh random). Returns `(keys it sends with, keys it
+    /// receives with)`.
+    fn kunci_server_side(sock: &mut TcpStream, secret: &str) -> (RecordKeys, RecordKeys) {
+        let client_random = parse_kunci_hello(&read_handshake_record(sock).unwrap()).unwrap();
+        let mine = riina_tls::handshake::os_entropy_32().unwrap();
+        write_handshake_record(sock, &kunci_hello(&mine)).unwrap();
+        let (c, s) = kunci_traffic_keys(secret.as_bytes(), &client_random, &mine).unwrap();
+        (s, c)
+    }
+
+    /// As `spawn_echo`, but the peer first completes the kunci exchange, so
+    /// the RIINA side can install keys; afterwards it echoes raw bytes.
+    fn spawn_kunci_echo(secret: &'static str) -> std::net::SocketAddr {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            if let Ok((mut sock, _)) = listener.accept() {
+                let _keys = kunci_server_side(&mut sock, secret);
+                let mut buf = [0u8; 1024];
+                while let Ok(n) = sock.read(&mut buf) {
+                    if n == 0 || sock.write_all(&buf[..n]).is_err() {
+                        break;
+                    }
+                }
+            }
+        });
+        addr
+    }
+
     #[test]
     fn connect_send_recv_close_roundtrip() {
         let addr = spawn_echo();
@@ -1069,21 +1220,18 @@ mod tests {
         let addr = listener.local_addr().unwrap();
         const SECRET: &str = "a-32-byte-traffic-secret-abcdefg";
         const MSG: &str = "rahsia atas talian";
-        // Server: accept, capture the raw wire bytes, then open the record.
+        // Server: complete the kunci exchange, capture the raw wire bytes,
+        // then open the record with the client→server keys it derived from
+        // the secret and BOTH per-connection randoms.
         let server = std::thread::spawn(move || {
             let (mut sock, _) = listener.accept().unwrap();
+            let (_send, recv) = kunci_server_side(&mut sock, SECRET);
             let mut len_buf = [0u8; 4];
             sock.read_exact(&mut len_buf).unwrap();
             let len = u32::from_be_bytes(len_buf) as usize;
             let mut sealed = vec![0u8; len];
             sock.read_exact(&mut sealed).unwrap();
-            // The simulated peer must derive the way the builtin now does:
-            // per-direction secrets (client→server here), which is the fix for
-            // the increment-1 nonce-reuse flaw.
-            let c_secret =
-                riina_tls::derive_secret(TLS_HASH, SECRET.as_bytes(), b"c ap traffic", &[]).unwrap();
-            let keys = RecordKeys::derive(TLS_HASH, &c_secret).unwrap();
-            let opened = keys.unprotect(0, &[], &sealed).unwrap();
+            let opened = recv.unprotect(0, &[], &sealed).unwrap();
             (sealed, String::from_utf8(opened).unwrap())
         });
         let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
@@ -1112,10 +1260,11 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let addr = listener.local_addr().unwrap();
         const SECRET: &str = "another-32-byte-traffic-secret!!";
-        // Server seals a record, flips one bit, and sends it.
+        // Server keys the connection, seals a record under the correct
+        // server→client key, flips one bit, and sends it.
         std::thread::spawn(move || {
             let (mut sock, _) = listener.accept().unwrap();
-            let keys = RecordKeys::derive(TLS_HASH, SECRET.as_bytes()).unwrap();
+            let (keys, _recv) = kunci_server_side(&mut sock, SECRET);
             let mut sealed = keys.protect(0, &[], b"tampered payload").unwrap();
             sealed[0] ^= 0x01;
             let len = u32::try_from(sealed.len()).unwrap();
@@ -1163,6 +1312,7 @@ mod tests {
             let addr = listener.local_addr().unwrap();
             let peer = std::thread::spawn(move || {
                 let (mut socket, _) = listener.accept().unwrap();
+                let _keys = kunci_server_side(&mut socket, "test record material");
                 socket.write_all(&length.to_be_bytes()).unwrap();
                 // No payload is supplied. A payload read would return EOF
                 // instead of the required bounds error.
@@ -1186,8 +1336,7 @@ mod tests {
             const MATERIAL: &str = "test boundary material";
             let peer = std::thread::spawn(move || {
                 let (mut socket, _) = listener.accept().unwrap();
-                let traffic = riina_tls::derive_secret(TLS_HASH, MATERIAL.as_bytes(), b"s ap traffic", &[]).unwrap();
-                let keys = RecordKeys::derive(TLS_HASH, &traffic).unwrap();
+                let (keys, _recv) = kunci_server_side(&mut socket, MATERIAL);
                 let sealed = keys.protect(0, &[], &vec![b'x'; size]).unwrap();
                 socket.write_all(&(sealed.len() as u32).to_be_bytes()).unwrap();
                 socket.write_all(&sealed).unwrap();
@@ -1202,7 +1351,7 @@ mod tests {
 
     #[test]
     fn tls_manual_keys_cannot_restart_nonce_sequences() {
-        let addr = spawn_echo();
+        let addr = spawn_kunci_echo("test manual material");
         let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
         let key_arg = pair(Value::Int(id), s("test manual material"));
         apply("jaring_tls_kunci", &key_arg).unwrap();
@@ -1224,7 +1373,10 @@ mod tests {
             let listener = TcpListener::bind("127.0.0.1:0").unwrap();
             let addr = listener.local_addr().unwrap();
             let peer = std::thread::spawn(move || {
-                let (socket, _) = listener.accept().unwrap();
+                let (mut socket, _) = listener.accept().unwrap();
+                // Let the client install kunci keys, then hang up so the
+                // subsequent handshake fails.
+                let _keys = kunci_server_side(&mut socket, "test handshake material");
                 socket.shutdown(std::net::Shutdown::Both).unwrap();
             });
             let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
@@ -1241,7 +1393,7 @@ mod tests {
 
     #[test]
     fn tls_send_limits_and_sequence_exhaustion_fail_closed() {
-        let addr = spawn_echo();
+        let addr = spawn_kunci_echo("test sequence material");
         let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else { panic!("connect") };
         apply("jaring_tls_kunci", &pair(Value::Int(id), s("test sequence material"))).unwrap();
         let huge = "x".repeat(wire::MAX_PLAINTEXT + 1);
@@ -1342,65 +1494,133 @@ mod tests {
     /// XOR(ciphertexts) equalled XOR(plaintexts), which also exposes the GHASH
     /// authentication key. Here the two directions must produce different
     /// ciphertext for the same plaintext at the same sequence.
-    #[test]
-    fn directional_keys_are_not_reused() {
-        // A client connection and a server connection sharing one secret.
+    // NB: a typed const, deliberately — a lowercase binding of that name
+    // assigned a string literal trips the repo's secret-scanning gate, and a
+    // test fixture is not worth an exemption that would blunt a real check.
+    // (Describe the pattern, never quote it: this file is scanned.)
+    const SHARED_IKM: &str = "traffic-input-keying-material-xyz";
+
+    /// One `jaring_tls_kunci` connection between two RIINA peers (this thread
+    /// = server, a spawned thread = client; the builtin state is thread-local,
+    /// so they are genuinely independent). Each side seals `probe` at
+    /// sequence 0 with its SEND key; the client also sends `msg` for real.
+    /// Returns `(client probe record, server probe record, what the server
+    /// received)`.
+    fn kunci_pair_seal(probe: &'static [u8], msg: &'static str) -> (Vec<u8>, Vec<u8>, String) {
         let Some(Value::Int(lid)) = apply("jaring_dengar", &s("127.0.0.1:0")).unwrap() else {
             panic!("listen failed")
         };
         let Some(Value::String(addr)) = apply("jaring_alamat", &Value::Int(lid)).unwrap() else {
             panic!("addr failed")
         };
-        let t = std::thread::spawn(move || {
-            let _peer = std::net::TcpStream::connect(addr).unwrap();
-            std::thread::sleep(std::time::Duration::from_millis(200));
+        let client = std::thread::spawn(move || {
+            let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&addr)).unwrap() else {
+                panic!("connect failed")
+            };
+            apply("jaring_tls_kunci", &pair(Value::Int(cid), s(SHARED_IKM))).unwrap();
+            let sealed = NET.with(|n| {
+                n.borrow().conns[&cid].tls.as_ref().unwrap().send.protect(0, &[], probe).unwrap()
+            });
+            apply("jaring_tls_hantar", &pair(Value::Int(cid), s(msg))).unwrap();
+            sealed
         });
         let Some(Value::Int(sid)) = apply("jaring_terima_sambungan", &Value::Int(lid)).unwrap()
         else {
             panic!("accept failed")
         };
-        let Some(Value::Int(cid)) = apply("jaring_sambung", &s(&{
-            let Some(Value::String(a)) = apply("jaring_alamat", &Value::Int(lid)).unwrap() else {
-                panic!()
-            };
-            a
-        }))
-        .unwrap() else {
-            panic!("connect failed")
-        };
-        // NB: a typed const, deliberately — a lowercase binding of that name
-        // assigned a string literal trips the repo's secret-scanning gate, and
-        // a test fixture is not worth an exemption that would blunt a real
-        // check. (Describe the pattern, never quote it: this file is scanned.)
-        const SHARED_IKM: &str = "traffic-input-keying-material-xyz";
-        for id in [sid, cid] {
-            apply("jaring_tls_kunci", &pair(Value::Int(id), s(SHARED_IKM))).unwrap();
-        }
-        // Seal the same plaintext at the same sequence on each side and
-        // compare the raw records.
-        let seal = |id: u64| {
-            NET.with(|n| {
-                let st = &*n.borrow();
-                let tls = st.conns[&id].tls.as_ref().unwrap();
-                tls.send.protect(0, &[], b"same plaintext").unwrap()
-            })
-        };
-        assert_ne!(
-            seal(sid),
-            seal(cid),
-            "client and server must not seal with the same key+nonce"
-        );
-        // And each side's send key must equal the peer's recv key.
-        let cross = NET.with(|n| {
-            let st = &*n.borrow();
-            let c = st.conns[&cid].tls.as_ref().unwrap();
-            let sv = st.conns[&sid].tls.as_ref().unwrap();
-            let sealed = c.send.protect(0, &[], b"halo").unwrap();
-            sv.recv.unprotect(0, &[], &sealed).unwrap()
+        apply("jaring_tls_kunci", &pair(Value::Int(sid), s(SHARED_IKM))).unwrap();
+        let server_probe = NET.with(|n| {
+            n.borrow().conns[&sid].tls.as_ref().unwrap().send.protect(0, &[], probe).unwrap()
         });
-        assert_eq!(cross, b"halo", "server must open what the client sealed");
+        let Some(Value::String(got)) = apply("jaring_tls_terima", &Value::Int(sid)).unwrap() else {
+            panic!("receive failed")
+        };
+        let client_probe = client.join().unwrap();
+        let _ = apply("jaring_tutup", &Value::Int(sid));
         let _ = apply("jaring_tutup_dengar", &Value::Int(lid));
-        let _ = t.join();
+        (client_probe, server_probe, got)
+    }
+
+    #[test]
+    fn directional_keys_are_not_reused() {
+        let (client, server, got) = kunci_pair_seal(b"same plaintext", "halo");
+        assert_ne!(client, server, "client and server must not seal with the same key+nonce");
+        // And each side's send key equals the peer's recv key: the server
+        // opened what the client sealed.
+        assert_eq!(got, "halo", "server must open what the client sealed");
+    }
+
+    /// REGRESSION (audit H2): `jaring_tls_kunci` derived its keys from the
+    /// caller secret alone and restarted the sequence at 0 on every
+    /// connection, so two connections keyed with the SAME secret sealed with
+    /// the same key+nonce — identical keystreams (XOR of ciphertexts = XOR of
+    /// plaintexts) and an exposed GHASH key. Each connection now mixes both
+    /// peers' fresh randoms into its keys.
+    #[test]
+    fn kunci_keys_are_unique_per_connection_even_with_the_same_secret() {
+        let (c1, s1, got1) = kunci_pair_seal(b"identical probe plaintext", "satu");
+        let (c2, s2, got2) = kunci_pair_seal(b"identical probe plaintext", "dua");
+        assert_eq!((got1.as_str(), got2.as_str()), ("satu", "dua"));
+        assert_ne!(c1, c2, "client keystream repeated across connections (GCM nonce reuse)");
+        assert_ne!(s1, s2, "server keystream repeated across connections (GCM nonce reuse)");
+    }
+
+    /// The derivation itself: same secret + same randoms is deterministic
+    /// (both peers agree); changing EITHER random or the secret changes both
+    /// directions' keys; client and server keys differ.
+    #[test]
+    fn kunci_derivation_binds_secret_and_both_randoms() {
+        let probe = |(c, s): (RecordKeys, RecordKeys)| {
+            (c.protect(0, &[], b"p").unwrap(), s.protect(0, &[], b"p").unwrap())
+        };
+        let base = probe(kunci_traffic_keys(b"k", &[1; 32], &[2; 32]).unwrap());
+        assert_eq!(base, probe(kunci_traffic_keys(b"k", &[1; 32], &[2; 32]).unwrap()));
+        assert_ne!(base.0, base.1, "directions must differ");
+        for other in [
+            kunci_traffic_keys(b"k", &[3; 32], &[2; 32]).unwrap(),
+            kunci_traffic_keys(b"k", &[1; 32], &[3; 32]).unwrap(),
+            kunci_traffic_keys(b"k", &[2; 32], &[1; 32]).unwrap(), // role order matters
+            kunci_traffic_keys(b"k2", &[1; 32], &[2; 32]).unwrap(),
+        ] {
+            let o = probe(other);
+            assert_ne!(o.0, base.0);
+            assert_ne!(o.1, base.1);
+        }
+    }
+
+    /// A peer that does not speak the kunci exchange (a reflector, or one
+    /// running a different protocol step) is refused, and the failure is
+    /// final for that connection: keys can never be installed on it later.
+    #[test]
+    fn kunci_refuses_echo_and_foreign_peers() {
+        let addr = spawn_echo(); // reflects our own hello back
+        let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect")
+        };
+        let res = apply("jaring_tls_kunci", &pair(Value::Int(id), s(SHARED_IKM)));
+        assert!(matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("echoed")), "{res:?}");
+        assert!(NET.with(|n| n.borrow().conns[&id].tls.is_none()));
+        assert!(apply("jaring_tls_kunci", &pair(Value::Int(id), s(SHARED_IKM))).is_err());
+        apply("jaring_tutup", &Value::Int(id)).unwrap();
+
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let peer = std::thread::spawn(move || {
+            let (mut sock, _) = listener.accept().unwrap();
+            let _ = read_handshake_record(&mut sock);
+            write_handshake_record(&mut sock, b"not a kunci hello").unwrap();
+        });
+        let Some(Value::Int(id)) = apply("jaring_sambung", &s(&addr.to_string())).unwrap() else {
+            panic!("connect")
+        };
+        let res = apply("jaring_tls_kunci", &pair(Value::Int(id), s(SHARED_IKM)));
+        assert!(matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("kunci hello")), "{res:?}");
+        peer.join().unwrap();
+        apply("jaring_tutup", &Value::Int(id)).unwrap();
+
+        // And an empty secret is refused before any I/O.
+        let res = apply("jaring_tls_kunci", &pair(Value::Int(id), s("")));
+        assert!(matches!(&res, Err(Error::InvalidOperation(m)) if m.contains("empty secret")), "{res:?}");
     }
 
     /// End-to-end REAL handshake over loopback sockets: two RIINA peers run
@@ -1463,8 +1683,8 @@ mod tests {
     }
 
     /// Authenticated handshake over real sockets: the client pins the
-    /// server's credential, both sides report the FULL Coq `tls_connected`
-    /// conjunction, and the channel works.
+    /// server's credential and reports the FULL Coq `tls_connected` conjunction
+    /// for its peer; the server does not (no client auth); the channel works.
     #[test]
     fn authenticated_handshake_over_sockets() {
         // Server identity, and the credential the client will pin.
@@ -1503,10 +1723,19 @@ mod tests {
         else {
             panic!("accept failed")
         };
+        // The server COMPLETES the handshake (keys installed, channel works
+        // below) but must not claim its peer is authenticated: it presented
+        // its own identity; nothing authenticated the client. (Audit L2 —
+        // this used to assert `true`, i.e. the old, wrong meaning.)
         assert_eq!(
             apply("jaring_tls_jabat_sah", &Value::Int(sid)).unwrap(),
-            Some(Value::Bool(true)),
-            "server must complete the authenticated handshake"
+            Some(Value::Bool(false)),
+            "server completes the handshake but its peer is unauthenticated"
+        );
+        assert_eq!(
+            apply("jaring_tls_disahkan", &Value::Int(sid)).unwrap(),
+            Some(Value::Bool(false)),
+            "a server without client authentication must not report an authenticated peer"
         );
         assert_eq!(
             apply("jaring_tls_terima", &Value::Int(sid)).unwrap(),

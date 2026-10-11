@@ -68,11 +68,48 @@ fn parse_url(url: &str) -> Result<UrlParts> {
         });
     }
 
+    // Plain HTTP is unauthenticated and unencrypted: anyone on the path can
+    // substitute package bytes, and nothing here signs them. So it is only
+    // allowed to the local machine (e.g. a test registry, or a loopback
+    // TLS-terminating proxy that does the real HTTPS to a remote registry).
+    if !is_loopback_host(&host) {
+        return Err(PkgError::Network {
+            message: format!(
+                "refusing plain-http registry {url}: http:// is only allowed to a loopback \
+                 host (localhost, 127.0.0.0/8, [::1]); a remote registry over http could \
+                 substitute packages in transit. Use a filesystem registry or a loopback \
+                 TLS-terminating proxy"
+            ),
+        });
+    }
+
     Ok(UrlParts {
         host,
         port,
         path: path.to_string(),
     })
+}
+
+/// `localhost`, or an IP literal in the loopback range (`127.0.0.0/8`,
+/// `[::1]`). Nothing else — in particular not `localhost.example` or
+/// `user@127.0.0.1`, which a substring check would accept.
+fn is_loopback_host(host: &str) -> bool {
+    if host.eq_ignore_ascii_case("localhost") {
+        return true;
+    }
+    let literal = host
+        .strip_prefix('[')
+        .and_then(|h| h.strip_suffix(']'))
+        .unwrap_or(host);
+    literal
+        .parse::<std::net::IpAddr>()
+        .is_ok_and(|ip| ip.is_loopback())
+}
+
+/// Check a registry URL up front (scheme, host, port, loopback-only policy),
+/// so a refused registry fails before any resolution work starts.
+pub(crate) fn validate_registry_url(url: &str) -> Result<()> {
+    parse_url(url).map(|_| ())
 }
 
 /// Send a GET request.
@@ -271,10 +308,32 @@ mod tests {
 
     #[test]
     fn test_parse_url_basic() {
-        let p = parse_url("http://example.com/api/v1/crates").unwrap();
-        assert_eq!(p.host, "example.com");
+        let p = parse_url("http://127.0.0.1/api/v1/crates").unwrap();
+        assert_eq!(p.host, "127.0.0.1");
         assert_eq!(p.port, 80);
         assert_eq!(p.path, "/api/v1/crates");
+    }
+
+    /// Audit L6: a remote host over plain http is refused (this test used to
+    /// parse `http://example.com/...` successfully). Loopback stays allowed.
+    #[test]
+    fn test_parse_url_refuses_remote_plain_http() {
+        for remote in [
+            "http://example.com/api/v1/crates",
+            "http://registry.riina.dev/api",
+            "http://localhost.evil.example/x",
+            "http://127.0.0.1.evil.example/x",
+            "http://evil@127.0.0.1/x",
+            "http://10.0.0.1:8080/x",
+            "http://[2001:db8::1]:80/x",
+        ] {
+            let e = parse_url(remote).err().unwrap_or_else(|| panic!("{remote} accepted"));
+            assert!(e.to_string().contains("loopback"), "{remote}: {e}");
+            assert!(validate_registry_url(remote).is_err());
+        }
+        for local in ["http://localhost/x", "http://LOCALHOST:1/x", "http://127.0.0.1:8080/x", "http://127.9.9.9/x", "http://[::1]:8080/x"] {
+            assert!(validate_registry_url(local).is_ok(), "{local} refused");
+        }
     }
 
     #[test]

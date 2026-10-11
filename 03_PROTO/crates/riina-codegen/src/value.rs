@@ -90,6 +90,19 @@ impl Env {
         self.bindings.contains_key(name)
     }
 
+    /// A copy of this environment without the bindings `remove` selects.
+    #[must_use]
+    pub fn without(&self, mut remove: impl FnMut(&Ident, &Value) -> bool) -> Self {
+        Self {
+            bindings: self
+                .bindings
+                .iter()
+                .filter(|(name, value)| !remove(name, value))
+                .map(|(name, value)| (name.clone(), value.clone()))
+                .collect(),
+        }
+    }
+
     /// Get the number of bindings
     #[must_use]
     pub fn len(&self) -> usize {
