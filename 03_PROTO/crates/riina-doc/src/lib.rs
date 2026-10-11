@@ -181,8 +181,60 @@ pub fn extract_docs(source: &str, program: &Program) -> Vec<DocItem> {
     items
 }
 
+/// Escape text for HTML element content and quoted attribute values.
+///
+/// Every value interpolated into the page passes through here: names, test
+/// names (arbitrary string literals), doc comments, signatures (types render
+/// with `<`/`>`) and the title. They used to be pasted in raw, so
+/// `ujian "<script>alert(1)</script>"` became live script in the generated
+/// page (in its `<h2>` and in an `href`).
+fn html_escape(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    for c in text.chars() {
+        match c {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '"' => out.push_str("&quot;"),
+            '\'' => out.push_str("&#39;"),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// A safe, unique HTML `id` for each item: ASCII letters, digits, `-` and `_`
+/// only (anything else becomes `-`), starting with a letter, and suffixed
+/// when two items would collide (e.g. two tests with the same name). A plain
+/// identifier keeps its own name, so `#tambah` anchors are unchanged.
+fn anchor_ids(items: &[DocItem]) -> Vec<String> {
+    let mut used = std::collections::HashSet::new();
+    items
+        .iter()
+        .map(|item| {
+            let mut base: String = item
+                .name
+                .chars()
+                .map(|c| if c.is_ascii_alphanumeric() || c == '_' || c == '-' { c } else { '-' })
+                .collect();
+            if !base.starts_with(|c: char| c.is_ascii_alphabetic()) {
+                base.insert_str(0, "item-");
+            }
+            let mut id = base.clone();
+            let mut n = 2;
+            while !used.insert(id.clone()) {
+                id = format!("{base}-{n}");
+                n += 1;
+            }
+            id
+        })
+        .collect()
+}
+
 /// Generate HTML documentation from doc items.
 pub fn generate_html(title: &str, items: &[DocItem]) -> String {
+    let title = html_escape(title);
+    let ids = anchor_ids(items);
     let mut html = String::new();
     html.push_str("<!DOCTYPE html>\n<html lang=\"ms\">\n<head>\n");
     html.push_str("<meta charset=\"utf-8\">\n");
@@ -204,16 +256,17 @@ pub fn generate_html(title: &str, items: &[DocItem]) -> String {
 
     // Table of contents
     html.push_str("<h2>Kandungan</h2>\n<ul>\n");
-    for item in items {
+    for (item, id) in items.iter().zip(&ids) {
         html.push_str(&format!(
             "<li><a href=\"#{}\">{}</a></li>\n",
-            item.name, item.name
+            id,
+            html_escape(&item.name)
         ));
     }
     html.push_str("</ul>\n");
 
     // Items
-    for item in items {
+    for (item, id) in items.iter().zip(&ids) {
         let kind_class = match item.kind {
             DocKind::Function => "kind-fn",
             DocKind::Binding => "kind-let",
@@ -223,15 +276,18 @@ pub fn generate_html(title: &str, items: &[DocItem]) -> String {
             DocKind::Binding => "biar",
         };
 
-        html.push_str(&format!("<h2 id=\"{}\">{}</h2>\n", item.name, item.name));
+        html.push_str(&format!("<h2 id=\"{}\">{}</h2>\n", id, html_escape(&item.name)));
         html.push_str(&format!(
             "<span class=\"kind {kind_class}\">{kind_label}</span>\n"
         ));
-        html.push_str(&format!("<pre class=\"sig\">{}</pre>\n", item.signature));
+        html.push_str(&format!(
+            "<pre class=\"sig\">{}</pre>\n",
+            html_escape(&item.signature)
+        ));
         if !item.doc.is_empty() {
             html.push_str(&format!(
                 "<div class=\"doc\">{}</div>\n",
-                item.doc.replace('\n', "<br>")
+                html_escape(&item.doc).replace('\n', "<br>")
             ));
         }
     }
@@ -273,6 +329,45 @@ mod tests {
         let html = generate_html("Test", &items);
         assert!(html.contains("tambah"));
         assert!(html.contains("Adds two numbers"));
+    }
+
+    #[test]
+    fn interpolated_text_is_html_escaped() {
+        // The audit's reproducer: a test name, a doc comment and a title that
+        // are markup must come out as inert text.
+        let source = "/// Fungsi biasa <img src=x onerror=alert(document.domain)>\n\
+                      fungsi f(x: Nombor) -> Nombor kesan Bersih { x }\n\
+                      ujian \"<script>alert(1)</script>\" { tegaskan(betul) }\n";
+        let html = generate_from_source("<b>t</b>", source).unwrap();
+        assert!(!html.contains("<script>"), "{html}");
+        assert!(!html.contains("<img"), "{html}");
+        assert!(!html.contains("<b>"), "{html}");
+        assert!(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"), "{html}");
+        assert!(html.contains("&lt;img src=x onerror=alert(document.domain)&gt;"), "{html}");
+        assert!(html.contains("<title>&lt;b&gt;t&lt;/b&gt; — RIINA Dokumentasi</title>"));
+        // Anchors and ids are restricted to a safe alphabet, and agree.
+        assert!(html.contains("href=\"#item--script-alert-1---script-\""), "{html}");
+        assert!(html.contains("id=\"item--script-alert-1---script-\""), "{html}");
+        assert!(html.contains("href=\"#f\""));
+    }
+
+    #[test]
+    fn duplicate_names_get_distinct_anchors() {
+        let items = vec![
+            DocItem {
+                name: "t".into(),
+                kind: DocKind::Binding,
+                doc: String::new(),
+                signature: "ujian \"t\"".into(),
+            },
+            DocItem {
+                name: "t".into(),
+                kind: DocKind::Binding,
+                doc: String::new(),
+                signature: "ujian \"t\"".into(),
+            },
+        ];
+        assert_eq!(anchor_ids(&items), vec!["t".to_string(), "t-2".to_string()]);
     }
 
     #[test]

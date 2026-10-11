@@ -387,6 +387,66 @@ fn wcag_aa_contrast_ok(fg: (u8, u8, u8), bg: (u8, u8, u8)) -> bool {
     (lighter + 0.05) / (darker + 0.05) >= 4.5
 }
 
+/// Result type of `lhs op rhs` given the operand types (the `BinOp` case of
+/// `Lower::infer_type`, also used to type operator chains incrementally).
+fn binop_result_ty(op: &BinOp, lt: &Ty, rt: &Ty) -> Ty {
+    let base = match op {
+        BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
+            // Numeric tower: a sized operand propagates its width to the
+            // result so the emitter masks arithmetic at that width
+            // (mirrors the typechecker's `int_arith_result`). A plain
+            // `Int` operand adapts; mismatched sized widths are already
+            // rejected by the typechecker before lowering.
+            match (lt, rt) {
+                (Ty::IntN { bits, signed }, _) | (_, Ty::IntN { bits, signed }) => {
+                    Ty::IntN {
+                        bits: *bits,
+                        signed: *signed,
+                    }
+                }
+                // Boxed numeric tower: a BigInt/Decimal operand makes the
+                // result BigInt/Decimal, so `cetak`/`a + b`/binding
+                // dispatch stays on the boxed path on WASM (the C backend
+                // uses runtime tags).
+                (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
+                (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
+                (Ty::Fixed, _) | (_, Ty::Fixed) => Ty::Fixed,
+                (Ty::FixedBin, _) | (_, Ty::FixedBin) => Ty::FixedBin,
+                // `+` on strings is concatenation, not arithmetic.
+                // Typing the result `Int` made the WASM backend
+                // print `cetakln("i=" + ke_teks(i))` through its
+                // integer (itoa) path, so the program emitted the
+                // heap ADDRESS of the joined string as a decimal
+                // number. (The concat itself was right; only the
+                // result's static type was wrong. C dispatches on a
+                // runtime tag, so it was unaffected — this was a
+                // WASM-only silent wrong answer.)
+                (Ty::String, _) | (_, Ty::String) if matches!(op, BinOp::Add) => {
+                    Ty::String
+                }
+                _ => Ty::Int,
+            }
+        }
+        BinOp::Eq
+        | BinOp::Ne
+        | BinOp::Lt
+        | BinOp::Le
+        | BinOp::Gt
+        | BinOp::Ge
+        | BinOp::And
+        | BinOp::Or => Ty::Bool,
+    };
+    // Constant-time contagion: a result derived from a ConstantTime
+    // operand stays ConstantTime, so the CT discipline is preserved
+    // in the IR annotations for the codegen CT verifier. Guarded on
+    // CT operands, so non-CT programs are unaffected.
+    if ty_is_constant_time(lt) || ty_is_constant_time(rt) {
+        Ty::ConstantTime(Box::new(base))
+    } else {
+        base
+    }
+}
+
 /// Whether a type carries the constant-time discipline, looking through a
 /// security `Labeled` wrapper. Used for CT contagion in `infer_type` so the
 /// codegen constant-time verifier can see CT-derived IR values.
@@ -1167,61 +1227,13 @@ impl Lower {
                 .and_then(|var| self.env.types.get(&var).cloned())
                 .unwrap_or(Ty::Unit), // unbound (e.g. a top-level function not yet in env) → Unit
             Expr::Loc(_) => Ty::Unit, // Runtime-only; actual type from store
+            // Each operand is inferred ONCE. This arm used to call
+            // `infer_type(lhs)` and `infer_type(rhs)` twice each (once for the
+            // result type, once for constant-time contagion), which is
+            // exponential in the length of an operator chain: a 25-term
+            // `1 + 1 + …` took seconds to `emit-c`, 40 terms hours.
             Expr::BinOp(op, lhs, rhs) => {
-                let base = match op {
-                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
-                        // Numeric tower: a sized operand propagates its width to the
-                        // result so the emitter masks arithmetic at that width
-                        // (mirrors the typechecker's `int_arith_result`). A plain
-                        // `Int` operand adapts; mismatched sized widths are already
-                        // rejected by the typechecker before lowering.
-                        match (self.infer_type(lhs), self.infer_type(rhs)) {
-                            (Ty::IntN { bits, signed }, _) | (_, Ty::IntN { bits, signed }) => {
-                                Ty::IntN { bits, signed }
-                            }
-                            // Boxed numeric tower: a BigInt/Decimal operand makes the
-                            // result BigInt/Decimal, so `cetak`/`a + b`/binding
-                            // dispatch stays on the boxed path on WASM (the C backend
-                            // uses runtime tags).
-                            (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
-                            (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
-                            (Ty::Fixed, _) | (_, Ty::Fixed) => Ty::Fixed,
-                            (Ty::FixedBin, _) | (_, Ty::FixedBin) => Ty::FixedBin,
-                            // `+` on strings is concatenation, not arithmetic.
-                            // Typing the result `Int` made the WASM backend
-                            // print `cetakln("i=" + ke_teks(i))` through its
-                            // integer (itoa) path, so the program emitted the
-                            // heap ADDRESS of the joined string as a decimal
-                            // number. (The concat itself was right; only the
-                            // result's static type was wrong. C dispatches on a
-                            // runtime tag, so it was unaffected — this was a
-                            // WASM-only silent wrong answer.)
-                            (Ty::String, _) | (_, Ty::String) if matches!(op, BinOp::Add) => {
-                                Ty::String
-                            }
-                            _ => Ty::Int,
-                        }
-                    }
-                    BinOp::Eq
-                    | BinOp::Ne
-                    | BinOp::Lt
-                    | BinOp::Le
-                    | BinOp::Gt
-                    | BinOp::Ge
-                    | BinOp::And
-                    | BinOp::Or => Ty::Bool,
-                };
-                // Constant-time contagion: a result derived from a ConstantTime
-                // operand stays ConstantTime, so the CT discipline is preserved
-                // in the IR annotations for the codegen CT verifier. Guarded on
-                // CT operands, so non-CT programs are unaffected.
-                if ty_is_constant_time(&self.infer_type(lhs))
-                    || ty_is_constant_time(&self.infer_type(rhs))
-                {
-                    Ty::ConstantTime(Box::new(base))
-                } else {
-                    base
-                }
+                binop_result_ty(op, &self.infer_type(lhs), &self.infer_type(rhs))
             }
             Expr::FFICall { ret_ty, .. } => ret_ty.clone(),
             Expr::ActorDecl { .. } => Ty::Unit,
@@ -2861,34 +2873,57 @@ impl Lower {
                 Ok(self.emit_bool_const(wcag_aa_contrast_ok(fg, bg)))
             }
 
-            Expr::BinOp(op, lhs, rhs) => {
-                let l = self.lower_expr(lhs)?;
-                let r = self.lower_expr(rhs)?;
-                let ir_op = match op {
-                    BinOp::Add => IrBinOp::Add,
-                    BinOp::Sub => IrBinOp::Sub,
-                    BinOp::Mul => IrBinOp::Mul,
-                    BinOp::Div => IrBinOp::Div,
-                    BinOp::Mod => IrBinOp::Mod,
-                    BinOp::Eq => IrBinOp::Eq,
-                    BinOp::Ne => IrBinOp::Ne,
-                    BinOp::Lt => IrBinOp::Lt,
-                    BinOp::Le => IrBinOp::Le,
-                    BinOp::Gt => IrBinOp::Gt,
-                    BinOp::Ge => IrBinOp::Ge,
-                    BinOp::And => IrBinOp::And,
-                    BinOp::Or => IrBinOp::Or,
-                };
-                let result_ty = self.infer_type(expr);
-                let effect = self.infer_effect(expr);
-                Ok(self.emit(
-                    Instruction::BinOp(ir_op, l, r),
-                    result_ty,
-                    SecurityLevel::Public,
-                    effect,
-                ))
+            Expr::BinOp(..) => {
+                // Lower the chain's left spine iteratively, carrying the type
+                // and effect of the accumulated left operand. Recursing per
+                // operand, and calling `infer_type`/`infer_effect` on the WHOLE
+                // sub-chain at every level, made an n-term chain O(n^2) and
+                // overflowed the stack. The result is identical: each node's
+                // type/effect is `binop_result_ty`/`join` of its operands'.
+                let mut spine: Vec<(BinOp, &Expr)> = Vec::new();
+                let mut leaf = expr;
+                while let Expr::BinOp(op, lhs, rhs) = leaf {
+                    spine.push((*op, rhs));
+                    leaf = lhs;
+                }
+                let mut acc = self.lower_expr(leaf)?;
+                let mut acc_ty = self.infer_type(leaf);
+                let mut acc_effect = self.infer_effect(leaf);
+                for (op, rhs) in spine.into_iter().rev() {
+                    let r = self.lower_expr(rhs)?;
+                    let result_ty = binop_result_ty(&op, &acc_ty, &self.infer_type(rhs));
+                    let effect = acc_effect.join(self.infer_effect(rhs));
+                    acc = self.emit(
+                        Instruction::BinOp(ir_binop(op), acc, r),
+                        result_ty.clone(),
+                        SecurityLevel::Public,
+                        effect,
+                    );
+                    acc_ty = result_ty;
+                    acc_effect = effect;
+                }
+                Ok(acc)
             }
         }
+    }
+}
+
+/// The IR operator for a surface binary operator.
+fn ir_binop(op: BinOp) -> IrBinOp {
+    match op {
+        BinOp::Add => IrBinOp::Add,
+        BinOp::Sub => IrBinOp::Sub,
+        BinOp::Mul => IrBinOp::Mul,
+        BinOp::Div => IrBinOp::Div,
+        BinOp::Mod => IrBinOp::Mod,
+        BinOp::Eq => IrBinOp::Eq,
+        BinOp::Ne => IrBinOp::Ne,
+        BinOp::Lt => IrBinOp::Lt,
+        BinOp::Le => IrBinOp::Le,
+        BinOp::Gt => IrBinOp::Gt,
+        BinOp::Ge => IrBinOp::Ge,
+        BinOp::And => IrBinOp::And,
+        BinOp::Or => IrBinOp::Or,
     }
 }
 

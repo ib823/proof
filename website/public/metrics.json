@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-08T05:22:53Z",
-  "generatedHuman": "September 08, 2026 at 05:22 UTC",
+  "generated": "2026-10-11T13:20:27Z",
+  "generatedHuman": "October 11, 2026 at 13:20 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "75a9afcc",
-    "branch": "main"
+    "commit": "bff1d4d",
+    "branch": "audit-fix/parser-codegen"
   },
   "proofs": {
     "qedActive": 12678,
@@ -197,8 +197,8 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 3413,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 172,
