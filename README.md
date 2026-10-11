@@ -251,7 +251,7 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 19 proto + 5 tooling = 24 |
-| Test count | 2,479 proto + 248 tooling = 2,727 (all passing) |
+| Test count | 3,528 proto + 352 tooling = 3,880 (all passing, measured 2026-10-11) |
 | External dependencies | **0** at runtime |
 | Lines of Rust | ~73,500 (proto) |
 | Standard library builtins | 88 across 9 modules |
@@ -328,7 +328,7 @@ riina/
 ├── 02_FORMAL/tlaplus/       TLA+ (317 .tla, generated; 1 smoke spec TLC-checked)
 │   └── ...                  (F*, alloy, smt, verus, kani, tv: generated/quarantined — see metrics.json)
 │
-├── 03_PROTO/               Rust compiler (19 crates, 2,479 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (18 crates, 3,528 tests, 0 third-party deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -393,11 +393,11 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3528 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 | Area | Status |
 |------|--------|
-| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 2,727 tests; end-to-end security alignment still in progress |
+| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,528 tests (plus 352 in the tooling workspace); end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
 | Formal verification | **Coq active lane is the only real machine-checked verification** (0 admit/0 axiom, modulo 29 `Parameter` assumptions). Lean/Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV are generated from Coq and are stubbed or single smoke artifacts — see `02_FORMAL/lean/COMPILATION_STATUS.md` and `metrics.json` |
 | WASM/mobile backends | Present as scaffolding, not full production backends |

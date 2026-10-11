@@ -196,7 +196,7 @@ const PIPELINE_STATIC = [
 
 const RESEARCH = [
   { name: 'Core type theory', desc: 'Type safety, logical relations, declassification, general recursion in the mechanized core' },
-  { name: 'Compiler', desc: '19 crates, 3,002 tests, zero third-party runtime dependencies (SBOM-proven)' },
+  { name: 'Compiler', desc: '18 crates, 3,528 tests, zero third-party runtime dependencies (SBOM-proven)' },
   { name: 'Attack surface', desc: '1,231+ threats modelled across the research corpus' },
   { name: 'Termination and memory', desc: 'Sized types, premise-free strong normalisation for the reference-free core, separation-logic models' },
   { name: 'Concurrency and effects', desc: 'Session types, effect algebra, choreography projection' },
