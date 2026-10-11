@@ -9,8 +9,9 @@
 use crate::{
     register_builtin_types, type_check_full, types_compatible, Context, TypeError, TypingContext,
 };
-use riina_types::{Effect, Expr, Program, TopLevelDecl, Ty};
-use std::collections::{HashMap, HashSet};
+use riina_types::{Effect, EffectSet, Expr, Program, TopLevelDecl, Ty};
+use riina_types::persistent::PMap;
+use std::collections::HashSet;
 
 fn builtin_typing_context() -> TypingContext {
     register_builtin_types(&Context::new()).to_typing_context()
@@ -42,7 +43,10 @@ struct ExprSummary {
     callable: Option<CallableSummary>,
 }
 
-type CapabilityEnv = HashMap<String, CallableSummary>;
+/// Persistent: every `biar`/lambda shadows or adds a callable in a CLONE of the
+/// environment, and a copied `HashMap` made a chain of n lambda bindings
+/// O(n²).
+type CapabilityEnv = PMap<String, CallableSummary>;
 
 fn compose_exec(first: &ExecSummary, second: &ExecSummary) -> ExecSummary {
     let mut required = first.required.clone();
@@ -495,9 +499,14 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 params,
                 return_ty,
                 effect,
+                effect_set,
                 ..
             } => {
-                let fn_ty = declared_function_type(params, return_ty, *effect);
+                // The latent effect callers see is the WHOLE declared set: a
+                // `kesan (Masa, SistemFail)` callee is not a `kesan Masa` one
+                // (M1c).
+                let declared = EffectSet::from_declaration(*effect, effect_set);
+                let fn_ty = declared_function_type(params, return_ty, declared);
                 ctx = ctx.extend_gamma(name.clone(), fn_ty);
             }
             TopLevelDecl::ExternBlock { decls, .. } => {
@@ -545,10 +554,11 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 // lossy lattice join: a compound `kesan (A, B, C)` grants all of
                 // A, B, C, which is what makes capability-gating sound for
                 // compound-effect functions.
-                for e in effect_set {
-                    body_ctx = body_ctx.with_grant(*e);
-                }
+                let declared = EffectSet::from_declaration(*effect, effect_set);
+                body_ctx = body_ctx.with_declared_grants(declared);
 
+                // Also fixes the `beri` ceiling (M1b) at exactly the declared
+                // set: inside this body a grant may only attenuate it.
                 body_ctx.enter_function();
                 let (body_ty, body_eff) = type_check_full(&mut body_ctx, body)?;
                 // A secret-dependent `pulang` makes the fall-through value
@@ -573,25 +583,28 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                     body_eff
                 }
                 .join(hidden_eff);
-                if body_eff.level() > effect.level() {
-                    return Err(TypeError::EffectViolation {
-                        allowed: *effect,
-                        found: body_eff,
-                    });
-                }
+                // M1c: the body's effects must be COVERED by the declared set
+                // under the category-respecting partial order. This was
+                // `body_eff.level() > effect.level()` on the lossy lattice
+                // join, so `kesan Masa` (Time, 11) admitted `fail_tulis`
+                // (FileSystem, 5) and `jaring_*` (Network, 6).
+                crate::check_effects_covered(declared, body_eff)?;
                 // Signature already in ctx from pass 1.
             }
             TopLevelDecl::Binding { name, value, is_mut } => {
                 let mut binding_ctx = ctx.clone();
                 let (ty, eff) = type_check_full(&mut binding_ctx, value)?;
-                // Top-level bindings: reject side effects except actor operations
-                if eff.level() > Effect::Pure.level()
-                    && eff != Effect::Process
-                    && eff != Effect::Network
+                // Top-level bindings: reject side effects except actor
+                // operations. Checked per component: with the old lattice
+                // value, `Network ⊔ Write = Network` let a printing or
+                // file-writing initializer through as an "actor operation".
+                if let Some(found) = eff
+                    .iter()
+                    .find(|e| !matches!(e, Effect::Process | Effect::Network))
                 {
                     return Err(TypeError::EffectViolation {
-                        allowed: Effect::Pure,
-                        found: eff,
+                        allowed: EffectSet::PURE,
+                        found,
                     });
                 }
                 // A `biar ubah` top-level binding is a mutable SLOT, so it is
@@ -633,7 +646,9 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
     Ok(())
 }
 
-pub fn check_program(program: &Program) -> Result<(Expr, Ty, Effect), TypeError> {
+/// Type-check a whole program. The returned effect is the precise SET of
+/// effects the program's top-level code performs.
+pub fn check_program(program: &Program) -> Result<(Expr, Ty, EffectSet), TypeError> {
     validate_top_level_decls(program)?;
     let expr = program.clone().desugar();
 
@@ -654,17 +669,16 @@ pub fn check_program(program: &Program) -> Result<(Expr, Ty, Effect), TypeError>
     //     point) is authorized by that function's own declaration — its body
     //     is checked against exactly that declaration in
     //     `validate_top_level_decls`;
-    //   * the function BODIES of the group are re-checked here with every
-    //     declared effect component granted (over-granting is harmless: the
-    //     authoritative per-function check, with only the function's own
-    //     effect set granted, already ran above).
+    //   * the function BODIES of the group are re-checked here, each with
+    //     exactly its own declared effect set granted — the same grants as the
+    //     authoritative per-function check above. (They used to be granted the
+    //     union of every function's components, `body_grants`, because the
+    //     latent type was a single lossy lattice value; it is a set now.)
+    //   * `beri` in this top-level code is the program's capability manifest
+    //     and is unrestricted (`grant_ceiling` is `None`); inside every
+    //     function body it may only attenuate (M1b).
     let mut ctx = builtin_typing_context();
     ctx.gate_always = true;
-    for decl in &program.decls {
-        if let TopLevelDecl::Function { effect_set, .. } = decl {
-            ctx.body_grants.extend(effect_set.iter().copied());
-        }
-    }
     let (ty, eff) = type_check_full(&mut ctx, &expr)?;
     Ok((expr, ty, eff))
 }

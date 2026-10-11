@@ -299,7 +299,7 @@ fn format_type_error_json(e: &riina_typechecker::TypeError, filename: &str) -> S
 }
 
 /// Format a JSON success result.
-fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::Effect, filename: &str) -> String {
+fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::EffectSet, filename: &str) -> String {
     let ty_str = json_escape(&format!("{:?}", ty));
     let eff_str = json_escape(&format!("{:?}", eff));
     format!(

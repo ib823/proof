@@ -299,7 +299,7 @@ fn handle_tools_call(params: &JsonValue, config: McpConfig) -> JsonValue {
 }
 
 /// The refusal for an effectful program on a server without `--allow-effects`.
-fn effect_refusal(what: &str, eff: Effect) -> String {
+fn effect_refusal(what: &str, eff: riina_types::EffectSet) -> String {
     format!(
         "Refused: {what} has inferred effect {eff:?}, not Pure. This MCP server only \
          executes pure code; start it with `riinac mcp --allow-effects` to permit effects \

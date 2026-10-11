@@ -111,7 +111,7 @@ fungsi parse_contoh(sumber: Teks) -> Nombor kesan Bersih {
 }
 
 // Entry point for testing
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar contoh = "fungsi utama() { pulang 0; }";
     biar hasil = parse_contoh(contoh);
     cetakln("Parser selesai");

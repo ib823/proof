@@ -66,6 +66,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stricter URL/referer validation in both backends; checked HTTP body arithmetic; key files
   created 0600 and never silently overwritten; secret scrubbing in X25519/Ed25519/HMAC/TLS.
 
+### Fixed (effects and capabilities — audit-fix/effects)
+- **Effects are a partial order in the compiler, not a total order.** Declared and latent
+  effects are sets (`EffectSet`); an effect is covered only by a declaration in the SAME
+  category at an equal or higher level. Before, `kesan Masa` (Time) silently allowed file
+  writes and network access because those effects have lower levels, and a function type
+  kept only the max of a compound declaration. Strictly finer than the Coq typing bound.
+- **`beri` can only attenuate.** Inside a function, closure or local `fungsi`, a grant must
+  already be held; top-level `beri` remains the program's explicit capability manifest.
+  Local `fungsi` declarations no longer grant themselves capabilities.
+- Behaviour change: declarations must list every category used, e.g. `kesan (Rangkaian,
+  Tulis)` for networking plus printing; `kesan Sistem`/`Masa`/`Kripto` no longer cover output.
+- Persistent typing context: checking 5,000 sequential `biar` bindings took 2.7 GB / 17.8 s,
+  now 36 MiB / 0.19 s (release); long `lain kalau` chains likewise linear.
+
 ### Fixed (parser, backends, CLI — audit-fix/parser-codegen)
 - Parser loops that never stopped at end of input (`jenis T =`, `guna`, `modul m {`) now
   error; unclosed generics/structs and lexer errors between declarations are reported

@@ -8,7 +8,7 @@
 
 #![forbid(unsafe_code)]
 
-use riina_types::{Effect, Program, TopLevelDecl, Ty};
+use riina_types::{Effect, EffectSet, Program, TopLevelDecl, Ty};
 
 /// A documented declaration.
 #[derive(Debug, Clone)]
@@ -112,6 +112,7 @@ pub fn extract_docs(source: &str, program: &Program) -> Vec<DocItem> {
                 params,
                 return_ty,
                 effect,
+                effect_set,
                 ..
             } => {
                 let params_str: Vec<String> = params
@@ -122,8 +123,16 @@ pub fn extract_docs(source: &str, program: &Program) -> Vec<DocItem> {
                 if *return_ty != Ty::Unit {
                     sig.push_str(&format!(" -> {}", format_ty(return_ty)));
                 }
-                if *effect != Effect::Pure {
-                    sig.push_str(&format!(" kesan {}", format_effect(effect)));
+                // The whole declared set — the lattice `effect` alone shows
+                // `kesan (Masa, SistemFail)` as `kesan Masa`.
+                let declared: Vec<&str> = EffectSet::from_declaration(*effect, effect_set)
+                    .iter()
+                    .map(|e| format_effect(&e))
+                    .collect();
+                match declared.as_slice() {
+                    [] => {}
+                    [one] => sig.push_str(&format!(" kesan {one}")),
+                    many => sig.push_str(&format!(" kesan ({})", many.join(", "))),
                 }
                 items.push(DocItem {
                     name: name.clone(),

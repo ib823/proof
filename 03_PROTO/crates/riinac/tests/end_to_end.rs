@@ -76,7 +76,7 @@ fn e2e_hello_cetak() {
     let (out, code) = compile_and_run(
         "e2e_hello",
         r#"
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     cetak("Selamat pagi!");
     pulang 0
 }
@@ -95,7 +95,7 @@ fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
     pulang x + y
 }
 
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar r = tambah(17, 25);
     cetak(r);
     pulang 0
@@ -111,7 +111,7 @@ fn e2e_conditional() {
     let (out, code) = compile_and_run(
         "e2e_cond",
         r#"
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar x = 10;
     biar msg = kalau x > 5 { "besar" } lain { "kecil" };
     cetak(msg);
@@ -128,7 +128,7 @@ fn e2e_declassify() {
     let (out, code) = compile_and_run(
         "e2e_declass",
         r#"
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar v = dedah sulit 99 dengan bukti sulit 99;
     cetak(v);
     pulang 0
@@ -152,7 +152,7 @@ fungsi tambah_satu(x: Nombor) -> Nombor kesan Bersih {
     pulang x + 1
 }
 
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar r = tambah_satu(gandakan(5));
     cetak(r);
     pulang 0
@@ -174,7 +174,7 @@ fungsi kira(jam: Nombor, kadar: Nombor) -> Nombor kesan Bersih {
     pulang jam * kadar
 }
 
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar gaji = kira(40, 25);
     cetak("RM");
     cetak(gaji);
@@ -296,6 +296,12 @@ fn examples_root() -> std::path::PathBuf {
 /// (a record built from `fail_baca` dropped its `Tercemar` taint through a
 /// plain record result type — now `Tercemar<DataTercemar<Teks>, FileSystem>`,
 /// H1).
+///
+/// 2026-10-11: 98 -> 98, same passing set (effect partial order, M1c). The six
+/// `compiler/*.rii` examples declared `utama() kesan Sistem` but only print
+/// (`Tulis`, an IO effect); the old total order let System (10) cover Write
+/// (4). They failed closed and now declare what they perform (`kesan Tulis`);
+/// output unchanged.
 const CORPUS_PASSING: usize = 98;
 const CORPUS_TOTAL: usize = 172;
 
