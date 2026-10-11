@@ -254,7 +254,36 @@ impl Effect {
         }
     }
 
-    /// Join: max in the hierarchy
+    /// Every effect, in ascending [`Effect::level`] order (`ALL[i].level() == i`).
+    pub const ALL: [Effect; 19] = [
+        Self::Pure,
+        Self::Mut,
+        Self::Read,
+        Self::Alloc,
+        Self::Write,
+        Self::FileSystem,
+        Self::Network,
+        Self::NetworkSecure,
+        Self::Crypto,
+        Self::Random,
+        Self::System,
+        Self::Time,
+        Self::Process,
+        Self::Panel,
+        Self::Zirah,
+        Self::Benteng,
+        Self::Sandi,
+        Self::Menara,
+        Self::Gapura,
+    ];
+
+    /// Join: max in the hierarchy (Coq `effect_join`).
+    ///
+    /// This is a TOTAL order and is lossy across categories (`Time ⊔
+    /// FileSystem = Time`), so it must not be used to accumulate what a
+    /// computation performs or what a function declares — that is
+    /// [`EffectSet`], whose join is set union and whose subsumption is the
+    /// category-respecting partial order [`EffectSet::covers`].
     #[must_use]
     pub const fn join(self, other: Self) -> Self {
         if self.level() < other.level() {
@@ -282,6 +311,191 @@ impl Effect {
             Self::Random => CapabilityKind::SysRandom,
             Self::Process => CapabilityKind::ProcSpawn,
             _ => CapabilityKind::SysRandom, // fallback
+        }
+    }
+}
+
+/// A SET of effects: what a computation may perform, what a function declares
+/// (`kesan (Masa, SistemFail)`) and therefore what its type's latent effect is,
+/// or which capabilities a scope holds.
+///
+/// # Why a set, not the `Effect` lattice
+///
+/// [`Effect::join`] is the Coq `effect_join`: the max of a TOTAL order. It is
+/// lossy across categories — `Time ⊔ FileSystem = Time` — so with single-effect
+/// latent types a `kesan (Masa, SistemFail)` callee looked like plain `Masa` to
+/// its callers, and the "performed level ≤ declared level" check let a
+/// `kesan Masa` (level 11) function write files (FileSystem, level 5) or open
+/// sockets (Network, 6): declaring one capability silently authorized every
+/// unrelated, lower-numbered one (audit finding M1c).
+///
+/// An `EffectSet` keeps every component, its `join` is set UNION (lossless),
+/// and subsumption is the PARTIAL order [`EffectSet::covers`], which never lets
+/// an effect of one [`EffectCategory`] stand in for one of another. Within a
+/// single category the original level order still applies (`kesan SistemFail`
+/// covers `Baca`; `kesan RangkaianSelamat` covers `Rangkaian`).
+///
+/// # Relation to the Coq model
+///
+/// Whatever this order accepts, the Coq total order accepts too: if each
+/// performed `e` is covered by some declared `d` (same category,
+/// `level e ≤ level d`), then `level e ≤ level (⊔ D)`. The prototype is thus a
+/// strict REFINEMENT of Coq `effect_join`/`effect_level` — it rejects more
+/// programs, never fewer — so the mechanized results still apply to every
+/// program it accepts.
+///
+/// Representation: bit `i` is the effect whose level is `i` (levels are unique
+/// and `0..=18`). `Pure` is the identity and is never stored, so the empty set
+/// is "pure". Equality and hashing are structural.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct EffectSet(u32);
+
+impl EffectSet {
+    /// The pure (empty) effect set.
+    pub const PURE: EffectSet = EffectSet(0);
+
+    /// The singleton set `{e}` (`Pure` gives the empty set).
+    #[must_use]
+    pub const fn single(e: Effect) -> Self {
+        match e {
+            Effect::Pure => Self::PURE,
+            _ => EffectSet(1u32 << e.level()),
+        }
+    }
+
+    /// The effect set a function DECLARES: the components of a compound
+    /// `kesan (A, B)` annotation together with its lattice `effect` (the two
+    /// agree when produced by the parser; the union keeps a hand-built
+    /// declaration with an empty component list meaningful).
+    #[must_use]
+    pub fn from_declaration(effect: Effect, components: &[Effect]) -> Self {
+        components.iter().copied().fold(Self::single(effect), Self::join)
+    }
+
+    /// Set union — the lossless join. Accepts an `Effect` or an `EffectSet`.
+    #[must_use]
+    pub fn join(self, other: impl Into<EffectSet>) -> Self {
+        EffectSet(self.0 | other.into().0)
+    }
+
+    /// No effect at all.
+    #[must_use]
+    pub const fn is_pure(self) -> bool {
+        self.0 == 0
+    }
+
+    /// Exact membership (`Pure` is a member of every set).
+    #[must_use]
+    pub const fn contains(self, e: Effect) -> bool {
+        match e {
+            Effect::Pure => true,
+            _ => self.0 & (1u32 << e.level()) != 0,
+        }
+    }
+
+    /// The members, in ascending level order (`Pure` is never listed).
+    pub fn iter(self) -> impl Iterator<Item = Effect> {
+        Effect::ALL
+            .into_iter()
+            .filter(move |e| *e != Effect::Pure && self.contains(*e))
+    }
+
+    /// Whether this (declared / held) set COVERS the single effect `e`. This is
+    /// the partial order that replaces "`e.level() <= declared.level()`":
+    ///
+    /// * `Pure` is covered by everything (it is the identity);
+    /// * `Mut` — the write to a `biar ubah` slot the function did not bind,
+    ///   which its caller can observe (H2) — is covered by any NON-pure set.
+    ///   It is not a capability (no I/O, no authority outside the program), so
+    ///   covering it cannot reach another category; but it is observable, so
+    ///   `kesan Bersih` must not cover it. That is exactly where the old total
+    ///   order placed it (level 1, below every other effect);
+    /// * any other `e` is covered iff some member `d` is in the SAME
+    ///   [`EffectCategory`] with `e.level() <= d.level()`.
+    ///
+    /// `Alloc` is deliberately NOT local: it is an IO-category effect (see
+    /// [`Effect::category`] and the `riina-pkg` mapping) and a `kesan Peruntuk`
+    /// declaration covers `Read` (same category, lower level), so treating it
+    /// as local would let a `kesan Bersih` caller reach `Read` through an
+    /// Alloc-declared callee. The checker never infers `Alloc` on its own
+    /// (`ruj` is charged `Write`, as in Coq T_Ref): it only arises from an
+    /// explicit declaration or `laku`, where honouring it is the safe side.
+    #[must_use]
+    pub fn covers(self, e: Effect) -> bool {
+        match e {
+            Effect::Pure => true,
+            Effect::Mut => !self.is_pure(),
+            _ => self
+                .iter()
+                .any(|d| d.category() == e.category() && e.level() <= d.level()),
+        }
+    }
+
+    /// Whether every member of `other` is covered (see [`EffectSet::covers`]).
+    #[must_use]
+    pub fn covers_all(self, other: EffectSet) -> bool {
+        self.first_uncovered(other).is_none()
+    }
+
+    /// The lowest-level member of `other` this set does NOT cover, if any —
+    /// the effect an effect violation reports.
+    #[must_use]
+    pub fn first_uncovered(self, other: EffectSet) -> Option<Effect> {
+        other.iter().find(|e| !self.covers(*e))
+    }
+
+    /// The Coq-style TOTAL-order join of the members (the max level). LOSSY
+    /// across categories: only for display, codegen annotations and other
+    /// consumers that need a single label — never for an effect or capability
+    /// check.
+    #[must_use]
+    pub fn total_join(self) -> Effect {
+        self.iter().fold(Effect::Pure, Effect::join)
+    }
+}
+
+impl From<Effect> for EffectSet {
+    fn from(e: Effect) -> Self {
+        Self::single(e)
+    }
+}
+
+impl FromIterator<Effect> for EffectSet {
+    fn from_iter<I: IntoIterator<Item = Effect>>(iter: I) -> Self {
+        iter.into_iter().fold(Self::PURE, Self::join)
+    }
+}
+
+impl<'a> FromIterator<&'a Effect> for EffectSet {
+    fn from_iter<I: IntoIterator<Item = &'a Effect>>(iter: I) -> Self {
+        iter.into_iter().copied().collect()
+    }
+}
+
+/// A set equals a single effect when it is exactly that singleton (the empty
+/// set is `Pure`).
+impl PartialEq<Effect> for EffectSet {
+    fn eq(&self, other: &Effect) -> bool {
+        *self == Self::single(*other)
+    }
+}
+
+impl PartialEq<EffectSet> for Effect {
+    fn eq(&self, other: &EffectSet) -> bool {
+        other == self
+    }
+}
+
+/// Prints like `Effect` for the empty set (`Pure`) and for a singleton
+/// (`Write`), so single-effect diagnostics and type renderings are unchanged;
+/// a compound set prints as `{Time, FileSystem}`.
+impl std::fmt::Debug for EffectSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut members = self.iter();
+        match (members.next(), members.next()) {
+            (None, _) => write!(f, "{:?}", Effect::Pure),
+            (Some(e), None) => write!(f, "{e:?}"),
+            _ => f.debug_set().entries(self.iter()).finish(),
         }
     }
 }
@@ -561,8 +775,10 @@ pub enum Ty {
     String,
     Bytes,
     // Function types
-    /// T1 -[ε]-> T2
-    Fn(Box<Ty>, Box<Ty>, Effect),
+    /// T1 -[ε]-> T2. The latent effect ε is an [`EffectSet`], not a single
+    /// `Effect`: a compound declaration `kesan (Masa, SistemFail)` must reach
+    /// the callers of a function value with every component intact (M1c).
+    Fn(Box<Ty>, Box<Ty>, EffectSet),
     // Compound types
     /// T1 × T2
     Prod(Box<Ty>, Box<Ty>),
@@ -708,15 +924,17 @@ pub enum TopLevelDecl {
         name: Ident,
         params: Vec<(Ident, Ty)>,
         return_ty: Ty,
-        /// The function's effect as a single lattice value (the join of the
-        /// declared components) — used for effect propagation and codegen.
+        /// The function's effect as a single lattice value (the total-order
+        /// join of the declared components). LOSSY for a compound declaration
+        /// — display and codegen only; every check uses
+        /// [`EffectSet::from_declaration`]`(effect, &effect_set)`.
         effect: Effect,
         /// The *components* of a compound declared effect (`kesan (A, B, C)` ⇒
         /// `[A, B, C]`). The lattice `effect` field is lossy (it collapses a
-        /// compound to the max-level component), so this preserves the full set
-        /// for capability granting: each component is granted in the body, which
-        /// makes capability-gating sound for compound-effect functions. For a
-        /// single declared effect this is a one-element vector.
+        /// compound to the max-level component), so this preserves the full
+        /// set: it is the function type's latent [`EffectSet`], what its body
+        /// is checked against, and what is granted in its body. For a single
+        /// declared effect this is a one-element vector.
         effect_set: Vec<Effect>,
         body: Box<Expr>,
     },
@@ -804,8 +1022,14 @@ pub const ENTRY_POINT: &str = "utama";
 /// arity. They did disagree — the typechecker kept computing the old bare
 /// return type for zero-parameter functions after desugaring had moved on, and
 /// every zero-arg call then failed with "Expected function type, found Int".
+///
+/// `effect` is the function's whole DECLARED effect set (pass
+/// [`EffectSet::from_declaration`] for a `TopLevelDecl::Function`); a single
+/// `Effect` converts. Passing only the lossy lattice join would hide the other
+/// components of a compound declaration from every caller (M1c).
 #[must_use]
-pub fn declared_fn_ty(params: &[(Ident, Ty)], return_ty: &Ty, effect: Effect) -> Ty {
+pub fn declared_fn_ty(params: &[(Ident, Ty)], return_ty: &Ty, effect: impl Into<EffectSet>) -> Ty {
+    let effect = effect.into();
     if params.is_empty() {
         return Ty::Fn(Box::new(Ty::Unit), Box::new(return_ty.clone()), effect);
     }
@@ -841,7 +1065,7 @@ pub fn declared_fn_ty(params: &[(Ident, Ty)], return_ty: &Ty, effect: Effect) ->
 pub fn desugar_function(
     params: Vec<(Ident, Ty)>,
     return_ty: Ty,
-    effect: Effect,
+    effect: impl Into<EffectSet>,
     body: Box<Expr>,
 ) -> (Expr, Ty) {
     let fn_ty = declared_fn_ty(&params, &return_ty, effect);
@@ -1009,10 +1233,11 @@ impl Program {
                     params,
                     return_ty,
                     effect,
+                    effect_set,
                     body,
-                    ..
                 } => {
-                    let (lam, fn_ty) = desugar_function(params, return_ty, effect, body);
+                    let declared = EffectSet::from_declaration(effect, &effect_set);
+                    let (lam, fn_ty) = desugar_function(params, return_ty, declared, body);
                     pending.push((name, fn_ty, lam));
                 }
                 TopLevelDecl::Expr(e) => {
@@ -1328,5 +1553,91 @@ pub mod crypto_policy {
             "rc4" => "biased keystream, prohibited by RFC 7465",
             _ => "scheduled for removal (NIST IR 8547); migrate to a PQC or hybrid algorithm",
         }
+    }
+}
+
+#[cfg(test)]
+mod effect_set_tests {
+    use super::{Effect, EffectSet};
+
+    fn set(effs: &[Effect]) -> EffectSet {
+        effs.iter().collect()
+    }
+
+    #[test]
+    fn all_is_indexed_by_level() {
+        for (i, e) in Effect::ALL.iter().enumerate() {
+            assert_eq!(usize::from(e.level()), i, "{e:?}");
+        }
+    }
+
+    #[test]
+    fn join_is_lossless_union() {
+        let s = EffectSet::from(Effect::Time).join(Effect::FileSystem);
+        assert!(s.contains(Effect::Time) && s.contains(Effect::FileSystem));
+        assert_eq!(s.iter().collect::<Vec<_>>(), [Effect::FileSystem, Effect::Time]);
+        // The lattice join of the same two effects forgets FileSystem.
+        assert_eq!(Effect::Time.join(Effect::FileSystem), Effect::Time);
+        assert_eq!(s.total_join(), Effect::Time);
+        // Pure is the identity and is never stored.
+        assert!(EffectSet::from(Effect::Pure).is_pure());
+        assert_eq!(EffectSet::PURE.join(Effect::Write), Effect::Write);
+    }
+
+    #[test]
+    fn covers_never_crosses_a_category() {
+        let time = EffectSet::from(Effect::Time);
+        for e in [Effect::FileSystem, Effect::Write, Effect::Read, Effect::Network, Effect::Crypto] {
+            assert!(!time.covers(e), "Time must not cover {e:?}");
+        }
+        // Within a category the level order still applies...
+        assert!(time.covers(Effect::System));
+        assert!(EffectSet::from(Effect::FileSystem).covers(Effect::Read));
+        assert!(EffectSet::from(Effect::NetworkSecure).covers(Effect::Network));
+        // ...upwards only.
+        assert!(!EffectSet::from(Effect::Network).covers(Effect::NetworkSecure));
+        // A compound declaration covers each of its components' categories.
+        let both = set(&[Effect::Time, Effect::FileSystem]);
+        assert!(both.covers_all(set(&[Effect::System, Effect::Write, Effect::Time])));
+        assert_eq!(both.first_uncovered(set(&[Effect::Read, Effect::Network])), Some(Effect::Network));
+    }
+
+    #[test]
+    fn pure_mut_and_alloc_coverage() {
+        assert!(EffectSet::PURE.covers(Effect::Pure));
+        // Mut (an observable write to an outer slot) is covered by any
+        // effectful declaration, never by Bersih.
+        assert!(!EffectSet::PURE.covers(Effect::Mut));
+        assert!(EffectSet::from(Effect::Mut).covers(Effect::Mut));
+        assert!(EffectSet::from(Effect::Network).covers(Effect::Mut));
+        // Alloc is an IO effect, not local: Bersih does not cover it, and
+        // a Peruntuk declaration covers Read but not Write.
+        assert!(!EffectSet::PURE.covers(Effect::Alloc));
+        assert!(EffectSet::from(Effect::Alloc).covers(Effect::Read));
+        assert!(!EffectSet::from(Effect::Alloc).covers(Effect::Write));
+    }
+
+    #[test]
+    fn refines_the_total_order() {
+        // Everything the partial order accepts, the Coq total order accepts.
+        for d in Effect::ALL {
+            for e in Effect::ALL {
+                if EffectSet::from(d).covers(e) {
+                    assert!(e.level() <= d.level(), "{d:?} covers {e:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn debug_matches_effect_for_singletons() {
+        assert_eq!(format!("{:?}", EffectSet::PURE), "Pure");
+        assert_eq!(format!("{:?}", EffectSet::from(Effect::Write)), "Write");
+        assert_eq!(
+            format!("{:?}", set(&[Effect::Time, Effect::FileSystem])),
+            "{FileSystem, Time}"
+        );
+        assert_eq!(EffectSet::from_declaration(Effect::Time, &[Effect::FileSystem, Effect::Time]),
+                   set(&[Effect::Time, Effect::FileSystem]));
     }
 }

@@ -1100,7 +1100,7 @@ impl Lower {
             Expr::Lam(_, param_ty, body) => Ty::Fn(
                 Box::new(param_ty.clone()),
                 Box::new(self.infer_type(body)),
-                self.infer_effect(body),
+                self.infer_effect(body).into(),
             ),
             // `pulang e` has type Any (it never yields to its own context).
             Expr::Return(_) => Ty::Any,
@@ -1321,7 +1321,9 @@ impl Lower {
             Expr::App(e1, e2) => {
                 let base = self.infer_effect(e1).join(self.infer_effect(e2));
                 if let Ty::Fn(_, _, eff) = self.infer_type(e1) {
-                    base.join(eff)
+                    // The IR carries one effect label; the precise set is the
+                    // typechecker's business (it has already been checked).
+                    base.join(eff.total_join())
                 } else {
                     base
                 }
@@ -1681,7 +1683,7 @@ impl Lower {
                 self.next_var = saved_next_var;
 
                 // Emit closure creation with captured variables
-                let fn_ty = Ty::Fn(Box::new(param_ty.clone()), Box::new(return_ty), body_effect);
+                let fn_ty = Ty::Fn(Box::new(param_ty.clone()), Box::new(return_ty), body_effect.into());
                 Ok(self.emit(
                     Instruction::Closure {
                         func: func_id,

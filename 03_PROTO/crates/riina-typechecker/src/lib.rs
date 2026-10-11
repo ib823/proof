@@ -8,7 +8,8 @@
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
 use riina_types::{
-    BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage,
+    BinOp, Effect, EffectSet, Expr, Ident, Linearity, Location, SecurityLevel, SessionType,
+    StoreTy, Ty, Usage,
 };
 use std::collections::{HashMap, HashSet};
 use std::cell::{Cell, RefCell};
@@ -31,8 +32,11 @@ pub enum TypeError {
     ExpectedRef(Ty),
     ExpectedSecret(Ty),
     ExpectedProof(Ty),
+    /// A computation performs `found`, which the declared (or permitted) set
+    /// `allowed` does not cover under the category-respecting partial order
+    /// [`EffectSet::covers`]. `found` is the lowest-level offending effect.
     EffectViolation {
-        allowed: Effect,
+        allowed: EffectSet,
         found: Effect,
     },
     AnnotationMismatch {
@@ -257,10 +261,11 @@ impl TypeError {
             TypeError::VarNotFound(name) => {
                 format!("Did you mean a different variable? Check spelling of '{name}'")
             }
-            TypeError::EffectViolation { allowed: _, found } => {
+            TypeError::EffectViolation { allowed, found } => {
                 format!(
-                    "Add 'kesan {:?}' to the function signature, or remove the {:?} operation",
-                    found, found
+                    "Declare {found:?} in the function signature (effects of different \
+                     categories do not cover each other: list them all, e.g. \
+                     'kesan ({allowed:?}, {found:?})'), or remove the {found:?} operation"
                 )
             }
             TypeError::SecurityViolation {
@@ -288,8 +293,10 @@ impl TypeError {
             }
             TypeError::CapabilityViolation { required, .. } => {
                 format!(
-                    "Add a prior or enclosing 'beri {:?} ...' before the guarded operation, or remove the matching 'perlu {:?}'",
-                    required, required
+                    "Inside a function, declare {required:?} in its 'kesan' (a function body can \
+                     only narrow the capabilities it holds, never 'beri' itself new ones); at top \
+                     level add a prior or enclosing 'beri {required:?} ...' before the guarded \
+                     operation. Or remove the matching 'perlu {required:?}'"
                 )
             }
             TypeError::AnnotationMismatch { expected, found } => {
@@ -810,10 +817,15 @@ pub struct TypingContext {
     /// capabilities it is explicitly granted (`beri`), never the union of the
     /// effects other functions declare (M1a).
     pub gate_always: bool,
-    /// Extra grants for the bodies of the top-level function group when the
-    /// whole program is re-checked. Each body was already checked against
-    /// exactly its own declared effect set; this only lets the re-check pass.
-    pub body_grants: HashSet<Effect>,
+    /// M1b — the most a `beri` may grant here. `None` in top-level code, where
+    /// `beri` is the program's explicit capability MANIFEST and is
+    /// unrestricted. Inside any function body — a top-level function, a local
+    /// `fungsi`, or a closure — it is `Some(held)`: the capabilities that body
+    /// already holds when it starts (`enter_function`). There `beri X` may only
+    /// ATTENUATE: it is accepted only if `held` covers `X` under the effect
+    /// partial order ([`EffectSet::covers`]), so a function cannot grant itself
+    /// a capability its declaration (or its enclosing scope) did not give it.
+    pub grant_ceiling: Option<EffectSet>,
     /// Top-level functions in scope (by name, unshadowed). At top level a call
     /// to one is authorized by the callee's own effect declaration — its body
     /// is checked against exactly that declaration — whereas a builtin gated
@@ -849,7 +861,7 @@ impl TypingContext {
             last_closure_writes: None,
             closure_linearity: None,
             gate_always: false,
-            body_grants: HashSet::new(),
+            grant_ceiling: None,
             declared_fns: HashSet::new(),
         }
     }
@@ -866,7 +878,13 @@ impl TypingContext {
     /// Start a fresh function scope (a lambda or a top-level function body):
     /// returns, control-flow raises, local slots and outer-write tracking are
     /// all per function. The definition-site pc is kept as Δ.
+    ///
+    /// M1b: a function body can only attenuate the capabilities it starts
+    /// with — the grants in scope here (a top-level function's declared set,
+    /// or a closure's / local `fungsi`'s lexically enclosing grants) become the
+    /// ceiling for every `beri` inside it.
     pub fn enter_function(&mut self) {
+        self.grant_ceiling = Some(self.held());
         self.delta = self.pc();
         self.return_types = Rc::default();
         self.fn_raise = Rc::new(Cell::new(SecurityLevel::Public));
@@ -905,9 +923,35 @@ impl TypingContext {
         ctx
     }
 
-    /// Whether the capability gate is active and `eff` is NOT granted.
+    /// Grant a function's whole DECLARED effect set in its body: every
+    /// component, plus `Pure` so that even a `kesan Bersih` body has a
+    /// non-empty granted set (which is what switches the opt-in capability
+    /// gate on — exactly as granting the old single lattice value did).
+    pub fn with_declared_grants(&self, declared: EffectSet) -> Self {
+        let mut ctx = self.clone();
+        ctx.granted.insert(Effect::Pure);
+        ctx.granted.extend(declared.iter());
+        ctx
+    }
+
+    /// The capabilities held here, as a set (for the `beri` ceiling).
+    pub fn held(&self) -> EffectSet {
+        self.granted.iter().collect()
+    }
+
+    /// Whether the capability gate is active and `eff` is NOT granted. The
+    /// gate is EXACT membership (holding `RangkaianSelamat` does not open a
+    /// plaintext `Rangkaian` operation); only `beri` uses the coverage order.
     fn capability_missing(&self, eff: Effect) -> bool {
         (self.gate_always || !self.granted.is_empty()) && !self.granted.contains(&eff)
+    }
+
+    /// The first GATED member of `effs` the gate does not let through here.
+    /// Every component of a latent effect set is checked: with the old single
+    /// lattice value, a callee performing `(Rangkaian, Kripto)` was gated only
+    /// on `Kripto` (the join) and its Network use went unchecked.
+    fn missing_gated_capability(&self, effs: EffectSet) -> Option<Effect> {
+        effs.iter().find(|e| is_gated_effect(*e) && self.capability_missing(*e))
     }
 
     /// Allocate a new location in the store typing
@@ -992,25 +1036,25 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // prints declares `kesan Tulis`.
     c = c.extend(
         "cetak".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write.into()),
     );
     c = c.extend(
         "print".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write.into()),
     );
     c = c.extend(
         "cetakln".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write.into()),
     );
     // `cetak_baris` ("print line") is the BM name the example corpus uses for a
     // line-terminated print; same signature as `cetakln`.
     c = c.extend(
         "cetak_baris".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write.into()),
     );
     c = c.extend(
         "println".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write.into()),
     );
     // String
     c = c.extend(
@@ -1018,7 +1062,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::String),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1026,16 +1070,16 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::String),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
         "panjang".to_string(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure.into()),
     );
     c = c.extend(
         "length".to_string(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure.into()),
     );
     // Range constructors `a..b` / `a..=b`: (Int, Int) -> List<Int>.
     c = c.extend(
@@ -1043,7 +1087,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
             Box::new(Ty::List(Box::new(Ty::Int))),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1051,49 +1095,49 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
             Box::new(Ty::List(Box::new(Ty::Int))),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     // Sum (Option/Result) introspection for constructor-pattern desugaring.
     c = c.extend(
         "adalah_kiri".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure.into()),
     );
     c = c.extend(
         "adalah_kanan".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure.into()),
     );
     c = c.extend(
         "nilai_kiri".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into()),
     );
     c = c.extend(
         "nilai_kanan".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into()),
     );
     // Conversion
     c = c.extend(
         "ke_teks".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure.into()),
     );
     c = c.extend(
         "to_string".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure.into()),
     );
     c = c.extend(
         "ke_nombor".to_string(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure.into()),
     );
     c = c.extend(
         "parse_int".to_string(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure.into()),
     );
     // Arbitrary-precision integer constructor (numeric-tower BigInt slice):
     // parse a base-10 string of any length into a `BigInt`.
     for nm in ["besar", "bigint"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::BigInt), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::BigInt), Effect::Pure.into()),
         );
     }
     // Arbitrary-precision decimal constructor (numeric-tower decimal slice):
@@ -1101,7 +1145,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["perpuluhan", "decimal"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Decimal), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Decimal), Effect::Pure.into()),
         );
     }
     // Fixed-scale decimal / money (numeric-tower fixed-point slice): `wang` parses
@@ -1110,7 +1154,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["wang", "money"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Fixed), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Fixed), Effect::Pure.into()),
         );
     }
     for nm in ["titik_tetap", "fixed"] {
@@ -1119,7 +1163,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::Int))),
                 Box::new(Ty::Fixed),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
@@ -1130,7 +1174,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::Int))),
                 Box::new(Ty::FixedBin),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
@@ -1138,7 +1182,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["nfc", "ke_nfc"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure.into()),
         );
     }
     // UTS #39 confusable skeleton (`String -> String`) + detection
@@ -1146,7 +1190,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["skeleton", "rangka"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure.into()),
         );
     }
     for nm in ["adalah_keliru", "is_confusable"] {
@@ -1155,7 +1199,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 Box::new(Ty::Bool),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
@@ -1167,7 +1211,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["vfs_mula", "vfs_init", "vfs_jadi_pengguna", "vfs_become_user"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), unit_ty(), Effect::FileSystem),
+            Ty::Fn(Box::new(Ty::Int), unit_ty(), Effect::FileSystem.into()),
         );
     }
     for nm in ["vfs_tulis", "vfs_write"] {
@@ -1176,20 +1220,20 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 unit_ty(),
-                Effect::Write,
+                Effect::Write.into(),
             ),
         );
     }
     for nm in ["vfs_baca", "vfs_read"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Read),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Read.into()),
         );
     }
     for nm in ["vfs_padam", "vfs_delete"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Write),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Write.into()),
         );
     }
     // Network builtins (real TCP gated by the verified RFC 793 state machine
@@ -1200,7 +1244,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["jaring_sambung", "net_connect"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Network),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Network.into()),
         );
     }
     for nm in ["jaring_hantar", "net_send"] {
@@ -1209,7 +1253,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::Int),
-                Effect::Network,
+                Effect::Network.into(),
             ),
         );
     }
@@ -1219,14 +1263,14 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
                 Box::new(Ty::String),
-                Effect::Network,
+                Effect::Network.into(),
             ),
         );
     }
     for nm in ["jaring_tutup", "net_close"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network.into()),
         );
     }
     // Passive open: `jaring_dengar` binds "host:port" and returns a listener
@@ -1236,19 +1280,19 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["jaring_dengar", "net_listen"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Network),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Network.into()),
         );
     }
     for nm in ["jaring_alamat", "net_local_addr"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Network),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Network.into()),
         );
     }
     for nm in ["jaring_terima_sambungan", "net_accept"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Network),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Network.into()),
         );
     }
     // TLS 1.3 record protection (real AEAD via riina-tls on riina-core):
@@ -1261,7 +1305,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["jaring_tls_jabat", "net_tls_handshake"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure.into()),
         );
     }
     // Authentication (RFC 7250 raw public keys + §4.4.3 CertificateVerify):
@@ -1274,26 +1318,26 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::String),
                 Box::new(Ty::String),
-                Effect::NetworkSecure,
+                Effect::NetworkSecure.into(),
             ),
         );
     }
     for nm in ["jaring_tls_percaya", "net_tls_trust"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::NetworkSecure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::NetworkSecure.into()),
         );
     }
     for nm in ["jaring_tls_jabat_sah", "net_tls_handshake_auth"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure.into()),
         );
     }
     for nm in ["jaring_tls_disahkan", "net_tls_is_authenticated"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::NetworkSecure.into()),
         );
     }
     for nm in ["jaring_tls_kunci", "net_tls_keys"] {
@@ -1302,7 +1346,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::Bool),
-                Effect::NetworkSecure,
+                Effect::NetworkSecure.into(),
             ),
         );
     }
@@ -1312,20 +1356,20 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::Int),
-                Effect::NetworkSecure,
+                Effect::NetworkSecure.into(),
             ),
         );
     }
     for nm in ["jaring_tls_terima", "net_tls_recv"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::NetworkSecure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::NetworkSecure.into()),
         );
     }
     for nm in ["jaring_tutup_dengar", "net_close_listener"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Network.into()),
         );
     }
     // Durable key-value store (REQ-73 persistence). All carry FileSystem: a
@@ -1333,7 +1377,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["simpan_buka", "store_open"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::FileSystem),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::FileSystem.into()),
         );
     }
     for nm in ["simpan_letak", "store_put"] {
@@ -1345,7 +1389,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                     Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 )),
                 Box::new(Ty::Bool),
-                Effect::FileSystem,
+                Effect::FileSystem.into(),
             ),
         );
     }
@@ -1355,7 +1399,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::String),
-                Effect::FileSystem,
+                Effect::FileSystem.into(),
             ),
         );
     }
@@ -1365,7 +1409,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::Bool),
-                Effect::FileSystem,
+                Effect::FileSystem.into(),
             ),
         );
     }
@@ -1375,7 +1419,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::Bool),
-                Effect::FileSystem,
+                Effect::FileSystem.into(),
             ),
         );
     }
@@ -1385,20 +1429,20 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Int),
                 Box::new(Ty::List(Box::new(Ty::String))),
-                Effect::FileSystem,
+                Effect::FileSystem.into(),
             ),
         );
     }
     for nm in ["simpan_padat", "store_compact"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem.into()),
         );
     }
     for nm in ["simpan_tutup", "store_close"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::FileSystem.into()),
         );
     }
     // Real HTTP/1.1 above the verified TCP machine (REQ-73). Parsing is Pure;
@@ -1407,19 +1451,19 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     for nm in ["http_hurai_kaedah", "http_parse_method"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure.into()),
         );
     }
     for nm in ["http_hurai_laluan", "http_parse_target"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure.into()),
         );
     }
     for nm in ["http_hurai_jasad", "http_parse_body"] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::String), Effect::Pure.into()),
         );
     }
     for nm in ["http_hurai_kepala", "http_parse_header"] {
@@ -1428,7 +1472,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 Box::new(Ty::String),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
@@ -1438,7 +1482,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::String),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
@@ -1448,7 +1492,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 Box::new(Ty::String),
-                Effect::Network,
+                Effect::Network.into(),
             ),
         );
     }
@@ -1460,26 +1504,26 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 Box::new(Ty::Bool),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
     c = c.extend(
         "ke_bool".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure.into()),
     );
     c = c.extend(
         "to_bool".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure.into()),
     );
     // Math
     c = c.extend(
         "mutlak".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
     );
     c = c.extend(
         "abs".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
     );
     for name in &[
         "minimum", "min", "maksimum", "max", "kuasa", "pow", "gcd", "lcm",
@@ -1489,49 +1533,49 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
                 Box::new(Ty::Int),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
     c = c.extend(
         "punca".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
     );
     c = c.extend(
         "sqrt".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
     );
     // Assert
     c = c.extend(
         "tegaskan".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure.into()),
     );
     c = c.extend(
         "assert".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure.into()),
     );
     c = c.extend(
         "tegaskan_betul".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure.into()),
     );
     c = c.extend(
         "assert_true".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure.into()),
     );
     c = c.extend(
         "tegaskan_salah".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure.into()),
     );
     c = c.extend(
         "assert_false".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure.into()),
     );
     c = c.extend(
         "tegaskan_sama".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
             Box::new(Ty::Unit),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1539,7 +1583,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
             Box::new(Ty::Unit),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1547,7 +1591,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
             Box::new(Ty::Unit),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1555,7 +1599,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
             Box::new(Ty::Unit),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -1578,7 +1622,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ("teks_pad_kanan", "str_pad_right"),
         ("teks_baris", "str_lines"),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
+        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into());
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
@@ -1604,7 +1648,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ("senarai_unik", "list_unique"),
         ("senarai_potong", "list_slice"),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
+        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into());
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
@@ -1620,7 +1664,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ("peta_mengandungi", "map_contains"),
         ("peta_panjang", "map_len"),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
+        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into());
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
@@ -1635,7 +1679,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ("set_persilangan", "set_intersect"),
         ("set_panjang", "set_len"),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
+        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into());
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
@@ -1656,7 +1700,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::FileSystem,
             )),
-            Effect::FileSystem,
+            Effect::FileSystem.into(),
         );
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
@@ -1671,7 +1715,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ("fail_panjang", "file_size", Ty::Int),
         ("fail_senarai", "file_list_dir", Ty::Any),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::String), Box::new(ret.clone()), Effect::FileSystem);
+        let ty = Ty::Fn(Box::new(Ty::String), Box::new(ret.clone()), Effect::FileSystem.into());
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
@@ -1684,7 +1728,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         let ty = Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Unit),
-            Effect::FileSystem,
+            Effect::FileSystem.into(),
         );
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
@@ -1699,7 +1743,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // pair. The `()` zero-arg-thunk *materialisation* at runtime is a separate,
     // codebase-wide item (the interpreter evaluates a bare builtin `Var` to its
     // `Builtin` value, like `baca_garisan`).
-    let unit_to_int = || Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time);
+    let unit_to_int = || Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time.into());
     for (bm, en, ty) in [
         ("masa_sekarang", "time_now", unit_to_int()),
         // `masa_unix` — alias used by the example corpus (REQ-55): same clock.
@@ -1709,7 +1753,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         (
             "masa_tidur",
             "time_sleep",
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Time),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Time.into()),
         ),
         (
             "masa_format",
@@ -1717,7 +1761,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::String))),
                 Box::new(Ty::String),
-                Effect::Time,
+                Effect::Time.into(),
             ),
         ),
         (
@@ -1726,7 +1770,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
                 Box::new(Ty::Int),
-                Effect::Time,
+                Effect::Time.into(),
             ),
         ),
     ] {
@@ -1742,7 +1786,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         ("json_letak", "json_set"),
         ("json_ada", "json_has"),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
+        let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure.into());
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
@@ -1764,41 +1808,41 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Ty::Fn(
                 Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
                 Box::new(Ty::Int),
-                Effect::Pure,
+                Effect::Pure.into(),
             ),
         );
     }
     // `log2` really is unary — it is what the loop above was written for.
     c = c.extend(
         "log2".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
     );
     // Random — Effect::Random
     c = c.extend(
         "rawak".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random.into()),
     );
     c = c.extend(
         "random".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random.into()),
     );
 
     // ── Extra conversion builtins ──
     c = c.extend(
         "bool_ke_nombor".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure.into()),
     );
     c = c.extend(
         "bool_to_int".to_string(),
-        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure.into()),
     );
     c = c.extend(
         "nombor_ke_teks".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure.into()),
     );
     c = c.extend(
         "int_to_string".to_string(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure.into()),
     );
 
     // ── DOMAIN SECURITY: Taint Sources (return tainted data) ──
@@ -1812,7 +1856,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -1823,7 +1867,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     // `baca_garisan` — read one line of input as plain text. A real
@@ -1833,7 +1877,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // the runtime value was the un-applied builtin (master plan REQ-68).
     c = c.extend(
         "baca_garisan".to_string(),
-        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::System),
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::System.into()),
     );
 
     // HTTP request body → Tainted<String, NetworkExternal>
@@ -1845,7 +1889,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::NetworkExternal,
             )),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -1856,7 +1900,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::NetworkExternal,
             )),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -1874,7 +1918,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::SqlParam,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1888,7 +1932,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::SqlParam,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -1904,7 +1948,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::HtmlEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1918,7 +1962,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::HtmlEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -1934,7 +1978,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::JsEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1948,7 +1992,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::JsEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -1964,7 +2008,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::CommandEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -1978,7 +2022,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::CommandEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -1994,7 +2038,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::LdapEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2008,7 +2052,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::LdapEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2023,7 +2067,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::SqlParam,
             )),
             Box::new(Ty::Any), // Query results
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -2034,7 +2078,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::SqlParam,
             )),
             Box::new(Ty::Any),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
 
@@ -2047,7 +2091,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::HtmlEscape,
             )),
             Box::new(Ty::String),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2058,7 +2102,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::HtmlEscape,
             )),
             Box::new(Ty::String),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2071,7 +2115,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::JsEscape,
             )),
             Box::new(Ty::Any),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -2082,7 +2126,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::JsEscape,
             )),
             Box::new(Ty::Any),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
 
@@ -2095,7 +2139,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::CommandEscape,
             )),
             Box::new(Ty::Int), // Exit code
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -2106,7 +2150,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::CommandEscape,
             )),
             Box::new(Ty::Int),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
 
@@ -2119,7 +2163,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::LdapEscape,
             )),
             Box::new(Ty::Any), // Search results
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -2130,7 +2174,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::LdapEscape,
             )),
             Box::new(Ty::Any),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
 
@@ -2148,7 +2192,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::UrlEncode,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2162,7 +2206,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::UrlEncode,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2178,7 +2222,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::CssEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2192,7 +2236,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::CssEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2210,7 +2254,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Unit),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -2224,7 +2268,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Unit),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
 
@@ -2243,7 +2287,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Unit),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
     c = c.extend(
@@ -2260,7 +2304,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Unit),
-            Effect::System,
+            Effect::System.into(),
         ),
     );
 
@@ -2281,7 +2325,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )))),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2298,7 +2342,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )))),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2314,7 +2358,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2328,7 +2372,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2344,7 +2388,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2358,7 +2402,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::TaintSource::UserInput,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2374,12 +2418,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Unit),
             Box::new(Ty::String), // Base64-encoded token
-            Effect::Random,       // Cryptographic randomness required
+            Effect::Random.into(),       // Cryptographic randomness required
         ),
     );
     c = c.extend(
         "csrf_jana".to_string(),
-        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::Random),
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::Random.into()),
     );
 
     // Validate CSRF token (request token vs session token)
@@ -2392,7 +2436,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String), // Session token
             )),
             Box::new(Ty::Bool), // Validation result
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2400,7 +2444,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Bool),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2414,7 +2458,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String), // Expected origin
             )),
             Box::new(Ty::Bool),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2422,7 +2466,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Bool),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2436,7 +2480,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String), // Expected referer
             )),
             Box::new(Ty::Bool),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2444,7 +2488,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Bool),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2456,12 +2500,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::String), // URL only (no token needed)
             Box::new(Ty::Any),    // Response
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
         "http_dapat".to_string(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Network),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Network.into()),
     );
 
     // State-changing POST (CSRF token REQUIRED in type signature)
@@ -2478,7 +2522,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Any), // Response
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -2489,7 +2533,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::String))),
             )),
             Box::new(Ty::Any),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -2506,7 +2550,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Any),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -2517,7 +2561,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::String))),
             )),
             Box::new(Ty::Any),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -2532,7 +2576,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String), // CSRF token (REQUIRED)
             )),
             Box::new(Ty::Any),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -2540,7 +2584,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         Ty::Fn(
             Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Any),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -2564,7 +2608,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::PathTraversal,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2578,7 +2622,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::PathTraversal,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2591,7 +2635,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::PathTraversal,
             )),
             Box::new(Ty::Any), // File contents
-            Effect::Read,
+            Effect::Read.into(),
         ),
     );
     c = c.extend(
@@ -2602,7 +2646,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::PathTraversal,
             )),
             Box::new(Ty::Any),
-            Effect::Read,
+            Effect::Read.into(),
         ),
     );
 
@@ -2618,7 +2662,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::Any), // Data to write
             )),
             Box::new(Ty::Unit),
-            Effect::Write,
+            Effect::Write.into(),
         ),
     );
     c = c.extend(
@@ -2632,7 +2676,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::Any),
             )),
             Box::new(Ty::Unit),
-            Effect::Write,
+            Effect::Write.into(),
         ),
     );
 
@@ -2645,7 +2689,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::PathTraversal,
             )),
             Box::new(Ty::Bool), // Success
-            Effect::Write,
+            Effect::Write.into(),
         ),
     );
     c = c.extend(
@@ -2656,7 +2700,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::PathTraversal,
             )),
             Box::new(Ty::Bool),
-            Effect::Write,
+            Effect::Write.into(),
         ),
     );
 
@@ -2675,7 +2719,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::XmlEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2689,7 +2733,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::XmlEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2702,7 +2746,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::XmlEscape,
             )),
             Box::new(Ty::Any), // Parsed XML tree
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2713,7 +2757,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::XmlEscape,
             )),
             Box::new(Ty::Any),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2726,7 +2770,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::XmlEscape,
             )),
             Box::new(Ty::Any), // Query results
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2737,7 +2781,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::XmlEscape,
             )),
             Box::new(Ty::Any),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2756,7 +2800,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::UrlAllowlist,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2770,7 +2814,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::UrlAllowlist,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2783,7 +2827,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::UrlAllowlist,
             )),
             Box::new(Ty::Any), // Response
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -2794,7 +2838,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::UrlAllowlist,
             )),
             Box::new(Ty::Any),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -2807,7 +2851,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::UrlAllowlist,
             )),
             Box::new(Ty::Unit),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -2818,7 +2862,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::UrlAllowlist,
             )),
             Box::new(Ty::Unit),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -2837,7 +2881,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::EmailValidation,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2851,7 +2895,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::EmailValidation,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2867,7 +2911,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String), // Message body
             )),
             Box::new(Ty::Bool), // Success
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
     c = c.extend(
@@ -2881,7 +2925,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
             )),
             Box::new(Ty::Bool),
-            Effect::Network,
+            Effect::Network.into(),
         ),
     );
 
@@ -2897,7 +2941,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Unit),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -2911,7 +2955,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 )),
             )),
             Box::new(Ty::Unit),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2930,7 +2974,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::JsonValidation,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     // JSON string-CONTENT escaper: Tainted → Sanitized<String, JsonEscape>.
@@ -2956,7 +3000,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::JsonEscape,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2978,7 +3022,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 Box::new(Ty::String),
                 riina_types::Sanitizer::JsonValidation,
             )),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -2991,7 +3035,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::JsonValidation,
             )),
             Box::new(Ty::Any), // Parsed value
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -3002,7 +3046,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::JsonValidation,
             )),
             Box::new(Ty::Any),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -3015,7 +3059,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::JsonValidation,
             )),
             Box::new(Ty::Any), // Deserialized object
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
     c = c.extend(
@@ -3026,7 +3070,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
                 riina_types::Sanitizer::JsonValidation,
             )),
             Box::new(Ty::Any),
-            Effect::Pure,
+            Effect::Pure.into(),
         ),
     );
 
@@ -3046,7 +3090,7 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     ] {
         c = c.extend(
             nm.to_string(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Crypto.into()),
         );
     }
 
@@ -3083,7 +3127,7 @@ fn internal_primitive_type(name: &str) -> Option<Ty> {
         "$for_get" => (Ty::Any, Ty::Any),
         _ => return None,
     };
-    Some(Ty::Fn(Box::new(arg), Box::new(result), Effect::Pure))
+    Some(Ty::Fn(Box::new(arg), Box::new(result), Effect::Pure.into()))
 }
 
 /// Preserve an iterable's element type through lowering, so a return from a
@@ -3143,7 +3187,7 @@ struct Latent {
     /// Whether it carries/produces a `ConstantTime` value.
     ct: bool,
     /// Effect performed when (a function inside) the value is called.
-    effect: Effect,
+    effect: EffectSet,
 }
 
 impl Latent {
@@ -3151,7 +3195,7 @@ impl Latent {
         level: SecurityLevel::Public,
         taint: None,
         ct: false,
-        effect: Effect::Pure,
+        effect: EffectSet::PURE,
     };
 
     fn join(self, other: Latent) -> Latent {
@@ -3169,7 +3213,7 @@ impl Latent {
 
     /// The data-flow part only (the effect is accounted separately).
     fn data(self) -> Latent {
-        Latent { effect: Effect::Pure, ..self }
+        Latent { effect: EffectSet::PURE, ..self }
     }
 }
 
@@ -3352,7 +3396,7 @@ fn ty_contains_any(ty: &Ty) -> bool {
 /// a plain `T`). Coq's T_App/T_Lam use the exact result type, so this only
 /// closes the Rust `Any` gap. Returns the latent effect of function values
 /// erased into the result, which the caller must charge to the function.
-fn erased_result_check(declared: &Ty, found: &Ty) -> Result<Effect, TypeError> {
+fn erased_result_check(declared: &Ty, found: &Ty) -> Result<EffectSet, TypeError> {
     let hidden = erased_info(declared, found);
     if hidden.level != SecurityLevel::Public {
         return Err(TypeError::SecurityViolation {
@@ -3382,25 +3426,43 @@ fn erased_function_check(declared: &Ty, found: &Ty) -> Result<(), TypeError> {
     let hidden_eff = erased_result_check(declared, found)?;
     let declared_eff = match declared {
         Ty::Fn(_, _, e) => *e,
-        _ => Effect::Pure,
+        _ => EffectSet::PURE,
     };
-    if hidden_eff.level() > declared_eff.level() {
-        return Err(TypeError::EffectViolation {
-            allowed: declared_eff,
-            found: hidden_eff,
-        });
+    check_effects_covered(declared_eff, hidden_eff)
+}
+
+/// A LetRec/LetRecGroup binding's inferred latent effects against its declared
+/// `kesan`, arrow by arrow along the curried chain, reported as an
+/// `EffectViolation` naming the uncovered effect (the structural
+/// `types_compatible` check that follows would only say "annotation
+/// mismatch").
+fn declared_latent_check(declared: &Ty, found: &Ty) -> Result<(), TypeError> {
+    if let (Ty::Fn(_, r1, e1), Ty::Fn(_, r2, e2)) = (declared, found) {
+        check_effects_covered(*e1, *e2)?;
+        declared_latent_check(r1, r2)?;
     }
     Ok(())
+}
+
+/// The effect discipline: everything `performed` must be covered by the
+/// `declared` set under the category-respecting partial order
+/// ([`EffectSet::covers`]) — never by a merely higher-numbered effect of
+/// another category (M1c: `kesan Masa` does not cover `SistemFail`).
+fn check_effects_covered(declared: EffectSet, performed: EffectSet) -> Result<(), TypeError> {
+    match declared.first_uncovered(performed) {
+        Some(found) => Err(TypeError::EffectViolation { allowed: declared, found }),
+        None => Ok(()),
+    }
 }
 
 /// Call rule of the legacy `type_check`: an effectful call whose argument
 /// erases a secret into an `Any` position (or that runs in a secret context)
 /// is rejected; the result re-carries whatever was erased.
-fn check_call_secrecy(expected: &Ty, found: &Ty, result: Ty, effect: Effect,
+fn check_call_secrecy(expected: &Ty, found: &Ty, result: Ty, effect: EffectSet,
     pc: SecurityLevel) -> Result<Ty, TypeError> {
     let hidden = erased_info(expected, found);
     let observable_level = pc.join(hidden.level);
-    if effect.join(hidden.effect) != Effect::Pure && observable_level != SecurityLevel::Public {
+    if !effect.join(hidden.effect).is_pure() && observable_level != SecurityLevel::Public {
         return Err(TypeError::SecurityViolation {
             found: observable_level, expected: SecurityLevel::Public,
             context: "effectful call (including aliases)",
@@ -3448,16 +3510,16 @@ fn is_gated_effect(eff: Effect) -> bool {
 /// Charge the latent effect of function values erased into an `Any` position
 /// at the erasure point: it must be granted (capability gate) and must not run
 /// under a secret pc, exactly as if the function were called here.
-fn charge_erased_effect(ctx: &TypingContext, latent: Effect, pc: SecurityLevel) -> Result<(), TypeError> {
-    if latent == Effect::Pure {
+fn charge_erased_effect(ctx: &TypingContext, latent: EffectSet, pc: SecurityLevel) -> Result<(), TypeError> {
+    if latent.is_pure() {
         return Ok(());
     }
-    if is_gated_effect(latent) && ctx.capability_missing(latent) {
+    if let Some(missing) = ctx.missing_gated_capability(latent) {
         return Err(TypeError::CapabilityViolation {
-            required: latent,
+            required: missing,
             message: format!(
                 "a function value performing {latent:?} is passed into an untyped (Any) position, \
-                 where it may be called; {latent:?} must be granted in scope"
+                 where it may be called; {missing:?} must be granted in scope"
             ),
         });
     }
@@ -3480,7 +3542,8 @@ fn charge_erased_effect(ctx: &TypingContext, latent: Effect, pc: SecurityLevel) 
 /// recorded as the caller's own outer writes (so the caller becomes `Mut`).
 /// Anything else is charged its full latent effect. The secret-pc check at the
 /// call site always uses the full effect.
-fn attribute_slot_writes(ctx: &TypingContext, callee: &Expr, fn_eff: Effect) -> Effect {
+fn attribute_slot_writes(ctx: &TypingContext, callee: &Expr, fn_eff: EffectSet) -> EffectSet {
+    // Only a closure whose ENTIRE latent effect is `Mut` qualifies.
     if fn_eff != Effect::Mut {
         return fn_eff;
     }
@@ -3495,7 +3558,7 @@ fn attribute_slot_writes(ctx: &TypingContext, callee: &Expr, fn_eff: Effect) -> 
             outer.ids.insert(*id);
         }
     }
-    Effect::Pure
+    EffectSet::PURE
 }
 
 /// Join two compatible types (branch arms, a function's returns), preferring
@@ -3939,7 +4002,12 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
             // expected) — you may always declare more effect than you use (e.g. a
             // `kesan Baca` stub whose body is actually Pure). Argument/return
             // types must be compatible as before.
-            types_compatible(a1, a2) && types_compatible(r1, r2) && e2.level() <= e1.level()
+            //
+            // "Smaller" is the category-respecting PARTIAL order: every latent
+            // component of `e2` must be covered by `e1` (M1c). The old
+            // `e2.level() <= e1.level()` let a `Masa`-typed slot hold a
+            // file-writing closure because FileSystem (5) < Time (11).
+            types_compatible(a1, a2) && types_compatible(r1, r2) && e1.covers_all(*e2)
         }
 
         // Product types: covariant in both components
@@ -4275,14 +4343,14 @@ pub fn session_subtype(sub: &SessionType, sup: &SessionType) -> bool {
 /// Inductive has_type : type_env -> store_ty -> security_level ->
 ///                       expr -> ty -> effect -> Prop
 /// ```
-pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     match expr {
         // ════════════════════════════════════════════════════════════════════
         // VERIFIED: Values (T_Unit, T_Bool, T_Int, T_String, T_Var)
         // ════════════════════════════════════════════════════════════════════
-        Expr::Unit => Ok((Ty::Unit, Effect::Pure)),
-        Expr::Bool(_) => Ok((Ty::Bool, Effect::Pure)),
-        Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
+        Expr::Unit => Ok((Ty::Unit, EffectSet::PURE)),
+        Expr::Bool(_) => Ok((Ty::Bool, EffectSet::PURE)),
+        Expr::Int(_) => Ok((Ty::Int, EffectSet::PURE)),
         // Sized integer literal `42u8` types as the distinct `Ty::IntN`, not the
         // default `Ty::Int` (numeric tower).
         Expr::IntN { bits, signed, .. } => Ok((
@@ -4290,9 +4358,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 bits: *bits,
                 signed: *signed,
             },
-            Effect::Pure,
+            EffectSet::PURE,
         )),
-        Expr::String(_) => Ok((Ty::String, Effect::Pure)),
+        Expr::String(_) => Ok((Ty::String, EffectSet::PURE)),
 
         // List literal `[e1, e2, ...]`: every element must share a type; the
         // result is `List<elem>`. An empty `[]` is `List<Any>`. The effect is
@@ -4437,7 +4505,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             if let Some(raise) = ctx.loop_raises.last() {
                 raise.set(raise.get().join(pc));
             }
-            Ok((Ty::Any, Effect::Pure))
+            Ok((Ty::Any, EffectSet::PURE))
         }
 
         // T_LetMut: Γ ⊢ e₁ : T, ε₁ →  Γ, x:Ref(T,Awam) ⊢ e₂ : U, ε₂ →
@@ -4475,12 +4543,11 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
         // Mutually-recursive group (REQ-44 forward references): all group names
         // are in scope in every body AND the continuation. Every BODY is granted
-        // every declared effect (over-granting only admits MORE programs — the
-        // body-effect <= declared discipline, with exactly the function's own
-        // effect set granted, is enforced separately in
-        // validate_top_level_decls, so this never falsely rejects). The
-        // CONTINUATION (top-level code) is granted nothing from the group (M1a):
-        // a function's declaration authorizes its own body, not the program.
+        // exactly its own declared effect set (the same grants as the
+        // authoritative per-function check in validate_top_level_decls), and
+        // its latent effects must be covered by that set. The CONTINUATION
+        // (top-level code) is granted nothing from the group (M1a): a
+        // function's declaration authorizes its own body, not the program.
         // Recursion soundness is mechanized in foundations/RecursionSafety.v.
         Expr::LetRecGroup(..) => tc_let_rec_group(ctx, expr),
 
@@ -4567,8 +4634,36 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // FORMALIZED: Capabilities (T_Require, T_Grant)
         // ════════════════════════════════════════════════════════════════════
         Expr::Require(..) => tc_require(ctx, expr),
+        // T_Grant: typecheck body with eff added to granted set.
+        //
+        // M1b — grants may ATTENUATE, never AMPLIFY. Coq T_Grant is
+        // unrestricted, and so was this arm: any function could `beri` itself
+        // Network/Process/... and pass the capability gate. Now:
+        //   * in TOP-LEVEL code (`grant_ceiling == None`) `beri` is the
+        //     program's explicit capability manifest and stays unrestricted;
+        //   * inside ANY function body — top-level `fungsi`, local `fungsi` or
+        //     closure — `beri X` is accepted only if X is covered (effect
+        //     partial order, `EffectSet::covers`) by what the body already held
+        //     on entry (`enter_function`): a top-level function holds its
+        //     declared `kesan` set; a closure or local `fungsi` holds exactly
+        //     its lexically enclosing grants (a local function's own `kesan`
+        //     bounds its latent effect but grants nothing — see T_LetRec), so
+        //     neither is a route to amplification.
+        // A permitted grant is covered by the ceiling, so it never raises it.
         Expr::Grant(eff, e) => {
-            // T_Grant: typecheck body with eff added to granted set
+            if let Some(held) = ctx.grant_ceiling {
+                if !held.covers(*eff) {
+                    return Err(TypeError::CapabilityViolation {
+                        required: *eff,
+                        message: format!(
+                            "'beri {eff:?}' inside a function body may only narrow the \
+                             capabilities the function already holds ({held:?}), never add one; \
+                             declare {eff:?} in the function's 'kesan' instead (its callers \
+                             then need it too)"
+                        ),
+                    });
+                }
+            }
             let mut grant_ctx = ctx.with_grant(*eff);
             let (t, e_eff) = type_check_full(&mut grant_ctx, e)?;
             Ok((t, e_eff))
@@ -4580,7 +4675,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::Loc(idx) => {
             let loc = Location::new(*idx as usize);
             match ctx.lookup_loc(&loc) {
-                Some((ty, sl)) => Ok((Ty::Ref(Box::new(ty.clone()), *sl), Effect::Pure)),
+                Some((ty, sl)) => Ok((Ty::Ref(Box::new(ty.clone()), *sl), EffectSet::PURE)),
                 None => Err(TypeError::LocationNotFound(loc)),
             }
         }
@@ -4593,7 +4688,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             args,
             ret_ty,
         } => {
-            let mut eff = Effect::System;
+            let mut eff = EffectSet::from(Effect::System);
             for arg in args {
                 let (_t, e) = type_check_full(ctx, arg)?;
                 eff = eff.join(e);
@@ -4650,7 +4745,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // CAHAYA Phase J5: UI Primitives
         // ════════════════════════════════════════════════════════════════════
         Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
-            let mut eff = Effect::Pure;
+            let mut eff = EffectSet::PURE;
             for e in elems {
                 let (_, e_eff) = type_check_full(ctx, e)?;
                 eff = eff.join(e_eff);
@@ -4666,9 +4761,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             Ok((Ty::Element, eff1.join(eff2)))
         }
 
-        Expr::UIColor(_, _, _) => Ok((Ty::Color, Effect::Pure)),
+        Expr::UIColor(_, _, _) => Ok((Ty::Color, EffectSet::PURE)),
 
-        Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, Effect::Pure)),
+        Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, EffectSet::PURE)),
 
         Expr::UIContrastCheck(..) => tc_ui_contrast_check(ctx, expr),
     }
@@ -4683,12 +4778,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 // fuzz harness's 4 MiB worker stack on legal, parser-bounded nesting).
 
 #[inline(never)]
-fn tc_list_lit(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_list_lit(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::ListLit(elems) = expr else {
         unreachable!("tc_list_lit is only called for Expr::ListLit")
     };
     let mut elem_ty = Ty::Any;
-    let mut eff = Effect::Pure;
+    let mut eff = EffectSet::PURE;
     for (i, e) in elems.iter().enumerate() {
         let (t, ef) = type_check_full(ctx, e)?;
         eff = eff.join(ef);
@@ -4711,11 +4806,11 @@ fn tc_list_lit(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Typ
 }
 
 #[inline(never)]
-fn tc_record_lit(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_record_lit(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::RecordLit(_name, fields) = expr else {
         unreachable!("tc_record_lit is only called for Expr::RecordLit")
     };
-    let mut eff = Effect::Pure;
+    let mut eff = EffectSet::PURE;
     let mut info = Latent::NONE;
     for (_f, e) in fields {
         let (t, ef) = type_check_full(ctx, e)?;
@@ -4727,12 +4822,12 @@ fn tc_record_lit(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), T
 }
 
 #[inline(never)]
-fn tc_var(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_var(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Var(x) = expr else {
         unreachable!("tc_var is only called for Expr::Var")
     };
     if let Some(ty) = internal_primitive_type(x) {
-        return Ok((ty, Effect::Pure));
+        return Ok((ty, EffectSet::PURE));
     }
     let ty = ctx
         .lookup_var(x)
@@ -4755,11 +4850,11 @@ fn tc_var(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
     // A3: Record usage for linearity tracking.
     // Linear/Affine variables error on second use.
     ctx.gamma.record_use(x)?;
-    Ok((ty, Effect::Pure))
+    Ok((ty, EffectSet::PURE))
 }
 
 #[inline(never)]
-fn tc_lam(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_lam(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Lam(x, t1, body) = expr else {
         unreachable!("tc_lam is only called for Expr::Lam")
     };
@@ -4800,12 +4895,12 @@ fn tc_lam(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
     ctx.last_closure_writes = Some(Rc::new(writes));
     Ok((
         Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff),
-        Effect::Pure,
+        EffectSet::PURE,
     ))
 }
 
 #[inline(never)]
-fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::App(e1, e2) = expr else {
         unreachable!("tc_app is only called for Expr::App")
     };
@@ -4818,7 +4913,7 @@ fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
                 .cloned()
                 .ok_or_else(|| TypeError::VarNotFound(f.clone()))?;
             ctx.gamma.record_use(f)?;
-            (ty, Effect::Pure)
+            (ty, EffectSet::PURE)
         }
         _ => type_check_full(ctx, e1)?,
     };
@@ -4865,21 +4960,30 @@ fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
             // Rawak)` grants every component (via `effect_set` on the
             // function decl), so a legitimate compound-effect function
             // (e.g. `crypto_ops.rii`) is no longer a false positive. File
-            // I/O stays at effect+taint typing (not capability-gated).
+            // I/O and Time stay at effect+taint typing (not capability-gated);
+            // since M1c that effect typing is the category-respecting partial
+            // order, so a declaration of another category no longer covers
+            // them.
             //
             // M1a: at TOP LEVEL (`gate_always`) a call to a declared
             // top-level function is authorized by that function's own
             // declaration (its body is checked against exactly it);
             // every other gated operation needs an explicit grant.
+            //
+            // M1c: EVERY gated component of the latent set is checked
+            // (the old lattice value gated `(Rangkaian, Kripto)` only on
+            // `Kripto`, its join).
             let declared_callee = ctx.gate_always
                 && matches!(&**e1, Expr::Var(f) if ctx.declared_fns.contains(f));
-            if is_gated_effect(fn_eff) && !declared_callee && ctx.capability_missing(fn_eff) {
-                return Err(TypeError::CapabilityViolation {
-                    required: fn_eff,
-                    message: format!(
-                        "{fn_eff:?} operation requires a granted {fn_eff:?} capability in scope"
-                    ),
-                });
+            if !declared_callee {
+                if let Some(missing) = ctx.missing_gated_capability(fn_eff) {
+                    return Err(TypeError::CapabilityViolation {
+                        required: missing,
+                        message: format!(
+                            "{missing:?} operation requires a granted {missing:?} capability in scope"
+                        ),
+                    });
+                }
             }
             // H1/H4/M3: what the argument loses by being viewed at the
             // parameter type (an `Any` position). Parser-generated
@@ -4901,7 +5005,7 @@ fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
             // and secret-dependent `pulang`/`putus` earlier), is an
             // observable flow. A slot-writing closure is `Mut` (H2).
             let observable_level = call_pc.join(hidden.level);
-            if call_eff != Effect::Pure && observable_level != SecurityLevel::Public {
+            if !call_eff.is_pure() && observable_level != SecurityLevel::Public {
                 return Err(TypeError::SecurityViolation {
                     found: observable_level,
                     expected: SecurityLevel::Public,
@@ -4951,7 +5055,7 @@ fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
 }
 
 #[inline(never)]
-fn tc_fst(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_fst(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Fst(e) = expr else {
         unreachable!("tc_fst is only called for Expr::Fst")
     };
@@ -4967,7 +5071,7 @@ fn tc_fst(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
 }
 
 #[inline(never)]
-fn tc_case(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_case(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Case(e, x, e1, y, e2) = expr else {
         unreachable!("tc_case is only called for Expr::Case")
     };
@@ -5026,7 +5130,7 @@ fn tc_case(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErr
 }
 
 #[inline(never)]
-fn tc_if(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_if(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::If(cond, e2, e3) = expr else {
         unreachable!("tc_if is only called for Expr::If")
     };
@@ -5100,7 +5204,7 @@ fn tc_if(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError
 }
 
 #[inline(never)]
-fn tc_while(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_while(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::While(cond, body) = expr else {
         unreachable!("tc_while is only called for Expr::While")
     };
@@ -5137,7 +5241,7 @@ fn tc_while(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeEr
 }
 
 #[inline(never)]
-fn tc_slot_get(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_slot_get(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::SlotGet(x) = expr else {
         unreachable!("tc_slot_get is only called for Expr::SlotGet")
     };
@@ -5146,13 +5250,13 @@ fn tc_slot_get(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Typ
         .cloned()
         .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
     match ty {
-        Ty::Ref(inner, _) => Ok((*inner, Effect::Pure)),
-        other => Ok((other, Effect::Pure)),
+        Ty::Ref(inner, _) => Ok((*inner, EffectSet::PURE)),
+        other => Ok((other, EffectSet::PURE)),
     }
 }
 
 #[inline(never)]
-fn tc_slot_set(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_slot_set(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::SlotSet(x, e) = expr else {
         unreachable!("tc_slot_set is only called for Expr::SlotSet")
     };
@@ -5198,7 +5302,7 @@ fn tc_slot_set(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Typ
 }
 
 #[inline(never)]
-fn tc_let(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_let(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Let(x, linearity, e1, e2) = expr else {
         unreachable!("tc_let is only called for Expr::Let")
     };
@@ -5243,7 +5347,7 @@ fn tc_let(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeErro
 }
 
 #[inline(never)]
-fn tc_return(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_return(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Return(e) = expr else {
         unreachable!("tc_return is only called for Expr::Return")
     };
@@ -5258,23 +5362,26 @@ fn tc_return(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeE
 }
 
 #[inline(never)]
-fn tc_let_rec(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_let_rec(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::LetRec(x, ty_ann, e1, e2) = expr else {
         unreachable!("tc_let_rec is only called for Expr::LetRec")
     };
     let ctx_rec = ctx.extend_gamma(x.clone(), ty_ann.clone());
-    // Grant the function's declared effect so Require inside body is
-    // authorized. The grant is scoped to the BODY: the continuation
-    // holds only its own capabilities (M1a — a local `fungsi` declaring
-    // `kesan Rangkaian` used to authorize networking in the rest of the
-    // enclosing block).
-    let mut ctx_rec_mut = match ty_ann {
-        Ty::Fn(_, _, fn_eff) => ctx_rec.with_grant(*fn_eff),
-        _ => ctx_rec.clone(),
-    };
-    ctx_rec_mut.gate_always = false;
+    // A LOCAL `fungsi` is a named, recursive closure: its body holds exactly
+    // the capabilities of its lexically enclosing scope, like any lambda
+    // (M1b). Its `kesan` declaration is an UPPER BOUND on its latent effect
+    // (checked below), not a grant. It used to grant its declared effect to
+    // its own body (with the gate otherwise off), so `fungsi g() kesan
+    // Rangkaian { .. }` inside a `kesan Bersih` function, or in top-level
+    // code with no `beri`, could open sockets; and at top level a call to it
+    // was then authorized "by its own declaration" (`declared_fns`), which is
+    // only sound for TOP-LEVEL functions, whose bodies are checked against
+    // their declaration alone. Neither grant leaks into the continuation
+    // (M1a).
+    let mut ctx_rec_mut = ctx_rec.clone();
     ctx_rec_mut.last_closure_writes = None;
     let (t1, eff1) = type_check_full(&mut ctx_rec_mut, e1)?;
+    declared_latent_check(ty_ann, &t1)?;
     if !types_compatible(ty_ann, &t1) {
         return Err(TypeError::AnnotationMismatch {
             expected: ty_ann.clone(),
@@ -5283,7 +5390,6 @@ fn tc_let_rec(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Type
     }
     erased_function_check(ty_ann, &t1)?;
     let mut ctx_rec_mut2 = ctx_rec;
-    ctx_rec_mut2.declared_fns.insert(x.clone());
     if let (Expr::Lam(..), Some(writes)) = (&**e1, ctx_rec_mut.last_closure_writes.take()) {
         ctx_rec_mut2.closure_writes.insert(x.clone(), writes);
     }
@@ -5292,7 +5398,7 @@ fn tc_let_rec(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Type
 }
 
 #[inline(never)]
-fn tc_let_rec_group(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_let_rec_group(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::LetRecGroup(bindings, cont) = expr else {
         unreachable!("tc_let_rec_group is only called for Expr::LetRecGroup")
     };
@@ -5302,18 +5408,20 @@ fn tc_let_rec_group(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect)
     }
     let mut body_ctx = ctx_rec.clone();
     body_ctx.gate_always = false;
-    for (_, ty_ann, _) in bindings {
-        if let Ty::Fn(_, _, fn_eff) = ty_ann {
-            body_ctx = body_ctx.with_grant(*fn_eff);
-        }
-    }
-    for eff in ctx.body_grants.iter().copied() {
-        body_ctx = body_ctx.with_grant(eff);
-    }
-    let mut eff = Effect::Pure;
+    let mut eff = EffectSet::PURE;
     for (_, ty_ann, e1) in bindings {
-        let mut c = body_ctx.clone();
+        // Each body holds exactly ITS OWN declared effect set (every
+        // component — the latent type is a set now, so nothing is lost). The
+        // group used to grant every body the union of all the group's
+        // declarations, to compensate for the lossy single-effect latent
+        // type; that over-grant is gone. This re-check now agrees with the
+        // authoritative per-function check in `validate_top_level_decls`.
+        let mut c = match ty_ann {
+            Ty::Fn(_, _, fn_eff) => body_ctx.with_declared_grants(*fn_eff),
+            _ => body_ctx.clone(),
+        };
         let (t1, eff1) = type_check_full(&mut c, e1)?;
+        declared_latent_check(ty_ann, &t1)?;
         if !types_compatible(ty_ann, &t1) {
             return Err(TypeError::AnnotationMismatch {
                 expected: ty_ann.clone(),
@@ -5332,7 +5440,7 @@ fn tc_let_rec_group(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect)
 }
 
 #[inline(never)]
-fn tc_deref(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_deref(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Deref(e) = expr else {
         unreachable!("tc_deref is only called for Expr::Deref")
     };
@@ -5370,7 +5478,7 @@ fn tc_deref(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeEr
 }
 
 #[inline(never)]
-fn tc_assign(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_assign(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Assign(e1, e2) = expr else {
         unreachable!("tc_assign is only called for Expr::Assign")
     };
@@ -5421,7 +5529,7 @@ fn tc_assign(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeE
 }
 
 #[inline(never)]
-fn tc_declassify(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_declassify(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Declassify(e, proof) = expr else {
         unreachable!("tc_declassify is only called for Expr::Declassify")
     };
@@ -5453,7 +5561,7 @@ fn tc_declassify(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), T
 }
 
 #[inline(never)]
-fn tc_require(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_require(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Require(eff, e) = expr else {
         unreachable!("tc_require is only called for Expr::Require")
     };
@@ -5471,7 +5579,7 @@ fn tc_require(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Type
 }
 
 #[inline(never)]
-fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::BinOp(op, e1, e2) = expr else {
         unreachable!("tc_bin_op is only called for Expr::BinOp")
     };
@@ -5678,7 +5786,7 @@ fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeE
 }
 
 #[inline(never)]
-fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::ActorDecl {
         name: _,
         state_ty,
@@ -5722,7 +5830,7 @@ fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), T
 }
 
 #[inline(never)]
-fn tc_choreography_block(expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_choreography_block(expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::ChoreographyBlock {
         name: _,
         roles,
@@ -5740,12 +5848,12 @@ fn tc_choreography_block(expr: &Expr) -> Result<(Ty, Effect), TypeError> {
     }
     Ok((
         Ty::Choreography(roles.clone(), protocol.clone()),
-        Effect::Pure,
+        EffectSet::PURE,
     ))
 }
 
 #[inline(never)]
-fn tc_spawn(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_spawn(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::Spawn(actor_expr, init_state_expr) = expr else {
         unreachable!("tc_spawn is only called for Expr::Spawn")
     };
@@ -5769,7 +5877,7 @@ fn tc_spawn(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeEr
 }
 
 #[inline(never)]
-fn tc_actor_send(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_actor_send(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::ActorSend(actor_expr, msg_expr) = expr else {
         unreachable!("tc_actor_send is only called for Expr::ActorSend")
     };
@@ -5806,7 +5914,7 @@ fn tc_actor_send(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), T
 }
 
 #[inline(never)]
-fn tc_crdt_merge(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_crdt_merge(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::CRDTMerge(left, right) = expr else {
         unreachable!("tc_crdt_merge is only called for Expr::CRDTMerge")
     };
@@ -5828,7 +5936,7 @@ fn tc_crdt_merge(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), T
 }
 
 #[inline(never)]
-fn tc_content_verify(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_content_verify(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::ContentVerify(expected_hash, value) = expr else {
         unreachable!("tc_content_verify is only called for Expr::ContentVerify")
     };
@@ -5850,7 +5958,7 @@ fn tc_content_verify(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect
 }
 
 #[inline(never)]
-fn tc_token_transfer(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_token_transfer(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::TokenTransfer { from, to, amount } = expr else {
         unreachable!("tc_token_transfer is only called for Expr::TokenTransfer")
     };
@@ -5888,7 +5996,7 @@ fn tc_token_transfer(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect
 }
 
 #[inline(never)]
-fn tc_zakat_calculate(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_zakat_calculate(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::ZakatCalculate(value) = expr else {
         unreachable!("tc_zakat_calculate is only called for Expr::ZakatCalculate")
     };
@@ -5906,7 +6014,7 @@ fn tc_zakat_calculate(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effec
 }
 
 #[inline(never)]
-fn tc_ui_text(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_ui_text(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::UIText(content, color) = expr else {
         unreachable!("tc_ui_text is only called for Expr::UIText")
     };
@@ -5922,7 +6030,7 @@ fn tc_ui_text(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), Type
 }
 
 #[inline(never)]
-fn tc_ui_contrast_check(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+fn tc_ui_contrast_check(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     let Expr::UIContrastCheck(fg, bg) = expr else {
         unreachable!("tc_ui_contrast_check is only called for Expr::UIContrastCheck")
     };
@@ -5949,25 +6057,25 @@ fn tc_ui_contrast_check(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Eff
 
 /// Legacy typechecker for backward compatibility.
 /// DEPRECATED: Use type_check_full with TypingContext for new code.
-pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError> {
+pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
     match expr {
         // VERIFIED: Values
-        Expr::Unit => Ok((Ty::Unit, Effect::Pure)),
-        Expr::Bool(_) => Ok((Ty::Bool, Effect::Pure)),
-        Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
+        Expr::Unit => Ok((Ty::Unit, EffectSet::PURE)),
+        Expr::Bool(_) => Ok((Ty::Bool, EffectSet::PURE)),
+        Expr::Int(_) => Ok((Ty::Int, EffectSet::PURE)),
         // Sized integer literal `42u8` types as the distinct `Ty::IntN` (numeric tower).
         Expr::IntN { bits, signed, .. } => Ok((
             Ty::IntN {
                 bits: *bits,
                 signed: *signed,
             },
-            Effect::Pure,
+            EffectSet::PURE,
         )),
-        Expr::String(_) => Ok((Ty::String, Effect::Pure)),
+        Expr::String(_) => Ok((Ty::String, EffectSet::PURE)),
         // List literal `[e1, ...]` — all elements share a type; result `List<T>`.
         Expr::ListLit(elems) => {
             let mut elem_ty = Ty::Any;
-            let mut eff = Effect::Pure;
+            let mut eff = EffectSet::PURE;
             for (i, e) in elems.iter().enumerate() {
                 let (t, ef) = type_check(ctx, e)?;
                 eff = eff.join(ef);
@@ -5984,7 +6092,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         }
         // Record literal / field access — structural, typed as `Any`.
         Expr::RecordLit(_name, fields) => {
-            let mut eff = Effect::Pure;
+            let mut eff = EffectSet::PURE;
             for (_f, e) in fields {
                 let (_t, ef) = type_check(ctx, e)?;
                 eff = eff.join(ef);
@@ -5997,13 +6105,13 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         }
         Expr::Var(x) => {
             if let Some(ty) = internal_primitive_type(x) {
-                return Ok((ty, Effect::Pure));
+                return Ok((ty, EffectSet::PURE));
             }
             let ty = ctx
                 .lookup(x)
                 .cloned()
                 .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
-            Ok((ty, Effect::Pure))
+            Ok((ty, EffectSet::PURE))
         }
 
         // VERIFIED: Functions
@@ -6014,7 +6122,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let t2 = function_result_type(t2, &new_ctx.return_types.borrow())?;
             Ok((
                 Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff),
-                Effect::Pure,
+                EffectSet::PURE,
             ))
         }
         Expr::App(e1, e2) => {
@@ -6175,7 +6283,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let (_t_body, eff_body) = type_check(ctx, body)?;
             Ok((Ty::Unit, eff_cond.join(eff_body)))
         }
-        Expr::Break | Expr::Continue => Ok((Ty::Any, Effect::Pure)),
+        Expr::Break | Expr::Continue => Ok((Ty::Any, EffectSet::PURE)),
         Expr::LetMut(x, e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let ctx_new = ctx.extend(x.clone(), Ty::Ref(Box::new(t1), SecurityLevel::Public));
@@ -6188,8 +6296,8 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 .cloned()
                 .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
             match ty {
-                Ty::Ref(inner, _) => Ok((*inner, Effect::Pure)),
-                other => Ok((other, Effect::Pure)),
+                Ty::Ref(inner, _) => Ok((*inner, EffectSet::PURE)),
+                other => Ok((other, EffectSet::PURE)),
             }
         }
         Expr::SlotSet(_, _) => type_check_full(&mut ctx.to_typing_context(), expr),
@@ -6226,7 +6334,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             for (name, ty_ann, _) in bindings {
                 ctx_rec = ctx_rec.extend(name.clone(), ty_ann.clone());
             }
-            let mut eff = Effect::Pure;
+            let mut eff = EffectSet::PURE;
             for (_, ty_ann, e1) in bindings {
                 let (t1, eff1) = type_check(&ctx_rec, e1)?;
                 if !types_compatible(ty_ann, &t1) {
@@ -6328,7 +6436,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             // Without store context, we return Ref(Unit, Public) as a conservative type.
             Ok((
                 Ty::Ref(Box::new(Ty::Unit), SecurityLevel::Public),
-                Effect::Pure,
+                EffectSet::PURE,
             ))
         }
 
@@ -6338,7 +6446,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             args,
             ret_ty,
         } => {
-            let mut eff = Effect::System; // FFI is always effectful
+            let mut eff = EffectSet::from(Effect::System); // FFI is always effectful
             for arg in args {
                 let (_t, e) = type_check(ctx, arg)?;
                 eff = eff.join(e);
@@ -6486,7 +6594,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             }
             Ok((
                 Ty::Choreography(roles.clone(), protocol.clone()),
-                Effect::Pure,
+                EffectSet::PURE,
             ))
         }
 
@@ -6637,7 +6745,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
 
         // CAHAYA Phase J5: UI Primitives
         Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
-            let mut eff = Effect::Pure;
+            let mut eff = EffectSet::PURE;
             for e in elems {
                 let (_, e_eff) = type_check(ctx, e)?;
                 eff = eff.join(e_eff);
@@ -6663,9 +6771,9 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             Ok((Ty::Element, eff1.join(eff2)))
         }
 
-        Expr::UIColor(_, _, _) => Ok((Ty::Color, Effect::Pure)),
+        Expr::UIColor(_, _, _) => Ok((Ty::Color, EffectSet::PURE)),
 
-        Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, Effect::Pure)),
+        Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, EffectSet::PURE)),
 
         Expr::UIContrastCheck(fg, bg) => {
             let (fg_ty, eff1) = type_check(ctx, fg)?;

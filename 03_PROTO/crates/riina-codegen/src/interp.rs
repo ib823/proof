@@ -2667,7 +2667,7 @@ mod tests {
     fn test_eval_letrec_simple() {
         let mut interp = Interpreter::new();
         // let rec f : Int -> Int = λn. if n <= 0 then 1 else n * f(n-1) in f(5)
-        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
         let body = Expr::If(
             Box::new(Expr::BinOp(
                 BinOp::Le,
@@ -2707,7 +2707,7 @@ mod tests {
         with_eval_stack(|| {
             let mut interp = Interpreter::new();
             // let rec count : Int -> Int = λn. if n <= 0 then 0 else count(n-1) in count(10)
-            let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+            let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
             let body = Expr::If(
                 Box::new(Expr::BinOp(
                     BinOp::Le,

@@ -98,7 +98,9 @@ fn effect_label(eff: Effect) -> &'static str {
 /// values/constants).
 fn builtin_effect(ty: &Ty) -> Effect {
     match ty {
-        Ty::Fn(_, _, eff) => *eff,
+        // Every builtin's latent set is a single effect (or pure), so its
+        // total-order join is exactly that effect.
+        Ty::Fn(_, _, eff) => eff.total_join(),
         _ => Effect::Pure,
     }
 }

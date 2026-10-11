@@ -12,7 +12,8 @@ pub mod modules;
 use riina_lexer::{Lexer, Span, Token, TokenKind};
 use riina_types::Span as AstSpan;
 use riina_types::{
-    BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Import, Linearity, Program, Sanitizer,
+    BinOp, CapabilityKind, Effect, EffectSet, Expr, ExternDecl, Ident, Import, Linearity, Program,
+    Sanitizer,
     SecurityLevel, SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
 };
 use std::fmt;
@@ -874,9 +875,16 @@ impl<'a> Parser<'a> {
                     params,
                     return_ty,
                     effect,
+                    effect_set,
                     body,
-                    ..
-                } => (name, params, return_ty, effect, body),
+                } => (
+                    name,
+                    params,
+                    return_ty,
+                    // The whole declared set, not the lossy lattice join (M1c).
+                    EffectSet::from_declaration(effect, &effect_set),
+                    body,
+                ),
                 _ => unreachable!("parse_function_decl returns Function"),
             };
             let continuation = if self.at_sequence_end() {
@@ -3178,14 +3186,19 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse an optional trailing `kesan <eff>` effect annotation on a function
-    /// type (e.g. `Fn(A) -> B kesan Tulis`). Defaults to `Effect::Pure`.
-    fn parse_optional_fn_effect(&mut self) -> Result<Effect, ParseError> {
+    /// type (e.g. `Fn(A) -> B kesan Tulis`). Defaults to pure.
+    ///
+    /// A compound annotation keeps EVERY component: the latent effect of a
+    /// function type is an `EffectSet`, and collapsing `kesan (Masa,
+    /// SistemFail)` to its lattice join (`Masa`) would let a `kesan Masa`
+    /// caller invoke a file-writing function value (M1c).
+    fn parse_optional_fn_effect(&mut self) -> Result<EffectSet, ParseError> {
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
             self.consume(TokenKind::KwEffect)?;
-            // Function-type effects only need the joined lattice value.
-            self.parse_effect_annotation().map(|(eff, _)| eff)
+            self.parse_effect_annotation()
+                .map(|(eff, set)| EffectSet::from_declaration(eff, &set))
         } else {
-            Ok(Effect::Pure)
+            Ok(EffectSet::PURE)
         }
     }
 
@@ -3346,7 +3359,7 @@ impl<'a> Parser<'a> {
                             Ok(Ty::Fn(
                                 Box::new(param_ty),
                                 Box::new(ret_ty),
-                                legacy_eff.unwrap_or(Effect::Pure),
+                                EffectSet::from(legacy_eff.unwrap_or(Effect::Pure)),
                             ))
                         }
                     }

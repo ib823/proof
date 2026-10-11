@@ -1,11 +1,11 @@
 {
-  "generated": "2026-10-11T12:40:56Z",
-  "generatedHuman": "October 11, 2026 at 12:40 UTC",
+  "generated": "2026-10-11T14:17:57Z",
+  "generatedHuman": "October 11, 2026 at 14:17 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "bff1d4d",
-    "branch": "audit-fix/typechecker"
+    "commit": "4147e5b",
+    "branch": "audit-fix/effects"
   },
   "proofs": {
     "qedActive": 12678,
@@ -197,7 +197,7 @@
   "rust": {
     "tests": 3376,
     "testsVerified": 3376,
-    "testsEstimated": 3405,
+    "testsEstimated": 3419,
     "testsSource": "cached_verified",
     "crates": 18
   },

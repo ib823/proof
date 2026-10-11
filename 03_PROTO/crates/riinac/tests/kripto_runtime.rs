@@ -64,7 +64,7 @@ fn run_lines(src: &PathBuf) -> (bool, Vec<String>) {
 }
 
 fn program(body: &str) -> String {
-    format!("fungsi utama() -> Nombor kesan Kripto {{\n{body}\n    0\n}}\n")
+    format!("fungsi utama() -> Nombor kesan (Kripto, Tulis) {{\n{body}\n    0\n}}\n")
 }
 
 // ── The gate the checker cannot run ────────────────────────────────────────

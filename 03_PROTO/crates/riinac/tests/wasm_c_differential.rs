@@ -149,7 +149,7 @@ fn assert_byte_equal(name: &str, source: &str) {
 fn diff_cetak_int() {
     assert_byte_equal(
         "cetak_int",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(42); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(42); pulang 0 }",
     );
 }
 
@@ -157,7 +157,7 @@ fn diff_cetak_int() {
 fn diff_cetak_string() {
     assert_byte_equal(
         "cetak_string",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(\"Selamat\"); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(\"Selamat\"); pulang 0 }",
     );
 }
 
@@ -165,7 +165,7 @@ fn diff_cetak_string() {
 fn diff_cetak_arithmetic() {
     assert_byte_equal(
         "cetak_arith",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(3 + 4); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(3 + 4); pulang 0 }",
     );
 }
 
@@ -173,7 +173,7 @@ fn diff_cetak_arithmetic() {
 fn diff_cetak_multiple() {
     assert_byte_equal(
         "cetak_multi",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(1); cetak(2); cetak(3); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(1); cetak(2); cetak(3); pulang 0 }",
     );
 }
 
@@ -207,7 +207,7 @@ fn diff_cetak_64bit_value() {
     // 5_000_000_000 > 2^32 (4_294_967_296).
     assert_byte_equal(
         "cetak_64bit",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(5000000000); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(5000000000); pulang 0 }",
     );
 }
 
@@ -216,7 +216,7 @@ fn diff_cetak_64bit_add() {
     // 3e9 + 3e9 = 6e9 — a sum that overflows 32 bits.
     assert_byte_equal(
         "cetak_64bit_add",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(3000000000 + 3000000000); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(3000000000 + 3000000000); pulang 0 }",
     );
 }
 
@@ -225,7 +225,7 @@ fn diff_cetak_64bit_mul() {
     // 10^6 * 10^6 = 10^12 — a product that overflows 32 bits.
     assert_byte_equal(
         "cetak_64bit_mul",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(1000000 * 1000000); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(1000000 * 1000000); pulang 0 }",
     );
 }
 
@@ -245,7 +245,7 @@ fn diff_bare_64bit() {
 fn diff_besar_small() {
     assert_byte_equal(
         "besar_small",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(besar(\"7\")); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(besar(\"7\")); pulang 0 }",
     );
 }
 
@@ -255,7 +255,7 @@ fn diff_besar_two_limb() {
     // that exposed the bump-pointer-alignment bug).
     assert_byte_equal(
         "besar_two_limb",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(besar(\"12345678901234567890\")); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(besar(\"12345678901234567890\")); pulang 0 }",
     );
 }
 
@@ -264,7 +264,7 @@ fn diff_besar_2pow64() {
     // 2^64 — the smallest three-limb value.
     assert_byte_equal(
         "besar_2p64",
-        "fungsi utama() -> Nombor kesan Sistem { cetak(besar(\"18446744073709551616\")); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetak(besar(\"18446744073709551616\")); pulang 0 }",
     );
 }
 
@@ -273,7 +273,7 @@ fn diff_besar_2pow128_cetakln() {
     // 2^128 (39 digits), via cetakln (trailing newline).
     assert_byte_equal(
         "besar_2p128",
-        "fungsi utama() -> Nombor kesan Sistem { cetakln(besar(\"340282366920938463463374607431768211456\")); pulang 0 }",
+        "fungsi utama() -> Nombor kesan Tulis { cetakln(besar(\"340282366920938463463374607431768211456\")); pulang 0 }",
     );
 }
 
@@ -288,7 +288,7 @@ fn diff_besar_cmp_true_cases() {
     // >, <, ==, cross-limb >, >=, !=, <, <=  → all true → "11111111".
     assert_byte_equal(
         "besar_cmp_true",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             kalau besar(\"100\") > besar(\"99\") { cetak(1) } lain { cetak(0) }\n\
             kalau besar(\"99\") < besar(\"100\") { cetak(1) } lain { cetak(0) }\n\
             kalau besar(\"50\") == besar(\"50\") { cetak(1) } lain { cetak(0) }\n\
@@ -307,7 +307,7 @@ fn diff_besar_cmp_false_and_zero() {
     // false relations, zero, and cross-limb the other way → "001101".
     assert_byte_equal(
         "besar_cmp_false",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             kalau besar(\"99\") > besar(\"100\") { cetak(1) } lain { cetak(0) }\n\
             kalau besar(\"7\") == besar(\"8\") { cetak(1) } lain { cetak(0) }\n\
             kalau besar(\"0\") == besar(\"0\") { cetak(1) } lain { cetak(0) }\n\
@@ -328,7 +328,7 @@ fn diff_besar_cmp_false_and_zero() {
 fn diff_besar_add() {
     assert_byte_equal(
         "besar_add",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(besar(\"100\") + besar(\"200\"));\n\
             cetakln(besar(\"4294967295\") + besar(\"1\"));\n\
             cetakln(besar(\"99999999999999999999\") + besar(\"1\"));\n\
@@ -343,7 +343,7 @@ fn diff_besar_sub() {
     // includes a negative result (-100), zero, and a 3-limb -> 2-limb borrow.
     assert_byte_equal(
         "besar_sub",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(besar(\"300\") - besar(\"100\"));\n\
             cetakln(besar(\"100\") - besar(\"200\"));\n\
             cetakln(besar(\"100\") - besar(\"100\"));\n\
@@ -359,7 +359,7 @@ fn diff_besar_addsub_chain_and_negcmp() {
     // add/sub and bi_cmp's signed paths.
     assert_byte_equal(
         "besar_chain",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             biar a = besar(\"99999999999999999999\");\n\
             biar b = a + a;\n\
             cetakln(b);\n\
@@ -381,7 +381,7 @@ fn diff_besar_addsub_chain_and_negcmp() {
 fn diff_besar_mul() {
     assert_byte_equal(
         "besar_mul",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(besar(\"12\") * besar(\"12\"));\n\
             cetakln(besar(\"99999999999999999999\") * besar(\"99999999999999999999\"));\n\
             cetakln(besar(\"4294967295\") * besar(\"4294967295\"));\n\
@@ -400,7 +400,7 @@ fn diff_besar_mul_square_let() {
     // 30-digit squared (58-digit result) through a let binding.
     assert_byte_equal(
         "besar_mul_sq",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             biar a = besar(\"123456789012345678901234567890\");\n\
             cetakln(a * a);\n\
             pulang 0\n\
@@ -418,7 +418,7 @@ fn diff_besar_mul_square_let() {
 fn diff_besar_divmod() {
     assert_byte_equal(
         "besar_divmod",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(besar(\"100\") / besar(\"7\"));\n\
             cetakln(besar(\"100\") % besar(\"7\"));\n\
             cetakln(besar(\"99999999999999999999\") / besar(\"12345678901234567890\"));\n\
@@ -438,7 +438,7 @@ fn diff_besar_divmod_negative() {
     // truncating toward zero; remainder takes the dividend's sign.
     assert_byte_equal(
         "besar_divmod_neg",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln((besar(\"0\") - besar(\"100\")) / besar(\"7\"));\n\
             cetakln((besar(\"0\") - besar(\"100\")) % besar(\"7\"));\n\
             cetakln(besar(\"100\") / (besar(\"0\") - besar(\"7\")));\n\
@@ -457,7 +457,7 @@ fn diff_besar_divmod_negative() {
 fn diff_perpuluhan_display() {
     assert_byte_equal(
         "perpuluhan_display",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(perpuluhan(\"3.14\"));\n\
             cetakln(perpuluhan(\"0.001\"));\n\
             cetakln(perpuluhan(\"-3.14\"));\n\
@@ -483,7 +483,7 @@ fn diff_perpuluhan_display() {
 fn diff_perpuluhan_arith() {
     assert_byte_equal(
         "perpuluhan_arith",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(perpuluhan(\"0.1\") + perpuluhan(\"0.2\"));\n\
             cetakln(perpuluhan(\"19.99\") * perpuluhan(\"3\"));\n\
             cetakln(perpuluhan(\"5\") - perpuluhan(\"0.01\"));\n\
@@ -503,7 +503,7 @@ fn diff_perpuluhan_div() {
     // trailing-zero strip (10/4 = 2.5), negative quotient.
     assert_byte_equal(
         "perpuluhan_div",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(perpuluhan(\"1\") / perpuluhan(\"4\"));\n\
             cetakln(perpuluhan(\"1\") / perpuluhan(\"3\"));\n\
             cetakln(perpuluhan(\"2\") / perpuluhan(\"3\"));\n\
@@ -520,7 +520,7 @@ fn diff_perpuluhan_cmp_and_ties() {
     // place: 5e-35 rounds to even (0); 15e-35 has an odd quotient and bumps.
     assert_byte_equal(
         "perpuluhan_cmp_ties",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             kalau perpuluhan(\"3.14\") == perpuluhan(\"3.140\") { cetak(1) } lain { cetak(0) }\n\
             kalau perpuluhan(\"0.5\") < perpuluhan(\"0.75\") { cetak(1) } lain { cetak(0) }\n\
             kalau (perpuluhan(\"0\") - perpuluhan(\"0.1\")) < perpuluhan(\"0.05\") { cetak(1) } lain { cetak(0) }\n\
@@ -543,7 +543,7 @@ fn diff_perpuluhan_cmp_and_ties() {
 fn diff_wang_display_addsub() {
     assert_byte_equal(
         "wang_display_addsub",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(wang(\"19.99\"));\n\
             cetakln(wang(\"100.00\"));\n\
             cetakln(wang(\"1.10\") + wang(\"2.20\"));\n\
@@ -562,7 +562,7 @@ fn diff_wang_mul_div_round_to_scale() {
     // banker's at the kept digit: 0.5*0.5 = 0.25 -> 0.2 (round to even).
     assert_byte_equal(
         "wang_mul_div",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(wang(\"1.55\") * wang(\"1.55\"));\n\
             cetakln(wang(\"19.99\") * wang(\"3\"));\n\
             cetakln(wang(\"10.00\") / wang(\"3\"));\n\
@@ -579,7 +579,7 @@ fn diff_titik_tetap_rescale() {
     // (3.145 -> 3.14, 3.155 -> 3.16), zero-pad when growing (5 -> 5.000).
     assert_byte_equal(
         "titik_tetap",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(titik_tetap((\"3.14159\", 2)));\n\
             cetakln(titik_tetap((\"3.145\", 2)));\n\
             cetakln(titik_tetap((\"3.155\", 2)));\n\
@@ -601,7 +601,7 @@ fn diff_qmn_construct_display() {
     // (0.1015625); integers; negatives; Q32 precision.
     assert_byte_equal(
         "qmn_construct",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(qmn((\"0.5\", 8)));\n\
             cetakln(qmn((\"0.1\", 8)));\n\
             cetakln(qmn((\"7\", 4)));\n\
@@ -618,7 +618,7 @@ fn diff_qmn_arith_cmp() {
     // alignment, value-based compare across widths.
     assert_byte_equal(
         "qmn_arith",
-        "fungsi utama() -> Nombor kesan Sistem {\n\
+        "fungsi utama() -> Nombor kesan Tulis {\n\
             cetakln(qmn((\"0.5\", 8)) + qmn((\"0.25\", 8)));\n\
             cetakln(qmn((\"0.25\", 8)) - qmn((\"0.5\", 8)));\n\
             cetakln(qmn((\"1.5\", 16)) * qmn((\"2.5\", 16)));\n\

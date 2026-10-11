@@ -4,7 +4,7 @@
 #[allow(clippy::module_inception)]
 mod tests {
     use crate::{type_check, Context, TypeError};
-    use riina_types::{BinOp, Effect, Expr, SecurityLevel, Ty};
+    use riina_types::{BinOp, Effect, EffectSet, Expr, SecurityLevel, Ty};
 
     // ── Literals ──
 
@@ -13,15 +13,15 @@ mod tests {
         let ctx = Context::new();
         assert_eq!(
             type_check(&ctx, &Expr::Int(42)).unwrap(),
-            (Ty::Int, Effect::Pure)
+            (Ty::Int, EffectSet::PURE)
         );
         assert_eq!(
             type_check(&ctx, &Expr::Bool(true)).unwrap(),
-            (Ty::Bool, Effect::Pure)
+            (Ty::Bool, EffectSet::PURE)
         );
         assert_eq!(
             type_check(&ctx, &Expr::Unit).unwrap(),
-            (Ty::Unit, Effect::Pure)
+            (Ty::Unit, EffectSet::PURE)
         );
     }
 
@@ -30,7 +30,7 @@ mod tests {
         let ctx = Context::new();
         assert_eq!(
             type_check(&ctx, &Expr::String("hello".into())).unwrap(),
-            (Ty::String, Effect::Pure)
+            (Ty::String, EffectSet::PURE)
         );
     }
 
@@ -41,7 +41,7 @@ mod tests {
         let ctx = Context::new().extend("x".into(), Ty::Int);
         assert_eq!(
             type_check(&ctx, &Expr::Var("x".into())).unwrap(),
-            (Ty::Int, Effect::Pure)
+            (Ty::Int, EffectSet::PURE)
         );
     }
 
@@ -78,7 +78,7 @@ mod tests {
 
         // (fn(x: Int) x) 42
         let app = Expr::App(Box::new(id_int), Box::new(Expr::Int(42)));
-        assert_eq!(type_check(&ctx, &app).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &app).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
@@ -121,7 +121,7 @@ mod tests {
         let ctx = Context::new();
         let pair = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Bool(true)));
         let fst = Expr::Fst(Box::new(pair));
-        assert_eq!(type_check(&ctx, &fst).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &fst).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
@@ -129,7 +129,7 @@ mod tests {
         let ctx = Context::new();
         let pair = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Bool(true)));
         let snd = Expr::Snd(Box::new(pair));
-        assert_eq!(type_check(&ctx, &snd).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &snd).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -280,7 +280,7 @@ mod tests {
             Box::new(Expr::Int(1)),
             Box::new(Expr::Int(2)),
         );
-        assert_eq!(type_check(&ctx, &if_expr).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &if_expr).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
@@ -332,7 +332,7 @@ mod tests {
         );
         assert_eq!(
             type_check(&ctx, &let_expr).unwrap(),
-            (Ty::Int, Effect::Pure)
+            (Ty::Int, EffectSet::PURE)
         );
     }
 
@@ -341,7 +341,7 @@ mod tests {
     #[test]
     fn test_letrec() {
         let ctx = Context::new();
-        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
         // let rec f : Int -> Int = fn(x: Int) x in f
         let letrec = Expr::LetRec(
             "f".into(),
@@ -364,7 +364,7 @@ mod tests {
         // Annotated as Int -> Bool but body is Int -> Int
         let letrec = Expr::LetRec(
             "f".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::Int,
@@ -399,7 +399,9 @@ mod tests {
         let deref = Expr::Deref(Box::new(r));
         let (ty, eff) = type_check(&ctx, &deref).unwrap();
         assert_eq!(ty, Ty::Int);
-        assert_eq!(eff, Effect::Write);
+        // Effects are a SET (M1c): the allocation's Write and the read are both
+        // kept, not collapsed to the max of a total order.
+        assert_eq!(eff, EffectSet::from(Effect::Write).join(Effect::Read));
     }
 
     #[test]
@@ -561,7 +563,7 @@ mod tests {
     fn test_binop_add_int() {
         let ctx = Context::new();
         let add = Expr::BinOp(BinOp::Add, Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
-        assert_eq!(type_check(&ctx, &add).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &add).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
@@ -572,7 +574,7 @@ mod tests {
             Box::new(Expr::String("a".into())),
             Box::new(Expr::String("b".into())),
         );
-        assert_eq!(type_check(&ctx, &add).unwrap(), (Ty::String, Effect::Pure));
+        assert_eq!(type_check(&ctx, &add).unwrap(), (Ty::String, EffectSet::PURE));
     }
 
     #[test]
@@ -590,28 +592,28 @@ mod tests {
     fn test_binop_sub() {
         let ctx = Context::new();
         let sub = Expr::BinOp(BinOp::Sub, Box::new(Expr::Int(5)), Box::new(Expr::Int(3)));
-        assert_eq!(type_check(&ctx, &sub).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &sub).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
     fn test_binop_mul() {
         let ctx = Context::new();
         let mul = Expr::BinOp(BinOp::Mul, Box::new(Expr::Int(2)), Box::new(Expr::Int(3)));
-        assert_eq!(type_check(&ctx, &mul).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &mul).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
     fn test_binop_div() {
         let ctx = Context::new();
         let div = Expr::BinOp(BinOp::Div, Box::new(Expr::Int(6)), Box::new(Expr::Int(2)));
-        assert_eq!(type_check(&ctx, &div).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &div).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
     fn test_binop_mod() {
         let ctx = Context::new();
         let modop = Expr::BinOp(BinOp::Mod, Box::new(Expr::Int(7)), Box::new(Expr::Int(3)));
-        assert_eq!(type_check(&ctx, &modop).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &modop).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
@@ -652,7 +654,7 @@ mod tests {
     fn test_binop_eq() {
         let ctx = Context::new();
         let eq = Expr::BinOp(BinOp::Eq, Box::new(Expr::Int(1)), Box::new(Expr::Int(1)));
-        assert_eq!(type_check(&ctx, &eq).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &eq).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -663,7 +665,7 @@ mod tests {
             Box::new(Expr::Bool(true)),
             Box::new(Expr::Bool(false)),
         );
-        assert_eq!(type_check(&ctx, &ne).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &ne).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -674,7 +676,7 @@ mod tests {
             Box::new(Expr::String("a".into())),
             Box::new(Expr::String("b".into())),
         );
-        assert_eq!(type_check(&ctx, &eq).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &eq).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -692,28 +694,28 @@ mod tests {
     fn test_binop_lt() {
         let ctx = Context::new();
         let lt = Expr::BinOp(BinOp::Lt, Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
-        assert_eq!(type_check(&ctx, &lt).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &lt).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
     fn test_binop_le() {
         let ctx = Context::new();
         let le = Expr::BinOp(BinOp::Le, Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
-        assert_eq!(type_check(&ctx, &le).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &le).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
     fn test_binop_gt() {
         let ctx = Context::new();
         let gt = Expr::BinOp(BinOp::Gt, Box::new(Expr::Int(3)), Box::new(Expr::Int(1)));
-        assert_eq!(type_check(&ctx, &gt).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &gt).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
     fn test_binop_ge() {
         let ctx = Context::new();
         let ge = Expr::BinOp(BinOp::Ge, Box::new(Expr::Int(3)), Box::new(Expr::Int(1)));
-        assert_eq!(type_check(&ctx, &ge).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &ge).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -741,7 +743,7 @@ mod tests {
             Box::new(Expr::Bool(true)),
             Box::new(Expr::Bool(false)),
         );
-        assert_eq!(type_check(&ctx, &and).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &and).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -752,7 +754,7 @@ mod tests {
             Box::new(Expr::Bool(false)),
             Box::new(Expr::Bool(true)),
         );
-        assert_eq!(type_check(&ctx, &or).unwrap(), (Ty::Bool, Effect::Pure));
+        assert_eq!(type_check(&ctx, &or).unwrap(), (Ty::Bool, EffectSet::PURE));
     }
 
     #[test]
@@ -819,8 +821,8 @@ mod tests {
         let right = Expr::Perform(Effect::Write, Box::new(Expr::Int(2)));
         let pair = Expr::Pair(Box::new(left), Box::new(right));
         let (_ty, eff) = type_check(&ctx, &pair).unwrap();
-        // Write > Read, so join should be Write
-        assert_eq!(eff, Effect::Write);
+        // The join is set union (M1c): both components are kept.
+        assert_eq!(eff, EffectSet::from(Effect::Read).join(Effect::Write));
     }
 
     #[test]
@@ -838,7 +840,8 @@ mod tests {
         let arg = Expr::Perform(Effect::Read, Box::new(Expr::Int(1)));
         let app = Expr::App(Box::new(f), Box::new(arg));
         let (_ty, eff) = type_check(&ctx, &app).unwrap();
-        assert_eq!(eff, Effect::System);
+        // The argument's Read is not absorbed by the callee's System (M1c).
+        assert_eq!(eff, EffectSet::from(Effect::System).join(Effect::Read));
     }
 
     // ── Nested expressions ──
@@ -857,7 +860,7 @@ mod tests {
                 Box::new(Expr::Int(0)),
             )),
         );
-        assert_eq!(type_check(&ctx, &expr).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &expr).unwrap(), (Ty::Int, EffectSet::PURE));
     }
 
     #[test]
@@ -882,7 +885,8 @@ mod formalized_tests {
         TypingContext,
     };
     use riina_types::{
-        BinOp, Effect, Expr, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage,
+        BinOp, Effect, EffectSet, Expr, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty,
+        Usage,
     };
 
     // ── Basic value typing with new context ──
@@ -892,15 +896,15 @@ mod formalized_tests {
         let mut ctx = TypingContext::new();
         assert_eq!(
             type_check_full(&mut ctx, &Expr::Int(42)).unwrap(),
-            (Ty::Int, Effect::Pure)
+            (Ty::Int, EffectSet::PURE)
         );
         assert_eq!(
             type_check_full(&mut ctx, &Expr::Bool(true)).unwrap(),
-            (Ty::Bool, Effect::Pure)
+            (Ty::Bool, EffectSet::PURE)
         );
         assert_eq!(
             type_check_full(&mut ctx, &Expr::Unit).unwrap(),
-            (Ty::Unit, Effect::Pure)
+            (Ty::Unit, EffectSet::PURE)
         );
     }
 
@@ -923,7 +927,7 @@ mod formalized_tests {
         let mut ctx = builtin_ctx();
         assert_eq!(
             type_check_full(&mut ctx, &besar_call("123456789012345678901234567890")).unwrap(),
-            (Ty::BigInt, Effect::Pure)
+            (Ty::BigInt, EffectSet::PURE)
         );
     }
 
@@ -979,7 +983,7 @@ mod formalized_tests {
         let mut ctx = builtin_ctx();
         assert_eq!(
             type_check_full(&mut ctx, &decimal_call("3.14")).unwrap(),
-            (Ty::Decimal, Effect::Pure)
+            (Ty::Decimal, EffectSet::PURE)
         );
         for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div] {
             let e = Expr::BinOp(op, Box::new(decimal_call("1.5")), Box::new(decimal_call("0.5")));
@@ -1018,7 +1022,7 @@ mod formalized_tests {
         // `wang(String) -> Fixed`.
         assert_eq!(
             type_check_full(&mut ctx, &wang_call("19.99")).unwrap(),
-            (Ty::Fixed, Effect::Pure)
+            (Ty::Fixed, EffectSet::PURE)
         );
         // `titik_tetap((String, Int)) -> Fixed`.
         let tt = Expr::App(
@@ -1030,7 +1034,7 @@ mod formalized_tests {
         );
         assert_eq!(
             type_check_full(&mut ctx, &tt).unwrap(),
-            (Ty::Fixed, Effect::Pure)
+            (Ty::Fixed, EffectSet::PURE)
         );
         for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div] {
             let e = Expr::BinOp(op, Box::new(wang_call("1.50")), Box::new(wang_call("0.50")));
@@ -1073,7 +1077,7 @@ mod formalized_tests {
         // `qmn((String, Int)) -> FixedBin`.
         assert_eq!(
             type_check_full(&mut ctx, &qmn_call("0.5")).unwrap(),
-            (Ty::FixedBin, Effect::Pure)
+            (Ty::FixedBin, EffectSet::PURE)
         );
         for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Div] {
             let e = Expr::BinOp(op, Box::new(qmn_call("0.5")), Box::new(qmn_call("0.25")));
@@ -1119,7 +1123,7 @@ mod formalized_tests {
                     bits: 8,
                     signed: false
                 },
-                Effect::Pure
+                EffectSet::PURE
             )
         );
         assert_eq!(
@@ -1137,7 +1141,7 @@ mod formalized_tests {
                     bits: 32,
                     signed: true
                 },
-                Effect::Pure
+                EffectSet::PURE
             )
         );
     }
@@ -1212,7 +1216,7 @@ mod formalized_tests {
         ctx = ctx.extend_gamma("x".into(), Ty::Int);
         assert_eq!(
             type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap(),
-            (Ty::Int, Effect::Pure)
+            (Ty::Int, EffectSet::PURE)
         );
     }
 
@@ -1600,8 +1604,8 @@ mod formalized_tests {
         let right = Expr::Ref(Box::new(Expr::Int(2)), SecurityLevel::Public);
         let pair = Expr::Pair(Box::new(left), Box::new(right));
         let (_ty, eff) = type_check_full(&mut ctx, &pair).unwrap();
-        // Write > Read
-        assert_eq!(eff, Effect::Write);
+        // Set union (M1c): Read and the allocation's Write are both kept.
+        assert_eq!(eff, EffectSet::from(Effect::Read).join(Effect::Write));
     }
 
     // ── Multi-level security scenarios ──
@@ -2384,8 +2388,10 @@ mod formalized_tests {
         match type_check(&ctx, &post_with_token) {
             Ok((ty, eff)) => {
                 assert_eq!(ty, Ty::Any);
-                // csrf_generate (Random, level 9) + http_post (Network, level 6) → Random
-                assert_eq!(eff, Effect::Random);
+                // csrf_generate (Random) + http_post (Network): BOTH are kept.
+                // The old total-order join reported only Random, hiding the
+                // network access from any `kesan Rawak` caller (M1c).
+                assert_eq!(eff, EffectSet::from(Effect::Random).join(Effect::Network));
             }
             Err(e) => panic!("Expected POST with token to succeed, got error: {:?}", e),
         }
@@ -3026,7 +3032,7 @@ mod formalized_tests {
                     .unwrap_or_else(|e| panic!("{name} must be a bound builtin: {e:?}"));
                 assert_eq!(
                     ty,
-                    Ty::Fn(Box::new(arg.clone()), Box::new(ret.clone()), Effect::FileSystem),
+                    Ty::Fn(Box::new(arg.clone()), Box::new(ret.clone()), Effect::FileSystem.into()),
                     "{name}: signature drifted from FileIOEffectModel.v"
                 );
             }
@@ -3181,7 +3187,7 @@ mod formalized_tests {
         // rule — both checking paths share `secrecy_at_sink`.
         let mut ctx = TypingContext::new().extend_gamma(
             "cetak".to_string(),
-            Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+            Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write.into()),
         );
         let call = Expr::App(
             Box::new(Expr::Var("cetak".to_string())),
@@ -3802,7 +3808,7 @@ mod formalized_tests {
         let (ty, _) = type_check(&ctx, &Expr::Var("masa_sekarang".to_string())).unwrap();
         assert_eq!(
             ty,
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Time.into()),
             "a clock is a Unit -> Int function"
         );
     }
@@ -4534,7 +4540,7 @@ mod formalized_tests {
         // let rec f : Int -> Int = fn(x: Int) f(x) in f
         // This should typecheck: f has type Int -> Int, and f(x) applies Int -> Int to Int.
         let ctx = Context::new();
-        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
         let letrec = Expr::LetRec(
             "f".into(),
             fn_ty.clone(),
@@ -4557,7 +4563,7 @@ mod formalized_tests {
     fn test_recursive_factorial_pattern_typechecks() {
         // LetRec modelling factorial: let rec fact : Int -> Int = fn(n: Int) if ... in fact
         let ctx = Context::new();
-        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
         let letrec = Expr::LetRec(
             "fact".into(),
             fn_ty.clone(),
@@ -4721,7 +4727,7 @@ mod jalinan_phase6_tests {
         is_dual, session_dual, session_subtype, type_check, type_check_full, Context, TypeError,
         TypingContext,
     };
-    use riina_types::{Effect, Expr, SessionType, Ty};
+    use riina_types::{Effect, EffectSet, Expr, SessionType, Ty};
 
     // ── Helper: make a handler function Fn(msg_ty) -> state_ty ──
 
@@ -5449,7 +5455,9 @@ mod jalinan_phase6_tests {
             Box::new(Expr::Int(9)),
         )));
         let (_ty, eff) = type_check(&ctx, &expr).unwrap();
-        assert_eq!(eff, Effect::Crypto);
+        // The inner Crypto AND the deployment's NetworkSecure (M1c: the old
+        // total-order join kept only Crypto).
+        assert_eq!(eff, EffectSet::from(Effect::Crypto).join(Effect::NetworkSecure));
     }
 
     #[test]
@@ -5741,7 +5749,7 @@ mod jalinan_phase6_tests {
 #[cfg(test)]
 mod gate_b_parity {
     use crate::{is_dual, type_check, type_check_full, types_compatible, Context, TypeError, TypingContext};
-    use riina_types::{Effect, Expr, Linearity, SecurityLevel, SessionType, Ty};
+    use riina_types::{Effect, EffectSet, Expr, Linearity, SecurityLevel, SessionType, Ty};
 
     // ── Property 1: Capability safety — Coq T_Require / T_Grant (Typing.v:207-213)
     #[test]
@@ -6187,7 +6195,7 @@ mod gate_b_parity {
         let outer = Expr::Perform(Effect::Write, Box::new(inner));
         let (ty, eff) = type_check_full(&mut ctx, &outer).expect("nested perform must typecheck");
         assert_eq!(ty, Ty::Int);
-        assert_eq!(eff, Effect::Read.join(Effect::Write));
+        assert_eq!(eff, EffectSet::from(Effect::Read).join(Effect::Write));
     }
 
     // ── Gate C (hybrid POLA): Network/Process capability gating ──
@@ -6340,7 +6348,7 @@ mod gate_b_parity {
         let loop_expr = Expr::While(Box::new(Expr::Bool(true)), Box::new(Expr::Int(1)));
         assert_eq!(
             type_check_full(&mut ctx, &loop_expr).unwrap(),
-            (Ty::Unit, Effect::Pure)
+            (Ty::Unit, EffectSet::PURE)
         );
         // The body's effect propagates to the loop, once, however many times it
         // would run.
@@ -6370,11 +6378,11 @@ mod gate_b_parity {
         // and must not force the sibling branch's type.
         assert_eq!(
             type_check_full(&mut ctx, &Expr::Break).unwrap(),
-            (Ty::Any, Effect::Pure)
+            (Ty::Any, EffectSet::PURE)
         );
         assert_eq!(
             type_check_full(&mut ctx, &Expr::Continue).unwrap(),
-            (Ty::Any, Effect::Pure)
+            (Ty::Any, EffectSet::PURE)
         );
         let branch = Expr::If(
             Box::new(Expr::Bool(true)),
@@ -6396,7 +6404,7 @@ mod gate_b_parity {
         );
         assert_eq!(
             type_check_full(&mut ctx, &e).unwrap(),
-            (Ty::Int, Effect::Pure)
+            (Ty::Int, EffectSet::PURE)
         );
     }
 
@@ -6414,7 +6422,7 @@ mod gate_b_parity {
         );
         assert_eq!(
             type_check_full(&mut ctx, &e).unwrap(),
-            (Ty::Unit, Effect::Pure)
+            (Ty::Unit, EffectSet::PURE)
         );
     }
 
@@ -6455,7 +6463,7 @@ mod gate_b_parity {
         let ctx = Context::new();
         assert_eq!(
             type_check(&ctx, &Expr::While(Box::new(Expr::Bool(true)), Box::new(Expr::Int(1)))).unwrap(),
-            (Ty::Unit, Effect::Pure)
+            (Ty::Unit, EffectSet::PURE)
         );
         assert!(matches!(
             type_check(&ctx, &Expr::While(Box::new(Expr::Int(0)), Box::new(Expr::Unit))),
@@ -6463,24 +6471,24 @@ mod gate_b_parity {
         ));
         assert_eq!(
             type_check(&ctx, &Expr::Break).unwrap(),
-            (Ty::Any, Effect::Pure)
+            (Ty::Any, EffectSet::PURE)
         );
         assert_eq!(
             type_check(&ctx, &Expr::Continue).unwrap(),
-            (Ty::Any, Effect::Pure)
+            (Ty::Any, EffectSet::PURE)
         );
         let e = Expr::LetMut(
             "x".into(),
             Box::new(Expr::Int(42)),
             Box::new(Expr::SlotGet("x".into())),
         );
-        assert_eq!(type_check(&ctx, &e).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(type_check(&ctx, &e).unwrap(), (Ty::Int, EffectSet::PURE));
         let w = Expr::LetMut(
             "x".into(),
             Box::new(Expr::Int(0)),
             Box::new(Expr::SlotSet("x".into(), Box::new(Expr::Int(1)))),
         );
-        assert_eq!(type_check(&ctx, &w).unwrap(), (Ty::Unit, Effect::Pure));
+        assert_eq!(type_check(&ctx, &w).unwrap(), (Ty::Unit, EffectSet::PURE));
         assert!(matches!(
             type_check(&ctx, &Expr::SlotGet("hantu".into())),
             Err(TypeError::VarNotFound(_))
@@ -6502,7 +6510,7 @@ mod gate_b_parity {
 mod audit_soundness {
     use crate::{check_program, TypeError};
     use riina_parser::Parser;
-    use riina_types::{Effect, Linearity, SecurityLevel};
+    use riina_types::{Effect, EffectSet, Linearity, SecurityLevel};
 
     fn check(src: &str) -> Result<(), TypeError> {
         let mut parser = Parser::new(src);
@@ -6887,6 +6895,193 @@ mod audit_soundness {
         accepts(
             "fungsi utama() -> Nombor kesan Rangkaian { biar l = jaring_dengar(\"127.0.0.1:1\"); 0 }\nutama()",
         );
+    }
+
+    // ── M1c: effects are a PARTIAL order (category, then level) ─────────────
+    //
+    // Every negative below type-checked on the base branch (`audit-fix/
+    // typechecker`): "performed level ≤ declared level" on the total-order
+    // join let `kesan Masa` (Time, 11) cover FileSystem (5), Write (4), ...,
+    // and a compound `kesan (Masa, SistemFail)` collapsed to plain `Masa` in
+    // the function's type.
+
+    fn assert_effect_violation(e: TypeError, want_allowed: EffectSet, want_found: Effect) {
+        match e {
+            TypeError::EffectViolation { allowed, found } => {
+                assert_eq!(allowed, want_allowed, "allowed");
+                assert_eq!(found, want_found, "found");
+            }
+            other => panic!("expected EffectViolation({want_found:?}), got {other:?}"),
+        }
+    }
+
+    const UTAMA: &str = "fungsi utama() -> Nombor kesan Bersih { 0 }";
+
+    /// A `kesan (Masa, SistemFail)` function that really performs both.
+    const MASA_FAIL: &str = "fungsi g() -> Nombor kesan (Masa, SistemFail) { \
+                             fail_tulis((\"x\", \"y\")); masa_sekarang(()) }";
+
+    #[test]
+    fn m1c_rejects_a_declaration_covering_another_category() {
+        // The audit reproducer: a Time declaration authorized a file write.
+        assert_effect_violation(
+            rejects(&format!(
+                "fungsi f() -> Nombor kesan Masa {{ fail_tulis((\"x\",\"y\")); pulang 0; }}\n{UTAMA}"
+            )),
+            Effect::Time.into(),
+            Effect::FileSystem,
+        );
+        // ...and printing (Write) under Time or Crypto.
+        for (decl, allowed) in [("Masa", Effect::Time), ("Kripto", Effect::Crypto)] {
+            assert_effect_violation(
+                rejects(&format!(
+                    "fungsi f() -> Nombor kesan {decl} {{ cetak(1); pulang 0; }}\n{UTAMA}"
+                )),
+                allowed.into(),
+                Effect::Write,
+            );
+        }
+        // A top-level binding may only perform actor operations; Network used
+        // to absorb the Write of a `cetak` in the same initializer.
+        assert_effect_violation(
+            rejects(&format!(
+                "biar s = kalau betul {{ cetak(1); beri Rangkaian jaring_sambung(\"127.0.0.1:1\") }} \
+                 lain {{ beri Rangkaian jaring_sambung(\"127.0.0.1:1\") }};\n{UTAMA}"
+            )),
+            EffectSet::PURE,
+            Effect::Write,
+        );
+    }
+
+    #[test]
+    fn m1c_accepts_effects_within_their_declared_category() {
+        // The level order still applies INSIDE one category.
+        accepts(&format!("fungsi f(p: Teks) -> Teks kesan SistemFail {{ vfs_baca(p) }}\n{UTAMA}"));
+        accepts(&format!(
+            "fungsi f() -> Nombor kesan (Masa, SistemFail) {{ fail_tulis((\"x\",\"y\")); pulang 0; }}\n{UTAMA}"
+        ));
+        // A write to a global slot (Mut) is covered by any effectful
+        // declaration, but still not by `Bersih` (h2_rejects_bersih_*).
+        accepts(&format!(
+            "biar ubah n: Nombor = 0;\nfungsi f() -> Nombor kesan Tulis {{ n = 1; cetak(n); n }}\n{UTAMA}"
+        ));
+    }
+
+    #[test]
+    fn m1c_compound_callee_keeps_every_component_through_its_function_type() {
+        let time = EffectSet::from(Effect::Time);
+        // Direct call, a first-class alias, a closure, and a `Fn` parameter
+        // whose type is written with a compound `kesan`: a `kesan Masa`
+        // caller is rejected in every case.
+        for caller in [
+            "fungsi f() -> Nombor kesan Masa { g() }",
+            "fungsi f() -> Nombor kesan Masa { biar h = g; h(()) }",
+            "fungsi f() -> Nombor kesan Masa { biar k = fungsi(u: Unit) { \
+             fail_tulis((\"x\",\"y\")); masa_sekarang(()) }; k(()) }",
+            "fungsi f(k: Fn(Unit) -> Nombor kesan (Masa, SistemFail)) -> Nombor kesan Masa { k(()) }",
+        ] {
+            assert_effect_violation(
+                rejects(&format!("{MASA_FAIL}\n{caller}\n{UTAMA}")),
+                time,
+                Effect::FileSystem,
+            );
+        }
+        // Nor can the callee be laundered through a `kesan Masa` function type.
+        let e = rejects(&format!(
+            "{MASA_FAIL}\n\
+             fungsi panggil(k: Fn(Unit) -> Nombor kesan Masa) -> Nombor kesan Masa {{ k(()) }}\n\
+             fungsi utama() -> Nombor kesan (Masa, SistemFail) {{ panggil(g) }}"
+        ));
+        assert!(matches!(e, TypeError::TypeMismatch { .. }), "{e:?}");
+        // A caller that declares both components is accepted, in either order.
+        for caller in [
+            "fungsi f() -> Nombor kesan (Masa, SistemFail) { g() }",
+            "fungsi f() -> Nombor kesan (SistemFail, Masa) { biar h = g; h(()) }",
+            "fungsi f(k: Fn(Unit) -> Nombor kesan (Masa, SistemFail)) -> Nombor kesan (Masa, SistemFail) { k(()) }",
+        ] {
+            accepts(&format!("{MASA_FAIL}\n{caller}\n{UTAMA}"));
+        }
+    }
+
+    // ── M1b: `beri` inside a function may only attenuate ────────────────────
+    //
+    // Every negative below type-checked on the base branch: `beri X` added X
+    // to the granted set unconditionally, and a local `fungsi` was granted its
+    // own declaration.
+
+    fn assert_capability_violation(e: TypeError, want: Effect) {
+        match e {
+            TypeError::CapabilityViolation { required, .. } => assert_eq!(required, want),
+            other => panic!("expected CapabilityViolation({want:?}), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn m1b_rejects_self_grant_inside_a_function() {
+        for f in [
+            // A pure function granting itself the network.
+            "fungsi f() -> Nombor kesan Bersih { beri Rangkaian 0 }",
+            // A Time function granting itself the network and using it.
+            "fungsi f() -> Nombor kesan Masa { biar s = beri Rangkaian jaring_sambung(\"127.0.0.1:1\"); 0 }",
+            // Same-level arithmetic never helped: Process (12) > Network (6).
+            "fungsi f() -> Nombor kesan Proses { biar s = beri Rangkaian jaring_sambung(\"127.0.0.1:1\"); 0 }",
+            // A closure holds what its enclosing function holds.
+            "fungsi f() -> Nombor kesan Bersih { biar k = fungsi(u: Unit) { beri Rangkaian 0 }; 0 }",
+        ] {
+            assert_capability_violation(rejects(&format!("{f}\n{UTAMA}")), Effect::Network);
+        }
+    }
+
+    #[test]
+    fn m1b_local_function_declaration_does_not_grant_capabilities() {
+        // Inside a `kesan Bersih` function.
+        assert_capability_violation(
+            rejects(&format!(
+                "fungsi f() -> Nombor kesan Bersih {{\n\
+                     fungsi g(u: Unit) -> Nombor kesan Rangkaian {{ biar s = jaring_sambung(\"127.0.0.1:1\"); 0 }}\n\
+                     0\n\
+                 }}\n{UTAMA}"
+            )),
+            Effect::Network,
+        );
+        // In top-level code with no `beri`: the local function's own
+        // declaration used to authorize both its body and the call to it.
+        assert_capability_violation(
+            rejects(&format!(
+                "biar s = kalau betul {{ fungsi g(u: Unit) -> Nombor kesan Rangkaian \
+                 {{ biar c = jaring_sambung(\"127.0.0.1:1\"); 0 }} g(()) }} lain {{ 0 }};\n{UTAMA}"
+            )),
+            Effect::Network,
+        );
+    }
+
+    #[test]
+    fn m1b_accepts_attenuating_grants_and_inherited_capabilities() {
+        for f in [
+            // Re-granting a declared capability.
+            "fungsi f() -> Nombor kesan (Rangkaian, Tulis) { biar s = beri Rangkaian jaring_sambung(\"127.0.0.1:1\"); 0 }",
+            // Narrowing within a category: FileSystem covers Read.
+            "fungsi f(p: Teks) -> Teks kesan SistemFail { beri Baca vfs_baca(p) }",
+            // A closure / local function inside a function that holds it.
+            "fungsi f() -> Nombor kesan Rangkaian { biar k = fungsi(u: Unit) { beri Rangkaian 0 }; k(()) }",
+            "fungsi f() -> Nombor kesan Rangkaian {\n\
+                 fungsi g(u: Unit) -> Nombor kesan Rangkaian { biar s = jaring_sambung(\"127.0.0.1:1\"); 0 }\n\
+                 g(())\n\
+             }",
+        ] {
+            accepts(&format!("{f}\n{UTAMA}"));
+        }
+    }
+
+    #[test]
+    fn m1b_top_level_beri_remains_the_capability_manifest() {
+        accepts(&format!("biar sambungan = beri Rangkaian jaring_sambung(\"127.0.0.1:1\");\n{UTAMA}"));
+        accepts("fungsi perlu_r() -> Nombor kesan Rangkaian { perlukan Rangkaian 1 }\nberi Rangkaian perlu_r()");
+        // A local function in top-level code holds the manifest's grants.
+        accepts(&format!(
+            "biar s = beri Rangkaian kalau betul {{ fungsi g(u: Unit) -> Nombor kesan Rangkaian \
+             {{ biar c = jaring_sambung(\"127.0.0.1:1\"); 0 }} g(()) }} lain {{ 0 }};\n{UTAMA}"
+        ));
     }
 
     // ── M2: linear (`sekali`) discipline ────────────────────────────────────
