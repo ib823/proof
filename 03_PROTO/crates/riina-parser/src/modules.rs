@@ -84,6 +84,9 @@ pub enum ResolveErrorKind {
     TopLevelCodeInModule { module: Ident },
     /// A module file failed to parse. The message carries the inner diagnostic.
     Parse { module: Ident, detail: String },
+    /// The LINKED program would be deeper than `limits::MAX_AST_DEPTH` (each
+    /// file is checked when parsed; this is the sum over modules).
+    ProgramTooDeep { depth: usize, limit: usize },
 }
 
 /// A module-resolution failure, with the file it came from.
@@ -144,6 +147,11 @@ impl std::fmt::Display for ResolveError {
             ResolveErrorKind::Parse { module, detail } => {
                 write!(f, "in module `{module}`: {detail}")
             }
+            ResolveErrorKind::ProgramTooDeep { depth, limit } => write!(
+                f,
+                "Program too deeply nested once its modules are linked: at least {depth} \
+                 levels (limit {limit}); split it into fewer, smaller declarations"
+            ),
         }
     }
 }
@@ -182,7 +190,27 @@ pub fn resolve_program(root: &Path, root_source: &str) -> Result<Program, Resolv
         program: root_program,
     });
 
-    link(loaded, &root_name)
+    let program = link(loaded, &root_name)?;
+    // Each file was held to `MAX_AST_DEPTH` when it was parsed, but linking
+    // concatenates them, and desugaring nests every declaration under the
+    // ones before it — so the bound is re-checked for the whole program.
+    let depth = program
+        .decls
+        .iter()
+        .map(crate::limits::decl_depth)
+        .max()
+        .unwrap_or(0)
+        + program.decls.len();
+    if depth > crate::limits::MAX_AST_DEPTH {
+        return Err(ResolveError {
+            kind: ResolveErrorKind::ProgramTooDeep {
+                depth,
+                limit: crate::limits::MAX_AST_DEPTH,
+            },
+            path: root.to_path_buf(),
+        });
+    }
+    Ok(program)
 }
 
 /// Convenience wrapper that reads `root` from disk itself.
@@ -781,6 +809,28 @@ fungsi rahsia_dalaman(x: Nombor) -> Nombor kesan Bersih { x * 99 }
             names.contains(&"kira_rahsia_dalaman".to_string()),
             "{names:?}"
         );
+    }
+
+    /// Each file passes the depth limit on its own, but the linked program
+    /// does not: the merged program is rejected cleanly, not handed on to
+    /// stages that would overflow the stack.
+    #[test]
+    fn linked_programs_are_held_to_the_depth_limit() {
+        let sb = Sandbox::new("deep_link");
+        let half = crate::limits::MAX_AST_DEPTH / 2 + 1_000;
+        let many = |prefix: &str| -> String {
+            (0..half)
+                .map(|i| format!("fungsi {prefix}{i}() -> Nombor kesan Bersih {{ {i} }}\n"))
+                .collect()
+        };
+        sb.write("besar.rii", &many("b"));
+        let main = sb.write("utama.rii", &format!("guna besar;\n{}", many("u")));
+        let err = resolve_file(&main).expect_err("too deep once linked");
+        assert!(
+            matches!(err.kind, ResolveErrorKind::ProgramTooDeep { .. }),
+            "{err:?}"
+        );
+        assert!(err.to_string().contains("too deeply nested"));
     }
 
     /// A module imported through two paths is loaded and linked ONCE.

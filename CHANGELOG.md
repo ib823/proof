@@ -66,6 +66,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stricter URL/referer validation in both backends; checked HTTP body arithmetic; key files
   created 0600 and never silently overwritten; secret scrubbing in X25519/Ed25519/HMAC/TLS.
 
+### Fixed (parser, backends, CLI — audit-fix/parser-codegen)
+- Parser loops that never stopped at end of input (`jenis T =`, `guna`, `modul m {`) now
+  error; unclosed generics/structs and lexer errors between declarations are reported
+  instead of silently dropping the rest of the file.
+- Flat or deep input no longer overflows the stack: statement sequences and `lain kalau`
+  chains are iterative, every recursive parse path counts against a nesting guard, and
+  programs deeper than 20,000 levels are rejected cleanly (P0014). The interpreter's
+  environment is persistent (5,000 bindings used ~5 GB); operator-chain lowering is linear.
+- C backend: string literals escape non-printable/non-ASCII bytes (NUL rejected); every
+  runtime allocation is checked; branching on a secret boolean uses its value (interpreter
+  and C agreed wrongly); signed `MIN / -1` wraps identically on all three backends; Unicode
+  case mapping and character indexing match the interpreter.
+- `riinac build --run` runs by absolute path; intermediates live in a private 0700 temp dir;
+  `test --update` rewrites only the failing assertion; `riinac doc` HTML-escapes output.
+
 ### Fixed (gates and supply chain)
 - Commit-accurate pre-commit/pre-push hooks; history-wide secret scan and byte-level
   Trojan-source scan; sync-public refuses untracked files; SHA-pinned CI actions,

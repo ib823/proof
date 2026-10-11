@@ -7,16 +7,19 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
+pub mod limits;
 pub mod modules;
 
-use riina_lexer::{Lexer, Span, Token, TokenKind};
+use riina_lexer::{LexError, Lexer, Span, Token, TokenKind};
 use riina_types::Span as AstSpan;
 use riina_types::{
     BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Import, Linearity, Program, Sanitizer,
     SecurityLevel, SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
 };
+use std::cell::RefCell;
 use std::fmt;
 use std::iter::Peekable;
+use std::rc::Rc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParseError {
@@ -73,6 +76,18 @@ pub enum ParseErrorKind {
     /// call position is a data constructor, so `Kira_tokokan(1)` built the tuple
     /// `(Kira_tokokan, 1)` instead of calling anything — and said nothing.
     CapitalizedFunctionName(String),
+    /// The program's syntax tree would be deeper than
+    /// [`limits::MAX_AST_DEPTH`] levels. Flat source becomes a deep tree (a
+    /// statement sequence is a right-nested `Let` chain, `a + b + …` a
+    /// left-nested `BinOp` chain), and every later stage recurses over it, so
+    /// a pathologically long sequence is rejected here rather than allowed to
+    /// overflow the stack (an uncatchable abort) further down.
+    ProgramTooDeep { depth: usize, limit: usize },
+    /// The source contains text the lexer cannot tokenize. The token stream
+    /// ends there; reporting it (rather than treating it as the end of the
+    /// file) is what stops a stray character at the top level from silently
+    /// discarding every declaration after it.
+    Lex(LexError),
 }
 
 impl fmt::Display for ParseErrorKind {
@@ -105,6 +120,11 @@ impl fmt::Display for ParseErrorKind {
                 "`fungsi {name}` starts with an uppercase letter: it could never be \
                  called"
             ),
+            ParseErrorKind::ProgramTooDeep { depth, limit } => write!(
+                f,
+                "Program too deeply nested: at least {depth} levels (limit {limit})"
+            ),
+            ParseErrorKind::Lex(e) => write!(f, "{e}"),
         }
     }
 }
@@ -132,6 +152,8 @@ impl ParseErrorKind {
             // internal registry.
             ParseErrorKind::CapitalizedModuleName(_) => "P0012",
             ParseErrorKind::CapitalizedFunctionName(_) => "P0013",
+            ParseErrorKind::ProgramTooDeep { .. } => "P0014",
+            ParseErrorKind::Lex(e) => e.error_code(),
         }
     }
 
@@ -171,6 +193,12 @@ impl ParseErrorKind {
             }
             ParseErrorKind::NestingTooDeep => {
                 "Expression/grouping nesting is too deep. Deeply nested input like ((((… can exhaust the stack; reduce the nesting depth".to_string()
+            }
+            ParseErrorKind::Lex(_) => {
+                "The source contains a character or literal the lexer cannot read at this position; fix or remove it".to_string()
+            }
+            ParseErrorKind::ProgramTooDeep { limit, .. } => {
+                format!("Every statement in a block, every operator in a chain like `a + b + …`, every `lain kalau` and every top-level declaration adds a level. Split very long blocks or expressions into smaller functions so the program stays under {limit} levels")
             }
             ParseErrorKind::CapitalizedModuleName(name) => {
                 let lower = lowercase_first(name);
@@ -212,28 +240,74 @@ fn lowercase_first(s: &str) -> String {
 #[derive(Clone)]
 struct LexerIter<'a> {
     lexer: Lexer<'a>,
+    /// The first lexical error this token stream hit. The stream itself
+    /// reports an error as `None` (no token); the parser reads the cause from
+    /// here. Shared with the parser and with lookahead clones.
+    error: Rc<RefCell<Option<LexError>>>,
 }
 
 impl Iterator for LexerIter<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.lexer.next_token().ok()
+        match self.lexer.next_token() {
+            Ok(token) => Some(token),
+            Err(e) => {
+                let mut slot = self.error.borrow_mut();
+                if slot.is_none() {
+                    *slot = Some(e);
+                }
+                None
+            }
+        }
     }
 }
 
-/// Maximum expression/grouping nesting depth before the parser fails with
-/// [`ParseErrorKind::NestingTooDeep`]. The recursive-descent parser would
+/// Byte offset a lexical error points at.
+fn lex_error_pos(e: &LexError) -> usize {
+    match e {
+        LexError::UnexpectedChar(_, p)
+        | LexError::UnterminatedString(p)
+        | LexError::UnterminatedChar(p)
+        | LexError::UnterminatedComment(p)
+        | LexError::InvalidEscapeSequence(p)
+        | LexError::InvalidNumericLiteral(_, p)
+        | LexError::EmptyCharLiteral(p)
+        | LexError::Unknown(_, p) => *p,
+    }
+}
+
+/// Maximum parser recursion depth, in nesting units, before the parser fails
+/// with [`ParseErrorKind::NestingTooDeep`]. The recursive-descent parser would
 /// otherwise overflow the stack on adversarial input (`((((…`) — a SIGABRT/SIGSEGV
 /// rather than a catchable error.
 ///
-/// The value is chosen to be safe on a **default 2 MiB thread stack** (Rust's
-/// `std::thread` default — smaller than the 8 MiB main thread), since the parser
-/// is a library others may call off-thread: the per-level frames are large
-/// (~8 KiB), so 256 levels overflow a 2 MiB stack while 100 leaves comfortable
-/// margin (~1 MiB). No hand-written or generated RIINA nests expressions
-/// anywhere near this deep. REQ-30 (found by the fuzz-robustness harness).
-const MAX_EXPR_DEPTH: usize = 100;
+/// EVERY self-recursive entry point charges one unit: `parse_expr`,
+/// `parse_control_flow`, `parse_unary`, `parse_ty`, `parse_pattern` and
+/// `parse_session_type`. Guarding only `parse_expr` (as until 2026-10) left
+/// cycles that never pass through it unbounded — `[[[[…`, `!!!!…`,
+/// `f(f(f(…`, curried lambdas `fungsi(x: N) fungsi(y: N) …`, nested `padan`
+/// arms, `Senarai<Senarai<…` types — and each of those overflowed the stack
+/// at a few thousand levels. A parenthesised level costs three units
+/// (`parse_expr` → `parse_control_flow` → `parse_unary`), so this admits
+/// about 100 nested parentheses, the same as the earlier per-`parse_expr`
+/// limit of 100.
+///
+/// What this bounds is the parser's stack use. Measured (2026-10) per
+/// nesting level of an UNOPTIMISED build: ~115 KiB per parenthesised level,
+/// ~95 KiB per `[`, ~47 KiB per `!` — so at the limit the parser needs up to
+/// ~15 MiB in a debug build and a small fraction of that optimised. (The
+/// earlier claim of ~8 KiB per level, safe on a 2 MiB thread, did not hold
+/// for debug builds.) `riinac` runs on a large dedicated stack and the
+/// workspace raises `RUST_MIN_STACK` for tests; a library caller parsing
+/// untrusted input on its own thread should reserve at least 16 MiB. No
+/// hand-written or generated RIINA nests expressions anywhere near this deep.
+/// REQ-30 (found by the fuzz-robustness harness).
+///
+/// This bounds NESTING only. Flat-but-long input (statement sequences,
+/// operator chains, `lain kalau` chains) is parsed iteratively and bounded by
+/// [`limits::MAX_AST_DEPTH`] instead.
+const MAX_EXPR_DEPTH: usize = 300;
 
 pub struct Parser<'a> {
     lexer: Peekable<LexerIter<'a>>,
@@ -253,7 +327,7 @@ pub struct Parser<'a> {
     /// be returned by `parse_top_level_decl` before resuming the token stream.
     /// A module function `fungsi f` becomes a top-level `Name_f` so the existing
     /// `Name::f` -> `Name_f` qualified-call resolution finds it.
-    pending_decls: Vec<TopLevelDecl>,
+    pending_decls: std::collections::VecDeque<TopLevelDecl>,
     /// Sibling modules named by a single-segment `guna <name>;` (REQ-71).
     /// A multi-segment path (`guna std::teks;`) names the builtin namespace,
     /// has no file behind it, and is deliberately NOT recorded here.
@@ -279,6 +353,8 @@ pub struct Parser<'a> {
     /// `untuk` also raises this: it lowers to a real `While`, preserving the
     /// enclosing function's return boundary and the innermost loop's control.
     loop_depth: usize,
+    /// The token stream's first lexical error (see [`LexerIter::error`]).
+    lex_error: Rc<RefCell<Option<LexError>>>,
 }
 
 /// A surface match pattern, used only during `padan` compilation. The AST has
@@ -318,6 +394,71 @@ enum Pattern {
     NamedCtor { name: String, args: Vec<Pattern> },
 }
 
+/// One statement of a sequence, parsed but not yet wrapped around the rest of
+/// the sequence (its continuation). [`Parser::parse_stmt_frames`] collects
+/// these iteratively and [`Parser::fold_stmt_frames`] builds the nested
+/// expression from the innermost statement outwards.
+enum SeqFrame {
+    /// Local `fungsi f(..) { .. }` → `LetRec(f, ty, lam, rest)`.
+    LocalFn { name: Ident, fn_ty: Ty, lam: Expr },
+    /// `biar (a, b, ..) = e;` → `Let(tmp, lin, e, Let(a, proj, ..rest))`.
+    TupleLet {
+        names: Vec<Ident>,
+        linearity: Option<Linearity>,
+        value: Expr,
+    },
+    /// `biar x = e;` → `Let(x, lin, e, rest)`.
+    Let {
+        name: Ident,
+        linearity: Option<Linearity>,
+        value: Expr,
+    },
+    /// `biar ubah x = e;` → `LetMut(x, e, rest)`. A linearity qualifier is an
+    /// error, reported when the frame is folded (after the rest is parsed, as
+    /// the recursive parser did).
+    LetMut {
+        name: Ident,
+        value: Expr,
+        has_linearity: bool,
+    },
+    /// Any other sequenced statement → `Let(name, None, value, rest)`
+    /// (`name` is `_` for a discarded value, or the rebound name for `x = e;`).
+    Seq { name: Ident, value: Expr },
+    /// `pastikan cond …;` → `If(cond, rest, otherwise)`.
+    Guard { cond: Expr, otherwise: Expr },
+}
+
+/// One link of a `kalau … lain kalau …` chain (see [`Parser::parse_if`]).
+enum IfLink {
+    /// `kalau cond { then } lain kalau …` — the next link follows.
+    ElseIf { cond: Expr, then_branch: Expr },
+    /// The final link, already built into its `If`.
+    Last(Expr),
+}
+
+/// What a `pastikan` guard runs when its condition is false.
+enum GuardElse {
+    /// `pastikan c lain { body };`
+    Block(Expr),
+    /// `pastikan c ["msg"];` — fail execution.
+    Fail,
+}
+
+impl GuardElse {
+    fn into_expr(self) -> Expr {
+        match self {
+            GuardElse::Block(body) => body,
+            // This compiler-internal name cannot be declared in surface syntax
+            // (`$` is not an identifier character), so it cannot be shadowed.
+            // It never returns: interpreter error, C abort, WASM trap.
+            GuardElse::Fail => Expr::App(
+                Box::new(Expr::Var("$guard_fail".into())),
+                Box::new(Expr::Unit),
+            ),
+        }
+    }
+}
+
 /// One arm of a `padan` expression: a pattern, an optional `kalau` guard, and a
 /// body expression.
 #[derive(Debug, Clone)]
@@ -347,16 +488,19 @@ fn int_suffix_to_width(suffix: &str) -> Option<(u8, bool)> {
 
 impl<'a> Parser<'a> {
     pub fn new(source: &'a str) -> Self {
+        let lex_error = Rc::new(RefCell::new(None));
         Self {
             lexer: LexerIter {
                 lexer: Lexer::new(source),
+                error: Rc::clone(&lex_error),
             }
             .peekable(),
+            lex_error,
             current_span: Span { start: 0, end: 0 },
             depth: 0,
             gensym: 0,
             pending_gt: false,
-            pending_decls: Vec::new(),
+            pending_decls: std::collections::VecDeque::new(),
             imports: Vec::new(),
             public_names: Vec::new(),
             pending_pub: false,
@@ -391,6 +535,16 @@ impl<'a> Parser<'a> {
         // Depth guard (REQ-30): every nested grouping `(e)`, block, argument,
         // etc. re-enters here, so bounding `parse_expr` bounds the recursion and
         // turns a stack-overflow on adversarial input into a clean error.
+        self.nested(Self::parse_stmt_sequence)
+    }
+
+    /// Run `f` one nesting unit deeper, failing with
+    /// [`ParseErrorKind::NestingTooDeep`] past [`MAX_EXPR_DEPTH`] units. Every
+    /// self-recursive parse function enters through here (see the constant).
+    fn nested<T>(
+        &mut self,
+        f: impl FnOnce(&mut Self) -> Result<T, ParseError>,
+    ) -> Result<T, ParseError> {
         self.depth += 1;
         if self.depth > MAX_EXPR_DEPTH {
             self.depth -= 1;
@@ -399,18 +553,72 @@ impl<'a> Parser<'a> {
                 span: self.current_span,
             });
         }
-        let result = self.parse_stmt_sequence();
+        let result = f(self);
         self.depth -= 1;
         result
+    }
+
+    /// The error for running out of tokens: the lexical error that ended the
+    /// token stream if there was one, else end of input.
+    fn end_of_tokens_error(&self) -> ParseError {
+        match self.lex_error.borrow().as_ref() {
+            Some(e) => {
+                let at = lex_error_pos(e);
+                ParseError {
+                    kind: ParseErrorKind::Lex(e.clone()),
+                    span: Span::new(at, at + 1),
+                }
+            }
+            None => ParseError {
+                kind: ParseErrorKind::UnexpectedEof,
+                span: self.current_span,
+            },
+        }
+    }
+
+    /// Fail with [`ParseErrorKind::ProgramTooDeep`] once a flat chain being
+    /// built iteratively (statements, operator operands, `lain kalau` arms,
+    /// postfix operations, …) reaches [`limits::MAX_AST_DEPTH`] links, so the
+    /// parser never even BUILDS a tree deeper than that (its derived
+    /// `Clone`/`Drop` recurse per level too).
+    fn check_chain_len(&self, len: usize) -> Result<(), ParseError> {
+        if len >= limits::MAX_AST_DEPTH {
+            return Err(ParseError {
+                kind: ParseErrorKind::ProgramTooDeep {
+                    depth: len,
+                    limit: limits::MAX_AST_DEPTH,
+                },
+                span: self.current_span,
+            });
+        }
+        Ok(())
     }
 
     /// Parse a complete .rii file as a sequence of top-level declarations.
     pub fn parse_program(&mut self) -> Result<Program, ParseError> {
         let mut decls = Vec::new();
         let mut spans = Vec::new();
-        while self.peek().map(|t| &t.kind) != Some(&TokenKind::Eof) && self.peek().is_some() {
+        loop {
             let start = self.peek().map(|t| t.span.start).unwrap_or(0);
-            let decl = self.parse_top_level_decl()?;
+            let Some(decl) = self.parse_top_level_decl()? else {
+                break;
+            };
+            // Desugaring nests each declaration under every earlier one
+            // (`Program::desugar` builds a `Let`/`LetRecGroup` chain), so the
+            // program's tree is at least `decls.len() + depth(decl)` deep.
+            // Checked BEFORE the clone below: cloning (and dropping) a tree
+            // recurses once per level.
+            let depth = decls.len() + limits::decl_depth(&decl);
+            if depth > limits::MAX_AST_DEPTH {
+                limits::dismantle_decl(decl);
+                return Err(ParseError {
+                    kind: ParseErrorKind::ProgramTooDeep {
+                        depth,
+                        limit: limits::MAX_AST_DEPTH,
+                    },
+                    span: Span::new(start, self.current_span.end),
+                });
+            }
             let end = self.current_span.end;
             let name_span = match &decl {
                 TopLevelDecl::Function { .. } | TopLevelDecl::Binding { .. } => {
@@ -436,187 +644,35 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    /// Continue parsing the next top-level declaration after a skipped one
-    /// (module/use/etc.). If the input is exhausted, yield a Unit expression
-    /// declaration instead of recursing into `parse_top_level_decl` (which would
-    /// try to parse an expression from EOF and fail).
-    fn parse_next_decl_or_unit(&mut self) -> Result<TopLevelDecl, ParseError> {
-        if matches!(
-            self.peek().map(|t| &t.kind),
-            Some(TokenKind::Eof) | None
-        ) {
-            return Ok(TopLevelDecl::Expr(Box::new(Expr::Unit)));
+    /// Parse the next top-level declaration; `None` at the end of input.
+    ///
+    /// Declarations with no runtime meaning of their own — `modul` blocks
+    /// (whose functions are queued in `pending_decls`), `guna`,
+    /// `bentuk`/`pilihan` and `jenis` — are consumed by
+    /// [`Self::skip_meta_decl`] in a LOOP. This used to recurse once per
+    /// skipped declaration (a long run of `guna …;` lines overflowed the
+    /// stack) and, at end of input, produced a synthetic `()` declaration that
+    /// `Program::desugar` then took as the program BODY: a trailing
+    /// `guna`/`jenis` silently stopped `utama` from running, and a trailing
+    /// `modul` block lost its queued functions.
+    fn parse_top_level_decl(&mut self) -> Result<Option<TopLevelDecl>, ParseError> {
+        loop {
+            // Drain any decls flattened out of a `modul { ... }` block first.
+            if let Some(decl) = self.pending_decls.pop_front() {
+                return Ok(Some(decl));
+            }
+            match self.peek().map(|t| &t.kind) {
+                Some(TokenKind::Eof) => return Ok(None),
+                // A lexical error, not the end of the file: it used to end
+                // the program silently, dropping everything after it.
+                None => return Err(self.end_of_tokens_error()),
+                Some(_) => {}
+            }
+            if !self.skip_meta_decl()? {
+                break;
+            }
         }
-        self.parse_top_level_decl()
-    }
-
-    fn parse_top_level_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
-        // Drain any decls flattened out of a `modul { ... }` block first.
-        if !self.pending_decls.is_empty() {
-            return Ok(self.pending_decls.remove(0));
-        }
-        match self.peek().map(|t| &t.kind) {
-            Some(TokenKind::KwMod) => {
-                // Module declaration. `modul name;` (forward decl) is skipped.
-                // `modul name { ...decls }` is FLATTENED: each inner `fungsi f`
-                // becomes a top-level `name_f` so the existing `name::f` ->
-                // `name_f` qualified-call resolution (parse_module_path) finds
-                // the user definition. Non-function inner items are skipped
-                // (struct/enum/let have no top-level semantics yet).
-                self.consume(TokenKind::KwMod)?;
-                // Span of the NAME, not of the `modul` keyword, so the caret
-                // lands on the thing the user has to change.
-                let modname_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
-                let modname = self.parse_ident()?;
-                // REQ-82: a CAPITALIZED module name is rejected here rather than
-                // flattened. `modul Masa { fungsi masa_unix }` defines
-                // `Masa_masa_unix`, but `Masa::masa_unix` resolves via the
-                // capitalized-namespace rule in `parse_module_path` to the bare
-                // `masa_unix` — the BUILTIN. The block was therefore dead code
-                // that looked live, and a stub written to make an example
-                // deterministic silently got the real clock instead.
-                //
-                // Only the DECLARATION is rejected. The capitalized call path is
-                // untouched, because that is the form the corpus actually uses.
-                if modname.chars().next().is_some_and(char::is_uppercase) {
-                    return Err(ParseError {
-                        kind: ParseErrorKind::CapitalizedModuleName(modname),
-                        span: modname_span,
-                    });
-                }
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
-                    self.consume(TokenKind::LBrace)?;
-                    while !matches!(
-                        self.peek().map(|t| &t.kind),
-                        Some(TokenKind::RBrace) | None
-                    ) {
-                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn)) {
-                            let decl = self.parse_function_decl()?;
-                            if let TopLevelDecl::Function {
-                                name,
-                                params,
-                                return_ty,
-                                effect,
-                                effect_set,
-                                body,
-                            } = decl
-                            {
-                                self.pending_decls.push(TopLevelDecl::Function {
-                                    name: format!("{modname}_{name}"),
-                                    params,
-                                    return_ty,
-                                    effect,
-                                    effect_set,
-                                    body,
-                                });
-                            }
-                        } else {
-                            // Skip a non-function inner item up to the next
-                            // top-level boundary within the module.
-                            self.next();
-                        }
-                    }
-                    self.consume(TokenKind::RBrace)?;
-                } else {
-                    self.consume(TokenKind::Semi)?;
-                }
-                self.parse_next_decl_or_unit()
-            }
-            Some(TokenKind::KwUse) => {
-                // `guna <name>;`            — import the sibling file <name>.rii (REQ-71).
-                // `guna a::b;` / `guna std::teks;` — the BUILTIN namespace: no file
-                //   behind it, so it is consumed and not recorded. This is what
-                //   keeps every pre-module-system example (`guna std::senarai;`)
-                //   compiling unchanged.
-                self.consume(TokenKind::KwUse)?;
-                let first = self.peek().and_then(|t| match &t.kind {
-                    TokenKind::Identifier(n) => Some(n.clone()),
-                    _ => None,
-                });
-                let name_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
-                let mut segments = 0usize;
-                while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi) | None) {
-                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
-                        segments += 1;
-                    }
-                    self.next();
-                }
-                self.consume(TokenKind::Semi)?;
-                if segments == 0 {
-                    if let Some(module) = first {
-                        // Deduplicate: importing the same module twice is
-                        // harmless, and the resolver loads each file once.
-                        if !self.imports.iter().any(|i| i.module == module) {
-                            self.imports.push(Import {
-                                module,
-                                span: AstSpan::new(name_span.start, name_span.end),
-                            });
-                        }
-                    }
-                }
-                self.parse_next_decl_or_unit()
-            }
-            Some(TokenKind::KwStruct) | Some(TokenKind::KwEnum) => {
-                // bentuk/pilihan — skip declaration (no struct/enum semantics yet)
-                self.next(); // consume KwStruct or KwEnum
-                let _name = self.parse_ident()?;
-                self.consume(TokenKind::LBrace)?;
-                self.skip_balanced_braces();
-                self.parse_next_decl_or_unit()
-            }
-            Some(TokenKind::KwType) => {
-                // jenis — skip type/record declaration (no nominal type semantics
-                // yet; the typechecker infers structurally). Forms handled:
-                //   jenis Name { ... }
-                //   jenis Name<T, ...> { ... }
-                //   jenis Name            (marker type, no body)
-                self.next(); // consume KwType
-                let _name = self.parse_ident()?;
-                // Optional generic parameter list `<...>` — skip balanced angles.
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
-                    self.next();
-                    let mut depth = 1u32;
-                    while depth > 0 {
-                        match self.peek().map(|t| &t.kind) {
-                            Some(TokenKind::Lt) => {
-                                self.next();
-                                depth += 1;
-                            }
-                            Some(TokenKind::Gt) => {
-                                self.next();
-                                depth -= 1;
-                            }
-                            // Terminate at Eof (lexer repeats Eof, never None) so
-                            // unclosed `<` doesn't loop forever (REQ-30).
-                            Some(TokenKind::Eof) | None => break,
-                            _ => {
-                                self.next();
-                            }
-                        }
-                    }
-                }
-                match self.peek().map(|t| &t.kind) {
-                    // Record body: `jenis Name { ... }`
-                    Some(TokenKind::LBrace) => {
-                        self.next();
-                        self.skip_balanced_braces();
-                    }
-                    // Type alias: `jenis Name = SomeType;` — skip to the `;`.
-                    Some(TokenKind::Eq) => {
-                        self.next();
-                        while !matches!(
-                            self.peek().map(|t| &t.kind),
-                            Some(TokenKind::Semi) | None
-                        ) {
-                            self.next();
-                        }
-                        let _ = self.consume(TokenKind::Semi);
-                    }
-                    // Marker type with no body: `jenis Name`
-                    _ => {}
-                }
-                self.parse_next_decl_or_unit()
-            }
+        let decl = match self.peek().map(|t| &t.kind) {
             Some(TokenKind::KwChoreography) => self.parse_choreography(),
             Some(TokenKind::KwActor) => self.parse_actor_decl(),
             Some(TokenKind::KwTest) => self.parse_test_block(),
@@ -629,22 +685,28 @@ impl<'a> Parser<'a> {
                 // for every decl form the parser already supports.
                 self.consume(TokenKind::KwPub)?;
                 self.pending_pub = true;
-                let decl = self.parse_next_decl_or_unit();
+                // `nested`: `awam awam awam …` must not recurse unboundedly.
+                let decl = self.nested(Self::parse_top_level_decl);
                 self.pending_pub = false;
-                if let Ok(d) = &decl {
-                    match d {
-                        TopLevelDecl::Function { name, .. }
-                        | TopLevelDecl::Binding { name, .. } => {
-                            if !self.public_names.contains(name) {
-                                self.public_names.push(name.clone());
-                            }
+                // `awam` must make SOMETHING public: at end of input it is an
+                // error (it used to yield a stray `()` declaration).
+                let Some(d) = decl? else {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnexpectedEof,
+                        span: self.current_span,
+                    });
+                };
+                match &d {
+                    TopLevelDecl::Function { name, .. } | TopLevelDecl::Binding { name, .. } => {
+                        if !self.public_names.contains(name) {
+                            self.public_names.push(name.clone());
                         }
-                        TopLevelDecl::Expr(_)
-                        | TopLevelDecl::ExternBlock { .. }
-                        | TopLevelDecl::Test { .. } => {}
                     }
+                    TopLevelDecl::Expr(_)
+                    | TopLevelDecl::ExternBlock { .. }
+                    | TopLevelDecl::Test { .. } => {}
                 }
-                decl
+                return Ok(Some(d));
             }
             Some(TokenKind::KwFn) => self.parse_function_decl(),
             Some(TokenKind::KwLet) => {
@@ -678,6 +740,206 @@ impl<'a> Parser<'a> {
                 let expr = self.parse_expr()?;
                 Ok(TopLevelDecl::Expr(Box::new(expr)))
             }
+        }?;
+        Ok(Some(decl))
+    }
+
+    /// Consume one top-level declaration that has no runtime meaning of its
+    /// own (`modul`, `guna`, `bentuk`/`pilihan`, `jenis`). Returns `false`,
+    /// consuming nothing, when the next token starts anything else.
+    fn skip_meta_decl(&mut self) -> Result<bool, ParseError> {
+        match self.peek().map(|t| &t.kind) {
+            Some(TokenKind::KwMod) => {
+                // Module declaration. `modul name;` (forward decl) is skipped.
+                // `modul name { ...decls }` is FLATTENED: each inner `fungsi f`
+                // becomes a top-level `name_f` so the existing `name::f` ->
+                // `name_f` qualified-call resolution (parse_module_path) finds
+                // the user definition. Non-function inner items are skipped
+                // (struct/enum/let have no top-level semantics yet).
+                self.consume(TokenKind::KwMod)?;
+                // Span of the NAME, not of the `modul` keyword, so the caret
+                // lands on the thing the user has to change.
+                let modname_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
+                let modname = self.parse_ident()?;
+                // REQ-82: a CAPITALIZED module name is rejected here rather than
+                // flattened. `modul Masa { fungsi masa_unix }` defines
+                // `Masa_masa_unix`, but `Masa::masa_unix` resolves via the
+                // capitalized-namespace rule in `parse_module_path` to the bare
+                // `masa_unix` — the BUILTIN. The block was therefore dead code
+                // that looked live, and a stub written to make an example
+                // deterministic silently got the real clock instead.
+                //
+                // Only the DECLARATION is rejected. The capitalized call path is
+                // untouched, because that is the form the corpus actually uses.
+                if modname.chars().next().is_some_and(char::is_uppercase) {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::CapitalizedModuleName(modname),
+                        span: modname_span,
+                    });
+                }
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
+                    self.consume(TokenKind::LBrace)?;
+                    // `Eof` must end the scan as well as `None`: the lexer
+                    // repeats `Eof` forever, so an unclosed `modul m {` used
+                    // to spin here at 100% CPU (`self.next()` on `Eof` makes
+                    // no progress). The `consume(RBrace)` below then reports
+                    // the missing `}`.
+                    while !matches!(
+                        self.peek().map(|t| &t.kind),
+                        Some(TokenKind::RBrace) | Some(TokenKind::Eof) | None
+                    ) {
+                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn)) {
+                            let decl = self.parse_function_decl()?;
+                            if let TopLevelDecl::Function {
+                                name,
+                                params,
+                                return_ty,
+                                effect,
+                                effect_set,
+                                body,
+                            } = decl
+                            {
+                                self.pending_decls.push_back(TopLevelDecl::Function {
+                                    name: format!("{modname}_{name}"),
+                                    params,
+                                    return_ty,
+                                    effect,
+                                    effect_set,
+                                    body,
+                                });
+                            }
+                        } else {
+                            // Skip a non-function inner item up to the next
+                            // top-level boundary within the module.
+                            self.next();
+                        }
+                    }
+                    self.consume(TokenKind::RBrace)?;
+                } else {
+                    self.consume(TokenKind::Semi)?;
+                }
+                Ok(true)
+            }
+            Some(TokenKind::KwUse) => {
+                // `guna <name>;`            — import the sibling file <name>.rii (REQ-71).
+                // `guna a::b;` / `guna std::teks;` — the BUILTIN namespace: no file
+                //   behind it, so it is consumed and not recorded. This is what
+                //   keeps every pre-module-system example (`guna std::senarai;`)
+                //   compiling unchanged.
+                self.consume(TokenKind::KwUse)?;
+                let first = self.peek().and_then(|t| match &t.kind {
+                    TokenKind::Identifier(n) => Some(n.clone()),
+                    _ => None,
+                });
+                let name_span = self.peek().map(|t| t.span).unwrap_or(self.current_span);
+                let mut segments = 0usize;
+                // Stop at `Eof` too (the lexer yields it forever, never `None`):
+                // `guna std::teks` with no `;` used to hang here. The
+                // `consume(Semi)` below turns it into a clean error.
+                while !matches!(
+                    self.peek().map(|t| &t.kind),
+                    Some(TokenKind::Semi) | Some(TokenKind::Eof) | None
+                ) {
+                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
+                        segments += 1;
+                    }
+                    self.next();
+                }
+                self.consume(TokenKind::Semi)?;
+                if segments == 0 {
+                    if let Some(module) = first {
+                        // Deduplicate: importing the same module twice is
+                        // harmless, and the resolver loads each file once.
+                        if !self.imports.iter().any(|i| i.module == module) {
+                            self.imports.push(Import {
+                                module,
+                                span: AstSpan::new(name_span.start, name_span.end),
+                            });
+                        }
+                    }
+                }
+                Ok(true)
+            }
+            Some(TokenKind::KwStruct) | Some(TokenKind::KwEnum) => {
+                // bentuk/pilihan — skip declaration (no struct/enum semantics yet)
+                self.next(); // consume KwStruct or KwEnum
+                let _name = self.parse_ident()?;
+                self.consume(TokenKind::LBrace)?;
+                self.skip_balanced_braces()?;
+                Ok(true)
+            }
+            Some(TokenKind::KwType) => {
+                // jenis — skip type/record declaration (no nominal type semantics
+                // yet; the typechecker infers structurally). Forms handled:
+                //   jenis Name { ... }
+                //   jenis Name<T, ...> { ... }
+                //   jenis Name            (marker type, no body)
+                self.next(); // consume KwType
+                let _name = self.parse_ident()?;
+                // Optional generic parameter list `<...>` — skip balanced angles.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
+                    self.next();
+                    let mut depth = 1u32;
+                    while depth > 0 {
+                        match self.peek().map(|t| &t.kind) {
+                            Some(TokenKind::Lt) => {
+                                self.next();
+                                depth += 1;
+                            }
+                            Some(TokenKind::Gt) => {
+                                self.next();
+                                depth -= 1;
+                            }
+                            // `>>` closes two levels (`jenis T<A<B>>`). It was
+                            // skipped like any other token, so the scan ran on
+                            // past the declaration and swallowed the rest of
+                            // the file.
+                            Some(TokenKind::Shr) => {
+                                self.next();
+                                depth = depth.saturating_sub(2);
+                            }
+                            // Terminate at Eof (lexer repeats Eof, never None) so
+                            // unclosed `<` doesn't loop forever (REQ-30) — and
+                            // report it, rather than accept a truncated decl.
+                            Some(TokenKind::Eof) | None => {
+                                return Err(ParseError {
+                                    kind: ParseErrorKind::UnexpectedEof,
+                                    span: self.current_span,
+                                });
+                            }
+                            _ => {
+                                self.next();
+                            }
+                        }
+                    }
+                }
+                match self.peek().map(|t| &t.kind) {
+                    // Record body: `jenis Name { ... }`
+                    Some(TokenKind::LBrace) => {
+                        self.next();
+                        self.skip_balanced_braces()?;
+                    }
+                    // Type alias: `jenis Name = SomeType;` — skip to the `;`.
+                    // The scan stops at `Eof` as well: the lexer repeats `Eof`
+                    // forever, so `jenis T =` with no `;` used to spin at 100%
+                    // CPU (hanging `check`, `fmt`, the LSP and MCP). A missing
+                    // `;` is now an error instead of being silently accepted.
+                    Some(TokenKind::Eq) => {
+                        self.next();
+                        while !matches!(
+                            self.peek().map(|t| &t.kind),
+                            Some(TokenKind::Semi) | Some(TokenKind::Eof) | None
+                        ) {
+                            self.next();
+                        }
+                        self.consume(TokenKind::Semi)?;
+                    }
+                    // Marker type with no body: `jenis Name`
+                    _ => {}
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 
@@ -841,6 +1103,8 @@ impl<'a> Parser<'a> {
             params.push((name, ty));
 
             while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                // Parameters curry into a nested `Lam` chain.
+                self.check_chain_len(params.len())?;
                 self.consume(TokenKind::Comma)?;
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut)) {
                     self.consume(TokenKind::KwMut)?;
@@ -858,233 +1122,327 @@ impl<'a> Parser<'a> {
     /// stmt_seq ::= (stmt ';')* expr
     /// A `biar` binding: `biar x = e1; rest` desugars to Let(x, e1, rest).
     /// A non-binding expression followed by `;`: `e1; rest` desugars to Let("_", e1, rest).
+    ///
+    /// The sequence is parsed ITERATIVELY: each statement becomes a
+    /// [`SeqFrame`] and the nested `Let` chain is folded together afterwards
+    /// (see [`Self::fold_stmt_frames`]). This used to recurse once per
+    /// statement — through `with_bindings` closures as well — so a few
+    /// thousand consecutive `biar` lines overflowed the stack even in a
+    /// release build. The produced AST, the scoping of `biar ubah` slots and
+    /// the order of generated names are unchanged.
     fn parse_stmt_sequence(&mut self) -> Result<Expr, ParseError> {
-        // Local (nested) function declaration: `fungsi f(..) -> T { .. }` in
-        // statement position. Desugars to a recursive `LetRec` binding whose
-        // continuation is the rest of the sequence, mirroring how top-level
-        // functions desugar. Distinguished from a lambda (`fn(x: T) body`) by a
-        // *named* head: `fn`/`fungsi` immediately followed by an identifier.
-        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn))
-            && self.next_is_named_fn()
-        {
-            let decl = self.parse_function_decl()?;
-            let (name, params, return_ty, effect, body) = match decl {
-                TopLevelDecl::Function {
-                    name,
-                    params,
-                    return_ty,
-                    effect,
-                    body,
-                    ..
-                } => (name, params, return_ty, effect, body),
-                _ => unreachable!("parse_function_decl returns Function"),
-            };
-            let continuation = if self.at_sequence_end() {
-                Expr::Var(name.clone())
-            } else {
-                self.parse_stmt_sequence()?
-            };
-            // Build the curried lambda and its function type through the SAME
-            // helper top-level declarations use. This was a third hand-rolled
-            // copy of the fold, and it diverged: when zero-parameter functions
-            // gained a synthesised `()` parameter (REQ-68) a NESTED zero-arg
-            // `fungsi` kept the old thunk shape here, so calling it applied a
-            // non-function.
-            let (lam, fn_ty) = riina_types::desugar_function(params, return_ty, effect, body);
-            return Ok(Expr::LetRec(
-                name,
-                fn_ty,
-                Box::new(lam),
-                Box::new(continuation),
-            ));
-        }
+        // Names bound by the sequence scope over the rest of it and are
+        // popped when it ends, exactly as the nested `with_bindings` calls
+        // did.
+        let mark = self.binding_scope.len();
+        let parsed = self.parse_stmt_frames();
+        self.binding_scope.truncate(mark);
+        let (frames, tail) = parsed?;
+        self.fold_stmt_frames(frames, tail)
+    }
 
-        // Check if this is a let-binding
-        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwLet)) {
-            self.consume(TokenKind::KwLet)?;
-            // Optional `ubah` (mut) modifier: `biar ubah x = e` binds a real
-            // mutable slot (see `Expr::LetMut`). Without it the binding is
-            // immutable, as before.
-            let is_mut = matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut));
-            if is_mut {
-                self.consume(TokenKind::KwMut)?;
-            }
-            let linearity = match self.peek().map(|t| &t.kind) {
-                Some(TokenKind::KwSekali) => {
-                    self.next();
-                    Some(Linearity::Linear)
-                }
-                Some(TokenKind::KwPaling) => {
-                    self.next();
-                    Some(Linearity::Affine)
-                }
-                Some(TokenKind::KwMesti) => {
-                    self.next();
-                    Some(Linearity::Relevant)
-                }
-                _ => None,
-            };
-            // Tuple-destructuring binding: `biar (a, b, ...) = e; rest`. Binds a
-            // fresh temp to `e`, then projects each name via Fst/Snd (left-nested
-            // pairs, matching how tuples are constructed). Nested patterns are not
-            // supported here — only a flat list of identifiers.
-            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
-                self.consume(TokenKind::LParen)?;
-                let mut names = vec![self.parse_ident()?];
-                while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                    self.consume(TokenKind::Comma)?;
-                    names.push(self.parse_ident()?);
-                }
-                self.consume(TokenKind::RParen)?;
-                self.consume(TokenKind::Eq)?;
-                let e1 = self.parse_control_flow()?;
-                self.consume(TokenKind::Semi)?;
-                let scope: Vec<(Ident, bool)> =
-                    names.iter().map(|n| (n.clone(), false)).collect();
-                let body = self.with_bindings(&scope, |p| {
-                    if p.at_sequence_end() {
-                        Ok(Expr::Unit)
-                    } else {
-                        p.parse_stmt_sequence()
-                    }
-                })?;
-                let tmp = self.fresh_var("padTup");
-                // Bind the names from the temp via Fst/Snd projection; the last
-                // element is the final `Snd` of the left-nested pair chain.
-                let mut bound = body;
-                let n = names.len();
-                for (i, nm) in names.iter().enumerate().rev() {
-                    let proj = self.tuple_proj(&tmp, i, n);
-                    bound = Expr::Let(nm.clone(), None, Box::new(proj), Box::new(bound));
-                }
-                return Ok(Expr::Let(tmp, linearity, Box::new(e1), Box::new(bound)));
-            }
-            let name = self.parse_binding_name()?;
-            // Optional type annotation: `biar x: T = e`. Accepted for ergonomics
-            // and documentation; the binding's type is inferred by the
-            // typechecker, so the parsed `Ty` is intentionally discarded (the
-            // Let AST node carries no annotation slot).
-            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
-                self.consume(TokenKind::Colon)?;
-                let _annotated_ty = self.parse_ty()?;
-            }
-            self.consume(TokenKind::Eq)?;
-            let e1 = self.parse_control_flow()?;
-            self.consume(TokenKind::Semi)?;
-            // A trailing binding with nothing after it (`biar x = e;` then `}`/EOF)
-            // yields Unit as the block's value. The name is in scope for the rest
-            // of the sequence, shadowing any outer binding of the same name.
-            let e2 = self.with_bindings(&[(name.clone(), is_mut)], |p| {
-                if p.at_sequence_end() {
-                    Ok(Expr::Unit)
-                } else {
-                    p.parse_stmt_sequence()
-                }
-            })?;
-            if is_mut {
-                // A slot has no linearity slot to carry, and "use exactly once"
-                // does not combine with "assign repeatedly" anyway. Reject the
-                // pair rather than silently dropping the qualifier.
-                if linearity.is_some() {
-                    return Err(ParseError {
-                        kind: ParseErrorKind::MutWithLinearity,
-                        span: self.current_span,
-                    });
-                }
-                return Ok(Expr::LetMut(name, Box::new(e1), Box::new(e2)));
-            }
-            return Ok(Expr::Let(name, linearity, Box::new(e1), Box::new(e2)));
-        }
+    /// Parse the statements of a sequence up to its end, returning one frame
+    /// per statement plus the sequence's final value (its tail).
+    fn parse_stmt_frames(&mut self) -> Result<(Vec<SeqFrame>, Expr), ParseError> {
+        let mut frames: Vec<SeqFrame> = Vec::new();
+        loop {
+            self.check_chain_len(frames.len())?;
 
-        // Statement-position assignment: `x = e;`.
-        //
-        // For a `biar ubah` name this is a real slot write, visible to every
-        // later read of `x` — including reads OUTSIDE the enclosing block, which
-        // is the whole point: `kalau c { jumlah = jumlah + 1; }` inside a loop
-        // has to accumulate.
-        //
-        // For any other name it keeps the historical meaning — rebinding `x`
-        // (shadowing) for the rest of this sequence. That is observationally
-        // equivalent for straight-line code and keeps programs that never say
-        // `ubah` working exactly as before, but it does NOT escape the block, so
-        // `biar ubah` is the form to reach for.
-        //
-        // Detected as `ident =` where the next token is a single `=` (not `==`).
-        // Field/element assignments (`obj.f = e`) fall through to normal parsing.
-        if let Some(name) = self.peek_simple_reassignment() {
-            self.parse_ident()?; // consume the name
-            self.consume(TokenKind::Eq)?;
-            let value = self.parse_control_flow()?;
-            self.consume(TokenKind::Semi)?;
-            if self.is_slot(&name) {
-                let rest = if self.at_sequence_end() {
-                    Expr::Unit
-                } else {
-                    self.parse_stmt_sequence()?
+            // Local (nested) function declaration: `fungsi f(..) -> T { .. }`
+            // in statement position. Desugars to a recursive `LetRec` binding
+            // whose continuation is the rest of the sequence, mirroring how
+            // top-level functions desugar. Distinguished from a lambda
+            // (`fn(x: T) body`) by a *named* head: `fn`/`fungsi` immediately
+            // followed by an identifier.
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn))
+                && self.next_is_named_fn()
+            {
+                let decl = self.parse_function_decl()?;
+                let (name, params, return_ty, effect, body) = match decl {
+                    TopLevelDecl::Function {
+                        name,
+                        params,
+                        return_ty,
+                        effect,
+                        body,
+                        ..
+                    } => (name, params, return_ty, effect, body),
+                    _ => unreachable!("parse_function_decl returns Function"),
                 };
-                return Ok(Expr::Let(
-                    "_".to_string(),
-                    None,
-                    Box::new(Expr::SlotSet(name, Box::new(value))),
-                    Box::new(rest),
-                ));
-            }
-            let rest = self.with_bindings(&[(name.clone(), false)], |p| {
-                if p.at_sequence_end() {
-                    Ok(Expr::Var(name.clone()))
-                } else {
-                    p.parse_stmt_sequence()
+                // Build the curried lambda and its function type through the
+                // SAME helper top-level declarations use. This was a third
+                // hand-rolled copy of the fold, and it diverged: when
+                // zero-parameter functions gained a synthesised `()` parameter
+                // (REQ-68) a NESTED zero-arg `fungsi` kept the old thunk shape
+                // here, so calling it applied a non-function.
+                let (lam, fn_ty) = riina_types::desugar_function(params, return_ty, effect, body);
+                frames.push(SeqFrame::LocalFn {
+                    name: name.clone(),
+                    fn_ty,
+                    lam,
+                });
+                if self.at_sequence_end() {
+                    return Ok((frames, Expr::Var(name)));
                 }
-            })?;
-            return Ok(Expr::Let(name, None, Box::new(value), Box::new(rest)));
-        }
-
-        // A block-form statement (`kalau`/`padan`/`selagi`/`untuk`/`ulang`) may
-        // be used in statement position without a trailing `;`, e.g. an
-        // early-return guard `kalau c { pulang x; }` followed by more statements.
-        // Other expressions still require a `;` to start a sequence.
-        let first_is_block_form = matches!(
-            self.peek().map(|t| &t.kind),
-            Some(TokenKind::KwIf)
-                | Some(TokenKind::KwMatch)
-                | Some(TokenKind::KwWhile)
-                | Some(TokenKind::KwFor)
-                | Some(TokenKind::KwLoop)
-        );
-
-        let first = self.parse_control_flow()?;
-
-        // If next token is ';', this is a statement sequence
-        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
-            self.consume(TokenKind::Semi)?;
-            // A trailing `;` before the block end (`expr;` then `}`/EOF) — e.g. a
-            // final `pulang x;` — yields `expr` as the block's value. RIINA marks
-            // returns explicitly with `pulang`, so `pulang x;}` is intended to
-            // return `x`, not discard it.
-            if self.at_sequence_end() {
-                return Ok(first);
+                continue;
             }
-            let rest = self.parse_stmt_sequence()?;
-            Ok(Expr::Let(
-                "_".to_string(),
-                None,
-                Box::new(first),
-                Box::new(rest),
-            ))
-        } else if first_is_block_form && !self.at_sequence_end() {
-            // No `;`, but a block-form statement is followed by more statements
-            // — e.g. `kalau c { pulang x; }` (a guard) then further statements.
-            // Sequence `first` (its value discarded) before the rest.
-            let rest = self.parse_stmt_sequence()?;
-            Ok(Expr::Let(
-                "_".to_string(),
-                None,
-                Box::new(first),
-                Box::new(rest),
-            ))
-        } else {
-            Ok(first)
+
+            // Check if this is a let-binding
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwLet)) {
+                self.consume(TokenKind::KwLet)?;
+                // Optional `ubah` (mut) modifier: `biar ubah x = e` binds a real
+                // mutable slot (see `Expr::LetMut`). Without it the binding is
+                // immutable, as before.
+                let is_mut = matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut));
+                if is_mut {
+                    self.consume(TokenKind::KwMut)?;
+                }
+                let linearity = match self.peek().map(|t| &t.kind) {
+                    Some(TokenKind::KwSekali) => {
+                        self.next();
+                        Some(Linearity::Linear)
+                    }
+                    Some(TokenKind::KwPaling) => {
+                        self.next();
+                        Some(Linearity::Affine)
+                    }
+                    Some(TokenKind::KwMesti) => {
+                        self.next();
+                        Some(Linearity::Relevant)
+                    }
+                    _ => None,
+                };
+                // Tuple-destructuring binding: `biar (a, b, ...) = e; rest`. Binds
+                // a fresh temp to `e`, then projects each name via Fst/Snd
+                // (left-nested pairs, matching how tuples are constructed).
+                // Nested patterns are not supported here — only a flat list of
+                // identifiers.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                    self.consume(TokenKind::LParen)?;
+                    let mut names = vec![self.parse_ident()?];
+                    while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                        self.consume(TokenKind::Comma)?;
+                        names.push(self.parse_ident()?);
+                    }
+                    self.consume(TokenKind::RParen)?;
+                    self.consume(TokenKind::Eq)?;
+                    let value = self.parse_control_flow()?;
+                    self.consume(TokenKind::Semi)?;
+                    self.binding_scope
+                        .extend(names.iter().map(|n| (n.clone(), false)));
+                    frames.push(SeqFrame::TupleLet {
+                        names,
+                        linearity,
+                        value,
+                    });
+                    if self.at_sequence_end() {
+                        return Ok((frames, Expr::Unit));
+                    }
+                    continue;
+                }
+                let name = self.parse_binding_name()?;
+                // Optional type annotation: `biar x: T = e`. Accepted for
+                // ergonomics and documentation; the binding's type is inferred
+                // by the typechecker, so the parsed `Ty` is intentionally
+                // discarded (the Let AST node carries no annotation slot).
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
+                    self.consume(TokenKind::Colon)?;
+                    let _annotated_ty = self.parse_ty()?;
+                }
+                self.consume(TokenKind::Eq)?;
+                let value = self.parse_control_flow()?;
+                self.consume(TokenKind::Semi)?;
+                // The name is in scope for the rest of the sequence, shadowing
+                // any outer binding of the same name.
+                self.binding_scope.push((name.clone(), is_mut));
+                frames.push(if is_mut {
+                    SeqFrame::LetMut {
+                        name,
+                        value,
+                        has_linearity: linearity.is_some(),
+                    }
+                } else {
+                    SeqFrame::Let {
+                        name,
+                        linearity,
+                        value,
+                    }
+                });
+                // A trailing binding with nothing after it (`biar x = e;` then
+                // `}`/EOF) yields Unit as the block's value.
+                if self.at_sequence_end() {
+                    return Ok((frames, Expr::Unit));
+                }
+                continue;
+            }
+
+            // Statement-position assignment: `x = e;`.
+            //
+            // For a `biar ubah` name this is a real slot write, visible to every
+            // later read of `x` — including reads OUTSIDE the enclosing block,
+            // which is the whole point: `kalau c { jumlah = jumlah + 1; }` inside
+            // a loop has to accumulate.
+            //
+            // For any other name it keeps the historical meaning — rebinding `x`
+            // (shadowing) for the rest of this sequence. That is observationally
+            // equivalent for straight-line code and keeps programs that never
+            // say `ubah` working exactly as before, but it does NOT escape the
+            // block, so `biar ubah` is the form to reach for.
+            //
+            // Detected as `ident =` where the next token is a single `=` (not
+            // `==`). Field/element assignments (`obj.f = e`) fall through to
+            // normal parsing.
+            if let Some(name) = self.peek_simple_reassignment() {
+                self.parse_ident()?; // consume the name
+                self.consume(TokenKind::Eq)?;
+                let value = self.parse_control_flow()?;
+                self.consume(TokenKind::Semi)?;
+                if self.is_slot(&name) {
+                    frames.push(SeqFrame::Seq {
+                        name: "_".to_string(),
+                        value: Expr::SlotSet(name, Box::new(value)),
+                    });
+                    if self.at_sequence_end() {
+                        return Ok((frames, Expr::Unit));
+                    }
+                    continue;
+                }
+                self.binding_scope.push((name.clone(), false));
+                frames.push(SeqFrame::Seq {
+                    name: name.clone(),
+                    value,
+                });
+                if self.at_sequence_end() {
+                    return Ok((frames, Expr::Var(name)));
+                }
+                continue;
+            }
+
+            // A guard statement `pastikan …;` scopes over the REST of the
+            // sequence (it desugars to `kalau cond { rest } lain { … }`), so it
+            // is a frame here too — handing the rest to `parse_guard` would
+            // recurse once per guard.
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwGuard)) {
+                let (cond, otherwise) = self.parse_guard_head()?;
+                let needs_rest = matches!(otherwise, GuardElse::Block(_));
+                frames.push(SeqFrame::Guard {
+                    cond,
+                    otherwise: otherwise.into_expr(),
+                });
+                // The `lain { … };` form always continues with the rest of the
+                // sequence (an empty rest is a parse error, as before); the
+                // assertion form ends the sequence with `()` when nothing follows.
+                if !needs_rest && self.at_sequence_end() {
+                    return Ok((frames, Expr::Unit));
+                }
+                continue;
+            }
+
+            // A block-form statement (`kalau`/`padan`/`selagi`/`untuk`/`ulang`)
+            // may be used in statement position without a trailing `;`, e.g. an
+            // early-return guard `kalau c { pulang x; }` followed by more
+            // statements. Other expressions still require a `;` to start a
+            // sequence.
+            let first_is_block_form = matches!(
+                self.peek().map(|t| &t.kind),
+                Some(TokenKind::KwIf)
+                    | Some(TokenKind::KwMatch)
+                    | Some(TokenKind::KwWhile)
+                    | Some(TokenKind::KwFor)
+                    | Some(TokenKind::KwLoop)
+            );
+
+            let first = self.parse_control_flow()?;
+
+            // If next token is ';', this is a statement sequence
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
+                self.consume(TokenKind::Semi)?;
+                // A trailing `;` before the block end (`expr;` then `}`/EOF) —
+                // e.g. a final `pulang x;` — yields `expr` as the block's value.
+                // RIINA marks returns explicitly with `pulang`, so `pulang x;}` is
+                // intended to return `x`, not discard it.
+                if self.at_sequence_end() {
+                    return Ok((frames, first));
+                }
+                frames.push(SeqFrame::Seq {
+                    name: "_".to_string(),
+                    value: first,
+                });
+                continue;
+            }
+            if first_is_block_form && !self.at_sequence_end() {
+                // No `;`, but a block-form statement is followed by more
+                // statements — e.g. `kalau c { pulang x; }` (a guard) then
+                // further statements. Sequence `first` (its value discarded)
+                // before the rest.
+                frames.push(SeqFrame::Seq {
+                    name: "_".to_string(),
+                    value: first,
+                });
+                continue;
+            }
+            return Ok((frames, first));
         }
+    }
+
+    /// Fold parsed statement frames, innermost (last) first, around the
+    /// sequence's tail into the nested core-calculus expression.
+    fn fold_stmt_frames(&mut self, frames: Vec<SeqFrame>, tail: Expr) -> Result<Expr, ParseError> {
+        let mut acc = tail;
+        for frame in frames.into_iter().rev() {
+            acc = match frame {
+                SeqFrame::LocalFn { name, fn_ty, lam } => {
+                    Expr::LetRec(name, fn_ty, Box::new(lam), Box::new(acc))
+                }
+                SeqFrame::TupleLet {
+                    names,
+                    linearity,
+                    value,
+                } => {
+                    let tmp = self.fresh_var("padTup");
+                    // Bind the names from the temp via Fst/Snd projection; the
+                    // last element is the final `Snd` of the left-nested pair
+                    // chain.
+                    let mut bound = acc;
+                    let n = names.len();
+                    for (i, nm) in names.iter().enumerate().rev() {
+                        let proj = self.tuple_proj(&tmp, i, n);
+                        bound = Expr::Let(nm.clone(), None, Box::new(proj), Box::new(bound));
+                    }
+                    Expr::Let(tmp, linearity, Box::new(value), Box::new(bound))
+                }
+                SeqFrame::Let {
+                    name,
+                    linearity,
+                    value,
+                } => Expr::Let(name, linearity, Box::new(value), Box::new(acc)),
+                SeqFrame::LetMut {
+                    name,
+                    value,
+                    has_linearity,
+                } => {
+                    // A slot has no linearity slot to carry, and "use exactly
+                    // once" does not combine with "assign repeatedly" anyway.
+                    // Reject the pair rather than silently dropping the
+                    // qualifier.
+                    if has_linearity {
+                        limits::dismantle(acc);
+                        return Err(ParseError {
+                            kind: ParseErrorKind::MutWithLinearity,
+                            span: self.current_span,
+                        });
+                    }
+                    Expr::LetMut(name, Box::new(value), Box::new(acc))
+                }
+                SeqFrame::Seq { name, value } => {
+                    Expr::Let(name, None, Box::new(value), Box::new(acc))
+                }
+                SeqFrame::Guard { cond, otherwise } => {
+                    Expr::If(Box::new(cond), Box::new(acc), Box::new(otherwise))
+                }
+            };
+        }
+        Ok(acc)
     }
 
     /// True when the next token ends a statement sequence — a block close `}`
@@ -1147,7 +1505,9 @@ impl<'a> Parser<'a> {
 
     /// Skip tokens up to and including the `}` that closes an already-consumed
     /// opening `{`. Tracks nesting so inner braces don't end the skip early.
-    fn skip_balanced_braces(&mut self) {
+    /// Reaching the end of input first is an error: an unclosed `bentuk S {`
+    /// used to be accepted as a complete declaration.
+    fn skip_balanced_braces(&mut self) -> Result<(), ParseError> {
         let mut depth = 1u32;
         while depth > 0 {
             match self.peek().map(|t| &t.kind) {
@@ -1163,12 +1523,18 @@ impl<'a> Parser<'a> {
                 // input, so an Eof here must terminate the skip — otherwise the
                 // `_` arm consumes it without progress and loops forever on
                 // unclosed input like `fungsi x<` (REQ-30, fuzz-found).
-                Some(TokenKind::Eof) | None => break,
+                Some(TokenKind::Eof) | None => {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnexpectedEof,
+                        span: self.current_span,
+                    });
+                }
                 _ => {
                     self.next();
                 }
             }
         }
+        Ok(())
     }
 
     fn peek(&mut self) -> Option<&Token> {
@@ -1355,6 +1721,8 @@ impl<'a> Parser<'a> {
             }
         }
         segments.push(cur);
+        // Two left-nested `+` levels per placeholder.
+        self.check_chain_len(2 * placeholders)?;
 
         // Build: seg0 + ke_teks(arg0) + seg1 + ke_teks(arg1) + ... + segN.
         // `segments` has exactly `placeholders + 1` entries. Missing args (fewer
@@ -1443,14 +1811,16 @@ impl<'a> Parser<'a> {
                 span: token.span,
             })
         } else {
-            Err(ParseError {
-                kind: ParseErrorKind::UnexpectedEof,
-                span: self.current_span,
-            })
+            Err(self.end_of_tokens_error())
         }
     }
 
+    /// Nesting-guarded entry (see [`MAX_EXPR_DEPTH`]).
     fn parse_control_flow(&mut self) -> Result<Expr, ParseError> {
+        self.nested(Self::parse_control_flow_inner)
+    }
+
+    fn parse_control_flow_inner(&mut self) -> Result<Expr, ParseError> {
         match self.peek().map(|t| &t.kind) {
             Some(TokenKind::KwIf) => self.parse_if(),
             Some(TokenKind::KwFn) => self.parse_lam(),
@@ -1616,48 +1986,50 @@ impl<'a> Parser<'a> {
     /// Parse guard clause:
     ///   'pastikan'|'guard' expr 'lain'|'else' '{' expr '}' ';' expr
     /// Desugars to If(cond, continuation, else_body)
+    ///
+    /// Reached only when a guard appears outside statement position; a
+    /// statement-position guard is folded by `parse_stmt_frames` instead.
     fn parse_guard(&mut self) -> Result<Expr, ParseError> {
+        let (cond, otherwise) = self.parse_guard_head()?;
+        let continuation = match otherwise {
+            GuardElse::Block(_) => self.parse_stmt_sequence()?,
+            GuardElse::Fail if self.at_sequence_end() => Expr::Unit,
+            GuardElse::Fail => self.parse_stmt_sequence()?,
+        };
+        Ok(Expr::If(
+            Box::new(cond),
+            Box::new(continuation),
+            Box::new(otherwise.into_expr()),
+        ))
+    }
+
+    /// The part of a guard clause before its continuation: the condition and
+    /// what runs when it fails.
+    ///
+    /// Two surface forms:
+    ///   1. `pastikan cond lain { else_body }; rest`  (Swift-style guard)
+    ///   2. `pastikan cond ["message"]; rest`         (assertion guard)
+    ///
+    /// Both desugar to `kalau cond { rest } lain { else }`: execution proceeds
+    /// to `rest` when the condition holds. Form 2 fails execution on a false
+    /// condition rather than returning a Unit from an arbitrarily typed function.
+    fn parse_guard_head(&mut self) -> Result<(Expr, GuardElse), ParseError> {
         self.consume(TokenKind::KwGuard)?;
         let cond = self.parse_pipe()?;
-
-        // Two surface forms:
-        //   1. `pastikan cond lain { else_body }; rest`  (Swift-style guard)
-        //   2. `pastikan cond ["message"]; rest`         (assertion guard)
-        // Both desugar to `kalau cond { rest } lain { else }`: execution proceeds
-        // to `rest` when the condition holds. Form 2 fails execution on a false
-        // condition rather than returning a Unit from an arbitrarily typed function.
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwElse)) {
             self.consume(TokenKind::KwElse)?;
             self.consume(TokenKind::LBrace)?;
             let else_body = self.parse_expr()?;
             self.consume(TokenKind::RBrace)?;
             self.consume(TokenKind::Semi)?;
-            let continuation = self.parse_stmt_sequence()?;
-            return Ok(Expr::If(
-                Box::new(cond),
-                Box::new(continuation),
-                Box::new(else_body),
-            ));
+            return Ok((cond, GuardElse::Block(else_body)));
         }
-
         // Assertion form: optional trailing message expression, then `;`.
         if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
             let _msg = self.parse_pipe()?; // message (informational; discarded)
         }
         self.consume(TokenKind::Semi)?;
-        let continuation = if self.at_sequence_end() {
-            Expr::Unit
-        } else {
-            self.parse_stmt_sequence()?
-        };
-        // This compiler-internal name cannot be declared in surface syntax
-        // (`$` is not an identifier character), so it cannot be shadowed.
-        // It never returns: interpreter error, C abort, WASM trap.
-        Ok(Expr::If(
-            Box::new(cond),
-            Box::new(continuation),
-            Box::new(Expr::App(Box::new(Expr::Var("$guard_fail".into())), Box::new(Expr::Unit))),
-        ))
+        Ok((cond, GuardElse::Fail))
     }
 
     /// Parse pipe expressions: expr (|> expr)*
@@ -1680,7 +2052,10 @@ impl<'a> Parser<'a> {
                 Box::new(Expr::Pair(Box::new(expr), Box::new(end))),
             ));
         }
+        let mut links = 0usize;
         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Pipe)) {
+            self.check_chain_len(links)?;
+            links += 1;
             self.consume(TokenKind::Pipe)?;
             // The pipe target is a single expression. A lambda (`x |> fungsi(y)
             // { .. }`) is parsed directly so it works as a target, but the target
@@ -1725,7 +2100,10 @@ impl<'a> Parser<'a> {
 
     fn parse_or(&mut self) -> Result<Expr, ParseError> {
         let mut left = self.parse_and()?;
+        let mut links = 0usize;
         while let Some(TokenKind::OrOr) = self.peek().map(|t| &t.kind) {
+            self.check_chain_len(links)?;
+            links += 1;
             self.next();
             let right = self.parse_and()?;
             left = Expr::BinOp(BinOp::Or, Box::new(left), Box::new(right));
@@ -1735,7 +2113,10 @@ impl<'a> Parser<'a> {
 
     fn parse_and(&mut self) -> Result<Expr, ParseError> {
         let mut left = self.parse_equality()?;
+        let mut links = 0usize;
         while let Some(TokenKind::AndAnd) = self.peek().map(|t| &t.kind) {
+            self.check_chain_len(links)?;
+            links += 1;
             self.next();
             let right = self.parse_equality()?;
             left = Expr::BinOp(BinOp::And, Box::new(left), Box::new(right));
@@ -1745,7 +2126,12 @@ impl<'a> Parser<'a> {
 
     fn parse_equality(&mut self) -> Result<Expr, ParseError> {
         let mut left = self.parse_comparison()?;
+        // Iterative over the chain (`a + b + …` builds a left-nested BinOp
+        // per operand); the cap stops the TREE growing past MAX_AST_DEPTH.
+        let mut links = 0usize;
         loop {
+            self.check_chain_len(links)?;
+            links += 1;
             let op = match self.peek().map(|t| &t.kind) {
                 Some(TokenKind::EqEq) => BinOp::Eq,
                 Some(TokenKind::Ne) => BinOp::Ne,
@@ -1760,7 +2146,12 @@ impl<'a> Parser<'a> {
 
     fn parse_comparison(&mut self) -> Result<Expr, ParseError> {
         let mut left = self.parse_additive()?;
+        // Iterative over the chain (`a + b + …` builds a left-nested BinOp
+        // per operand); the cap stops the TREE growing past MAX_AST_DEPTH.
+        let mut links = 0usize;
         loop {
+            self.check_chain_len(links)?;
+            links += 1;
             let op = match self.peek().map(|t| &t.kind) {
                 Some(TokenKind::Lt) => BinOp::Lt,
                 Some(TokenKind::Gt) => BinOp::Gt,
@@ -1777,7 +2168,12 @@ impl<'a> Parser<'a> {
 
     fn parse_additive(&mut self) -> Result<Expr, ParseError> {
         let mut left = self.parse_multiplicative()?;
+        // Iterative over the chain (`a + b + …` builds a left-nested BinOp
+        // per operand); the cap stops the TREE growing past MAX_AST_DEPTH.
+        let mut links = 0usize;
         loop {
+            self.check_chain_len(links)?;
+            links += 1;
             let op = match self.peek().map(|t| &t.kind) {
                 Some(TokenKind::Plus) => BinOp::Add,
                 Some(TokenKind::Minus) => BinOp::Sub,
@@ -1792,7 +2188,12 @@ impl<'a> Parser<'a> {
 
     fn parse_multiplicative(&mut self) -> Result<Expr, ParseError> {
         let mut left = self.parse_app()?;
+        // Iterative over the chain (`a + b + …` builds a left-nested BinOp
+        // per operand); the cap stops the TREE growing past MAX_AST_DEPTH.
+        let mut links = 0usize;
         loop {
+            self.check_chain_len(links)?;
+            links += 1;
             let op = match self.peek().map(|t| &t.kind) {
                 Some(TokenKind::Star) => BinOp::Mul,
                 Some(TokenKind::Slash) => BinOp::Div,
@@ -1808,11 +2209,14 @@ impl<'a> Parser<'a> {
 
     fn parse_app(&mut self) -> Result<Expr, ParseError> {
         let mut expr = self.parse_unary()?;
+        let mut links = 0usize;
         // Postfix accessors, chained left-to-right:
         //   `e.field`      -> structural FieldAccess
         //   `e.0` / `e.1`  -> Fst / Snd (pairs)
         //   `e[i]`         -> list indexing, desugared to `senarai_dapat((e, i))`
         loop {
+            self.check_chain_len(links)?;
+            links += 1;
             match self.peek().map(|t| &t.kind) {
                 Some(TokenKind::Dot) => {
                     self.consume(TokenKind::Dot)?;
@@ -1894,6 +2298,8 @@ impl<'a> Parser<'a> {
                         let arg = self.parse_control_flow()?;
                         expr = Expr::App(Box::new(expr), Box::new(arg));
                         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            self.check_chain_len(links)?;
+                            links += 1;
                             self.consume(TokenKind::Comma)?;
                             let arg = self.parse_control_flow()?;
                             expr = Expr::App(Box::new(expr), Box::new(arg));
@@ -1925,6 +2331,8 @@ impl<'a> Parser<'a> {
         );
         if head_is_callable {
             loop {
+                self.check_chain_len(links)?;
+                links += 1;
                 if self.is_expr_start() {
                     let arg = self.parse_unary()?;
                     expr = Expr::App(Box::new(expr), Box::new(arg));
@@ -1969,7 +2377,12 @@ impl<'a> Parser<'a> {
         )
     }
 
+    /// Nesting-guarded entry (see [`MAX_EXPR_DEPTH`]).
     fn parse_unary(&mut self) -> Result<Expr, ParseError> {
+        self.nested(Self::parse_unary_inner)
+    }
+
+    fn parse_unary_inner(&mut self) -> Result<Expr, ParseError> {
         let kind = self.peek().map(|t| t.kind.clone());
         match kind {
             Some(TokenKind::Not) => {
@@ -2200,6 +2613,7 @@ impl<'a> Parser<'a> {
                     if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
                         args.push(self.parse_control_flow()?);
                         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            self.check_chain_len(args.len())?;
                             self.consume(TokenKind::Comma)?;
                             args.push(self.parse_control_flow()?);
                         }
@@ -2277,6 +2691,7 @@ impl<'a> Parser<'a> {
                         // and destructuring).
                         let mut elems = vec![e];
                         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            self.check_chain_len(elems.len())?;
                             self.consume(TokenKind::Comma)?;
                             if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
                                 break; // trailing comma
@@ -2308,16 +2723,38 @@ impl<'a> Parser<'a> {
                 kind: ParseErrorKind::UnexpectedToken(kind),
                 span: self.current_span,
             }),
-            None => Err(ParseError {
-                kind: ParseErrorKind::UnexpectedEof,
-                span: self.current_span,
-            }),
+            None => Err(self.end_of_tokens_error()),
         }
     }
 
     // parse_let logic is now inlined in parse_stmt_sequence
 
+    /// Parse `kalau c { .. } [lain kalau c { .. }]* [lain { .. }]`.
+    ///
+    /// The `lain kalau` links are collected in a LOOP and folded into the
+    /// nested `If` chain afterwards (each link's else branch is the next
+    /// link). Parsing each link by recursing into `parse_if` — as until
+    /// 2026-10 — overflowed the stack on a few thousand links.
     fn parse_if(&mut self) -> Result<Expr, ParseError> {
+        let mut links: Vec<(Expr, Expr)> = Vec::new();
+        loop {
+            self.check_chain_len(links.len())?;
+            match self.parse_if_link()? {
+                IfLink::ElseIf { cond, then_branch } => links.push((cond, then_branch)),
+                IfLink::Last(innermost) => {
+                    let mut acc = innermost;
+                    for (cond, then_branch) in links.into_iter().rev() {
+                        acc = Expr::If(Box::new(cond), Box::new(then_branch), Box::new(acc));
+                    }
+                    return Ok(acc);
+                }
+            }
+        }
+    }
+
+    /// One `kalau c { .. }` link of an `if` chain, with its `lain` tail if the
+    /// tail is not another `kalau`.
+    fn parse_if_link(&mut self) -> Result<IfLink, ParseError> {
         self.consume(TokenKind::KwIf)?;
         let cond = self.parse_expr()?;
         self.consume(TokenKind::LBrace)?;
@@ -2326,24 +2763,19 @@ impl<'a> Parser<'a> {
 
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwElse)) {
             self.consume(TokenKind::KwElse)?;
-            // `lain kalau ...` (else-if): the else branch is itself an `if`,
-            // parsed recursively to chain conditions.
+            // `lain kalau ...` (else-if): the else branch is itself an `if` —
+            // the next link, parsed by the caller's loop.
             if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwIf)) {
-                let else_branch = self.parse_if()?;
-                return Ok(Expr::If(
-                    Box::new(cond),
-                    Box::new(then_branch),
-                    Box::new(else_branch),
-                ));
+                return Ok(IfLink::ElseIf { cond, then_branch });
             }
             self.consume(TokenKind::LBrace)?;
             let else_branch = self.parse_expr()?;
             self.consume(TokenKind::RBrace)?;
-            Ok(Expr::If(
+            Ok(IfLink::Last(Expr::If(
                 Box::new(cond),
                 Box::new(then_branch),
                 Box::new(else_branch),
-            ))
+            )))
         } else {
             // `kalau cond { ... }` with no `lain`: used as a statement (e.g. an
             // early-return guard `kalau c { pulang x; }`). Both branches must
@@ -2355,11 +2787,11 @@ impl<'a> Parser<'a> {
                 Box::new(then_branch),
                 Box::new(Expr::Unit),
             );
-            Ok(Expr::If(
+            Ok(IfLink::Last(Expr::If(
                 Box::new(cond),
                 Box::new(then_unit),
                 Box::new(Expr::Unit),
-            ))
+            )))
         }
     }
 
@@ -2426,6 +2858,8 @@ impl<'a> Parser<'a> {
 
         let mut arms: Vec<MatchArm> = Vec::new();
         while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None) {
+            // Arms compile to a nested `If` chain, one level per arm.
+            self.check_chain_len(arms.len())?;
             let pattern = self.parse_pattern()?;
             // Optional guard: `kalau <cond>`.
             let guard = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwIf)) {
@@ -2479,7 +2913,12 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse a single match pattern.
+    /// Nesting-guarded entry (see [`MAX_EXPR_DEPTH`]).
     fn parse_pattern(&mut self) -> Result<Pattern, ParseError> {
+        self.nested(Self::parse_pattern_inner)
+    }
+
+    fn parse_pattern_inner(&mut self) -> Result<Pattern, ParseError> {
         match self.peek().map(|t| t.kind.clone()) {
             // Tuple pattern `(p1, p2, ...)` (or `()` for unit).
             Some(TokenKind::LParen) => {
@@ -3189,7 +3628,12 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Nesting-guarded entry (see [`MAX_EXPR_DEPTH`]).
     fn parse_ty(&mut self) -> Result<Ty, ParseError> {
+        self.nested(Self::parse_ty_inner)
+    }
+
+    fn parse_ty_inner(&mut self) -> Result<Ty, ParseError> {
         let kind = self.peek().map(|t| t.kind.clone());
         match kind {
             Some(TokenKind::Star) => {
@@ -3571,7 +4015,12 @@ impl<'a> Parser<'a> {
     /// Parse a session type: Send<T, S> | Recv<T, S> | Select<S1, S2> |
     /// Branch<S1, S2> | End | Rec<X, S> | Var<X>
     /// Matches Coq SessionTypes.v session type constructors.
+    /// Nesting-guarded entry (see [`MAX_EXPR_DEPTH`]).
     fn parse_session_type(&mut self) -> Result<SessionType, ParseError> {
+        self.nested(Self::parse_session_type_inner)
+    }
+
+    fn parse_session_type_inner(&mut self) -> Result<SessionType, ParseError> {
         let ident = self.parse_ident()?;
         match ident.as_str() {
             // Send<PayloadType, Continuation>
@@ -3819,6 +4268,7 @@ impl<'a> Parser<'a> {
             self.peek().map(|t| &t.kind),
             Some(TokenKind::Identifier(s)) if s == "kendalikan"
         ) {
+            self.check_chain_len(handlers.len())?;
             self.next(); // consume "kendalikan" identifier
             let msg_name = self.parse_ident()?;
             self.consume(TokenKind::LParen)?;
@@ -4231,3 +4681,6 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod robustness_tests;
