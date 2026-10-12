@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-12T01:04:06Z",
-  "generatedHuman": "October 12, 2026 at 01:04 UTC",
+  "generated": "2026-10-12T01:22:31Z",
+  "generatedHuman": "October 12, 2026 at 01:22 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "d40f538d",
+    "commit": "d8eece41c",
     "branch": "main"
   },
   "proofs": {
@@ -148,16 +148,16 @@
     "isabelleCompiled": false,
     "fstarStatus": "retired",
     "tlaplusStatus": "generated",
-    "alloyStatus": "compiled",
+    "alloyStatus": "generated",
     "smtStatus": "mechanized",
     "verusStatus": "generated",
     "kaniStatus": "generated",
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": false,
+      "reportFresh": true,
       "overallMechanized": false,
-      "source": "cached_metrics",
+      "source": "strict_report",
       "pending": {
         "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
         "isabelle": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus (local Isabelle enforcement: ERROR: pinned local Isabelle not found at ./05_TOOLING/tools/isabelle/current/bin/isabelle. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-isabelle.sh)",
@@ -195,7 +195,7 @@
     "isabelle": "retired",
     "fstar": "retired",
     "tlaplus": "generated",
-    "alloy": "compiled",
+    "alloy": "generated",
     "smt": "mechanized",
     "verus": "generated",
     "kani": "generated",
