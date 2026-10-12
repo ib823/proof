@@ -4663,6 +4663,31 @@ I/O and clock access are not capability-gated at top level; package signing
 has no revocation or per-package key scoping; HMAC receipts are symmetric (no
 non-repudiation).
 
+### Merge and deployment — 2026-10-12 (PR #89)
+
+Owner-authorized ("mark the PR merged and deploy per protocol"). PR #89 merged
+into `main` as `d40f538` (merge commit; CI 11/11 green on head `992cab6`).
+Post-merge chain on `main`, each commit through the normal hooks:
+`d8eece41` metrics provenance stamp; `166ed506` non-Coq lane report refreshed
+at `d8eece41` (identical lane verdicts) — `894a774` had untracked two Lean
+`.lake` build artifacts under a path the report's freshness rule watches,
+the stale report sent `generate-metrics.sh --fast` down its cached fallback,
+and that fallback promotes an Alloy SMOKE pass to a "compiled" claim; the
+public claim-integrity gate refused the sync, and the refreshed report put
+Alloy back to `generated` (the fallback flaw itself is still open);
+`effd0a50` verification manifest; `fa97d81e` removed a container-absolute
+path from a `verify.rs` doc comment (verify-public check 7).
+**Public:** `sync-public.sh --reconcile` pushed `origin/public`
+`5913ba37b → 952949b9b` with every public quality gate and verify-public
+check passing (stale agent worktrees under `.claude/worktrees/` had made
+verify-public's filesystem scans report false contamination; removed).
+**Not done:** the website (`deploy-website.sh` → `gh-pages` on `ib823/riina`)
+and the `ib823/riina` main mirror — that repository is outside this session's
+access and no `riina` remote is configured here. Owner action: with the
+`riina` remote configured, run `bash scripts/deploy-website.sh` from `main`
+and commit its byproducts (playground WASM, report stamps) as the usual
+"deploy artifacts" chore.
+
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
 **Owner directive (2026-08-06):** make RIINA an indisputable, disruptive, unparalleled innovation,
