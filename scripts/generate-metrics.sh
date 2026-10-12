@@ -32,6 +32,18 @@ escape_json() {
     printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' '
 }
 
+# Fast mode with a stale/missing non-Coq lane report: carry DESCRIPTIVE fields
+# (pending reasons, backlogs, unobserved smoke results) forward from the last
+# published metrics.json so a pre-commit run does not churn them.
+#
+# It must never carry a claim. Lane claims (and quality.*Compiled) come only
+# from a fresh strict report; scripts/public-quality-gates.sh rejects any
+# non-Coq claim above "generated" without one. This fallback used to rebuild
+# *_COMPILED / *_MECHANIZED_READY from the previous claimLevels and from smoke
+# passes, so a smoke pass became a published "compiled" claim (Alloy, PR #89
+# deploy) and every later fast run re-read it as evidence: a self-reinforcing
+# overclaim. Smoke results this run actually observed are kept as well, so a
+# cached pass cannot mask a smoke check that now fails.
 load_cached_fast_noncoq_metrics() {
     [ "$FAST_MODE" -eq 1 ] || return 0
     [ "$NONCOQ_MECH_FRESH" != true ] || return 0
@@ -39,22 +51,24 @@ load_cached_fast_noncoq_metrics() {
     command -v python3 >/dev/null 2>&1 || return 0
 
     eval "$(
-        python3 - <<'PY' "$PREV_METRICS"
+        python3 - <<'PY' "$PREV_METRICS" \
+            "$ISABELLE_SMOKE_OBSERVED" "$FSTAR_SMOKE_OBSERVED" \
+            "$TLAPLUS_SMOKE_OBSERVED" "$ALLOY_SMOKE_OBSERVED"
 import json
 import shlex
 import sys
 
 with open(sys.argv[1], "r", encoding="utf-8") as f:
     data = json.load(f)
+observed = dict(zip(("isabelle", "fstar", "tlaplus", "alloy"),
+                    (flag == "true" for flag in sys.argv[2:6])))
 
 quality = data.get("quality", {})
 noncoq = quality.get("nonCoqMechanization", {})
 pending = noncoq.get("pending", {})
 backlog = noncoq.get("backlog", {})
-claims = data.get("claimLevels", {})
 
-compiled_claims = {"compiled", "mechanized", "independently_audited"}
-mechanized_claims = {"mechanized", "independently_audited"}
+STALE = "noncoq_report_missing_or_stale"
 
 
 def shell(name, value):
@@ -66,12 +80,11 @@ def shell(name, value):
         print(f"{name}={shlex.quote(str(value))}")
 
 
-def claim_compiled(name):
-    return claims.get(name) in compiled_claims
-
-
-def claim_mechanized(name):
-    return claims.get(name) in mechanized_claims
+def pending_reason(lane):
+    # "none" meant "nothing pending" under the report that was fresh then; the
+    # lane is generated now, so the honest reason is the stale report.
+    reason = str(pending.get(lane, "") or "").replace("\n", " ").strip()
+    return STALE if reason in ("", "none") else reason
 
 
 isabelle = data.get("isabelle", {})
@@ -81,34 +94,15 @@ alloy = data.get("alloy", {})
 
 values = {
     "NONCOQ_MECH_SOURCE": "cached_metrics",
-    "NONCOQ_MECH_OVERALL": bool(noncoq.get("overallMechanized", False)),
-    "LEAN_COMPILED": claim_compiled("lean") or bool(quality.get("leanCompiled", False)),
-    "ISABELLE_COMPILED": claim_compiled("isabelle") or bool(quality.get("isabelleCompiled", False)),
-    "FSTAR_COMPILED": claim_compiled("fstar") or bool(fstar.get("smokeBuildOk", False)),
-    "TLAPLUS_COMPILED": claim_compiled("tlaplus") or bool(tlaplus.get("smokeBuildOk", False)),
-    "ALLOY_COMPILED": claim_compiled("alloy") or bool(alloy.get("smokeBuildOk", False)),
-    "SMT_COMPILED": claim_compiled("smt"),
-    "VERUS_COMPILED": claim_compiled("verus"),
-    "KANI_COMPILED": claim_compiled("kani"),
-    "TV_COMPILED": claim_compiled("tv"),
-    "LEAN_MECHANIZED_READY": claim_mechanized("lean"),
-    "ISABELLE_MECHANIZED_READY": claim_mechanized("isabelle"),
-    "FSTAR_MECHANIZED_READY": claim_mechanized("fstar"),
-    "TLAPLUS_MECHANIZED_READY": claim_mechanized("tlaplus"),
-    "ALLOY_MECHANIZED_READY": claim_mechanized("alloy"),
-    "SMT_MECHANIZED_READY": claim_mechanized("smt"),
-    "VERUS_MECHANIZED_READY": claim_mechanized("verus"),
-    "KANI_MECHANIZED_READY": claim_mechanized("kani"),
-    "TV_MECHANIZED_READY": claim_mechanized("tv"),
-    "LEAN_PENDING_REASON": pending.get("lean", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "ISABELLE_PENDING_REASON": pending.get("isabelle", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "FSTAR_PENDING_REASON": pending.get("fstar", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "TLAPLUS_PENDING_REASON": pending.get("tlaplus", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "ALLOY_PENDING_REASON": pending.get("alloy", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "SMT_PENDING_REASON": pending.get("smt", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "VERUS_PENDING_REASON": pending.get("verus", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "KANI_PENDING_REASON": pending.get("kani", "noncoq_report_missing_or_stale").replace("\n", " "),
-    "TV_PENDING_REASON": pending.get("tv", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "LEAN_PENDING_REASON": pending_reason("lean"),
+    "ISABELLE_PENDING_REASON": pending_reason("isabelle"),
+    "FSTAR_PENDING_REASON": pending_reason("fstar"),
+    "TLAPLUS_PENDING_REASON": pending_reason("tlaplus"),
+    "ALLOY_PENDING_REASON": pending_reason("alloy"),
+    "SMT_PENDING_REASON": pending_reason("smt"),
+    "VERUS_PENDING_REASON": pending_reason("verus"),
+    "KANI_PENDING_REASON": pending_reason("kani"),
+    "TV_PENDING_REASON": pending_reason("tv"),
     "LEAN_SORRY_BACKLOG": int(backlog.get("leanSorry", 0) or 0),
     "LEAN_AXIOMS_BACKLOG": int(backlog.get("leanAxioms", 0) or 0),
     "ISABELLE_SORRY_BACKLOG": int(backlog.get("isabelleSorry", 0) or 0),
@@ -117,20 +111,32 @@ values = {
     "VERUS_GENERATED_BACKLOG": int(backlog.get("verusGeneratedFiles", 0) or 0),
     "KANI_GENERATED_BACKLOG": int(backlog.get("kaniGeneratedFiles", 0) or 0),
     "TV_GENERATED_BACKLOG": int(backlog.get("tvGeneratedFiles", 0) or 0),
-    "ISABELLE_SMOKE_SESSION": isabelle.get("smokeSession", "RIINA_CORE"),
-    "ISABELLE_SMOKE_BUILD_OK": bool(isabelle.get("smokeBuildOk", False)),
-    "ISABELLE_COMPILED_THEORIES": int(isabelle.get("compiledTheories", 0) or 0),
-    "ISABELLE_COMPILED_LEMMAS": int(isabelle.get("compiledLemmas", 0) or 0),
-    "FSTAR_SMOKE_MODULE": fstar.get("smokeModule", "RIINA.Active.CryptographicSecurityActive"),
-    "FSTAR_SMOKE_BUILD_OK": bool(fstar.get("smokeBuildOk", False)),
-    "FSTAR_COMPILED_LEMMAS": int(fstar.get("compiledLemmas", 0) or 0),
-    "TLAPLUS_SMOKE_SPEC": tlaplus.get("smokeSpec", "RIINA.Active.TelusProcurementProtocol"),
-    "TLAPLUS_SMOKE_BUILD_OK": bool(tlaplus.get("smokeBuildOk", False)),
-    "TLAPLUS_COMPILED_THEOREMS": int(tlaplus.get("compiledTheorems", 0) or 0),
-    "ALLOY_SMOKE_MODEL": alloy.get("smokeModel", "RIINA.Active.TelusProcurementAccessControl"),
-    "ALLOY_SMOKE_BUILD_OK": bool(alloy.get("smokeBuildOk", False)),
-    "ALLOY_COMPILED_ASSERTIONS": int(alloy.get("compiledAssertions", 0) or 0),
 }
+if not observed["isabelle"]:
+    values.update({
+        "ISABELLE_SMOKE_SESSION": isabelle.get("smokeSession", "RIINA_CORE"),
+        "ISABELLE_SMOKE_BUILD_OK": bool(isabelle.get("smokeBuildOk", False)),
+        "ISABELLE_COMPILED_THEORIES": int(isabelle.get("compiledTheories", 0) or 0),
+        "ISABELLE_COMPILED_LEMMAS": int(isabelle.get("compiledLemmas", 0) or 0),
+    })
+if not observed["fstar"]:
+    values.update({
+        "FSTAR_SMOKE_MODULE": fstar.get("smokeModule", "RIINA.Active.CryptographicSecurityActive"),
+        "FSTAR_SMOKE_BUILD_OK": bool(fstar.get("smokeBuildOk", False)),
+        "FSTAR_COMPILED_LEMMAS": int(fstar.get("compiledLemmas", 0) or 0),
+    })
+if not observed["tlaplus"]:
+    values.update({
+        "TLAPLUS_SMOKE_SPEC": tlaplus.get("smokeSpec", "RIINA.Active.TelusProcurementProtocol"),
+        "TLAPLUS_SMOKE_BUILD_OK": bool(tlaplus.get("smokeBuildOk", False)),
+        "TLAPLUS_COMPILED_THEOREMS": int(tlaplus.get("compiledTheorems", 0) or 0),
+    })
+if not observed["alloy"]:
+    values.update({
+        "ALLOY_SMOKE_MODEL": alloy.get("smokeModel", "RIINA.Active.TelusProcurementAccessControl"),
+        "ALLOY_SMOKE_BUILD_OK": bool(alloy.get("smokeBuildOk", False)),
+        "ALLOY_COMPILED_ASSERTIONS": int(alloy.get("compiledAssertions", 0) or 0),
+    })
 
 for key, value in values.items():
     shell(key, value)
@@ -220,11 +226,22 @@ report_head_matches_or_compatible() {
         return 0
     fi
 
-    if ! git -C "$ROOT_DIR" merge-base --is-ancestor "$report_head" "$CURRENT_HEAD" >/dev/null 2>&1; then
+    # Same compatibility rule as scripts/public-quality-gates.sh: the report
+    # still applies when the sensitive paths are content-identical between its
+    # commit and HEAD, markdown excluded (the checkers never read it). This used
+    # to also demand ancestry and count .md changes, so the generator called a
+    # report stale that the gate accepted as fresh, and the stale path then
+    # published claims the gate rejected (2026-10-12). Fails closed: a missing
+    # commit or a failing diff means stale.
+    if ! git -C "$ROOT_DIR" cat-file -e "${report_head}^{commit}" >/dev/null 2>&1; then
         return 1
     fi
 
-    if git -C "$ROOT_DIR" diff --name-only "$report_head..$CURRENT_HEAD" -- "$@" | grep -q .; then
+    local changed
+    if ! changed="$(git -C "$ROOT_DIR" diff --name-only "$report_head" "$CURRENT_HEAD" -- "$@" 2>/dev/null)"; then
+        return 1
+    fi
+    if printf '%s\n' "$changed" | grep -v '\.md$' | grep -q .; then
         return 1
     fi
 
@@ -900,6 +917,12 @@ TLAPLUS_SMOKE_BUILD_OK=false
 TLAPLUS_COMPILED_THEOREMS=0
 ALLOY_SMOKE_BUILD_OK=false
 ALLOY_COMPILED_ASSERTIONS=0
+# Set when this run actually attempted the lane's smoke check (tool present).
+# The fast-mode fallback never overrides an observed result with a cached one.
+ISABELLE_SMOKE_OBSERVED=false
+FSTAR_SMOKE_OBSERVED=false
+TLAPLUS_SMOKE_OBSERVED=false
+ALLOY_SMOKE_OBSERVED=false
 
 DIM14_REPORT="$ROOT_DIR/reports/dim14_runtime_status.json"
 DIM14_FRESH=false
@@ -1013,8 +1036,9 @@ if [ "$NONCOQ_MECH_FRESH" = true ]; then
 fi
 
 if [ "$NONCOQ_MECH_FRESH" != true ]; then
-    if ISABELLE_BIN_LOCAL="$(detect_isabelle_bin)"; then
-        if [ -d "$ISABELLE_SMOKE_DIR" ] && "$ISABELLE_BIN_LOCAL" build -d "$ISABELLE_SMOKE_DIR" -b "$ISABELLE_SMOKE_SESSION" >/dev/null 2>&1; then
+    if ISABELLE_BIN_LOCAL="$(detect_isabelle_bin)" && [ -d "$ISABELLE_SMOKE_DIR" ]; then
+        ISABELLE_SMOKE_OBSERVED=true
+        if "$ISABELLE_BIN_LOCAL" build -d "$ISABELLE_SMOKE_DIR" -b "$ISABELLE_SMOKE_SESSION" >/dev/null 2>&1; then
             ISABELLE_SMOKE_BUILD_OK=true
             ISABELLE_COMPILED_THEORIES="$ISABELLE_SMOKE_DECLARED_THEORIES"
             ISABELLE_COMPILED_LEMMAS="$ISABELLE_SMOKE_DECLARED_LEMMAS"
@@ -1022,6 +1046,7 @@ if [ "$NONCOQ_MECH_FRESH" != true ]; then
     fi
 
     if [ -f "$FSTAR_SMOKE_FILE" ] && FSTAR_BIN="$(detect_fstar_bin)"; then
+        FSTAR_SMOKE_OBSERVED=true
         if "$FSTAR_BIN" \
             --cache_checked_modules \
             --cache_dir /tmp/riina-fstar-active-cache \
@@ -1033,6 +1058,7 @@ if [ "$NONCOQ_MECH_FRESH" != true ]; then
     fi
 
     if [ -f "$TLAPLUS_SMOKE_FILE" ] && [ -f "$TLAPLUS_SMOKE_CFG" ] && command -v java >/dev/null 2>&1 && TLA2TOOLS_JAR_LOCAL="$(detect_tla2tools_jar)"; then
+        TLAPLUS_SMOKE_OBSERVED=true
         TLAPLUS_META_DIR="$(mktemp -d 2>/dev/null || mktemp -d -t riina-tla-smoke)"
         if (cd "$(dirname "$TLAPLUS_SMOKE_FILE")" \
             && java -cp "$TLA2TOOLS_JAR_LOCAL" tla2sany.SANY "$(basename "$TLAPLUS_SMOKE_FILE")" >/dev/null 2>&1 \
@@ -1044,6 +1070,7 @@ if [ "$NONCOQ_MECH_FRESH" != true ]; then
     fi
 
     if [ -f "$ALLOY_SMOKE_FILE" ] && command -v java >/dev/null 2>&1 && ALLOY_JAR_LOCAL="$(detect_alloy_jar)"; then
+        ALLOY_SMOKE_OBSERVED=true
         if alloy_smoke_ok "$ALLOY_JAR_LOCAL" "$ALLOY_SMOKE_FILE"; then
             ALLOY_SMOKE_BUILD_OK=true
             ALLOY_COMPILED_ASSERTIONS="$ALLOY_SMOKE_DECLARED_ASSERTIONS"
@@ -1097,8 +1124,9 @@ fi
 
 TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
 
+# Smoke never sets ISABELLE_COMPILED (see HONESTY POLICY below): that flag is
+# quality.isabelleCompiled and the lane's claim, owned by the strict report.
 if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_THEORIES" -gt 0 ]; then
-    ISABELLE_COMPILED=true
     if [ "$ISABELLE_MECHANIZED_READY" != true ]; then
         ISABELLE_PENDING_REASON="partial RIINA_CORE smoke build verified; full RIINA+RIINA_Domains build still pending"
     fi

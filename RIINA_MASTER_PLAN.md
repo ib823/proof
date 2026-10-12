@@ -4674,7 +4674,7 @@ at `d8eece41` (identical lane verdicts) — `894a774` had untracked two Lean
 the stale report sent `generate-metrics.sh --fast` down its cached fallback,
 and that fallback promotes an Alloy SMOKE pass to a "compiled" claim; the
 public claim-integrity gate refused the sync, and the refreshed report put
-Alloy back to `generated` (the fallback flaw itself is still open);
+Alloy back to `generated` (the fallback flaw is fixed below);
 `effd0a50` verification manifest; `fa97d81e` removed a container-absolute
 path from a `verify.rs` doc comment (verify-public check 7).
 **Public:** `sync-public.sh --reconcile` pushed `origin/public`
@@ -4687,6 +4687,35 @@ access and no `riina` remote is configured here. Owner action: with the
 `riina` remote configured, run `bash scripts/deploy-website.sh` from `main`
 and commit its byproducts (playground WASM, report stamps) as the usual
 "deploy artifacts" chore.
+
+### Fast-mode metrics fallback fixed — 2026-10-12
+
+`scripts/generate-metrics.sh --fast` (the pre-commit and `deploy-website.sh`
+path), given a stale or missing non-Coq lane report, used to rebuild every
+lane's `*_COMPILED`/`*_MECHANIZED_READY` from the previous `metrics.json`
+`claimLevels` and from smoke passes. A smoke pass therefore became a published
+"compiled" claim, and each later fast run re-read that claim as evidence, so
+the overclaim reinforced itself. Fixed:
+
+1. **No claims from the fallback.** It now carries only descriptive fields:
+   pending reasons (with "none" turned into the stale-report reason), backlogs,
+   and smoke results this run did not observe. Without a fresh report every
+   non-Coq lane is `generated`, which is the rule
+   `public-quality-gates.sh` already enforced.
+2. **Observed beats cached.** A smoke check that runs and fails now sets
+   `smokeBuildOk=false` instead of being masked by a cached pass.
+3. **One freshness rule.** The generator's report-compatibility check now
+   matches the public gate: paths are content-identical, `.md` is ignored, no
+   ancestry is required, and it fails closed. A report the gate accepts is no
+   longer pushed down the fallback.
+4. **Isabelle.** A smoke pass no longer sets `isabelleCompiled`. The F*, TLA+
+   and Alloy honesty policy already applied; for Isabelle the flaw was masked
+   only by the lane's retirement.
+
+Pinned by `scripts/test-generate-metrics-fallback.sh` (throwaway clone, about
+3 min). It fails 32 assertions against the previous generator and passes
+against the fix. Published claims are unchanged (the current report is
+fresh).
 
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
