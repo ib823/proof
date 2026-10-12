@@ -4079,9 +4079,10 @@ pub fn run(mode: Mode) -> i32 {
 mod tests {
     use super::*;
 
-    /// A path inside this repository. These tests used hard-coded
-    /// `/workspaces/proof/...` paths guarded by `if path.exists()`, so in any
-    /// other checkout they silently passed without running (2026-10-11 audit).
+    /// A path inside this repository. These tests used hard-coded absolute
+    /// paths of one development container, guarded by `if path.exists()`, so
+    /// in any other checkout they silently passed without running (2026-10-11
+    /// audit).
     fn repo_path(rel: &str) -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..").join(rel)
     }
