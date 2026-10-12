@@ -4717,6 +4717,10 @@ Pinned by `scripts/test-generate-metrics-fallback.sh` (throwaway clone, about
 against the fix. Published claims are unchanged (the current report is
 fresh).
 
+Merged via PR #90 as `68b6c505` (CI green on `c084b9e0`; Coq build skipped,
+no proofs changed), followed by a `metrics.json` provenance stamp at the
+merge. Counts and claim levels are unchanged.
+
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
 **Owner directive (2026-08-06):** make RIINA an indisputable, disruptive, unparalleled innovation,
