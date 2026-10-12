@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-09-03T07:37:48Z",
-  "repo_head": "346b48137837daaef4cc65887f46089f90edbc9e",
+  "generated_utc": "2026-10-12T03:55:22Z",
+  "repo_head": "2fea4f5b533ba6ac114663783e4e6d90e4ba4d1d",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 0,
   "provision": {
@@ -25,7 +25,7 @@
     "promotion_ready": false,
     "checks": {
       "coq_core": true,
-      "coq_theorem_count": 54,
+      "coq_theorem_count": 58,
       "lean_core": true,
       "lean_build": false,
       "lean_actionable_sorry": 0,
@@ -33,7 +33,7 @@
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh"
+    "detail": "coq_core=1 coq_thm=58 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh"
   },
   "dimension_9": {
     "status": "PASS",
