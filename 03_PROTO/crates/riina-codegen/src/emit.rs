@@ -138,6 +138,11 @@ impl CEmitter {
         if Self::program_uses_unicode(program) {
             self.emit_unicode_runtime();
         }
+        // Likewise the case-mapping tables (~90 KB of C), generated from the
+        // Rust standard library the interpreter itself calls.
+        if Self::program_calls_any(program, Self::CASE_BUILTINS) {
+            self.emit_case_runtime();
+        }
 
         // Collect forward declarations
         for func_id in program.functions.keys() {
@@ -164,14 +169,70 @@ impl CEmitter {
 
     /// Whether `program` calls any builtin that needs the UCD tables.
     fn program_uses_unicode(program: &Program) -> bool {
+        Self::program_calls_any(program, Self::UNICODE_BUILTINS)
+    }
+
+    /// Canonical names of the case-mapping builtins (see `emit_case_runtime`).
+    const CASE_BUILTINS: &'static [&'static str] = &["teks_huruf_besar", "teks_huruf_kecil"];
+
+    /// Whether `program` calls any of the builtins `names`.
+    fn program_calls_any(program: &Program, names: &[&str]) -> bool {
         program.functions.values().any(|f| {
             f.blocks.iter().any(|b| {
                 b.instrs.iter().any(|i| {
                     matches!(&i.instr, crate::ir::Instruction::BuiltinCall { name, .. }
-                        if Self::UNICODE_BUILTINS.contains(&name.as_str()))
+                        if names.contains(&name.as_str()))
                 })
             })
         })
+    }
+
+    /// Emit `teks_huruf_besar`/`teks_huruf_kecil` with full Unicode case
+    /// mapping: generated tables ([`case_tables`]) plus
+    /// [`RIINA_C_CASE_ALGORITHM`]. These used to map ASCII letters only, so
+    /// `teks_huruf_besar("ßé")` was `SSÉ` in the interpreter (Rust
+    /// `str::to_uppercase`, the semantics `VerifiedString.v` documents as
+    /// Unicode-faithful) but `ßé` from a compiled binary.
+    fn emit_case_runtime(&mut self) {
+        fn mapping_table(out: &mut String, name: &str, rows: &[(u32, Vec<u32>)]) {
+            let _ = writeln!(out, "static const uint32_t {name}[][4] = {{");
+            for chunk in rows.chunks(6) {
+                out.push_str("   ");
+                for (cp, to) in chunk {
+                    let at = |k: usize| to.get(k).copied().unwrap_or(0);
+                    let _ = write!(out, " {{0x{cp:X},0x{:X},0x{:X},0x{:X}}},", at(0), at(1), at(2));
+                }
+                out.push('\n');
+            }
+            let _ = writeln!(out, "}};");
+            let _ = writeln!(out, "static const size_t {name}_n = {};", rows.len());
+        }
+        fn range_table(out: &mut String, name: &str, rows: &[(u32, u32)]) {
+            let _ = writeln!(out, "static const uint32_t {name}[][2] = {{");
+            for chunk in rows.chunks(8) {
+                out.push_str("   ");
+                for (lo, hi) in chunk {
+                    let _ = write!(out, " {{0x{lo:X},0x{hi:X}}},");
+                }
+                out.push('\n');
+            }
+            let _ = writeln!(out, "}};");
+            let _ = writeln!(out, "static const size_t {name}_n = {};", rows.len());
+        }
+
+        let tables = case_tables();
+        self.writeln("/* ══════════════════════════════════════════════════════════════════ */");
+        self.writeln("/*   CASE MAPPING (teks_huruf_besar / teks_huruf_kecil)               */");
+        self.writeln("/*   Tables generated from Rust's char::to_uppercase/to_lowercase —   */");
+        self.writeln("/*   what the interpreter calls — when this program was compiled.     */");
+        self.writeln("/* ══════════════════════════════════════════════════════════════════ */");
+        let mut out = String::new();
+        mapping_table(&mut out, "riina_case_upper", &tables.upper);
+        mapping_table(&mut out, "riina_case_lower", &tables.lower);
+        range_table(&mut out, "riina_case_ignorable", &tables.ignorable);
+        range_table(&mut out, "riina_case_cased", &tables.cased);
+        self.output.push_str(&out);
+        self.writeln(RIINA_C_CASE_ALGORITHM);
     }
 
     /// Emit the UCD tables and the NFC / UTS-39 skeleton implementation.
@@ -308,7 +369,7 @@ typedef struct { uint32_t* cps; size_t len; size_t cap; } riina_cpbuf_t;
 static void riina_cpbuf_push(riina_cpbuf_t* b, uint32_t cp) {
     if (b->len >= b->cap) {
         b->cap = b->cap ? b->cap * 2 : 32;
-        b->cps = (uint32_t*)realloc(b->cps, b->cap * sizeof(uint32_t));
+        b->cps = (uint32_t*)riina_xrealloc(b->cps, b->cap * sizeof(uint32_t));
         if (!b->cps) abort();
     }
     b->cps[b->len++] = cp;
@@ -427,7 +488,7 @@ static riina_cpbuf_t riina_ucd_decode(const char* s, size_t slen) {
 
 static riina_value_t* riina_ucd_encode(riina_cpbuf_t* b) {
     size_t cap = b->len * 4 + 1, n = 0;
-    char* out = (char*)malloc(cap);
+    char* out = (char*)riina_xmalloc(cap);
     if (!out) abort();
     for (size_t i = 0; i < b->len; i++) riina_sec_put_utf8(&out, &n, &cap, b->cps[i]);
     out[n] = '\0';
@@ -570,6 +631,14 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
         self.writeln("#include <setjmp.h>");
         self.writeln("#include <pthread.h>");
         self.writeln("");
+
+        // Checked allocation. Every allocation in the runtime goes through
+        // these: an unchecked `malloc` (the bigint helpers had a dozen) turns
+        // memory exhaustion into a NULL dereference — a crash at best, a
+        // write through a near-NULL pointer at worst — instead of a clean
+        // stop. A zero-byte request asks for one byte so NULL always means
+        // failure.
+        self.writeln(RIINA_C_CHECKED_ALLOC);
 
         // Security level enum
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
@@ -813,7 +882,7 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
 
         // Allocator
         self.writeln("static riina_value_t* riina_alloc(void) {");
-        self.writeln("    riina_value_t* v = (riina_value_t*)calloc(1, sizeof(riina_value_t));");
+        self.writeln("    riina_value_t* v = (riina_value_t*)riina_xcalloc(1, sizeof(riina_value_t));");
         self.writeln("    if (!v) {");
         self.writeln("        fprintf(stderr, \"RIINA: Out of memory\\n\");");
         self.writeln("        abort();");
@@ -899,9 +968,24 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
         self.writeln("    v->tag = RIINA_TAG_STRING;");
         self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
         self.writeln("    size_t len = strlen(s);");
-        self.writeln("    v->data.string_val.data = (char*)malloc(len + 1);");
+        self.writeln("    v->data.string_val.data = (char*)riina_xmalloc(len + 1);");
         self.writeln("    if (!v->data.string_val.data) abort();");
         self.writeln("    memcpy(v->data.string_val.data, s, len + 1);");
+        self.writeln("    v->data.string_val.len = len;");
+        self.writeln("    return v;");
+        self.writeln("}");
+        self.writeln("");
+
+        // String from (pointer, byte length): for slices of another string,
+        // which are not NUL-terminated where the slice ends.
+        self.writeln("static riina_value_t* riina_string_n(const char* s, size_t len) {");
+        self.writeln("    riina_value_t* v = riina_alloc();");
+        self.writeln("    v->tag = RIINA_TAG_STRING;");
+        self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
+        self.writeln("    v->data.string_val.data = (char*)riina_xmalloc(len + 1);");
+        self.writeln("    if (!v->data.string_val.data) abort();");
+        self.writeln("    memcpy(v->data.string_val.data, s, len);");
+        self.writeln("    v->data.string_val.data[len] = '\\0';");
         self.writeln("    v->data.string_val.len = len;");
         self.writeln("    return v;");
         self.writeln("}");
@@ -920,7 +1004,7 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
         self.writeln("    riina_value_t* v = riina_alloc();");
         self.writeln("    v->tag = RIINA_TAG_STRING;");
         self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
-        self.writeln("    v->data.string_val.data = (char*)malloc(len + 1);");
+        self.writeln("    v->data.string_val.data = (char*)riina_xmalloc(len + 1);");
         self.writeln("    if (!v->data.string_val.data) abort();");
         self.writeln(
             "    memcpy(v->data.string_val.data, a->data.string_val.data, a->data.string_val.len);",
@@ -1095,6 +1179,22 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
         self.writeln("}");
         self.writeln("");
 
+        // The boolean a conditional branch tests. A secret (`sulit`) boolean
+        // is branched on by its underlying value, as in the interpreter (the
+        // typechecker accepts `kalau` on `Rahsia<Benar>` and tracks the
+        // implicit flow). Reading `->data.bool_val` straight off the SECRET
+        // wrapper read its pointer field instead, so `kalau sulit betul` and
+        // `kalau sulit salah` took the same branch.
+        self.writeln("static bool riina_cond(riina_value_t* v) {");
+        self.writeln("    while (v && v->tag == RIINA_TAG_SECRET) v = v->data.wrapped_val;");
+        self.writeln("    if (!v || v->tag != RIINA_TAG_BOOL) {");
+        self.writeln("        fprintf(stderr, \"RIINA: branch condition is not a boolean\\n\");");
+        self.writeln("        abort();");
+        self.writeln("    }");
+        self.writeln("    return v->data.bool_val;");
+        self.writeln("}");
+        self.writeln("");
+
         self.writeln("static bool riina_value_eq(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a == b) return true;");
         self.writeln("    if (!a || !b) return false;");
@@ -1214,7 +1314,7 @@ static int riina_bi_cmp_mag(const uint32_t* a, size_t na, const uint32_t* b, siz
 static uint32_t* riina_bi_add_mag(const uint32_t* a, size_t na,
                                   const uint32_t* b, size_t nb, size_t* outlen) {
     size_t n = na > nb ? na : nb;
-    uint32_t* out = (uint32_t*)malloc((n + 1) * sizeof(uint32_t));
+    uint32_t* out = (uint32_t*)riina_xmalloc((n + 1) * sizeof(uint32_t));
     if (!out) abort();
     uint64_t carry = 0;
     for (size_t i = 0; i < n; i++) {
@@ -1232,7 +1332,7 @@ static uint32_t* riina_bi_add_mag(const uint32_t* a, size_t na,
 /* a - b, requires a >= b (magnitudes). */
 static uint32_t* riina_bi_sub_mag(const uint32_t* a, size_t na,
                                   const uint32_t* b, size_t nb, size_t* outlen) {
-    uint32_t* out = (uint32_t*)malloc((na ? na : 1) * sizeof(uint32_t));
+    uint32_t* out = (uint32_t*)riina_xmalloc((na ? na : 1) * sizeof(uint32_t));
     if (!out) abort();
     int64_t borrow = 0;
     for (size_t i = 0; i < na; i++) {
@@ -1248,9 +1348,9 @@ static uint32_t* riina_bi_sub_mag(const uint32_t* a, size_t na,
 
 static uint32_t* riina_bi_mul_mag(const uint32_t* a, size_t na,
                                   const uint32_t* b, size_t nb, size_t* outlen) {
-    if (na == 0 || nb == 0) { *outlen = 0; return (uint32_t*)malloc(1); }
+    if (na == 0 || nb == 0) { *outlen = 0; return (uint32_t*)riina_xmalloc(1); }
     size_t n = na + nb;
-    uint32_t* out = (uint32_t*)calloc(n, sizeof(uint32_t));
+    uint32_t* out = (uint32_t*)riina_xcalloc(n, sizeof(uint32_t));
     if (!out) abort();
     for (size_t i = 0; i < na; i++) {
         uint64_t carry = 0;
@@ -1281,16 +1381,16 @@ static size_t riina_bi_shl1(uint32_t* r, size_t len, size_t cap) {
 static void riina_bi_divmod_mag(const uint32_t* u, size_t nu, const uint32_t* v, size_t nv,
                                 uint32_t** qout, size_t* qlen, uint32_t** rout, size_t* rlen) {
     if (riina_bi_cmp_mag(u, nu, v, nv) < 0) {
-        uint32_t* r = (uint32_t*)malloc((nu ? nu : 1) * sizeof(uint32_t));
+        uint32_t* r = (uint32_t*)riina_xmalloc((nu ? nu : 1) * sizeof(uint32_t));
         for (size_t i = 0; i < nu; i++) r[i] = u[i];
-        *qout = (uint32_t*)malloc(1); *qlen = 0;
+        *qout = (uint32_t*)riina_xmalloc(1); *qlen = 0;
         *rout = r; *rlen = nu;
         return;
     }
     size_t total_bits = nu * 32;
-    uint32_t* q = (uint32_t*)calloc(nu ? nu : 1, sizeof(uint32_t));
+    uint32_t* q = (uint32_t*)riina_xcalloc(nu ? nu : 1, sizeof(uint32_t));
     size_t rcap = nu + 1;
-    uint32_t* r = (uint32_t*)calloc(rcap, sizeof(uint32_t));
+    uint32_t* r = (uint32_t*)riina_xcalloc(rcap, sizeof(uint32_t));
     if (!q || !r) abort();
     size_t rl = 0;
     for (size_t bi = total_bits; bi-- > 0;) {
@@ -1316,7 +1416,7 @@ static void riina_bi_divmod_mag(const uint32_t* u, size_t nu, const uint32_t* v,
 /* acc*m + add (scalar), used by base-10 parsing. */
 static uint32_t* riina_bi_muladd_small(const uint32_t* a, size_t na,
                                        uint32_t m, uint32_t add, size_t* outlen) {
-    uint32_t* out = (uint32_t*)malloc((na + 2) * sizeof(uint32_t));
+    uint32_t* out = (uint32_t*)riina_xmalloc((na + 2) * sizeof(uint32_t));
     if (!out) abort();
     uint64_t carry = add;
     for (size_t i = 0; i < na; i++) {
@@ -1334,7 +1434,7 @@ static uint32_t* riina_bi_muladd_small(const uint32_t* a, size_t na,
 static riina_value_t* riina_bigint_from_str(const char* s) {
     int neg = 0; size_t i = 0;
     if (s[0] == '-') { neg = 1; i = 1; } else if (s[0] == '+') { i = 1; }
-    uint32_t* mag = (uint32_t*)malloc(1); size_t len = 0;
+    uint32_t* mag = (uint32_t*)riina_xmalloc(1); size_t len = 0;
     for (; s[i]; i++) {
         if (s[i] < '0' || s[i] > '9') {
             fprintf(stderr, "RIINA: besar: '%s' is not a base-10 integer\n", s);
@@ -1350,12 +1450,12 @@ static riina_value_t* riina_bigint_from_str(const char* s) {
 /* Render a BigInt in base 10 (sign + 9-digit groups via division by 10^9). */
 static char* riina_bigint_to_str(riina_value_t* v) {
     riina_bigint_t* b = &v->data.bigint_val;
-    if (b->len == 0) { char* z = (char*)malloc(2); z[0] = '0'; z[1] = 0; return z; }
+    if (b->len == 0) { char* z = (char*)riina_xmalloc(2); z[0] = '0'; z[1] = 0; return z; }
     size_t len = b->len;
-    uint32_t* m = (uint32_t*)malloc(len * sizeof(uint32_t));
+    uint32_t* m = (uint32_t*)riina_xmalloc(len * sizeof(uint32_t));
     if (!m) abort();
     for (size_t i = 0; i < len; i++) m[i] = b->mag[i];
-    uint32_t* groups = (uint32_t*)malloc((len * 10 + 1) * sizeof(uint32_t));
+    uint32_t* groups = (uint32_t*)riina_xmalloc((len * 10 + 1) * sizeof(uint32_t));
     if (!groups) abort();
     size_t ng = 0;
     while (len > 0) {
@@ -1368,7 +1468,7 @@ static char* riina_bigint_to_str(riina_value_t* v) {
         groups[ng++] = (uint32_t)rem;
         while (len > 0 && m[len - 1] == 0) len--;
     }
-    char* out = (char*)malloc(ng * 9 + 2);
+    char* out = (char*)riina_xmalloc(ng * 9 + 2);
     if (!out) abort();
     size_t pos = 0;
     if (b->neg) out[pos++] = '-';
@@ -1391,7 +1491,7 @@ static riina_value_t* riina_bigint_add(riina_value_t* x, riina_value_t* y) {
         return riina_bigint_mk(a->neg, m, ol);
     }
     int c = riina_bi_cmp_mag(a->mag, a->len, b->mag, b->len);
-    if (c == 0) return riina_bigint_mk(0, (uint32_t*)malloc(1), 0);
+    if (c == 0) return riina_bigint_mk(0, (uint32_t*)riina_xmalloc(1), 0);
     if (c > 0) {
         uint32_t* m = riina_bi_sub_mag(a->mag, a->len, b->mag, b->len, &ol);
         return riina_bigint_mk(a->neg, m, ol);
@@ -1402,7 +1502,7 @@ static riina_value_t* riina_bigint_add(riina_value_t* x, riina_value_t* y) {
 
 static riina_value_t* riina_bigint_neg(riina_value_t* x) {
     riina_bigint_t* a = &x->data.bigint_val;
-    uint32_t* m = (uint32_t*)malloc((a->len ? a->len : 1) * sizeof(uint32_t));
+    uint32_t* m = (uint32_t*)riina_xmalloc((a->len ? a->len : 1) * sizeof(uint32_t));
     if (!m) abort();
     for (size_t i = 0; i < a->len; i++) m[i] = a->mag[i];
     return riina_bigint_mk(a->len ? !a->neg : 0, m, a->len);
@@ -1628,7 +1728,7 @@ static riina_value_t* riina_decimal_from_str(const char* s0) {
     }
     int neg = 0; size_t i = 0;
     if (s[0] == '-') { neg = 1; i = 1; } else if (s[0] == '+') { i = 1; }
-    char* digits = (char*)malloc(n + 2);
+    char* digits = (char*)riina_xmalloc(n + 2);
     if (!digits) abort();
     size_t dn = 0;
     if (neg) digits[dn++] = '-';
@@ -1676,7 +1776,7 @@ static char* riina_decimal_to_str(riina_value_t* v) {
     size_t p = 0;
     if ((size_t)scale >= maglen) {
         size_t zeros = (size_t)scale - maglen;
-        out = (char*)malloc((neg ? 1 : 0) + 2 + zeros + maglen + 1);
+        out = (char*)riina_xmalloc((neg ? 1 : 0) + 2 + zeros + maglen + 1);
         if (!out) abort();
         if (neg) out[p++] = '-';
         out[p++] = '0'; out[p++] = '.';
@@ -1684,7 +1784,7 @@ static char* riina_decimal_to_str(riina_value_t* v) {
         memcpy(out + p, mag, maglen); p += maglen;
     } else {
         size_t point = maglen - (size_t)scale;
-        out = (char*)malloc((neg ? 1 : 0) + maglen + 2);
+        out = (char*)riina_xmalloc((neg ? 1 : 0) + maglen + 2);
         if (!out) abort();
         if (neg) out[p++] = '-';
         memcpy(out + p, mag, point); p += point;
@@ -1966,7 +2066,7 @@ static riina_value_t* riina_fixedbin_parse(const char* s0, uint32_t frac_bits) {
 static char* riina_fixedbin_to_str(riina_value_t* v) {
     riina_fixedbin_t* fb = &v->data.fixedbin_val;
     if (fb->raw == 0) {
-        char* z = (char*)malloc(2);
+        char* z = (char*)riina_xmalloc(2);
         if (!z) abort();
         z[0] = '0'; z[1] = '\0';
         return z;
@@ -2056,7 +2156,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    if (a->tag == RIINA_TAG_STRING && b->tag == RIINA_TAG_STRING) {");
         self.writeln("        size_t la = a->data.string_val.len;");
         self.writeln("        size_t lb = b->data.string_val.len;");
-        self.writeln("        char* buf = (char*)malloc(la + lb + 1);");
+        self.writeln("        char* buf = (char*)riina_xmalloc(la + lb + 1);");
         self.writeln("        memcpy(buf, a->data.string_val.data, la);");
         self.writeln("        memcpy(buf + la, b->data.string_val.data, lb);");
         self.writeln("        buf[la + lb] = '\\0';");
@@ -2111,8 +2211,18 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("        fprintf(stderr, \"RIINA: division by zero\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        // Signed sized division is the exact quotient wrapped modulo 2^w
+        // (SizedInt.v `toSigned`/`wrapU`; the interpreter's `wrapping_div`).
+        // `INT64_MIN / -1` overflows `int64_t` — undefined behaviour, SIGFPE on
+        // x86 — so dividing by -1 is done as a negation in `uint64_t`, where
+        // it wraps: `-(INT64_MIN)` is `INT64_MIN` again.
         self.writeln("    unsigned w = riina_swidth(a, b);");
-        self.writeln("    if (w) return riina_int_sized((uint64_t)(riina_sext(a->data.int_val, w) / riina_sext(b->data.int_val, w)), w, 1);");
+        self.writeln("    if (w) {");
+        self.writeln("        int64_t sa = riina_sext(a->data.int_val, w);");
+        self.writeln("        int64_t sb = riina_sext(b->data.int_val, w);");
+        self.writeln("        if (sb == -1) return riina_int_sized((uint64_t)0 - (uint64_t)sa, w, 1);");
+        self.writeln("        return riina_int_sized((uint64_t)(sa / sb), w, 1);");
+        self.writeln("    }");
         self.writeln("    return riina_int(a->data.int_val / b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -2129,8 +2239,15 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("        fprintf(stderr, \"RIINA: modulo by zero\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
+        // `x % -1` is 0 for every x; `INT64_MIN % -1` is undefined behaviour
+        // in C (SIGFPE on x86), so that divisor is answered directly.
         self.writeln("    unsigned w = riina_swidth(a, b);");
-        self.writeln("    if (w) return riina_int_sized((uint64_t)(riina_sext(a->data.int_val, w) % riina_sext(b->data.int_val, w)), w, 1);");
+        self.writeln("    if (w) {");
+        self.writeln("        int64_t sa = riina_sext(a->data.int_val, w);");
+        self.writeln("        int64_t sb = riina_sext(b->data.int_val, w);");
+        self.writeln("        if (sb == -1) return riina_int_sized(0, w, 1);");
+        self.writeln("        return riina_int_sized((uint64_t)(sa % sb), w, 1);");
+        self.writeln("    }");
         self.writeln("    return riina_int(a->data.int_val % b->data.int_val);");
         self.writeln("}");
         self.writeln("");
@@ -2649,7 +2766,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("static void riina_list_push(riina_list_t* l, riina_value_t* v) {");
         self.writeln("    if (l->len >= l->cap) {");
         self.writeln("        l->cap = l->cap ? l->cap * 2 : 8;");
-        self.writeln("        l->items = (riina_value_t**)realloc(l->items, l->cap * sizeof(riina_value_t*));");
+        self.writeln("        l->items = (riina_value_t**)riina_xrealloc(l->items, l->cap * sizeof(riina_value_t*));");
         self.writeln("        if (!l->items) abort();");
         self.writeln("    }");
         self.writeln("    l->items[l->len++] = v;");
@@ -2716,7 +2833,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
         self.writeln("    /* Store list data in pair_val: fst=items ptr, snd encodes len+cap */");
         self.writeln("    /* We reuse wrapped_val to point to a heap-allocated riina_list_t */");
-        self.writeln("    riina_list_t* lp = (riina_list_t*)malloc(sizeof(riina_list_t));");
+        self.writeln("    riina_list_t* lp = (riina_list_t*)riina_xmalloc(sizeof(riina_list_t));");
         self.writeln("    if (!lp) abort();");
         self.writeln("    *lp = l;");
         self.writeln("    v->data.wrapped_val = (riina_value_t*)lp; /* type-punned */");
@@ -2741,7 +2858,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("    riina_value_t* v = riina_alloc();");
         self.writeln("    v->tag = RIINA_TAG_MAP;");
         self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
-        self.writeln("    riina_map_t* mp = (riina_map_t*)malloc(sizeof(riina_map_t));");
+        self.writeln("    riina_map_t* mp = (riina_map_t*)riina_xmalloc(sizeof(riina_map_t));");
         self.writeln("    if (!mp) abort();");
         self.writeln("    *mp = m;");
         self.writeln("    v->data.wrapped_val = (riina_value_t*)mp;");
@@ -2772,7 +2889,7 @@ static void riina_fmt_put(char** b, size_t* n, size_t* cap, const char* s) {
     size_t l = strlen(s);
     while (*n + l + 1 > *cap) {
         *cap = *cap ? *cap * 2 : 128;
-        *b = (char*)realloc(*b, *cap);
+        *b = (char*)riina_xrealloc(*b, *cap);
         if (!*b) abort();
     }
     memcpy(*b + *n, s, l);
@@ -2873,7 +2990,7 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("    riina_value_t* d = arg->data.pair_val.snd;");
         self.writeln("    if (s->tag != RIINA_TAG_STRING || d->tag != RIINA_TAG_STRING) abort();");
         self.writeln("    riina_list_t result = riina_list_new();");
-        self.writeln("    char* str = strdup(s->data.string_val.data);");
+        self.writeln("    char* str = riina_xstrdup(s->data.string_val.data);");
         self.writeln("    if (!str) abort();");
         self.writeln("    size_t dlen = d->data.string_val.len;");
         self.writeln("    if (dlen == 0) {");
@@ -2911,7 +3028,7 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("        if (l->items[i]->tag == RIINA_TAG_STRING) total += l->items[i]->data.string_val.len;");
         self.writeln("        if (i > 0) total += sep->data.string_val.len;");
         self.writeln("    }");
-        self.writeln("    char* buf = (char*)malloc(total + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(total + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    buf[0] = '\\0';");
         self.writeln("    size_t off = 0;");
@@ -2934,7 +3051,7 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("    size_t start = 0, end = len;");
         self.writeln("    while (start < len && (s[start]==' '||s[start]=='\\t'||s[start]=='\\n'||s[start]=='\\r')) start++;");
         self.writeln("    while (end > start && (s[end-1]==' '||s[end-1]=='\\t'||s[end-1]=='\\n'||s[end-1]=='\\r')) end--;");
-        self.writeln("    char* buf = (char*)malloc(end - start + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(end - start + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    memcpy(buf, s + start, end - start);");
         self.writeln("    buf[end - start] = '\\0';");
@@ -2977,7 +3094,7 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("    const char* tmp = src;");
         self.writeln("    while ((tmp = strstr(tmp, from->data.string_val.data)) != NULL) { count++; tmp += flen; }");
         self.writeln("    size_t newlen = s->data.string_val.len + count * (tlen - flen);");
-        self.writeln("    char* buf = (char*)malloc(newlen + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(newlen + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    char* dst = buf;");
         self.writeln("    tmp = src;");
@@ -3026,39 +3143,17 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("}");
         self.writeln("");
 
-        // teks_huruf_besar (str_to_upper)
-        self.writeln("static riina_value_t* riina_builtin_teks_huruf_besar(riina_value_t* arg) {");
-        self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    size_t len = arg->data.string_val.len;");
-        self.writeln("    char* buf = (char*)malloc(len + 1);");
-        self.writeln("    if (!buf) abort();");
-        self.writeln("    for (size_t i = 0; i < len; i++) {");
-        self.writeln("        char c = arg->data.string_val.data[i];");
-        self.writeln("        buf[i] = (c >= 'a' && c <= 'z') ? (char)(c - 32) : c;");
-        self.writeln("    }");
-        self.writeln("    buf[len] = '\\0';");
-        self.writeln("    riina_value_t* r = riina_string(buf);");
-        self.writeln("    free(buf);");
-        self.writeln("    return r;");
-        self.writeln("}");
-        self.writeln("");
+        // UTF-8 helpers. RIINA strings are sequences of Unicode scalar values:
+        // the interpreter indexes `teks_sub`/`teks_aksara_di` with
+        // `chars()`, so this backend must count code points too and never
+        // split a UTF-8 sequence (byte indexing made
+        // `teks_sub(("€uro", (0, 1)))` a lone 0xE2 byte). A malformed byte
+        // (possible only for data read from outside, never for a literal)
+        // counts as one unit of its own.
+        self.writeln(RIINA_C_UTF8_HELPERS);
 
-        // teks_huruf_kecil (str_to_lower)
-        self.writeln("static riina_value_t* riina_builtin_teks_huruf_kecil(riina_value_t* arg) {");
-        self.writeln("    if (arg->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    size_t len = arg->data.string_val.len;");
-        self.writeln("    char* buf = (char*)malloc(len + 1);");
-        self.writeln("    if (!buf) abort();");
-        self.writeln("    for (size_t i = 0; i < len; i++) {");
-        self.writeln("        char c = arg->data.string_val.data[i];");
-        self.writeln("        buf[i] = (c >= 'A' && c <= 'Z') ? (char)(c + 32) : c;");
-        self.writeln("    }");
-        self.writeln("    buf[len] = '\\0';");
-        self.writeln("    riina_value_t* r = riina_string(buf);");
-        self.writeln("    free(buf);");
-        self.writeln("    return r;");
-        self.writeln("}");
-        self.writeln("");
+        // teks_huruf_besar / teks_huruf_kecil are emitted with the case-mapping
+        // tables, only for programs that call them (`emit_case_runtime`).
 
         // teks_aksara_di (str_char_at): (String, Int) -> String
         self.writeln("static riina_value_t* riina_builtin_teks_aksara_di(riina_value_t* arg) {");
@@ -3066,14 +3161,16 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* idx = arg->data.pair_val.snd;");
         self.writeln("    if (s->tag != RIINA_TAG_STRING || idx->tag != RIINA_TAG_INT) abort();");
-        self.writeln("    size_t i = (size_t)idx->data.int_val;");
-        self.writeln("    if (i >= s->data.string_val.len) { fprintf(stderr, \"RIINA: char_at out of bounds\\n\"); abort(); }");
-        self.writeln("    char c[2] = { s->data.string_val.data[i], 0 };");
-        self.writeln("    return riina_string(c);");
+        self.writeln("    const unsigned char* d = (const unsigned char*)s->data.string_val.data;");
+        self.writeln("    size_t n = s->data.string_val.len;");
+        self.writeln("    size_t at = riina_utf8_skip(d, n, 0, idx->data.int_val);");
+        self.writeln("    if (at >= n) { fprintf(stderr, \"RIINA: char_at out of bounds\\n\"); abort(); }");
+        self.writeln("    return riina_string_n((const char*)d + at, riina_utf8_seq_len(d, n, at));");
         self.writeln("}");
         self.writeln("");
 
-        // teks_sub (str_substring): (String, (Int, Int)) -> String
+        // teks_sub (str_substring): (String, (Int, Int)) -> String — code
+        // points [start, end), like `chars().skip(start).take(end - start)`.
         self.writeln("static riina_value_t* riina_builtin_teks_sub(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
@@ -3081,19 +3178,13 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln(
             "    if (s->tag != RIINA_TAG_STRING || range->tag != RIINA_TAG_PAIR) abort();",
         );
-        self.writeln("    size_t start = (size_t)range->data.pair_val.fst->data.int_val;");
-        self.writeln("    size_t end = (size_t)range->data.pair_val.snd->data.int_val;");
-        self.writeln("    if (start > s->data.string_val.len) start = s->data.string_val.len;");
-        self.writeln("    if (end > s->data.string_val.len) end = s->data.string_val.len;");
-        self.writeln("    if (end < start) end = start;");
-        self.writeln("    size_t len = end - start;");
-        self.writeln("    char* buf = (char*)malloc(len + 1);");
-        self.writeln("    if (!buf) abort();");
-        self.writeln("    memcpy(buf, s->data.string_val.data + start, len);");
-        self.writeln("    buf[len] = '\\0';");
-        self.writeln("    riina_value_t* r = riina_string(buf);");
-        self.writeln("    free(buf);");
-        self.writeln("    return r;");
+        self.writeln("    uint64_t start = range->data.pair_val.fst->data.int_val;");
+        self.writeln("    uint64_t end = range->data.pair_val.snd->data.int_val;");
+        self.writeln("    const unsigned char* d = (const unsigned char*)s->data.string_val.data;");
+        self.writeln("    size_t n = s->data.string_val.len;");
+        self.writeln("    size_t from = riina_utf8_skip(d, n, 0, start);");
+        self.writeln("    size_t to = end > start ? riina_utf8_skip(d, n, from, end - start) : from;");
+        self.writeln("    return riina_string_n((const char*)d + from, to - from);");
         self.writeln("}");
         self.writeln("");
 
@@ -3384,9 +3475,9 @@ static const char* riina_format(riina_value_t* v) {
         self.writeln("        if (c > 0) break;");
         self.writeln("        slot = &(*slot)->next;");
         self.writeln("    }");
-        self.writeln("    riina_map_entry_t* ne = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
+        self.writeln("    riina_map_entry_t* ne = (riina_map_entry_t*)riina_xmalloc(sizeof(riina_map_entry_t));");
         self.writeln("    if (!ne) abort();");
-        self.writeln("    ne->key = strdup(key);");
+        self.writeln("    ne->key = riina_xstrdup(key);");
         self.writeln("    if (!ne->key) abort();");
         self.writeln("    ne->value = val;");
         self.writeln("    ne->next = *slot;");
@@ -4126,11 +4217,22 @@ static riina_value_t* riina_builtin_sanitize_email(riina_value_t* arg) {
     RIINA_SEC_END()
 }
 
+/* Mirrors `url_validate`: ASCII controls (C0 + DEL) and backslashes ANYWHERE
+   are refused (browsers drop tab/CR/LF and read `\` as `/`, so "/\t/evil" and
+   "/\\evil" are open redirects); only ASCII spaces are trimmed; a relative
+   path whose second byte is '/' or '\' is refused. */
 static riina_value_t* riina_builtin_validate_url(riina_value_t* arg) {
     RIINA_SEC_BEGIN(arg)
+    for (size_t k = 0; k < _slen; k++) {
+        unsigned char c = (unsigned char)_s[k];
+        if (c < 0x20 || c == 0x7F || c == '\\') {
+            riina_sec_puts(&_b, &_n, &_cap, "about:blank");
+            RIINA_SEC_END()
+        }
+    }
     size_t lo = 0, hi = _slen;
-    while (lo < hi && (unsigned char)_s[lo] <= 0x20) lo++;
-    while (hi > lo && (unsigned char)_s[hi-1] <= 0x20) hi--;
+    while (lo < hi && _s[lo] == ' ') lo++;
+    while (hi > lo && _s[hi-1] == ' ') hi--;
     size_t tl = hi - lo;
     char* t = (char*)malloc(tl + 1);
     if (!t) abort();
@@ -4144,7 +4246,7 @@ static riina_value_t* riina_builtin_validate_url(riina_value_t* arg) {
     low[tl] = 0;
     bool ok = strncmp(low, "http://", 7) == 0 || strncmp(low, "https://", 8) == 0
            || strncmp(low, "mailto:", 7) == 0
-           || (tl > 0 && t[0] == '/' && !(tl > 1 && t[1] == '/'));
+           || (tl > 0 && t[0] == '/' && !(tl > 1 && (t[1] == '/' || t[1] == '\\')));
     riina_sec_puts(&_b, &_n, &_cap, ok ? t : "about:blank");
     free(t); free(low);
     RIINA_SEC_END()
@@ -4298,15 +4400,26 @@ static riina_value_t* riina_builtin_csrf_check_origin(riina_value_t* arg) {
     return riina_bool(memcmp(o->data.string_val.data, w->data.string_val.data,
                              w->data.string_val.len) == 0);
 }
+/* Mirrors `referer_matches_origin`: the referer must EQUAL the origin or
+   continue it with '/', '?' or '#' — a bare prefix match accepted
+   "https://bank.example.attacker.net/" for "https://bank.example". One
+   trailing '/' on the configured origin is ignored; an empty origin never
+   matches. */
 static riina_value_t* riina_builtin_csrf_check_referer(riina_value_t* arg) {
     if (arg->tag != RIINA_TAG_PAIR) abort();
     riina_value_t* r = arg->data.pair_val.fst;
     riina_value_t* w = arg->data.pair_val.snd;
     if (r->tag != RIINA_TAG_STRING || w->tag != RIINA_TAG_STRING) abort();
-    if (w->data.string_val.len == 0) return riina_bool(false);
-    if (r->data.string_val.len < w->data.string_val.len) return riina_bool(false);
-    return riina_bool(memcmp(r->data.string_val.data, w->data.string_val.data,
-                             w->data.string_val.len) == 0);
+    size_t wl = w->data.string_val.len;
+    if (wl > 0 && w->data.string_val.data[wl - 1] == '/') wl--;
+    if (wl == 0) return riina_bool(false);
+    size_t rl = r->data.string_val.len;
+    if (rl < wl) return riina_bool(false);
+    if (memcmp(r->data.string_val.data, w->data.string_val.data, wl) != 0)
+        return riina_bool(false);
+    if (rl == wl) return riina_bool(true);
+    char next = r->data.string_val.data[wl];
+    return riina_bool(next == '/' || next == '?' || next == '#');
 }
 
 /* No XML tree exists in-tree, so the interpreter models the parse as identity
@@ -4379,9 +4492,9 @@ static riina_value_t* riina_builtin_xml_parse_safe(riina_value_t* arg) {
         self.writeln("    for (riina_inode_t* i = riina_inodes; i; i = i->next) {");
         self.writeln("        if (strcmp(i->path, path) == 0) return i;");
         self.writeln("    }");
-        self.writeln("    riina_inode_t* ino = (riina_inode_t*)malloc(sizeof(riina_inode_t));");
+        self.writeln("    riina_inode_t* ino = (riina_inode_t*)riina_xmalloc(sizeof(riina_inode_t));");
         self.writeln("    if (!ino) abort();");
-        self.writeln("    ino->path = strdup(path);");
+        self.writeln("    ino->path = riina_xstrdup(path);");
         self.writeln("    if (!ino->path) abort();");
         self.writeln("    ino->owner_uid = riina_ctx_uid;");
         self.writeln("    ino->owner_gid = riina_ctx_gid;");
@@ -4467,7 +4580,7 @@ static riina_value_t* riina_builtin_xml_parse_safe(riina_value_t* arg) {
         self.writeln("    fseek(f, 0, SEEK_END);");
         self.writeln("    long sz = ftell(f);");
         self.writeln("    fseek(f, 0, SEEK_SET);");
-        self.writeln("    char* buf = (char*)malloc((size_t)sz + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc((size_t)sz + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    size_t rd = fread(buf, 1, (size_t)sz, f);");
         self.writeln("    buf[rd] = '\\0';");
@@ -4554,7 +4667,7 @@ static riina_value_t* riina_builtin_file_read_safe(riina_value_t* arg) {
     fseek(f, 0, SEEK_END);
     long sz = ftell(f);
     fseek(f, 0, SEEK_SET);
-    char* buf = (char*)malloc((size_t)sz + 1);
+    char* buf = (char*)riina_xmalloc((size_t)sz + 1);
     if (!buf) abort();
     size_t rd = fread(buf, 1, (size_t)sz, f);
     buf[rd] = '\0';
@@ -4715,11 +4828,11 @@ static riina_value_t* riina_json_parse_value(const char** p);
 static riina_value_t* riina_json_parse_string(const char** p) {
     (*p)++; /* opening quote; the caller has already matched it */
     size_t cap = 64, len = 0;
-    char* buf = (char*)malloc(cap);
+    char* buf = (char*)riina_xmalloc(cap);
     if (!buf) abort();
     for (;;) {
         if (len + 8 >= cap) {
-            cap *= 2; buf = (char*)realloc(buf, cap); if (!buf) abort();
+            cap *= 2; buf = (char*)riina_xrealloc(buf, cap); if (!buf) abort();
         }
         if (**p == '\0') {
             free(buf); riina_json_fail("unterminated string"); return NULL;
@@ -4985,7 +5098,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("static void riina_json_stringify_impl(riina_value_t* v, char** buf, size_t* len, size_t* cap);");
         self.writeln("");
         self.writeln("static void riina_json_buf_append(char** buf, size_t* len, size_t* cap, const char* s, size_t slen) {");
-        self.writeln("    while (*len + slen + 1 >= *cap) { *cap *= 2; *buf = (char*)realloc(*buf, *cap); if (!*buf) abort(); }");
+        self.writeln("    while (*len + slen + 1 >= *cap) { *cap *= 2; *buf = (char*)riina_xrealloc(*buf, *cap); if (!*buf) abort(); }");
         self.writeln("    memcpy(*buf + *len, s, slen);");
         self.writeln("    *len += slen;");
         self.writeln("}");
@@ -5074,7 +5187,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         // json_ke_teks (json_stringify): Value -> Teks
         self.writeln("static riina_value_t* riina_builtin_json_ke_teks(riina_value_t* arg) {");
         self.writeln("    size_t cap = 256, len = 0;");
-        self.writeln("    char* buf = (char*)malloc(cap);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(cap);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    riina_json_stringify_impl(arg, &buf, &len, &cap);");
         self.writeln("    buf[len] = '\\0';");
@@ -5114,7 +5227,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("    if (s->tag != RIINA_TAG_STRING || n->tag != RIINA_TAG_INT) abort();");
         self.writeln("    size_t count = (size_t)n->data.int_val;");
         self.writeln("    size_t slen = s->data.string_val.len;");
-        self.writeln("    char* buf = (char*)malloc(slen * count + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(slen * count + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    for (size_t i = 0; i < count; i++) memcpy(buf + i * slen, s->data.string_val.data, slen);");
         self.writeln("    buf[slen * count] = '\\0';");
@@ -5137,7 +5250,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("    size_t slen = s->data.string_val.len;");
         self.writeln("    if (slen >= width) return s;");
         self.writeln("    size_t pad = width - slen;");
-        self.writeln("    char* buf = (char*)malloc(width + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(width + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    memset(buf, pc, pad);");
         self.writeln("    memcpy(buf + pad, s->data.string_val.data, slen);");
@@ -5161,7 +5274,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("    size_t slen = s->data.string_val.len;");
         self.writeln("    if (slen >= width) return s;");
         self.writeln("    size_t pad = width - slen;");
-        self.writeln("    char* buf = (char*)malloc(width + 1);");
+        self.writeln("    char* buf = (char*)riina_xmalloc(width + 1);");
         self.writeln("    if (!buf) abort();");
         self.writeln("    memcpy(buf, s->data.string_val.data, slen);");
         self.writeln("    memset(buf + slen, pc, pad);");
@@ -5182,7 +5295,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("        if (*s == '\\n') {");
         self.writeln("            size_t len = (size_t)(s - start);");
         self.writeln("            if (len > 0 && start[len-1] == '\\r') len--;");
-        self.writeln("            char* line = (char*)malloc(len + 1);");
+        self.writeln("            char* line = (char*)riina_xmalloc(len + 1);");
         self.writeln("            if (!line) abort();");
         self.writeln("            memcpy(line, start, len); line[len] = '\\0';");
         self.writeln("            riina_list_push(&nl, riina_string(line));");
@@ -5193,7 +5306,7 @@ static riina_value_t* riina_builtin_deserialize_safe(riina_value_t* arg) {
         self.writeln("    }");
         self.writeln("    if (s > start) {");
         self.writeln("        size_t len = (size_t)(s - start);");
-        self.writeln("        char* line = (char*)malloc(len + 1);");
+        self.writeln("        char* line = (char*)riina_xmalloc(len + 1);");
         self.writeln("        if (!line) abort();");
         self.writeln("        memcpy(line, start, len); line[len] = '\\0';");
         self.writeln("        riina_list_push(&nl, riina_string(line));");
@@ -5754,7 +5867,7 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
                         format!("riina_bool({})", if *b { "true" } else { "false" })
                     }
                     Constant::Int(n) => format!("riina_int({n}ULL)"),
-                    Constant::String(s) => format!("riina_string(\"{}\")", self.escape_string(s)),
+                    Constant::String(s) => self.c_string_literal(s)?,
                 };
                 self.writeln(&format!("{result} = {val};"));
             }
@@ -5824,7 +5937,7 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
                         self.func_name(func)
                     ));
                     self.writeln(&format!(
-                        "{result}->data.closure_val.captures = (riina_value_t**)malloc({} * sizeof(riina_value_t*));",
+                        "{result}->data.closure_val.captures = (riina_value_t**)riina_xmalloc({} * sizeof(riina_value_t*));",
                         captures.len()
                     ));
                     self.writeln(&format!(
@@ -6160,7 +6273,7 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
                     .is_some_and(|v| !v.is_empty());
 
                 if has_then_phis || has_else_phis {
-                    self.writeln(&format!("if ({}->data.bool_val) {{", self.var_name(cond)));
+                    self.writeln(&format!("if (riina_cond({})) {{", self.var_name(cond)));
                     self.indent();
                     self.emit_phi_copies(current_block, then_block, phi_map);
                     self.writeln(&format!("goto {};", self.block_name(then_block)));
@@ -6173,7 +6286,7 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
                     self.writeln("}");
                 } else {
                     self.writeln(&format!(
-                        "if ({}->data.bool_val) goto {}; else goto {};",
+                        "if (riina_cond({})) goto {}; else goto {};",
                         self.var_name(cond),
                         self.block_name(then_block),
                         self.block_name(else_block)
@@ -6342,23 +6455,59 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
         }
     }
 
-    /// Escape a string for C
+    /// Escape a string's bytes for the body of a C string literal.
+    ///
+    /// Every byte outside printable ASCII becomes a fixed-width three-digit
+    /// octal escape (`\ooo`), which C ends after exactly three digits. The
+    /// former `\xNN` escapes are read GREEDILY by C — `\x00B` is one escape
+    /// (0x0B), so `"A\0B|"` compiled to `A\v|`, and `\x01abc` is "hex escape
+    /// sequence out of range". Non-ASCII (UTF-8) bytes are escaped too, so the
+    /// literal's bytes do not depend on the C compiler's source/execution
+    /// character sets, and `?` is escaped so no `??=`-style trigraph can form
+    /// under a strict ISO mode. NUL is rejected before this is called (see
+    /// [`Self::c_string_literal`]).
     fn escape_string(&self, s: &str) -> String {
         let mut result = String::with_capacity(s.len());
-        for c in s.chars() {
-            match c {
-                '\\' => result.push_str("\\\\"),
-                '"' => result.push_str("\\\""),
-                '\n' => result.push_str("\\n"),
-                '\r' => result.push_str("\\r"),
-                '\t' => result.push_str("\\t"),
-                c if c.is_ascii_control() => {
-                    let _ = write!(result, "\\x{:02x}", c as u8);
+        for &b in s.as_bytes() {
+            match b {
+                b'\\' => result.push_str("\\\\"),
+                b'"' => result.push_str("\\\""),
+                b'?' => result.push_str("\\?"),
+                b'\n' => result.push_str("\\n"),
+                b'\r' => result.push_str("\\r"),
+                b'\t' => result.push_str("\\t"),
+                0x20..=0x7e => result.push(char::from(b)),
+                _ => {
+                    let _ = write!(result, "\\{b:03o}");
                 }
-                c => result.push(c),
             }
         }
         result
+    }
+
+    /// The C expression constructing a RIINA string constant.
+    ///
+    /// A literal containing NUL (`"\0"`) is a compile error for this backend.
+    /// The C runtime keeps strings NUL-terminated and consumes them as C
+    /// strings throughout — printing, `strstr`/`strcmp`-based search and
+    /// comparison, map keys, numeric parsing, file paths handed to
+    /// `fopen`/`stat` — so a length-aware literal would only move the
+    /// truncation from the literal into every one of those consumers, each
+    /// diverging silently from the interpreter (e.g. `mengandungi(s, "\0")`
+    /// becomes `strstr(s, "")`, which is always true; a path `"a\0b"` opens
+    /// `a`). Refusing to compile is the only answer that cannot be wrong; the
+    /// interpreter and the WASM backend (length-prefixed strings) support NUL.
+    fn c_string_literal(&self, s: &str) -> Result<String> {
+        if let Some(pos) = s.find('\0') {
+            return Err(crate::Error::InvalidOperation(format!(
+                "the C backend cannot compile a string literal containing a NUL byte \
+                 (\\0 at byte {pos} of {:?}): C runtime strings are NUL-terminated, so the \
+                 string would be silently truncated. Remove the NUL, or run the program \
+                 with `riinac run` or the wasm32 target",
+                s.chars().take(40).collect::<String>()
+            )));
+        }
+        Ok(format!("riina_string(\"{}\")", self.escape_string(s)))
     }
 }
 
@@ -6366,6 +6515,259 @@ impl Default for CEmitter {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Checked allocation wrappers for the C runtime (see the call site in
+/// `emit_runtime_prelude`).
+const RIINA_C_CHECKED_ALLOC: &str = r#"static void riina_oom(void) {
+    fputs("RIINA: out of memory\n", stderr);
+    abort();
+}
+static void* riina_xmalloc(size_t n) {
+    void* p = malloc(n ? n : 1);
+    if (!p) riina_oom();
+    return p;
+}
+static void* riina_xcalloc(size_t count, size_t size) {
+    void* p = calloc(count ? count : 1, size ? size : 1);
+    if (!p) riina_oom();
+    return p;
+}
+static void* riina_xrealloc(void* old, size_t n) {
+    void* p = realloc(old, n ? n : 1);
+    if (!p) riina_oom();
+    return p;
+}
+static char* riina_xstrdup(const char* str) {
+    size_t n = strlen(str) + 1;
+    char* p = (char*)riina_xmalloc(n);
+    memcpy(p, str, n);
+    return p;
+}
+"#;
+
+/// UTF-8 navigation for the C runtime's code-point-indexed string builtins
+/// (`teks_sub`, `teks_aksara_di`). See the call site in
+/// `emit_runtime_helpers`.
+const RIINA_C_UTF8_HELPERS: &str = r#"/* Bytes in the UTF-8 sequence at d[i] (1..4). A byte that does not start a
+   well-formed sequence (overlong, surrogate, out of range, truncated) is a
+   unit of 1, so malformed input is passed through, never over-read. */
+static size_t riina_utf8_seq_len(const unsigned char* d, size_t n, size_t i) {
+    unsigned char b = d[i];
+    unsigned char lo = 0x80, hi = 0xBF;
+    size_t need;
+    if (b < 0x80) return 1;
+    if (b >= 0xC2 && b <= 0xDF) need = 1;
+    else if (b >= 0xE0 && b <= 0xEF) { need = 2; if (b == 0xE0) lo = 0xA0; if (b == 0xED) hi = 0x9F; }
+    else if (b >= 0xF0 && b <= 0xF4) { need = 3; if (b == 0xF0) lo = 0x90; if (b == 0xF4) hi = 0x8F; }
+    else return 1;
+    if (n - i <= need) return 1;
+    if (d[i + 1] < lo || d[i + 1] > hi) return 1;
+    for (size_t k = 2; k <= need; k++) {
+        if (d[i + k] < 0x80 || d[i + k] > 0xBF) return 1;
+    }
+    return need + 1;
+}
+
+/* Byte offset reached by advancing `count` code points from byte offset
+   `from` (stops at the end of the string). */
+static size_t riina_utf8_skip(const unsigned char* d, size_t n, size_t from, uint64_t count) {
+    size_t pos = from;
+    while (count > 0 && pos < n) {
+        pos += riina_utf8_seq_len(d, n, pos);
+        count--;
+    }
+    return pos;
+}
+"#;
+
+/// Case mapping for `teks_huruf_besar`/`teks_huruf_kecil`: the algorithm half
+/// of `emit_case_runtime` (the tables are generated). Mirrors Rust's
+/// `str::to_uppercase`/`str::to_lowercase`, the interpreter's definition:
+/// per-code-point full case mapping, plus the one context-sensitive rule
+/// Rust implements — Greek capital sigma lowers to final `ς` when preceded
+/// (skipping case-ignorable code points) by a cased one and not followed by
+/// one, else to `σ`.
+const RIINA_C_CASE_ALGORITHM: &str = r#"static int64_t riina_utf8_decode(const unsigned char* d, size_t n, size_t i, size_t* len) {
+    size_t l = riina_utf8_seq_len(d, n, i);
+    *len = l;
+    if (l == 1) return d[i] < 0x80 ? (int64_t)d[i] : -1;
+    uint32_t cp = d[i] & (0xFFu >> (l + 1));
+    for (size_t k = 1; k < l; k++) cp = (cp << 6) | (uint32_t)(d[i + k] & 0x3F);
+    return (int64_t)cp;
+}
+
+static size_t riina_utf8_put(unsigned char* out, uint32_t cp) {
+    if (cp < 0x80) { out[0] = (unsigned char)cp; return 1; }
+    if (cp < 0x800) {
+        out[0] = (unsigned char)(0xC0 | (cp >> 6));
+        out[1] = (unsigned char)(0x80 | (cp & 0x3F));
+        return 2;
+    }
+    if (cp < 0x10000) {
+        out[0] = (unsigned char)(0xE0 | (cp >> 12));
+        out[1] = (unsigned char)(0x80 | ((cp >> 6) & 0x3F));
+        out[2] = (unsigned char)(0x80 | (cp & 0x3F));
+        return 3;
+    }
+    out[0] = (unsigned char)(0xF0 | (cp >> 18));
+    out[1] = (unsigned char)(0x80 | ((cp >> 12) & 0x3F));
+    out[2] = (unsigned char)(0x80 | ((cp >> 6) & 0x3F));
+    out[3] = (unsigned char)(0x80 | (cp & 0x3F));
+    return 4;
+}
+
+static const uint32_t* riina_case_find(const uint32_t (*t)[4], size_t n, uint32_t cp) {
+    size_t lo = 0, hi = n;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        if (t[mid][0] == cp) return t[mid];
+        if (t[mid][0] < cp) lo = mid + 1; else hi = mid;
+    }
+    return NULL;
+}
+
+static int riina_case_in(const uint32_t (*r)[2], size_t n, uint32_t cp) {
+    size_t lo = 0, hi = n;
+    while (lo < hi) {
+        size_t mid = lo + (hi - lo) / 2;
+        if (cp < r[mid][0]) hi = mid;
+        else if (cp > r[mid][1]) lo = mid + 1;
+        else return 1;
+    }
+    return 0;
+}
+
+/* Rust's `case_ignorable_then_cased`: skip case-ignorable code points in the
+   given direction; true iff the first other one is cased. A malformed byte
+   is neither. */
+static int riina_case_ignorable_then_cased(const int64_t* cps, size_t count, size_t k, int forward) {
+    while (forward ? (k < count) : (k > 0)) {
+        int64_t c = forward ? cps[k++] : cps[--k];
+        if (c < 0) return 0;
+        if (riina_case_in(riina_case_ignorable, riina_case_ignorable_n, (uint32_t)c)) continue;
+        return riina_case_in(riina_case_cased, riina_case_cased_n, (uint32_t)c);
+    }
+    return 0;
+}
+
+static riina_value_t* riina_case_map(riina_value_t* arg, int upper) {
+    if (arg->tag != RIINA_TAG_STRING) abort();
+    const unsigned char* d = (const unsigned char*)arg->data.string_val.data;
+    size_t n = arg->data.string_val.len;
+    /* Each input unit (>= 1 byte) maps to at most 3 code points of <= 4 bytes. */
+    if (n > (SIZE_MAX - 1) / 12) { fprintf(stderr, "RIINA: string too large for case mapping\n"); abort(); }
+    int64_t* cps = (int64_t*)riina_xmalloc((n ? n : 1) * sizeof(int64_t));
+    unsigned char* raw = (unsigned char*)riina_xmalloc(n ? n : 1);
+    unsigned char* out = (unsigned char*)riina_xmalloc(n * 12 + 1);
+    if (!cps || !raw || !out) { fprintf(stderr, "RIINA: out of memory\n"); abort(); }
+    size_t count = 0;
+    for (size_t i = 0; i < n; ) {
+        size_t l;
+        raw[count] = d[i];
+        cps[count++] = riina_utf8_decode(d, n, i, &l);
+        i += l;
+    }
+    size_t o = 0;
+    for (size_t k = 0; k < count; k++) {
+        int64_t c = cps[k];
+        if (c < 0) { out[o++] = raw[k]; continue; }
+        if (!upper && c == 0x3A3) {
+            int final_sigma = riina_case_ignorable_then_cased(cps, count, k, 0)
+                && !riina_case_ignorable_then_cased(cps, count, k + 1, 1);
+            o += riina_utf8_put(out + o, final_sigma ? 0x3C2 : 0x3C3);
+            continue;
+        }
+        const uint32_t* m = upper
+            ? riina_case_find(riina_case_upper, riina_case_upper_n, (uint32_t)c)
+            : riina_case_find(riina_case_lower, riina_case_lower_n, (uint32_t)c);
+        if (!m) { o += riina_utf8_put(out + o, (uint32_t)c); continue; }
+        for (int j = 1; j < 4 && m[j]; j++) o += riina_utf8_put(out + o, m[j]);
+    }
+    riina_value_t* r = riina_string_n((const char*)out, o);
+    free(cps);
+    free(raw);
+    free(out);
+    return r;
+}
+
+static riina_value_t* riina_builtin_teks_huruf_besar(riina_value_t* arg) {
+    return riina_case_map(arg, 1);
+}
+
+static riina_value_t* riina_builtin_teks_huruf_kecil(riina_value_t* arg) {
+    return riina_case_map(arg, 0);
+}
+"#;
+
+/// Generated case-mapping data (see [`case_tables`]).
+struct CaseTables {
+    /// Code points whose `char::to_uppercase` is not themselves, with the
+    /// (1–3 code point) result.
+    upper: Vec<(u32, Vec<u32>)>,
+    /// Likewise for `char::to_lowercase`.
+    lower: Vec<(u32, Vec<u32>)>,
+    /// Inclusive ranges of Case_Ignorable code points.
+    ignorable: Vec<(u32, u32)>,
+    /// Inclusive ranges of Cased code points that are not Case_Ignorable
+    /// (the only ones the final-sigma rule asks about).
+    cased: Vec<(u32, u32)>,
+}
+
+/// Case-mapping tables generated from the Rust standard library — the very
+/// functions the interpreter's `teks_huruf_besar`/`teks_huruf_kecil` call —
+/// so the two backends cannot disagree about the DATA, only about the small
+/// algorithm. Computed once per process.
+///
+/// Rust exposes the Case_Ignorable and Cased properties only through
+/// `str::to_lowercase`'s final-sigma rule, so they are measured through it:
+/// lowering `"cΣ"` yields final `ς` iff `c` is cased and not case-ignorable,
+/// and lowering `"AcΣ"` yields it iff `c` is case-ignorable or cased.
+fn case_tables() -> &'static CaseTables {
+    static TABLES: std::sync::OnceLock<CaseTables> = std::sync::OnceLock::new();
+    TABLES.get_or_init(|| {
+        fn extend(ranges: &mut Vec<(u32, u32)>, cp: u32) {
+            match ranges.last_mut() {
+                Some(last) if last.1 + 1 == cp => last.1 = cp,
+                _ => ranges.push((cp, cp)),
+            }
+        }
+        let mut tables = CaseTables {
+            upper: Vec::new(),
+            lower: Vec::new(),
+            ignorable: Vec::new(),
+            cased: Vec::new(),
+        };
+        let mut probe = String::with_capacity(16);
+        for cp in 0..=0x10_FFFFu32 {
+            let Some(c) = char::from_u32(cp) else {
+                continue;
+            };
+            let up: Vec<u32> = c.to_uppercase().map(u32::from).collect();
+            if up != [cp] {
+                tables.upper.push((cp, up));
+            }
+            let low: Vec<u32> = c.to_lowercase().map(u32::from).collect();
+            if low != [cp] {
+                tables.lower.push((cp, low));
+            }
+            probe.clear();
+            probe.push(c);
+            probe.push('Σ');
+            let cased_not_ignorable = probe.to_lowercase().ends_with('ς');
+            probe.clear();
+            probe.push('A');
+            probe.push(c);
+            probe.push('Σ');
+            let ignorable_or_cased = probe.to_lowercase().ends_with('ς');
+            if cased_not_ignorable {
+                extend(&mut tables.cased, cp);
+            } else if ignorable_or_cased {
+                extend(&mut tables.ignorable, cp);
+            }
+        }
+        tables
+    })
 }
 
 /// Emit C code from an IR program
@@ -6473,7 +6875,7 @@ static void riina_store_set(riina_store_t* s, const char* k, size_t klen,
         if (count_dead)
             s->dead_bytes += riina_store_record_size(klen, s->kv[at].vlen);
         free(s->kv[at].v);
-        s->kv[at].v = (char*)malloc(vlen ? vlen : 1);
+        s->kv[at].v = (char*)riina_xmalloc(vlen ? vlen : 1);
         if (!s->kv[at].v) abort();
         memcpy(s->kv[at].v, v, vlen);
         s->kv[at].vlen = vlen;
@@ -6481,13 +6883,13 @@ static void riina_store_set(riina_store_t* s, const char* k, size_t klen,
     }
     if (s->n == s->cap) {
         size_t nc = s->cap ? s->cap * 2 : 16;
-        riina_store_kv_t* nk = (riina_store_kv_t*)realloc(s->kv, nc * sizeof(*nk));
+        riina_store_kv_t* nk = (riina_store_kv_t*)riina_xrealloc(s->kv, nc * sizeof(*nk));
         if (!nk) abort();
         s->kv = nk; s->cap = nc;
     }
     memmove(&s->kv[at + 1], &s->kv[at], (s->n - at) * sizeof(s->kv[0]));
-    s->kv[at].k = (char*)malloc(klen ? klen : 1);
-    s->kv[at].v = (char*)malloc(vlen ? vlen : 1);
+    s->kv[at].k = (char*)riina_xmalloc(klen ? klen : 1);
+    s->kv[at].v = (char*)riina_xmalloc(vlen ? vlen : 1);
     if (!s->kv[at].k || !s->kv[at].v) abort();
     memcpy(s->kv[at].k, k, klen); s->kv[at].klen = klen;
     memcpy(s->kv[at].v, v, vlen); s->kv[at].vlen = vlen;
@@ -6510,7 +6912,7 @@ static unsigned char* riina_store_encode(unsigned char op, const char* k, size_t
                                          const char* v, size_t vlen, size_t* out_len) {
     size_t plen = 1 + 4 + klen + 4 + vlen;
     size_t total = 8 + plen;
-    unsigned char* buf = (unsigned char*)malloc(total);
+    unsigned char* buf = (unsigned char*)riina_xmalloc(total);
     if (!buf) abort();
     unsigned char* p = buf + 8;
     p[0] = op;
@@ -6619,7 +7021,7 @@ static riina_value_t* riina_builtin_simpan_buka(riina_value_t* arg) {
                 riina_store_die("simpan_buka", "not a RIINA store (bad magic) - refusing to overwrite it");
             size_t body = (size_t)(sz - RIINA_STORE_MAGIC_LEN);
             if (body) {
-                unsigned char* buf = (unsigned char*)malloc(body);
+                unsigned char* buf = (unsigned char*)riina_xmalloc(body);
                 if (!buf) abort();
                 ssize_t got = read(fd, buf, body);
                 if (got < 0 || (size_t)got != body) riina_store_die("simpan_buka", "short read of journal");
@@ -6631,7 +7033,7 @@ static riina_value_t* riina_builtin_simpan_buka(riina_value_t* arg) {
     if (lseek(fd, 0, SEEK_END) < 0) riina_store_die("simpan_buka", strerror(errno));
     s->used = 1;
     s->fd = fd;
-    s->path = (char*)malloc(strlen(path) + 1);
+    s->path = (char*)riina_xmalloc(strlen(path) + 1);
     if (!s->path) abort();
     memcpy(s->path, path, strlen(path) + 1);
     return riina_int(id);
@@ -6680,7 +7082,7 @@ static riina_value_t* riina_builtin_simpan_dapat(riina_value_t* arg) {
     int found = 0;
     size_t at = riina_store_find(s, kv->data.string_val.data, kv->data.string_val.len, &found);
     if (!found) return riina_string("");
-    char* tmp = (char*)malloc(s->kv[at].vlen + 1);
+    char* tmp = (char*)riina_xmalloc(s->kv[at].vlen + 1);
     if (!tmp) abort();
     memcpy(tmp, s->kv[at].v, s->kv[at].vlen);
     tmp[s->kv[at].vlen] = 0;
@@ -6731,7 +7133,7 @@ static riina_value_t* riina_builtin_simpan_kunci(riina_value_t* arg) {
     riina_store_t* s = riina_store_slot(arg->data.int_val, "simpan_kunci");
     riina_list_t l = {0};
     for (size_t i = 0; i < s->n; i++) {
-        char* tmp = (char*)malloc(s->kv[i].klen + 1);
+        char* tmp = (char*)riina_xmalloc(s->kv[i].klen + 1);
         if (!tmp) abort();
         memcpy(tmp, s->kv[i].k, s->kv[i].klen);
         tmp[s->kv[i].klen] = 0;
@@ -6749,7 +7151,7 @@ static riina_value_t* riina_builtin_simpan_padat(riina_value_t* arg) {
     if (arg->tag != RIINA_TAG_INT) riina_store_die("simpan_padat", "expects a handle");
     riina_store_t* s = riina_store_slot(arg->data.int_val, "simpan_padat");
     size_t plen = strlen(s->path);
-    char* tmp = (char*)malloc(plen + 16);
+    char* tmp = (char*)riina_xmalloc(plen + 16);
     if (!tmp) abort();
     memcpy(tmp, s->path, plen);
     memcpy(tmp + plen, ".padat-tmp", 11);
@@ -6920,7 +7322,7 @@ static uint64_t riina_net_new_id(int kind, riina_tcp_state_t state, int fd) {
         size_t want = riina_net_cap ? riina_net_cap * 2 : 16;
         while (id >= want) want *= 2;
         riina_net_entry_t* grown =
-            (riina_net_entry_t*)realloc(riina_net_tab, want * sizeof(riina_net_entry_t));
+            (riina_net_entry_t*)riina_xrealloc(riina_net_tab, want * sizeof(riina_net_entry_t));
         if (!grown) abort();
         memset(grown + riina_net_cap, 0, (want - riina_net_cap) * sizeof(riina_net_entry_t));
         riina_net_tab = grown;
@@ -6956,7 +7358,7 @@ static void riina_net_event(riina_net_entry_t* e, riina_tcp_event_t ev,
    alone would additionally truncate at an embedded NUL. */
 static riina_value_t* riina_net_string_lossy(const unsigned char* p, size_t n) {
     size_t cap = n + 16, len = 0;
-    unsigned char* out = (unsigned char*)malloc(cap + 1);
+    unsigned char* out = (unsigned char*)riina_xmalloc(cap + 1);
     if (!out) abort();
     size_t i = 0;
     while (i < n) {
@@ -6964,7 +7366,7 @@ static riina_value_t* riina_net_string_lossy(const unsigned char* p, size_t n) {
         size_t width;
         unsigned char lo, hi;   /* accepted range for the SECOND byte */
         if (b < 0x80) {
-            if (len + 1 > cap) { cap = cap * 2 + 1; out = (unsigned char*)realloc(out, cap + 1); if (!out) abort(); }
+            if (len + 1 > cap) { cap = cap * 2 + 1; out = (unsigned char*)riina_xrealloc(out, cap + 1); if (!out) abort(); }
             out[len++] = b;
             i++;
             continue;
@@ -6989,7 +7391,7 @@ static riina_value_t* riina_net_string_lossy(const unsigned char* p, size_t n) {
                 good++;
             }
         }
-        if (len + 3 > cap) { cap = cap * 2 + 3; out = (unsigned char*)realloc(out, cap + 1); if (!out) abort(); }
+        if (len + 3 > cap) { cap = cap * 2 + 3; out = (unsigned char*)riina_xrealloc(out, cap + 1); if (!out) abort(); }
         if (width != 0 && good == width) {
             for (size_t k = 0; k < width; k++) out[len++] = p[i + k];
             i += width;
@@ -7014,7 +7416,7 @@ static struct addrinfo* riina_net_resolve(const char* addr, const char* what) {
     const char* colon = strrchr(addr, ':');
     if (!colon || colon == addr) riina_net_die(what, "address must be \"host:port\"");
     size_t hlen = (size_t)(colon - addr);
-    char* host = (char*)malloc(hlen + 1);
+    char* host = (char*)riina_xmalloc(hlen + 1);
     if (!host) abort();
     memcpy(host, addr, hlen);
     host[hlen] = 0;
@@ -7101,7 +7503,7 @@ static riina_value_t* riina_builtin_jaring_terima(riina_value_t* arg) {
     uint64_t max = m->data.int_val;
     if (max > (uint64_t)SIZE_MAX) riina_net_die("terima", "max too large");
     size_t cap = (size_t)max;
-    unsigned char* buf = (unsigned char*)malloc(cap ? cap : 1);
+    unsigned char* buf = (unsigned char*)riina_xmalloc(cap ? cap : 1);
     if (!buf) abort();
     ssize_t got;
     do { got = recv(e->fd, buf, cap, 0); } while (got < 0 && errno == EINTR);
@@ -7291,7 +7693,7 @@ static void riina_http_buf_push(riina_http_buf_t* b, const char* d, size_t n) {
     if (b->n + n + 1 > b->cap) {
         size_t want = b->cap ? b->cap * 2 : 256;
         while (b->n + n + 1 > want) want *= 2;
-        char* grown = (char*)realloc(b->p, want);
+        char* grown = (char*)riina_xrealloc(b->p, want);
         if (!grown) abort();
         b->p = grown;
         b->cap = want;
@@ -7312,7 +7714,7 @@ typedef struct { char* name; char* value; size_t vlen; } riina_http_hdr_t;
 typedef struct { riina_http_hdr_t* h; size_t n, cap; } riina_http_hdrs_t;
 
 static char* riina_http_dup(const char* p, size_t n) {
-    char* s = (char*)malloc(n + 1);
+    char* s = (char*)riina_xmalloc(n + 1);
     if (!s) abort();
     if (n) memcpy(s, p, n);
     s[n] = 0;
@@ -7333,7 +7735,7 @@ static void riina_http_hdr_add(riina_http_hdrs_t* hs, const char* name,
         else if (c > 0) hi = mid;
         else {
             size_t a = hs->h[mid].vlen;
-            char* joined = (char*)malloc(a + 2 + vlen + 1);
+            char* joined = (char*)riina_xmalloc(a + 2 + vlen + 1);
             if (!joined) abort();
             memcpy(joined, hs->h[mid].value, a);
             memcpy(joined + a, ", ", 2);
@@ -7347,7 +7749,7 @@ static void riina_http_hdr_add(riina_http_hdrs_t* hs, const char* name,
     }
     if (hs->n + 1 > hs->cap) {
         size_t want = hs->cap ? hs->cap * 2 : 16;
-        riina_http_hdr_t* grown = (riina_http_hdr_t*)realloc(hs->h, want * sizeof(riina_http_hdr_t));
+        riina_http_hdr_t* grown = (riina_http_hdr_t*)riina_xrealloc(hs->h, want * sizeof(riina_http_hdr_t));
         if (!grown) abort();
         hs->h = grown;
         hs->cap = want;
@@ -7614,6 +8016,11 @@ static int riina_http_message_complete(const unsigned char* b, size_t n) {
     uint64_t content_length = 0;
     riina_http_parse_headers((const char*)b, (size_t)head_len, 1, &hs, &has_len, &content_length);
     riina_http_hdrs_free(&hs);
+    /* Mirrors the Rust codec's checked arithmetic: a declared body over the
+       limit is refused HERE (same message as extract_body), so the sum below
+       can never wrap and declare an incomplete message complete. */
+    if (has_len && content_length > (uint64_t)RIINA_HTTP_MAX_BODY)
+        riina_http_die("body exceeds 8388608 bytes");
     uint64_t want = (uint64_t)body_start + (has_len ? content_length : 0);
     return (uint64_t)n >= want ? 1 : 0;
 }

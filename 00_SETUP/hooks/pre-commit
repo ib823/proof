@@ -23,7 +23,9 @@ fi
 # Source opam environment if available
 # (needed for Coq compilation via riinac verify)
 if command -v opam &> /dev/null; then
-    eval $(opam env --switch=coq820 2>/dev/null) || true
+    # The provisioned switch is `rocq` (scripts/provision-coq.sh); this named
+    # a long-gone `coq820` switch, so the hook never picked up the prover.
+    eval "$(opam env --switch=rocq 2>/dev/null)" || true
 fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -32,6 +34,26 @@ echo ""
 echo "================================================================"
 echo "  RIINA PRE-COMMIT VERIFICATION"
 echo "================================================================"
+
+# ── Step 0: the hook must verify what is being COMMITTED ─────────────
+# `riinac verify` runs on the working tree. If verified sources (Rust in the
+# two workspaces, Coq proofs) have unstaged edits or untracked files, the
+# verification below would pass or fail on code that is not in this commit.
+# Docs-only partial commits are unaffected.
+UNSTAGED_SOURCES=$( { git diff --name-only; git ls-files --others --exclude-standard; } \
+    | grep -E '^(03_PROTO|05_TOOLING)/.*\.(rs|toml|lock)$|^02_FORMAL/coq/.*\.v$|^02_FORMAL/coq/_CoqProject$' \
+    | sort -u || true)
+if [ -n "$UNSTAGED_SOURCES" ]; then
+    echo ""
+    echo "================================================================"
+    echo "  BLOCKED: verified sources differ between the index and the"
+    echo "  working tree. The hook verifies the working tree, so it would"
+    echo "  not be verifying this commit. Stage or stash these first:"
+    echo ""
+    echo "$UNSTAGED_SOURCES" | head -20 | sed 's/^/    /'
+    echo "================================================================"
+    exit 1
+fi
 
 # ── Step 0a: _CoqProject completeness check ──────────────────────────
 # Every .v file in 02_FORMAL/coq/ (except _archive_deprecated/) must be

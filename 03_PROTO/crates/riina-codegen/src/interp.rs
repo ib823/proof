@@ -303,6 +303,43 @@ pub struct Interpreter {
     actor_handlers: std::collections::HashMap<u64, Expr>,
     /// Content-addressed store: hash → original value (JALINAN Phase 6 J2)
     content_store: HashMap<u64, Value>,
+    /// Resource/capability limits for UNTRUSTED programs (`None` = the
+    /// ordinary unrestricted interpreter). See [`crate::ExecLimits`].
+    limits: Option<ActiveLimits>,
+}
+
+/// The running state of an [`crate::ExecLimits`] budget.
+struct ActiveLimits {
+    deny_host_effects: bool,
+    steps_left: u64,
+    max_depth: usize,
+    depth: usize,
+    deadline: std::time::Instant,
+}
+
+impl ActiveLimits {
+    /// Charge one evaluation step and enter one level of nesting. The clock is
+    /// sampled every 1024 steps so the check stays cheap.
+    fn enter(&mut self) -> Result<()> {
+        if self.steps_left == 0 {
+            return Err(Error::InvalidOperation(
+                "execution budget exhausted: step limit reached".to_string(),
+            ));
+        }
+        self.steps_left -= 1;
+        if self.steps_left.is_multiple_of(1024) && std::time::Instant::now() >= self.deadline {
+            return Err(Error::InvalidOperation(
+                "execution budget exhausted: wall-clock limit reached".to_string(),
+            ));
+        }
+        if self.depth >= self.max_depth {
+            return Err(Error::InvalidOperation(
+                "execution budget exhausted: nesting depth limit reached".to_string(),
+            ));
+        }
+        self.depth += 1;
+        Ok(())
+    }
 }
 
 impl Interpreter {
@@ -319,6 +356,40 @@ impl Interpreter {
             actor_states: std::collections::HashMap::new(),
             actor_handlers: std::collections::HashMap::new(),
             content_store: HashMap::new(),
+            limits: None,
+        }
+    }
+
+    /// An interpreter for UNTRUSTED programs: a step budget, a nesting-depth
+    /// cap and a wall-clock deadline (measured from now), and — when
+    /// `limits.deny_host_effects` — no builtin that reaches the host (file
+    /// system, network, HTTP, durable store, VFS, process stdin/stdout, clock,
+    /// randomness). Host builtins are both left out of the environment by
+    /// [`Self::eval_with_builtins`] AND refused at application time, so a
+    /// builtin value that reaches a call site some other way still cannot run.
+    #[must_use]
+    pub fn with_limits(limits: crate::ExecLimits) -> Self {
+        let mut interp = Self::new();
+        interp.limits = Some(ActiveLimits {
+            deny_host_effects: limits.deny_host_effects,
+            steps_left: limits.max_steps,
+            max_depth: limits.max_depth,
+            depth: 0,
+            deadline: std::time::Instant::now() + limits.wall_clock,
+        });
+        interp
+    }
+
+    /// Refuse a host-effect builtin when this interpreter is sandboxed.
+    fn check_builtin_allowed(&self, name: &str) -> Result<()> {
+        match &self.limits {
+            Some(l) if l.deny_host_effects && crate::builtins::is_host_effect_builtin(name) => {
+                Err(Error::InvalidOperation(format!(
+                    "builtin `{name}` reaches the host (file/network/process/clock/random) \
+                     and is disabled in this sandbox"
+                )))
+            }
+            _ => Ok(()),
         }
     }
 
@@ -387,9 +458,15 @@ impl Interpreter {
         Self::catch_toplevel_return(self.eval_with_env(&env, expr))
     }
 
-    /// Evaluate with built-in functions pre-registered.
+    /// Evaluate with built-in functions pre-registered. A sandboxed
+    /// interpreter ([`Self::with_limits`] with `deny_host_effects`) gets only
+    /// the builtins that cannot reach the host.
     pub fn eval_with_builtins(&mut self, expr: &Expr) -> Result<Value> {
-        let env = crate::builtins::register_builtins(&Env::new());
+        let env = if self.limits.as_ref().is_some_and(|l| l.deny_host_effects) {
+            crate::builtins::register_pure_builtins(&Env::new())
+        } else {
+            crate::builtins::register_builtins(&Env::new())
+        };
         Self::catch_toplevel_return(self.eval_with_env(&env, expr))
     }
 
@@ -402,12 +479,110 @@ impl Interpreter {
         }
     }
 
+    /// Evaluate with an environment, charging the sandbox budget (if any) for
+    /// every step. Unrestricted interpreters pay one `Option` check.
+    fn eval_with_env(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+        let Some(limits) = self.limits.as_mut() else {
+            return self.eval_with_env_inner(env, expr);
+        };
+        limits.enter()?;
+        let result = self.eval_with_env_inner(env, expr);
+        if let Some(limits) = self.limits.as_mut() {
+            limits.depth = limits.depth.saturating_sub(1);
+        }
+        result
+    }
+
     /// Evaluate with an environment
     ///
     /// This is the core evaluation function. Each match arm corresponds
     /// to a rule in the Coq `eval` relation.
-    fn eval_with_env(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+    ///
+    /// Called through [`Self::eval_with_env`], which charges the sandbox
+    /// budget. Tail positions — the body of a `Let`/`LetMut` and the taken
+    /// branch of an `If` — are evaluated by LOOPING here rather than by a recursive
+    /// call, and a left-nested `BinOp` chain is folded iteratively
+    /// ([`Self::eval_binop_chain`]). A block of n statements is a right-nested
+    /// `Let` chain and `a + b + …` a left-nested `BinOp` chain, so evaluating
+    /// either recursively cost one large native frame per statement/operand
+    /// and overflowed the stack on a few thousand of them. Every other node is
+    /// evaluated by [`Self::eval_node`].
+    fn eval_with_env_inner(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+        // Owns the environment a tail step extends; `env` then borrows it.
+        let mut tail_env: Env;
+        let mut env = env;
+        let mut expr = expr;
+        loop {
+            match expr {
+                // E_Let: eval ρ σ e1 σ' v1 -> eval (extend ρ x v1) σ' e2 σ'' v2
+                //        -> eval ρ σ (ELet x e1 e2) σ'' v2
+                Expr::Let(name, _, binding, body) => {
+                    let bind_val = self.eval_with_env(env, binding)?;
+                    tail_env = env.extend(name.clone(), bind_val);
+                    env = &tail_env;
+                    expr = body;
+                }
+                // E_LetMut: `biar ubah x = e1; e2` — allocate a mutable slot
+                // holding `e1` and bind `x` to it for `e2`. The slot lives in
+                // the same store as `ruj` cells, at `Awam` (public), so a write
+                // inside a nested block or loop body is visible to every later
+                // read.
+                Expr::LetMut(name, init, body) => {
+                    let init_val = self.eval_with_env(env, init)?;
+                    let loc = self.store.alloc(init_val, SecurityLevel::Public);
+                    let slot = Value::Ref(RefCell {
+                        location: loc,
+                        level: SecurityLevel::Public,
+                    });
+                    tail_env = env.extend(name.clone(), slot);
+                    env = &tail_env;
+                    expr = body;
+                }
+                // E_IfTrue / E_IfFalse
+                Expr::If(cond, then_expr, else_expr) => {
+                    let cond_val = self.eval_with_env(env, cond)?;
+                    expr = if branch_condition(cond_val, "if condition")? {
+                        then_expr
+                    } else {
+                        else_expr
+                    };
+                }
+                Expr::BinOp(..) => return self.eval_binop_chain(env, expr),
+                _ => return self.eval_node(env, expr),
+            }
+        }
+    }
+
+    /// Evaluate a `BinOp` by walking the left spine of its chain iteratively:
+    /// the leftmost operand first, then each right operand in turn, applying
+    /// its operator — the same left-to-right order (and the same eager
+    /// evaluation of both operands) as the recursive rule.
+    fn eval_binop_chain(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+        let mut spine: Vec<(BinOp, &Expr)> = Vec::new();
+        let mut leaf = expr;
+        while let Expr::BinOp(op, lhs, rhs) = leaf {
+            spine.push((*op, rhs));
+            leaf = lhs;
+        }
+        let mut acc = self.eval_with_env(env, leaf)?;
+        for (op, rhs) in spine.into_iter().rev() {
+            let r = self.eval_with_env(env, rhs)?;
+            acc = apply_binop(op, acc, r)?;
+        }
+        Ok(acc)
+    }
+
+    /// Evaluate one node that is not a tail-position form (see
+    /// [`Self::eval_with_env`]). Each match arm corresponds to a rule in the
+    /// Coq `eval` relation.
+    fn eval_node(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
         match expr {
+            // Evaluated by the tail loop in `eval_with_env`, which never
+            // dispatches them here; delegating keeps this match total.
+            Expr::Let(..) | Expr::LetMut(..) | Expr::If(..) | Expr::BinOp(..) => {
+                self.eval_with_env(env, expr)
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // VALUES (E_Unit, E_Bool, E_Int, E_String)
             // ═══════════════════════════════════════════════════════════════
@@ -486,9 +661,13 @@ impl Interpreter {
                                 ))
                             })
                     }
-                    Value::Builtin(name) => crate::builtins::apply_builtin(&name, arg_val),
+                    Value::Builtin(name) => {
+                        self.check_builtin_allowed(&name)?;
+                        crate::builtins::apply_builtin(&name, arg_val)
+                    }
                     // Partially-applied builtin: form pair and complete the call
                     Value::BuiltinPartial(name, first_arg) => {
+                        self.check_builtin_allowed(&name)?;
                         let pair = Value::Pair(first_arg, Box::new(arg_val));
                         crate::builtins::apply_builtin(&name, pair)
                     }
@@ -615,27 +794,7 @@ impl Interpreter {
             // CONTROL FLOW (E_IfTrue, E_IfFalse, E_Let)
             // ═══════════════════════════════════════════════════════════════
 
-            // E_IfTrue / E_IfFalse
-            Expr::If(cond, then_expr, else_expr) => {
-                let cond_val = self.eval_with_env(env, cond)?;
-                match cond_val {
-                    Value::Bool(true) => self.eval_with_env(env, then_expr),
-                    Value::Bool(false) => self.eval_with_env(env, else_expr),
-                    _ => Err(Error::TypeMismatch {
-                        expected: "bool".to_string(),
-                        found: format!("{:?}", cond_val),
-                        context: "if condition".to_string(),
-                    }),
-                }
-            }
-
-            // E_Let: eval ρ σ e1 σ' v1 -> eval (extend ρ x v1) σ' e2 σ'' v2
-            //        -> eval ρ σ (ELet x e1 e2) σ'' v2
-            Expr::Let(name, _, binding, body) => {
-                let bind_val = self.eval_with_env(env, binding)?;
-                let new_env = env.extend(name.clone(), bind_val);
-                self.eval_with_env(&new_env, body)
-            }
+            // E_IfTrue / E_IfFalse and E_Let: see `eval_with_env`.
 
             // E_Return: `pulang e` — evaluate the operand, then unwind to the
             // nearest enclosing function-application boundary by raising the
@@ -656,16 +815,8 @@ impl Interpreter {
             // loop is a real node rather than a desugaring into a closure.
             Expr::While(cond, body) => {
                 loop {
-                    let keep_going = match self.eval_with_env(env, cond)? {
-                        Value::Bool(b) => b,
-                        other => {
-                            return Err(Error::TypeMismatch {
-                                expected: "bool".to_string(),
-                                found: format!("{other:?}"),
-                                context: "selagi condition".to_string(),
-                            })
-                        }
-                    };
+                    let cond_val = self.eval_with_env(env, cond)?;
+                    let keep_going = branch_condition(cond_val, "selagi condition")?;
                     if !keep_going {
                         break;
                     }
@@ -684,20 +835,7 @@ impl Interpreter {
             Expr::Break => Err(Error::Break),
             Expr::Continue => Err(Error::Continue),
 
-            // E_LetMut: `biar ubah x = e1; e2` — allocate a mutable slot holding
-            // `e1` and bind `x` to it for `e2`. The slot lives in the same store
-            // as `ruj` cells, at `Awam` (public), so a write inside a nested
-            // block or loop body is visible to every later read.
-            Expr::LetMut(name, init, body) => {
-                let init_val = self.eval_with_env(env, init)?;
-                let loc = self.store.alloc(init_val, SecurityLevel::Public);
-                let slot = Value::Ref(RefCell {
-                    location: loc,
-                    level: SecurityLevel::Public,
-                });
-                let new_env = env.extend(name.clone(), slot);
-                self.eval_with_env(&new_env, body)
-            }
+            // E_LetMut: see `eval_with_env`.
 
             // E_SlotGet / E_SlotSet: read and write a `biar ubah` slot. No
             // security check is needed — a slot is always `Awam` and, unlike a
@@ -1172,100 +1310,121 @@ impl Interpreter {
                 Ok(Value::Bool(has_wcag_aa_contrast(fg, bg)))
             }
 
-            Expr::BinOp(op, lhs, rhs) => {
-                let l = self.eval_with_env(env, lhs)?;
-                let r = self.eval_with_env(env, rhs)?;
-                // Numeric tower: if either operand is a sized integer, arithmetic
-                // and comparisons wrap/interpret at that width (a plain `Int`
-                // literal adapts to the sized operand). Falls through to the
-                // unsized arms below only for non-integer ops (And/Or) or operand
-                // shapes this path does not handle.
-                if matches!(l, Value::IntN { .. }) || matches!(r, Value::IntN { .. }) {
-                    if let Some(result) = eval_sized_int_binop(*op, &l, &r) {
-                        return result;
-                    }
-                }
-                // Numeric tower: arbitrary-precision `BigInt` arithmetic. Both
-                // operands must be `BigInt` (the typechecker rejects mixing with
-                // fixed-width ints), so a lone `BigInt` operand falls through to
-                // the generic type-mismatch error below.
-                if matches!(l, Value::BigInt(_)) && matches!(r, Value::BigInt(_)) {
-                    if let Some(result) = eval_bigint_binop(*op, &l, &r) {
-                        return result;
-                    }
-                }
-                // Numeric tower: arbitrary-precision `Decimal` arithmetic. Both
-                // operands must be `Decimal` (the typechecker rejects mixing).
-                if matches!(l, Value::Decimal(_)) && matches!(r, Value::Decimal(_)) {
-                    if let Some(result) = eval_decimal_binop(*op, &l, &r) {
-                        return result;
-                    }
-                }
-                // Numeric tower: fixed-scale `Fixed` (`wang`/`titik_tetap`)
-                // arithmetic. Both operands are `Fixed` (the typechecker rejects
-                // mixing); the result stays at the fixed scale.
-                if matches!(l, Value::Fixed(_)) && matches!(r, Value::Fixed(_)) {
-                    if let Some(result) = eval_fixed_binop(*op, &l, &r) {
-                        return result;
-                    }
-                }
-                // Numeric tower: binary fixed-point `FixedBin` (`qmn`) arithmetic.
-                if matches!(l, Value::FixedBin(_)) && matches!(r, Value::FixedBin(_)) {
-                    if let Some(result) = eval_fixedbin_binop(*op, &l, &r) {
-                        return result;
-                    }
-                }
-                match (op, &l, &r) {
-                    (BinOp::Add, Value::Int(a), Value::Int(b)) => {
-                        Ok(Value::Int(a.wrapping_add(*b)))
-                    }
-                    (BinOp::Add, Value::String(a), Value::String(b)) => {
-                        Ok(Value::String(format!("{a}{b}")))
-                    }
-                    // `+` concatenates lists (e.g. `[x] + akum`).
-                    (BinOp::Add, Value::List(a), Value::List(b)) => {
-                        let mut items = a.clone();
-                        items.extend(b.iter().cloned());
-                        Ok(Value::List(items))
-                    }
-                    (BinOp::Sub, Value::Int(a), Value::Int(b)) => {
-                        Ok(Value::Int(a.wrapping_sub(*b)))
-                    }
-                    (BinOp::Mul, Value::Int(a), Value::Int(b)) => {
-                        Ok(Value::Int(a.wrapping_mul(*b)))
-                    }
-                    (BinOp::Div, Value::Int(a), Value::Int(b)) => {
-                        if *b == 0 {
-                            return Err(Error::DivisionByZero);
-                        }
-                        Ok(Value::Int(a / b))
-                    }
-                    (BinOp::Mod, Value::Int(a), Value::Int(b)) => {
-                        if *b == 0 {
-                            return Err(Error::DivisionByZero);
-                        }
-                        Ok(Value::Int(a % b))
-                    }
-                    (BinOp::Eq, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a == b)),
-                    (BinOp::Ne, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a != b)),
-                    (BinOp::Lt, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a < b)),
-                    (BinOp::Le, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a <= b)),
-                    (BinOp::Gt, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a > b)),
-                    (BinOp::Ge, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a >= b)),
-                    (BinOp::Eq, Value::String(a), Value::String(b)) => Ok(Value::Bool(a == b)),
-                    (BinOp::Ne, Value::String(a), Value::String(b)) => Ok(Value::Bool(a != b)),
-                    (BinOp::Eq, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(a == b)),
-                    (BinOp::Ne, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(a != b)),
-                    (BinOp::And, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(*a && *b)),
-                    (BinOp::Or, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(*a || *b)),
-                    _ => Err(Error::TypeMismatch {
-                        expected: "matching operand types for binary op".to_string(),
-                        found: format!("{:?} {:?} {:?}", l, op, r),
-                        context: "binary operation".to_string(),
-                    }),
-                }
-            }
         }
+    }
+}
+
+/// The value of a `kalau`/`selagi` condition.
+///
+/// A secret boolean (`Value::Secret`, from `sulit`) is branched on by its
+/// underlying value: the typechecker accepts `kalau` on a `Rahsia<Benar>` and
+/// tracks the implicit flow by raising the pc, so the backends must agree on
+/// what the branch DOES. The interpreter used to reject it at run time
+/// ("expected bool, found Secret(Bool(false))") while the C backend read the
+/// wrapper pointer as the boolean and always took the same branch.
+fn branch_condition(v: Value, context: &str) -> Result<bool> {
+    match v {
+        Value::Bool(b) => Ok(b),
+        Value::Secret(inner) => branch_condition(*inner, context),
+        other => Err(Error::TypeMismatch {
+            expected: "bool".to_string(),
+            found: format!("{other:?}"),
+            context: context.to_string(),
+        }),
+    }
+}
+
+/// Apply a binary operator to its two evaluated operands (E_BinOp).
+fn apply_binop(op: BinOp, l: Value, r: Value) -> Result<Value> {
+    let op = &op;
+    // Numeric tower: if either operand is a sized integer, arithmetic
+    // and comparisons wrap/interpret at that width (a plain `Int`
+    // literal adapts to the sized operand). Falls through to the
+    // unsized arms below only for non-integer ops (And/Or) or operand
+    // shapes this path does not handle.
+    if matches!(l, Value::IntN { .. }) || matches!(r, Value::IntN { .. }) {
+        if let Some(result) = eval_sized_int_binop(*op, &l, &r) {
+            return result;
+        }
+    }
+    // Numeric tower: arbitrary-precision `BigInt` arithmetic. Both
+    // operands must be `BigInt` (the typechecker rejects mixing with
+    // fixed-width ints), so a lone `BigInt` operand falls through to
+    // the generic type-mismatch error below.
+    if matches!(l, Value::BigInt(_)) && matches!(r, Value::BigInt(_)) {
+        if let Some(result) = eval_bigint_binop(*op, &l, &r) {
+            return result;
+        }
+    }
+    // Numeric tower: arbitrary-precision `Decimal` arithmetic. Both
+    // operands must be `Decimal` (the typechecker rejects mixing).
+    if matches!(l, Value::Decimal(_)) && matches!(r, Value::Decimal(_)) {
+        if let Some(result) = eval_decimal_binop(*op, &l, &r) {
+            return result;
+        }
+    }
+    // Numeric tower: fixed-scale `Fixed` (`wang`/`titik_tetap`)
+    // arithmetic. Both operands are `Fixed` (the typechecker rejects
+    // mixing); the result stays at the fixed scale.
+    if matches!(l, Value::Fixed(_)) && matches!(r, Value::Fixed(_)) {
+        if let Some(result) = eval_fixed_binop(*op, &l, &r) {
+            return result;
+        }
+    }
+    // Numeric tower: binary fixed-point `FixedBin` (`qmn`) arithmetic.
+    if matches!(l, Value::FixedBin(_)) && matches!(r, Value::FixedBin(_)) {
+        if let Some(result) = eval_fixedbin_binop(*op, &l, &r) {
+            return result;
+        }
+    }
+    match (op, &l, &r) {
+        (BinOp::Add, Value::Int(a), Value::Int(b)) => {
+            Ok(Value::Int(a.wrapping_add(*b)))
+        }
+        (BinOp::Add, Value::String(a), Value::String(b)) => {
+            Ok(Value::String(format!("{a}{b}")))
+        }
+        // `+` concatenates lists (e.g. `[x] + akum`).
+        (BinOp::Add, Value::List(a), Value::List(b)) => {
+            let mut items = a.clone();
+            items.extend(b.iter().cloned());
+            Ok(Value::List(items))
+        }
+        (BinOp::Sub, Value::Int(a), Value::Int(b)) => {
+            Ok(Value::Int(a.wrapping_sub(*b)))
+        }
+        (BinOp::Mul, Value::Int(a), Value::Int(b)) => {
+            Ok(Value::Int(a.wrapping_mul(*b)))
+        }
+        (BinOp::Div, Value::Int(a), Value::Int(b)) => {
+            if *b == 0 {
+                return Err(Error::DivisionByZero);
+            }
+            Ok(Value::Int(a / b))
+        }
+        (BinOp::Mod, Value::Int(a), Value::Int(b)) => {
+            if *b == 0 {
+                return Err(Error::DivisionByZero);
+            }
+            Ok(Value::Int(a % b))
+        }
+        (BinOp::Eq, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a == b)),
+        (BinOp::Ne, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a != b)),
+        (BinOp::Lt, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a < b)),
+        (BinOp::Le, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a <= b)),
+        (BinOp::Gt, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a > b)),
+        (BinOp::Ge, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a >= b)),
+        (BinOp::Eq, Value::String(a), Value::String(b)) => Ok(Value::Bool(a == b)),
+        (BinOp::Ne, Value::String(a), Value::String(b)) => Ok(Value::Bool(a != b)),
+        (BinOp::Eq, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(a == b)),
+        (BinOp::Ne, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(a != b)),
+        (BinOp::And, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(*a && *b)),
+        (BinOp::Or, Value::Bool(a), Value::Bool(b)) => Ok(Value::Bool(*a || *b)),
+        _ => Err(Error::TypeMismatch {
+            expected: "matching operand types for binary op".to_string(),
+            found: format!("{:?} {:?} {:?}", l, op, r),
+            context: "binary operation".to_string(),
+        }),
     }
 }
 
@@ -1992,6 +2151,88 @@ mod tests {
     use riina_types::Ty;
 
     // ═══════════════════════════════════════════════════════════════════════
+    // SANDBOX (ExecLimits) — the `riinac mcp` defence in depth
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fn sandbox() -> Interpreter {
+        Interpreter::with_limits(crate::ExecLimits {
+            deny_host_effects: true,
+            max_steps: 100_000,
+            max_depth: 200,
+            wall_clock: std::time::Duration::from_secs(5),
+        })
+    }
+
+    /// Even if a host builtin VALUE reaches a call site (here: evaluated in
+    /// the full environment, bypassing the pure one), a sandboxed
+    /// interpreter refuses to apply it — and the host is untouched.
+    #[test]
+    fn sandbox_refuses_host_builtins_at_application_time() {
+        let path = std::env::temp_dir().join(format!("riina_sandbox_{}.txt", std::process::id()));
+        let _ = std::fs::remove_file(&path);
+        let call = Expr::App(
+            Box::new(Expr::Var("fail_tulis".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String(path.display().to_string())),
+                Box::new(Expr::String("x".to_string())),
+            )),
+        );
+        let full = crate::builtins::register_builtins(&Env::new());
+        let err = sandbox().eval_with_env(&full, &call).unwrap_err();
+        assert!(err.to_string().contains("disabled in this sandbox"), "{err}");
+        assert!(!path.exists());
+        // And the sandbox's own environment does not even bind it.
+        assert!(matches!(
+            sandbox().eval_with_builtins(&call),
+            Err(Error::UnboundVariable(ref n)) if n == "fail_tulis"
+        ));
+        // Pure builtins are unaffected.
+        let pure = Expr::App(
+            Box::new(Expr::Var("panjang".to_string())),
+            Box::new(Expr::String("abc".to_string())),
+        );
+        assert_eq!(sandbox().eval_with_builtins(&pure).unwrap(), Value::Int(3));
+    }
+
+    #[test]
+    fn host_effect_deny_list_covers_every_host_family() {
+        use crate::builtins::is_host_effect_builtin as host;
+        for name in [
+            "cetak", "cetakln", "baca_baris", "fail_tulis", "fail_baca", "jaring_sambung",
+            "jaring_tls_kunci", "http_minta", "simpan_buka", "vfs_tulis", "masa_sekarang",
+            "masa_tidur", "rawak", "csrf_generate", "file_write_safe",
+        ] {
+            assert!(host(name), "{name} must be denied in the sandbox");
+        }
+        for name in ["panjang", "tls_dasar_ok", "sanitize_html", "http_get", "json_urai", "masa_format", "tegaskan"] {
+            assert!(!host(name), "{name} is pure and must stay available");
+        }
+        let pure = crate::builtins::register_pure_builtins(&Env::new());
+        assert!(pure.lookup("fail_tulis").is_none() && pure.lookup("print").is_none());
+        assert!(pure.lookup("panjang").is_some());
+    }
+
+    #[test]
+    fn sandbox_budgets_stop_runaway_evaluation() {
+        // Unbounded recursion: f = λn. f n.
+        let omega = Expr::LetRec(
+            "f".to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
+            Box::new(Expr::Lam(
+                "n".to_string(),
+                Ty::Int,
+                Box::new(Expr::App(
+                    Box::new(Expr::Var("f".to_string())),
+                    Box::new(Expr::Var("n".to_string())),
+                )),
+            )),
+            Box::new(Expr::App(Box::new(Expr::Var("f".to_string())), Box::new(Expr::Int(0)))),
+        );
+        let err = sandbox().eval_with_builtins(&omega).unwrap_err();
+        assert!(err.to_string().contains("budget exhausted"), "{err}");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // VALUE TESTS
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -2667,7 +2908,7 @@ mod tests {
     fn test_eval_letrec_simple() {
         let mut interp = Interpreter::new();
         // let rec f : Int -> Int = λn. if n <= 0 then 1 else n * f(n-1) in f(5)
-        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
         let body = Expr::If(
             Box::new(Expr::BinOp(
                 BinOp::Le,
@@ -2707,7 +2948,7 @@ mod tests {
         with_eval_stack(|| {
             let mut interp = Interpreter::new();
             // let rec count : Int -> Int = λn. if n <= 0 then 0 else count(n-1) in count(10)
-            let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+            let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into());
             let body = Expr::If(
                 Box::new(Expr::BinOp(
                     BinOp::Le,
@@ -4239,5 +4480,101 @@ mod tests {
         assert_eq!(format!("{}", iu(255, 8)), "255");
         assert_eq!(format!("{}", is(128, 8)), "-128");
         assert_eq!(format!("{}", is(7, 32)), "7");
+    }
+
+    #[test]
+    fn numeric_tower_signed_min_over_minus_one_wraps() {
+        // MIN / -1 is the exact quotient 2^(w-1) wrapped to the width, i.e.
+        // MIN again; MIN % -1 is 0 (SizedInt.v toSigned/wrapU). The C and
+        // WASM backends are held to this by `audit_backend_differential`.
+        let min64 = "(0i64 - 9223372036854775807i64 - 1i64)";
+        assert_eq!(
+            format!("{}", run_src(&format!("pulang {min64} / (0i64 - 1i64)"))),
+            "-9223372036854775808"
+        );
+        assert_eq!(
+            format!("{}", run_src(&format!("pulang {min64} % (0i64 - 1i64)"))),
+            "0"
+        );
+        assert_eq!(
+            format!("{}", run_src("pulang (0i8 - 127i8 - 1i8) / (0i8 - 1i8)")),
+            "-128"
+        );
+    }
+
+    /// `kalau`/`selagi` on a secret boolean branch on its value (it used to be
+    /// a runtime type error: "expected bool, found Secret(Bool(false))").
+    #[test]
+    fn secret_booleans_drive_if_and_while() {
+        let secret = |b| Box::new(Expr::Classify(Box::new(Expr::Bool(b))));
+        let mut interp = Interpreter::new();
+        for (b, want) in [(true, 1), (false, 2)] {
+            let e = Expr::If(secret(b), Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
+            assert_eq!(interp.eval(&e).unwrap(), Value::Int(want));
+        }
+        let w = Expr::While(secret(false), Box::new(Expr::Unit));
+        assert_eq!(interp.eval(&w).unwrap(), Value::Unit);
+        // Anything that is not a (possibly secret) boolean is still refused.
+        let bad = Expr::If(
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(2)),
+        );
+        assert!(interp.eval(&bad).is_err());
+    }
+
+    /// Statement sequences (right-nested `Let`) and operator chains
+    /// (left-nested `BinOp`) are evaluated iteratively: 200,000-long chains
+    /// run on a 1 MiB stack, where one recursive frame per link would need
+    /// gigabytes.
+    #[test]
+    fn long_let_and_binop_chains_evaluate_iteratively() {
+        std::thread::Builder::new()
+            .stack_size(1024 * 1024)
+            .spawn(|| {
+                const N: u64 = 200_000;
+                let mut sum = Expr::Int(0);
+                for _ in 0..N {
+                    sum = Expr::BinOp(BinOp::Add, Box::new(sum), Box::new(Expr::Int(1)));
+                }
+                let mut lets = Expr::Var("x".to_string());
+                for i in 0..N {
+                    lets = Expr::Let(
+                        "x".to_string(),
+                        None,
+                        Box::new(Expr::Int(i)),
+                        Box::new(lets),
+                    );
+                }
+                let mut interp = Interpreter::new();
+                assert_eq!(interp.eval(&sum).unwrap(), Value::Int(N));
+                assert_eq!(interp.eval(&lets).unwrap(), Value::Int(0));
+                riina_parser::limits::dismantle(sum);
+                riina_parser::limits::dismantle(lets);
+            })
+            .expect("spawn")
+            .join()
+            .expect("deep chains must evaluate without overflowing");
+    }
+
+    /// The persistent environment: shadowing, and bindings surviving the
+    /// periodic flattening of its recent-bindings list.
+    #[test]
+    fn persistent_env_shadows_and_flattens_correctly() {
+        let mut env = Env::new().extend("a".to_string(), Value::Int(0));
+        let snapshot = env.clone();
+        for i in 0..100u64 {
+            env = env.extend(format!("v{i}"), Value::Int(i));
+            env = env.extend("a".to_string(), Value::Int(i + 1));
+        }
+        assert_eq!(env.lookup("a"), Some(&Value::Int(100)));
+        assert_eq!(env.lookup("v0"), Some(&Value::Int(0)));
+        assert_eq!(env.lookup("v99"), Some(&Value::Int(99)));
+        assert_eq!(env.lookup("missing"), None);
+        assert_eq!(env.len(), 101);
+        // Extending never disturbs an earlier environment.
+        assert_eq!(snapshot.lookup("a"), Some(&Value::Int(0)));
+        assert_eq!(snapshot.lookup("v0"), None);
+        assert_eq!(snapshot.len(), 1);
     }
 }

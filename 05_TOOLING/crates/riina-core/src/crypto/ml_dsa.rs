@@ -22,12 +22,20 @@
 //! - Sign: `ρ'' = H(K ‖ rnd ‖ μ)` with `rnd = 0^32` for deterministic signing
 //!   (the draft hashed `H(K ‖ μ)` with no `rnd`).
 //!
-//! All FIPS 204 interfaces are wired and ACVP-verified: the internal interface
-//! (`sign`/`verify`, μ = H(tr ‖ M)), the external "pure" interface
+//! All FIPS 204 interfaces are wired and ACVP-verified. The DEFAULTS
+//! (`sign`/`verify`/`sign_hedged`, and therefore the `Signature` trait impl,
+//! `hybrid`, and every tool built on them) are the standard external "pure"
+//! interface with an EMPTY context (M' = 0x00 ‖ 0x00 ‖ M), so their signatures
+//! interoperate with any conforming FIPS 204 implementation. The other
+//! interfaces are explicit: the external interface with a context
 //! (`sign_with_context`/`verify_with_context`, M' = 0x00 ‖ |ctx| ‖ ctx ‖ M), the
 //! pre-hash interface (`sign_prehash`/`verify_prehash`, HashML-DSA — for the
 //! hashes `riina-core` ships: SHA2-256/512, SHA3-256/512, SHAKE-128/256), and
-//! hedged signing (`sign_hedged`, real `rnd`). See
+//! the *internal* interface (`sign_internal`/`sign_hedged_internal`/
+//! `verify_internal`, μ = H(tr ‖ M) with no M' prefix), which exists for ACVP
+//! internal-interface vectors only. (Until 2026-10 the defaults were the
+//! internal interface: non-interoperable, and a standard signature over X
+//! verified here as a signature over 0x00 ‖ 0x00 ‖ X.) See
 //! `reports/precrypto_audit_secondmodel.md`.
 //!
 //! # Law 2: Cryptographic Non-Negotiables
@@ -1103,11 +1111,27 @@ impl MlDsa65SigningKey {
         &self.bytes
     }
 
-    /// Sign with the FIPS 204 *internal* interface (no M' prefix), deterministic
-    /// (rnd = 0^32). This is what `MlDsa65KeyPair::sign` and the ACVP internal,
-    /// deterministic vectors use.
+    /// FIPS 204 `ML-DSA.Sign` — the standard external ("pure") interface with an
+    /// EMPTY context string, deterministic (rnd = 0^32): `M' = 0x00 || 0x00 || M`.
+    ///
+    /// This is the default because it is what every conforming FIPS 204
+    /// verifier checks. It used to be the *internal* interface (no `M'`
+    /// prefix), which (a) produced signatures no standard verifier accepts and
+    /// (b) allowed cross-protocol forgery: a standard signature over `X`
+    /// verified here as a signature over `0x00 || 0x00 || X`. The internal
+    /// interface remains available, under an explicit name, as
+    /// [`Self::sign_internal`].
     pub fn sign(&self, message: &[u8]) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
-        self.sign_internal(&[], message, &[0u8; 32])
+        self.sign_with_context(message, b"", &[0u8; 32])
+    }
+
+    /// FIPS 204 `ML-DSA.Sign_internal` (Algorithm 7) — NO `M'` prefix,
+    /// deterministic (rnd = 0^32). For ACVP internal-interface vectors and for
+    /// protocols that construct `M'` themselves. Do NOT use it to sign
+    /// application messages: its output is not a standard FIPS 204 signature
+    /// over `message`.
+    pub fn sign_internal(&self, message: &[u8]) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
+        self.sign_core(&[], message, &[0u8; 32])
     }
 
     /// FIPS 204 ML-DSA.Sign — external ("pure") interface with a context string
@@ -1121,7 +1145,7 @@ impl MlDsa65SigningKey {
     ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
         let mut prefix = [0u8; 257];
         let n = encode_msg_prefix(&mut prefix, 0, context)?;
-        self.sign_internal(&prefix[..n], message, random)
+        self.sign_core(&prefix[..n], message, random)
     }
 
     /// FIPS 204 HashML-DSA.Sign — external pre-hash interface. `M' = (0x01 || |ctx|
@@ -1139,13 +1163,13 @@ impl MlDsa65SigningKey {
         prefix[n..n + oid.len()].copy_from_slice(oid);
         let mut digest = [0u8; 64];
         let dlen = ph.hash(message, &mut digest);
-        self.sign_internal(&prefix[..n + oid.len()], &digest[..dlen], random)
+        self.sign_core(&prefix[..n + oid.len()], &digest[..dlen], random)
     }
 
-    /// FIPS 204 internal signing core. `ctx_prefix` is the M' domain prefix (empty
-    /// for the internal interface); `rnd` is the per-signature randomizer (0^32 =
-    /// deterministic).
-    fn sign_internal(
+    /// FIPS 204 `ML-DSA.Sign_internal` core. `ctx_prefix` is the M' domain prefix
+    /// (empty for the internal interface); `rnd` is the per-signature randomizer
+    /// (0^32 = deterministic).
+    fn sign_core(
         &self,
         ctx_prefix: &[u8],
         message: &[u8],
@@ -1364,16 +1388,27 @@ impl MlDsa65SigningKey {
         }
     }
 
-    /// FIPS 204 hedged signing (internal interface): the 32-byte `random` is used
-    /// directly as `rnd` in `rho'' = H(K || rnd || mu)` (deterministic mode passes
-    /// 0^32). Previously this delegated to deterministic signing and ignored
-    /// `random`; it now actually mixes the randomizer in.
+    /// FIPS 204 hedged `ML-DSA.Sign` — external ("pure") interface, EMPTY
+    /// context: the 32-byte `random` is used directly as `rnd` in
+    /// `rho'' = H(K || rnd || mu)` (all-zero = deterministic). `random` MUST be
+    /// fresh CSPRNG output on every call.
     pub fn sign_hedged(
         &self,
         message: &[u8],
         random: &[u8; 32],
     ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
-        self.sign_internal(&[], message, random)
+        self.sign_with_context(message, b"", random)
+    }
+
+    /// FIPS 204 hedged `ML-DSA.Sign_internal` — NO `M'` prefix, caller-supplied
+    /// `rnd`. For ACVP internal-interface vectors only; see
+    /// [`Self::sign_internal`] for why application code must not use it.
+    pub fn sign_hedged_internal(
+        &self,
+        message: &[u8],
+        random: &[u8; 32],
+    ) -> CryptoResult<[u8; SIGNATURE_SIZE]> {
+        self.sign_core(&[], message, random)
     }
 
     /// Get the verification key
@@ -1456,10 +1491,24 @@ impl MlDsa65VerifyingKey {
         &self.bytes
     }
 
-    /// Verify with the FIPS 204 *internal* interface (no M' prefix). Matches
-    /// `MlDsa65KeyPair::verify` and the ACVP internal vectors.
+    /// FIPS 204 `ML-DSA.Verify` — the standard external ("pure") interface with
+    /// an EMPTY context string (`M' = 0x00 || 0x00 || M`). Accepts exactly the
+    /// signatures a conforming FIPS 204 signer produces over `message`, and
+    /// nothing produced through the internal interface. See
+    /// [`MlDsa65SigningKey::sign`].
     pub fn verify(&self, message: &[u8], signature: &[u8; SIGNATURE_SIZE]) -> CryptoResult<()> {
-        self.verify_internal(&[], message, signature)
+        self.verify_with_context(message, b"", signature)
+    }
+
+    /// FIPS 204 `ML-DSA.Verify_internal` (Algorithm 8) — NO `M'` prefix. For
+    /// ACVP internal-interface vectors only; application code must use
+    /// [`Self::verify`].
+    pub fn verify_internal(
+        &self,
+        message: &[u8],
+        signature: &[u8; SIGNATURE_SIZE],
+    ) -> CryptoResult<()> {
+        self.verify_core(&[], message, signature)
     }
 
     /// FIPS 204 ML-DSA.Verify — external ("pure") interface with a context string.
@@ -1471,7 +1520,7 @@ impl MlDsa65VerifyingKey {
     ) -> CryptoResult<()> {
         let mut prefix = [0u8; 257];
         let n = encode_msg_prefix(&mut prefix, 0, context)?;
-        self.verify_internal(&prefix[..n], message, signature)
+        self.verify_core(&prefix[..n], message, signature)
     }
 
     /// FIPS 204 HashML-DSA.Verify — external pre-hash interface.
@@ -1488,12 +1537,12 @@ impl MlDsa65VerifyingKey {
         prefix[n..n + oid.len()].copy_from_slice(oid);
         let mut digest = [0u8; 64];
         let dlen = ph.hash(message, &mut digest);
-        self.verify_internal(&prefix[..n + oid.len()], &digest[..dlen], signature)
+        self.verify_core(&prefix[..n + oid.len()], &digest[..dlen], signature)
     }
 
-    /// FIPS 204 internal verification core. `ctx_prefix` is the M' domain prefix
-    /// (empty for the internal interface).
-    fn verify_internal(
+    /// FIPS 204 `ML-DSA.Verify_internal` core. `ctx_prefix` is the M' domain
+    /// prefix (empty for the internal interface).
+    fn verify_core(
         &self,
         ctx_prefix: &[u8],
         message: &[u8],
@@ -1969,6 +2018,53 @@ mod tests {
         let signature = keypair.sign(b"Original").unwrap();
         let result = keypair.verifying_key().verify(b"Different", &signature);
         assert!(result.is_err());
+    }
+
+    /// Regression (audit M1): the DEFAULT `sign`/`verify` — which the
+    /// `Signature` trait, `hybrid`, `artifact-sign` and the interpreter's
+    /// `kripto` builtin all use — must be FIPS 204 pure `ML-DSA.Sign`/`Verify`
+    /// with an empty context, not the internal interface. Under the old
+    /// defaults a standard signature over `X` verified as a signature over
+    /// `0x00 || 0x00 || X` (cross-protocol forgery) and nothing interoperated.
+    #[test]
+    fn default_interface_is_fips204_pure_with_empty_context() {
+        let kp = MlDsa65KeyPair::generate(&[0x5Au8; 32]).unwrap();
+        let vk = kp.verifying_key();
+        let msg = b"riina artifact bytes";
+        let sig = kp.sign(msg).unwrap();
+
+        // Byte-identical to the explicit external interface, empty context.
+        let explicit = kp.signing_key().sign_with_context(msg, b"", &[0u8; 32]).unwrap();
+        assert_eq!(sig, explicit);
+        assert!(vk.verify_with_context(msg, b"", &sig).is_ok());
+        // A non-empty context is a different message representative.
+        assert!(vk.verify_with_context(msg, b"ctx", &sig).is_err());
+
+        // It is NOT an internal-interface signature over `msg`...
+        assert!(vk.verify_internal(msg, &sig).is_err());
+        // ...and an internal signature over `msg` is NOT accepted by default.
+        let internal = kp.signing_key().sign_internal(msg).unwrap();
+        assert!(vk.verify_internal(msg, &internal).is_ok());
+        assert!(vk.verify(msg, &internal).is_err(), "default verify accepted an internal signature");
+
+        // The old cross-protocol forgery: a standard signature over X must
+        // not verify as a signature over 0x00 || 0x00 || X.
+        let mut prefixed = vec![0u8, 0u8];
+        prefixed.extend_from_slice(msg);
+        assert!(vk.verify(&prefixed, &sig).is_err(), "cross-protocol forgery accepted");
+        // (FIPS 204 identity: pure-sign(X) == Sign_internal(0x00||0x00||X).)
+        assert_eq!(kp.signing_key().sign_internal(&prefixed).unwrap(), sig);
+
+        // The `Signature` trait goes through the same default.
+        let mut trait_sig = [0u8; SIGNATURE_SIZE];
+        <MlDsa65 as Signature>::sign(kp.signing_key().as_bytes(), msg, &mut trait_sig).unwrap();
+        assert_eq!(trait_sig, sig);
+        assert!(<MlDsa65 as Signature>::verify(vk.as_bytes(), msg, &trait_sig).is_ok());
+
+        // Hedged default is pure too.
+        let hedged = kp.signing_key().sign_hedged(msg, &[9u8; 32]).unwrap();
+        assert!(vk.verify(msg, &hedged).is_ok());
+        assert!(vk.verify_internal(msg, &hedged).is_err());
     }
 
     #[test]

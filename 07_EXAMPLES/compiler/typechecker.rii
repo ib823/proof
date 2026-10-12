@@ -150,7 +150,7 @@ fungsi semak_contoh(sumber: Teks) -> Nombor kesan Bersih {
 }
 
 // Entry point for testing
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar contoh = "biar x = 42; x";
     biar hasil = semak_contoh(contoh);
     cetakln("Typechecker selesai");

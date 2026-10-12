@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,678 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3376 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3528 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,98 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-10-11 — Full audit remediation (REQ-84..REQ-89, PR #89)
+
+### Security (proof kernel)
+- **Two active Coq files let `False` be proven.** `domains/AlgebraicEffects.v` used
+  `Unset Positivity Checking` on a type with a negative occurrence; `domains/PhysicalSecurity.v`
+  declared a jointly unsatisfiable `Parameter` interface. Both rebuilt (first-order
+  resumptions; an opaque PUF function plus a satisfiability witness). Parameter pin 30 → 29.
+- `riinac verify` / `audit-docs.sh` now gate kernel-weakening constructs (`Conjecture`,
+  `give_up`, `Admit Obligations`, `bypass_check`, `Unset Guard/Positivity/Universe Checking`),
+  lex Coq strings inside comments (a hidden `Admitted` slipped past both scanners), report
+  capstones stated under section premises as CONDITIONAL, and pin nine capstones as
+  axiom-free (`Print Assumptions` must report "Closed under the global context").
+
+### Added (machine-checked, kernel-closed)
+- `effect_sound_multi_step_declared` (REQ-87): evaluation stays within the DECLARED effect.
+- `reachable_effects_from_program_text`: set-based — no reachable configuration contains a
+  perform/require/grant label absent from the program text and initial store.
+- `ref_free_well_typed_SN` (REQ-84): premise-free strong normalization for the
+  reference-free, `fix`-free core; `well_typed_SN_conclusion_is_false` proves the old
+  full-calculus statement false (Landin's knot through a higher-order reference).
+- `ref_free_noninterference` (REQ-85) and `ref_free_constant_time` (REQ-86, timing
+  contract: reduction count) for the same core, with a non-vacuity witness.
+
+### Retracted / corrected claims
+- "Non-interference proven" (README, website, master plan): the active build had no NI
+  theorem; NI is now proven for the reference-free, `fix`-free core only (REQ-89 tracks the rest).
+- "Strong normalization proven": `well_typed_SN` rested on refutable section premises and its
+  conclusion is false for the calculus; superseded by `ref_free_well_typed_SN`.
+- The 0.3.0 (Phase 7) entry "Backend composition Coq proofs: NI preservation through compiled
+  backends (BackendComposition.v)" was vacuous: its `ni_secure` concluded `f pub = f pub`.
+  The definition now states real NI over an abstract backend model (still not a proof
+  about the C/WASM output), with `ni_secure_nonvacuous`.
+- Effect soundness was static only (now dynamic, REQ-87); constant time had no formal
+  statement (now REQ-86, abstract-machine time — compiled code relies on the checker CT
+  rule and `ct_verify.rs`); the tooling SBOM is not dependency-free (it lists 122
+  third-party components; the compiler SBOM is); README's example and crypto claims fixed.
+
+### Fixed (runtime, tools, supply chain — audit-fix/runtime-tools, audit-fix/receipts-pkg)
+- `csrf_generate` returns 128 bits from the OS RNG (was clock + counter); TLS-kunci keys are
+  derived per connection from both peers' randoms (the same secret no longer reuses keys);
+  server-side `jaring_tls_disahkan` no longer claims an unauthenticated peer is authenticated.
+- `build-manifest verify/diff`, `artifact-sign verify-manifest`, `hash-chain verify` and
+  `runtime-proof-verify` now fail closed (real SHA-256, exit non-zero on mismatch/missing/
+  empty input; proof bundles bind a program hash and gain an HMAC-authenticated mode).
+- ML-DSA `sign`/`verify` (and hybrid, artifact-sign, the `kripto` builtin) are FIPS 204 *pure*
+  ML-DSA, interoperable with OpenSSL; **old artifact-sign ML-DSA/hybrid signatures no longer verify**.
+- `riinac mcp` runs only `Pure` programs by default, without host-effect builtins, under step,
+  depth and wall-clock budgets; `--allow-effects` opts back in.
+- Execution receipts are HMAC-SHA256-chained and sealed (the FNV-1a chain was forgeable).
+- `riina-pkg`: Ed25519 publisher signatures for remote registries (`pkg keygen`, `pkg publish
+  --key`, trusted publishers in `riina.toml` / `~/.riina/trusted-publishers`, signer pinned in
+  `riina.lock`); unsigned or untrusted packages are refused unless `--insecure-allow-unsigned`;
+  remote plain-http registries refused except loopback. Existing remote `riina.lock` files fail
+  closed until re-locked.
+- Stricter URL/referer validation in both backends; checked HTTP body arithmetic; key files
+  created 0600 and never silently overwritten; secret scrubbing in X25519/Ed25519/HMAC/TLS.
+
+### Fixed (effects and capabilities — audit-fix/effects)
+- **Effects are a partial order in the compiler, not a total order.** Declared and latent
+  effects are sets (`EffectSet`); an effect is covered only by a declaration in the SAME
+  category at an equal or higher level. Before, `kesan Masa` (Time) silently allowed file
+  writes and network access because those effects have lower levels, and a function type
+  kept only the max of a compound declaration. Strictly finer than the Coq typing bound.
+- **`beri` can only attenuate.** Inside a function, closure or local `fungsi`, a grant must
+  already be held; top-level `beri` remains the program's explicit capability manifest.
+  Local `fungsi` declarations no longer grant themselves capabilities.
+- Behaviour change: declarations must list every category used, e.g. `kesan (Rangkaian,
+  Tulis)` for networking plus printing; `kesan Sistem`/`Masa`/`Kripto` no longer cover output.
+- Persistent typing context: checking 5,000 sequential `biar` bindings took 2.7 GB / 17.8 s,
+  now 36 MiB / 0.19 s (release); long `lain kalau` chains likewise linear.
+
+### Fixed (parser, backends, CLI — audit-fix/parser-codegen)
+- Parser loops that never stopped at end of input (`jenis T =`, `guna`, `modul m {`) now
+  error; unclosed generics/structs and lexer errors between declarations are reported
+  instead of silently dropping the rest of the file.
+- Flat or deep input no longer overflows the stack: statement sequences and `lain kalau`
+  chains are iterative, every recursive parse path counts against a nesting guard, and
+  programs deeper than 20,000 levels are rejected cleanly (P0014). The interpreter's
+  environment is persistent (5,000 bindings used ~5 GB); operator-chain lowering is linear.
+- C backend: string literals escape non-printable/non-ASCII bytes (NUL rejected); every
+  runtime allocation is checked; branching on a secret boolean uses its value (interpreter
+  and C agreed wrongly); signed `MIN / -1` wraps identically on all three backends; Unicode
+  case mapping and character indexing match the interpreter.
+- `riinac build --run` runs by absolute path; intermediates live in a private 0700 temp dir;
+  `test --update` rewrites only the failing assertion; `riinac doc` HTML-escapes output.
+
+### Fixed (gates and supply chain)
+- Commit-accurate pre-commit/pre-push hooks; history-wide secret scan and byte-level
+  Trojan-source scan; sync-public refuses untracked files; SHA-pinned CI actions,
+  checksum-verified toolchain installers, digest-pinned non-root Docker images; committed
+  web lockfiles; VS Code extension safe in untrusted workspaces; proof-vacuity ratchet.
 
 ### 2026-08-08 — Gate C: rendering parity, `pelaku` rename, verified listener close
 
@@ -861,7 +953,7 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 12,678 Qed proofs
+- Active Coq build now at 12,819 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

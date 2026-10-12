@@ -73,7 +73,12 @@ if [ -n "${RIINA_SIGNING_KEY:-}" ]; then
         echo "Tarball signature:  ${TARBALL}.sig"
         echo "Checksums signature: $DIST_DIR/SHA256SUMS.sig"
     else
-        echo "WARN: riina-artifact-sign not found, skipping signing"
+        # A signing key was provided, so the caller expects signed artifacts.
+        # Emitting unsigned ones with a warning would ship a release that looks
+        # complete but is not (2026-10-11 audit) — fail instead.
+        echo "ERROR: RIINA_SIGNING_KEY is set but riina-artifact-sign is not built" >&2
+        echo "       Build it: cargo build --release -p riina-artifact-sign --manifest-path 05_TOOLING/Cargo.toml" >&2
+        exit 1
     fi
 else
     echo "[5/5] Skipping signing (RIINA_SIGNING_KEY not set)"

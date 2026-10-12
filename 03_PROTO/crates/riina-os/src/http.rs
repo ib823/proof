@@ -418,7 +418,21 @@ pub fn message_length(bytes: &[u8]) -> Result<Option<usize>, HttpError> {
         .map_err(|_| HttpError::BadStartLine("non-UTF-8 head".to_string()))?;
     let header_lines: Vec<&str> = head.split("\r\n").skip(1).filter(|l| !l.is_empty()).collect();
     let (_, content_length) = parse_headers(&header_lines)?;
-    let want = body_start + usize::try_from(content_length.unwrap_or(0)).unwrap_or(usize::MAX);
+    // Checked arithmetic: an attacker-chosen Content-Length near u64::MAX
+    // used to overflow `body_start + len` (a debug-build panic; in release a
+    // wrapped, tiny `want` that declared an incomplete message complete). A
+    // declared body larger than the codec will ever accept is refused here,
+    // with the same error `extract_body` gives it, instead of being waited for.
+    let declared = content_length.unwrap_or(0);
+    let too_large = || HttpError::TooLarge {
+        what: "body",
+        limit: MAX_BODY_BYTES,
+    };
+    let body_len = usize::try_from(declared).map_err(|_| too_large())?;
+    if body_len > MAX_BODY_BYTES {
+        return Err(too_large());
+    }
+    let want = body_start.checked_add(body_len).ok_or_else(too_large)?;
     if bytes.len() >= want {
         Ok(Some(want))
     } else {
@@ -787,6 +801,30 @@ mod tests {
     fn message_length_surfaces_framing_errors_early() {
         let smuggle = b"POST / HTTP/1.1\r\nHost: a.test\r\nContent-Length: 1\r\nTransfer-Encoding: chunked\r\n\r\nx";
         assert!(message_length(smuggle).is_err());
+    }
+
+    /// Regression (audit L3): `Content-Length: 18446744073709551615` made
+    /// `body_start + len` overflow — a panic ("attempt to add with overflow")
+    /// in debug builds and a wrapped, wrong length in release. Every
+    /// over-limit declaration must be a clean `TooLarge` error.
+    #[test]
+    fn message_length_rejects_huge_content_length_without_overflow() {
+        for len in [
+            u64::MAX.to_string(),
+            (u64::MAX - 1).to_string(),
+            (MAX_BODY_BYTES as u64 + 1).to_string(),
+        ] {
+            let msg = format!("HTTP/1.1 200 OK\r\nContent-Length: {len}\r\n\r\n");
+            let r = std::panic::catch_unwind(|| message_length(msg.as_bytes()));
+            let r = r.unwrap_or_else(|_| panic!("message_length panicked for Content-Length {len}"));
+            assert!(
+                matches!(r, Err(HttpError::TooLarge { what: "body", .. })),
+                "Content-Length {len}: {r:?}"
+            );
+        }
+        // The limit itself is still a legitimate (incomplete) message.
+        let at_limit = format!("HTTP/1.1 200 OK\r\nContent-Length: {MAX_BODY_BYTES}\r\n\r\n");
+        assert_eq!(message_length(at_limit.as_bytes()).unwrap(), None);
     }
 
     // ── URLs ─────────────────────────────────────────────────────────────

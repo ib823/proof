@@ -85,7 +85,7 @@ fn letrec_group_yields_same_violations_as_letrec_chain() {
         Ty::Int,
         Box::new(Expr::Perform(Effect::Write, Box::new(Expr::Var("x".into())))),
     );
-    let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Write);
+    let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Write.into());
 
     for profile in [
         ComplianceProfile::Gdpr,
@@ -128,7 +128,7 @@ fn letrec_group_body_is_actually_inspected() {
         Ty::Int,
         Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Var("x".into())))),
     );
-    let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Network);
+    let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), Effect::Network.into());
 
     let group = as_group("hantar_data_peribadi", ty, leaky, Expr::Unit);
     let empty = Expr::Unit;
@@ -180,7 +180,7 @@ fn pulang_wrapped_body_scans_like_a_bare_body() {
     // without the `pulang`. Both use the effect; both must be judged alike.
     for effect in [Effect::Crypto, Effect::Write, Effect::Time, Effect::Network] {
         let inner = Expr::Perform(effect, Box::new(Expr::Var("x".into())));
-        let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), effect);
+        let ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), effect.into());
 
         for name in ["sahkan_pengguna", "authenticate", "proses_bayaran", "log_audit"] {
             let bare = as_letrec(
@@ -235,14 +235,14 @@ fn cra_i_2a_secure_default() {
 fn cra_i_2d_auth_crypto() {
     let pure_auth = Expr::LetRec(
         "verify_user".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
         Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
         Box::new(Expr::Unit),
     );
     assert_violation(&pure_auth, ComplianceProfile::Cra, "CRA-I.2d");
     let crypto_auth = Expr::LetRec(
         "verify_user".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
         Box::new(Expr::Lam(
             "x".into(),
             Ty::String,
@@ -345,7 +345,7 @@ fn cra_i_2i_unbounded_recursion() {
     assert_violation(
         &Expr::LetRec(
             "spin".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("spin".into())),
                 Box::new(Expr::Unit),
@@ -384,7 +384,7 @@ fn cra_i_2l_audit_trail() {
 fn cra_i_2m_update_signature() {
     let unsigned_update = Expr::LetRec(
         "kemaskini_firmware".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Unit), Effect::Network),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Unit), Effect::Network.into()),
         Box::new(Expr::Lam(
             "x".into(),
             Ty::String,
@@ -395,7 +395,7 @@ fn cra_i_2m_update_signature() {
     assert_violation(&unsigned_update, ComplianceProfile::Cra, "CRA-I.2m");
     let signed_update = Expr::LetRec(
         "kemaskini_firmware".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Unit), Effect::Crypto),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Unit), Effect::Crypto.into()),
         Box::new(Expr::Lam(
             "x".into(),
             Ty::String,
@@ -506,14 +506,14 @@ fn dora_9_2_secure_default() {
 fn dora_9_3b_auth_crypto() {
     let pure_auth = Expr::LetRec(
         "payment_auth".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
         Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
         Box::new(Expr::Unit),
     );
     assert_violation(&pure_auth, ComplianceProfile::Dora, "DORA-9.3b");
     let crypto_auth = Expr::LetRec(
         "payment_auth".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
         Box::new(Expr::Lam(
             "x".into(),
             Ty::String,
@@ -645,7 +645,7 @@ fn dora_9_1_availability() {
     assert_violation(
         &Expr::LetRec(
             "spin".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("spin".into())),
                 Box::new(Expr::Unit),
@@ -851,14 +851,14 @@ fn nis2_21_2i_access_control() {
 fn nis2_21_2j_auth() {
     let pure_auth = Expr::LetRec(
         "verify_user".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
         Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
         Box::new(Expr::Unit),
     );
     assert_violation(&pure_auth, ComplianceProfile::Nis2, "NIS2-21.2j");
     let crypto_auth = Expr::LetRec(
         "verify_user".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
         Box::new(Expr::Lam(
             "x".into(),
             Ty::String,
@@ -874,7 +874,7 @@ fn nis2_21_1_availability() {
     assert_violation(
         &Expr::LetRec(
             "spin".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(Box::new(Expr::Var("spin".into())), Box::new(Expr::Unit))),
             Box::new(Expr::Unit),
         ),
@@ -1046,7 +1046,7 @@ fn pci_dss_6_5_card_data_classified_ok() {
 fn pci_dss_8_3_auth_without_crypto() {
     let expr = Expr::LetRec(
         "authenticate".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
         Box::new(Expr::Lam(
             "pwd".into(),
             Ty::String,
@@ -1062,7 +1062,7 @@ fn pci_dss_8_3_auth_without_crypto() {
 fn pci_dss_8_3_auth_with_crypto_ok() {
     let expr = Expr::LetRec(
         "authenticate".into(),
-        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
         Box::new(Expr::Lam(
             "pwd".into(),
             Ty::String,
@@ -1294,7 +1294,7 @@ fn pci_dss_6_3_1_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -1310,7 +1310,7 @@ fn pci_dss_6_3_1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -1353,7 +1353,7 @@ fn hipaa_164_312_a2_violation() {
     assert_violation(
         &Expr::LetRec(
             "medical_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -1370,7 +1370,7 @@ fn hipaa_164_312_a2_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "medical_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -1864,7 +1864,7 @@ fn pdpa_s12_violation() {
     assert_violation(
         &Expr::LetRec(
             "pengesahan".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -1881,7 +1881,7 @@ fn pdpa_s12_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "pengesahan".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -1992,7 +1992,7 @@ fn bnm_10_50_violation() {
     assert_violation(
         &Expr::LetRec(
             "pengesahan".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2009,7 +2009,7 @@ fn bnm_10_50_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "pengesahan".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2185,7 +2185,7 @@ fn mas_trm_9_2_1_violation() {
     assert_violation(
         &Expr::LetRec(
             "authenticate".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2202,7 +2202,7 @@ fn mas_trm_9_2_1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "authenticate".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2562,7 +2562,7 @@ fn iso_a9_1_violation() {
     assert_violation(
         &Expr::LetRec(
             "authenticate".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2579,7 +2579,7 @@ fn iso_a9_1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "authenticate".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2718,7 +2718,7 @@ fn do178c_6_3_1_violation() {
     assert_violation(
         &Expr::LetRec(
             "loop_fn".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("loop_fn".into())),
                 Box::new(Expr::Unit),
@@ -2734,7 +2734,7 @@ fn do178c_6_3_1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "safe_fn".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -2954,7 +2954,7 @@ fn sox_302_2_violation() {
     assert_violation(
         &Expr::LetRec(
             "financial_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -2971,7 +2971,7 @@ fn sox_302_2_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "financial_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -3456,7 +3456,7 @@ fn fda_11_10_b_violation() {
     assert_violation(
         &Expr::LetRec(
             "clinical_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -3473,7 +3473,7 @@ fn fda_11_10_b_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "clinical_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -5821,7 +5821,7 @@ fn pci_dss_pci_dss_6_5_9_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -5837,7 +5837,7 @@ fn pci_dss_pci_dss_6_5_9_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -5910,7 +5910,7 @@ fn pci_dss_pci_dss_8_1_1_violation() {
     assert_violation(
         &Expr::LetRec(
             "user_identify".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -5927,7 +5927,7 @@ fn pci_dss_pci_dss_8_1_1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "user_identify".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -6136,7 +6136,7 @@ fn hipaa_hipaa_164_308_a4_violation() {
     assert_violation(
         &Expr::LetRec(
             "access_mgmt".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -6153,7 +6153,7 @@ fn hipaa_hipaa_164_308_a4_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "access_mgmt".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -6323,7 +6323,7 @@ fn hipaa_hipaa_164_316_b1_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -6339,7 +6339,7 @@ fn hipaa_hipaa_164_316_b1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -6474,7 +6474,7 @@ fn gdpr_gdpr_25_3_violation() {
     assert_violation(
         &Expr::LetRec(
             "privacy_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -6491,7 +6491,7 @@ fn gdpr_gdpr_25_3_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "privacy_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -7269,7 +7269,7 @@ fn nist_nist_ia_2_violation() {
     assert_violation(
         &Expr::LetRec(
             "identify_user".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -7286,7 +7286,7 @@ fn nist_nist_ia_2_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "identify_user".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -7307,7 +7307,7 @@ fn nist_nist_ia_3_violation() {
     assert_violation(
         &Expr::LetRec(
             "device_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -7324,7 +7324,7 @@ fn nist_nist_ia_3_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "device_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -7382,7 +7382,7 @@ fn nist_nist_ia_8_violation() {
     assert_violation(
         &Expr::LetRec(
             "external_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -7399,7 +7399,7 @@ fn nist_nist_ia_8_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "external_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -8069,7 +8069,7 @@ fn iso27001_iso_a6_4_violation() {
     assert_violation(
         &Expr::LetRec(
             "group_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -8086,7 +8086,7 @@ fn iso27001_iso_a6_4_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "group_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -8641,7 +8641,7 @@ fn iso27001_iso_a14_4_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -8657,7 +8657,7 @@ fn iso27001_iso_a14_4_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -8830,7 +8830,7 @@ fn do178c_do178c_6_3_9_violation() {
     assert_violation(
         &Expr::LetRec(
             "pilot_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -8847,7 +8847,7 @@ fn do178c_do178c_6_3_9_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "pilot_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -9199,7 +9199,7 @@ fn do178c_do178c_6_7_12_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -9215,7 +9215,7 @@ fn do178c_do178c_6_7_12_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -9826,7 +9826,7 @@ fn cmmc_cmmc_ia_1_violation() {
     assert_violation(
         &Expr::LetRec(
             "defense_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -9843,7 +9843,7 @@ fn cmmc_cmmc_ia_1_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "defense_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -9864,7 +9864,7 @@ fn cmmc_cmmc_ia_2_violation() {
     assert_violation(
         &Expr::LetRec(
             "device_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -9881,7 +9881,7 @@ fn cmmc_cmmc_ia_2_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "device_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -9994,7 +9994,7 @@ fn cmmc_cmmc_ia_8_violation() {
     assert_violation(
         &Expr::LetRec(
             "external_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10011,7 +10011,7 @@ fn cmmc_cmmc_ia_8_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "external_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10464,7 +10464,7 @@ fn iec62443_iec62443_sr_13_violation() {
     assert_violation(
         &Expr::LetRec(
             "scada_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10481,7 +10481,7 @@ fn iec62443_iec62443_sr_13_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "scada_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10587,7 +10587,7 @@ fn iec62443_iec62443_sr_18_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -10603,7 +10603,7 @@ fn iec62443_iec62443_sr_18_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -10848,7 +10848,7 @@ fn iec62443_iec62443_sr_31_violation() {
     assert_violation(
         &Expr::LetRec(
             "remote_access".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10865,7 +10865,7 @@ fn iec62443_iec62443_sr_31_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "remote_access".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10903,7 +10903,7 @@ fn nerc_cip_nerc_cip_013_violation() {
     assert_violation(
         &Expr::LetRec(
             "grid_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -10920,7 +10920,7 @@ fn nerc_cip_nerc_cip_013_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "grid_auth".into(),
-            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto.into()),
             Box::new(Expr::Lam(
                 "x".into(),
                 Ty::String,
@@ -11077,7 +11077,7 @@ fn nerc_cip_nerc_cip_021_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -11093,7 +11093,7 @@ fn nerc_cip_nerc_cip_021_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,
@@ -11288,7 +11288,7 @@ fn fda_fda_11_50_d_violation() {
     assert_violation(
         &Expr::LetRec(
             "infinite".into(),
-            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
             Box::new(Expr::App(
                 Box::new(Expr::Var("infinite".into())),
                 Box::new(Expr::Unit),
@@ -11304,7 +11304,7 @@ fn fda_fda_11_50_d_ok() {
     assert_no_violation(
         &Expr::LetRec(
             "factorial".into(),
-            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure.into()),
             Box::new(Expr::Lam(
                 "n".into(),
                 Ty::Int,

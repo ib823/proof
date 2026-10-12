@@ -1807,7 +1807,7 @@ fn test_parse_fn_type() {
     let ty = p.parse_ty().unwrap();
     assert_eq!(
         ty,
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Pure)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Pure.into())
     );
 }
 
@@ -1817,7 +1817,7 @@ fn test_parse_fn_type_with_effect() {
     let ty = p.parse_ty().unwrap();
     assert_eq!(
         ty,
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Write)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Write.into())
     );
 }
 
@@ -2132,7 +2132,7 @@ fn test_parse_fn_type_with_effect_mut() {
     let ty = p.parse_ty().unwrap();
     assert_eq!(
         ty,
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Mut)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Mut.into())
     );
 }
 
@@ -2142,7 +2142,7 @@ fn test_parse_fn_type_with_effect_alloc() {
     let ty = p.parse_ty().unwrap();
     assert_eq!(
         ty,
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Alloc)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Alloc.into())
     );
 }
 
@@ -3695,7 +3695,7 @@ fn test_parse_fn_type_arrow_form() {
     let mut p = Parser::new("Fn(Nombor) -> Teks");
     assert_eq!(
         p.parse_ty().unwrap(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure.into())
     );
 }
 
@@ -3705,7 +3705,7 @@ fn test_parse_fn_type_arrow_empty_params() {
     let mut p = Parser::new("Fn() -> Nombor");
     assert_eq!(
         p.parse_ty().unwrap(),
-        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Pure)
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Pure.into())
     );
 }
 
@@ -3715,7 +3715,7 @@ fn test_parse_fn_type_arrow_with_effect() {
     let mut p = Parser::new("Fn(Nombor) -> Nombor kesan Tulis");
     assert_eq!(
         p.parse_ty().unwrap(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Write)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Write.into())
     );
 }
 
@@ -3725,7 +3725,7 @@ fn test_parse_fn_type_legacy_comma_still_works() {
     let mut p = Parser::new("Fn(Int, Bool, Write)");
     assert_eq!(
         p.parse_ty().unwrap(),
-        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Write)
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Write.into())
     );
 }
 

@@ -20,7 +20,21 @@
 //!   shared-secret outputs are rejected per Section 6.1.
 
 use super::montgomery;
+use crate::constant_time::ConstantTimeEq;
 use crate::crypto::{CryptoError, CryptoResult};
+
+/// Constant-time all-zero test for a shared secret.
+///
+/// The shared secret is secret, so the RFC 7748 §6.1 contributory check must
+/// not leak how many leading bytes are zero: the previous
+/// `iter().all(|&b| b == 0)` returned at the first non-zero byte, i.e. its
+/// running time depended on the secret. This OR-accumulates every byte with no
+/// early exit (via the crate's `ct_eq`), so only the final verdict — which is
+/// public anyway, it decides whether the exchange fails — is observable.
+#[inline(never)]
+fn is_all_zero_ct(shared_secret: &[u8; SHARED_SECRET_SIZE]) -> bool {
+    shared_secret.ct_eq(&[0u8; SHARED_SECRET_SIZE])
+}
 
 /// X25519 private key size (32 bytes)
 pub const PRIVATE_KEY_SIZE: usize = 32;
@@ -86,7 +100,7 @@ impl X25519KeyPair {
         let shared_secret = montgomery::x25519(&self.private_key, peer_public_key);
 
         // Check for all-zero result (contributory behavior, RFC 7748 recommends rejecting)
-        let is_zero = shared_secret.iter().all(|&b| b == 0);
+        let is_zero = is_all_zero_ct(&shared_secret);
         if is_zero {
             return Err(CryptoError::KeyGenerationFailed);
         }
@@ -121,7 +135,7 @@ pub fn x25519(
     let shared_secret = montgomery::x25519(private_key, public_key);
 
     // Check for all-zero result
-    let is_zero = shared_secret.iter().all(|&b| b == 0);
+    let is_zero = is_all_zero_ct(&shared_secret);
     if is_zero {
         return Err(CryptoError::KeyGenerationFailed);
     }
@@ -143,6 +157,26 @@ pub fn x25519_base(private_key: &[u8; PRIVATE_KEY_SIZE]) -> [u8; PUBLIC_KEY_SIZE
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The contributory check (audit L5): exact verdicts at the edges —
+    /// all-zero, a single non-zero byte at either end, all non-zero — and the
+    /// small-order point still rejected through both entry points.
+    #[test]
+    fn all_zero_check_is_exact_and_rejects_small_order_points() {
+        assert!(is_all_zero_ct(&[0u8; 32]));
+        for pos in [0usize, 15, 31] {
+            let mut s = [0u8; 32];
+            s[pos] = 0x80;
+            assert!(!is_all_zero_ct(&s), "non-zero byte at {pos} missed");
+        }
+        assert!(!is_all_zero_ct(&[0xFFu8; 32]));
+
+        // u = 0 is a small-order point: every scalar maps it to zero.
+        let small_order = [0u8; 32];
+        assert!(x25519(&[7u8; 32], &small_order).is_err());
+        let kp = X25519KeyPair::generate(&[7u8; 32]);
+        assert!(kp.diffie_hellman(&small_order).is_err());
+    }
 
     #[test]
     fn test_x25519_key_clamping() {

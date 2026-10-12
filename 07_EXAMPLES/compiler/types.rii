@@ -159,7 +159,7 @@ struktur Program {
 
 // ── Entry Point ──
 
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     cetakln("RIINA Types module loaded");
     pulang 0;
 }

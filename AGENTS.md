@@ -14,7 +14,7 @@
 | Metric | Value |
 |--------|-------|
 | Version | 0.3.0 (tagged) |
-| Coq Qed | 12,678 (0 Admitted, 0 axioms, 0 Abort, 331 active files) |
+| Coq Qed | 12,819 (0 Admitted, 0 axioms, 0 Abort, 334 active files) |
 | Lean theorems | 12,576 *declarations* (326 files) — but only **7/326 files elaborate (215 thms)**, measured 2026-06-01 (Lean 4.16.0); generated, NOT mechanized. See `02_FORMAL/lean/COMPILATION_STATUS.md` |
 | Isabelle lemmas | ~12,931 (368 .thy files, 1 smoke theory `RIINA_CORE` compiles, 0 sorry) |
 | F* / TLA+ / Alloy / SMT | 1 active smoke artifact each; rest are generated corpora (`metrics.json` is authoritative) |
@@ -142,7 +142,7 @@ cd website && npm run build && deploy to gh-pages
 eval $(opam env --switch=rocq) && cd 02_FORMAL/coq && make -j$(nproc)
 
 # Lean
-cd 02_FORMAL/lean && /home/codespace/.elan/bin/lake build RIINA
+cd 02_FORMAL/lean && PATH="$HOME/.elan/bin:$PATH" lake build RIINA
 
 # Rust
 export PATH="$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:$PATH"

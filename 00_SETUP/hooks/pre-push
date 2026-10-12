@@ -18,6 +18,30 @@ fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
+# The refs being pushed arrive on stdin, which can be read only once; keep them.
+PUSH_REFS="$(cat)"
+
+# ── Step 0: the hook must verify what is being PUSHED ─────────────
+# `riinac verify` checks the working tree. That only verifies the pushed commit
+# when the pushed commit IS the checked-out HEAD and the tree is clean.
+ZERO_SHA="0000000000000000000000000000000000000000"
+HEAD_SHA="$(git rev-parse HEAD)"
+while read -r _lref lsha _rref _rsha; do
+    [ -z "${lsha:-}" ] && continue
+    [ "$lsha" = "$ZERO_SHA" ] && continue   # branch deletion: nothing to verify
+    if [ "$lsha" != "$HEAD_SHA" ]; then
+        echo "BLOCKED: pushing $lsha, but HEAD is $HEAD_SHA. Check out the commit"
+        echo "         being pushed so the verification below runs on it."
+        exit 1
+    fi
+done <<< "$PUSH_REFS"
+if ! git diff --quiet HEAD -- ; then
+    echo "BLOCKED: uncommitted changes to tracked files — the working tree is not"
+    echo "         the commit being pushed. Commit or stash them first."
+    git diff --name-only HEAD | head -20 | sed 's/^/    /'
+    exit 1
+fi
+
 echo "================================================================"
 echo "  RIINA PRE-PUSH VERIFICATION"
 echo "================================================================"
@@ -70,7 +94,7 @@ echo "[2/4] Running strict security gates..."
 ZERO="0000000000000000000000000000000000000000"
 RANGES=()
 
-while read local_ref local_sha remote_ref remote_sha; do
+while read -r local_ref local_sha remote_ref remote_sha; do
     if [ -z "${local_sha:-}" ]; then
         continue
     fi
@@ -84,7 +108,7 @@ while read local_ref local_sha remote_ref remote_sha; do
     else
         RANGES+=("$remote_sha..$local_sha")
     fi
-done
+done <<< "$PUSH_REFS"
 
 if [ ${#RANGES[@]} -eq 0 ]; then
     RANGES=("origin/main..HEAD")

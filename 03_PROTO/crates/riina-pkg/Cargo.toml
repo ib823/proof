@@ -8,6 +8,11 @@ description = "RIINA package manager"
 
 [dependencies]
 riina-types.workspace = true
+# Publisher signatures (Ed25519) and archive digests (SHA-256) come from the
+# first-party `riina-core` (05_TOOLING) — the same edge riina-tls and
+# riina-codegen have. Law 8 holds: no third-party crate; a path dependency is
+# recorded as internal by the SBOM.
+riina-core = { path = "../../../05_TOOLING/crates/riina-core" }
 
 [dev-dependencies]
 

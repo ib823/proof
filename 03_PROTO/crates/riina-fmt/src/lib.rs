@@ -8,8 +8,8 @@
 #![forbid(unsafe_code)]
 
 use riina_types::{
-    BinOp, Capability, CapabilityKind, Effect, Expr, Program, Sanitizer, SecurityLevel,
-    SessionType, TaintSource, TopLevelDecl, Ty,
+    BinOp, Capability, CapabilityKind, Effect, EffectSet, Expr, Program, Sanitizer,
+    SecurityLevel, SessionType, TaintSource, TopLevelDecl, Ty,
 };
 
 /// Formatter configuration.
@@ -72,8 +72,8 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
             params,
             return_ty,
             effect,
+            effect_set,
             body,
-            ..
         } => {
             indent(out, level, cfg);
             out.push_str("fungsi ");
@@ -92,9 +92,13 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
                 out.push_str(" -> ");
                 fmt_ty(out, return_ty);
             }
-            if *effect != Effect::Pure {
+            // Print the whole declared SET: printing only the lossy lattice
+            // join would turn `kesan (Masa, SistemFail)` into `kesan Masa`,
+            // which no longer covers the file write (M1c).
+            let declared = EffectSet::from_declaration(*effect, effect_set);
+            if !declared.is_pure() {
                 out.push_str(" kesan ");
-                fmt_effect(out, effect);
+                fmt_effect_set(out, declared);
             }
             out.push_str(" {\n");
             fmt_expr(out, body, level + 1, cfg);
@@ -858,6 +862,26 @@ fn fmt_effect(out: &mut String, eff: &Effect) {
     });
 }
 
+/// A declared/latent effect set in surface syntax: `Tulis` for one effect,
+/// `(Masa, SistemFail)` for a compound set, `Bersih` for the empty set.
+fn fmt_effect_set(out: &mut String, effs: EffectSet) {
+    let members: Vec<Effect> = effs.iter().collect();
+    match members.as_slice() {
+        [] => fmt_effect(out, &Effect::Pure),
+        [one] => fmt_effect(out, one),
+        many => {
+            out.push('(');
+            for (i, e) in many.iter().enumerate() {
+                if i > 0 {
+                    out.push_str(", ");
+                }
+                fmt_effect(out, e);
+            }
+            out.push(')');
+        }
+    }
+}
+
 fn fmt_security_level(out: &mut String, lvl: &SecurityLevel) {
     out.push_str(match lvl {
         SecurityLevel::Public => "Awam",
@@ -884,14 +908,24 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         Ty::FixedBin => out.push_str("Qmn"),
         Ty::String => out.push_str("Teks"),
         Ty::Bytes => out.push_str("Bait"),
+        Ty::Fn(param, ret, eff) if eff.iter().nth(1).is_some() => {
+            // A compound latent set has no legacy `Fn(P, R, Eff)` spelling;
+            // use the arrow form, which parses `kesan (A, B)`.
+            out.push_str("Fn(");
+            fmt_ty(out, param);
+            out.push_str(") -> ");
+            fmt_ty(out, ret);
+            out.push_str(" kesan ");
+            fmt_effect_set(out, *eff);
+        }
         Ty::Fn(param, ret, eff) => {
             out.push_str("Fn(");
             fmt_ty(out, param);
             out.push_str(", ");
             fmt_ty(out, ret);
-            if *eff != Effect::Pure {
+            if !eff.is_pure() {
                 out.push_str(", ");
-                fmt_effect(out, eff);
+                fmt_effect(out, &eff.total_join());
             }
             out.push(')');
         }
@@ -1223,6 +1257,28 @@ mod tests {
         let source = "fungsi io() -> Teks kesan Tulis { \"hello\" }";
         let result = format_source(source).unwrap();
         assert!(result.contains("kesan Tulis"));
+    }
+
+    #[test]
+    fn test_format_keeps_compound_effects() {
+        // Formatting must not collapse a compound declaration to its lattice
+        // join: `kesan Masa` no longer covers the file write (M1c). Both the
+        // declaration and a compound function-type parameter round-trip.
+        let source = "fungsi f(k: Fn(Unit) -> Nombor kesan (Masa, SistemFail)) -> Nombor \
+                      kesan (Masa, SistemFail) { k(()) }";
+        let result = format_source(source).unwrap();
+        assert!(result.contains(") -> Nombor kesan (SistemFail, Masa) {"), "{result}");
+        assert!(result.contains("Fn(()) -> Nombor kesan (SistemFail, Masa)"), "{result}");
+        // ...and the output parses back to the same declaration.
+        let reparsed = riina_parser::Parser::new(&result).parse_program().unwrap();
+        let original = riina_parser::Parser::new(source).parse_program().unwrap();
+        let sig = |p: &Program| match &p.decls[0] {
+            TopLevelDecl::Function { params, effect, effect_set, .. } => {
+                (params[0].1.clone(), EffectSet::from_declaration(*effect, effect_set))
+            }
+            other => panic!("expected a function, got {other:?}"),
+        };
+        assert_eq!(sig(&reparsed), sig(&original));
     }
 
     #[test]

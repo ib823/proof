@@ -7,8 +7,8 @@
 > **⚠️ SUPERSEDED / read this first (2026-06-01).** This is a point-in-time report
 > and its body is **out of date and over-claims**. The single source of truth for
 > all counts and per-lane claim levels is `website/public/metrics.json`. Current
-> honest state: the **primary lane is Rocq 9.2** (not Coq 8.20.1) with **12,386 Qed**
-> (not "4,890+"), 0 Admitted / 0 Axioms. **Only Coq is mechanized.** Lean is
+> honest state: the **primary lane is Rocq 9.1.1** (pinned by `scripts/provision-coq.sh`; not Coq 8.20.1); for the
+> live Qed count see `metrics.json` (12,819 at 2026-10-11, not "4,890+"), 0 Admitted / 0 Axioms. **Only Coq is mechanized.** Lean is
 > *generated, not elaborating* (7/326 files elaborate; core type-safety files fail —
 > see `02_FORMAL/lean/COMPILATION_STATUS.md`); Isabelle is an unverified smoke;
 > F*/TLA+/Alloy are trivial smoke artifacts. The "0 sorry across all provers" /

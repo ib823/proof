@@ -23,11 +23,16 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 RANGES=()
+ALL_TRACKED=0
 
 usage() {
   cat <<'EOF'
 Usage:
-  bash scripts/security-gates.sh [--range <git-range>]...
+  bash scripts/security-gates.sh [--range <git-range>]... [--all-tracked]
+
+A <git-range> is A..B, or a bare commit meaning "every commit reachable from it
+that no remote has" (what the pre-push hook passes for a new branch).
+--all-tracked scans every tracked file at HEAD (release gate).
 
 Examples:
   bash scripts/security-gates.sh
@@ -45,6 +50,10 @@ while [ $# -gt 0 ]; do
       fi
       RANGES+=("$2")
       shift 2
+      ;;
+    --all-tracked)
+      ALL_TRACKED=1
+      shift
       ;;
     -h|--help)
       usage
@@ -86,68 +95,119 @@ done
 # provision a key + allowed-signers file and restore this step.
 echo "[1/3] Signed-commit policy: retracted (optional) — skipping."
 
-# Step 2: secret detection on changed files in outgoing range(s)
-echo "[2/3] Scanning changed files for secrets..."
-SECRETS_PATTERN='(?<![A-Za-z0-9_])(password|secret|api[_-]?key|token|private[_-]?key)(?![A-Za-z0-9_])\s*[=:]\s*["\x27][^"\x27]+'
-declare -A changed_files=()
-
-for range in "${RANGES[@]}"; do
-  while IFS= read -r path; do
-    [ -z "$path" ] && continue
-    changed_files["$path"]=1
-  done < <(git diff --name-only --diff-filter=ACM "$range" 2>/dev/null || true)
-done
-
-if [ ${#changed_files[@]} -eq 0 ]; then
-  echo -e "${YELLOW}      No changed files found in provided ranges; skipping range-limited secret scan${NC}"
-else
-  HITS=""
-  for rel in "${!changed_files[@]}"; do
-    case "$rel" in
-      *.v|*.lean|*.thy|*.fst|*.tla|*.als|*.smt2|*.rs.verus) continue ;;
-      # The AI-training corpus contains vulnerable→safe TRAINING PAIRS whose
-      # vulnerable_code fields deliberately embed example hardcoded credentials
-      # (e.g. an OWASP A09 entry assigning an obviously-fake admin credential
-      # to a constant). Verified synthetic 2026-08-06: every pattern hit sits
-      # inside a "vulnerable_code" JSON field. Path-scoped to *.jsonl in this
-      # one directory so the gate still fails on secrets anywhere else.
-      07_EXAMPLES/08_ai_training/*.jsonl) continue ;;
-      # Tier-3 archival research surveys quote Haskell DataKinds type-family
-      # equations over promoted security-lattice constructors (Join/CanFlow of
-      # the promoted Secret level, whose tick-quote syntax the regex reads as
-      # a value assignment). Verified 2026-08-08: every hit in the four
-      # RESEARCH_A18 files is such an equation — lattice levels, not
-      # credentials. Scoped to Markdown under the archival tree (excluded from
-      # the public mirror and all other audits); any non-doc file there still
-      # gets the full scan. NB: describe, never quote, the matching text here —
-      # this file is inside its own scan.
-      01_RESEARCH/*.md|01_RESEARCH/*/*.md|01_RESEARCH/*/*/*.md) continue ;;
-    esac
-
-    abs="$REPO_ROOT/$rel"
-    [ -f "$abs" ] || continue
-
-    if grep -nPi "$SECRETS_PATTERN" "$abs" >/dev/null 2>&1; then
-      HITS+="$rel"$'\n'
-    fi
-  done
-
-  if [ -n "$HITS" ]; then
-    echo -e "${RED}FAIL: Potential secrets detected in changed files:${NC}"
-    printf '%s' "$HITS"
-    exit 1
-  fi
+# Step 2: secret detection on what is being pushed.
+#
+# Scans the ADDED LINES OF EVERY COMMIT in the outgoing ranges (`git log -p`),
+# not the working-tree copy of the files the range touches. The previous
+# implementation had three holes, each demonstrated by the 2026-10-11 audit:
+#   - a new-branch push passes a bare SHA, and `git diff <sha>` compares that
+#     commit with the WORKING TREE (usually identical) — so nothing was scanned
+#     on every first push of a branch;
+#   - `--diff-filter=ACM` dropped renames, so rename + add a secret passed;
+#   - only the final file content was read, so a secret committed and then
+#     deleted in a later commit still reached the remote's history.
+# A bare SHA now means "every commit reachable from it that no remote has".
+# `--all-tracked` scans every tracked file at HEAD (used by release.sh, where
+# an `origin/main..HEAD` range is empty once main has been pushed).
+echo "[2/3] Scanning outgoing commits for secrets..."
+SECRET_SCAN_ARGS=()
+if [ "$ALL_TRACKED" -eq 1 ]; then
+  SECRET_SCAN_ARGS+=(--all-tracked)
 fi
+for r in "${RANGES[@]}"; do
+  SECRET_SCAN_ARGS+=(--range "$r")
+done
+python3 - "${SECRET_SCAN_ARGS[@]}" <<'PY'
+import fnmatch
+import re
+import subprocess
+import sys
+
+# Describe, never quote, the matching text in this file — it is in the scan.
+PATTERN = re.compile(
+    r"(?<![A-Za-z0-9_])(password|secret|api[_-]?key|token|private[_-]?key)"
+    r"(?![A-Za-z0-9_])\s*[=:]\s*[\"'][^\"']+",
+    re.IGNORECASE,
+)
+# Proof sources are exempt: identifiers such as a `secret` security level are
+# lattice constructors there, never credentials.
+EXEMPT_SUFFIXES = (".v", ".lean", ".thy", ".fst", ".tla", ".als", ".smt2", ".rs.verus")
+EXEMPT_GLOBS = (
+    # Training pairs whose vulnerable_code fields embed deliberately fake
+    # credentials (verified synthetic 2026-08-06).
+    "07_EXAMPLES/08_ai_training/*.jsonl",
+    # Archival research surveys quoting promoted security-lattice equations
+    # (verified 2026-08-08); Markdown only.
+    "01_RESEARCH/*.md",
+)
+
+
+def exempt(path):
+    return path.endswith(EXEMPT_SUFFIXES) or any(fnmatch.fnmatch(path, g) for g in EXEMPT_GLOBS)
+
+
+def git(*args):
+    return subprocess.run(["git", *args], check=True, stdout=subprocess.PIPE).stdout
+
+
+args = sys.argv[1:]
+all_tracked = "--all-tracked" in args
+ranges = [args[i + 1] for i, a in enumerate(args) if a == "--range"]
+hits = []
+
+if all_tracked:
+    for path in git("ls-files", "-z").decode().split("\0"):
+        if not path or exempt(path):
+            continue
+        try:
+            text = git("show", "HEAD:" + path).decode("utf-8", errors="replace")
+        except subprocess.CalledProcessError:
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            if PATTERN.search(line):
+                hits.append(f"{path}:{n} (HEAD)")
+else:
+    for r in ranges:
+        rev_args = [r] if ".." in r else [r, "--not", "--remotes"]
+        out = git("log", "-p", "-M", "--no-color", "--no-ext-diff",
+                  "--diff-filter=d", "--format=commit %H", *rev_args)
+        commit, path = "?", None
+        for raw in out.decode("utf-8", errors="replace").splitlines():
+            if raw.startswith("commit "):
+                commit = raw[7:19]
+            elif raw.startswith("+++ "):
+                path = raw[6:] if raw.startswith("+++ b/") else None
+            elif raw.startswith("+") and path and not exempt(path):
+                if PATTERN.search(raw[1:]):
+                    hits.append(f"{path} (commit {commit})")
+
+if hits:
+    print("FAIL: Potential secrets in outgoing changes:")
+    for h in sorted(set(hits)):
+        print("  " + h)
+    sys.exit(1)
+PY
 echo -e "${GREEN}      Secret scan passed${NC}"
 
-# Step 3: Trojan source scan (bidi unicode controls)
+# Step 3: Trojan source scan (bidi unicode controls) over every tracked text
+# file. Byte patterns (the UTF-8 encodings of U+202A..U+202E and
+# U+2066..U+2069) make this locale-independent: the previous `\x{202A}` form
+# made grep exit 2 ("code point too large") under the C/POSIX locale, `|| true`
+# swallowed it, and the scan reported a pass on a file containing U+202E.
 echo "[3/3] Scanning for Trojan source (bidi Unicode controls)..."
-TROJAN="$(grep -rPl \
-  '[\x{202A}\x{202B}\x{202C}\x{202D}\x{202E}\x{2066}\x{2067}\x{2068}\x{2069}]' \
-  --include='*.v' --include='*.rs' --include='*.rii' --include='*.md' \
-  --include='*.sh' --include='*.py' \
-  "$REPO_ROOT" 2>/dev/null || true)"
-
+TROJAN_ERR="$(mktemp)"
+TROJAN="$(git -C "$REPO_ROOT" ls-files -z \
+  | (cd "$REPO_ROOT" && LC_ALL=C xargs -0 grep -IlP \
+      '\xE2\x80[\xAA-\xAE]|\xE2\x81[\xA6-\xA9]' -- 2>"$TROJAN_ERR"))" || true
+# xargs folds grep's "no match" (1) and "error" (2) into one exit code (123),
+# so errors are detected from stderr instead: any diagnostic fails the gate.
+if [ -s "$TROJAN_ERR" ]; then
+  echo -e "${RED}FAIL: Trojan-source scan could not run cleanly:${NC}"
+  head -5 "$TROJAN_ERR"
+  rm -f "$TROJAN_ERR"
+  exit 1
+fi
+rm -f "$TROJAN_ERR"
 if [ -n "$TROJAN" ]; then
   echo -e "${RED}FAIL: Trojan source characters detected:${NC}"
   echo "$TROJAN"

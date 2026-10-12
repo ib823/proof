@@ -54,6 +54,7 @@ use riina_core::crypto::gcm::{Aes256Gcm, KEY_SIZE, NONCE_SIZE, TAG_SIZE};
 use riina_core::crypto::hkdf::{HkdfSha256, HkdfSha384};
 use riina_core::crypto::hmac::{HmacSha256, HmacSha384};
 use riina_core::crypto::sha2::{Sha256, Sha384};
+use riina_core::zeroize::Zeroize;
 
 /// The largest hash output this module handles (SHA-384 → 48). Used to size
 /// stack buffers; the *active* length is always [`HashAlg::hash_len`].
@@ -275,12 +276,14 @@ impl RecordKeys {
     /// [`TlsError::BadLength`] should not occur for the fixed lengths here, but
     /// is propagated rather than panicked.
     pub fn derive(alg: HashAlg, traffic_secret: &[u8]) -> Result<Self, TlsError> {
-        let key_v = hkdf_expand_label(alg, traffic_secret, b"key", b"", KEY_SIZE as u16)?;
-        let iv_v = hkdf_expand_label(alg, traffic_secret, b"iv", b"", NONCE_SIZE as u16)?;
+        let mut key_v = hkdf_expand_label(alg, traffic_secret, b"key", b"", KEY_SIZE as u16)?;
+        let mut iv_v = hkdf_expand_label(alg, traffic_secret, b"iv", b"", NONCE_SIZE as u16)?;
         let mut key = [0u8; KEY_SIZE];
         let mut iv = [0u8; NONCE_SIZE];
         key.copy_from_slice(&key_v);
         iv.copy_from_slice(&iv_v);
+        key_v.zeroize();
+        iv_v.zeroize();
         Ok(Self { key, iv })
     }
 
@@ -331,6 +334,17 @@ impl RecordKeys {
             .decrypt(&nonce, aad, record, &mut out)
             .map_err(|_| TlsError::BadRecord)?;
         Ok(out)
+    }
+}
+
+/// Law 4: traffic keys are scrubbed when the session (or a clone of it) is
+/// dropped — riina-core's volatile-write zeroizer, so the compiler cannot elide
+/// it. Until 2026-10 `RecordKeys` had no `Drop` and every installed key stayed
+/// in freed memory.
+impl Drop for RecordKeys {
+    fn drop(&mut self) {
+        self.key.zeroize();
+        self.iv.zeroize();
     }
 }
 

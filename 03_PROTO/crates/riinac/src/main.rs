@@ -10,9 +10,11 @@
 #![forbid(unsafe_code)]
 
 mod diagnostics;
+mod expect_update;
 mod frontend;
 mod pkg_compile;
 mod mcp;
+mod private_tmp;
 mod repl;
 mod verify;
 
@@ -81,7 +83,7 @@ fn usage() -> ! {
     eprintln!("  lsp      Start LSP server (stdio)");
     eprintln!("  mcp      Start MCP server for AI agents (stdio)");
     eprintln!("  repl     Interactive read-eval-print loop");
-    eprintln!("  verify   Run verification gate [--fast|--full]");
+    eprintln!("  verify   Run verification gate [--fast|--full|--coq]");
     eprintln!("  pkg      Package manager (init/add/remove/lock/build/...)");
     eprintln!();
     eprintln!("Options:");
@@ -111,6 +113,7 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
             match args[2].as_str() {
                 "--fast" => verify::Mode::Fast,
                 "--full" => verify::Mode::Full,
+                "--coq" => verify::Mode::Coq,
                 other => {
                     eprintln!("Unknown verify flag: {other}");
                     usage();
@@ -228,6 +231,20 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
     (cmd, file, opts)
 }
 
+/// `path` made absolute (against the current directory), so that handing it to
+/// `Command::new` executes exactly that file — a relative name with no
+/// directory component would otherwise be looked up on `$PATH` — and so that
+/// a file name beginning with `-` cannot be mistaken for an option.
+fn explicit_path(path: &std::path::Path) -> PathBuf {
+    if path.is_absolute() {
+        return path.to_path_buf();
+    }
+    match std::env::current_dir() {
+        Ok(cwd) => cwd.join(path),
+        Err(_) => std::path::Path::new(".").join(path),
+    }
+}
+
 /// Escape a string for JSON output (no external dependencies).
 fn json_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
@@ -245,30 +262,6 @@ fn json_escape(s: &str) -> String {
         }
     }
     out
-}
-
-/// Parse an expect-test mismatch error message.
-/// Returns (actual_value, expected_value) if the message matches the expect mismatch format.
-fn parse_expect_mismatch(msg: &str) -> Option<(String, String)> {
-    // Format from jangkakan builtin:
-    //   expect mismatch:
-    //     actual:   <value>
-    //     expected: <value>
-    if !msg.contains("expect mismatch") {
-        return None;
-    }
-    let actual = msg
-        .split("actual:")
-        .nth(1)?
-        .split('\n')
-        .next()?
-        .trim()
-        .to_string();
-    let expected = msg.split("expected:").nth(1)?.trim().to_string();
-    if actual.is_empty() || expected.is_empty() {
-        return None;
-    }
-    Some((actual, expected))
 }
 
 /// Format a JSON diagnostic from a parse error.
@@ -306,7 +299,7 @@ fn format_type_error_json(e: &riina_typechecker::TypeError, filename: &str) -> S
 }
 
 /// Format a JSON success result.
-fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::Effect, filename: &str) -> String {
+fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::EffectSet, filename: &str) -> String {
     let ty_str = json_escape(&format!("{:?}", ty));
     let eff_str = json_escape(&format!("{:?}", eff));
     format!(
@@ -315,30 +308,52 @@ fn format_success_json(ty: &riina_types::Ty, eff: &riina_types::Effect, filename
     )
 }
 
+/// Stack reserved for the compiler thread, on every platform and for every
+/// command (check/run/build/emit-*/fmt/test/doc/repl/lsp/mcp/pkg/verify).
+///
+/// Every stage after the parser — typechecker, interpreter, lowering,
+/// emitters, formatter, and the derived `Clone`/`Drop` of the AST — recurses
+/// over the syntax tree, and flat source makes a deep tree: 2,000 sequential
+/// `biar` statements or a 2,000-term `1 + 1 + …` overflowed the 8 MiB main
+/// thread even in a release build (an uncatchable abort). The parser rejects
+/// trees deeper than `riina_parser::limits::MAX_AST_DEPTH` (20,000) with a
+/// clean error; this stack must hold that depth in the deepest stage.
+///
+/// Measured per-level cost: ~6 KiB (release) and ~90 KiB (debug — unoptimised
+/// frames of the large `match`-based walkers are ~15–20x bigger). Hence
+/// 256 MiB for release (2x margin at the limit) and 4 GiB of address space for
+/// a debug build on 64-bit hosts. This is a reservation, not an allocation:
+/// only the pages a deep program actually touches are ever committed.
+const COMPILER_STACK_BYTES: usize = if cfg!(debug_assertions) && usize::BITS >= 64 {
+    (4u64 << 30) as usize
+} else {
+    256 << 20
+};
+
 fn main() {
-    // Parsing and checking use recursive AST walks. Windows' executable stack
-    // is smaller than the Unix default and overflowed on repository examples.
-    // An explicit compiler stack also applies to the REPL/LSP entry points.
-    #[cfg(windows)]
-    {
+    // Run the whole driver on a dedicated large-stack thread, as rustc does.
+    // If the host refuses a reservation that large (e.g. strict overcommit),
+    // fall back to smaller ones rather than failing outright.
+    let mut size = COMPILER_STACK_BYTES;
+    loop {
         match std::thread::Builder::new()
             .name("riinac".into())
-            .stack_size(16 * 1024 * 1024)
+            .stack_size(size)
             .spawn(run)
         {
             Ok(worker) => {
                 if let Err(panic) = worker.join() {
                     std::panic::resume_unwind(panic);
                 }
+                return;
             }
+            Err(_) if size > 64 << 20 => size /= 4,
             Err(error) => {
                 eprintln!("Cannot start compiler: {error}");
                 process::exit(1);
             }
         }
     }
-    #[cfg(not(windows))]
-    run();
 }
 
 fn run() {
@@ -570,8 +585,9 @@ fn run() {
             let mut passed = 0usize;
             let mut failed = 0usize;
             let mut results: Vec<(String, bool, std::time::Duration, String)> = Vec::new();
-            // Collect expect-test updates: (old_expected, new_actual)
-            let mut expect_updates: Vec<(String, String)> = Vec::new();
+            // Failing tests, for `--update`: (name, occurrence of that name
+            // among the file's tests, error message).
+            let mut update_candidates: Vec<(String, usize, String)> = Vec::new();
 
             if !opts.json {
                 eprintln!("RIINA Test Runner v0.1.0");
@@ -580,7 +596,8 @@ fn run() {
                 eprintln!();
             }
 
-            for (name, body) in &test_blocks {
+            for (index, (name, body)) in test_blocks.iter().enumerate() {
+                let occurrence = test_blocks[..index].iter().filter(|(n, _)| n == name).count();
                 let test_expr = riina_types::Program::new(non_test_decls.clone())
                     .desugar_with_body(body.clone());
 
@@ -602,11 +619,8 @@ fn run() {
                         let elapsed = start.elapsed();
                         let msg = e.to_string();
 
-                        // Check if this is an expect-test mismatch (for --update)
                         if opts.update {
-                            if let Some((actual, expected)) = parse_expect_mismatch(&msg) {
-                                expect_updates.push((expected, actual));
-                            }
+                            update_candidates.push((name.clone(), occurrence, msg.clone()));
                         }
 
                         failed += 1;
@@ -624,18 +638,23 @@ fn run() {
             }
 
             // Apply expect-test updates if --update was specified
-            if opts.update && !expect_updates.is_empty() {
-                let mut updated_source = source.clone();
-                let mut update_count = 0;
-                for (old_expected, new_actual) in &expect_updates {
-                    // Find jangkakan/expect calls with the old expected string and replace
-                    let old_pattern = format!("\"{}\"", old_expected);
-                    let new_pattern = format!("\"{}\"", new_actual);
-                    if updated_source.contains(&old_pattern) {
-                        updated_source = updated_source.replacen(&old_pattern, &new_pattern, 1);
-                        update_count += 1;
-                    }
+            // Each rewrite is confined to the source span of the failing
+            // assertion's expected literal (see `expect_update`).
+            if opts.update && !update_candidates.is_empty() {
+                let failures: Vec<expect_update::Failure<'_>> = update_candidates
+                    .iter()
+                    .map(|(name, occurrence, message)| expect_update::Failure {
+                        name,
+                        occurrence: *occurrence,
+                        message,
+                    })
+                    .collect();
+                let outcome = expect_update::apply(&source, &failures);
+                for reason in &outcome.skipped {
+                    eprintln!("Not updated: {reason}");
                 }
+                let updated_source = outcome.source;
+                let update_count = outcome.updated;
                 if update_count > 0 {
                     if let Some(ref path) = input_path {
                         if let Err(e) = fs::write(path, &updated_source) {
@@ -760,29 +779,46 @@ fn run() {
                 .unwrap_or_else(|| std::path::Path::new("."));
 
             if target == riina_codegen::Target::Native {
-                // Native: write C, compile with cc
+                // Native: write C, compile with cc. The intermediate C goes in
+                // a private, freshly created directory (random name, mode 0700,
+                // exclusive create) — never a predictable shared path that a
+                // planted symlink could redirect.
                 let output_name = output_dir.join(stem);
-                let tmp_c = std::env::temp_dir().join(format!("riina_{}.c", stem));
-                if let Err(e) = fs::write(&tmp_c, &output.primary) {
-                    eprintln!("Error writing temp file: {}", e);
-                    process::exit(1);
-                }
+                let scratch = match private_tmp::PrivateTempDir::create("riina-build") {
+                    Ok(dir) => dir,
+                    Err(e) => {
+                        eprintln!("Error creating temporary directory: {}", e);
+                        process::exit(1);
+                    }
+                };
+                let tmp_c = match scratch.write_new(&format!("{stem}.c"), &output.primary) {
+                    Ok(path) => path,
+                    Err(e) => {
+                        eprintln!("Error writing temp file: {}", e);
+                        drop(scratch);
+                        process::exit(1);
+                    }
+                };
 
                 let status = process::Command::new("cc")
-                    .args([
-                        "-o",
-                        &output_name.to_string_lossy(),
-                        &*tmp_c.to_string_lossy(),
-                    ])
+                    .arg("-o")
+                    .arg(&output_name)
+                    .arg(&tmp_c)
                     .status();
 
-                let _ = fs::remove_file(&tmp_c);
+                // Removes the C file and its directory (explicitly: the
+                // `process::exit` calls below would skip the destructor).
+                drop(scratch);
 
                 match status {
                     Ok(s) if s.success() => {
                         eprintln!("Built: {}", output_name.display());
                         if opts.run_after_build {
-                            let run_status = process::Command::new(&output_name).status();
+                            // Execute the artifact by an explicit path. A bare
+                            // name like `id` (from `build id.rii` in the cwd) made
+                            // `Command::new` search `$PATH` and run /usr/bin/id.
+                            let run_status =
+                                process::Command::new(explicit_path(&output_name)).status();
                             match run_status {
                                 Ok(s) if s.success() => {}
                                 Ok(s) => process::exit(s.code().unwrap_or(1)),
@@ -825,9 +861,11 @@ fn run() {
                 // --run: execute WASM with wasmtime
                 if opts.run_after_build {
                     let wasm_path = output_dir.join(format!("{}{}", stem, output.extension));
+                    // Absolute, so a file name starting with `-` cannot be read
+                    // as a wasmtime option.
                     let status = process::Command::new("wasmtime")
                         .arg("run")
-                        .arg(&wasm_path)
+                        .arg(explicit_path(&wasm_path))
                         .status();
                     match status {
                         Ok(s) if s.success() => {}

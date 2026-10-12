@@ -2,22 +2,22 @@
 RIINA PROOF VACUITY DETECTION REPORT
 ========================================================================
 
-Files scanned:     308
-Total Qed:         12385
-Total findings:    1316
-Overall vacuity:   11%
+Files scanned:     333
+Total Qed:         12819
+Total findings:    1318
+Overall vacuity:   10%
 
 Pattern breakdown:
   P1 (True/trivial):         142 critical
   P2 (reflexivity/boolean):    42 high
   P3 (False definitions):      12 critical
-  P4 (tautology proofs):     1120 medium
+  P4 (tautology proofs):     1122 medium
 
 File verdict distribution:
   VACUOUS (>=70%):     9 files
   MIXED (40-69%):     25 files
-  MOSTLY_REAL:       161 files
-  CLEAN (0%):        113 files
+  MOSTLY_REAL:       162 files
+  CLEAN (0%):        137 files
 
 ------------------------------------------------------------------------
 FLAGGED FILES (sorted by vacuity %)
@@ -177,13 +177,13 @@ FLAGGED FILES (sorted by vacuity %)
     ... and 8 more findings
 
   02_FORMAL/coq/domains/PhysicalSecurity.v
-    Qed: 21  Vacuous: 11  (52%)  [MIXED]
-    [P4] L314: PHY_001_02_timing_closed — Tautological proof: intros nl clk H_analysis. apply timing_analysis_co
-    [P4] L324: PHY_001_03_no_trojans — Tautological proof: intros rtl H_scan. unfold no_hardware_trojans. exa
-    [P4] L334: PHY_001_04_hw_constant_time — Tautological proof: intros op H_crypto. apply crypto_constant_time. ex
-    [P4] L358: PHY_001_06_golden_equivalent — Tautological proof: intros c g H_match. apply x_ray_soundness. exact H
-    [P4] L380: PHY_001_08_puf_stable — Tautological proof: intros c t1 t2 challenge. apply puf_temperature_st
-    ... and 6 more findings
+    Qed: 23  Vacuous: 12  (52%)  [MIXED]
+    [P4] L372: PHY_001_02_timing_closed — Tautological proof: intros nl clk H_analysis. apply timing_analysis_co
+    [P4] L382: PHY_001_03_no_trojans — Tautological proof: intros rtl H_scan. unfold no_hardware_trojans. exa
+    [P4] L392: PHY_001_04_hw_constant_time — Tautological proof: intros op H_crypto. apply crypto_constant_time. ex
+    [P4] L416: PHY_001_06_golden_equivalent — Tautological proof: intros c g H_match. apply x_ray_soundness. exact H
+    [P4] L426: PHY_001_07_puf_unique — Tautological proof: intros c1 c2 challenge H_diff_id. apply puf_physic
+    ... and 7 more findings
 
   02_FORMAL/coq/domains/mobile_os/MemoryManagement.v
     Qed: 21  Vacuous: 11  (52%)  [MIXED]
@@ -288,9 +288,9 @@ FLAGGED FILES (sorted by vacuity %)
     Qed: 22  Vacuous: 9  (41%)  [MIXED]
     [P4] L87: geofence_accurate — Tautological proof: intros fence position Hacc. unfold accurate_geofen
     [P4] L98: inside_within_radius — Tautological proof: intros fence pos Hinside. unfold inside in Hinside
-    [P4] L251: geofence_battery_efficient — Tautological proof: intros fence H. exact H.
-    [P4] L260: location_data_encrypted — Tautological proof: intros l _ Hsrc. exact Hsrc.
-    [P4] L293: altitude_accuracy_bounded — Tautological proof: intros el H. exact H.
+    [P4] L242: geofence_battery_efficient — Tautological proof: intros fence H. exact H.
+    [P4] L251: location_data_encrypted — Tautological proof: intros l _ Hsrc. exact Hsrc.
+    [P4] L284: altitude_accuracy_bounded — Tautological proof: intros el H. exact H.
     ... and 4 more findings
 
   02_FORMAL/coq/domains/MLTTFoundation.v
@@ -313,11 +313,11 @@ FLAGGED FILES (sorted by vacuity %)
 
   02_FORMAL/coq/domains/VerifiedNetwork.v
     Qed: 25  Vacuous: 10  (40%)  [MIXED]
-    [P1] L430: NET_001_06_tls_0rtt_replay_safe — Concludes with True, proved by intros data Hcheck Hnonce. trivial.
-    [P4] L440: NET_001_07_tls_certificate_chain_valid — Tautological proof: intros conn cert Hconn Hin Hverified. unfold valid
-    [P4] L462: NET_001_09_tls_no_truncation — Tautological proof: intros conn Hconn Hbound. apply Nat.le_0_l.
-    [P4] L501: NET_001_12_tcp_seq_unpredictable — Tautological proof: intros conn Hrandom. unfold seq_unpredictable. exa
-    [P4] L526: NET_001_14_tcp_flow_control_correct — Tautological proof: intros conn Hwindow. unfold flow_control_correct. 
+    [P1] L434: NET_001_06_tls_0rtt_replay_safe — Concludes with True, proved by intros data Hcheck Hnonce. trivial.
+    [P4] L444: NET_001_07_tls_certificate_chain_valid — Tautological proof: intros conn cert Hconn Hin Hverified. unfold valid
+    [P4] L466: NET_001_09_tls_no_truncation — Tautological proof: intros conn Hconn Hbound. apply Nat.le_0_l.
+    [P4] L505: NET_001_12_tcp_seq_unpredictable — Tautological proof: intros conn Hrandom. unfold seq_unpredictable. exa
+    [P4] L530: NET_001_14_tcp_flow_control_correct — Tautological proof: intros conn Hwindow. unfold flow_control_correct. 
     ... and 5 more findings
 
   02_FORMAL/coq/domains/security_foundation/GarbageCollector.v
@@ -332,6 +332,8 @@ FLAGGED FILES (sorted by vacuity %)
 ------------------------------------------------------------------------
 CRITICAL FINDINGS (154)
 ------------------------------------------------------------------------
+  [P1] 02_FORMAL/coq/runtime/CPUModel.v:L365 inception_safe_paired
+         Concludes with True, proved by intros. exact I. Qed.  (** *** 8.10 SRBD
   [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L131 auth_004_pass_the_hash_mitigated
          Concludes with True, proved by intros. trivial.
   [P1] 02_FORMAL/coq/domains/AuthenticationSecurity.v:L158 auth_006_kerberoasting_mitigated
@@ -370,10 +372,8 @@ CRITICAL FINDINGS (154)
          Concludes with True, proved by intros retpoline ibrs Hmitigation. trivi
   [P1] 02_FORMAL/coq/domains/HardwareSecurity.v:L109 hw_003_spectre_v4_mitigated
          Concludes with True, proved by intros ssbd Hssbd. trivial.
-  [P1] 02_FORMAL/coq/domains/HardwareSecurity.v:L121 hw_004_meltdown_mitigated
-         Concludes with True, proved by intros mp Hkpti. trivial.
 
 ========================================================================
-RESULT: 1316 vacuous proofs detected across 308 files
+RESULT: 1318 vacuous proofs detected across 333 files
 EXIT CODE: 1
 ========================================================================

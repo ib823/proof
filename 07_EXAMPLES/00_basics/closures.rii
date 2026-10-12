@@ -2,14 +2,16 @@
 /// Penutup (closure) yang menangkap pembolehubah
 /// Demonstrates: variable capture, lexical scope, closures in containers
 
-fungsi buat_pencacah() -> Fn() -> Nombor kesan Bersih {
+fungsi buat_pencacah() -> Fn() -> Nombor kesan Ubah {
     /// Buat penutup yang menangkap ubah
     /// Create closure capturing mutable variable
+    /// A closure that WRITES a captured `biar ubah` has a side effect its
+    /// caller can observe, so its type carries `kesan Ubah` (not Bersih).
     biar ubah kiraan = 0;
 
     /// Kembalikan fungsi yang mengakses kiraan
     /// Return function that accesses kiraan
-    fungsi cacah() -> Nombor {
+    fungsi cacah() -> Nombor kesan Ubah {
         kiraan = kiraan + 1;
         pulang kiraan;
     }
@@ -72,12 +74,12 @@ fungsi penutup_dengan_peta() -> Senarai<Fn(Nombor) -> Nombor> kesan Bersih {
     pulang penutup;
 }
 
-fungsi penutup_kurang() -> Fn(Nombor) -> Nombor kesan Bersih {
+fungsi penutup_kurang() -> Fn(Nombor) -> Nombor kesan Ubah {
     /// Penutup yang menangkap rujukan
     /// Closure capturing reference
     biar ubah terhenti = salah;
 
-    fungsi kurangkan(x: Nombor) -> Nombor {
+    fungsi kurangkan(x: Nombor) -> Nombor kesan Ubah {
         kalau !terhenti {
             terhenti = betul;
             pulang x - 1;
@@ -88,13 +90,13 @@ fungsi penutup_kurang() -> Fn(Nombor) -> Nombor kesan Bersih {
     pulang kurangkan;
 }
 
-fungsi tutup_dengan_kadir() -> (Fn(Nombor) -> Nombor, Fn() -> Nombor) kesan Bersih {
+fungsi tutup_dengan_kadir() -> (Fn(Nombor) -> Nombor kesan Ubah, Fn() -> Nombor) kesan Bersih {
     /// Penutup yang berkongsi keadaan
     /// Closure sharing state
     biar ubah jumlah = 0;
     biar ubah kiraan = 0;
 
-    fungsi tambah(x: Nombor) -> Nombor {
+    fungsi tambah(x: Nombor) -> Nombor kesan Ubah {
         jumlah = jumlah + x;
         kiraan = kiraan + 1;
         pulang jumlah;

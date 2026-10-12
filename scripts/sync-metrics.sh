@@ -60,6 +60,8 @@ TOTAL_PROOFS_COMMA=$(add_commas "$TOTAL_PROOFS")
 TRIPLE_PROVER=$(grep -oP '"tripleProverTheorems":\s*\K\d+' "$METRICS_FILE" | head -1)
 TOTAL_PROVERS=$(grep -oP '"totalProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
 TOTAL_PROVERS=${TOTAL_PROVERS:-10}
+# Pinned primary prover label from metrics.json (e.g. "Rocq 9.1.1")
+COQ_PROVER=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['coq']['prover'])" "$METRICS_FILE" 2>/dev/null || true)
 RUST_TESTS=$(grep -oP '"tests":\s*\K\d+' "$METRICS_FILE" | head -1)
 RUST_CRATES=$(grep -oP '"crates":\s*\K\d+' "$METRICS_FILE" | head -1)
 EXAMPLES=$(grep -oP '"examples":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -190,14 +192,24 @@ if [ -f "$README" ]; then
     if [ "$DRY_RUN" -eq 0 ]; then
         # Use awk for safe replacements (avoids sed ERE escaping bugs with \*\*)
         tmpfile=$(mktemp)
-        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" -v total="$TOTAL_PROOFS_COMMA" '
+        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" -v total="$TOTAL_PROOFS_COMMA" -v prover="$COQ_PROVER" '
         {
             # Update comparison table: "Yes (N Coq + N Lean + N Isabelle)"
             gsub(/Yes \([0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle\)/, "Yes (" qed " Coq + " lean " Lean + " isa " Isabelle)")
 
-            # Update prover table: "| **Rocq 9.1.1** (Primary) | N Qed |"
-            if ($0 ~ /[*][*]Rocq 9[.]1[.]1[*][*].*Primary.*Qed/) {
-                gsub(/[0-9,]+ Qed/, qed " Qed")
+            # Primary-prover row: pin the toolchain label. This used to match
+            # only a literal **Rocq 9.1.1** row, so once the row said another
+            # version nothing was ever updated (2026-10-11 audit).
+            if (prover != "" && $0 ~ /^[|] [*][*](Coq|Rocq) [0-9.]+[*][*] \(Primary\)/) {
+                sub(/[*][*](Coq|Rocq) [0-9.]+[*][*]/, "**" prover "**")
+            }
+
+            # Every current-state Qed figure ("N Qed" / "N Coq Qed") tracks the
+            # live count; explicitly historical lines keep their numbers. This
+            # is the same rule audit-docs.sh enforces.
+            if ($0 !~ /at the tagged commit|at release|[Hh]istorical/) {
+                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Coq Qed/, qed " Coq Qed")
+                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Qed/, qed " Qed")
             }
 
             # Update phase 3 line with Coq/Lean/Isabelle totals
@@ -381,8 +393,11 @@ INDEX_HTML="$REPO_ROOT/website/index.html"
 if [ -f "$INDEX_HTML" ]; then
     echo "  Processing website/index.html..."
     if [ "$DRY_RUN" -eq 0 ]; then
-        # Update meta description total proofs (static HTML for SEO — the one allowed hardcoded number)
-        sed -i -E "s|[0-9,]+ proofs across [0-9]+ independent provers|${TOTAL_PROOFS_COMMA} proofs across ${TOTAL_PROVERS} independent provers|g" "$INDEX_HTML"
+        # Static meta description (SEO) carries the one hardcoded figure: the
+        # active Coq Qed count. (The old updater rewrote a "proofs across N
+        # independent provers" phrase the page no longer contains, so the Qed
+        # figure went stale unnoticed.)
+        sed -i -E "s/[0-9]{1,2},[0-9]{3} Coq Qed/${QED_COMMA} Coq Qed/g" "$INDEX_HTML"
 
         echo "    [UPDATED] website/index.html"
     else

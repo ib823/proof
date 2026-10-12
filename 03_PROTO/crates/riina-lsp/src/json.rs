@@ -94,19 +94,33 @@ impl fmt::Display for JsonValue {
     }
 }
 
+/// Maximum nesting of arrays/objects accepted by [`parse`].
+///
+/// The parser is recursive descent, so without a bound a message of a few
+/// megabytes of `[` (which the LSP and MCP servers accept from their client)
+/// overflowed the stack — an uncatchable abort of the whole server. Real
+/// LSP/MCP messages nest a handful of levels.
+pub const MAX_JSON_DEPTH: usize = 256;
+
 /// Parse a JSON string into a JsonValue.
 pub fn parse(input: &str) -> Result<JsonValue, String> {
     let mut chars = input.trim().chars().peekable();
-    let val = parse_value(&mut chars)?;
+    let val = parse_value(&mut chars, 0)?;
     Ok(val)
 }
 
-fn parse_value(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<JsonValue, String> {
+fn parse_value(
+    chars: &mut std::iter::Peekable<std::str::Chars<'_>>,
+    depth: usize,
+) -> Result<JsonValue, String> {
     skip_whitespace(chars);
+    if depth >= MAX_JSON_DEPTH && matches!(chars.peek(), Some('{') | Some('[')) {
+        return Err(format!("JSON nested more than {MAX_JSON_DEPTH} levels deep"));
+    }
     match chars.peek() {
         Some('"') => parse_string(chars).map(JsonValue::String),
-        Some('{') => parse_object(chars),
-        Some('[') => parse_array(chars),
+        Some('{') => parse_object(chars, depth + 1),
+        Some('[') => parse_array(chars, depth + 1),
         Some('t') => {
             expect_str(chars, "true")?;
             Ok(JsonValue::Bool(true))
@@ -196,7 +210,10 @@ fn parse_number(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<
         .map_err(|e| format!("Invalid number: {e}"))
 }
 
-fn parse_array(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<JsonValue, String> {
+fn parse_array(
+    chars: &mut std::iter::Peekable<std::str::Chars<'_>>,
+    depth: usize,
+) -> Result<JsonValue, String> {
     chars.next(); // consume [
     let mut arr = Vec::new();
     skip_whitespace(chars);
@@ -205,7 +222,7 @@ fn parse_array(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<J
         return Ok(JsonValue::Array(arr));
     }
     loop {
-        arr.push(parse_value(chars)?);
+        arr.push(parse_value(chars, depth)?);
         skip_whitespace(chars);
         match chars.peek() {
             Some(',') => {
@@ -220,7 +237,10 @@ fn parse_array(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<J
     }
 }
 
-fn parse_object(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<JsonValue, String> {
+fn parse_object(
+    chars: &mut std::iter::Peekable<std::str::Chars<'_>>,
+    depth: usize,
+) -> Result<JsonValue, String> {
     chars.next(); // consume {
     let mut map = BTreeMap::new();
     skip_whitespace(chars);
@@ -236,7 +256,7 @@ fn parse_object(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> Result<
             Some(':') => {}
             _ => return Err("Expected ':'".into()),
         }
-        let val = parse_value(chars)?;
+        let val = parse_value(chars, depth)?;
         map.insert(key, val);
         skip_whitespace(chars);
         match chars.peek() {
@@ -264,6 +284,26 @@ pub fn obj(entries: Vec<(&str, JsonValue)>) -> JsonValue {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn deep_nesting_is_an_error_not_a_stack_overflow() {
+        // A million levels would overflow any thread's stack if the parser
+        // recursed without a bound; it must be rejected cleanly instead.
+        for open in ["[", "{\"a\":"] {
+            let input = open.repeat(1_000_000);
+            let err = parse(&input).expect_err("too deep");
+            assert!(err.contains("nested"), "{err}");
+        }
+        // The limit itself is accepted.
+        let ok = format!("{}{}", "[".repeat(MAX_JSON_DEPTH), "]".repeat(MAX_JSON_DEPTH));
+        assert!(parse(&ok).is_ok());
+        let too_deep = format!(
+            "{}{}",
+            "[".repeat(MAX_JSON_DEPTH + 1),
+            "]".repeat(MAX_JSON_DEPTH + 1)
+        );
+        assert!(parse(&too_deep).is_err());
+    }
 
     #[test]
     fn test_parse_null() {

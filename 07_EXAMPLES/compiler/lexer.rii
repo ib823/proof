@@ -124,7 +124,7 @@ fungsi tokenize_mudah(sumber: Teks) -> Nombor kesan Bersih {
 }
 
 // Entry point for testing
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar contoh = "fungsi utama() { pulang 0; }";
     biar kiraan = tokenize_mudah(contoh);
     cetakln("Tokenize selesai");

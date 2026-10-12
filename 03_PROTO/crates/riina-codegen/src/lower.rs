@@ -211,15 +211,15 @@ pub(crate) fn builtin_canonical(name: &str) -> Option<&'static str> {
     // needing no partial-application machinery costs nothing.
     //
     // NOT ROUTED: `csrf_generate` / `csrf_jana`. It is the one member whose
-    // result is not a function of its input — a token seeded from the clock and
-    // a process-local counter — so the two backends cannot be held to agreement
-    // by a differential, only to a shape. Mirroring it would mean transcribing
-    // Rust's `DefaultHasher` into C to reproduce a generator its own doc comment
-    // already marks as "a *reference* token, not a certified CSPRNG". Spreading
-    // that to a second implementation makes the eventual fix twice the work and
-    // buys nothing: `csrf_validate` takes plain `Teks`, so a compiled program
-    // can still carry tokens minted elsewhere and is not cut off from the
-    // family the way the sanitizers would have been without `baca_baris`.
+    // result is not a function of its input — 128 bits from the OS CSPRNG
+    // (`/dev/urandom`, failing closed; it was clock+counter `DefaultHasher`
+    // output until 2026-10) — so the two backends cannot be held to agreement
+    // by a differential, only to a shape. It stays interpreter-only (compiled
+    // programs fail closed with `unbound variable`) until a C version reads
+    // the OS CSPRNG with the same fail-closed contract. `csrf_validate` takes
+    // plain `Teks`, so a compiled program can still carry tokens minted
+    // elsewhere and is not cut off from the family the way the sanitizers
+    // would have been without `baca_baris`.
     match name {
         // The taint SOURCE. Routed with the sanitizers because it is their only
         // input: `Tainted<Teks, UserInput>` has exactly one producer, so
@@ -385,6 +385,66 @@ fn wcag_aa_contrast_ok(fg: (u8, u8, u8), bg: (u8, u8, u8)) -> bool {
         (bg_l, fg_l)
     };
     (lighter + 0.05) / (darker + 0.05) >= 4.5
+}
+
+/// Result type of `lhs op rhs` given the operand types (the `BinOp` case of
+/// `Lower::infer_type`, also used to type operator chains incrementally).
+fn binop_result_ty(op: &BinOp, lt: &Ty, rt: &Ty) -> Ty {
+    let base = match op {
+        BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
+            // Numeric tower: a sized operand propagates its width to the
+            // result so the emitter masks arithmetic at that width
+            // (mirrors the typechecker's `int_arith_result`). A plain
+            // `Int` operand adapts; mismatched sized widths are already
+            // rejected by the typechecker before lowering.
+            match (lt, rt) {
+                (Ty::IntN { bits, signed }, _) | (_, Ty::IntN { bits, signed }) => {
+                    Ty::IntN {
+                        bits: *bits,
+                        signed: *signed,
+                    }
+                }
+                // Boxed numeric tower: a BigInt/Decimal operand makes the
+                // result BigInt/Decimal, so `cetak`/`a + b`/binding
+                // dispatch stays on the boxed path on WASM (the C backend
+                // uses runtime tags).
+                (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
+                (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
+                (Ty::Fixed, _) | (_, Ty::Fixed) => Ty::Fixed,
+                (Ty::FixedBin, _) | (_, Ty::FixedBin) => Ty::FixedBin,
+                // `+` on strings is concatenation, not arithmetic.
+                // Typing the result `Int` made the WASM backend
+                // print `cetakln("i=" + ke_teks(i))` through its
+                // integer (itoa) path, so the program emitted the
+                // heap ADDRESS of the joined string as a decimal
+                // number. (The concat itself was right; only the
+                // result's static type was wrong. C dispatches on a
+                // runtime tag, so it was unaffected — this was a
+                // WASM-only silent wrong answer.)
+                (Ty::String, _) | (_, Ty::String) if matches!(op, BinOp::Add) => {
+                    Ty::String
+                }
+                _ => Ty::Int,
+            }
+        }
+        BinOp::Eq
+        | BinOp::Ne
+        | BinOp::Lt
+        | BinOp::Le
+        | BinOp::Gt
+        | BinOp::Ge
+        | BinOp::And
+        | BinOp::Or => Ty::Bool,
+    };
+    // Constant-time contagion: a result derived from a ConstantTime
+    // operand stays ConstantTime, so the CT discipline is preserved
+    // in the IR annotations for the codegen CT verifier. Guarded on
+    // CT operands, so non-CT programs are unaffected.
+    if ty_is_constant_time(lt) || ty_is_constant_time(rt) {
+        Ty::ConstantTime(Box::new(base))
+    } else {
+        base
+    }
 }
 
 /// Whether a type carries the constant-time discipline, looking through a
@@ -1100,7 +1160,7 @@ impl Lower {
             Expr::Lam(_, param_ty, body) => Ty::Fn(
                 Box::new(param_ty.clone()),
                 Box::new(self.infer_type(body)),
-                self.infer_effect(body),
+                self.infer_effect(body).into(),
             ),
             // `pulang e` has type Any (it never yields to its own context).
             Expr::Return(_) => Ty::Any,
@@ -1167,61 +1227,13 @@ impl Lower {
                 .and_then(|var| self.env.types.get(&var).cloned())
                 .unwrap_or(Ty::Unit), // unbound (e.g. a top-level function not yet in env) → Unit
             Expr::Loc(_) => Ty::Unit, // Runtime-only; actual type from store
+            // Each operand is inferred ONCE. This arm used to call
+            // `infer_type(lhs)` and `infer_type(rhs)` twice each (once for the
+            // result type, once for constant-time contagion), which is
+            // exponential in the length of an operator chain: a 25-term
+            // `1 + 1 + …` took seconds to `emit-c`, 40 terms hours.
             Expr::BinOp(op, lhs, rhs) => {
-                let base = match op {
-                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
-                        // Numeric tower: a sized operand propagates its width to the
-                        // result so the emitter masks arithmetic at that width
-                        // (mirrors the typechecker's `int_arith_result`). A plain
-                        // `Int` operand adapts; mismatched sized widths are already
-                        // rejected by the typechecker before lowering.
-                        match (self.infer_type(lhs), self.infer_type(rhs)) {
-                            (Ty::IntN { bits, signed }, _) | (_, Ty::IntN { bits, signed }) => {
-                                Ty::IntN { bits, signed }
-                            }
-                            // Boxed numeric tower: a BigInt/Decimal operand makes the
-                            // result BigInt/Decimal, so `cetak`/`a + b`/binding
-                            // dispatch stays on the boxed path on WASM (the C backend
-                            // uses runtime tags).
-                            (Ty::BigInt, _) | (_, Ty::BigInt) => Ty::BigInt,
-                            (Ty::Decimal, _) | (_, Ty::Decimal) => Ty::Decimal,
-                            (Ty::Fixed, _) | (_, Ty::Fixed) => Ty::Fixed,
-                            (Ty::FixedBin, _) | (_, Ty::FixedBin) => Ty::FixedBin,
-                            // `+` on strings is concatenation, not arithmetic.
-                            // Typing the result `Int` made the WASM backend
-                            // print `cetakln("i=" + ke_teks(i))` through its
-                            // integer (itoa) path, so the program emitted the
-                            // heap ADDRESS of the joined string as a decimal
-                            // number. (The concat itself was right; only the
-                            // result's static type was wrong. C dispatches on a
-                            // runtime tag, so it was unaffected — this was a
-                            // WASM-only silent wrong answer.)
-                            (Ty::String, _) | (_, Ty::String) if matches!(op, BinOp::Add) => {
-                                Ty::String
-                            }
-                            _ => Ty::Int,
-                        }
-                    }
-                    BinOp::Eq
-                    | BinOp::Ne
-                    | BinOp::Lt
-                    | BinOp::Le
-                    | BinOp::Gt
-                    | BinOp::Ge
-                    | BinOp::And
-                    | BinOp::Or => Ty::Bool,
-                };
-                // Constant-time contagion: a result derived from a ConstantTime
-                // operand stays ConstantTime, so the CT discipline is preserved
-                // in the IR annotations for the codegen CT verifier. Guarded on
-                // CT operands, so non-CT programs are unaffected.
-                if ty_is_constant_time(&self.infer_type(lhs))
-                    || ty_is_constant_time(&self.infer_type(rhs))
-                {
-                    Ty::ConstantTime(Box::new(base))
-                } else {
-                    base
-                }
+                binop_result_ty(op, &self.infer_type(lhs), &self.infer_type(rhs))
             }
             Expr::FFICall { ret_ty, .. } => ret_ty.clone(),
             Expr::ActorDecl { .. } => Ty::Unit,
@@ -1321,7 +1333,9 @@ impl Lower {
             Expr::App(e1, e2) => {
                 let base = self.infer_effect(e1).join(self.infer_effect(e2));
                 if let Ty::Fn(_, _, eff) = self.infer_type(e1) {
-                    base.join(eff)
+                    // The IR carries one effect label; the precise set is the
+                    // typechecker's business (it has already been checked).
+                    base.join(eff.total_join())
                 } else {
                     base
                 }
@@ -1681,7 +1695,7 @@ impl Lower {
                 self.next_var = saved_next_var;
 
                 // Emit closure creation with captured variables
-                let fn_ty = Ty::Fn(Box::new(param_ty.clone()), Box::new(return_ty), body_effect);
+                let fn_ty = Ty::Fn(Box::new(param_ty.clone()), Box::new(return_ty), body_effect.into());
                 Ok(self.emit(
                     Instruction::Closure {
                         func: func_id,
@@ -2861,34 +2875,57 @@ impl Lower {
                 Ok(self.emit_bool_const(wcag_aa_contrast_ok(fg, bg)))
             }
 
-            Expr::BinOp(op, lhs, rhs) => {
-                let l = self.lower_expr(lhs)?;
-                let r = self.lower_expr(rhs)?;
-                let ir_op = match op {
-                    BinOp::Add => IrBinOp::Add,
-                    BinOp::Sub => IrBinOp::Sub,
-                    BinOp::Mul => IrBinOp::Mul,
-                    BinOp::Div => IrBinOp::Div,
-                    BinOp::Mod => IrBinOp::Mod,
-                    BinOp::Eq => IrBinOp::Eq,
-                    BinOp::Ne => IrBinOp::Ne,
-                    BinOp::Lt => IrBinOp::Lt,
-                    BinOp::Le => IrBinOp::Le,
-                    BinOp::Gt => IrBinOp::Gt,
-                    BinOp::Ge => IrBinOp::Ge,
-                    BinOp::And => IrBinOp::And,
-                    BinOp::Or => IrBinOp::Or,
-                };
-                let result_ty = self.infer_type(expr);
-                let effect = self.infer_effect(expr);
-                Ok(self.emit(
-                    Instruction::BinOp(ir_op, l, r),
-                    result_ty,
-                    SecurityLevel::Public,
-                    effect,
-                ))
+            Expr::BinOp(..) => {
+                // Lower the chain's left spine iteratively, carrying the type
+                // and effect of the accumulated left operand. Recursing per
+                // operand, and calling `infer_type`/`infer_effect` on the WHOLE
+                // sub-chain at every level, made an n-term chain O(n^2) and
+                // overflowed the stack. The result is identical: each node's
+                // type/effect is `binop_result_ty`/`join` of its operands'.
+                let mut spine: Vec<(BinOp, &Expr)> = Vec::new();
+                let mut leaf = expr;
+                while let Expr::BinOp(op, lhs, rhs) = leaf {
+                    spine.push((*op, rhs));
+                    leaf = lhs;
+                }
+                let mut acc = self.lower_expr(leaf)?;
+                let mut acc_ty = self.infer_type(leaf);
+                let mut acc_effect = self.infer_effect(leaf);
+                for (op, rhs) in spine.into_iter().rev() {
+                    let r = self.lower_expr(rhs)?;
+                    let result_ty = binop_result_ty(&op, &acc_ty, &self.infer_type(rhs));
+                    let effect = acc_effect.join(self.infer_effect(rhs));
+                    acc = self.emit(
+                        Instruction::BinOp(ir_binop(op), acc, r),
+                        result_ty.clone(),
+                        SecurityLevel::Public,
+                        effect,
+                    );
+                    acc_ty = result_ty;
+                    acc_effect = effect;
+                }
+                Ok(acc)
             }
         }
+    }
+}
+
+/// The IR operator for a surface binary operator.
+fn ir_binop(op: BinOp) -> IrBinOp {
+    match op {
+        BinOp::Add => IrBinOp::Add,
+        BinOp::Sub => IrBinOp::Sub,
+        BinOp::Mul => IrBinOp::Mul,
+        BinOp::Div => IrBinOp::Div,
+        BinOp::Mod => IrBinOp::Mod,
+        BinOp::Eq => IrBinOp::Eq,
+        BinOp::Ne => IrBinOp::Ne,
+        BinOp::Lt => IrBinOp::Lt,
+        BinOp::Le => IrBinOp::Le,
+        BinOp::Gt => IrBinOp::Gt,
+        BinOp::Ge => IrBinOp::Ge,
+        BinOp::And => IrBinOp::And,
+        BinOp::Or => IrBinOp::Or,
     }
 }
 

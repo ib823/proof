@@ -76,7 +76,7 @@ struktur Pilihan {
 
 // ── Entry Point ──
 
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     // Print version
     biar v = versi_semasa();
     cetak("riinac (self-hosted) v");

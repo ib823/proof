@@ -167,19 +167,26 @@ Inductive Val : Type :=
 .
 
 (* Computations and handlers.
-   The mutual inductive uses function types in Handler constructors,
-   which requires disabling the strict positivity check.
-   This is safe because the function types are only used covariantly
-   at runtime (handlers are called, not pattern-matched for negativity). *)
-Unset Positivity Checking.
+
+   An operation clause receives the operation's argument and may resume the
+   captured continuation. The continuation is NOT passed as a Coq function
+   [Val -> Comp] — that would put [Comp] to the left of an arrow inside its
+   own constructor (a non-strictly-positive occurrence), and accepting such a
+   type requires [Unset Positivity Checking], under which [False] is
+   derivable. Instead resumption is first-order: a clause body is an ordinary
+   [Comp] that uses [CResume r] to resume the innermost enclosing clause's
+   continuation with [r]; [resume_with] plugs the real continuation in when
+   the clause fires. Both types are strictly positive and are checked by the
+   kernel. *)
 Inductive Comp : Type :=
   | CReturn : Val -> Comp                           (* return v *)
   | CPerform : EffectOp -> Val -> Comp              (* perform op v *)
   | CHandle : Comp -> Handler -> Comp               (* handle c with h *)
   | CBind : Comp -> (Val -> Comp) -> Comp           (* c >>= k *)
+  | CResume : Val -> Comp                           (* resume r *)
 with Handler : Type :=
   | HReturn : (Val -> Comp) -> Handler              (* return case *)
-  | HOp : EffectOp -> (Val -> (Val -> Comp) -> Comp) -> Handler -> Handler
+  | HOp : EffectOp -> (Val -> Comp) -> Handler -> Handler
 .
 
 (* Handler handles a specific effect row *)
@@ -189,19 +196,18 @@ Fixpoint handler_effects (h : Handler) : EffectRow :=
   | HOp op _ h' => op :: handler_effects h'
   end.
 
-Set Positivity Checking.
-
-(* Manual induction principles since Unset Positivity Checking
-   prevents automatic generation *)
-Definition Handler_ind (P : Handler -> Prop)
-  (f_ret : forall f, P (HReturn f))
-  (f_op : forall op f h, P h -> P (HOp op f h))
-  : forall h, P h :=
-  fix F (h : Handler) : P h :=
-    match h with
-    | HReturn f => f_ret f
-    | HOp op f rest => f_op op f rest (F rest)
-    end.
+(* Plug the continuation [K] into every [CResume] bound by the current clause.
+   A nested handler's clauses bind their own [CResume], so handlers are left
+   untouched; the computation a nested handler handles is still in scope of
+   the outer clause and is traversed. *)
+Fixpoint resume_with (K : Val -> Comp) (c : Comp) : Comp :=
+  match c with
+  | CReturn v => CReturn v
+  | CPerform op v => CPerform op v
+  | CHandle c' h => CHandle (resume_with K c') h
+  | CBind c' k => CBind (resume_with K c') (fun v => resume_with K (k v))
+  | CResume r => K r
+  end.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 (* WELL-FORMEDNESS                                                              *)
@@ -217,42 +223,68 @@ Inductive val_has_type : Val -> BaseTy -> Prop :=
   | TyVNat : forall n, val_has_type (VNat n) TNat
 .
 
-(* Computation typing judgment — needs positivity check disabled for mutual
-   inductive with Handler function types *)
-Unset Positivity Checking.
-Inductive comp_has_type : Comp -> CompTy -> Prop :=
-  | TyReturn : forall v t,
+(* Computation typing judgment. The first index is the resume context: [None]
+   outside any operation clause, [Some (tin, ct)] inside a clause whose
+   continuation accepts a [tin] and yields a [ct]. Every premise mentions the
+   judgment only in positive position, so no positivity bypass is needed. *)
+Inductive comp_has_type_r : option (BaseTy * CompTy) -> Comp -> CompTy -> Prop :=
+  | TyReturn : forall R v t,
       val_has_type v t ->
-      comp_has_type (CReturn v) (CTyPure t)
-  | TyPerform : forall op v sig,
+      comp_has_type_r R (CReturn v) (CTyPure t)
+  | TyPerform : forall R op v sig,
       val_has_type v (opInputTy (opSignature op)) ->
       In op sig ->
-      comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)
-  | TyHandle : forall c h t sig sig',
-      comp_has_type c (CTyEff t sig) ->
+      comp_has_type_r R (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)
+  | TyHandle : forall R c h t sig sig',
+      comp_has_type_r R c (CTyEff t sig) ->
       handler_has_type h sig t sig' ->
-      comp_has_type (CHandle c h) (CTyEff t sig')
-  | TyBind : forall c k t1 t2 sig,
-      comp_has_type c (CTyEff t1 sig) ->
-      (forall v, val_has_type v t1 -> comp_has_type (k v) (CTyEff t2 sig)) ->
-      comp_has_type (CBind c k) (CTyEff t2 sig)
-  | TyPureSubsume : forall c t,
-      comp_has_type c (CTyPure t) ->
-      comp_has_type c (CTyEff t empty_row)
+      comp_has_type_r R (CHandle c h) (CTyEff t sig')
+  | TyBind : forall R c k t1 t2 sig,
+      comp_has_type_r R c (CTyEff t1 sig) ->
+      (forall v, val_has_type v t1 -> comp_has_type_r R (k v) (CTyEff t2 sig)) ->
+      comp_has_type_r R (CBind c k) (CTyEff t2 sig)
+  | TyPureSubsume : forall R c t,
+      comp_has_type_r R c (CTyPure t) ->
+      comp_has_type_r R c (CTyEff t empty_row)
+  | TyResume : forall r tin ct,
+      val_has_type r tin ->
+      comp_has_type_r (Some (tin, ct)) (CResume r) ct
 with handler_has_type : Handler -> EffectRow -> BaseTy -> EffectRow -> Prop :=
   | TyHReturn : forall f t sig,
-      (forall v, val_has_type v t -> comp_has_type (f v) (CTyEff t sig)) ->
+      (forall v, val_has_type v t -> comp_has_type_r None (f v) (CTyEff t sig)) ->
       handler_has_type (HReturn f) [] t sig
   | TyHOp : forall op f h handled_ops t sig,
-      (forall v k,
+      (forall v,
         val_has_type v (opInputTy (opSignature op)) ->
-        (forall r, val_has_type r (opOutputTy (opSignature op)) ->
-                   comp_has_type (k r) (CTyEff t sig)) ->
-        comp_has_type (f v k) (CTyEff t sig)) ->
+        comp_has_type_r (Some (opOutputTy (opSignature op), CTyEff t sig))
+                        (f v) (CTyEff t sig)) ->
       handler_has_type h handled_ops t sig ->
       handler_has_type (HOp op f h) (op :: handled_ops) t sig
 .
-Set Positivity Checking.
+
+(* Top-level (closed) computations: no enclosing operation clause. *)
+Notation comp_has_type := (comp_has_type_r None).
+
+(* Resumption is type-safe: plugging a continuation of the clause's resume
+   type into a clause body preserves the body's type. *)
+Lemma resume_with_typing : forall R0 c ct',
+  comp_has_type_r R0 c ct' ->
+  forall tin ct R K,
+    R0 = Some (tin, ct) ->
+    (forall r, val_has_type r tin -> comp_has_type_r R (K r) ct) ->
+    comp_has_type_r R (resume_with K c) ct'.
+Proof.
+  intros R0 c ct' Hty.
+  induction Hty; intros tin0 ct0 R' K HR HK; simpl.
+  - apply TyReturn; assumption.
+  - apply TyPerform; assumption.
+  - eapply TyHandle; [ eapply IHHty; eassumption | assumption ].
+  - eapply TyBind.
+    + eapply IHHty; eassumption.
+    + intros v Hv. eapply H0; eassumption.
+  - apply TyPureSubsume. eapply IHHty; eassumption.
+  - injection HR as Htin Hct. subst. apply HK. assumption.
+Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 (* EFFECT ROW OPERATIONS                                                        *)
@@ -310,9 +342,9 @@ Inductive deep_step : Comp -> Comp -> Prop :=
   | DeepReturn : forall v f (h : Handler),
       deep_step (CHandle (CReturn v) (HReturn f)) (f v)
   | DeepOp : forall op v f (h : Handler) rest,
-      deep_step 
+      deep_step
         (CHandle (CPerform op v) (HOp op f rest))
-        (f v (fun r => CHandle (CReturn r) (HOp op f rest)))
+        (resume_with (fun r => CHandle (CReturn r) (HOp op f rest)) (f v))
   | DeepSkip : forall op v op' f h,
       op <> op' ->
       deep_step
@@ -325,9 +357,9 @@ Inductive shallow_step : Comp -> Comp -> Prop :=
   | ShallowReturn : forall v f,
       shallow_step (CHandle (CReturn v) (HReturn f)) (f v)
   | ShallowOp : forall op v f h,
-      shallow_step 
+      shallow_step
         (CHandle (CPerform op v) (HOp op f h))
-        (f v (fun r => CReturn r))
+        (resume_with (fun r => CReturn r) (f v))
 .
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
@@ -349,18 +381,20 @@ Inductive is_pure : Comp -> Prop :=
 (* RESUMPTION TRACKING                                                          *)
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
-(* Count continuation uses in a computation *)
-Fixpoint count_continuation_uses (c : Comp) (k : Val -> Comp) : nat :=
+(* Count the syntactic resumptions bound by the current clause (the binder
+   [k] of a [CBind] is opaque here, so only its head computation is counted) *)
+Fixpoint count_resumes (c : Comp) : nat :=
   match c with
   | CReturn _ => 0
   | CPerform _ _ => 0
-  | CHandle c' _ => count_continuation_uses c' k
-  | CBind c' k' => count_continuation_uses c' k
+  | CHandle c' _ => count_resumes c'
+  | CBind c' _ => count_resumes c'
+  | CResume _ => 1
   end.
 
-(* Linear resumption: continuation used exactly once *)
-Definition linear_resumption (f : Val -> (Val -> Comp) -> Comp) : Prop :=
-  forall v k, exists r, f v k = k r.
+(* Tail-resumptive clause: the body immediately resumes exactly once *)
+Definition linear_resumption (f : Val -> Comp) : Prop :=
+  forall v, exists r, f v = CResume r.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 (* THEOREM EFF_001_01: Effect signature well-formedness                         *)
@@ -408,7 +442,7 @@ Theorem EFF_001_03_handler_typing :
     comp_has_type (CHandle c h) (CTyEff t sig').
 Proof.
   intros h c t sig sig' Hcomp Hhandler.
-  exact (TyHandle c h t sig sig' Hcomp Hhandler).
+  exact (TyHandle None c h t sig sig' Hcomp Hhandler).
 Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
@@ -528,10 +562,10 @@ Qed.
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
 Theorem EFF_001_09_deep_handler_semantics :
-  forall (op : EffectOp) (v : Val) (f : Val -> (Val -> Comp) -> Comp) (h : Handler),
-    deep_step 
+  forall (op : EffectOp) (v : Val) (f : Val -> Comp) (h : Handler),
+    deep_step
       (CHandle (CPerform op v) (HOp op f h))
-      (f v (fun r => CHandle (CReturn r) (HOp op f h))).
+      (resume_with (fun r => CHandle (CReturn r) (HOp op f h)) (f v)).
 Proof.
   intros op v f h.
   exact (DeepOp op v f h h).
@@ -542,10 +576,10 @@ Qed.
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
 Theorem EFF_001_10_shallow_handler_semantics :
-  forall (op : EffectOp) (v : Val) (f : Val -> (Val -> Comp) -> Comp) (h : Handler),
+  forall (op : EffectOp) (v : Val) (f : Val -> Comp) (h : Handler),
     shallow_step
       (CHandle (CPerform op v) (HOp op f h))
-      (f v (fun r => CReturn r)).
+      (resume_with (fun r => CReturn r) (f v)).
 Proof.
   intros op v f h.
   apply (ShallowOp op v f h).
@@ -572,16 +606,16 @@ Qed.
 (* THEOREM EFF_001_12: Resumption linearity                                     *)
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
-Definition linear_handler_clause (f : Val -> (Val -> Comp) -> Comp) : Prop :=
-  forall v k, exists r, f v k = k r.
-
+(* A tail-resumptive clause, once its continuation is plugged in, calls that
+   continuation exactly once, with some result [r]. *)
 Theorem EFF_001_12_resumption_linearity :
-  forall (f : Val -> (Val -> Comp) -> Comp) (v : Val) (k : Val -> Comp),
-    linear_handler_clause f ->
-    exists r, f v k = k r.
+  forall (f : Val -> Comp) (v : Val) (K : Val -> Comp),
+    linear_resumption f ->
+    exists r, resume_with K (f v) = K r /\ count_resumes (f v) = 1.
 Proof.
-  intros f v k Hlin.
-  apply Hlin.
+  intros f v K Hlin.
+  destruct (Hlin v) as [r Hr].
+  exists r. rewrite Hr. split; reflexivity.
 Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
