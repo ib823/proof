@@ -604,8 +604,12 @@ impl WasmBackend {
                 // sized result echoes signed (sign-extend + leading '-'); local 3
                 // is the sign flag.
                 Ty::Int | Ty::CInt => wasm_echo_int(&mut trampoline_code, 0, 1, 2, 3, None),
+                // Every signed width, i64 included: the magnitude loop is
+                // unsigned, so even |i64::MIN| = 2^63 renders correctly. (i64
+                // was excluded and echoed as unsigned — `-5i64` printed
+                // 18446744073709551611 — unlike the interpreter and C.)
                 Ty::IntN { bits, signed } => {
-                    let sb = if signed && bits <= 32 { Some(bits) } else { None };
+                    let sb = if signed { Some(bits) } else { None };
                     wasm_echo_int(&mut trampoline_code, 0, 1, 2, 3, sb);
                 }
                 Ty::Bool => {
@@ -5973,54 +5977,88 @@ impl WasmBackend {
                     ctx.var_to_ty.get(rhs),
                     Some(Ty::IntN { signed: true, .. })
                 );
-                Self::emit_local_get(lhs, ctx.var_map, code);
-                if let Some(b) = lext {
-                    emit_sext_i64(b, code);
-                }
-                Self::emit_local_get(rhs, ctx.var_map, code);
-                if let Some(b) = rext {
-                    emit_sext_i64(b, code);
-                }
-                match op {
-                    BinOp::Add => code.push(Op::I64Add as u8),
-                    BinOp::Sub => code.push(Op::I64Sub as u8),
-                    BinOp::Mul => code.push(Op::I64Mul as u8),
-                    BinOp::Div => code.push(if signed_ints {
-                        Op::I64DivS
-                    } else {
-                        Op::I64DivU
-                    } as u8),
-                    BinOp::Mod => code.push(if signed_ints {
-                        Op::I64RemS
-                    } else {
-                        Op::I64RemU
-                    } as u8),
-                    BinOp::And => code.push(Op::I64And as u8),
-                    BinOp::Or => code.push(Op::I64Or as u8),
-                    // Comparisons yield an i32 (0/1); lift back into the i64 cell.
-                    BinOp::Eq => {
-                        code.push(Op::I64Eq as u8);
-                        code.push(Op::I64ExtendI32U as u8);
+                let push_lhs = |code: &mut Vec<u8>| {
+                    Self::emit_local_get(lhs, ctx.var_map, code);
+                    if let Some(b) = lext {
+                        emit_sext_i64(b, code);
                     }
-                    BinOp::Ne => {
-                        code.push(Op::I64Ne as u8);
-                        code.push(Op::I64ExtendI32U as u8);
+                };
+                let push_rhs = |code: &mut Vec<u8>| {
+                    Self::emit_local_get(rhs, ctx.var_map, code);
+                    if let Some(b) = rext {
+                        emit_sext_i64(b, code);
                     }
-                    BinOp::Lt => {
-                        code.push(if signed_ints { Op::I64LtS } else { Op::I64LtU } as u8);
-                        code.push(Op::I64ExtendI32U as u8);
-                    }
-                    BinOp::Gt => {
-                        code.push(if signed_ints { Op::I64GtS } else { Op::I64GtU } as u8);
-                        code.push(Op::I64ExtendI32U as u8);
-                    }
-                    BinOp::Le => {
-                        code.push(if signed_ints { Op::I64LeS } else { Op::I64LeU } as u8);
-                        code.push(Op::I64ExtendI32U as u8);
-                    }
-                    BinOp::Ge => {
-                        code.push(if signed_ints { Op::I64GeS } else { Op::I64GeU } as u8);
-                        code.push(Op::I64ExtendI32U as u8);
+                };
+                if matches!(op, BinOp::Div) && signed_ints {
+                    // Signed division with the `MIN / -1` overflow defined.
+                    // `i64.div_s` TRAPS on i64::MIN / -1 (the quotient 2^63 does
+                    // not fit), where the interpreter — and now C — yield the
+                    // true quotient wrapped modulo 2^bits, i.e. i64::MIN
+                    // (`wrapping_div`; SizedInt.v `wrapU` of the exact quotient).
+                    // Dividing by -1 is negation, so that divisor takes
+                    // `0 - a`, which wraps:
+                    //   if b == -1 { 0 - a } else { a /s b }
+                    // Narrower widths are sign-extended to i64 first, where the
+                    // quotient fits and the result mask below wraps it. A zero
+                    // divisor still traps, as before. (`i64.rem_s` already
+                    // defines MIN % -1 = 0, so `%` needs no guard.)
+                    push_rhs(code);
+                    wasm_i64c(code, -1);
+                    code.push(Op::I64Eq as u8);
+                    code.push(Op::If as u8);
+                    code.push(0x7E); // i64 result
+                    wasm_i64c(code, 0);
+                    push_lhs(code);
+                    code.push(Op::I64Sub as u8);
+                    code.push(Op::Else as u8);
+                    push_lhs(code);
+                    push_rhs(code);
+                    code.push(Op::I64DivS as u8);
+                    code.push(Op::End as u8);
+                } else {
+                    push_lhs(code);
+                    push_rhs(code);
+                    match op {
+                        BinOp::Add => code.push(Op::I64Add as u8),
+                        BinOp::Sub => code.push(Op::I64Sub as u8),
+                        BinOp::Mul => code.push(Op::I64Mul as u8),
+                        BinOp::Div => code.push(if signed_ints {
+                            Op::I64DivS
+                        } else {
+                            Op::I64DivU
+                        } as u8),
+                        BinOp::Mod => code.push(if signed_ints {
+                            Op::I64RemS
+                        } else {
+                            Op::I64RemU
+                        } as u8),
+                        BinOp::And => code.push(Op::I64And as u8),
+                        BinOp::Or => code.push(Op::I64Or as u8),
+                        // Comparisons yield an i32 (0/1); lift back into the i64 cell.
+                        BinOp::Eq => {
+                            code.push(Op::I64Eq as u8);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
+                        BinOp::Ne => {
+                            code.push(Op::I64Ne as u8);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
+                        BinOp::Lt => {
+                            code.push(if signed_ints { Op::I64LtS } else { Op::I64LtU } as u8);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
+                        BinOp::Gt => {
+                            code.push(if signed_ints { Op::I64GtS } else { Op::I64GtU } as u8);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
+                        BinOp::Le => {
+                            code.push(if signed_ints { Op::I64LeS } else { Op::I64LeU } as u8);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
+                        BinOp::Ge => {
+                            code.push(if signed_ints { Op::I64GeS } else { Op::I64GeU } as u8);
+                            code.push(Op::I64ExtendI32U as u8);
+                        }
                     }
                 }
                 // Numeric tower: mask an arithmetic result that types as a sized
@@ -6343,12 +6381,14 @@ impl WasmBackend {
                         // write via WASI fd_write. (C uses a runtime-tagged
                         // riina_format; WASM values are untagged i32, so we
                         // dispatch on the static IR type here.) A signed sized int
-                        // (i8/i16/i32) prints signed (sign-extend + leading '-').
+                        // (i8/i16/i32/i64) prints signed (sign-extend + leading
+                        // '-'). i64 used to be excluded, so a negative i64
+                        // printed as its unsigned bit pattern.
                         let signed_bits = match ctx.var_to_ty.get(arg) {
                             Some(Ty::IntN {
                                 bits,
                                 signed: true,
-                            }) if *bits <= 32 => Some(*bits),
+                            }) => Some(*bits),
                             _ => None,
                         };
                         Self::emit_print_int(arg, signed_bits, ctx, code);

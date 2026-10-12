@@ -5,7 +5,7 @@
 use riina_typechecker::{
     register_builtin_types, type_check_full, Context, TypeError, TypingContext,
 };
-use riina_types::{Effect, Expr};
+use riina_types::{EffectSet, Expr};
 
 pub(crate) use riina_typechecker::check_program;
 
@@ -13,7 +13,7 @@ fn builtin_typing_context() -> TypingContext {
     register_builtin_types(&Context::new()).to_typing_context()
 }
 
-pub(crate) fn check_expr(expr: &Expr) -> Result<(riina_types::Ty, Effect), TypeError> {
+pub(crate) fn check_expr(expr: &Expr) -> Result<(riina_types::Ty, EffectSet), TypeError> {
     let mut ctx = builtin_typing_context();
     type_check_full(&mut ctx, expr)
 }

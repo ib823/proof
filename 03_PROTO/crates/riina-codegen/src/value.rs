@@ -55,51 +55,140 @@ impl std::fmt::Display for Location {
     }
 }
 
-/// Environment binding names to values
-#[derive(Debug, Clone, Default)]
+/// Environment binding names to values.
+///
+/// Persistent: [`Env::extend`] shares structure with the environment it
+/// extends instead of copying it. The interpreter extends the environment once
+/// per `biar` (and per argument, per `padan` binding, …), and each extension
+/// used to CLONE the whole map — every builtin included — so a block of n
+/// statements cost O(n²) time and memory (5,000 sequential `biar` lines needed
+/// ~5 GB). Now the newest bindings sit in a short shared list in front of a
+/// shared, flattened map that is rebuilt only every [`ENV_FLATTEN_AT`]
+/// extensions, so lookups stay a hash probe plus a bounded scan.
+#[derive(Clone, Default)]
 pub struct Env {
-    bindings: HashMap<Ident, Value>,
+    /// Bindings older than `recent`, flattened into one shared map.
+    base: Rc<HashMap<Ident, Value>>,
+    /// The most recent bindings, newest first.
+    recent: Option<Rc<EnvNode>>,
+    /// Number of nodes in `recent`.
+    recent_len: usize,
 }
+
+/// One binding in [`Env::recent`].
+struct EnvNode {
+    name: Ident,
+    value: Value,
+    next: Option<Rc<EnvNode>>,
+}
+
+/// Length of the recent-bindings list at which [`Env::extend`] folds it into
+/// a fresh base map. Bounds the linear part of a lookup.
+const ENV_FLATTEN_AT: usize = 32;
 
 impl Env {
     /// Create a new empty environment
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            bindings: HashMap::new(),
-        }
+        Self::default()
     }
 
     /// Extend the environment with a new binding
     #[must_use]
     pub fn extend(&self, name: Ident, value: Value) -> Self {
-        let mut new_env = self.clone();
-        new_env.bindings.insert(name, value);
-        new_env
+        if self.recent_len >= ENV_FLATTEN_AT {
+            let mut map = self.flatten();
+            map.insert(name, value);
+            return Self {
+                base: Rc::new(map),
+                recent: None,
+                recent_len: 0,
+            };
+        }
+        Self {
+            base: Rc::clone(&self.base),
+            recent: Some(Rc::new(EnvNode {
+                name,
+                value,
+                next: self.recent.clone(),
+            })),
+            recent_len: self.recent_len + 1,
+        }
+    }
+
+    /// All bindings as one map (newer bindings shadow older ones).
+    fn flatten(&self) -> HashMap<Ident, Value> {
+        let mut map = (*self.base).clone();
+        let mut newest_first = Vec::with_capacity(self.recent_len);
+        let mut node = self.recent.as_deref();
+        while let Some(n) = node {
+            newest_first.push(n);
+            node = n.next.as_deref();
+        }
+        for n in newest_first.into_iter().rev() {
+            map.insert(n.name.clone(), n.value.clone());
+        }
+        map
     }
 
     /// Look up a name in the environment
     #[must_use]
     pub fn lookup(&self, name: &str) -> Option<&Value> {
-        self.bindings.get(name)
+        let mut node = self.recent.as_deref();
+        while let Some(n) = node {
+            if n.name == name {
+                return Some(&n.value);
+            }
+            node = n.next.as_deref();
+        }
+        self.base.get(name)
     }
 
     /// Check if the environment contains a name
     #[must_use]
     pub fn contains(&self, name: &str) -> bool {
-        self.bindings.contains_key(name)
+        self.lookup(name).is_some()
     }
 
-    /// Get the number of bindings
+    /// A copy of this environment without the bindings `remove` selects
+    /// (applied to the visible, shadowing-resolved bindings).
+    #[must_use]
+    pub fn without(&self, mut remove: impl FnMut(&Ident, &Value) -> bool) -> Self {
+        let map: HashMap<Ident, Value> = self
+            .flatten()
+            .into_iter()
+            .filter(|(name, value)| !remove(name, value))
+            .collect();
+        Self {
+            base: Rc::new(map),
+            recent: None,
+            recent_len: 0,
+        }
+    }
+
+    /// Get the number of bindings (distinct names)
     #[must_use]
     pub fn len(&self) -> usize {
-        self.bindings.len()
+        if self.recent.is_none() {
+            self.base.len()
+        } else {
+            self.flatten().len()
+        }
     }
 
     /// Check if empty
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.bindings.is_empty()
+        self.recent.is_none() && self.base.is_empty()
+    }
+}
+
+impl std::fmt::Debug for Env {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Same shape as the former derived `Debug` (a single `bindings` map).
+        f.debug_struct("Env")
+            .field("bindings", &self.flatten())
+            .finish()
     }
 }
 

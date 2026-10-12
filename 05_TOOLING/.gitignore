@@ -1,6 +1,7 @@
 # Rust build artifacts
 target/
-Cargo.lock
+# Cargo.lock is COMMITTED (reproducible `--locked` builds; the SBOM is
+# generated from it). It was listed here although tracked.
 
 # IDE files
 .vscode/

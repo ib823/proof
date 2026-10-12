@@ -68,16 +68,11 @@ count_abort_active() {
 # RIINA_MASTER_PLAN.md Part 2; any drift requires (a) updating the doctrine
 # header in the owning .v file, (b) updating the master plan count, and
 # (c) commit message [TRACK_A] referencing the new primitive.
-# Subshell disables pipefail locally so grep returning 0 matches (exit 1)
-# doesn't abort the parent under `set -o pipefail`.
+# Counted with the comment/string-aware scanner (identifier tokens), not a
+# `^\s*Parameter` grep: the grep missed `Local Parameter`, `#[local] Parameter`
+# and `Parameters`, each a TCB assumption all the same (2026-10-11 audit).
 count_parameter_active() {
-    (
-        set +o pipefail
-        grep -rP '^\s*Parameter\s' "$REPO_ROOT/02_FORMAL/coq" --include='*.v' 2>/dev/null \
-            | grep -v _archive_deprecated \
-            | grep -v _incomplete \
-            | wc -l
-    )
+    python3 "$REPO_ROOT/scripts/coq-source-counts.py" "$REPO_ROOT/02_FORMAL/coq" Parameter Parameters
 }
 
 # REQ-22 durability: active-lane Lean axiom count. Must stay 0 forever.
@@ -330,6 +325,9 @@ extract_first_number_from_line() {
 }
 
 # ── Gather actual metrics ─────────────────────────────────────────────
+# Pinned primary prover, read from the provisioning script (the single source of
+# truth for the toolchain pin; CI provisions through the same script).
+ACTUAL_COQ_PROVER="Rocq $(grep -oP 'ROCQ_CORE_VERSION="\$\{RIINA_ROCQ_CORE_VERSION:-\K[0-9.]+' "$REPO_ROOT/scripts/provision-coq.sh" 2>/dev/null | head -1)"
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo -e "${CYAN}Scanning codebase...${NC}"
@@ -488,14 +486,26 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     check_no_stale "$REPO_ROOT/README.md" "Lean 4.*repo-wide|Lean 4 active lane.*repo-wide" "Stale Lean scope wording" || true
 
     # Dynamically check that README prover rows match the current verified state.
-    README_COQ_LINE=$(grep -m1 '^\| \*\*Coq 8\.20\.1\*\*' "$REPO_ROOT/README.md" || true)
+    # The primary-prover row. This matched only `**Coq 8.20.1**` long after the
+    # README switched to a Rocq row, so README_QED was 0 and the Qed comparison
+    # below silently never ran (2026-10-11 audit). A missing row is now an error.
+    README_COQ_LINE=$(grep -m1 -E '^\| \*\*(Coq|Rocq)[^|]*\*\*' "$REPO_ROOT/README.md" || true)
+    if [ -z "$README_COQ_LINE" ]; then
+        echo -e "${RED}[ERROR]${NC} README.md: primary-prover (Coq/Rocq) row not found — the Qed check cannot run"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif ! printf '%s\n' "$README_COQ_LINE" | grep -q "$ACTUAL_COQ_PROVER"; then
+        echo -e "${RED}[ERROR]${NC} README.md: primary-prover row does not name the pinned toolchain ($ACTUAL_COQ_PROVER)"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    fi
     README_LEAN_LINE=$(grep -m1 '^\| \*\*Lean 4\*\*' "$REPO_ROOT/README.md" || true)
     README_ISABELLE_LINE=$(grep -m1 '^\| \*\*Isabelle/HOL\*\*' "$REPO_ROOT/README.md" || true)
     README_FSTAR_LINE=$(grep -m1 'CryptographicSecurityActive' "$REPO_ROOT/README.md" || true)
     README_TLAPLUS_LINE=$(grep -m1 'TelusProcurementProtocol' "$REPO_ROOT/README.md" || true)
     README_ALLOY_LINE=$(grep -m1 'TelusProcurementAccessControl' "$REPO_ROOT/README.md" || true)
 
-    README_QED=$(extract_first_number_from_line "$README_COQ_LINE")
+    # The Qed figure itself — the row now starts with a version number.
+    README_QED=$(printf '%s\n' "$README_COQ_LINE" | grep -oP '\d{1,3}(,\d{3})*(?= (Coq )?Qed)' | head -1 | tr -d , || true)
+    README_QED=${README_QED:-0}
     README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
     README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
     README_FSTAR=$(extract_first_number_from_line "$README_FSTAR_LINE")
@@ -522,6 +532,63 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     fi
 else
     warn_check "README.md not found" "missing"
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Every current-state Qed figure in public docs must be the actual count ──
+# Targeted denylists of old numbers (check_no_stale) cannot catch a NEW stale
+# number: README carried 12,613 and the website meta description 12,646 while
+# this audit passed (2026-10-11). Any "N Qed" / "N Coq Qed" in these files must
+# equal the live count, except lines that are explicitly historical.
+check_qed_mentions() {
+    local file="$1" rel line num
+    [ -f "$file" ] || return 0
+    rel="${file#"$REPO_ROOT"/}"
+    while IFS= read -r line; do
+        case "$line" in
+            *"at the tagged commit"*|*"at release"*|*"Historical"*|*"historical"*) continue ;;
+        esac
+        for num in $(printf '%s\n' "$line" | grep -oP '\b\d{1,2},\d{3}(?= (Coq )?Qed\b)'); do
+            if [ "${num//,/}" != "$ACTUAL_QED" ]; then
+                echo -e "${RED}[MISMATCH]${NC} Qed figure in $rel: $num (actual $ACTUAL_QED_COMMA)"
+                echo "           $(printf '%s' "$line" | cut -c1-160)"
+                DISCREPANCIES=$((DISCREPANCIES + 1))
+            fi
+        done
+    done < <(grep -E '[0-9]{1,2},[0-9]{3}( Coq)? Qed' "$file" 2>/dev/null || true)
+}
+for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
+               .cursorrules .clinerules website/index.html website/src/RiinaWebsite.jsx \
+               docs/UNDERSTANDING_RIINA.md; do
+    check_qed_mentions "$REPO_ROOT/$qed_doc"
+done
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Proof-vacuity ratchet ─────────────────────────────────────────────
+# scripts/detect-vacuous-proofs.py flags theorems that conclude True, are
+# reflexivity on hard-coded records, rest on `:= False` definitions, or are
+# definitional tautologies. It existed but gated nothing, so the count could
+# only grow (2026-10-11 audit: 1,316 recorded -> 1,318). The committed baseline
+# in reports/vacuity_scan_report.json may only go DOWN: regenerate it with
+#   python3 scripts/detect-vacuous-proofs.py --json > reports/vacuity_scan_report.json
+# in the same commit that removes findings.
+VACUITY_BASELINE_FILE="$REPO_ROOT/reports/vacuity_scan_report.json"
+if [ -f "$VACUITY_BASELINE_FILE" ]; then
+    VACUITY_NOW=$(cd "$REPO_ROOT" && python3 scripts/detect-vacuous-proofs.py --json 2>/dev/null \
+        | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])' 2>/dev/null || echo "")
+    VACUITY_BASE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["total_findings"])' "$VACUITY_BASELINE_FILE" 2>/dev/null || echo "")
+    if [ -z "$VACUITY_NOW" ] || [ -z "$VACUITY_BASE" ]; then
+        echo -e "${RED}[ERROR]${NC} proof-vacuity scan could not run (now='$VACUITY_NOW', baseline='$VACUITY_BASE')"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$VACUITY_NOW" -gt "$VACUITY_BASE" ]; then
+        echo -e "${RED}[ERROR]${NC} proof-vacuity findings rose: $VACUITY_NOW > baseline $VACUITY_BASE (new vacuous theorems — see scripts/detect-vacuous-proofs.py)"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} proof-vacuity findings: $VACUITY_NOW (baseline $VACUITY_BASE; may only decrease)"
+    fi
+else
+    echo -e "${RED}[ERROR]${NC} proof-vacuity baseline missing: reports/vacuity_scan_report.json"
+    DISCREPANCIES=$((DISCREPANCIES + 1))
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
@@ -854,6 +921,24 @@ if [ "$ACTUAL_ADMITTED" -ne 0 ] || [ "$ACTUAL_AXIOMS" -ne 0 ]; then
     DISCREPANCIES=$((DISCREPANCIES + 1))
 fi
 
+# Kernel-weakening constructs the Admitted/Axiom/Abort/Parameter counts never
+# saw (2026-10-11 audit: `Unset Positivity Checking` sat in the active build,
+# and False was provable under it). Each must stay 0; a scanner failure is a
+# discrepancy too, never a silent pass.
+FORBIDDEN_OUT=$(python3 "$REPO_ROOT/scripts/coq-source-counts.py" --forbidden "$REPO_ROOT/02_FORMAL/coq" 2>&1) || {
+    echo -e "${RED}[ERROR]${NC} Coq forbidden-construct scan failed: $FORBIDDEN_OUT"
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+    FORBIDDEN_OUT=""
+}
+FORBIDDEN_HITS=$(printf '%s\n' "$FORBIDDEN_OUT" | awk -F'\t' 'NF == 2 && $2 != 0 {print $1 ": " $2}')
+if [ -n "$FORBIDDEN_HITS" ]; then
+    echo -e "${RED}[ERROR]${NC} Kernel-weakening constructs in the active Coq build (all must be 0):"
+    printf '%s\n' "$FORBIDDEN_HITS" | sed 's/^/           /'
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+elif [ -n "$FORBIDDEN_OUT" ] && [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${GREEN}[OK]${NC} Coq kernel-weakening constructs (Conjecture, give_up, Admit Obligations, bypass_check, Unset Guard/Positivity/Universe Checking): 0"
+fi
+
 # REQ-21: Coq Abort must remain 0 in active scope
 if [ "$ACTUAL_ABORT" -ne 0 ]; then
     if [ "$QUICK_MODE" != "--quick" ]; then
@@ -1019,7 +1104,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     # verification banners". A doc audit must look at docs.
     done < <(grep -rlE "^\*\*(Audit Update|Verification):\*\*" "$REPO_ROOT" \
         --include='*.md' \
-        --exclude-dir=target --exclude-dir=.git \
+        --exclude-dir=target --exclude-dir=.git --exclude-dir=.claude \
         --exclude-dir=node_modules --exclude-dir=dist 2>/dev/null || true)
 
     if [ "$STALE_BANNERS" -gt 0 ]; then

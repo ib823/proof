@@ -1,5 +1,14 @@
 # Domain Audit Review: O_RUNTIME_EXECUTION
 
+> **Correction (2026-10-11 audit):** the G9 upgrade below rests on `riina-receipt`'s tamper tests, but the receipt
+> chain is UNKEYED (64-bit FNV-1a over public fields), so an adversary can edit a receipt and recompute the chain
+> and `verify()` still passes. Those tests detect accidental corruption, not adversarial tampering; G9 should not
+> be read as adversarial tamper coverage. Tamper-evidence needs a keyed MAC or signature (see master plan REQ-88).
+> **Fixed later the same day:** `riina-receipt` now chains receipts with HMAC-SHA256 under a 32-byte key
+> (length-prefixed encoding covering the previous tag and every field) and closes a chain with a keyed seal; the
+> unkeyed mode was removed and the re-chained forgery is a failing test. HMAC is symmetric: no non-repudiation.
+
+
 ## Verdict
 **reject**
 

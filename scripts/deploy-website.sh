@@ -52,7 +52,9 @@ fi
 # Step 1: Verify riina remote exists
 if ! git remote | grep -q "^riina$"; then
     echo -e "${RED}ERROR: riina remote not configured${NC}"
-    echo "Run: git remote add riina https://ib823:<TOKEN>@github.com/ib823/riina.git"
+    echo "Run: git remote add riina https://github.com/ib823/riina.git"
+    echo "     and authenticate with a credential helper (e.g. \`gh auth setup-git\`)."
+    echo "     Do NOT embed a token in the remote URL: it is stored in plaintext in .git/config."
     exit 1
 fi
 echo -e "${GREEN}[✓] riina remote configured${NC}"
@@ -85,15 +87,20 @@ echo -e "${GREEN}[✓] public quality gates passed${NC}"
 # Step 3: Build WASM binary for playground
 echo ""
 echo "Building WASM binary..."
+# A deploy must not publish a playground backed by a stale or stub .wasm: a
+# failed build used to be downgraded to a warning here (and `|| true` in the
+# npm prebuild hook), so the site shipped whatever binary was lying around.
 bash "$REPO_ROOT/scripts/build-wasm.sh" || {
-    echo -e "${YELLOW}WARNING: WASM build skipped (stub .wasm will be used)${NC}"
+    echo -e "${RED}ERROR: WASM build failed — refusing to deploy a playground with a stale/stub binary${NC}"
+    exit 1
 }
-echo -e "${GREEN}[✓] WASM build step complete${NC}"
+echo -e "${GREEN}[✓] WASM built${NC}"
 
 # Step 4: Build website
 echo ""
 echo "Building website..."
-(cd "$WEBSITE_DIR" && npm install --silent && npm run build) || {
+# `npm ci`: install exactly what website/package-lock.json records.
+(cd "$WEBSITE_DIR" && npm ci --silent && npm run build) || {
     echo -e "${RED}ERROR: Website build failed${NC}"; exit 1;
 }
 echo -e "${GREEN}[✓] Website built${NC}"

@@ -9,11 +9,21 @@
 //!
 //! Generates comprehensive build manifests for reproducibility verification.
 //! The manifest captures:
-//! - All input files with SHA-256 hashes
+//! - All input files with SHA-256 hashes (riina-core's FIPS 180-4 SHA-256)
 //! - Build environment configuration
 //! - Tool versions
 //! - Output artifacts with hashes
 //! - Verification results
+//!
+//! `verify` recomputes every listed file's SHA-256 and size under the project
+//! root and exits NON-ZERO on any mismatch, missing file, malformed entry, or
+//! an empty manifest. (Until 2026-10 the "sha256" fields were a 64-bit
+//! `DefaultHasher` value printed four times and `verify` was a stub that always
+//! reported success.)
+//!
+//! What `verify` does NOT establish: who produced the manifest. It is an
+//! unauthenticated list of hashes; sign it (`riina-artifact-sign
+//! sign-manifest`) and verify the signature to get authenticity.
 
 #![forbid(unsafe_code)]
 #![allow(
@@ -32,11 +42,13 @@ use std::collections::BTreeMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufReader, Read};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::process::{Command, ExitCode};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use clap::{Parser, Subcommand};
+use riina_core::crypto::sha2::Sha256;
+use serde_json::{json, Value};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CLI DEFINITION
@@ -76,12 +88,13 @@ enum Commands {
         include_sources: bool,
     },
 
-    /// Verify against an existing manifest
+    /// Verify the project tree against an existing manifest (exits non-zero
+    /// on any mismatch, missing file, or malformed/empty manifest)
     Verify {
         /// Manifest file to verify against
         manifest: PathBuf,
 
-        /// Strict mode (fail on any mismatch)
+        /// Strict mode: tool-version differences are failures, not warnings
         #[arg(long)]
         strict: bool,
     },
@@ -96,7 +109,7 @@ enum Commands {
         format: String,
     },
 
-    /// Compare two manifests
+    /// Compare two manifests (exits non-zero if they differ)
     Diff {
         /// First manifest
         manifest1: PathBuf,
@@ -133,7 +146,7 @@ struct BuildManifest {
     verification: VerificationResults,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct FileEntry {
     path: String,
     sha256: String,
@@ -148,75 +161,38 @@ struct VerificationResults {
     formal_verified: bool,
 }
 
+impl FileEntry {
+    fn to_json(&self) -> Value {
+        json!({ "path": self.path, "sha256": self.sha256, "size": self.size })
+    }
+}
+
 impl BuildManifest {
+    /// Serialise with a real JSON encoder — paths and environment values are
+    /// escaped, so a file name containing `"` cannot corrupt the manifest.
     fn to_json(&self) -> String {
-        let mut json = String::from("{\n");
-
-        json.push_str(&format!("  \"version\": \"{}\",\n", self.version));
-        json.push_str(&format!("  \"timestamp\": {},\n", self.timestamp));
-        json.push_str(&format!("  \"profile\": \"{}\",\n", self.profile));
-        json.push_str(&format!("  \"project_root\": \"{}\",\n", self.project_root));
-
-        // Environment
-        json.push_str("  \"environment\": {\n");
-        for (i, (key, value)) in self.environment.iter().enumerate() {
-            let comma = if i < self.environment.len() - 1 {
-                ","
-            } else {
-                ""
-            };
-            json.push_str(&format!("    \"{key}\": \"{value}\"{comma}\n"));
-        }
-        json.push_str("  },\n");
-
-        // Tools
-        json.push_str("  \"tools\": {\n");
-        for (i, (key, value)) in self.tools.iter().enumerate() {
-            let comma = if i < self.tools.len() - 1 { "," } else { "" };
-            json.push_str(&format!("    \"{key}\": \"{value}\"{comma}\n"));
-        }
-        json.push_str("  },\n");
-
-        // Inputs
-        json.push_str("  \"inputs\": [\n");
-        for (i, entry) in self.inputs.iter().enumerate() {
-            let comma = if i < self.inputs.len() - 1 { "," } else { "" };
-            json.push_str(&format!(
-                "    {{\"path\": \"{}\", \"sha256\": \"{}\", \"size\": {}}}{comma}\n",
-                entry.path, entry.sha256, entry.size
-            ));
-        }
-        json.push_str("  ],\n");
-
-        // Outputs
-        json.push_str("  \"outputs\": [\n");
-        for (i, entry) in self.outputs.iter().enumerate() {
-            let comma = if i < self.outputs.len() - 1 { "," } else { "" };
-            json.push_str(&format!(
-                "    {{\"path\": \"{}\", \"sha256\": \"{}\", \"size\": {}}}{comma}\n",
-                entry.path, entry.sha256, entry.size
-            ));
-        }
-        json.push_str("  ],\n");
-
-        // Verification
-        json.push_str("  \"verification\": {\n");
-        json.push_str(&format!("    \"level\": {},\n", self.verification.level));
-        json.push_str(&format!(
-            "    \"tests_passed\": {},\n",
-            self.verification.tests_passed
-        ));
+        let mut verification = json!({
+            "level": self.verification.level,
+            "tests_passed": self.verification.tests_passed,
+            "formal_verified": self.verification.formal_verified,
+        });
         if let Some(cov) = self.verification.coverage {
-            json.push_str(&format!("    \"coverage\": {cov:.2},\n"));
+            verification["coverage"] = json!(cov);
         }
-        json.push_str(&format!(
-            "    \"formal_verified\": {}\n",
-            self.verification.formal_verified
-        ));
-        json.push_str("  }\n");
-
-        json.push_str("}\n");
-        json
+        let doc = json!({
+            "version": self.version,
+            "timestamp": self.timestamp,
+            "profile": self.profile,
+            "project_root": self.project_root,
+            "environment": self.environment,
+            "tools": self.tools,
+            "inputs": self.inputs.iter().map(FileEntry::to_json).collect::<Vec<_>>(),
+            "outputs": self.outputs.iter().map(FileEntry::to_json).collect::<Vec<_>>(),
+            "verification": verification,
+        });
+        let mut out = serde_json::to_string_pretty(&doc).unwrap_or_default();
+        out.push('\n');
+        out
     }
 }
 
@@ -224,27 +200,25 @@ impl BuildManifest {
 // HASHING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Compute SHA-256 hash of a file
+/// Compute the SHA-256 of a file (lowercase hex), streaming, with riina-core's
+/// FIPS 180-4 implementation.
 fn hash_file(path: &Path) -> io::Result<String> {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::Hasher;
-
-    // Simple hash for now - in production, use proper SHA-256
-    // This is a placeholder until riina-core crypto is available
     let file = File::open(path)?;
     let mut reader = BufReader::new(file);
-    let mut contents = Vec::new();
-    reader.read_to_end(&mut contents)?;
-
-    // Compute a simple hash (replace with SHA-256 in production)
-    let mut hasher = DefaultHasher::new();
-    for byte in &contents {
-        hasher.write_u8(*byte);
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 8192];
+    loop {
+        let n = reader.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
     }
-    let hash = hasher.finish();
+    Ok(hex(&hasher.finalize()))
+}
 
-    // Format as hex (64 chars to simulate SHA-256)
-    Ok(format!("{hash:016x}{hash:016x}{hash:016x}{hash:016x}"))
+fn hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
 /// Get file size
@@ -320,40 +294,18 @@ fn generate_manifest(
     // Collect inputs (Cargo.toml, Cargo.lock, key source files)
     let mut inputs = Vec::new();
 
-    let cargo_toml = root.join("Cargo.toml");
-    if cargo_toml.exists() {
-        if verbose {
-            println!("Hashing: {}", cargo_toml.display());
+    for name in ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml"] {
+        let path = root.join(name);
+        if path.exists() {
+            if verbose {
+                println!("Hashing: {}", path.display());
+            }
+            inputs.push(FileEntry {
+                path: name.to_string(),
+                sha256: hash_file(&path)?,
+                size: file_size(&path)?,
+            });
         }
-        inputs.push(FileEntry {
-            path: "Cargo.toml".to_string(),
-            sha256: hash_file(&cargo_toml)?,
-            size: file_size(&cargo_toml)?,
-        });
-    }
-
-    let cargo_lock = root.join("Cargo.lock");
-    if cargo_lock.exists() {
-        if verbose {
-            println!("Hashing: {}", cargo_lock.display());
-        }
-        inputs.push(FileEntry {
-            path: "Cargo.lock".to_string(),
-            sha256: hash_file(&cargo_lock)?,
-            size: file_size(&cargo_lock)?,
-        });
-    }
-
-    let toolchain = root.join("rust-toolchain.toml");
-    if toolchain.exists() {
-        if verbose {
-            println!("Hashing: {}", toolchain.display());
-        }
-        inputs.push(FileEntry {
-            path: "rust-toolchain.toml".to_string(),
-            sha256: hash_file(&toolchain)?,
-            size: file_size(&toolchain)?,
-        });
     }
 
     // Optionally hash source files
@@ -407,10 +359,12 @@ fn hash_directory(
     entries: &mut Vec<FileEntry>,
     verbose: bool,
 ) -> io::Result<()> {
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-
+    let mut children: Vec<PathBuf> = fs::read_dir(dir)?
+        .map(|e| e.map(|e| e.path()))
+        .collect::<io::Result<_>>()?;
+    // Deterministic order, so two manifests of the same tree compare equal.
+    children.sort();
+    for path in children {
         if path.is_dir() {
             // Skip target directories
             if path.file_name().is_some_and(|n| n == "target") {
@@ -441,20 +395,168 @@ fn hash_directory(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// MANIFEST PARSING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// The parts of a manifest that `verify`/`diff` check.
+#[derive(Debug, Default)]
+struct ParsedManifest {
+    tools: BTreeMap<String, String>,
+    inputs: Vec<FileEntry>,
+    outputs: Vec<FileEntry>,
+}
+
+fn invalid(msg: impl Into<String>) -> io::Error {
+    io::Error::new(io::ErrorKind::InvalidData, msg.into())
+}
+
+fn is_sha256_hex(s: &str) -> bool {
+    s.len() == 64 && s.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+/// A manifest path must stay inside the project root: relative, and with no
+/// `..`/root/prefix components. A manifest is untrusted input to `verify`.
+fn safe_relative(path: &str) -> bool {
+    !path.is_empty()
+        && Path::new(path)
+            .components()
+            .all(|c| matches!(c, Component::Normal(_) | Component::CurDir))
+}
+
+fn parse_entries(doc: &Value, key: &str) -> io::Result<Vec<FileEntry>> {
+    let arr = doc
+        .get(key)
+        .and_then(Value::as_array)
+        .ok_or_else(|| invalid(format!("manifest has no \"{key}\" array")))?;
+    let mut out = Vec::with_capacity(arr.len());
+    for (i, e) in arr.iter().enumerate() {
+        let path = e
+            .get("path")
+            .and_then(Value::as_str)
+            .ok_or_else(|| invalid(format!("{key}[{i}]: missing \"path\"")))?;
+        let sha256 = e
+            .get("sha256")
+            .and_then(Value::as_str)
+            .ok_or_else(|| invalid(format!("{key}[{i}]: missing \"sha256\"")))?;
+        let size = e
+            .get("size")
+            .and_then(Value::as_u64)
+            .ok_or_else(|| invalid(format!("{key}[{i}]: missing \"size\"")))?;
+        out.push(FileEntry {
+            path: path.to_string(),
+            sha256: sha256.to_string(),
+            size,
+        });
+    }
+    Ok(out)
+}
+
+fn parse_manifest(contents: &str) -> io::Result<ParsedManifest> {
+    let doc: Value = serde_json::from_str(contents)
+        .map_err(|e| invalid(format!("manifest is not valid JSON: {e}")))?;
+    if doc.get("version").and_then(Value::as_str).is_none() {
+        return Err(invalid("manifest has no \"version\""));
+    }
+    let tools = doc
+        .get("tools")
+        .and_then(Value::as_object)
+        .map(|m| {
+            m.iter()
+                .filter_map(|(k, v)| v.as_str().map(|v| (k.clone(), v.to_string())))
+                .collect()
+        })
+        .unwrap_or_default();
+    Ok(ParsedManifest {
+        tools,
+        inputs: parse_entries(&doc, "inputs")?,
+        outputs: parse_entries(&doc, "outputs")?,
+    })
+}
+
+fn load_manifest(path: &Path) -> io::Result<ParsedManifest> {
+    parse_manifest(&fs::read_to_string(path)?)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MANIFEST OPERATIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn verify_manifest(manifest_path: &Path, strict: bool, verbose: bool) -> io::Result<bool> {
+/// Recompute every listed file under `root` and compare. Returns the list of
+/// failures (empty = verified). Fails closed: a missing/unreadable file, a
+/// malformed hash, an unsafe path, or an EMPTY manifest is a failure.
+fn check_manifest(root: &Path, manifest: &ParsedManifest, strict: bool) -> Vec<String> {
+    let mut failures = Vec::new();
+    if manifest.inputs.is_empty() && manifest.outputs.is_empty() {
+        failures.push("manifest lists no files — nothing would be verified".to_string());
+        return failures;
+    }
+    for entry in manifest.inputs.iter().chain(&manifest.outputs) {
+        if !safe_relative(&entry.path) {
+            failures.push(format!("{}: unsafe path (must be relative, no '..')", entry.path));
+            continue;
+        }
+        if !is_sha256_hex(&entry.sha256) {
+            failures.push(format!("{}: malformed sha256 {:?}", entry.path, entry.sha256));
+            continue;
+        }
+        let path = root.join(&entry.path);
+        match (hash_file(&path), file_size(&path)) {
+            (Ok(actual), Ok(size)) => {
+                if actual != entry.sha256 {
+                    failures.push(format!(
+                        "{}: SHA-256 mismatch (manifest {}, actual {actual})",
+                        entry.path, entry.sha256
+                    ));
+                } else if size != entry.size {
+                    failures.push(format!(
+                        "{}: size mismatch (manifest {}, actual {size})",
+                        entry.path, entry.size
+                    ));
+                }
+            }
+            (Err(e), _) | (_, Err(e)) => {
+                failures.push(format!("{}: missing or unreadable ({e})", entry.path));
+            }
+        }
+    }
+    let current = collect_tool_versions();
+    for (tool, version) in &manifest.tools {
+        let now = current.get(tool).map(String::as_str).unwrap_or("<absent>");
+        if now != version {
+            let msg = format!("tool {tool}: manifest {version:?}, current {now:?}");
+            if strict {
+                failures.push(msg);
+            } else {
+                println!("  warning: {msg}");
+            }
+        }
+    }
+    failures
+}
+
+fn verify_manifest(
+    root: &Path,
+    manifest_path: &Path,
+    strict: bool,
+    verbose: bool,
+) -> io::Result<bool> {
     println!("Verifying against manifest: {}", manifest_path.display());
-
-    // TODO: Parse manifest and verify hashes
-    println!("Manifest verification not yet implemented");
-    println!("Would verify:");
-    println!("  - All input file hashes match");
-    println!("  - All output file hashes match");
-    println!("  - Tool versions match");
-
-    Ok(true)
+    println!("Project root: {}", root.display());
+    let manifest = load_manifest(manifest_path)?;
+    let failures = check_manifest(root, &manifest, strict);
+    let total = manifest.inputs.len() + manifest.outputs.len();
+    if failures.is_empty() {
+        println!("  {total} file(s) match (SHA-256 + size)");
+        println!("  NOTE: integrity only — the manifest itself is unauthenticated;");
+        println!("        verify its signature with `riina-artifact-sign verify-manifest`.");
+        Ok(true)
+    } else {
+        for f in &failures {
+            println!("  ✗ {f}");
+        }
+        println!("  {} failure(s) across {total} listed file(s)", failures.len());
+        Ok(false)
+    }
 }
 
 fn show_manifest(manifest_path: &Path, format: &str) -> io::Result<()> {
@@ -477,16 +579,51 @@ fn show_manifest(manifest_path: &Path, format: &str) -> io::Result<()> {
     Ok(())
 }
 
-fn diff_manifests(manifest1: &Path, manifest2: &Path) -> io::Result<()> {
+/// Differences between two manifests' file lists and tool versions.
+fn manifest_differences(a: &ParsedManifest, b: &ParsedManifest) -> Vec<String> {
+    let index = |m: &ParsedManifest| -> BTreeMap<String, FileEntry> {
+        m.inputs
+            .iter()
+            .chain(&m.outputs)
+            .map(|e| (e.path.clone(), e.clone()))
+            .collect()
+    };
+    let (ia, ib) = (index(a), index(b));
+    let mut diffs = Vec::new();
+    for (path, ea) in &ia {
+        match ib.get(path) {
+            None => diffs.push(format!("- {path} (only in manifest 1)")),
+            Some(eb) if eb != ea => diffs.push(format!(
+                "~ {path}: {} ({} B) -> {} ({} B)",
+                ea.sha256, ea.size, eb.sha256, eb.size
+            )),
+            Some(_) => {}
+        }
+    }
+    for path in ib.keys().filter(|p| !ia.contains_key(*p)) {
+        diffs.push(format!("+ {path} (only in manifest 2)"));
+    }
+    if a.tools != b.tools {
+        diffs.push(format!("~ tools: {:?} -> {:?}", a.tools, b.tools));
+    }
+    diffs
+}
+
+fn diff_manifests(manifest1: &Path, manifest2: &Path) -> io::Result<bool> {
     println!("Comparing manifests:");
     println!("  1: {}", manifest1.display());
     println!("  2: {}", manifest2.display());
     println!();
-
-    // TODO: Parse and compare
-    println!("Manifest diff not yet implemented");
-
-    Ok(())
+    let diffs = manifest_differences(&load_manifest(manifest1)?, &load_manifest(manifest2)?);
+    if diffs.is_empty() {
+        println!("Manifests are identical (files, hashes, sizes, tools).");
+        Ok(true)
+    } else {
+        for d in &diffs {
+            println!("{d}");
+        }
+        Ok(false)
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -523,22 +660,24 @@ fn main() -> ExitCode {
                         println!("Inputs:  {} files", manifest.inputs.len());
                         println!("Outputs: {} files", manifest.outputs.len());
                         println!("Tools:   {} detected", manifest.tools.len());
-                        Ok(())
+                        Ok(true)
                     }
                     Err(e) => Err(e),
                 }
             }
             Err(e) => Err(e),
         },
-        Commands::Verify { manifest, strict } => verify_manifest(manifest, *strict, cli.verbose)
-            .map(|passed| {
+        Commands::Verify { manifest, strict } => {
+            verify_manifest(&root, manifest, *strict, cli.verbose).map(|passed| {
                 if passed {
                     println!("✓ Verification passed");
                 } else {
-                    println!("✗ Verification failed");
+                    println!("✗ Verification FAILED");
                 }
-            }),
-        Commands::Show { manifest, format } => show_manifest(manifest, format),
+                passed
+            })
+        }
+        Commands::Show { manifest, format } => show_manifest(manifest, format).map(|()| true),
         Commands::Diff {
             manifest1,
             manifest2,
@@ -546,10 +685,140 @@ fn main() -> ExitCode {
     };
 
     match result {
-        Ok(()) => ExitCode::SUCCESS,
+        Ok(true) => ExitCode::SUCCESS,
+        Ok(false) => ExitCode::FAILURE,
         Err(e) => {
             eprintln!("[ERROR] {e}");
             ExitCode::FAILURE
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A fresh, empty scratch directory under the system temp dir.
+    fn scratch(tag: &str) -> PathBuf {
+        let dir = env::temp_dir().join(format!(
+            "riina-build-manifest-{tag}-{}-{}",
+            std::process::id(),
+            SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()
+        ));
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    fn project(tag: &str) -> PathBuf {
+        let root = scratch(tag);
+        fs::write(root.join("Cargo.toml"), "[package]\nname = \"x\"\n").unwrap();
+        fs::write(root.join("Cargo.lock"), "# lock\n").unwrap();
+        fs::create_dir_all(root.join("crates/a/src")).unwrap();
+        fs::write(root.join("crates/a/src/lib.rs"), "pub fn f() {}\n").unwrap();
+        root
+    }
+
+    fn manifest_for(root: &Path) -> ParsedManifest {
+        let m = generate_manifest(root, "release", true, false).unwrap();
+        parse_manifest(&m.to_json()).unwrap()
+    }
+
+    #[test]
+    fn hash_file_is_real_sha256() {
+        let root = scratch("kat");
+        let p = root.join("abc");
+        fs::write(&p, "abc").unwrap();
+        // FIPS 180-4 / NIST CAVP "abc" vector.
+        assert_eq!(
+            hash_file(&p).unwrap(),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
+        fs::write(&p, "").unwrap();
+        assert_eq!(
+            hash_file(&p).unwrap(),
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        );
+    }
+
+    #[test]
+    fn untouched_tree_verifies() {
+        let root = project("ok");
+        let m = manifest_for(&root);
+        assert_eq!(m.inputs.len(), 3, "Cargo.toml, Cargo.lock, crates/a/src/lib.rs");
+        assert!(check_manifest(&root, &m, false).is_empty());
+    }
+
+    /// Regression (audit H3): `verify` used to return Ok(true) unconditionally.
+    #[test]
+    fn modified_file_fails_verification() {
+        let root = project("mod");
+        let m = manifest_for(&root);
+        fs::write(root.join("crates/a/src/lib.rs"), "pub fn f() { evil() }\n").unwrap();
+        let failures = check_manifest(&root, &m, false);
+        assert_eq!(failures.len(), 1, "{failures:?}");
+        assert!(failures[0].contains("mismatch"), "{failures:?}");
+    }
+
+    #[test]
+    fn missing_file_fails_verification() {
+        let root = project("missing");
+        let m = manifest_for(&root);
+        fs::remove_file(root.join("Cargo.lock")).unwrap();
+        let failures = check_manifest(&root, &m, false);
+        assert!(failures.iter().any(|f| f.contains("Cargo.lock") && f.contains("missing")), "{failures:?}");
+    }
+
+    #[test]
+    fn empty_or_malformed_manifests_fail_closed() {
+        let root = project("empty");
+        let empty = parse_manifest(r#"{"version":"1.0.0","inputs":[],"outputs":[]}"#).unwrap();
+        assert!(!check_manifest(&root, &empty, false).is_empty(), "empty manifest must not pass");
+        assert!(parse_manifest(r#"{"version":"1.0.0"}"#).is_err(), "no file lists");
+        assert!(parse_manifest("not json").is_err());
+
+        // The old placeholder format: a 64-bit value repeated four times is
+        // well-formed hex but is not the file's SHA-256.
+        let stub = format!(
+            r#"{{"version":"1.0.0","inputs":[{{"path":"Cargo.toml","sha256":"{0}{0}{0}{0}","size":21}}],"outputs":[]}}"#,
+            "0123456789abcdef"
+        );
+        let m = parse_manifest(&stub).unwrap();
+        assert!(!check_manifest(&root, &m, false).is_empty());
+    }
+
+    #[test]
+    fn traversal_paths_are_rejected() {
+        let root = project("trav");
+        for bad in ["../outside", "/etc/passwd", "crates/../../x"] {
+            let doc = format!(
+                r#"{{"version":"1.0.0","inputs":[{{"path":"{bad}","sha256":"{}","size":0}}],"outputs":[]}}"#,
+                "0".repeat(64)
+            );
+            let m = parse_manifest(&doc).unwrap();
+            let failures = check_manifest(&root, &m, false);
+            assert!(failures.iter().any(|f| f.contains("unsafe path")), "{bad}: {failures:?}");
+        }
+    }
+
+    #[test]
+    fn json_output_escapes_paths() {
+        let root = project("esc");
+        fs::write(root.join("crates/a/src/q\"uote.rs"), "x").unwrap();
+        let m = generate_manifest(&root, "release", true, false).unwrap();
+        let parsed = parse_manifest(&m.to_json()).unwrap();
+        assert!(parsed.inputs.iter().any(|e| e.path.ends_with("q\"uote.rs")));
+        assert!(check_manifest(&root, &parsed, false).is_empty());
+    }
+
+    #[test]
+    fn diff_detects_changes() {
+        let root = project("diff");
+        let a = manifest_for(&root);
+        assert!(manifest_differences(&a, &manifest_for(&root)).is_empty());
+        fs::write(root.join("Cargo.toml"), "[package]\nname = \"y\"\n").unwrap();
+        let b = manifest_for(&root);
+        let d = manifest_differences(&a, &b);
+        assert_eq!(d.len(), 1, "{d:?}");
+        assert!(d[0].contains("Cargo.toml"));
     }
 }

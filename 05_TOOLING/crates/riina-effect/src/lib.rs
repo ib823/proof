@@ -21,7 +21,9 @@ pub use ct_oracle::{CtOracle, CtOracleConfig, CtVerdict, SampleClass, TimingObse
 pub use effect_gate::{
     EffectDecision, EffectGate, EffectPolicy, EffectRequest, GateDenyReason, GateVerdict,
 };
-pub use proof_bundle::{ProofBundleError, RuntimeEvent, RuntimeEventKind, RuntimeProofBundle};
+pub use proof_bundle::{
+    ProofBundleError, RuntimeEvent, RuntimeEventKind, RuntimeProofBundle, MIN_AUTH_KEY_LEN,
+};
 
 #[cfg(test)]
 mod tests {

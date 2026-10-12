@@ -104,10 +104,12 @@ fn collect_mismatches(dir: &Path, expected: u64, checked: &mut usize, out: &mut 
         let name = entry.file_name();
         let name = name.to_string_lossy();
         if path.is_dir() {
-            // Archival trees are Tier 3 — deliberately not synced.
+            // Archival trees are Tier 3 — deliberately not synced. `.claude`
+            // holds agent worktrees (whole other checkouts of the repo, at
+            // other commits), which are not this tree's docs.
             if matches!(
                 name.as_ref(),
-                "01_RESEARCH" | "99_ARCHIVE" | ".git" | "target" | "node_modules"
+                "01_RESEARCH" | "99_ARCHIVE" | ".git" | ".claude" | "target" | "node_modules"
             ) || name.starts_with("_archive")
             {
                 continue;

@@ -71,7 +71,7 @@ echo -e "${GREEN}[✓] Tag $TAG is available${NC}"
 
 if [ -f "$REPO_ROOT/scripts/security-gates.sh" ]; then
     echo "Running strict security gates..."
-    bash "$REPO_ROOT/scripts/security-gates.sh" --range origin/main..HEAD || {
+    bash "$REPO_ROOT/scripts/security-gates.sh" --all-tracked || {
         echo -e "${RED}ERROR: strict security gates failed${NC}"; exit 1;
     }
     echo -e "${GREEN}[✓] strict security gates pass${NC}"

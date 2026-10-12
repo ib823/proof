@@ -311,6 +311,31 @@ pub fn eval_with_builtins(expr: &riina_types::Expr) -> Result<Value> {
     interp.eval_with_builtins(expr)
 }
 
+/// Limits for evaluating an UNTRUSTED program (see [`eval_with_limits`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ExecLimits {
+    /// Leave every host-reaching builtin (see
+    /// [`builtins::is_host_effect_builtin`]) out of the environment AND refuse
+    /// it at application time — defence in depth behind the effect check.
+    pub deny_host_effects: bool,
+    /// Maximum number of evaluation steps (expression evaluations).
+    pub max_steps: u64,
+    /// Maximum expression nesting depth (bounds interpreter recursion).
+    pub max_depth: usize,
+    /// Wall-clock budget, checked every 1024 steps. A single long-running
+    /// builtin call is not interrupted mid-call.
+    pub wall_clock: std::time::Duration,
+}
+
+/// Evaluate with builtins under [`ExecLimits`]: a step budget, a nesting-depth
+/// cap, a wall-clock deadline and, optionally, no host-effect builtins.
+/// Exceeding a budget is a runtime error ("execution budget exhausted: ...").
+/// Memory is NOT capped.
+pub fn eval_with_limits(expr: &riina_types::Expr, limits: ExecLimits) -> Result<Value> {
+    let mut interp = Interpreter::with_limits(limits);
+    interp.eval_with_builtins(expr)
+}
+
 /// Compile an expression to IR
 ///
 /// Translates the AST to SSA-form intermediate representation.

@@ -87,6 +87,10 @@ done
 # true on the curated public tree (0 global Admitted once the deprecated
 # archive is excluded) — and under `set -euo pipefail` that killed the whole
 # script silently. The `|| true` keeps the honest 0.
+# Section Hypotheses become premises of exported theorems; count them with the
+# comment/string-aware scanner.
+active_section_hypotheses="$(python3 "$REPO_ROOT/scripts/coq-source-counts.py" "$COQ_DIR" Hypothesis Hypotheses)"
+
 global_admitted="$({ find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Admitted\.' {} + 2>/dev/null || true; } | wc -l | tr -d " ")"
 global_axioms="$({ find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh '^[[:space:]]*Axiom[[:space:]]+' {} + 2>/dev/null || true; } | wc -l | tr -d " ")"
 
@@ -116,7 +120,8 @@ fi
   echo "- Abort (active, incomplete proof attempts): $active_abort"
   echo "- Axioms (active, declared with \`Axiom\`): $active_axioms"
   echo "- \`Parameter\` declarations (active): $active_parameters  ← see TCB caveat below"
-  echo "- Explicit semantic assumptions (active): $active_assumptions"
+  echo "- Former NI step-up assumption (\`Parameter val_rel_n_step_up\`, active): $active_assumptions"
+  echo "- Section \`Hypothesis\` premises (active): $active_section_hypotheses  ← premises of \`well_typed_SN\`; refutable (REQ-84), so that theorem is conditional"
   echo ""
   echo "## Caveat: \`Parameter\` declarations are axioms in all but name"
   echo "In Coq a \`Parameter\` is logically equivalent to an \`Axiom\`. The active build"

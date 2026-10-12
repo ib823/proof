@@ -27,7 +27,9 @@
             meta = with pkgs.lib; {
               description = "RIINA compiler — formally verified, zero-trust programming language";
               homepage = "https://github.com/ib823/riina";
-              license = licenses.mpl20;
+              # The repository LICENSE is proprietary (see ./LICENSE); this
+              # previously declared MPL-2.0.
+              license = licenses.unfree;
               mainProgram = "riinac";
             };
           };
@@ -37,13 +39,20 @@
       devShells = forAllSystems (system:
         let pkgs = pkgsFor system; in {
           default = pkgs.mkShell {
+            # No `coq` here on purpose: nixos-24.11 ships Coq 8.20, but the
+            # corpus needs Rocq 9.1.1 + stdlib 9.1.0 (it uses `From Stdlib`).
+            # The pin has ONE definition, scripts/provision-coq.sh (CI uses the
+            # same script); this shell provides what that script needs.
             buildInputs = with pkgs; [
               (rust-bin.stable."1.94.1".default)
-              coq
               gcc
+              opam
+              gmp
+              m4
             ];
             shellHook = ''
-              echo "RIINA dev shell — Rust $(rustc --version), Coq $(coqc --version | head -1)"
+              echo "RIINA dev shell — Rust $(rustc --version)"
+              echo "Rocq (pinned 9.1.1): bash scripts/provision-coq.sh && eval \$(opam env --switch=rocq)"
             '';
           };
         }

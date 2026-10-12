@@ -77,12 +77,16 @@ dependencies = [
 name = "riina-pkg"
 version = "0.4.0"
 dependencies = [
+ "riina-core",
  "riina-types",
 ]
 
 [[package]]
 name = "riina-receipt"
 version = "0.4.0"
+dependencies = [
+ "riina-core",
+]
 
 [[package]]
 name = "riina-span"

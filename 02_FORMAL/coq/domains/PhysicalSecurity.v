@@ -9,7 +9,7 @@
     TRUSTED HARDWARE PRIMITIVES — AXIOMATIC INTERFACE (REQ-23 AUDIT)
     ═══════════════════════════════════════════════════════════════════════════
 
-    This file declares 29 [Parameter] symbols. Every one of them models a
+    This file declares 28 [Parameter] symbols. Every one of them models a
     physical-world primitive (sensor, EDA tool output, manufacturing
     artefact) that cannot be implemented in Coq because it is not a
     computable function — it is a measurement of, or a specification
@@ -21,10 +21,20 @@
     property proved in this file. A bug or compromise in the physical
     primitive invalidates the corresponding proved theorem.
 
+    CONSISTENCY: an earlier revision of this interface was jointly
+    unsatisfiable — [chip_puf] was a free field of the [Chip] record, so two
+    records with distinct ids and the SAME response function contradicted
+    [puf_physically_unique], and [False] was derivable. [chip_puf] is now an
+    opaque physical function of the chip, and the whole interface is proved
+    jointly satisfiable at the end of this file
+    ([physical_tcb_satisfiable], closed under the global context): the
+    statement is generated from the declared Parameter types themselves, so
+    the witness cannot drift from the assumptions it vouches for.
+
     Each Parameter is categorised below with the external standard or
     measurement that binds it at deployment time:
 
-      §DESIGN VERIFICATION (lines ~52..103, 8 params)
+      §DESIGN VERIFICATION (10 params)
         - synthesize, synthesis_preserves_semantics, extract_paths,
           timing_analysis, timing_analysis_correct, trojan_scan,
           trojan_scan_sound, operation_cycles, crypto_operation,
@@ -33,15 +43,15 @@
            gate-level simulators. Compliance: IEC 61508 §7.4.2 (compiler
            qualification), trojan scan per IEEE Hardware Trojan Taxonomy.
 
-      §MANUFACTURING (lines ~142..195, 11 params)
-        - x_ray_compare, x_ray_soundness, puf_entropy,
-          puf_physically_unique, different_chips_different_entropy,
+      §MANUFACTURING (10 params)
+        - x_ray_compare, x_ray_soundness, chip_puf,
+          puf_physically_unique,
           chip_puf_at_time, puf_temperature_stable, authenticate_chip,
           authentication_sound, fab_integrity_check, fab_check_sound
         -> Bound by X-ray microscopy (ISO/IEC 19762), PUF physics
            (NIST SP 800-90B entropy assessment), and fab-audit programs.
 
-      §TAMPER / SIDE-CHANNEL (lines ~243..292, 8 params)
+      §TAMPER / SIDE-CHANNEL (8 params)
         - detect_probe, mesh_detects_probing, voltage_monitor,
           voltage_monitor_correct, temp_monitor,
           temp_monitor_triggers_shutdown, power_trace,
@@ -171,11 +181,13 @@ Definition XRayImage := list nat.
 Definition Challenge := list bool.
 Definition Response := list bool.
 
-(* Chip with PUF *)
+(* A manufactured chip. Its PUF response is NOT a field: a record field could
+   be filled with any function at all, which is how the uniqueness assumption
+   below once became contradictory. The response is a physical property of the
+   chip, modelled by the opaque [chip_puf]. *)
 Record Chip : Type := mkChip {
   chip_id : ChipId;
   chip_xray : XRayImage;
-  chip_puf : Challenge -> Response;
 }.
 
 (* Golden sample *)
@@ -200,18 +212,13 @@ Definition structurally_equivalent (c : Chip) (g : GoldenSample) : Prop :=
 Parameter x_ray_soundness : forall c g,
   x_ray_compare c g = Match -> chip_xray c = golden_xray g.
 
-(* PUF entropy source *)
-Parameter puf_entropy : Chip -> nat.
+(* PUF challenge-response behaviour of a physical chip *)
+Parameter chip_puf : Chip -> Challenge -> Response.
 
-(* PUF uniqueness axiom - different physical chips have different PUFs *)
+(* PUF uniqueness - different physical chips have different PUF responses *)
 Parameter puf_physically_unique : forall c1 c2 challenge,
   chip_id c1 <> chip_id c2 ->
-  puf_entropy c1 <> puf_entropy c2 ->
   chip_puf c1 challenge <> chip_puf c2 challenge.
-
-(* Different chips have different entropy *)
-Parameter different_chips_different_entropy : forall c1 c2,
-  chip_id c1 <> chip_id c2 -> puf_entropy c1 <> puf_entropy c2.
 
 (* PUF stability over time *)
 Definition Time := nat.
@@ -422,9 +429,7 @@ Theorem PHY_001_07_puf_unique : forall c1 c2 challenge,
 Proof.
   intros c1 c2 challenge H_diff_id.
   apply puf_physically_unique.
-  - exact H_diff_id.
-  - apply different_chips_different_entropy.
-    exact H_diff_id.
+  exact H_diff_id.
 Qed.
 
 (* PHY_001_08: PUF stability - PUF responses are stable over time *)
@@ -577,6 +582,100 @@ Proof.
   pose proof (synthesis_preserves_semantics rtl) as Hpres.
   unfold semantic_equivalent in Hpres.
   apply Hpres.
+Qed.
+
+(** ═══════════════════════════════════════════════════════════════════════════
+    TCB SATISFIABILITY WITNESS
+    ═══════════════════════════════════════════════════════════════════════════
+
+    The propositional Parameters above constrain the opaque functional ones.
+    If those constraints were jointly unsatisfiable, every theorem in this file
+    would be vacuous ([False] would be derivable). The theorem below proves
+    that ONE concrete interpretation of all fifteen functional Parameters
+    satisfies all thirteen propositional Parameters simultaneously.
+
+    The statement is not hand-copied: [physical_tcb] is assembled from the
+    declared types of the Parameters ([type of]), the definitions that hide
+    Parameters are unfolded, and the fifteen functional symbols are then
+    abstracted with [pattern]. [physical_tcb_satisfiable] must stay closed
+    under the global context; if any Parameter were still referenced, Print
+    Assumptions would list it.
+    ═══════════════════════════════════════════════════════════════════════════ *)
+
+(* The conjunction of every propositional Parameter, read off its declared type *)
+Definition physical_tcb : Prop := ltac:(
+  let t01 := type of synthesis_preserves_semantics in
+  let t02 := type of timing_analysis_correct in
+  let t03 := type of trojan_scan_sound in
+  let t04 := type of crypto_constant_time in
+  let t05 := type of x_ray_soundness in
+  let t06 := type of puf_physically_unique in
+  let t07 := type of puf_temperature_stable in
+  let t08 := type of authentication_sound in
+  let t09 := type of fab_check_sound in
+  let t10 := type of mesh_detects_probing in
+  let t11 := type of voltage_monitor_correct in
+  let t12 := type of temp_monitor_triggers_shutdown in
+  let t13 := type of crypto_power_independent in
+  exact (t01 /\ t02 /\ t03 /\ t04 /\ t05 /\ t06 /\ t07 /\ t08 /\ t09 /\ t10
+         /\ t11 /\ t12 /\ t13)).
+
+(* The same conjunction with the functional Parameters abstracted *)
+Definition physical_tcb_open := ltac:(
+  let t := eval cbv beta delta [physical_tcb timing_met constant_time_hw
+                                is_genuine structurally_equivalent
+                                power_independent] in physical_tcb in
+  let p := eval pattern synthesize, extract_paths, timing_analysis, trojan_scan,
+                        operation_cycles, crypto_operation, x_ray_compare,
+                        chip_puf, chip_puf_at_time, authenticate_chip,
+                        fab_integrity_check, detect_probe, voltage_monitor,
+                        temp_monitor, power_trace in t in
+  match p with ?F _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ => exact F end).
+
+(* The global assumptions are exactly an instance of the open conjunction *)
+Lemma physical_tcb_instance :
+  physical_tcb_open synthesize extract_paths timing_analysis trojan_scan
+    operation_cycles crypto_operation x_ray_compare chip_puf chip_puf_at_time
+    authenticate_chip fab_integrity_check detect_probe voltage_monitor
+    temp_monitor power_trace <-> physical_tcb.
+Proof. split; intro H; exact H. Qed.
+
+Theorem physical_tcb_satisfiable :
+  exists f01 f02 f03 f04 f05 f06 f07 f08 f09 f10 f11 f12 f13 f14 f15,
+    physical_tcb_open f01 f02 f03 f04 f05 f06 f07 f08 f09 f10 f11 f12 f13 f14 f15.
+Proof.
+  exists (fun rtl => mkNetlist [] (rtl_inputs rtl) (rtl_outputs rtl) (rtl_behavior rtl)),
+         (fun _ => []),
+         (fun _ _ => true),
+         (fun _ => TrojanFree),
+         (fun _ _ => 0),
+         (fun _ => true),
+         (fun c g => if list_eq_dec Nat.eq_dec (chip_xray c) (golden_xray g)
+                     then Match else Mismatch),
+         (fun c _ => repeat true (chip_id c)),
+         (fun c _ _ => repeat true (chip_id c)),
+         (fun _ _ => Counterfeit),
+         (fun c g => if list_eq_dec Nat.eq_dec (chip_xray c) (golden_xray g)
+                     then FabClean else FabTampered),
+         (fun d => if dev_mesh_intact d then NoProbe else ProbeDetected),
+         (fun _ => true),
+         (fun _ => true),
+         (fun _ _ => []).
+  cbv beta delta [physical_tcb_open semantic_equivalent].
+  repeat split; intros;
+    repeat match goal with
+           | H : In _ [] |- _ => destruct H
+           | H : dev_mesh_intact ?d = false |- _ => rewrite H
+           | H : context [list_eq_dec ?dec ?a ?b] |- _ => destruct (list_eq_dec dec a b)
+           | |- context [list_eq_dec ?dec ?a ?b] => destruct (list_eq_dec dec a b)
+           end;
+    try reflexivity; try assumption; try discriminate.
+  (* puf_physically_unique: distinct ids give responses of distinct length *)
+  match goal with
+  | Hid : chip_id ?c1 <> chip_id ?c2 |- repeat true (chip_id ?c1) <> repeat true (chip_id ?c2) =>
+      intro Heq; apply Hid;
+      apply (f_equal (@length bool)) in Heq; rewrite !repeat_length in Heq; exact Heq
+  end.
 Qed.
 
 (** ═══════════════════════════════════════════════════════════════════════════

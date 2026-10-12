@@ -21,12 +21,30 @@ export function activate(context: vscode.ExtensionContext) {
     );
 }
 
+/**
+ * The riinac binary to execute. Only the USER (global) value or the default is
+ * honoured: a workspace or folder value comes from the opened repository's
+ * .vscode/settings.json, and honouring it would let any cloned repository pick
+ * the binary this extension spawns. (The setting is also declared
+ * machine-scoped and restricted in package.json; this is defense in depth.)
+ */
+function riinacPath(): string {
+    const inspected = vscode.workspace.getConfiguration('riina').inspect<string>('riinacPath');
+    return inspected?.globalValue ?? inspected?.defaultValue ?? 'riinac';
+}
+
 function startLspClient(context: vscode.ExtensionContext) {
-    // Find riinac binary
-    const riinacPath = vscode.workspace.getConfiguration('riina').get<string>('riinacPath', 'riinac');
+    // Never start a language server for an untrusted workspace.
+    if (!vscode.workspace.isTrusted) {
+        context.subscriptions.push(
+            vscode.workspace.onDidGrantWorkspaceTrust(() => startLspClient(context))
+        );
+        return;
+    }
+    const riinacPath_ = riinacPath();
 
     try {
-        lspProcess = spawn(riinacPath, ['lsp'], {
+        lspProcess = spawn(riinacPath_, ['lsp'], {
             stdio: ['pipe', 'pipe', 'pipe'],
         });
 
@@ -132,11 +150,14 @@ function handleMessage(msg: any) {
 }
 
 function formatDocument(editor: vscode.TextEditor) {
-    const riinacPath = vscode.workspace.getConfiguration('riina').get<string>('riinacPath', 'riinac');
+    if (!vscode.workspace.isTrusted) {
+        vscode.window.showWarningMessage('RIINA: formatting runs riinac and is disabled in untrusted workspaces.');
+        return;
+    }
     const document = editor.document;
     const text = document.getText();
 
-    const proc = spawn(riinacPath, ['fmt', document.uri.fsPath]);
+    const proc = spawn(riinacPath(), ['fmt', document.uri.fsPath]);
     let output = '';
     let error = '';
 

@@ -97,7 +97,7 @@ impl Sandbox {
         let p = self.dir.join(format!("{}.rii", self.stem));
         std::fs::write(
             &p,
-            format!("fungsi utama() -> Nombor kesan Masa {{\n{body}\n    0\n}}\n"),
+            format!("fungsi utama() -> Nombor kesan (Masa, Tulis) {{\n{body}\n    0\n}}\n"),
         )
         .expect("write program");
         p

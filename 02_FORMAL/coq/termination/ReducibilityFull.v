@@ -1075,10 +1075,12 @@ Hypothesis store_values_are_values : forall loc val st,
    quantifies over ALL stores, so the stores evaluation may touch must be
    recursion-free as well. Entered as a Section Hypothesis, it becomes an
    explicit premise of [well_typed_SN]/[SN_app] when the Section closes: the
-   theorems are honestly conditional on evaluating over recursion-free
-   stores. [step_preserves_recursion_free] (foundations/Semantics.v) shows
-   the joint term/store invariant is self-sustaining, so this is a discipline
-   on the INITIAL store, not a hidden axiom about evaluation. *)
+   theorems are conditional on it. [step_preserves_recursion_free]
+   (foundations/Semantics.v) shows the joint term/store invariant is
+   self-sustaining from a recursion-free INITIAL store — but note this
+   hypothesis is quantified over EVERY store, not the initial one, and is
+   therefore false (a store may hold an [EFix]); see the honesty record after
+   the section (REQ-84). *)
 Hypothesis stores_recursion_free : forall st, store_recursion_free st.
 
 (** ========================================================================
@@ -1428,3 +1430,148 @@ Qed.
 *)
 
 End ReducibilityFull.
+
+(** ========================================================================
+    HONESTY RECORD: [well_typed_SN] IS CURRENTLY VACUOUS (2026-10-11 audit)
+    ========================================================================
+
+    Closing the section turned the four [Hypothesis] declarations above into
+    leading premises of [well_typed_SN] (inspect with [About well_typed_SN]):
+    [env_reducible_closed], [lambda_body_SN], [store_values_are_values] and
+    [stores_recursion_free]. Each is stated over EVERY environment, body or
+    store rather than over the program being evaluated, and they are not all
+    satisfiable — the lemma below refutes [store_values_are_values] outright
+    (a store may hold a non-value). A theorem whose premises can never all
+    hold establishes nothing, so [well_typed_SN] / [well_typed_SN_recursion_free]
+    must NOT be cited as a termination guarantee. The kernel's
+    [Print Assumptions] does not see this (premises are not axioms), which is
+    why the vacuity is recorded here, in the build.
+
+    The closure lemmas this development is built from are genuine; the repair
+    is to restate SN over well-formed stores ([store_wf]) and environments and
+    discharge the restated premises — tracked as REQ-84 in
+    RIINA_MASTER_PLAN.md Part 3. *)
+
+Lemma well_typed_SN_premise_store_values_are_values_refutable :
+  ~ (forall loc val st, store_lookup loc st = Some val -> value val).
+Proof.
+  intros H.
+  specialize (H 0 (EApp EUnit EUnit) ((0, EApp EUnit EUnit) :: nil) eq_refl).
+  inversion H.
+Qed.
+
+(** ========================================================================
+    LANDIN'S KNOT: THE SN CONCLUSION ITSELF FAILS FOR THIS CALCULUS
+    ========================================================================
+
+    The refutation above shows [well_typed_SN]'s premises cannot all hold.
+    The theorem below shows something stronger: its CONCLUSION is false for
+    this calculus, so no choice of satisfiable premises over arbitrary stores
+    can make it true. The core has higher-order references, and a function
+    stored in a reference may call whatever that reference holds (Landin's
+    knot) — divergence without any [EFix]. The witness is well typed,
+    recursion-free, and runs in a WELL-FORMED store:
+
+        location 0 : TRef (TFn TUnit TUnit Read) Public
+        store       : 0 ↦ λx:Unit. (!ℓ0) x
+        term        : (!ℓ0) ()
+
+    It steps to [(λx. (!ℓ0) x) ()] and straight back to itself. A correct
+    termination theorem therefore needs a fragment without higher-order store
+    (or a stratified store); see REQ-84 and
+    [ref_free_well_typed_SN] in termination/StrongNormRefFree.v. *)
+
+Definition knot_loc : loc := 0.
+Definition knot_fn_ty : ty := TFn TUnit TUnit EffRead.
+Definition knot_call : expr := EApp (EDeref (ELoc knot_loc)) EUnit.
+Definition knot_fn : expr :=
+  ELam "x"%string TUnit (EApp (EDeref (ELoc knot_loc)) (EVar "x"%string)).
+Definition knot_store : store := (knot_loc, knot_fn) :: nil.
+Definition knot_store_ty : store_ty := (knot_loc, knot_fn_ty, Public) :: nil.
+
+Lemma knot_step_deref : forall ctx,
+  (knot_call, knot_store, ctx) --> (EApp knot_fn EUnit, knot_store, ctx).
+Proof.
+  intros ctx. unfold knot_call. apply ST_App1. apply ST_DerefLoc. reflexivity.
+Qed.
+
+Lemma knot_step_beta : forall ctx,
+  (EApp knot_fn EUnit, knot_store, ctx) --> (knot_call, knot_store, ctx).
+Proof.
+  intros ctx. unfold knot_fn.
+  replace knot_call with (subst "x"%string EUnit (EApp (EDeref (ELoc knot_loc)) (EVar "x"%string)))
+    by reflexivity.
+  apply ST_AppAbs. constructor.
+Qed.
+
+Lemma knot_not_SN : forall ctx, ~ SN (knot_call, knot_store, ctx).
+Proof.
+  intros ctx Hsn.
+  assert (Hboth : forall c, Acc step_inv c ->
+            (c = (knot_call, knot_store, ctx) -> False) /\
+            (c = (EApp knot_fn EUnit, knot_store, ctx) -> False)).
+  { intros c Hacc. induction Hacc as [c _ IH]. split; intros ->.
+    - exact (proj2 (IH (EApp knot_fn EUnit, knot_store, ctx) (knot_step_deref ctx)) eq_refl).
+    - exact (proj1 (IH (knot_call, knot_store, ctx) (knot_step_beta ctx)) eq_refl). }
+  exact (proj1 (Hboth _ Hsn) eq_refl).
+Qed.
+
+Lemma knot_fn_typed : forall Σ,
+  store_ty_lookup knot_loc Σ = Some (knot_fn_ty, Public) ->
+  has_type nil Σ Public knot_fn knot_fn_ty EffectPure.
+Proof.
+  intros Σ Hl. unfold knot_fn, knot_fn_ty.
+  change EffRead with (effect_join EffRead (effect_join (effect_join EffectPure EffectRead) EffectPure)).
+  apply T_Lam. eapply T_App.
+  - eapply T_Deref.
+    + apply T_Loc. exact Hl.
+    + reflexivity.
+  - apply T_Var. reflexivity.
+Qed.
+
+Lemma knot_call_typed :
+  has_type nil knot_store_ty Public knot_call TUnit
+    (effect_join EffRead (effect_join (effect_join EffectPure EffectRead) EffectPure)).
+Proof.
+  unfold knot_call. eapply T_App.
+  - eapply T_Deref.
+    + apply T_Loc. reflexivity.
+    + reflexivity.
+  - apply T_Unit.
+Qed.
+
+Lemma knot_store_wf : Typing.store_wf knot_store_ty knot_store.
+Proof.
+  split.
+  - intros l T sl Hl. unfold knot_store_ty, knot_loc in Hl. simpl in Hl.
+    destruct (Nat.eqb l 0) eqn:E; [| discriminate].
+    apply Nat.eqb_eq in E. subst. injection Hl as <- <-.
+    exists knot_fn. split; [reflexivity | split; [constructor | apply knot_fn_typed; reflexivity]].
+  - intros l v Hl. unfold knot_store, knot_loc in Hl. simpl in Hl.
+    destruct (Nat.eqb l 0) eqn:E; [| discriminate].
+    apply Nat.eqb_eq in E. subst. injection Hl as <-.
+    exists knot_fn_ty, Public. split; [reflexivity | split; [constructor | apply knot_fn_typed; reflexivity]].
+Qed.
+
+(** The counterexample: a well-typed, recursion-free term whose evaluation in a
+    well-formed store does not terminate. Hence the conclusion of
+    [well_typed_SN] is false — it holds only because its premises are. *)
+Theorem landin_knot_counterexample :
+  exists (Σ : store_ty) (st : store) (e : expr) (T : ty) (ε : effect),
+    recursion_free e /\
+    has_type nil Σ Public e T ε /\
+    Typing.store_wf Σ st /\
+    forall ctx, ~ SN (e, st, ctx).
+Proof.
+  exists knot_store_ty, knot_store, knot_call, TUnit.
+  eexists. split; [| split; [exact knot_call_typed | split; [exact knot_store_wf | exact knot_not_SN]]].
+  unfold knot_call. simpl. tauto.
+Qed.
+
+Corollary well_typed_SN_conclusion_is_false :
+  ~ (forall Σ pc e T ε, recursion_free e -> has_type nil Σ pc e T ε -> SN_expr e).
+Proof.
+  intros H.
+  destruct landin_knot_counterexample as [Σ [st [e [T [ε [Hrf [Hty [_ Hnsn]]]]]]]].
+  exact (Hnsn nil (H Σ Public e T ε Hrf Hty st nil)).
+Qed.

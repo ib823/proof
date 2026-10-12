@@ -376,22 +376,31 @@ while IFS= read -r f; do
     fi
 done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
 
-# Count axioms dynamically from active build — from _CoqProject only
-AXIOMS=0
-while IFS= read -r f; do
-    [[ "$f" =~ ^[[:space:]]*# ]] && continue
-    [[ "$f" != *.v ]] && continue
-    f=$(echo "$f" | sed 's/^[[:space:]]*//')
-    fullpath="$ROOT_DIR/02_FORMAL/coq/$f"
-    count=$(grep -cE "^Axiom " "$fullpath" 2>/dev/null || true)
-    if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-        AXIOMS=$((AXIOMS + count))
-    fi
-done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
+# Count axioms in the active build with the comment/string-aware scanner (the
+# same one audit-docs.sh uses). The former `^Axiom ` grep missed indented,
+# `Local`, attribute-prefixed and plural (`Axioms`) declarations.
+COQ_SCAN="$ROOT_DIR/scripts/coq-source-counts.py"
+AXIOMS=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Axiom Axioms) || {
+    echo "ERROR: Coq source scan failed" >&2; exit 1; }
+# TCB Parameters and section-Hypothesis premises, published separately so the
+# headline "0 axioms" is never the only number a reader sees.
+PARAMETERS=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Parameter Parameters) || {
+    echo "ERROR: Coq source scan failed" >&2; exit 1; }
+SECTION_HYPOTHESES=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Hypothesis Hypotheses) || {
+    echo "ERROR: Coq source scan failed" >&2; exit 1; }
+# Proof-vacuity findings (scripts/detect-vacuous-proofs.py) — published so the
+# Qed headline is read next to how many of those Qed are vacuous patterns.
+VACUITY_FINDINGS=$(cd "$ROOT_DIR" && python3 scripts/detect-vacuous-proofs.py --json 2>/dev/null \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])') || {
+    echo "ERROR: proof-vacuity scan failed" >&2; exit 1; }
+KERNEL_WEAKENING=$(python3 "$COQ_SCAN" --forbidden "$ROOT_DIR/02_FORMAL/coq" | awk -F'\t' '{s += $2} END {print s + 0}') || {
+    echo "ERROR: Coq forbidden-construct scan failed" >&2; exit 1; }
 
-# Count explicit proof-architecture assumptions in active build (target: 0)
-# Currently tracked assumption:
-#   - Parameter val_rel_n_step_up (NonInterference_v2.v)
+# `assumptions` keeps its historical, narrow meaning — the former NI step-up
+# assumption `Parameter val_rel_n_step_up` — because the gap/hygiene gates
+# (check-easier-gaps, check-medium-gaps, public-quality-gates) pin exactly that
+# fact. It is NOT a count of everything assumed: see `parameters` and
+# `sectionHypotheses` below, and kernel `Print Assumptions` for stdlib axioms.
 ASSUMPTIONS=0
 while IFS= read -r f; do
     [[ "$f" =~ ^[[:space:]]*# ]] && continue
@@ -826,8 +835,20 @@ SESSION=$((SESSION_FROM_LOG > SESSION_FROM_CLAUDE ? SESSION_FROM_LOG : SESSION_F
 #   compiled -> tool/lane compilation evidence available
 #   mechanized -> machine-checked with active-build zero-gap policy
 #   independently_audited -> external independent audit published
+# Source-level conditions only: positive BUILD evidence for the Coq lane is
+# enforced where Coq is actually compiled — the pre-push `riinac verify --full`
+# and CI's `coq` job — not here. Recorded NEGATIVE evidence is honoured: a
+# full-mode verification manifest showing the Coq build failing downgrades the
+# claim. Kernel-weakening constructs (Unset Positivity Checking etc.) are
+# disqualifying: False was provable under one until 2026-10-11.
 COQ_COMPILED=true
-if [ "$QED_ACTIVE" -eq 0 ] || [ "$ADMITTED" -ne 0 ] || [ "$AXIOMS" -ne 0 ] || [ "$ASSUMPTIONS" -ne 0 ]; then
+if [ "$QED_ACTIVE" -eq 0 ] || [ "$ADMITTED" -ne 0 ] || [ "$AXIOMS" -ne 0 ] || [ "$ASSUMPTIONS" -ne 0 ] \
+   || [ "$KERNEL_WEAKENING" -ne 0 ]; then
+    COQ_COMPILED=false
+fi
+if [ -f "$ROOT_DIR/VERIFICATION_MANIFEST.md" ] \
+   && grep -q '^\*\*Mode:\*\* full' "$ROOT_DIR/VERIFICATION_MANIFEST.md" \
+   && grep -qE '^\| Coq Compilation \| FAIL' "$ROOT_DIR/VERIFICATION_MANIFEST.md"; then
     COQ_COMPILED=false
 fi
 
@@ -1220,6 +1241,14 @@ cat > "$OUTPUT_FILE" << EOF
     "admitted": $ADMITTED,
     "axioms": $AXIOMS,
     "assumptions": $ASSUMPTIONS,
+    "assumptionsScope": "Parameter val_rel_n_step_up only (the former NI step-up assumption); see parameters and sectionHypotheses",
+    "parameters": $PARAMETERS,
+    "parametersNote": "Coq Parameter declarations: the documented Trusted Computing Base (axioms in all but name); proved jointly satisfiable in domains/PhysicalSecurity.v",
+    "sectionHypotheses": $SECTION_HYPOTHESES,
+    "sectionHypothesesNote": "Section Hypothesis declarations; they become premises of exported theorems. All are premises of termination/ReducibilityFull.v well_typed_SN, which are refutable (REQ-84) - the theorem is conditional/vacuous, not a termination guarantee",
+    "kernelWeakeningConstructs": $KERNEL_WEAKENING,
+    "vacuityFindings": $VACUITY_FINDINGS,
+    "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
     "axiomsJustified": true
   },
   "coq": {

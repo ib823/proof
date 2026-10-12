@@ -102,16 +102,17 @@ if [ $GOV_FAIL -eq 0 ]; then
     echo -e "${GREEN}[OK] All governance files present${NC}"
 fi
 
-# ── 7. No /workspaces/proof hardcoded paths ───────────────────────────
-echo "[7/9] Checking for /workspaces/proof paths..."
-if grep -r '/workspaces/proof' "$REPO_ROOT" \
-    --include='*.sh' --include='*.md' --include='*.toml' \
-    --include='*.json' --include='*.nix' --include='*.txt' \
-    2>/dev/null | grep -v '\.git/' | grep -v 'verify-public.sh'; then
-    echo -e "${RED}FAIL: /workspaces/proof hardcoded path found${NC}"
+# ── 7. No container-absolute paths ────────────────────────────────────
+# Scans every tracked TEXT file (git grep -I skips binaries), not a short list
+# of extensions: the previous --include list skipped .py/.rs/.patch/.ts/.yml,
+# so `07_EXAMPLES/**/validate_jsonl.py` shipped `/workspaces/proof` paths.
+echo "[7/9] Checking for container-absolute paths..."
+if git -C "$REPO_ROOT" grep -nI -E '/workspaces/proof|/home/codespace/' -- . \
+    ':!scripts/verify-public.sh' 2>/dev/null; then
+    echo -e "${RED}FAIL: container-absolute path found${NC}"
     FAIL=1
 else
-    echo -e "${GREEN}[OK] No /workspaces/proof paths${NC}"
+    echo -e "${GREEN}[OK] No container-absolute paths${NC}"
 fi
 
 # ── 8. No backup/strategy files ──────────────────────────────────────

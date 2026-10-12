@@ -145,7 +145,7 @@ fungsi jana_c_contoh(sumber: Teks) -> Teks kesan Bersih {
 }
 
 // Entry point for testing
-fungsi utama() -> Nombor kesan Sistem {
+fungsi utama() -> Nombor kesan Tulis {
     biar hasil = jana_c_contoh("contoh");
     cetakln("Codegen selesai");
     cetakln(hasil);

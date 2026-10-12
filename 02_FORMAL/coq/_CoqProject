@@ -39,6 +39,8 @@ type_system/TypeSafety.v
 effects/EffectAlgebra.v
 effects/EffectSystem.v
 effects/EffectGate.v
+# Set-based effect containment, independent of the effect level order
+effects/EffectContainment.v
 effects/FileIOEffectModel.v
 
 # Properties - Phase 1 Foundation (WORKER_α) - VERIFIED COMPILING
@@ -59,6 +61,10 @@ termination/StrongNorm.v
 termination/TerminationLemmas.v
 properties/SN_Closure.v
 termination/ReducibilityFull.v
+# Premise-free SN for the reference-free, fixpoint-free core (REQ-84)
+termination/StrongNormRefFree.v
+# Non-interference + constant time (timing contract) for that core (REQ-85, REQ-86)
+properties/NonInterferenceRefFree.v
 
 # Properties - Phase 5 Store Semantics (WORKER_ζ)
 properties/StoreRelation.v

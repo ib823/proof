@@ -210,7 +210,7 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
         // same application: a zero-arg call applies `()` (REQ-68). Before that,
         // the bare form was dropped to a `Var` and evaluated to the un-applied
         // builtin instead of a token.
-        "csrf_generate" => Value::String(generate_csrf_token()),
+        "csrf_generate" => Value::String(generate_csrf_token()?),
         // (request_token, session_token) → Bool. Non-short-circuiting compare so
         // matching does not leak the common prefix length by timing.
         "csrf_validate" => match split_pair(name, arg)? {
@@ -226,14 +226,14 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
                 Value::Bool(!allowed.is_empty() && origin == allowed)
             }
         },
-        // (referer, allowed_origin) → Bool. The referrer URL must begin with the
-        // allowed origin.
+        // (referer, allowed_origin) → Bool. See `referer_matches_origin`: the
+        // referrer must BE the origin or continue it at a URL delimiter.
         "csrf_check_referer" => match split_pair(name, arg)? {
             Either::Partial(v) => v,
             Either::Pair(a, b) => {
                 let referer = as_str(&a, name)?;
                 let allowed = as_str(&b, name)?;
-                Value::Bool(!allowed.is_empty() && referer.starts_with(&allowed))
+                Value::Bool(referer_matches_origin(&referer, &allowed))
             }
         },
 
@@ -533,21 +533,57 @@ fn email_sanitize(s: &str) -> String {
         .to_string()
 }
 
+/// Does `referer` belong to `allowed_origin`?
+///
+/// True iff the referrer IS the origin, or continues it immediately with `/`,
+/// `?` or `#` — so scheme, host and port must match EXACTLY. A plain
+/// `starts_with` (the pre-2026-10 rule) accepted
+/// `https://bank.example.attacker.net/` and `https://bank.example@evil/` for
+/// the origin `https://bank.example`, and a different port too. One trailing
+/// `/` on the configured origin is ignored (`https://a.test/` = `https://a.test`).
+/// An empty origin never matches. Mirrored byte-for-byte by
+/// `riina_builtin_csrf_check_referer` in `emit.rs`.
+fn referer_matches_origin(referer: &str, allowed_origin: &str) -> bool {
+    let origin = allowed_origin.strip_suffix('/').unwrap_or(allowed_origin);
+    if origin.is_empty() {
+        return false;
+    }
+    match referer.strip_prefix(origin) {
+        Some(rest) => {
+            rest.is_empty() || rest.starts_with('/') || rest.starts_with('?') || rest.starts_with('#')
+        }
+        None => false,
+    }
+}
+
 /// URL allow-list (anti-XSS / open-redirect). Permits `http(s)://`, `mailto:`,
 /// and same-origin relative paths (`/x` but not protocol-relative `//x`).
 /// Everything else (`javascript:`, `data:`, `vbscript:`, `file:`, `//evil`)
 /// collapses to the inert `about:blank`.
+///
+/// Rejected outright, anywhere in the input: ASCII control characters (C0 and
+/// DEL) and backslashes. Browsers delete tab/CR/LF from URLs and treat `\` as
+/// `/` in http(s) URLs, so `"/\t/evil.example"` and `"/\\evil.example"` both
+/// navigate to `//evil.example` — an open redirect that the old check (which
+/// only looked for a literal `//`) let through. A relative path whose second
+/// character is `/` or `\` is rejected for the same reason. Only ASCII spaces
+/// are trimmed (controls are already refused), identically to the C backend.
 fn url_validate(s: &str) -> String {
-    let t = s.trim();
+    const BLANK: &str = "about:blank";
+    if s.bytes().any(|b| b < 0x20 || b == 0x7F || b == b'\\') {
+        return BLANK.to_string();
+    }
+    let t = s.trim_matches(' ');
     let lower = t.to_ascii_lowercase();
+    let b = t.as_bytes();
     let ok = lower.starts_with("http://")
         || lower.starts_with("https://")
         || lower.starts_with("mailto:")
-        || (t.starts_with('/') && !t.starts_with("//"));
+        || (b.first() == Some(&b'/') && !matches!(b.get(1), Some(b'/' | b'\\')));
     if ok {
         t.to_string()
     } else {
-        "about:blank".to_string()
+        BLANK.to_string()
     }
 }
 
@@ -590,30 +626,28 @@ fn constant_time_eq(a: &str, b: &str) -> bool {
     diff == 0
 }
 
-/// Modelled CSRF token: a 128-bit (32 hex char) value seeded from the system
-/// clock and a per-process monotonic counter (so rapid successive calls differ).
-/// NOTE: this is a *reference* token, not a certified CSPRNG — production
-/// deployments should source it from `riina-core`'s CSPRNG. The `Effect::Random`
-/// on its type records the intent. Mirrors the seeding pattern of the existing
-/// `matematik::rawak` builtin.
-fn generate_csrf_token() -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-    use std::sync::atomic::{AtomicU64, Ordering};
-    use std::time::SystemTime;
+/// Number of OS-random bytes in a CSRF token (128 bits → 32 hex chars).
+const CSRF_TOKEN_BYTES: usize = 16;
 
-    static COUNTER: AtomicU64 = AtomicU64::new(0);
-    let nanos = SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos() as u64;
-    let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-
-    let mut h1 = DefaultHasher::new();
-    (nanos, n, 0xC5F1_0001_u64).hash(&mut h1);
-    let mut h2 = DefaultHasher::new();
-    (nanos, n, 0x7012_0002_u64).hash(&mut h2);
-    format!("{:016x}{:016x}", h1.finish(), h2.finish())
+/// CSRF token: 128 bits read from the OS CSPRNG (`/dev/urandom`, via the same
+/// fail-closed reader the TLS handshake uses), lowercase hex.
+///
+/// FAILS CLOSED: if the OS entropy source cannot be read the builtin returns
+/// a runtime error — never a weaker token. (Until 2026-10 the token was
+/// fixed-key SipHash (`DefaultHasher`) of the wall-clock nanoseconds and a
+/// process counter, so an attacker who knew roughly when it was minted could
+/// recompute it offline.)
+fn generate_csrf_token() -> Result<String> {
+    let entropy = riina_tls::handshake::os_entropy_32().map_err(|_| {
+        Error::InvalidOperation(
+            "csrf_generate: OS entropy source (/dev/urandom) unavailable — refusing to mint a weak token"
+                .to_string(),
+        )
+    })?;
+    Ok(entropy[..CSRF_TOKEN_BYTES]
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect())
 }
 
 #[cfg(test)]
@@ -726,6 +760,74 @@ mod tests {
         assert_eq!(s("validate_url", "//evil.com"), "about:blank");
         assert_eq!(s("validate_url", "data:text/html,<script>"), "about:blank");
         assert_eq!(s("validate_url", "  HTTPS://up.example/x  "), "HTTPS://up.example/x");
+    }
+
+    /// Regression (audit L1): browsers drop tab/CR/LF and treat `\` as `/`,
+    /// so each of these navigates to `//evil.example` — an open redirect the
+    /// old check passed as a "same-origin relative path".
+    #[test]
+    fn validate_url_rejects_backslash_and_control_char_redirects() {
+        for evil in [
+            "/\\evil.example/x",
+            "/\t/evil.example/x",
+            "/\n/evil.example/x",
+            "/\r/evil.example",
+            "\\\\evil.example",
+            "/\\/evil.example",
+            "https://ok.example\\@evil.example",
+            "java\tscript:alert(1)",
+            "/x\u{0}y",
+            "/x\u{7f}",
+            "\t/relative",
+        ] {
+            assert_eq!(s("validate_url", evil), "about:blank", "{evil:?} must be refused");
+        }
+        // Ordinary relative paths and absolute URLs are unaffected.
+        assert_eq!(s("validate_url", "/a/b?c=d#e"), "/a/b?c=d#e");
+        assert_eq!(s("validate_url", "/"), "/");
+        assert_eq!(s("validate_url", " /p "), "/p");
+    }
+
+    fn referer(r: &str, origin: &str) -> bool {
+        let arg = Value::Pair(
+            Box::new(Value::String(r.to_string())),
+            Box::new(Value::String(origin.to_string())),
+        );
+        apply("csrf_check_referer", &arg).unwrap().unwrap() == Value::Bool(true)
+    }
+
+    /// Regression (audit M4): a prefix match accepted any referer that merely
+    /// STARTS WITH the origin's text — another host, a userinfo trick, or a
+    /// different port.
+    #[test]
+    fn csrf_referer_requires_exact_origin_then_delimiter() {
+        let o = "https://bank.example";
+        for bad in [
+            "https://bank.example.attacker.net/transfer",
+            "https://bank.example@evil.example/",
+            "https://bank.example:8443/",
+            "https://bank.examplex/",
+            "https://bank.exampl",
+            "http://bank.example/",
+            "",
+        ] {
+            assert!(!referer(bad, o), "{bad:?} must not match {o}");
+        }
+        for good in [
+            "https://bank.example",
+            "https://bank.example/",
+            "https://bank.example/transfer?to=1",
+            "https://bank.example?x=1",
+            "https://bank.example#frag",
+        ] {
+            assert!(referer(good, o), "{good:?} must match {o}");
+        }
+        // A trailing slash on the configured origin is the same origin.
+        assert!(referer("https://bank.example/x", "https://bank.example/"));
+        assert!(!referer("https://bank.example.evil/x", "https://bank.example/"));
+        // Empty (or slash-only) configured origin never matches.
+        assert!(!referer("https://bank.example/", ""));
+        assert!(!referer("/x", "/"));
     }
 
     #[test]
@@ -878,7 +980,52 @@ mod tests {
         };
         assert_eq!(a.len(), 32);
         assert!(a.chars().all(|c| c.is_ascii_hexdigit()));
-        assert_ne!(a, b, "successive tokens must differ (counter mixed in)");
+        assert_ne!(a, b, "successive tokens must differ");
+    }
+
+    /// Regression (audit H1): the old token was fixed-key SipHash of
+    /// (wall-clock ns, process counter), recoverable offline by searching the
+    /// mint-time window. Replay that attack against fresh tokens: it must
+    /// find nothing, and tokens must not repeat.
+    #[test]
+    fn csrf_tokens_are_not_derivable_from_clock_and_counter() {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        fn now_ns() -> u64 {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos() as u64
+        }
+        fn old_token(nanos: u64, n: u64) -> String {
+            let mut h1 = DefaultHasher::new();
+            (nanos, n, 0xC5F1_0001_u64).hash(&mut h1);
+            let mut h2 = DefaultHasher::new();
+            (nanos, n, 0x7012_0002_u64).hash(&mut h2);
+            format!("{:016x}{:016x}", h1.finish(), h2.finish())
+        }
+        let mut seen = std::collections::HashSet::new();
+        for _ in 0..3 {
+            let t0 = now_ns();
+            let tok = match apply("csrf_generate", &Value::Unit).unwrap().unwrap() {
+                Value::String(t) => t,
+                other => panic!("expected token, got {other:?}"),
+            };
+            let t1 = now_ns();
+            let window = t0..=t1.min(t0 + 20_000);
+            for ns in window {
+                for n in 0..32 {
+                    assert_ne!(old_token(ns, n), tok, "token recovered from (time, counter)");
+                }
+            }
+            assert!(seen.insert(tok), "token repeated");
+        }
+        for _ in 0..256 {
+            let Value::String(t) = apply("csrf_generate", &Value::Unit).unwrap().unwrap() else {
+                panic!("expected token")
+            };
+            assert!(seen.insert(t), "token repeated");
+        }
     }
 
     #[test]

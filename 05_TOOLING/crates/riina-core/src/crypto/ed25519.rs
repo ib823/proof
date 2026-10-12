@@ -1043,7 +1043,7 @@ impl Ed25519SigningKey {
     #[must_use]
     pub fn from_seed(seed: &[u8; SECRET_KEY_SIZE]) -> Self {
         // 1. Hash the seed with SHA-512
-        let expanded = Sha512::hash(seed);
+        let mut expanded = Sha512::hash(seed);
 
         // 2. Clamp the first 32 bytes to form the scalar
         let mut clamped = [0u8; 32];
@@ -1053,7 +1053,7 @@ impl Ed25519SigningKey {
         clamped[31] |= 64; // Set second-highest bit
 
         // 3. Compute public key: A = s * B
-        let scalar = Scalar::from_bytes_mod_order(&clamped);
+        let mut scalar = Scalar::from_bytes_mod_order(&clamped);
         let public_point = basepoint().scalar_mul(&scalar);
         let public_key = public_point.compress();
 
@@ -1062,11 +1062,20 @@ impl Ed25519SigningKey {
         expanded_key[..32].copy_from_slice(&clamped);
         expanded_key[32..].copy_from_slice(&expanded[32..]);
 
-        Self {
+        let key = Self {
             seed: *seed,
             expanded: expanded_key,
             public_key,
-        }
+        };
+
+        // Law 4: the stack temporaries hold the secret scalar and the nonce
+        // prefix — the whole signing secret. The struct's Drop scrubs its own
+        // copy, but these locals would otherwise linger on the stack.
+        expanded.zeroize();
+        clamped.zeroize();
+        scalar.bytes.zeroize();
+        expanded_key.zeroize();
+        key
     }
 
     /// Generate a new random signing key
@@ -1106,8 +1115,10 @@ impl Ed25519SigningKey {
         let mut hasher = Sha512::new();
         hasher.update(&self.expanded[32..]); // prefix
         hasher.update(message);
-        let r_hash = hasher.finalize();
-        let r = Scalar::from_bytes_mod_order_wide(&r_hash);
+        let mut r_hash = hasher.finalize();
+        let mut r = Scalar::from_bytes_mod_order_wide(&r_hash);
+        // The nonce r is as sensitive as the key (r + k*a reveals a).
+        r_hash.zeroize();
 
         // 2. R = r * B (compute commitment point)
         let r_point = basepoint().scalar_mul(&r);
@@ -1122,9 +1133,13 @@ impl Ed25519SigningKey {
         let k = Scalar::from_bytes_mod_order_wide(&k_hash);
 
         // 4. s = (r + k * scalar) mod L
-        let scalar = Scalar::from_bytes_mod_order(&self.expanded[..32].try_into().unwrap());
-        let k_scalar = scalar_mul(&k, &scalar);
+        let mut scalar = Scalar::from_bytes_mod_order(&self.expanded[..32].try_into().unwrap());
+        let mut k_scalar = scalar_mul(&k, &scalar);
         let s = scalar_add(&r, &k_scalar);
+        // Law 4: scrub the secret scalar, the nonce and k*a from the stack.
+        scalar.bytes.zeroize();
+        k_scalar.bytes.zeroize();
+        r.bytes.zeroize();
 
         // 5. Signature is (R, s)
         let mut signature = [0u8; SIGNATURE_SIZE];

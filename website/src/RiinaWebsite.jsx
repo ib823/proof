@@ -36,8 +36,8 @@ const EV = [
   },
   {
     name: 'Preservation.preservation', tier: 'core', sign: '⊢',
-    claim: 'Evaluation preserves typing and the effect row',
-    statement: 'If a well-typed term steps, the result is well-typed at the same type, and the effects performed stay within the declared effect row. Types and effect contracts mean the same thing at every point during execution.',
+    claim: 'Evaluation preserves typing',
+    statement: 'If a well-typed term steps, the result is well-typed at the same type (in an extended store typing). preservation_effect also bounds the result\'s effect by the ORIGINALLY declared effect, so EffectGate.effect_sound_multi_step_declared proves every configuration reachable by evaluation performs only effects within the declaration (the Coq model orders effects by a single level, coarser than the checker\'s per-category rule).',
     file: '02_FORMAL/coq/type_system/Preservation.v',
     cmd: 'cd 02_FORMAL/coq && make type_system/Preservation.vo',
   },
@@ -50,17 +50,31 @@ const EV = [
   },
   {
     name: 'Declassification.logical_relation_declassify_proven', tier: 'core', sign: '⊢',
-    claim: 'dedah with a proof is the only exit for a secret',
-    statement: 'Declassification soundness: dedah … dengan bukti preserves the logical relation, and declassify_requires_public_context pins where it may happen. The shipped compiler mirrors this: any Secret-carrying type at a print, network or file sink is a SecurityViolation — the sanctioned exit is exactly this rule.',
+    claim: 'A declassification step lemma (building block)',
+    statement: 'Proves that dedah of a classified value takes its evaluation step as specified, and declassify_requires_public_context pins where it may happen. It is a building block; the non-interference theorem itself is NonInterferenceRefFree.ref_free_noninterference below. Enforcement in the compiler is the rule that a Secret-carrying type at a print, network or file sink is rejected, with dedah plus a proof as the sanctioned exit.',
     file: '02_FORMAL/coq/properties/Declassification.v',
     cmd: 'cd 02_FORMAL/coq && make properties/Declassification.vo',
   },
   {
-    name: 'ReducibilityFull.well_typed_SN_recursion_free', tier: 'core', sign: '⊢',
-    claim: 'Recursion-free programs terminate (scoped SN)',
-    statement: 'Strong normalization, machine-checked-scoped to the recursion-free fragment: the recursion_free hypothesis is part of the theorem statement, so the claim cannot silently overreach now that general recursion is in the core. General recursion is type-safe and intentionally not normalizing.',
-    file: '02_FORMAL/coq/termination/ReducibilityFull.v',
-    cmd: 'cd 02_FORMAL/coq && make termination/ReducibilityFull.vo',
+    name: 'StrongNormRefFree.ref_free_well_typed_SN', tier: 'core', sign: '⊢',
+    claim: 'Strong normalization for the reference-free core — no premises',
+    statement: 'Every well-typed term of the reference-free, fix-free core terminates in every store and is strongly normalizing (a Tait-style logical relation; closed under the global context). References are excluded because they must be: ReducibilityFull.well_typed_SN_conclusion_is_false proves a well-typed program diverges through a function stored in a reference (Landin\'s knot), so the older full-calculus well_typed_SN is vacuous.',
+    file: '02_FORMAL/coq/termination/StrongNormRefFree.v',
+    cmd: 'cd 02_FORMAL/coq && make termination/StrongNormRefFree.vo',
+  },
+  {
+    name: 'NonInterferenceRefFree.ref_free_noninterference', tier: 'core', sign: '⊢',
+    claim: 'Non-interference for the reference-free core',
+    statement: 'Run a well-typed program twice, changing only its Secret inputs: an observable (first-order) result is the same value both times. Proven with a binary logical relation, closed under the global context. Scope: references and general recursion are not covered yet (REQ-89).',
+    file: '02_FORMAL/coq/properties/NonInterferenceRefFree.v',
+    cmd: 'cd 02_FORMAL/coq && make properties/NonInterferenceRefFree.vo',
+  },
+  {
+    name: 'NonInterferenceRefFree.ref_free_constant_time', tier: 'core', sign: '⊢',
+    claim: 'Execution time does not depend on secrets (timing contract)',
+    statement: 'For the same core, changing only the Secret inputs leaves the number of evaluation steps unchanged, and that number is well defined because evaluation is deterministic. The cost model is the reduction count of the formal semantics, not cycles of compiled code; compiled code relies on the checker\'s constant-time rule and the codegen structural pass.',
+    file: '02_FORMAL/coq/properties/NonInterferenceRefFree.v',
+    cmd: 'cd 02_FORMAL/coq && make properties/NonInterferenceRefFree.vo',
   },
   {
     name: 'X25519.x25519_rfc7748_vector1', tier: 'bridge', sign: '≡',
@@ -72,7 +86,7 @@ const EV = [
   {
     name: 'montgomery::tests::test_x25519_matches_coq_model', tier: 'bridge', sign: '≡',
     claim: 'The shipping Rust is checked against the Coq model',
-    statement: 'The bridge test: the X25519 implementation that actually ships is compared against the Coq model’s outputs. One of nine Coq⇄Rust formal-equivalence links for crypto primitives — the mechanism that keeps proofs about the code, not about a paper model of it.',
+    statement: 'The bridge test: the X25519 implementation that actually ships is compared against the Coq model’s outputs on test vectors. One of nine such differential links between Coq executable models and the Rust crypto — testing, not a proof that the Rust implements the model.',
     file: '05_TOOLING/crates/riina-core/src/crypto/montgomery.rs',
     cmd: 'cargo test -p riina-core --manifest-path 05_TOOLING/Cargo.toml test_x25519_matches_coq_model',
   },
@@ -177,14 +191,14 @@ const STDLIB = [
 const PIPELINE_STATIC = [
   { num: '01', title: 'Security becomes a type', desc: 'sulit classifies a secret into Rahsia<T>, kesan declares which effects a function may perform, masa_tetap fixes a region as constant-time, sekali makes a value linear. These are checked constructs, not comments or naming conventions a reviewer has to notice.' },
   { num: '02', title: 'Effects are tracked through the call graph', desc: 'A signature such as kesan Baca + Kripto is a contract. The checker propagates it across every call, so a helper five frames down cannot quietly open a socket on your behalf. The error is exact: “Effect violation: allowed Pure, found Write.”' },
-  { num: '03', title: 'The checker discharges proof obligations', desc: 'Each security-relevant construct is checked against rules that mirror the machine-checked theorem base — type safety, effect soundness, declassification, constant time. A rule that cannot be discharged is a build failure, not a warning.' },
+  { num: '03', title: 'The checker discharges proof obligations', desc: 'Each security-relevant construct is checked by typing rules modelled on the Coq development. Type safety and dynamic effect soundness are machine-checked end to end; non-interference, constant time (step count) and termination are machine-checked for the reference-free core and enforced by the checker beyond it. A rule that cannot be discharged is a build failure, not a warning.' },
 ];
 
 const RESEARCH = [
   { name: 'Core type theory', desc: 'Type safety, logical relations, declassification, general recursion in the mechanized core' },
-  { name: 'Compiler', desc: '19 crates, 3,002 tests, zero third-party runtime dependencies (SBOM-proven)' },
+  { name: 'Compiler', desc: '18 crates, 3,528 tests, zero third-party runtime dependencies (SBOM-proven)' },
   { name: 'Attack surface', desc: '1,231+ threats modelled across the research corpus' },
-  { name: 'Termination and memory', desc: 'Sized types, scoped strong normalisation, separation logic' },
+  { name: 'Termination and memory', desc: 'Sized types, premise-free strong normalisation for the reference-free core, separation-logic models' },
   { name: 'Concurrency and effects', desc: 'Session types, effect algebra, choreography projection' },
   { name: 'Runtime and hardware', desc: 'Constant time, side-channel models, leakage contracts (Guarnieri et al.)' },
   { name: 'Crypto engineering', desc: 'Nine Coq⇄Rust primitive equivalences, CBOM, typed algorithm deprecation' },
@@ -209,7 +223,7 @@ const SECTORS = [
   { name: 'Defence and military', regs: 'CMMC · ITAR · NIST 800-53', desc: 'Compartmentalisation typed rather than reviewed: classified data in Rahsia types, capability-gated operations, constant-time discipline for signals work.' },
   { name: 'Healthcare', regs: 'HIPAA · FDA 21 CFR 11', desc: 'PHI carried in secret types that cannot reach an unauthorised sink; audit-trail preconditions checked; a mechanized Coq model of the §164.312 slice.' },
   { name: 'Financial services', regs: 'PCI-DSS · SOX · BNM RMiT', desc: 'Cardholder data isolated by construction, hardcoded-credential rules, constant-time operations against timing attacks. DORA composes for EU entities.' },
-  { name: 'Aerospace and aviation', regs: 'DO-178C', desc: 'Deterministic evaluation is a mechanized theorem; termination is proven for the recursion-free fragment; the do-178c profile checks the code-level slice.' },
+  { name: 'Aerospace and aviation', regs: 'DO-178C', desc: 'Deterministic evaluation is a mechanized theorem, and termination is proven for the reference-free, fix-free core (not for general recursion or code using references); the do-178c profile checks the code-level slice.' },
   { name: 'Technology and SaaS', regs: 'ISO 27001 · NIST 800-53 · SOX', desc: 'Access control and audit-logging preconditions checked at compile time; secret typing enforced by the IFC rule rather than by review.' },
   { name: 'Energy and utilities', regs: 'NERC CIP · IEC 62443', desc: 'Access-boundary and control-system rules for critical infrastructure, checked per build with passing and violating test cases.' },
   { name: 'Islamic finance', regs: 'BNM RMiT · ESG/SDG', desc: 'BNM RMiT and ESG/SDG profiles ship today. A dedicated Syariah-compliant financial type library (AAOIFI/IFSB) is tracked on the public roadmap — planned, not claimed.' },
@@ -256,7 +270,7 @@ const RULES = [
 // Release history — dates and figures from CHANGELOG.md.
 const RELEASES = [
   { version: 'v0.4.0', date: '05 Aug 2026', items: [
-    { text: 'Nine Coq⇄Rust formal-equivalence proofs for crypto primitives — GHASH (×2), AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519 ladder' },
+    { text: 'Nine Coq executable models of crypto primitives, differential-tested against the shipping Rust — GHASH (×2), AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519 ladder' },
     { text: 'Constant-time hardening, CI-gated — including a real variable-time leak found and fixed in Ed25519 signing' },
     { text: '12,638 Qed across 328 active files at the tagged commit — 0 Admitted, 0 axioms' },
     { text: 'Set union/intersect O(n·m) → O(n+m) with a fast-path-equals-naive guard' } ] },
@@ -466,9 +480,9 @@ function Home({ go, metrics }) {
           <MonoLabel style={{ marginBottom: 'clamp(22px, 3vw, 34px)' }}>What is actually proven</MonoLabel>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 1, background: '#d8d3c7', border: '1px solid #d8d3c7' }}>
             {[
-              ['Information flow', 'A secret-typed value cannot reach a print, network or file sink — the checker rejects the flow on every path, and the only sanctioned exit is dedah with a proof.', 'Declassification.logical_relation_declassify_proven'],
+              ['Information flow', 'The checker rejects a secret-typed value at a print, network or file sink, and the sanctioned exit is dedah with a proof. For the reference-free core, Coq proves non-interference end to end: changing only the secret inputs cannot change an observable result.', 'NonInterferenceRefFree.ref_free_noninterference'],
               ['Type safety', 'Progress and preservation over the full core calculus, general recursion included. A well-typed program cannot reach an undefined state at runtime.', 'TypeSafety.type_safety · Progress · Preservation'],
-              ['Effect soundness', 'A function performs only the effects its signature declares. An undeclared write or network call is a type error: “Effect violation: allowed Pure, found Write.”', 'Preservation.preservation (effect row)'],
+              ['Effect soundness', 'The checker rejects a function that performs effects its signature does not declare: “Effect violation: allowed Pure, found Write.” In Coq, every configuration reachable by evaluation performs only effects within the declared effect.', 'EffectGate.effect_sound_multi_step_declared'],
             ].map(([title, desc, thm]) => (
               <div key={title} style={{ background: '#f5f3ee', padding: 'clamp(24px, 2.4vw, 32px) clamp(20px, 2vw, 28px)', display: 'flex', flexDirection: 'column', gap: 11 }}>
                 <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(23px, 2.1vw, 27px)', fontWeight: 400 }}>{title}</div>
@@ -675,7 +689,7 @@ function Evidence({ metrics }) {
         )}
 
         <div style={{ marginTop: 34, border: '1px solid #c9c3b4', background: '#efece4', padding: '22px 24px', fontSize: 14, lineHeight: 1.68, color: '#4a453d' }}>
-          <strong style={{ color: '#14120f' }}>On honesty.</strong> This ledger indexes the mechanized Coq lane only. The active build also carries 30 documented <span style={{ fontFamily: 'var(--font-mono)' }}>Parameter</span> declarations &mdash; interface assumptions with written rationales, enforced by <span style={{ fontFamily: 'var(--font-mono)' }}>scripts/audit-docs.sh</span> &mdash; and {fmt(tiers.domainTrivial || 0)} of the domain theorems are classed trivial in our own tiering. Kernel attestation goes deeper than the grep counts: <span style={{ fontFamily: 'var(--font-mono)' }}>riinac verify --full</span> runs <span style={{ fontFamily: 'var(--font-mono)' }}>Print Assumptions</span> on five capstone theorems; the sole permitted kernel dependency is the Rocq standard library&rsquo;s functional extensionality, and the gate fails the build if anything else ever appears. We publish these distinctions because an assessor would find them anyway.
+          <strong style={{ color: '#14120f' }}>On honesty.</strong> This ledger indexes the mechanized Coq lane only. The active build also carries 29 documented <span style={{ fontFamily: 'var(--font-mono)' }}>Parameter</span> declarations &mdash; interface assumptions with written rationales, enforced by <span style={{ fontFamily: 'var(--font-mono)' }}>scripts/audit-docs.sh</span> &mdash; and {fmt(tiers.domainTrivial || 0)} of the domain theorems are classed trivial in our own tiering. Kernel attestation goes deeper than the grep counts: <span style={{ fontFamily: 'var(--font-mono)' }}>riinac verify --full</span> runs <span style={{ fontFamily: 'var(--font-mono)' }}>Print Assumptions</span> on ten capstone theorems. Nine must be closed under the global context &mdash; no axiom at all; the tenth, the older full-calculus <span style={{ fontFamily: 'var(--font-mono)' }}>well_typed_SN</span>, may use the Rocq standard library&rsquo;s functional extensionality and is reported as conditional and vacuous. The gate fails the build if anything else ever appears. We publish these distinctions because an assessor would find them anyway.
         </div>
       </div>
     </div>

@@ -597,3 +597,41 @@ Proof.
 Qed.
 
 (** End of EffectGate.v *)
+
+(** ** Section 11: Dynamic effect soundness against the DECLARED effect (REQ-87)
+
+    [effect_sound_after_step] / [effect_sound_multi_step] above bound a reduct
+    by a fresh [ε'] unrelated to the declared [ε]. With
+    [Preservation.multi_step_preservation_effect] ([ε' ⊑ ε] along any number of
+    steps) the bound is the declared effect itself: every [perform] site of every
+    configuration reachable from a term typed at [ε] lies within [ε]. *)
+Theorem effect_sound_multi_step_declared : forall e e' T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) -->* (e', st', ctx') ->
+  performs_within e' ε.
+Proof.
+  intros e e' T ε st st' ctx ctx' Σ Hty Hwf Hmulti.
+  destruct (multi_step_preservation_effect _ _ Hmulti e e' T ε st st' ctx ctx' Σ
+              eq_refl eq_refl Hty Hwf) as [Σ' [ε' [_ [_ [Hty' Hle]]]]].
+  apply performs_within_mono with ε'.
+  - exact Hle.
+  - apply core_effects_within with (G := nil) (S := Σ') (D := Public) (T := T).
+    exact Hty'.
+Qed.
+
+(** Single-step form. *)
+Theorem effect_sound_after_step_declared : forall e e' T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) --> (e', st', ctx') ->
+  performs_within e' ε.
+Proof.
+  intros e e' T ε st st' ctx ctx' Σ Hty Hwf Hstep.
+  destruct (preservation_effect e e' T ε st st' ctx ctx' Σ Hty Hwf Hstep)
+    as [Σ' [ε' [_ [_ [Hty' Hle]]]]].
+  apply performs_within_mono with ε'.
+  - exact Hle.
+  - apply core_effects_within with (G := nil) (S := Σ') (D := Public) (T := T).
+    exact Hty'.
+Qed.
