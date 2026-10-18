@@ -1,6 +1,6 @@
 # RIINA Syntax Improvement Specification v2.0.0
 
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3528 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3530 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 **Document ID:** `SYNTAX_IMPROVEMENT_SPEC_v2_0_0`
 **Date:** 2026-01-30

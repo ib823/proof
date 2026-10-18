@@ -4762,6 +4762,10 @@ Tests:
 
 Seed 70 at 40,000 iterations now passes in release.
 
+Merged via PR #91 as `b70b7f0b` (11/11 CI checks green on `c2e2bd27`). The
+website was redeployed (`gh-pages` on `ib823/riina` `35f41d8` → `61c8b56`), and
+the published Rust test count is now 3,530 (full `cargo test`).
+
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
 **Owner directive (2026-08-06):** make RIINA an indisputable, disruptive, unparalleled innovation,
