@@ -97,7 +97,7 @@ pub mod wasm_encode;
 // Re-export primary interface
 pub use backend::{backend_for_target, Backend, BackendOutput, Target};
 pub use emit::{emit_c, CEmitter};
-pub use interp::Interpreter;
+pub use interp::{declare_eval_stack, Interpreter};
 pub use ir::{BasicBlock, Function, Instruction, Program};
 pub use lower::Lower;
 
