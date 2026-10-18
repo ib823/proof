@@ -4721,6 +4721,47 @@ Merged via PR #90 as `68b6c505` (CI green on `c084b9e0`; Coq build skipped,
 no proofs changed), followed by a `metrics.json` provenance stamp at the
 merge. Counts and claim levels are unchanged.
 
+### First continuous-fuzz finding: interpreter stack overflow — 2026-10-18
+
+The scheduled `fuzz-continuous` run on `ib823/riina` (seed 70, 40,000
+iterations, 2026-10-15) failed. A mutation of `07_EXAMPLES/00_basics/recursion.rii`
+renamed `kuasa_akum`'s `eksponen` parameter, so the body read the enclosing
+function's `eksponen` and the recursion never terminated. `riinac run` then
+ABORTED on a native stack overflow (SIGABRT) instead of reporting an error. A
+six-line well-typed program reproduces it
+(`fungsi pusing(n) { pulang pusing(n + 1); }`).
+
+The finding only surfaced after three defects were fixed:
+
+1. **Interpreter (the bug).** The evaluator recurses on the native stack, and
+   only the MCP sandbox (`ExecLimits`) capped depth. A thread can now declare
+   its stack (`riina_codegen::declare_eval_stack`). Interpreters on that
+   thread measure the real stack in use and stop at 7/8 of it, at least 1 MiB
+   below the top, with "execution budget exhausted: native stack limit
+   reached". `riinac`'s driver thread declares its stack, which covers `run`,
+   `test` and the REPL. Threads that declare nothing keep the previous
+   behaviour. The guard measures stack bytes, not a frame count, because frames
+   are ~15x larger in debug builds.
+2. **Fuzz harness: seeds did not reproduce.** The corpus was read in
+   `read_dir` order, which depends on the filesystem, so seed 70 picked
+   different example files locally and passed. The corpus is now sorted. The
+   CI inputs were recovered by replaying the xorshift stream: 3 of the 4,863
+   candidates abort on the old interpreter.
+3. **Workflow: no reproducer artifact.** `fuzz-continuous.yml` uploaded only
+   `/tmp/fuzz_hang.rii`, while interpreter crashes are written to
+   `/tmp/fuzz_interp_crash.rii`. It now uploads both.
+
+Tests:
+
+- `test_unbounded_recursion_is_an_error_not_a_stack_overflow` (riina-codegen,
+  any profile).
+- `interpreter_unbounded_recursion_does_not_crash` (fuzz harness). In release
+  it fails with SIGABRT when the `riinac` wiring is reverted. In debug, the
+  4 GiB stack outruns the harness's 1 GiB RSS watchdog, so the test is
+  skipped.
+
+Seed 70 at 40,000 iterations now passes in release.
+
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
 **Owner directive (2026-08-06):** make RIINA an indisputable, disruptive, unparalleled innovation,
