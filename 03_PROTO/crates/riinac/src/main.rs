@@ -339,8 +339,12 @@ fn main() {
         match std::thread::Builder::new()
             .name("riinac".into())
             .stack_size(size)
-            .spawn(run)
-        {
+            .spawn(move || {
+                // `run`, `test` and the REPL interpret on this thread: an
+                // unbounded recursion must end as a runtime error, not abort.
+                riina_codegen::declare_eval_stack(size);
+                run();
+            }) {
             Ok(worker) => {
                 if let Err(panic) = worker.join() {
                     std::panic::resume_unwind(panic);

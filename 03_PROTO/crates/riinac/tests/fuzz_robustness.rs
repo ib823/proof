@@ -329,6 +329,40 @@ fn mutate(rng: &mut XorShift, seed: &[u8]) -> String {
     String::from_utf8_lossy(&bytes).into_owned()
 }
 
+/// The `00_basics` example programs, in path order. `read_dir` order depends on
+/// the filesystem, so unsorted, one seed picked different files on different
+/// machines and a seed reported by CI did not reproduce locally (seed 70,
+/// 2026-10-15).
+fn basics_corpus() -> Vec<Vec<u8>> {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../07_EXAMPLES/00_basics");
+    let mut paths: Vec<std::path::PathBuf> = std::fs::read_dir(&dir)
+        .map(|rd| {
+            rd.filter_map(|e| e.ok())
+                .map(|e| e.path())
+                .filter(|p| p.extension().is_some_and(|x| x == "rii"))
+                .collect()
+        })
+        .unwrap_or_default();
+    paths.sort();
+    let seeds: Vec<Vec<u8>> = paths.iter().filter_map(|p| std::fs::read(p).ok()).collect();
+    assert!(!seeds.is_empty(), "expected seed corpus in {}", dir.display());
+    seeds
+}
+
+/// First continuous-fuzz finding (seed 70, 2026-10-15): a mutation of
+/// `recursion.rii` made a recursion unbounded, and `riinac run` ABORTED on a
+/// native stack overflow. It must end as a clean runtime error. A debug
+/// build's 4 GiB stack outruns the 1 GiB RSS watchdog (a skip), so this bites
+/// in the release continuous-fuzz job and in `cargo test --release`.
+#[test]
+fn interpreter_unbounded_recursion_does_not_crash() {
+    interp_no_crash(
+        "fungsi pusing(n: Nombor) -> Nombor kesan Bersih {\n    pulang pusing(n + 1);\n}\n\n\
+         fungsi utama() -> Nombor kesan Bersih {\n    pulang pusing(0);\n}\n",
+    );
+}
+
 #[test]
 fn fuzz_random_ascii_no_panic() {
     let base = 0x1234_5678_9ABC_DEF0;
@@ -354,17 +388,7 @@ fn fuzz_token_salad_no_panic() {
 #[test]
 fn fuzz_corpus_mutation_no_panic() {
     // Seed with the 00_basics examples (they parse), then mutate.
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../07_EXAMPLES/00_basics");
-    let seeds: Vec<Vec<u8>> = std::fs::read_dir(&dir)
-        .map(|rd| {
-            rd.filter_map(|e| e.ok())
-                .filter(|e| e.path().extension().is_some_and(|x| x == "rii"))
-                .filter_map(|e| std::fs::read(e.path()).ok())
-                .collect()
-        })
-        .unwrap_or_default();
-    assert!(!seeds.is_empty(), "expected seed corpus in {}", dir.display());
+    let seeds = basics_corpus();
 
     let base = 0x0BAD_C0DE_DEAD_BEEF;
     announce_fuzz_config("fuzz_corpus_mutation_no_panic", base);
@@ -382,17 +406,7 @@ fn fuzz_mutation_actually_reaches_deeper_stages() {
     // some all the way through `check_program`) — otherwise the stage-2/3
     // extension is dead code and the "fuzzes the typechecker" claim is hollow.
     // Deterministic seed ⇒ stable counts.
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../07_EXAMPLES/00_basics");
-    let seeds: Vec<Vec<u8>> = std::fs::read_dir(&dir)
-        .map(|rd| {
-            rd.filter_map(|e| e.ok())
-                .filter(|e| e.path().extension().is_some_and(|x| x == "rii"))
-                .filter_map(|e| std::fs::read(e.path()).ok())
-                .collect()
-        })
-        .unwrap_or_default();
-    assert!(!seeds.is_empty(), "expected seed corpus in {}", dir.display());
+    let seeds = basics_corpus();
 
     let mut rng = XorShift(0x0BAD_C0DE_DEAD_BEEF);
     let (mut parsed, mut checked) = (0u32, 0u32);

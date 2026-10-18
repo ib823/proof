@@ -11,8 +11,10 @@
 # Reproducibility: the harness logs its effective `iters`/`seed` (the `[fuzz]`
 # lines). A crash is reproduced locally by re-exporting the same
 # RIINA_FUZZ_ITERS + RIINA_FUZZ_SEED and running the named test; on failure the
-# harness also dumps the offending input to /tmp/fuzz_hang.rii, uploaded here as
-# an artifact for triage.
+# harness also dumps the offending input (/tmp/fuzz_hang.rii for a hang,
+# /tmp/fuzz_interp_crash.rii for an interpreter crash), uploaded here as an
+# artifact for triage. The seed corpus is read in sorted order, so a seed
+# reproduces on any machine.
 #
 # This wraps the in-tree stable-Rust harness (pinned 1.94.1, dependency-free);
 # it deliberately does NOT introduce cargo-fuzz/libFuzzer (nightly-only, against
@@ -79,5 +81,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: fuzz-reproducer
-          path: /tmp/fuzz_hang.rii
+          # fuzz_robustness.rs writes a hang to fuzz_hang.rii and an
+          # interpreter crash to fuzz_interp_crash.rii; upload whichever exists.
+          path: |
+            /tmp/fuzz_hang.rii
+            /tmp/fuzz_interp_crash.rii
           if-no-files-found: ignore

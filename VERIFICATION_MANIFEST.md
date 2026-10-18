@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-12T01:31:41Z
-**Git SHA:** 166ed506a
+**Generated:** 2026-10-18T02:27:17Z
+**Git SHA:** bbc84e434
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3528 tests |
+| Rust Tests | PASS | 3530 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 334 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 334 .vo files compiled in 193s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 334 .vo files compiled in 185s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
@@ -24,7 +24,7 @@
 | Isabelle sorry/oops | PASS | 0 sorry + 0 oops in 368 files (12925 lemmas) |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | WARN | 12012 admit in 315 files (19 lemmas) |
-| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 317 files (12284 theorems) |
 | Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 7s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 306 files (11627 assertions) |

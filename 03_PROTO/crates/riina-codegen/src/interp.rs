@@ -306,6 +306,42 @@ pub struct Interpreter {
     /// Resource/capability limits for UNTRUSTED programs (`None` = the
     /// ordinary unrestricted interpreter). See [`crate::ExecLimits`].
     limits: Option<ActiveLimits>,
+    /// Native-stack guard (see [`declare_eval_stack`]): the byte budget for
+    /// this thread, the stack position of the outermost active evaluation,
+    /// and how many evaluations are active.
+    stack_budget: Option<usize>,
+    stack_base: usize,
+    eval_nesting: usize,
+}
+
+thread_local! {
+    /// Native stack the evaluator may use on this thread, set by the thread's
+    /// creator through [`declare_eval_stack`]. `None` (the default) means the
+    /// stack size is unknown, and the evaluator is unguarded.
+    static EVAL_STACK_BUDGET: std::cell::Cell<Option<usize>> =
+        const { std::cell::Cell::new(None) };
+}
+
+/// Declare that the current thread was spawned with `stack_bytes` of stack.
+///
+/// The evaluator recurses on the native stack, so an unbounded recursion in a
+/// well-typed program (`fungsi f(n) { pulang f(n + 1); }`) used to overflow it
+/// — an uncatchable abort, found by the continuous fuzzer on 2026-10-15.
+/// Interpreters created on this thread afterwards stop such a program with a
+/// runtime error instead. One eighth of the stack (at least 1 MiB) is held back
+/// for the frames above the interpreter and for the deepest single step taken
+/// between two checks.
+pub fn declare_eval_stack(stack_bytes: usize) {
+    let reserve = (stack_bytes / 8).max(1 << 20);
+    EVAL_STACK_BUDGET.with(|budget| budget.set(Some(stack_bytes.saturating_sub(reserve))));
+}
+
+/// The current native stack position: the address of a local in this frame.
+/// Only the distance between two positions on the same thread is meaningful.
+#[inline]
+fn stack_position() -> usize {
+    let probe = 0u8;
+    std::hint::black_box(std::ptr::from_ref(&probe)).addr()
 }
 
 /// The running state of an [`crate::ExecLimits`] budget.
@@ -357,6 +393,9 @@ impl Interpreter {
             actor_handlers: std::collections::HashMap::new(),
             content_store: HashMap::new(),
             limits: None,
+            stack_budget: EVAL_STACK_BUDGET.with(std::cell::Cell::get),
+            stack_base: 0,
+            eval_nesting: 0,
         }
     }
 
@@ -479,9 +518,32 @@ impl Interpreter {
         }
     }
 
+    /// Evaluate with an environment, refusing to recurse past the thread's
+    /// declared native stack (see [`declare_eval_stack`]). Undeclared threads
+    /// pay one `Option` check.
+    fn eval_with_env(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+        let Some(budget) = self.stack_budget else {
+            return self.eval_with_env_charged(env, expr);
+        };
+        let here = stack_position();
+        if self.eval_nesting == 0 {
+            self.stack_base = here;
+        } else if self.stack_base.abs_diff(here) > budget {
+            return Err(Error::InvalidOperation(format!(
+                "execution budget exhausted: native stack limit reached \
+                 ({} MiB; unbounded recursion?)",
+                budget >> 20
+            )));
+        }
+        self.eval_nesting += 1;
+        let result = self.eval_with_env_charged(env, expr);
+        self.eval_nesting -= 1;
+        result
+    }
+
     /// Evaluate with an environment, charging the sandbox budget (if any) for
     /// every step. Unrestricted interpreters pay one `Option` check.
-    fn eval_with_env(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
+    fn eval_with_env_charged(&mut self, env: &Env, expr: &Expr) -> Result<Value> {
         let Some(limits) = self.limits.as_mut() else {
             return self.eval_with_env_inner(env, expr);
         };
@@ -3934,6 +3996,40 @@ mod tests {
         let expr = p.parse_program().unwrap().desugar();
         let mut interp = Interpreter::new();
         interp.eval_with_builtins(&expr).unwrap()
+    }
+
+    /// Continuous-fuzz finding (seed 70, 2026-10-15): a well-typed but
+    /// unbounded recursion overflowed the native stack and ABORTED the process.
+    /// On a thread that declared its stack it is a runtime error instead, and
+    /// bounded recursion on that same thread still evaluates.
+    #[test]
+    fn test_unbounded_recursion_is_an_error_not_a_stack_overflow() {
+        const STACK: usize = 256 << 20;
+        std::thread::scope(|scope| {
+            std::thread::Builder::new()
+                .stack_size(STACK)
+                .spawn_scoped(scope, || {
+                    declare_eval_stack(STACK);
+                    let expr = riina_parser::Parser::new(
+                        "fungsi f(n: Nombor) -> Nombor kesan Bersih { pulang f(n + 1); } f(0)",
+                    )
+                    .parse_program()
+                    .unwrap()
+                    .desugar();
+                    let err = Interpreter::new().eval_with_builtins(&expr).unwrap_err();
+                    assert!(
+                        matches!(&err, Error::InvalidOperation(m) if m.contains("native stack limit")),
+                        "{err:?}"
+                    );
+                    let v = run_src(
+                        "fungsi g(n: Nombor) -> Nombor kesan Bersih { kalau n < 1 { pulang 0; } pulang 1 + g(n - 1); } g(30)",
+                    );
+                    assert_eq!(v, Value::Int(30));
+                })
+                .expect("spawn declared-stack interpreter thread")
+                .join()
+                .expect("interpreter test body panicked")
+        });
     }
 
     #[test]
