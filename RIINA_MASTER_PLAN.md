@@ -219,7 +219,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-10-11 in a managed cloud container on Rust 1.94.1 and pinned Rocq 9.1.1 / stdlib 9.1.0: full Coq build (334 active modules, 0 warnings), `riinac verify --coq` kernel attestation of the capstones, `scripts/audit-docs.sh`. See the Part 11 entry "Full audit and remediation — 2026-10-11". Prior full validation incl. both Rust workspaces and `make verify-all`: 2026-09-08 (Codespaces).**
+**Last verified: 2026-10-19 in a managed cloud container on Rust 1.94.1, pinned Rocq 9.1.1 / stdlib 9.1.0 and wasmtime 27.0.0: `riinac verify --full` PASS (334 modules, 0 warnings, ten capstones attested), both Rust workspaces with no backend-tool opt-out, clippy, `scripts/audit-docs.sh`. See the Part 11 entry "Assessment and fail-open fixes — 2026-10-19". Previously: 2026-10-11 in a managed cloud container on Rust 1.94.1 and pinned Rocq 9.1.1 / stdlib 9.1.0: full Coq build (334 active modules, 0 warnings), `riinac verify --coq` kernel attestation of the capstones, `scripts/audit-docs.sh`. See the Part 11 entry "Full audit and remediation — 2026-10-11". Prior full validation incl. both Rust workspaces and `make verify-all`: 2026-09-08 (Codespaces).**
 
 ### Coq (Primary Prover)
 
@@ -322,18 +322,18 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 ### Rust Prototype
 
-Measured 2026-09-08 on Rust 1.94.1 in Codespaces. Full workspace test logs and
-Clippy logs are retained for the REQ-83 review; no backend-tool opt-out was set.
+Measured 2026-10-19 on Rust 1.94.1 in a managed cloud container with `cc` and
+wasmtime 27.0.0 present (no backend-tool opt-out). Coverage is from 2026-09-08.
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 3,376 passing, 0 failed, 2 ignored documentation examples |
-| Tests (05_TOOLING/) | 323 passing, 0 failed, 0 ignored |
+| Tests (03_PROTO/) | 3,555 passing, 0 failed, 2 ignored documentation examples |
+| Tests (05_TOOLING/) | 352 passing, 0 failed, 0 ignored |
 | Crates (03_PROTO) | 18 workspace members, derived with `cargo metadata --no-deps` |
 | Crates (05_TOOLING) | 8 workspace members (4 crates and 4 tools), derived with `cargo metadata --no-deps` |
 | Clippy | Both workspaces clean with `--all --all-targets -- -D warnings` |
-| Frontend line coverage | 83.12%, measured by `bash scripts/coverage-check.sh 80` |
-| Example .rii files | 172 |
+| Frontend line coverage | 83.12%, measured 2026-09-08 by `bash scripts/coverage-check.sh 80` |
+| Example .rii files | 172; 84 pass `riinac check` (gate `rii_corpus_gate`, `riinac/tests/end_to_end.rs`; 98 → 84 on 2026-10-19, REQ-93) |
 
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords
@@ -460,6 +460,16 @@ research source, and detailed description.
 | REQ-87 | **Dynamic effect soundness (found 2026-10-11 audit). DONE 2026-10-11.** `preservation_effect` (all 38 step cases) and `multi_step_preservation_effect` in `type_system/Preservation.v` add `effect_level ε' ≤ effect_level ε` to preservation; `effect_sound_multi_step_declared` (`effects/EffectGate.v`, kernel-closed, attested as an axiom-free capstone) proves every configuration reachable from `⊢ e : τ ! ε` (pc Public, well-formed store) performs only effects within the DECLARED `ε`. Caveat (model-level): the typing judgment's effect bound is the total order `effect_level`; `T_Grant` is unrestricted and `T_Require` checks no grant in the model. The COMPILER is strictly finer since 2026-10-11 (effect sets, same-category coverage, attenuation-only `beri`; REQ-88). Complemented by an order-independent, SET-based theorem: `effects/EffectContainment.v` `reachable_effects_from_program_text` / `absent_effect_never_reachable` (kernel-closed, untyped) — no reachable configuration contains a perform/require/grant site whose label is absent from the program text and initial store. | P1 | DONE | Phase 2 |
 | REQ-88 | **2026-10-11 audit remediation record.** Kernel: removed two `False`-deriving files from the active build (`Unset Positivity Checking` in `domains/AlgebraicEffects.v` — rebuilt with first-order resumptions; contradictory `Parameter`s in `domains/PhysicalSecurity.v` — rebuilt with a satisfiability witness `physical_tcb_satisfiable`); `riinac verify` gained kernel-weakening-construct scanning, conditional-capstone tracking, an axiom-free capstone pin, a Coq warning budget and a `--coq` lane. Gates: secret scanning over full history, bidi scan, untracked-file refusal in sync-public, SHA-pinned actions, pinned/verified toolchain installers, non-root Docker. Typechecker (Any-label erasure, implicit flows via slots/loops/`putus`, assignment labels, effect erasure through `Any`, top-level capability grants, linearity, CT through generic calls/indexing), runtime/tools (CSRF entropy, TLS key exchange, fail-closed manifest/hash-chain/proof-bundle verifiers, FIPS 204 pure ML-DSA, MCP effect sandbox, URL/referer checks, key file modes, http registries), parser/codegen robustness. Docs: NI/SN/CT/effect claims corrected to what the kernel attests; vacuity ratchet. Merged 2026-10-11 into PR #89 together with the follow-ups: the compiler's effect check as a category-respecting partial order over effect SETS plus attenuation-only `beri`, a persistent typing context (linear memory), HMAC-SHA256-chained receipts, and Ed25519 publisher signatures for remote packages. Remaining limitations are listed in REQ-87 and the Part 11 entry. | P0 | DONE | Phase 2 |
 | REQ-89 | **Extend SN / NI / CT beyond the reference-free core.** NI and CT with references need a Kripke (store-indexed) binary relation; with `fix`, a step-indexed one (termination-insensitive NI, since `fix` may diverge). SN cannot extend to higher-order references at all (`well_typed_SN_conclusion_is_false`); it can extend to a stratified store (references to first-order data only). Exit: kernel-closed theorems for the full core or a documented, enforced stratification. | P1 | TODO | Phase 2 |
+| REQ-90 | **`riinac` CLI failed open (2026-10-19 assessment). DONE 2026-10-19 (b34d5bb).** `riinac check leaky.rii ok.rii` checked only the LAST file and exited 0 (each file argument replaced the previous one); an unknown command fell through to `check` (`riinac emit-core x.rii` printed "Success!"); `--version`/`--help` printed "Unknown option"; every banner said v0.1.0; the pre-commit/pre-push hooks rebuilt riinac only when `crates/riinac` changed, so a typechecker/codegen change was verified with a stale binary. All fixed with regression tests (`cli_hardening.rs`). | P0 | DONE | Gate C / compiler enforcement parity |
+| REQ-91 | **Runtime capability gate disagreed across backends; `[kesan-dibenarkan]` was never checked against the code (2026-10-19). DONE 2026-10-19 (8906129, 0c8b4a6).** C `main` granted `0xFFFFFFFF`; the interpreter granted nothing (07_EXAMPLES/hello_dunia.rii failed `run`, ran natively), used a level order (Network covered Write), and errored on an unhandled `laku` where Coq `ST_PerformValue` returns the payload; C checked after the payload; the C enum lacked MUT/ALLOC; `pkg build` built `IO = false` servers; actor handler effects were dropped by `tc_actor_decl`; the playground's emit-C started with no capabilities. Now: both gates seeded from `check_program`'s `EffectSet` via `EffectSet::covers`, `RequireCap` before the payload, `pkg build` refuses any program/declared effect outside the package's own manifest, handler effects charged at the declaration. Adversarially reviewed (no blocker; findings fixed or recorded). **Residuals (pre-existing):** WASM has no runtime gate; `ujian` bodies are not type-checked and `riinac test` grants no capabilities; an un-imported `src/lib.rii` beside `src/utama.rii` is not checked; `kendali` handler results differ between interpreter, C and WASM (and Coq) — see REQ-97. | P0 | DONE (residuals listed) | Gate C / compiler enforcement parity |
+| REQ-92 | **`riinac fmt` changed program meaning (2026-10-19). PARTIAL 2026-10-19 (4f49769).** It printed `(2 + 3) * 4` as `2 + 3 * 4` (gaji.rii's tax RM 160.00 → RM 4760.00), output failed `check` on 60/98, replaced actor/UI code with a comment and deleted comments. Now fails closed (re-parse + AST compare, comments refused, fixpoint required) with precedence-aware operands; on comment-stripped copies of all 172 examples 30 format and run byte-identically, the rest are refused, none silently changed. **Remaining:** a CST-based formatter that preserves comments (every committed example has comments, so fmt refuses them all today) and printer coverage for desugared forms (`untuk`, `biar` sequencing, actors, UI). | P1 | PARTIAL | Gate E (tooling) |
+| REQ-93 | **The shipped checker accepted programs that fail at runtime (progress) (2026-10-19). PARTIAL 2026-10-19 (22f681b).** (a) DONE: field access on a non-record (`n.f`, `xs.panjang()`, `t.ada("@")`) is T0011 — corpus gate 98 → 84, the 14 examples written against a non-existent method library are listed in `end_to_end.rs` (REQ-55 to rewrite). (b) DONE: arithmetic/comparison on secrets runs on interpreter, C and WASM (result stays secret). **(c) OPEN:** an unknown type name, including a typo (`Nombr`, `Rahsa<Teks>`), parses as `Any`; rejecting it needs a declared-type table across `guna` modules and generic scopes (nominal-type design). Labels survive `Any`, so it is fail-open diagnosis, not a leak. (d) OPEN (REQ-66): the interpreter's `dedah` is syntactic (Coq `declass_ok`) while C compares values. | P1 | PARTIAL | Gate C / compiler enforcement parity |
+| REQ-94 | **Owner-supplied Hardening Mandate (2026-10-19) — integration pending owner rulings D1–D9.** Assessed end to end in session (baseline B1–B14 re-verified on Linux; most hold exactly). Its REQ anchors are stale (REQ-27 closed/Gate C active; REQ-29/33/35 decided 2026-06-10; REQ-44 is the forward-reference gap), and it conflicts with CLAUDE.md Forbidden #5 (new planning docs) and Part 0 precedence; not committed. Rulings needed: D1 where it lives (recommend: fold its standards into this file as REQ rows + a Part 11 section, text under `04_SPECS/governance/`); D2 repo visibility (REQ-98); D3 Gate C criterion 1 while the audit budget is deferred; D4 scope freeze (Syariah exemption) + close stale PRs #32/#36/#37/#41/#44/#45/#46; D5 licence fixes within proprietary (clause (e), runtime-library exception); D6 REQ-29 execution (archive 2,931 generated files, drop `multiProver` aggregates); D7 a human formal-methods/security reviewer; D8 floats / C1 route / backend / crypto backend / Iris; D9 public wording. | P0 | DECISION | Cross-cutting |
+| REQ-95 | **`rawak`/`random` is not a CSPRNG (2026-10-19).** C uses a clock-seeded LCG (`emit.rs`, `rawak`), the interpreter hashes `SystemTime` (`builtins/matematik.rs`), both with modulo bias, and STDLIB.md does not warn; its effect is the Crypto permission. OS entropy elsewhere is `/dev/urandom` only, so there is no Windows path. Back it with getrandom/arc4random/BCryptGenRandom, reject-sample, document. | P1 | TODO | Gate G |
+| REQ-96 | **Honesty defects in shipped artefacts (2026-10-19).** Emitted C opens with "Generated by riina-codegen from verified RIINA source. Corresponds to formal proofs" (`emit.rs`); README's Hello World, described as type-checking and running, fails (`allowed System, found Write`); 21 of 47 `riina` doc snippets fail unintentionally; 07_EXAMPLES/README.md, docs/api/STDLIB.md prose (hard-coded in `stdlib_doc.rs`) and llms.txt still say effectful builtins are interpreter-only though 342/374 compile; README/llms link the deleted `llms-full.txt`. Wording changes need owner approval (REQ-94 D9). | P1 | TODO | Gate I |
+| REQ-97 | **Silent wrong answers / divergence outside REQ-78 (2026-10-19).** WASM emits constants for FFICall, Actor*, CRDTMerge and ContentHash (`wasm.rs`); the generated JNI `verify` always returns true (`jni.rs`); `kendali` handlers disagree across backends (`kendali (laku Tulis 5) dengan x => x + 100`: run 105, native 5, wasm nothing; the C runtime pushes frames as `RIINA_EFFECT_PURE` and reads one slot past the frame). Establish reachability from source, then refuse or fix, with differentials. | P1 | TODO | Gate E |
+| REQ-98 | **`ib823/proof` is a PUBLIC repository (2026-10-19, GitHub API: `visibility: public`, default branch `public`, Pages on).** `main` therefore exposes `06_COORDINATION` (786 files), `properties/_archive_deprecated/` (99 Admitted, 87 Axiom), prompt files and 72 branches; `sync-public.sh` curation hides nothing. Owner: make it private, or accept it as public and stop treating `main` as internal (REQ-94 D2). | P0 | DECISION | Gate J |
+| REQ-99 | **Core-calculus v2 — the Coq model must cover the shipped language before conformance can (2026-10-19 assessment).** Coq `expr` has 27 constructors, Rust `Expr` 60 (34 Rust-only: `BinOp`, `While`, `LetMut`, slots, `Return`/`Break`, lists, records, FFI, actors, UI…); `Ty` 22 vs 45; effects are a total order in Coq and sets in Rust; Coq has no builtins (Rust 374) and no output trace (`step` is over `(expr, store, effect_ctx)`); `EInt` is `nat`. Until the core gains Z integers + `BinOp`, mutable locals/loops, an output trace, a builtin-call form typed by a signature table generated from the Rust registry, effect sets and grant/require typing — and the capstones plus `type_check_fn`/`step_fn` are re-proved over it — REQ-54 S3–S5 (extraction, golden compare, fuzz differential) and any NI with observable outputs (REQ-89) apply only to programs with no arithmetic, printing, loops or builtins. | P0 | TODO | Phase 2 / Part 12 axis A |
 
 ### Extension Protocol
 
@@ -2550,6 +2560,8 @@ These cannot be made by a session; they require the project owner:
 | External audit budget (~$100k–$500k) | Gates C, G | REQ-28, REQ-32 — **DEFERRED by owner 2026-06-10 (status quo)** |
 | Maintainer recruitment plan (current bus factor 1) | Gate J | REQ-36 — **still open** (and N/A while proprietary) |
 | Trademark policy publication | Gate J | (new REQ when decided) — **still open** |
+| Hardening Mandate integration and rulings D1–D9 (where it lives, visibility, Gate C criterion 1 vs the deferred audit, freeze, licence fixes, REQ-29 execution, reviewer, technical routes, wording) | All gates | REQ-94 — **open (2026-10-19)** |
+| Repository visibility (`ib823/proof` is public) | Gate J | REQ-98 — **open (2026-10-19)** |
 
 ### Effort Sizing (rough, calendar time)
 
@@ -4765,6 +4777,83 @@ Seed 70 at 40,000 iterations now passes in release.
 Merged via PR #91 as `b70b7f0b` (11/11 CI checks green on `c2e2bd27`). The
 website was redeployed (`gh-pages` on `ib823/riina` `35f41d8` → `61c8b56`), and
 the published Rust test count is now 3,530 (full `cargo test`).
+
+### Assessment and fail-open fixes — 2026-10-19
+
+The owner asked for an exhaustive assessment of the codebase and of an
+owner-supplied "Hardening Mandate" (five credibility concerns C1–C5 turned into
+standards S1.1–S5.8 and milestones M0–M6), then said to proceed with the urgent
+fixes that need no owner decision. The full assessment went to the owner in
+session. It is not committed: the mandate asks for new planning and audit
+documents, which CLAUDE.md forbids, so where it lives is ruling D1 (REQ-94).
+
+**Baseline, re-derived by command in a fresh container** (Rust 1.94.1, Rocq 9.1.1 /
+stdlib 9.1.0 via `scripts/provision-coq.sh`, wasmtime 27.0.0 via
+`scripts/ci-install-wasmtime.sh`, TLA2Tools/Alloy via
+`scripts/provision-formal-tools.sh`):
+- `make -j4`: 334/334 modules in 2m10s.
+- `riinac verify --coq`: PASS, ten capstones (nine axiom-free).
+- `riinac verify --full`: PASS.
+- 03_PROTO: 3,530 tests, 0 failed. 05_TOOLING: 352, 0 failed.
+- clippy clean; `audit-docs.sh` and `update-proof-ledger.sh --check` clean.
+
+`origin/public` is a curated copy of this `main`, so the mandate's baseline (taken
+at public `aeda25b`) describes this code, and B1–B14 hold on Linux, most of them
+exactly (98/172 examples, 12,819 Qed, 29 Parameters, 1,318 vacuity findings,
+6,048 lines of C for `11_servis`).
+
+**What the mandate gets wrong:**
+- **Stale REQ anchors.** REQ-27 is closed and Gate C is active. REQ-29, REQ-33
+  and REQ-35 were decided 2026-06-10. REQ-44 is the forward-reference gap.
+- **Wrong facts.** "Private `main`" is false (REQ-98). The "26/30" differential
+  comes from stale AGENTS.md. `llms-full.txt` does not exist. ACVP vectors and
+  a dudect harness already exist.
+- **Internal inconsistencies:**
+  - Capability parity sits in M5, though it is a live bug.
+  - Label polymorphism sits in M2, though R12 needs it in Coq first.
+  - Domain triage comes after vacuity cleanup, though it should come first.
+  - R3, read literally, rejects the whole language.
+
+The largest gap it misses is REQ-99. The Coq core (27 constructors, no arithmetic,
+builtins or output trace) must grow before oracle conformance or observable-output
+NI can cover real programs. It also misses bus factor 1 (R8/S2.10/S5.5 cannot be
+met without a second human) and that Gate C criterion 1 is owner-blocked
+indefinitely.
+
+**Fixed this session.** Each commit was verified by the hooks on exactly its tree,
+and the capability change was adversarially reviewed:
+1. `b34d5bb` — REQ-90, the fail-open CLI.
+2. `8906129` — REQ-91, capability seeding and manifest enforcement.
+3. `4f49769` — REQ-92, `fmt` fails closed.
+4. `22f681b` — REQ-93 (a)/(b): field access on non-records is T0011, and secret
+   arithmetic runs on every backend. The corpus gate goes 98 → 84, honestly.
+5. `0c8b4a6` — review findings: actor handler effects are charged, and the
+   playground emit-C is seeded.
+
+Rust tests 3,530 → 3,555. Proofs, claim levels and the public lane table are
+unchanged.
+
+**Opened and not done:**
+- REQ-93 (c), unknown types → `Any`.
+- REQ-95, `rawak`.
+- REQ-96, honesty defects.
+- REQ-97, WASM constants, JNI and handler divergence.
+- REQ-98, visibility.
+- REQ-99, Core v2.
+- The REQ-91 residuals.
+
+Pending owner rulings D1–D9 are listed under REQ-94. Also left alone: PR #87 (VFS
+trio in C, a draft that is not recorded under REQ-70) and the seven stale March
+PRs.
+
+**Recommended next work, no owner decision needed:**
+- REQ-95.
+- The REQ-91 residuals: type-check `ujian`, seed `riinac test`, check sibling
+  modules.
+- REQ-97 reachability.
+- The truth-up of this file's own stale cells (Gate C text "148/181", the
+  REQ-55/70/73 status cells, the 2026-08-23 "NOT MERGED" label, the 2026-10-12
+  deploy note).
 
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
