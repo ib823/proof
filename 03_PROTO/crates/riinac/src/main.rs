@@ -68,39 +68,73 @@ struct Options {
     run_after_build: bool,
 }
 
+/// The compiler version, from the workspace `Cargo.toml` (which
+/// `scripts/bump-version.sh` keeps equal to `VERSION`). Never hand-typed: the
+/// banners said "v0.1.0" through the 0.4.0 release.
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+const USAGE: &str = "\
+Usage: riinac [command] [options] <file.rii>
+
+Commands:
+  check    Parse and typecheck only (default)
+  run      Parse, typecheck, and interpret
+  build    Parse, typecheck, emit C/WASM, and compile (--run to execute)
+  emit-c   Parse, typecheck, and emit C to stdout
+  emit-ir  Parse, typecheck, lower, and print IR
+  test     Discover and run inline ujian (test) blocks
+  doc      Generate HTML documentation
+  fmt      Format a .rii file
+  lsp      Start LSP server (stdio)
+  mcp      Start MCP server for AI agents (stdio)
+  repl     Interactive read-eval-print loop
+  verify   Run verification gate [--fast|--full|--coq]
+  pkg      Package manager (init/add/remove/lock/build/...)
+  help     Print this help (also --help, -h)
+  version  Print the compiler version (also --version, -V)
+
+Options:
+  --json                   Output structured JSON (for AI agents)
+  --stdin                  Read source from stdin instead of file
+  --update                 Auto-update jangkakan (expect-test) expected values
+  --compliance <profiles>  Run compliance checks (comma-separated)
+  --report                 Generate compliance report (text)
+  --report-json            Generate compliance report (JSON)
+  --report-output <file>   Write report to file instead of stdout
+  --list-compliance        List available compliance profiles
+  --target <target>        Compilation target (native, wasm32, wasm64, android-arm64, ios-arm64)
+
+Exactly one input file is accepted per invocation.";
+
 fn usage() -> ! {
-    eprintln!("Usage: riinac [command] [options] <file.rii>");
-    eprintln!();
-    eprintln!("Commands:");
-    eprintln!("  check    Parse and typecheck only (default)");
-    eprintln!("  run      Parse, typecheck, and interpret");
-    eprintln!("  build    Parse, typecheck, emit C/WASM, and compile (--run to execute)");
-    eprintln!("  emit-c   Parse, typecheck, and emit C to stdout");
-    eprintln!("  emit-ir  Parse, typecheck, lower, and print IR");
-    eprintln!("  test     Discover and run inline ujian (test) blocks");
-    eprintln!("  doc      Generate HTML documentation");
-    eprintln!("  fmt      Format a .rii file");
-    eprintln!("  lsp      Start LSP server (stdio)");
-    eprintln!("  mcp      Start MCP server for AI agents (stdio)");
-    eprintln!("  repl     Interactive read-eval-print loop");
-    eprintln!("  verify   Run verification gate [--fast|--full|--coq]");
-    eprintln!("  pkg      Package manager (init/add/remove/lock/build/...)");
-    eprintln!();
-    eprintln!("Options:");
-    eprintln!("  --json                   Output structured JSON (for AI agents)");
-    eprintln!("  --stdin                  Read source from stdin instead of file");
-    eprintln!("  --update                 Auto-update jangkakan (expect-test) expected values");
-    eprintln!("  --compliance <profiles>  Run compliance checks (comma-separated)");
-    eprintln!("  --report                 Generate compliance report (text)");
-    eprintln!("  --report-json            Generate compliance report (JSON)");
-    eprintln!("  --report-output <file>   Write report to file instead of stdout");
-    eprintln!("  --list-compliance        List available compliance profiles");
-    eprintln!("  --target <target>        Compilation target (native, wasm32, wasm64, android-arm64, ios-arm64)");
+    eprintln!("{USAGE}");
     process::exit(1);
+}
+
+/// `true` when the first argument names a source file rather than a command,
+/// so the documented `riinac <file.rii>` shorthand for `check` still works but
+/// a mistyped or unknown command (`riinac chek x.rii`, `riinac emit-core
+/// x.rii`) is an error instead of a silent `check` that reports success.
+fn looks_like_source_file(arg: &str) -> bool {
+    arg.ends_with(".rii") || arg.ends_with(".riih") || std::path::Path::new(arg).is_file()
 }
 
 fn parse_args() -> (Command, Option<PathBuf>, Options) {
     let args: Vec<String> = std::env::args().collect();
+
+    if args.len() == 2 {
+        match args[1].as_str() {
+            "--help" | "-h" | "help" => {
+                println!("{USAGE}");
+                process::exit(0);
+            }
+            "--version" | "-V" | "version" => {
+                println!("riinac {VERSION}");
+                process::exit(0);
+            }
+            _ => {}
+        }
+    }
 
     // Handle pkg early — it takes subcommands, not a file
     if args.len() >= 2 && args[1] == "pkg" {
@@ -142,9 +176,14 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
         "repl" => return (Command::Repl, None, Options::default()),
         "lsp" => return (Command::Lsp, None, Options::default()),
         "mcp" => return (Command::Mcp, None, Options::default()),
-        _ => {
+        first if first.starts_with('-') || looks_like_source_file(first) => {
             // No command given — default to Check, treat arg[1] as file
             (Command::Check, &args[1..])
+        }
+        unknown => {
+            eprintln!("Unknown command: {unknown}");
+            eprintln!("Run `riinac --help` for the list of commands.");
+            process::exit(1);
         }
     };
 
@@ -222,6 +261,17 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
                 usage();
             }
             path => {
+                // Only one input file: a second one used to replace the first
+                // silently, so `riinac check leaky.rii ok.rii` checked only
+                // `ok.rii` and reported success.
+                if let Some(prev) = &file {
+                    eprintln!(
+                        "Only one input file may be given (got `{}` and `{path}`)",
+                        prev.display()
+                    );
+                    eprintln!("Run riinac once per file.");
+                    process::exit(1);
+                }
                 file = Some(PathBuf::from(path));
             }
         }
@@ -577,7 +627,7 @@ fn run() {
             if opts.json {
                 println!("{}", format_success_json(&ty, &eff, &filename));
             } else {
-                eprintln!("RIINA Compiler v0.1.0");
+                eprintln!("RIINA Compiler v{VERSION}");
                 eprintln!("Compiling: {}", filename);
                 eprintln!("Success!");
                 println!("Type: {:?}", ty);
@@ -594,7 +644,7 @@ fn run() {
             let mut update_candidates: Vec<(String, usize, String)> = Vec::new();
 
             if !opts.json {
-                eprintln!("RIINA Test Runner v0.1.0");
+                eprintln!("RIINA Test Runner v{VERSION}");
                 eprintln!("File: {}", filename);
                 eprintln!("Typecheck: LULUS (passed)");
                 eprintln!();

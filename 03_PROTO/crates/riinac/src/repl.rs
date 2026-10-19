@@ -12,7 +12,7 @@ use riina_parser::Parser;
 
 /// Run the REPL.
 pub fn run() {
-    eprintln!("RIINA REPL v0.1.0");
+    eprintln!("RIINA REPL v{}", env!("CARGO_PKG_VERSION"));
     eprintln!("Taip ':bantuan' untuk bantuan. / Type ':help' for help.");
     eprintln!();
 

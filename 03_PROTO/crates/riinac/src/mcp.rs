@@ -127,11 +127,15 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     if config.allow_effects {
         eprintln!(
-            "RIINA MCP Server v0.1.0 — ready (--allow-effects: programs run with this \
-             process's file/network access; use only with a trusted client)"
+            "RIINA MCP Server v{} — ready (--allow-effects: programs run with this \
+             process's file/network access; use only with a trusted client)",
+            env!("CARGO_PKG_VERSION")
         );
     } else {
-        eprintln!("RIINA MCP Server v0.1.0 — ready (pure programs only; sandboxed builtins)");
+        eprintln!(
+            "RIINA MCP Server v{} — ready (pure programs only; sandboxed builtins)",
+            env!("CARGO_PKG_VERSION")
+        );
     }
 
     loop {
@@ -212,7 +216,7 @@ fn handle_initialize() -> JsonValue {
             "serverInfo",
             json::obj(vec![
                 ("name", JsonValue::String("riinac".into())),
-                ("version", JsonValue::String("0.1.0".into())),
+                ("version", JsonValue::String(env!("CARGO_PKG_VERSION").into())),
             ]),
         ),
     ])
