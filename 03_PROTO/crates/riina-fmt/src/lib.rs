@@ -28,12 +28,108 @@ impl Default for FmtConfig {
 }
 
 /// Format a RIINA program from source text.
+///
+/// FAILS CLOSED. The formatter pretty-prints the parsed AST, so it can only be
+/// trusted when its output means exactly what its input meant. Every result is
+/// therefore re-parsed and compared with the input's AST, and `Err` is returned
+/// — never a changed program — when:
+///
+/// * the output does not parse, or parses to a different program (the
+///   2026-10-19 assessment found `(2 + 3) * 4` printed as `2 + 3 * 4`, and
+///   actor/UI code replaced by a `/* … */` placeholder);
+/// * the source contains comments, which the AST does not carry and the
+///   output would silently drop;
+/// * formatting does not reach a fixpoint (formatting the output again must
+///   give the output back).
 pub fn format_source(source: &str) -> Result<String, String> {
-    let mut parser = riina_parser::Parser::new(source);
-    let program = parser
-        .parse_program()
-        .map_err(|e| format!("Parse error: {e}"))?;
-    Ok(format_program(&program, &FmtConfig::default()))
+    let original = parse(source).map_err(|e| format!("Parse error: {e}"))?;
+    if has_comments(source) {
+        return Err("refusing to format: the file contains comments, which the formatter \
+                    cannot yet preserve (it would delete them)"
+            .to_string());
+    }
+    let cfg = FmtConfig::default();
+    let formatted = format_program(&original, &cfg);
+    let reparsed = parse(&formatted).map_err(|e| {
+        format!("refusing to format: the formatter produced output that does not parse ({e})")
+    })?;
+    if !same_program(&original, &reparsed) {
+        return Err("refusing to format: the formatted output would parse to a different \
+                    program than the input (formatter bug — the file is left unchanged)"
+            .to_string());
+    }
+    if format_program(&reparsed, &cfg) != formatted {
+        return Err("refusing to format: formatting is not stable on this file \
+                    (formatting the output again changes it)"
+            .to_string());
+    }
+    Ok(formatted)
+}
+
+fn parse(source: &str) -> Result<Program, riina_parser::ParseError> {
+    riina_parser::Parser::new(source).parse_program()
+}
+
+/// The two programs denote the same thing: identical declarations, imports
+/// and visibility. Spans are ignored — they are byte offsets into the text
+/// being rewritten — and so is the ORDER of a compound effect's components
+/// (`kesan (Masa, SistemFail)` is a set; the printer lists it canonically).
+/// Nothing else is normalised.
+fn same_program(a: &Program, b: &Program) -> bool {
+    canonical_decls(a) == canonical_decls(b)
+        && a.public_names == b.public_names
+        && a.imports.len() == b.imports.len()
+        && a.imports
+            .iter()
+            .zip(&b.imports)
+            .all(|(x, y)| x.module == y.module)
+}
+
+fn canonical_decls(p: &Program) -> Vec<TopLevelDecl> {
+    p.decls
+        .iter()
+        .cloned()
+        .map(|mut d| {
+            if let TopLevelDecl::Function {
+                effect, effect_set, ..
+            } = &mut d
+            {
+                *effect_set = EffectSet::from_declaration(*effect, effect_set)
+                    .iter()
+                    .collect();
+            }
+            d
+        })
+        .collect()
+}
+
+/// Whether `source` holds a comment: any non-whitespace byte that no token
+/// covers. The lexer skips comments without producing tokens, so a gap between
+/// tokens that is not pure whitespace is exactly a comment (or anything else
+/// the token stream — and so the AST — would lose).
+fn has_comments(source: &str) -> bool {
+    let mut lexer = riina_lexer::Lexer::new(source);
+    let mut covered_to = 0usize;
+    loop {
+        match lexer.next_token() {
+            Ok(tok) if tok.kind == riina_lexer::TokenKind::Eof => break,
+            Ok(tok) => {
+                // `get` rather than indexing: a span that is not a char
+                // boundary means "cannot prove there is no comment".
+                match source.get(covered_to.min(tok.span.start)..tok.span.start) {
+                    Some(gap) if gap.chars().all(char::is_whitespace) => {}
+                    _ => return true,
+                }
+                covered_to = covered_to.max(tok.span.end);
+            }
+            // The parser accepted the source, so this is unreachable; treat it
+            // as "cannot prove there are no comments".
+            Err(_) => return true,
+        }
+    }
+    source
+        .get(covered_to..)
+        .is_none_or(|rest| rest.chars().any(|c| !c.is_whitespace()))
 }
 
 /// Render a type to its RIINA (Bahasa Melayu) surface form — e.g. `Ty::String`
@@ -476,11 +572,11 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
         }
         Expr::BinOp(op, lhs, rhs) => {
             indent(out, level, cfg);
-            fmt_expr_inline(out, lhs, cfg);
+            fmt_operand(out, lhs, op, false, cfg);
             out.push(' ');
             fmt_binop(out, op);
             out.push(' ');
-            fmt_expr_inline(out, rhs, cfg);
+            fmt_operand(out, rhs, op, true, cfg);
         }
         Expr::FFICall { name, args, .. } => {
             indent(out, level, cfg);
@@ -759,11 +855,11 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         }
         Expr::Loc(n) => out.push_str(&format!("loc#{n}")),
         Expr::BinOp(op, lhs, rhs) => {
-            fmt_expr_inline(out, lhs, cfg);
+            fmt_operand(out, lhs, op, false, cfg);
             out.push(' ');
             fmt_binop(out, op);
             out.push(' ');
-            fmt_expr_inline(out, rhs, cfg);
+            fmt_operand(out, rhs, op, true, cfg);
         }
         Expr::FFICall { name, args, .. } => {
             out.push_str(name);
@@ -817,6 +913,52 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         | Expr::UIContrastCheck(_, _) => {
             out.push_str("/* CAHAYA Phase J5: UI primitives */");
         }
+    }
+}
+
+/// Binding level of a binary operator, matching the parser's precedence chain
+/// (`parse_or` … `parse_multiplicative`). Every level is left-associative.
+fn binop_level(op: &BinOp) -> u8 {
+    match op {
+        BinOp::Or => 1,
+        BinOp::And => 2,
+        BinOp::Eq | BinOp::Ne => 3,
+        BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => 4,
+        BinOp::Add | BinOp::Sub => 5,
+        BinOp::Mul | BinOp::Div | BinOp::Mod => 6,
+    }
+}
+
+/// Print an operand of `parent`, parenthesised whenever printing it bare would
+/// re-parse differently: a looser-binding operator on the left, a looser-or-
+/// equal one on the right (left associativity: `a - (b - c)`), and any operand
+/// that is not an atom (`kalau`, `biar`, lambdas, ...). The old printer never
+/// parenthesised, so `(2 + 3) * 4` came out as `2 + 3 * 4`.
+fn fmt_operand(out: &mut String, e: &Expr, parent: &BinOp, is_right: bool, cfg: &FmtConfig) {
+    let wrap = match e {
+        Expr::BinOp(op, _, _) => {
+            let (child, parent) = (binop_level(op), binop_level(parent));
+            if is_right {
+                child <= parent
+            } else {
+                child < parent
+            }
+        }
+        Expr::Var(_)
+        | Expr::Int(_)
+        | Expr::Bool(_)
+        | Expr::String(_)
+        | Expr::Unit
+        | Expr::App(_, _)
+        | Expr::Pair(_, _) => false,
+        _ => true,
+    };
+    if wrap {
+        out.push('(');
+        fmt_expr_inline(out, e, cfg);
+        out.push(')');
+    } else {
+        fmt_expr_inline(out, e, cfg);
     }
 }
 
@@ -1217,6 +1359,66 @@ fn fmt_session_type(out: &mut String, st: &SessionType) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn reparse(src: &str) -> Program {
+        parse(src).expect("parses")
+    }
+
+    /// Operator precedence survives formatting: `(2 + 3) * 4` used to come
+    /// out as `2 + 3 * 4` (20 became 14), and left associativity needs the
+    /// right operand of `-` parenthesised.
+    #[test]
+    fn parentheses_that_carry_meaning_are_kept() {
+        for src in [
+            "fungsi utama() -> Nombor { (2 + 3) * 4 }",
+            "fungsi utama() -> Nombor { 10 - (4 - 3) }",
+            "fungsi utama() -> Benar { (betul || salah) && salah }",
+            "fungsi utama() -> Nombor { (8 / 4) / 2 }",
+        ] {
+            let out = format_source(src).expect(src);
+            assert!(same_program(&reparse(src), &reparse(&out)), "{src} -> {out}");
+        }
+        let out = format_source("fungsi utama() -> Nombor { (2 + 3) * 4 }").unwrap();
+        assert!(out.contains("(2 + 3) * 4"), "{out}");
+    }
+
+    /// The AST carries no comments, so formatting would delete them: refuse.
+    #[test]
+    fn a_file_with_comments_is_refused_not_stripped() {
+        for src in [
+            "// nota\nfungsi utama() -> Nombor { 1 }",
+            "fungsi utama() -> Nombor { /* nota */ 1 }",
+            "/// dok\nfungsi utama() -> Nombor { 1 }",
+        ] {
+            let err = format_source(src).expect_err(src);
+            assert!(err.contains("comments"), "{src}: {err}");
+        }
+        // A `//` inside a string literal is not a comment.
+        assert!(format_source("fungsi utama() -> Teks { \"http://x\" }").is_ok());
+    }
+
+    /// Constructs the printer cannot reproduce are refused. The CAHAYA block
+    /// below used to be replaced by a `/* CAHAYA ... */` placeholder — the
+    /// UI code was deleted and the output still "succeeded".
+    #[test]
+    fn output_that_would_change_the_program_is_refused() {
+        let src = "paparan {\n    tulisan(\"hai\", warna(255, 255, 255));\n}\n";
+        assert!(parse(src).is_ok(), "fixture must parse");
+        let err = format_source(src).expect_err("UI block must not be formatted away");
+        assert!(err.contains("refusing to format"), "{err}");
+    }
+
+    /// Output that does not parse is never returned (`untuk` loops print in
+    /// their desugared form, which is not surface syntax).
+    #[test]
+    fn unparseable_output_is_refused() {
+        let src = "fungsi f() -> Nombor kesan Tulis {\n    untuk i dalam 0..3 { cetak(i); }\n    pulang 0;\n}\n";
+        assert!(parse(src).is_ok(), "fixture must parse");
+        match format_source(src) {
+            Ok(out) => assert!(same_program(&reparse(src), &reparse(&out)), "{out}"),
+            Err(e) => assert!(e.contains("refusing to format"), "{e}"),
+        }
+    }
 
     #[test]
     fn test_format_simple_function() {
