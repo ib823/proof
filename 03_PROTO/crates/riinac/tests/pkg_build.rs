@@ -327,3 +327,30 @@ fn a_declared_but_uncalled_effect_still_needs_the_manifest() {
     let (ok, out) = pkg.build();
     assert!(ok, "Network = true must build: {out}");
 }
+
+/// An actor whose message handler writes a file needs IO, although the
+/// handler only runs when a message is sent. Before the handler's effects
+/// were charged at the declaration, this built with `IO = false`
+/// (2026-10-19 adversarial review).
+#[test]
+fn an_actor_handler_effect_needs_the_manifest_too() {
+    let pkg = Pkg::new("actorio");
+    pkg.allow("Network");
+    pkg.allow("System");
+    pkg.src(
+        "lib.rii",
+        "pelaku P {\n\
+         \x20   keadaan: Nombor\n\
+         \x20   kendalikan M(n) {\n\
+         \x20       fail_tulis((\"x.txt\", \"y\"));\n\
+         \x20       n\n\
+         \x20   }\n\
+         }\n\
+         biar k = lahir P(0);\n\
+         hantar(k, 1);\n\
+         0\n",
+    );
+    let (ok, out) = pkg.build();
+    assert!(!ok, "a file-writing actor built with IO = false: {out}");
+    assert!(out.contains("FileSystem (category IO)"), "{out}");
+}

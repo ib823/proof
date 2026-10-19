@@ -5849,6 +5849,16 @@ fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet)
     }
     // Type-check handler: must be Fn(message_ty) -> state_ty
     let (handler_ty, eff2) = type_check_full(ctx, handler)?;
+    // What the handler DOES when a message arrives. It used to be dropped
+    // (`Ty::Fn(arg, ret, _)`), and `hantar` charges only Network, so an
+    // actor whose handler wrote files type-checked as if it did not — and a
+    // package with `IO = false` built (2026-10-19 adversarial review). It is
+    // charged here, where the actor is declared: an over-approximation (the
+    // handler may never run) that is sound for every send.
+    let handler_latent = match &handler_ty {
+        Ty::Fn(_, _, latent) => *latent,
+        _ => EffectSet::PURE,
+    };
     match &handler_ty {
         Ty::Fn(arg, ret, _) => {
             if !types_compatible(message_ty, arg) {
@@ -5868,7 +5878,7 @@ fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet)
     }
     Ok((
         Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone())),
-        eff1.join(eff2),
+        eff1.join(eff2).join(handler_latent),
     ))
 }
 

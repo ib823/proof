@@ -7258,4 +7258,26 @@ mod audit_soundness {
              }",
         );
     }
+
+    /// An actor's message handler effects are charged where the actor is
+    /// declared. They were dropped (`Ty::Fn(arg, ret, _)`), and `hantar`
+    /// charges only Network, so a handler that wrote files left no trace in
+    /// the program's effect set (2026-10-19 adversarial review).
+    #[test]
+    fn actor_handler_effects_reach_the_program_effect_set() {
+        let src = "pelaku P {\n\
+                   \x20   keadaan: Nombor\n\
+                   \x20   kendalikan M(n) {\n\
+                   \x20       fail_tulis((\"x.txt\", \"y\"));\n\
+                   \x20       n\n\
+                   \x20   }\n\
+                   }\n\
+                   biar k = lahir P(0);\n\
+                   hantar(k, 1);\n\
+                   0\n";
+        let mut parser = Parser::new(src);
+        let program = parser.parse_program().expect("parses");
+        let (_, _, eff) = crate::check_program(&program).expect("type-checks");
+        assert!(eff.contains(riina_types::Effect::FileSystem), "{eff:?}");
+    }
 }
