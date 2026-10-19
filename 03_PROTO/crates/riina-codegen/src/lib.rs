@@ -311,6 +311,19 @@ pub fn eval_with_builtins(expr: &riina_types::Expr) -> Result<Value> {
     interp.eval_with_builtins(expr)
 }
 
+/// Evaluate with builtins, starting with the runtime capabilities `caps` —
+/// the effect set the type checker verified for the program. This is what
+/// `riinac run` uses; [`eval_with_builtins`] starts with none, so any
+/// `laku`/`perlukan` in its program fails closed.
+pub fn eval_with_capabilities(
+    expr: &riina_types::Expr,
+    caps: riina_types::EffectSet,
+) -> Result<Value> {
+    let mut interp = Interpreter::new();
+    interp.grant_capabilities(caps);
+    interp.eval_with_builtins(expr)
+}
+
 /// Limits for evaluating an UNTRUSTED program (see [`eval_with_limits`]).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ExecLimits {

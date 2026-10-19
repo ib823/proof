@@ -37,7 +37,7 @@
 //!   | IRInr : var_id -> ir_instr.
 //! ```
 
-use riina_types::{Effect, Ident, SecurityLevel, Ty};
+use riina_types::{Effect, EffectSet, Ident, SecurityLevel, Ty};
 use std::collections::HashMap;
 
 /// Variable identifier in IR (SSA form)
@@ -880,6 +880,13 @@ pub struct Program {
     pub main: FuncId,
     /// Next available function ID
     next_func_id: u32,
+    /// Runtime capabilities the program starts with: the effect set the type
+    /// checker VERIFIED it may exercise (`riinac` sets it from
+    /// `check_program`). A native backend seeds its capability gate from this
+    /// and nothing else. Empty by default, so a caller that never states it
+    /// gets a program whose every `laku`/`perlukan` fails closed — never the
+    /// old "grant all capabilities to main" (`0xFFFFFFFF`).
+    pub capabilities: EffectSet,
 }
 
 impl Program {
@@ -890,7 +897,15 @@ impl Program {
             functions: HashMap::new(),
             main: FuncId::MAIN,
             next_func_id: 0,
+            capabilities: EffectSet::PURE,
         }
+    }
+
+    /// The same program, starting with `capabilities` (see the field).
+    #[must_use]
+    pub fn with_capabilities(mut self, capabilities: EffectSet) -> Self {
+        self.capabilities = capabilities;
+        self
     }
 
     /// Add a function to the program

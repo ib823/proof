@@ -379,6 +379,28 @@ fn reference_service_manifest_grants_only_what_it_uses() {
     }
 }
 
+/// The manifest is not just text: withholding a permission the service needs
+/// makes `pkg build` refuse it (this pins the CHECK the comment in
+/// `11_servis/riina.toml` promises; the test above pins the grant values).
+#[test]
+fn reference_service_build_is_refused_without_its_network_grant() {
+    let work = Workdir::new("nonet");
+    copy_tree(&service_dir(), &work.0);
+    let manifest = work.0.join("riina.toml");
+    let toml = std::fs::read_to_string(&manifest).expect("read manifest");
+    assert!(toml.contains("Network = true"), "{toml}");
+    std::fs::write(&manifest, toml.replace("Network = true", "Network = false"))
+        .expect("write manifest");
+    let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["pkg", "build"])
+        .current_dir(&work.0)
+        .output()
+        .expect("run pkg build");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!out.status.success(), "built without its Network grant: {stderr}");
+    assert!(stderr.contains("Network (category Network)"), "{stderr}");
+}
+
 /// Recursively copy a directory, skipping build output.
 fn copy_tree(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("create dir");

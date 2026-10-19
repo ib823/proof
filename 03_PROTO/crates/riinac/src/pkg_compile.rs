@@ -30,9 +30,69 @@
 //! `src/utama.rii` (binary) is preferred over `src/lib.rii` (library), matching
 //! `riina_pkg::layout`. A library entry is fully parsed, linked and
 //! type-checked but emits no binary — type errors still fail the build.
+//!
+//! # Effect permissions (`[kesan-dibenarkan]`)
+//!
+//! Every effect the package's code may exercise — the program's verified
+//! effect set, plus every top-level function's and `luaran` declaration's
+//! declared set — must fall in a category the package's own manifest allows,
+//! or the build fails. Before this check the section was parsed and used only
+//! to stop a DEPENDENCY from claiming more than its dependant; nothing compared
+//! it with the code, so `IO = false, Network = false` built a networked server.
+//! The native binary's runtime capability gate is then seeded with the
+//! verified set (never "all capabilities").
 
 use riina_pkg::build::BuiltArtifact;
+use riina_pkg::effects::{EffectCategory, EffectPermissions};
+use riina_types::{EffectSet, Program, TopLevelDecl};
 use std::path::Path;
+
+/// Every effect `program` may exercise: its verified effect set joined with
+/// what each top-level function and extern (`luaran`) declaration DECLARES.
+/// Declarations count even when uncalled — a package that ships a networked
+/// function claims the network, whether or not its entry point calls it.
+fn package_effects(program: &Program, verified: EffectSet) -> EffectSet {
+    program.decls.iter().fold(verified, |acc, decl| match decl {
+        TopLevelDecl::Function {
+            effect, effect_set, ..
+        } => acc.join(EffectSet::from_declaration(*effect, effect_set)),
+        TopLevelDecl::ExternBlock { decls, .. } => decls
+            .iter()
+            .fold(acc, |acc, d| acc.join(EffectSet::single(d.effect))),
+        _ => acc,
+    })
+}
+
+/// Fail unless the manifest of the package whose entry is `entry`
+/// (`<root>/src/<entry>.rii` ⇒ `<root>/riina.toml`) permits every effect in
+/// `effects`. A missing or unreadable manifest fails closed.
+fn check_manifest_permits(package: &str, entry: &Path, effects: EffectSet) -> Result<(), String> {
+    let manifest_path = entry
+        .parent()
+        .and_then(Path::parent)
+        .map(|root| root.join("riina.toml"))
+        .ok_or_else(|| format!("cannot locate riina.toml for {}", entry.display()))?;
+    let manifest = riina_pkg::manifest::Manifest::from_file(&manifest_path)
+        .map_err(|e| format!("cannot read {}: {e}", manifest_path.display()))?;
+    let permits = EffectPermissions::from_allowed(&manifest.allowed_effects);
+    let denied: Vec<String> = effects
+        .iter()
+        .filter_map(|e| EffectCategory::from_effect(e).map(|cat| (e, cat)))
+        .filter(|(_, cat)| !permits.permits(*cat))
+        .map(|(e, cat)| format!("{e:?} (category {})", cat.name()))
+        .collect();
+    if denied.is_empty() {
+        Ok(())
+    } else {
+        Err(format!(
+            "package `{package}` uses effects its manifest does not allow: {}. \
+             Set the category to `true` under [kesan-dibenarkan] in {} — or \
+             remove the code that needs it.",
+            denied.join(", "),
+            manifest_path.display()
+        ))
+    }
+}
 
 /// Compile one package. Returns the compiler's own diagnostic on failure, so
 /// `pkg build` reports exactly what `riinac build` would.
@@ -52,7 +112,11 @@ pub fn compile_package(
         .map_err(|e| format!("{e}"))?;
 
     // 2. Typecheck through the same frontend as `riinac check`.
-    let (expr, _ty, _eff) = crate::frontend::check_program(&program).map_err(|e| format!("{e}"))?;
+    let (expr, _ty, eff) = crate::frontend::check_program(&program).map_err(|e| format!("{e}"))?;
+
+    // 2b. The manifest must allow every effect the code may exercise — for a
+    //     library as much as for a binary.
+    check_manifest_permits(package, entry, package_effects(&program, eff))?;
 
     // A library entry is type-checked only. It is NOT a silent pass: any parse,
     // link or type error above has already failed the build.
@@ -66,7 +130,9 @@ pub fn compile_package(
 
     // 3. Lower. This is where an interpreter-only builtin (REQ-70) fails
     //    closed, rather than emitting something that cannot run.
-    let ir = riina_codegen::compile(&expr).map_err(|e| format!("Codegen Error: {e}"))?;
+    let ir = riina_codegen::compile(&expr)
+        .map_err(|e| format!("Codegen Error: {e}"))?
+        .with_capabilities(eff);
 
     // 4. Emit C and link a native binary with `cc`, exactly as `riinac build`
     //    does for the native target.

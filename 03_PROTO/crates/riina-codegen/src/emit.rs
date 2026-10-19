@@ -677,7 +677,11 @@ static riina_value_t* riina_builtin_adalah_keliru(riina_value_t* arg) {
         self.writeln("    RIINA_EFFECT_BENTENG = 13,");
         self.writeln("    RIINA_EFFECT_SANDI = 14,");
         self.writeln("    RIINA_EFFECT_MENARA = 15,");
-        self.writeln("    RIINA_EFFECT_GAPURA = 16");
+        self.writeln("    RIINA_EFFECT_GAPURA = 16,");
+        // `effect_str` names these two, so they must exist for a `laku Mut` /
+        // `perlukan Peruntuk` (or a capability mask naming them) to compile.
+        self.writeln("    RIINA_EFFECT_MUT = 17,");
+        self.writeln("    RIINA_EFFECT_ALLOC = 18");
         self.writeln("} riina_effect_t;");
         self.writeln("");
 
@@ -6346,9 +6350,15 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
         self.writeln("int main(void) {");
         self.indent();
 
-        // Grant all capabilities for main (can be restricted later)
-        self.writeln("/* Grant all capabilities to main */");
-        self.writeln("riina_ctx.capabilities = 0xFFFFFFFF;");
+        // Seed the capability gate with exactly what the type checker verified
+        // this program may exercise (`Program::capabilities`), closed under the
+        // checker's coverage order so the C bit test agrees with
+        // `EffectSet::covers` and with the interpreter. It used to be
+        // `0xFFFFFFFF` ("grant all capabilities to main"), so the native gate
+        // could never refuse anything and disagreed with `riinac run`.
+        let mask = Self::capability_mask_expr(program.capabilities, |e| self.effect_str(e));
+        self.writeln("/* Capabilities verified by the type checker (never all) */");
+        self.writeln(&format!("riina_ctx.capabilities = {mask};"));
         self.writeln("");
 
         // Call main function
@@ -6427,6 +6437,26 @@ static riina_value_t* riina_builtin_nilai_kanan(riina_value_t* arg) {
             SecurityLevel::User => "RIINA_LEVEL_USER",
             SecurityLevel::System => "RIINA_LEVEL_SYSTEM",
             SecurityLevel::Secret => "RIINA_LEVEL_SECRET",
+        }
+    }
+
+    /// The C expression for the capability bitmask that `held` grants: one
+    /// `(1u << RIINA_EFFECT_X)` term per effect `held` COVERS (so a set
+    /// holding `SistemFail` also passes the gate for `Baca`, exactly as
+    /// `EffectSet::covers` does), or `0u` when nothing is held.
+    fn capability_mask_expr(
+        held: riina_types::EffectSet,
+        name: impl Fn(&Effect) -> &'static str,
+    ) -> String {
+        let terms: Vec<String> = Effect::ALL
+            .into_iter()
+            .filter(|e| *e != Effect::Pure && held.covers(*e))
+            .map(|e| format!("(1u << {})", name(&e)))
+            .collect();
+        if terms.is_empty() {
+            "0u".to_string()
+        } else {
+            terms.join(" | ")
         }
     }
 
@@ -8282,6 +8312,69 @@ mod tests {
         let mut lower = Lower::new();
         let program = lower.compile(expr)?;
         emit_c(&program)
+    }
+
+    /// The entry point is seeded with the verified capability set, never with
+    /// "all capabilities": nothing stated ⇒ nothing held (`0u`); a stated set
+    /// ⇒ exactly the effects it covers.
+    #[test]
+    fn main_capabilities_come_from_the_program_never_all() {
+        let mut lower = Lower::new();
+        let program = lower.compile(&Expr::Int(1)).unwrap();
+        let code = emit_c(&program).unwrap();
+        assert!(
+            !code.contains("riina_ctx.capabilities = 0xFFFFFFFF"),
+            "blanket grant is back"
+        );
+        assert!(code.contains("riina_ctx.capabilities = 0u;"), "{code}");
+
+        let mut lower = Lower::new();
+        let program = lower
+            .compile(&Expr::Int(1))
+            .unwrap()
+            .with_capabilities(riina_types::EffectSet::single(Effect::FileSystem));
+        let code = emit_c(&program).unwrap();
+        let line = code
+            .lines()
+            .find(|l| l.contains("riina_ctx.capabilities = "))
+            .expect("capability seed");
+        // FileSystem covers Read (same IO category, lower level) ...
+        assert!(line.contains("RIINA_EFFECT_FILESYSTEM"), "{line}");
+        assert!(line.contains("RIINA_EFFECT_READ"), "{line}");
+        // ... but never another category.
+        assert!(!line.contains("RIINA_EFFECT_NETWORK"), "{line}");
+        assert!(!line.contains("RIINA_EFFECT_CRYPTO"), "{line}");
+    }
+
+    /// `laku` checks its capability before its payload runs, so a missing
+    /// capability cannot let the payload's side effect happen first.
+    #[test]
+    fn perform_checks_its_capability_before_the_payload() {
+        let perform = Expr::Perform(
+            Effect::Write,
+            Box::new(Expr::App(
+                Box::new(Expr::Var("cetak".to_string())),
+                Box::new(Expr::String("x".to_string())),
+            )),
+        );
+        let program = Lower::new().compile(&perform).unwrap();
+        let main = program.function(program.main).expect("main");
+        let instrs: Vec<&Instruction> = main
+            .blocks
+            .iter()
+            .flat_map(|b| b.instrs.iter().map(|a| &a.instr))
+            .collect();
+        let check = instrs
+            .iter()
+            .position(|i| matches!(i, Instruction::RequireCap(Effect::Write)))
+            .expect("RequireCap(Write) emitted");
+        let call = instrs
+            .iter()
+            .position(|i| matches!(i, Instruction::BuiltinCall { .. } | Instruction::Call(..)))
+            .expect("payload call emitted");
+        assert!(check < call, "payload call at {call} precedes the check at {check}");
+        // And the C runtime's own check still guards `riina_perform`.
+        assert!(emit_c(&program).unwrap().contains("riina_require_cap(RIINA_EFFECT_WRITE);"));
     }
 
     #[test]

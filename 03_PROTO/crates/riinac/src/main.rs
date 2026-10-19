@@ -755,7 +755,7 @@ fn run() {
                 process::exit(1);
             }
         }
-        Command::Run => match riina_codegen::eval_with_builtins(&expr) {
+        Command::Run => match riina_codegen::eval_with_capabilities(&expr, eff) {
             Ok(val) => {
                 if ty == riina_types::Ty::Element {
                     if let riina_codegen::Value::String(rendered) = val {
@@ -776,6 +776,7 @@ fn run() {
             let target = opts.target.unwrap_or(riina_codegen::Target::Native);
             match riina_codegen::compile(&expr) {
                 Ok(program) => {
+                    let program = program.with_capabilities(eff);
                     let backend = riina_codegen::backend_for_target(target);
                     match backend.emit(&program) {
                         Ok(output) => {
@@ -805,8 +806,9 @@ fn run() {
         Command::Build => {
             let target = opts.target.unwrap_or(riina_codegen::Target::Native);
 
+            // The native capability gate starts with what the checker verified.
             let program = match riina_codegen::compile(&expr) {
-                Ok(p) => p,
+                Ok(p) => p.with_capabilities(eff),
                 Err(e) => {
                     eprintln!("Codegen Error: {}", e);
                     process::exit(1);

@@ -131,7 +131,8 @@ fn eval_line(input: &str) {
         }
     };
 
-    match riina_codegen::eval_with_builtins(&expr) {
+    // Same capability seeding as `riinac run`: what the checker verified.
+    match riina_codegen::eval_with_capabilities(&expr, eff) {
         Ok(val) => {
             println!("{:?} : {:?} [{:?}]", val, ty, eff);
         }

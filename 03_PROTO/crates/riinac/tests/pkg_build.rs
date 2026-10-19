@@ -47,6 +47,18 @@ impl Pkg {
         std::fs::write(&p, contents).expect("write source");
     }
 
+    /// Allow one `[kesan-dibenarkan]` category (`IO`, `Network`, ...) in the
+    /// scaffolded manifest, which starts with every category `false`. A
+    /// package whose code needs a category it has not allowed fails to build.
+    fn allow(&self, category: &str) {
+        let path = self.0.join("riina.toml");
+        let toml = std::fs::read_to_string(&path).expect("read riina.toml");
+        let from = format!("{category} = false");
+        assert!(toml.contains(&from), "scaffold has no `{from}` line:\n{toml}");
+        std::fs::write(&path, toml.replace(&from, &format!("{category} = true")))
+            .expect("write riina.toml");
+    }
+
     fn rm_src(&self, name: &str) {
         let _ = std::fs::remove_file(self.0.join("src").join(name));
     }
@@ -143,6 +155,7 @@ fn package_with_wrong_return_type_fails_to_build() {
 fn package_using_interpreter_only_builtin_fails_at_codegen() {
     let pkg = Pkg::new("interponly");
     pkg.rm_src("lib.rii");
+    pkg.allow("IO");
     pkg.src(
         "utama.rii",
         "fungsi utama() -> Nombor kesan (Baca | Tulis) {\n\
@@ -165,6 +178,7 @@ fn package_using_interpreter_only_builtin_fails_at_codegen() {
 fn multi_file_binary_package_produces_a_working_executable() {
     let pkg = Pkg::new("bin");
     pkg.rm_src("lib.rii");
+    pkg.allow("IO");
     pkg.src(
         "kira.rii",
         "awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }\n",
@@ -201,6 +215,7 @@ fn multi_file_binary_package_produces_a_working_executable() {
 fn target_dir_holds_artifacts_not_copied_sources() {
     let pkg = Pkg::new("noscopy");
     pkg.rm_src("lib.rii");
+    pkg.allow("IO");
     pkg.src(
         "utama.rii",
         "fungsi utama() -> Nombor kesan Tulis { cetakln(\"hai\"); 0 }\n",
@@ -267,4 +282,48 @@ fn private_cross_module_access_fails_package_build() {
     let (ok, out) = pkg.build();
     assert!(!ok, "private access must fail the package build: {out}");
     assert!(out.contains("private"), "wrong error: {out}");
+}
+
+/// `[kesan-dibenarkan]` is enforced against the code: an effect whose category
+/// the manifest leaves `false` fails the build and names the effect, the
+/// category and the manifest. Before this, the section was only compared with
+/// DEPENDENCIES' manifests, so every package here built.
+#[test]
+fn effects_the_manifest_does_not_allow_fail_the_build() {
+    let pkg = Pkg::new("denied");
+    pkg.rm_src("lib.rii");
+    pkg.src(
+        "utama.rii",
+        "fungsi utama() -> Nombor kesan Tulis { cetakln(\"hai\"); 0 }\n",
+    );
+    let (ok, out) = pkg.build();
+    assert!(!ok, "printing with IO = false must not build: {out}");
+    assert!(out.contains("does not allow"), "{out}");
+    assert!(out.contains("Write (category IO)"), "{out}");
+    assert!(
+        !pkg.target().join("ujian").join("ujian").exists(),
+        "a refused build left a binary behind"
+    );
+    // Control: allowing the category is all it takes.
+    pkg.allow("IO");
+    let (ok, out) = pkg.build();
+    assert!(ok, "IO = true must build: {out}");
+}
+
+/// A library is held to its manifest too, and a DECLARED effect counts even
+/// when nothing calls it: shipping a networked function claims the network.
+#[test]
+fn a_declared_but_uncalled_effect_still_needs_the_manifest() {
+    let pkg = Pkg::new("libnet");
+    pkg.src(
+        "lib.rii",
+        "fungsi hubungi(hos: Teks) -> Nombor kesan Rangkaian { jaring_sambung(hos) }\n\
+         fungsi utama() -> Nombor { pulang 0; }\n",
+    );
+    let (ok, out) = pkg.build();
+    assert!(!ok, "a Rangkaian function with Network = false must not build: {out}");
+    assert!(out.contains("Network (category Network)"), "{out}");
+    pkg.allow("Network");
+    let (ok, out) = pkg.build();
+    assert!(ok, "Network = true must build: {out}");
 }
