@@ -2150,7 +2150,21 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         // interpreter, which supports it.
         self.writeln("static riina_value_t* riina_list_concat(riina_value_t* a, riina_value_t* b);");
         self.writeln("");
+        // A binary operation on a secret (`sulit`) operand computes on the
+        // underlying values and keeps the result secret: the type checker types
+        // `pin + 1` as `Labeled(Int, Secret)` and the interpreter computes it
+        // the same way. Each `riina_binop_*` used to read the SECRET wrapper's
+        // tag and abort ("add on incompatible types").
+        self.writeln("static riina_value_t* riina_unsecret(riina_value_t* v) {");
+        self.writeln("    while (v && v->tag == RIINA_TAG_SECRET) v = v->data.wrapped_val;");
+        self.writeln("    return v;");
+        self.writeln("}");
+        self.writeln("#define RIINA_SECRET_BINOP(fn) \\");
+        self.writeln("    if (a->tag == RIINA_TAG_SECRET || b->tag == RIINA_TAG_SECRET) \\");
+        self.writeln("        return riina_classify(fn(riina_unsecret(a), riina_unsecret(b)))");
+        self.writeln("");
         self.writeln("static riina_value_t* riina_binop_add(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_add);");
         self.writeln("    /* REQ-80: list concatenation, matching the interpreter. */");
         self.writeln("    if (a->tag == RIINA_TAG_LIST && b->tag == RIINA_TAG_LIST) return riina_list_concat(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_add(a, b);");
@@ -2175,6 +2189,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_sub(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_sub);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_sub(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_sub(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_sub(a, b);");
@@ -2188,6 +2203,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_mul(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_mul);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bigint_mul(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_decimal_mul(a, b);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_fixed_mul(a, b);");
@@ -2201,6 +2217,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_div(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_div);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) {");
         self.writeln("        riina_value_t *q, *r; riina_bigint_divmod(a, b, &q, &r); return q;");
         self.writeln("    }");
@@ -2232,6 +2249,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_mod(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_mod);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) {");
         self.writeln("        riina_value_t *q, *r; riina_bigint_divmod(a, b, &q, &r); return r;");
         self.writeln("    }");
@@ -2258,6 +2276,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
 
         // Comparison operations
         self.writeln("static riina_value_t* riina_binop_eq(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_eq);");
         self.writeln("    if (a->tag != b->tag) return riina_bool(false);");
         self.writeln("    switch (a->tag) {");
         self.writeln("        case RIINA_TAG_UNIT: return riina_bool(true);");
@@ -2290,12 +2309,14 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_ne(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_ne);");
         self.writeln("    riina_value_t* eq = riina_binop_eq(a, b);");
         self.writeln("    return riina_bool(!eq->data.bool_val);");
         self.writeln("}");
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_lt(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_lt);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) < 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) < 0);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) < 0);");
@@ -2311,6 +2332,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_le(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_le);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) <= 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) <= 0);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) <= 0);");
@@ -2326,6 +2348,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_gt(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_gt);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) > 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) > 0);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) > 0);");
@@ -2341,6 +2364,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_ge(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_ge);");
         self.writeln("    if (a->tag == RIINA_TAG_BIGINT && b->tag == RIINA_TAG_BIGINT) return riina_bool(riina_bigint_cmp(a, b) >= 0);");
         self.writeln("    if (a->tag == RIINA_TAG_DECIMAL && b->tag == RIINA_TAG_DECIMAL) return riina_bool(riina_decimal_cmp(a, b) >= 0);");
         self.writeln("    if (a->tag == RIINA_TAG_FIXED && b->tag == RIINA_TAG_FIXED) return riina_bool(riina_fixed_cmp(a, b) >= 0);");
@@ -2357,6 +2381,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
 
         // Logical operations
         self.writeln("static riina_value_t* riina_binop_and(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_and);");
         self.writeln("    if (a->tag != RIINA_TAG_BOOL || b->tag != RIINA_TAG_BOOL) {");
         self.writeln("        fprintf(stderr, \"RIINA: and on non-bool\\n\");");
         self.writeln("        abort();");
@@ -2366,6 +2391,7 @@ static riina_value_t* riina_builtin_qmn(riina_value_t* arg) {
         self.writeln("");
 
         self.writeln("static riina_value_t* riina_binop_or(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    RIINA_SECRET_BINOP(riina_binop_or);");
         self.writeln("    if (a->tag != RIINA_TAG_BOOL || b->tag != RIINA_TAG_BOOL) {");
         self.writeln("        fprintf(stderr, \"RIINA: or on non-bool\\n\");");
         self.writeln("        abort();");

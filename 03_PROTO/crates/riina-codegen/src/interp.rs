@@ -1420,6 +1420,21 @@ fn branch_condition(v: Value, context: &str) -> Result<bool> {
 
 /// Apply a binary operator to its two evaluated operands (E_BinOp).
 fn apply_binop(op: BinOp, l: Value, r: Value) -> Result<Value> {
+    // A secret (`sulit`) operand: compute on the underlying values and keep
+    // the result secret. The type checker types `pin + 1` as
+    // `Labeled(Int, Secret)` and controls where it may flow; the evaluator
+    // used to reject the operation outright ("expected matching operand types
+    // for binary op, found Secret(Int(1234)) Add Int(1)"), so a program the
+    // checker accepted could not run. The C runtime does the same.
+    if l.is_secret() || r.is_secret() {
+        let unwrap = |mut v: Value| {
+            while let Value::Secret(inner) = v {
+                v = *inner;
+            }
+            v
+        };
+        return apply_binop(op, unwrap(l), unwrap(r)).map(Value::secret);
+    }
     let op = &op;
     // Numeric tower: if either operand is a sized integer, arithmetic
     // and comparisons wrap/interpret at that width (a plain `Int`

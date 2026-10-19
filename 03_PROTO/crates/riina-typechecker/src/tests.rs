@@ -7224,4 +7224,38 @@ mod audit_soundness {
              fungsi utama() -> Nombor kesan Bersih { 0 }",
         );
     }
+
+    /// Only records (which type as `Any`) have fields. `n.f` on an `Int`,
+    /// `xs.panjang()` on a list and `t.ada("@")` on a string type-checked as
+    /// `Any` and failed only when run (2026-10-19 assessment).
+    #[test]
+    fn field_access_on_a_non_record_is_rejected() {
+        for (decl, access) in [
+            ("biar n = 5;", "n.apa_apa"),
+            ("biar t = \"teks\";", "t.panjang"),
+            ("biar xs = [1, 2, 3];", "xs.panjang"),
+            ("biar b = betul;", "b.x"),
+            ("biar s = sulit 7;", "s.nilai"),
+        ] {
+            let src = format!(
+                "fungsi utama() -> Unit kesan Bersih {{ {decl} biar m = {access}; () }}"
+            );
+            let e = rejects(&src);
+            assert!(matches!(e, TypeError::ExpectedRecord { .. }), "{access}: {e:?}");
+            assert_eq!(e.error_code(), "T0011");
+        }
+    }
+
+    #[test]
+    fn field_access_on_a_record_still_type_checks() {
+        accepts(
+            "fungsi utama() -> Unit kesan Bersih {\n\
+             \x20   biar k = Kotak { isi: 1, nama: \"a\" };\n\
+             \x20   biar i = k.isi;\n\
+             \x20   biar r = Rahsia { isi: sulit 2 };\n\
+             \x20   biar j = r.isi;\n\
+             \x20   ()\n\
+             }",
+        );
+    }
 }

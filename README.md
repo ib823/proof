@@ -294,7 +294,7 @@ This is not a whitepaper. This is working software.
 
 155 example `.rii` files across 18 category directories (security, effects, compliance, design patterns, FFI, AI context, JALINAN, showcase, and more).
 
-> **Parser-support caveat (honest):** Many of these examples — including most of `00_basics/` — use a multi-statement block-body function form that the *shipped* parser does not yet accept; 98 of the 172 currently pass `riinac check` (measured 2026-10-11). They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
+> **Parser-support caveat (honest):** Many of these examples — including most of `00_basics/` — use a multi-statement block-body function form that the *shipped* parser does not yet accept; 84 of the 172 currently pass `riinac check` (measured 2026-10-19; 14 that used method-call syntax RIINA does not have stopped passing when field access on non-records became a type error). They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
 
 ### Cryptographic Tooling
 
