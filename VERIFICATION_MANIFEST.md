@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-18T02:27:17Z
-**Git SHA:** bbc84e434
+**Generated:** 2026-10-19T23:37:45Z
+**Git SHA:** b59979929
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3530 tests |
+| Rust Tests | PASS | 3555 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 334 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 334 .vo files compiled in 185s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 334 .vo files compiled in 175s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
@@ -24,7 +24,7 @@
 | Isabelle sorry/oops | PASS | 0 sorry + 0 oops in 368 files (12925 lemmas) |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | WARN | 12012 admit in 315 files (19 lemmas) |
-| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 317 files (12284 theorems) |
 | Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 7s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 306 files (11627 assertions) |
@@ -33,6 +33,6 @@
 | Kani Scan | PASS | 307 files (5664 harnesses) |
 | TV Scan | PASS | 316 files (17463 validations) |
 | Prover Corpus Inventory (raw counts, not verification) | PASS | Raw declaration counts; only Coq is mechanized. Sum: 104708 | Coq: 12819 | Lean: 12576 | Isabelle: 12931 | F*: 516 | TLA+: 12284 | Alloy: 11627 | SMT: 12433 | Verus: 6395 | Kani: 5664 | TV: 17463 | Parity: OK |
-| Transpiler Staleness | WARN | 1 prover(s) may be stale: SMT — run `python3 scripts/generate-full-stack.py` (checked: SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Alloy, Verus, Kani, TV) |
+| Transpiler Staleness | PASS | all checked prover files up-to-date with Coq sources (checked: SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Alloy, Verus, Kani, TV) |
 | Metrics Accuracy | PASS | metrics.json matches live counts (Qed=12819, Lean=12576, Isabelle=12931, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
