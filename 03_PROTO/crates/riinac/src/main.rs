@@ -583,6 +583,20 @@ fn run() {
 
     // 3. Compliance validation (if profiles selected)
     if !opts.compliance.is_empty() {
+        // RIINA's cryptographic primitives are in-house and NOT validated (no
+        // CMVP/CAVP certificate; owner ruling D8, 2026-10-19). A compliance run
+        // over a program that uses them says so, so a report is never read as
+        // evidence that its crypto is certified.
+        if eff
+            .iter()
+            .any(|e| e.category() == riina_types::EffectCategory::Crypto)
+        {
+            eprintln!(
+                "notice: this program uses RIINA crypto primitives, which are experimental \
+                 and not validated (no CMVP/CAVP certificate); a compliance report is \
+                 evidence toward a profile, not a conformity assessment"
+            );
+        }
         let violations = riina_compliance::validate(&expr, &opts.compliance);
 
         // Generate report if requested

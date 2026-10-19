@@ -283,3 +283,26 @@ fn version_and_help_work_and_banners_carry_the_crate_version() {
     let banner = format!("RIINA Compiler v{}", env!("CARGO_PKG_VERSION"));
     assert!(String::from_utf8_lossy(&out.stderr).contains(&banner));
 }
+
+/// A compliance run over a program that uses RIINA's crypto says the crypto
+/// is experimental and not validated (owner ruling D8); one without crypto
+/// does not.
+#[test]
+fn compliance_runs_flag_unvalidated_crypto() {
+    let sb = Sandbox::new("cryptonotice");
+    sb.file(
+        "k.rii",
+        "fungsi utama() -> Unit kesan Kripto { biar h = hash_dengan(\"sha3-256\"); () }\n",
+    );
+    sb.file("ok.rii", WELL_TYPED);
+    let out = riinac(&sb.dir, &["check", "--compliance", "pci-dss", "k.rii"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("not validated"), "{stderr}");
+    let out = riinac(&sb.dir, &["check", "--compliance", "pci-dss", "ok.rii"]);
+    assert!(!String::from_utf8_lossy(&out.stderr).contains("not validated"));
+    let out = riinac(&sb.dir, &["check", "k.rii"]);
+    assert!(
+        !String::from_utf8_lossy(&out.stderr).contains("not validated"),
+        "the notice belongs to compliance runs"
+    );
+}

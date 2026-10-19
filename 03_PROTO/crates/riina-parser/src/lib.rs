@@ -57,6 +57,14 @@ pub enum ParseErrorKind {
     /// repeatedly"), and a slot carries no linearity, so this is reported
     /// rather than silently dropping the qualifier.
     MutWithLinearity,
+    /// A floating-point literal such as `1.5`. RIINA has no floating point by
+    /// design (owner ruling D8, 2026-10-19; master plan REQ-105): IEEE-754
+    /// results vary with platform and compiler flags, and float timing depends
+    /// on the operands (subnormals), which leaks secrets. Exact decimals are
+    /// `perpuluhan("1.5")`, money is `wang("12.34")`. The error used to be a
+    /// bare `Unexpected token: LiteralFloat("1.5", None)` pointing at the
+    /// token BEFORE the literal.
+    FloatLiteral(String),
     /// `modul Name { … }` with a CAPITALIZED name (REQ-82).
     ///
     /// The declaration and the call site disagreed, silently. A `modul Masa`
@@ -125,6 +133,11 @@ impl fmt::Display for ParseErrorKind {
                 f,
                 "Program too deeply nested: at least {depth} levels (limit {limit})"
             ),
+            ParseErrorKind::FloatLiteral(lit) => write!(
+                f,
+                "Floating point is not supported in RIINA (`{lit}`); use perpuluhan(\"{lit}\") \
+                 for an exact decimal or wang(\"{lit}\") for money"
+            ),
             ParseErrorKind::Lex(e) => write!(f, "{e}"),
         }
     }
@@ -154,6 +167,7 @@ impl ParseErrorKind {
             ParseErrorKind::CapitalizedModuleName(_) => "P0012",
             ParseErrorKind::CapitalizedFunctionName(_) => "P0013",
             ParseErrorKind::ProgramTooDeep { .. } => "P0014",
+            ParseErrorKind::FloatLiteral(_) => "P0015",
             ParseErrorKind::Lex(e) => e.error_code(),
         }
     }
@@ -197,6 +211,14 @@ impl ParseErrorKind {
             }
             ParseErrorKind::Lex(_) => {
                 "The source contains a character or literal the lexer cannot read at this position; fix or remove it".to_string()
+            }
+            ParseErrorKind::FloatLiteral(lit) => {
+                format!(
+                    "RIINA has no floating point by design: float results differ between \
+                     platforms and float timing leaks secrets. Write `perpuluhan(\"{lit}\")` \
+                     (exact decimal), `wang(\"{lit}\")` (money, fixed scale) or a scaled \
+                     integer (`Nombor`)"
+                )
             }
             ParseErrorKind::ProgramTooDeep { limit, .. } => {
                 format!("Every statement in a block, every operator in a chain like `a + b + …`, every `lain kalau` and every top-level declaration adds a level. Split very long blocks or expressions into smaller functions so the program stays under {limit} levels")
@@ -2726,6 +2748,15 @@ impl<'a> Parser<'a> {
                 let name = Self::soft_keyword_spelling(k).unwrap().to_string();
                 self.next();
                 Ok(self.name_ref(name))
+            }
+            // A float literal: a dedicated error at the literal's own span.
+            Some(TokenKind::LiteralFloat(lit, _)) => {
+                let fallback = self.current_span;
+                let span = self.peek().map_or(fallback, |t| t.span);
+                Err(ParseError {
+                    kind: ParseErrorKind::FloatLiteral(lit),
+                    span,
+                })
             }
             Some(kind) => Err(ParseError {
                 kind: ParseErrorKind::UnexpectedToken(kind),
