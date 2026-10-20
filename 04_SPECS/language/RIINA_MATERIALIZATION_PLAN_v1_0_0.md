@@ -1,5 +1,9 @@
 # RIINA Materialization Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 **Verification:** Coq 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3564 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 **Document ID:** `RIINA_MATERIALIZATION_PLAN_v1_0_0`

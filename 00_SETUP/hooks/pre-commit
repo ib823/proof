@@ -132,6 +132,15 @@ if [ "$SKIP_AUDIT" -eq 0 ]; then
         if [ -f "${REPO_ROOT}/scripts/sync-metrics.sh" ]; then
             bash "${REPO_ROOT}/scripts/sync-metrics.sh" 2>/dev/null || true
         fi
+        # REQ-103: the theorem registry's Print Assumptions capture covers the
+        # active Coq files. When one is staged and the Rocq toolchain is here,
+        # re-capture so the ledgers stay current; audit-docs.sh fails on a
+        # stale capture otherwise, with the command to run.
+        if echo "$STAGED_FILES" | grep -qE '\.v$|02_FORMAL/coq/_CoqProject$' \
+           && command -v rocq >/dev/null 2>&1 \
+           && [ -f "${REPO_ROOT}/scripts/generate-ledgers.py" ]; then
+            python3 -I "${REPO_ROOT}/scripts/generate-ledgers.py" --capture >/dev/null 2>&1 || true
+        fi
 
         POST_DIRTY="$(git -C "$REPO_ROOT" diff --name-only 2>/dev/null || true)"
 

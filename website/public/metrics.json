@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-20T02:41:38Z",
-  "generatedHuman": "October 20, 2026 at 02:41 UTC",
+  "generated": "2026-10-20T05:12:37Z",
+  "generatedHuman": "October 20, 2026 at 05:12 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "1d6ddd0f9",
+    "commit": "4026d7f2c",
     "branch": "main"
   },
   "proofs": {
@@ -202,11 +202,12 @@
   "rust": {
     "tests": 3564,
     "testsVerified": 3564,
-    "testsEstimated": 3561,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 18
   },
   "examples": 172,
+  "compliance": {"perProfile": {"bnm": 20, "cmmc": 63, "cra": 15, "do-178c": 48, "dora": 14, "esg-sdg": 30, "fda-21cfr": 18, "gdpr": 34, "hipaa": 33, "iec-62443": 32, "iso-27001": 59, "itar": 12, "mas-trm": 20, "nerc-cip": 20, "nis2": 13, "nist-800-53": 81, "pci-dss": 56, "pdpa": 20, "sox": 18}, "profiles": 19, "rules": 606},
   "status": {
     "build": "passing",
     "grade": "A",

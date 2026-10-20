@@ -1,5 +1,9 @@
 # AN_SYARIAH Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Turn `AN_SYARIAH` from an audited `R1` research lane into a domain family that can eventually support honest `R5` claims without relying on lexical support, shallow proofs, or conceptual examples.

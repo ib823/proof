@@ -1,5 +1,9 @@
 # X_CONCURRENCY_MODEL Remediation Plan
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Phase 1: Foundation Repair (R1 stabilization)
 1. Resolve domain overlap with H_CONCURRENCY_AND_POLICY
 2. Write canonical scope/assumptions/not-in-scope block

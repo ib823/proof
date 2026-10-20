@@ -1,0 +1,144 @@
+# Source of HEADLINE_THEOREMS.md (REQ-103; mandate S2.4, S2.9, S2.10).
+#
+# One [[theorem]] per entry of KERNEL_CAPSTONES in
+# 03_PROTO/crates/riinac/src/verify.rs; scripts/generate-ledgers.py fails if
+# the two sets differ. File, line and `Print Assumptions` are filled in by the
+# generator, not typed here.
+#
+# Fields:
+#   name, module        the Coq theorem and its module (as in KERNEL_CAPSTONES)
+#   statement           what the theorem says, in plain English
+#   fragment            which part of the language it covers
+#   public_claim        the sentence a public surface may use for it
+#   positive_witness    a Coq lemma showing the premises can hold, or "PENDING"
+#   negative_witness    a Coq lemma showing the conclusion is not trivially
+#                       true (a term it rules out), or "PENDING"
+#   reviewer            the named human who reviewed the statement, or "PENDING"
+#   review_date         YYYY-MM-DD of that review, or "PENDING"
+#   status              HEADLINE (unconditional) or CONDITIONAL (see note)
+#   note                anything a reader must know
+#
+# A named witness must exist as a Theorem/Lemma/Example/Corollary in the active
+# build. "PENDING" is allowed and shown as such: the registry never pretends a
+# witness or a review exists. Human review needs the D7 reviewer.
+
+[[theorem]]
+name = "type_safety"
+module = "type_system.TypeSafety"
+statement = "A closed term that is well typed at the Public level, run in a store that matches its store typing, is never stuck: it is a value or it can take a step."
+fragment = "The full core calculus in foundations/Syntax.v (27 constructors, including references and fix)."
+public_claim = "Type safety is proven in Coq for the language model."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "progress"
+module = "type_system.Progress"
+statement = "A closed, well-typed term in a well-formed store is a value or can take a step."
+fragment = "The full core calculus."
+public_claim = "Progress is proven in Coq for the language model."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "preservation"
+module = "type_system.Preservation"
+statement = "A step from a well-typed term in a well-formed store yields a term of the same type (its effect annotation may change), in a store that is still well formed under an extended store typing."
+fragment = "The full core calculus."
+public_claim = "Preservation is proven in Coq for the language model."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "effect_sound_multi_step_declared"
+module = "effects.EffectGate"
+statement = "Every term reachable by evaluating a closed, well-typed term performs only effects within the effect bound its type declares."
+fragment = "The full core calculus."
+public_claim = "Effect soundness against the declared effect is proven in Coq for the language model."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "reachable_effects_from_program_text"
+module = "effects.EffectContainment"
+statement = "Evaluation adds no effect site that is absent from the program text and the initial store."
+fragment = "The full core calculus (no typing premise)."
+public_claim = "Evaluation introduces no effect absent from the program and store (proven in Coq for the language model)."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "ref_free_well_typed_SN"
+module = "termination.StrongNormRefFree"
+statement = "Every well-typed term without references or fix is strongly normalizing: every evaluation of it terminates."
+fragment = "The reference-free, fix-free core only. With higher-order references, termination is provably false (see well_typed_SN)."
+public_claim = "Termination is proven in Coq for the reference-free, recursion-free core."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "ref_free_noninterference"
+module = "properties.NonInterferenceRefFree"
+statement = "For a well-typed term without references or fix whose one free variable is Secret, and whose result type is observable, runs that differ only in the secret input reach the same value."
+fragment = "The reference-free, fix-free core only (REQ-89 extends it)."
+public_claim = "Non-interference is proven in Coq for the reference-free, recursion-free core; beyond it, it is enforced by tests."
+positive_witness = "ref_free_noninterference_nonvacuous"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "ref_free_constant_time"
+module = "properties.NonInterferenceRefFree"
+statement = "For the same terms, the number of evaluation steps is well defined and does not depend on the secret input."
+fragment = "The reference-free, fix-free core; the cost model is the reduction count of the formal semantics, not cycles or wall-clock time."
+public_claim = "Reduction-count independence from secrets is proven in Coq for the language model, for the core fragment."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "accepts_uses_only_current"
+module = "crypto.AlgorithmPolicy"
+statement = "A program the crypto-agility policy accepts uses only algorithms the policy marks as current."
+fragment = "The algorithm-policy model in crypto/AlgorithmPolicy.v (a fact about the policy check, not about the crypto implementations)."
+public_claim = "The crypto-agility policy check is proven in Coq to accept only current algorithms (policy model)."
+positive_witness = "PENDING"
+negative_witness = "PENDING"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "HEADLINE"
+
+[[theorem]]
+name = "well_typed_SN"
+module = "termination.ReducibilityFull"
+statement = "Under the Section premises of ReducibilityFull.v, every well-typed recursion-free term is strongly normalizing."
+fragment = "None in practice: one premise is refuted in the build, and the conclusion is false for the calculus with higher-order references."
+public_claim = "Never cite as a guarantee."
+positive_witness = "PENDING"
+negative_witness = "well_typed_SN_conclusion_is_false"
+reviewer = "PENDING"
+review_date = "PENDING"
+status = "CONDITIONAL"
+note = "Vacuous (REQ-84): well_typed_SN_premise_store_values_are_values_refutable disproves a premise, and well_typed_SN_conclusion_is_false (Landin's knot) shows the conclusion fails. Leaves KERNEL_CAPSTONES when REQ-104 moves it to counterexamples/ (REQ-116). The guarantee that holds is ref_free_well_typed_SN."

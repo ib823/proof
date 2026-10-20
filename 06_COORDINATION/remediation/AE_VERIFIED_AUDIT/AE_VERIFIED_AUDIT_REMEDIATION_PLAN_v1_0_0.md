@@ -1,5 +1,9 @@
 # AE_VERIFIED_AUDIT Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Turn `AE_VERIFIED_AUDIT` from a research-backed audit/compliance concept into a domain that can eventually support honest end-to-end audit-trail claims.

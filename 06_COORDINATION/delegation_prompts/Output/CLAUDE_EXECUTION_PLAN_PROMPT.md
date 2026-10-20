@@ -1,5 +1,9 @@
 # RIINA Proof Repository: 28 Failing Files Resolution
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## THE ABSOLUTE PRIME DIRECTIVES
 
 This task requires **ABSOLUTE PERFECTION**. Every file must compile with zero admits, zero axioms, zero errors. Anything less is **FAILURE**.

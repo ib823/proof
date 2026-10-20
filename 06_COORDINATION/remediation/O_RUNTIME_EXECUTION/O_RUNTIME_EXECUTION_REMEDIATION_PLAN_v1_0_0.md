@@ -1,5 +1,9 @@
 # O_RUNTIME_EXECUTION Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Current Truth
 - R2: 542 real tests, 304 vacuous Coq theorems
 - All domain Coq files use boolean-stub pattern

@@ -1,0 +1,221 @@
+# Source of PROPERTY_LEDGER.md (REQ-103; mandate §2).
+#
+# One [[property]] per security or correctness property a public surface
+# advertises. `level` is exactly one of the mandate's seven claim levels:
+#   PROVEN-IMPL      proven for (or validated on every run of) the shipped riinac
+#   PROVEN-MODEL     Coq theorem, closed under the global context, about the
+#                    formal model; linked to the compiler only by testing
+#   ENFORCED-TESTED  the compiler rejects violations; positive and negative tests
+#   MODELLED         a formal model of X proving facts about its own definitions
+#   GENERATED        produced by a script, not independently checked
+#   RETIRED          no longer maintained
+#   PLANNED          not built
+# `theorem` names a HEADLINE_THEOREMS.md entry (PROVEN-MODEL rows must), and
+# every path in `tests` must exist; scripts/generate-ledgers.py checks both.
+
+[[property]]
+id = "type-safety"
+property = "Type safety: well-typed programs do not get stuck"
+level = "PROVEN-MODEL"
+fragment = "Full core calculus (27 constructors)"
+theorem = "type_safety"
+tests = ["03_PROTO/crates/riina-typechecker/src/tests.rs"]
+command = "riinac verify --coq"
+
+[[property]]
+id = "effect-soundness"
+property = "Effect soundness: evaluation stays within the declared effect"
+level = "PROVEN-MODEL"
+fragment = "Full core calculus"
+theorem = "effect_sound_multi_step_declared"
+tests = ["03_PROTO/crates/riina-typechecker/src/tests.rs"]
+command = "riinac verify --coq"
+
+[[property]]
+id = "effect-checking"
+property = "The compiler rejects effects a function does not declare"
+level = "ENFORCED-TESTED"
+fragment = "The shipped language"
+theorem = ""
+tests = ["03_PROTO/crates/riina-typechecker/src/tests.rs", "03_PROTO/crates/riinac/tests/end_to_end.rs"]
+command = "cargo test -p riina-typechecker"
+
+[[property]]
+id = "noninterference-model"
+property = "Non-interference: secret inputs do not change observable results"
+level = "PROVEN-MODEL"
+fragment = "Reference-free, fix-free core only (REQ-89 extends it)"
+theorem = "ref_free_noninterference"
+tests = []
+command = "riinac verify --coq"
+
+[[property]]
+id = "ifc-checking"
+property = "The compiler rejects information-flow violations it implements (secret to public sinks, unproven declassification)"
+level = "ENFORCED-TESTED"
+fragment = "The shipped language; not proven to match the model"
+theorem = ""
+tests = ["03_PROTO/crates/riina-typechecker/src/tests.rs", "03_PROTO/crates/riinac/tests/secret_arithmetic.rs"]
+command = "cargo test -p riina-typechecker"
+
+[[property]]
+id = "constant-time-model"
+property = "Reduction-count independence from secrets"
+level = "PROVEN-MODEL"
+fragment = "Reference-free, fix-free core; cost model = reduction count, not cycles"
+theorem = "ref_free_constant_time"
+tests = []
+command = "riinac verify --coq"
+
+[[property]]
+id = "masa-tetap-checking"
+property = "masa_tetap blocks reject secret-dependent branching and variable-time operations"
+level = "ENFORCED-TESTED"
+fragment = "The shipped language"
+theorem = ""
+tests = ["03_PROTO/crates/riinac/tests/masa_differential.rs"]
+command = "cargo test -p riinac --test masa_differential"
+
+[[property]]
+id = "termination-model"
+property = "Termination of well-typed programs"
+level = "PROVEN-MODEL"
+fragment = "Reference-free, fix-free core only; false with higher-order references"
+theorem = "ref_free_well_typed_SN"
+tests = []
+command = "riinac verify --coq"
+
+[[property]]
+id = "crypto-policy-model"
+property = "The crypto-agility policy accepts only current algorithms"
+level = "PROVEN-MODEL"
+fragment = "The policy model (crypto/AlgorithmPolicy.v)"
+theorem = "accepts_uses_only_current"
+tests = ["03_PROTO/crates/riinac/tests/kripto_runtime.rs"]
+command = "riinac verify --coq"
+
+[[property]]
+id = "capability-gate-interp-c"
+property = "Runtime capability gate: an effect not granted is refused (interpreter and native C)"
+level = "ENFORCED-TESTED"
+fragment = "Interpreter and C backend"
+theorem = ""
+tests = ["03_PROTO/crates/riinac/tests/capability_gate.rs"]
+command = "cargo test -p riinac --test capability_gate"
+
+[[property]]
+id = "capability-gate-wasm"
+property = "Runtime capability gate on the WASM backend"
+level = "PLANNED"
+fragment = "WASM compiles the gate to a no-op today (REQ-114)"
+theorem = ""
+tests = []
+command = ""
+
+[[property]]
+id = "package-effect-permissions"
+property = "Packages may use only the effects their manifest allows"
+level = "ENFORCED-TESTED"
+fragment = "riinac pkg build"
+theorem = ""
+tests = ["03_PROTO/crates/riinac/tests/pkg_build.rs"]
+command = "cargo test -p riinac --test pkg_build"
+
+[[property]]
+id = "native-backend"
+property = "Native (C) backend computes what the interpreter computes"
+level = "ENFORCED-TESTED"
+fragment = "Differential tests over the example corpus; not formally verified (REQ-59)"
+theorem = ""
+tests = ["03_PROTO/crates/riinac/tests/corpus_differential.rs", "03_PROTO/crates/riinac/tests/audit_backend_differential.rs"]
+command = "cargo test -p riinac --test corpus_differential"
+
+[[property]]
+id = "wasm-backend"
+property = "WASM backend agrees with the C backend"
+level = "ENFORCED-TESTED"
+fragment = "Differential tests; not formally verified"
+theorem = ""
+tests = ["03_PROTO/crates/riinac/tests/wasm_c_differential.rs"]
+command = "cargo test -p riinac --test wasm_c_differential"
+
+[[property]]
+id = "no-floats"
+property = "No floating point: a float literal is a compile error (P0015)"
+level = "ENFORCED-TESTED"
+fragment = "The shipped parser"
+theorem = ""
+tests = ["03_PROTO/crates/riina-parser/src/tests.rs"]
+command = "cargo test -p riina-parser"
+
+[[property]]
+id = "compliance-profiles"
+property = "Compliance profiles: heuristic checks giving evidence toward a profile, not a conformity assessment"
+level = "ENFORCED-TESTED"
+fragment = "19 profiles; per-rule implementation status is REQ-123"
+theorem = ""
+tests = ["03_PROTO/crates/riina-compliance/src/tests.rs"]
+command = "cargo test -p riina-compliance"
+
+[[property]]
+id = "domain-models"
+property = "Domain, industry and compliance Coq files"
+level = "MODELLED"
+fragment = "Facts about each file's own definitions; not verifications of real systems"
+theorem = ""
+tests = []
+command = "riinac verify --coq"
+
+[[property]]
+id = "crypto-primitives"
+property = "In-house cryptography (riina-core): experimental, not audited, not validated"
+level = "ENFORCED-TESTED"
+fragment = "Tested against NIST known-answer (ACVP) vectors for ML-KEM-768 and ML-DSA-65 and single RFC/FIPS vectors elsewhere; no CMVP/CAVP certificate"
+theorem = ""
+tests = ["05_TOOLING/crates/riina-core/tests/kat_audit.rs"]
+command = "cargo test --manifest-path 05_TOOLING/Cargo.toml -p riina-core"
+
+[[property]]
+id = "smt-lattice"
+property = "Security-lattice and effect-join laws"
+level = "MODELLED"
+fragment = "Z3 scoped set (02_FORMAL/smt/SCOPED_SET.txt), checked for exact unsat counts"
+theorem = ""
+tests = ["02_FORMAL/smt/SCOPED_SET.txt"]
+command = "bash scripts/verify-smt.sh"
+
+[[property]]
+id = "assured-mode"
+property = "Assured mode: the extracted Coq checker decides every program"
+level = "PLANNED"
+fragment = "REQ-100"
+theorem = ""
+tests = []
+command = ""
+
+[[property]]
+id = "noninterference-full"
+property = "Non-interference for the full core (references, fix, effects)"
+level = "PLANNED"
+fragment = "REQ-89"
+theorem = ""
+tests = []
+command = ""
+
+[[property]]
+id = "retired-prover-lanes"
+property = "Isabelle and F* prover lanes"
+level = "RETIRED"
+fragment = "Retired (REQ-67g); generated corpora archived 2026-10-20 (D6)"
+theorem = ""
+tests = []
+command = ""
+
+[[property]]
+id = "lean-reproof"
+property = "Independent Lean 4 re-proof of the core metatheory"
+level = "PLANNED"
+fragment = "REQ-67(b); the generated port was archived 2026-10-20 (D6)"
+theorem = ""
+tests = []
+command = ""

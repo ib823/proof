@@ -1,5 +1,9 @@
 # RIINA_BANK Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Turn `RIINA_BANK` from a broad research thesis plus preliminary formalization into a domain that can eventually support honest bounded core-banking claims.

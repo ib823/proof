@@ -1,5 +1,9 @@
 # L_FFI_AND_ATTACK_RESEARCH — Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 **Domain:** L_FFI_AND_ATTACK_RESEARCH
 **Current Rating:** R2 | **Target:** R3
 **Created:** 2026-03-21 | **Authority:** RIINA_MASTER_PLAN.md

@@ -1,5 +1,9 @@
 # D_HARDWARE_AND_CAPABILITY_SECURITY Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Rebuild `D_HARDWARE_AND_CAPABILITY_SECURITY` from its R1 state after the hostile review revealed that all 255 Coq theorems are vacuous. This domain requires fundamental reconstruction, not incremental improvement.

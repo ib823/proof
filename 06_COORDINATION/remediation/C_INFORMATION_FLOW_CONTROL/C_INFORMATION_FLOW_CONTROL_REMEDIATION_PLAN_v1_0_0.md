@@ -1,5 +1,9 @@
 # C_INFORMATION_FLOW_CONTROL Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Close the documentation and executable evidence gaps that cap `C_INFORMATION_FLOW_CONTROL` at R3, enabling honest promotion to R4.

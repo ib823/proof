@@ -166,7 +166,7 @@ RIINA does not just model generic security properties. It maps them to specific 
 
 The compiler checks a subset of these rules itself. Running `riinac check --compliance pci-dss` does not call an external scanner — the compiler runs regulation-specific heuristic checks on your code. Their output is evidence toward the profile; not a conformity assessment or certification.
 
-**Current state:** 6 rules implemented across 3 profiles (PCI-DSS, PDPA, BNM). Framework in place for all 15 profiles. Community contributions welcome for additional rules.
+**Current state:** 606 heuristic rules across 19 profiles (`riinac check --list-compliance`). Each is evidence toward a profile, not a conformity assessment or certification.
 
 ---
 

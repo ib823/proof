@@ -1,5 +1,9 @@
 # S_HARDWARE_CONTRACTS Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Replace the vacuous formal model with a meaningful hardware contract framework and add implementation-level enforcement to reach R2.

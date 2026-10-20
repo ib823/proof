@@ -110,7 +110,7 @@ const EV = [
   {
     name: 'HIPAACompliance.COMPLY_001_*', tier: 'domain', sign: '⊢',
     claim: 'The HIPAA §164.312 slice, modelled as Coq obligations',
-    statement: 'The compiler-checkable slice of HIPAA §164.312 (access control, audit controls) modelled as mechanized obligations, alongside the hipaa checker profile (54 rules, each with a passing and a violating test case). Evidence toward HIPAA; not a conformity assessment or certification.',
+    statement: 'The compiler-checkable slice of HIPAA §164.312 (access control, audit controls) modelled as mechanized obligations, alongside the hipaa checker profile (33 rules, each with a passing and a violating test case). Evidence toward HIPAA; not a conformity assessment or certification.',
     file: '02_FORMAL/coq/compliance/HIPAACompliance.v',
     cmd: 'cd 02_FORMAL/coq && make compliance/HIPAACompliance.vo',
   },
@@ -181,6 +181,17 @@ const EFFECTS = [
   { name: 'Rawak', en: 'Random', desc: 'Randomness.' },
 ];
 
+// Generated ledgers at the repository root (REQ-103); scripts/check-doc-drift.sh
+// fails if one of these links is missing here or in README.md.
+const LEDGERS = [
+  ['HEADLINE_THEOREMS.md', 'Headline theorems'],
+  ['PROPERTY_LEDGER.md', 'Property ledger'],
+  ['TRUSTED_BASE.md', 'Trusted base'],
+  ['PROOF_STATUS.md', 'Proof status'],
+  ['AXIOMS.md', 'Axioms and Parameters'],
+  ['docs/api/STDLIB.md', 'Builtin matrix'],
+];
+
 // Builtin families — names verified against the typechecker registry.
 const STDLIB = [
   { mod: 'teks', en: 'String', fns: 'teks_ganti, teks_belah, teks_cantum, gabung_teks, teks_baris, ke_teks' },
@@ -213,7 +224,7 @@ const RESEARCH = [
 // exists alongside checker rules; CHECKER = compiler-enforced rules with
 // pos+neg tests; ARTIFACT = build-time evidence emission. None is an assessment.
 const FRAMEWORKS = [
-  { fw: 'HIPAA', req: '§164.312 access & audit slice', th: 'COMPLY_001_* + hipaa profile (54 rules)', status: 'MODELLED' },
+  { fw: 'HIPAA', req: '§164.312 access & audit slice', th: 'COMPLY_001_* + hipaa profile (33 rules)', status: 'MODELLED' },
   { fw: 'PCI-DSS', req: 'PAN masking / encryption slice', th: 'COMPLY_002_* + pci-dss profile (56 rules)', status: 'MODELLED' },
   { fw: 'DO-178C', req: 'Deterministic-execution evidence', th: 'COMPLY_003_* + do-178c profile', status: 'MODELLED' },
   { fw: 'EU CRA', req: 'Annex I conditions + SBOM/CBOM/VEX', th: 'cra profile (15 rules) + build artefacts', status: 'CHECKER' },
@@ -387,6 +398,12 @@ function Footer({ go, metrics }) {
           <button onClick={() => go('arch')} className="hov-ink" style={lnk}>Architecture</button>
           <a href="https://github.com/ib823/riina" target="_blank" rel="noopener noreferrer" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>Source on GitHub</a>
           <a href="https://github.com/ib823/riina/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>License</a>
+        </div>
+        <div style={col}>
+          <div style={head}>Ledgers</div>
+          {LEDGERS.map(([file, label]) => (
+            <a key={file} href={`https://github.com/ib823/riina/blob/main/${file}`} target="_blank" rel="noopener noreferrer" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>{label}</a>
+          ))}
         </div>
         <div style={col}>
           <div style={head}>Contact</div>

@@ -1,5 +1,9 @@
 # F_MEMORY_SAFETY Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Resolve the scope-enforcement mismatch that caps `F_MEMORY_SAFETY` at R3: the formal model is broad (spatial, temporal, bounds, ROP, data races) but enforcement is narrow (linearity only). Either expand enforcement or narrow scope.

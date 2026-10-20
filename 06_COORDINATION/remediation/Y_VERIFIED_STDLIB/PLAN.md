@@ -1,5 +1,9 @@
 # Y_VERIFIED_STDLIB Remediation Plan
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Phase 1: Audit Repair (immediate)
 1. Correct implementation mapping to riina-codegen builtins/platform + riina-typechecker
 2. Include StandardLibrary.v and PlatformStdlibVerification.v in evidence review

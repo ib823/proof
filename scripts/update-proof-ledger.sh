@@ -194,6 +194,13 @@ fi
     echo "- None."
   fi
   echo ""
+  echo "### Trusted Interface (\`Parameter\`) Sites"
+  echo "A \`Parameter\` is logically an axiom. These are the trusted hardware and crypto"
+  echo "interface (mandate S2.8); no headline theorem depends on them (HEADLINE_THEOREMS.md)."
+  python3 -I "$REPO_ROOT/scripts/generate-ledgers.py" --list-parameters | while IFS=' ' read -r site name; do
+    echo "- \`$name\` — \`$site\`"
+  done
+  echo ""
   echo "## Global Repository $global_scope_suffix"
   echo "- Axioms (global): $global_axioms"
   echo "- Admitted (global): $global_admitted"

@@ -1,5 +1,9 @@
 # A_TYPE_THEORY Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Purpose
 
 Turn `A_TYPE_THEORY` from a broad research umbrella plus real but bounded core implementation into an honestly scoped family of child domains.

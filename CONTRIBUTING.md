@@ -33,8 +33,8 @@ cd 03_PROTO && cargo test --all && cd ..
 
 | Directory | What | Language |
 |-----------|------|---------|
-| `02_FORMAL/` | Formal proofs (Coq primary, Lean secondary, additional smoke lanes) | Coq/Lean/Isabelle + 7 more |
-| `03_PROTO/crates/` | Compiler (15 crates) | Rust |
+| `02_FORMAL/` | Formal proofs (Coq primary and the only fully mechanized lane; a scoped Z3 set; smoke artifacts) | Coq, Z3 |
+| `03_PROTO/crates/` | Compiler (18 crates) | Rust |
 | `04_SPECS/` | Language specifications | Markdown |
 | `05_TOOLING/` | Crypto primitives, build tools | Rust |
 | `07_EXAMPLES/` | Example `.rii` programs | RIINA |

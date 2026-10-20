@@ -1,5 +1,9 @@
 # Refactoring Plan: val_rel_at_type TFn Preconditions
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 ## Status: ✅ COMPLETED
 ## Created: 2026-01-24 (Session 42)
 ## Completed: 2026-01-24 (Session 42 continued)

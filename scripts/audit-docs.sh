@@ -608,6 +608,36 @@ for test_doc in README.md llms.txt AGENTS.md docs/UNDERSTANDING_RIINA.md; do
         done
     done < "$REPO_ROOT/$test_doc"
 done
+# Every other number, version and scoped claim on the public surfaces
+# (mandate S5.7, R5; REQ-109). The self-test runs first so a rule that has
+# stopped catching its seeded fault fails here instead of passing silently.
+if [ -f "$REPO_ROOT/scripts/check-doc-drift.sh" ]; then
+    if ! bash "$REPO_ROOT/scripts/check-doc-drift.sh" --self-test >/dev/null 2>&1; then
+        echo -e "${RED}[ERROR]${NC} scripts/check-doc-drift.sh --self-test failed"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    fi
+    if ! DRIFT_OUT=$(bash "$REPO_ROOT/scripts/check-doc-drift.sh" 2>&1); then
+        while IFS= read -r drift_line; do
+            echo -e "${RED}[DRIFT]${NC} $drift_line"
+        done <<< "$DRIFT_OUT"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $DRIFT_OUT"
+    fi
+fi
+# Generated ledgers (REQ-103): HEADLINE_THEOREMS.md, PROPERTY_LEDGER.md and
+# TRUSTED_BASE.md must match their sources, the capture must be fresh for the
+# active Coq files, and every named witness and test path must exist.
+if [ -f "$REPO_ROOT/scripts/generate-ledgers.py" ]; then
+    if ! LEDGER_OUT=$(python3 -I "$REPO_ROOT/scripts/generate-ledgers.py" --check 2>&1); then
+        while IFS= read -r ledger_line; do
+            echo -e "${RED}[LEDGER]${NC} $ledger_line"
+        done <<< "$LEDGER_OUT"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $LEDGER_OUT"
+    fi
+fi
 # CHANGELOG.md is release history, so its entries keep the figures they were
 # released with; only its banner is checked (below).
 for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \

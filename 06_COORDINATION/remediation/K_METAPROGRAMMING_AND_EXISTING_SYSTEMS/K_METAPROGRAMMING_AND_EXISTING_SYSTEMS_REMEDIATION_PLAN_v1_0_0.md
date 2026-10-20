@@ -1,5 +1,9 @@
 # K_METAPROGRAMMING_AND_EXISTING_SYSTEMS — Remediation Plan v1.0.0
 
+> **SUPERSEDED (2026-10-20).** Historical planning document, kept for the record only. It
+> is not a plan and its content is not current: `RIINA_MASTER_PLAN.md` is the only
+> planning authority (mandate S5.6, REQ-109).
+
 **Domain:** K_METAPROGRAMMING_AND_EXISTING_SYSTEMS
 **Current Rating:** R1 | **Target:** R2
 **Created:** 2026-03-21 | **Authority:** RIINA_MASTER_PLAN.md

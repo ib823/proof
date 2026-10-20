@@ -421,6 +421,25 @@ if [ "$COUNTED_QED" != "$QED_ACTIVE" ]; then
     echo "ERROR: counting policy partitions $COUNTED_QED Qed, but the active build has $QED_ACTIVE" >&2
     exit 1
 fi
+# Compliance profiles and rule counts, from riina-compliance itself: the slug of
+# each profile (lib.rs `slug`) and its rule count (rules.rs `rule_count`, which
+# the test `rule_count_matches_actual` pins to the real rule lists). Public
+# surfaces quote these numbers; scripts/check-doc-drift.sh checks them.
+COMPLIANCE_JSON=$(python3 - "$ROOT_DIR/03_PROTO/crates/riina-compliance/src" <<'PYCOMP'
+import json, re, sys
+src = sys.argv[1]
+lib = open(f"{src}/lib.rs", encoding="utf-8").read()
+rules = open(f"{src}/rules.rs", encoding="utf-8").read()
+slug_fn = lib.split("pub fn slug(self)", 1)[1].split("\n    }\n", 1)[0]
+slugs = dict(re.findall(r"Self::(\w+) => \"([a-z0-9-]+)\"", slug_fn))
+count_fn = rules.split("pub fn rule_count(", 1)[1].split("\n}\n", 1)[0]
+counts = dict((k, int(v)) for k, v in re.findall(r"ComplianceProfile::(\w+) => (\d+)", count_fn))
+if not slugs or set(slugs) != set(counts):
+    sys.exit("compliance: slug() and rule_count() disagree on the profile set")
+per = {slugs[k]: counts[k] for k in sorted(counts, key=lambda k: slugs[k])}
+print(json.dumps({"profiles": len(per), "rules": sum(per.values()), "perProfile": per}, sort_keys=True))
+PYCOMP
+) || { echo "ERROR: compliance count extraction failed" >&2; exit 1; }
 KERNEL_WEAKENING=$(python3 "$COQ_SCAN" --forbidden "$ROOT_DIR/02_FORMAL/coq" | awk -F'\t' '{s += $2} END {print s + 0}') || {
     echo "ERROR: Coq forbidden-construct scan failed" >&2; exit 1; }
 
@@ -1442,6 +1461,7 @@ cat > "$OUTPUT_FILE" << EOF
     "crates": $RUST_CRATES
   },
   "examples": $EXAMPLE_FILES,
+  "compliance": $COMPLIANCE_JSON,
   "status": {
     "build": "passing",
     "grade": "A",
