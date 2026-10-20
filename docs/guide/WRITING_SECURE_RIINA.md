@@ -5,12 +5,12 @@ use it, and — in keeping with this repository's honesty rules — **exactly wh
 is enforced by the shipped compiler today** versus what exists as a formal
 model awaiting enforcement.
 
-> **Verification promise.** Every code block below marked *(enforced today)*
-> was run against the shipped `riinac` before publishing (2026-06-10): the
-> "COMPILE ERROR" examples really fail with the message shown, and the
-> positive examples really check and run. Claims about Coq theorems cite the
-> file that proves them. The gaps section at the end is as load-bearing as the
-> features.
+> **Verification promise.** Every `riina` block below is checked by the test
+> suite (`03_PROTO/crates/riinac/tests/doc_snippets.rs`) against the shipped
+> `riinac`: each "COMPILE ERROR" example must fail with the message shown, and
+> each positive example must pass `riinac check`. Claims about Coq theorems
+> cite the file that proves them, and are about the language model, not the
+> compiler. The gaps section at the end is as load-bearing as the features.
 
 ---
 
@@ -20,7 +20,7 @@ Every function declares an effect (`kesan`). The typechecker computes the
 real effect of the body and rejects the function if it exceeds the
 declaration. *(enforced today)*
 
-```riina
+```riina error="Effect violation: allowed Pure, found Write"
 fungsi senyap() -> Unit kesan Bersih {
     cetak("bocor")        // COMPILE ERROR
 }
@@ -49,7 +49,7 @@ Effect names (EN | BM): `Pure|Bersih`, `Read|Baca`, `Write|Tulis`,
 sink — `cetak`, `cetakln`, `cetak_baris`, `print`, `println` — even nested
 inside a pair or other container. *(enforced today; added 2026-06-10)*
 
-```riina
+```riina error="Security violation in print sink"
 fungsi utama() -> Unit kesan Tulis {
     biar pin = sulit 1234;
     cetak(pin)            // COMPILE ERROR
@@ -99,7 +99,7 @@ label, so `cetak(ke_teks(pin))` is rejected exactly like `cetak(pin)` —
 declassify *first*, then convert. All of these report a `SecurityViolation`
 naming the leak level and the channel:
 
-```riina
+```riina error="Security violation in network sink"
 fungsi utama() -> Unit kesan Rangkaian {
     biar pin = sulit 1234;
     http_post(("https://api", (pin, "csrf")))   // COMPILE ERROR — secret on the network
@@ -119,7 +119,7 @@ yet) is tracked as REQ-27 in `RIINA_MASTER_PLAN.md`.
 Anything read from the filesystem is `Tainted<_, FileSystem>` *at birth*, and
 sensitive sinks demand `Sanitized` input. *(enforced today)*
 
-```riina
+```riina error="Taint violation in sink argument"
 fungsi utama() -> Unit kesan SistemFail {
     biar kandungan = fail_baca("data.sql");
     sql_execute(kandungan)     // COMPILE ERROR
@@ -132,7 +132,7 @@ error: Taint violation in sink argument: FileSystem data requires
 ```
 
 ```riina
-fungsi utama() -> Unit kesan Sistem {
+fungsi utama() -> Unit kesan (SistemFail, Sistem) {
     biar kandungan = fail_baca("data.sql");
     sql_execute(sanitasi_sql(kandungan))    // OK
 }
@@ -150,7 +150,7 @@ Every file builtin takes a **plain** string path, so a tainted value (e.g.
 contents you just read, or user input) cannot be used as a path —
 path-traversal prevention at the type boundary. *(enforced today)*
 
-```riina
+```riina error="Type mismatch: expected String, found Tainted(String, FileSystem)"
 fungsi utama() -> Unit kesan SistemFail {
     biar laluan = fail_baca("senarai.txt");
     fail_baca(laluan)          // COMPILE ERROR — tainted path
@@ -176,7 +176,7 @@ the Coq access-control model `domains/VerifiedFileSystem.v` (109 Qed:
 *(enforced today, interpreter)*
 
 ```riina
-fungsi utama() -> Unit kesan Sistem {
+fungsi utama() -> Unit kesan (SistemFail, Baca, Tulis) {
     vfs_mula(1024);                                    // init, 1 KiB quota
     vfs_jadi_pengguna(1000);
     vfs_tulis(("rahsia.txt", "data pengguna 1000"));   // 0644, owned by 1000

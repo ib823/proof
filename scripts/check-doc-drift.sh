@@ -46,6 +46,10 @@ SURFACES = [
     ".cursorrules", ".clinerules", ".github/copilot-instructions.md",
     "SECURITY.md", "CONTRIBUTING.md", "website/index.html",
     "website/src/RiinaWebsite.jsx", "riina-vscode/package.json",
+    "docs/guide/WRITING_SECURE_RIINA.md", "docs/guide/MUTABLE_STATE.md",
+    "docs/JALINAN_GUIDE.md", "docs/SYARIAH_GUIDE.md", "docs/CAHAYA_GUIDE.md",
+    "docs/api/STDLIB.md", "docs/enterprise/COMPLIANCE_GUIDE.md",
+    "docs/enterprise/COMPLIANCE_PACKAGING.md", "docs/enterprise/CERTIFICATION.md",
 ]
 HISTORICAL = re.compile(r"historical|at release|at the tagged commit", re.I)
 
@@ -212,7 +216,27 @@ RISKY = [
     (r"\b(?:ten|nine|\d+) (?:generated |independent )?prover lanes\b", "§5: a prover-lane count"),
     (r"\bfips[- ]validated\b|\bfips[- ]certified\b", "§5: 'FIPS validated' without a certificate"),
     (r"if your program compiles, it is safe", "§5: 'if it compiles, it is safe'"),
+    (r"proof certificate", "REQ-96: RIINA issues no proof certificate"),
+    (r"certifiably correct", "REQ-96: 'certifiably correct'"),
+    (r"replac\w* (?:for )?(?:manual )?code review", "REQ-96: a check does not replace code review"),
+    (r"mathematically (?:guaranteed|proven secure|certain)", "REQ-96: 'mathematically guaranteed'"),
+    (r"backed by (?:the )?coq (?:formal )?proofs", "REQ-96: compliance rules are not derived from Coq proofs"),
+    (r"syariahpatuh", "REQ-96: there is no SyariahPatuh effect (REQ-20 is planned)"),
 ]
+
+# Mandate S1.13: until the compiler itself is verified, the README and the
+# website say so, in these words (owner-revisable wording, R7).
+COMPILER_NOT_VERIFIED = re.compile(r"unlike compcert or cakeml,[^.]*\briinac\b[^.]*not (?:itself )?formally verified", re.I)
+
+
+def check_compiler_honesty(readme, site):
+    out = []
+    for rel, text in (("README.md", readme), ("website/src/RiinaWebsite.jsx", site)):
+        flat = re.sub(r"<[^>]+>|\s+", " ", text)
+        if not COMPILER_NOT_VERIFIED.search(flat):
+            out.append(f"{rel}: must say that, unlike CompCert or CakeML, riinac itself is not "
+                       "formally verified (mandate S1.13)")
+    return out
 
 
 def r_risky(line, t):
@@ -355,6 +379,7 @@ def check_repo(t):
         if not os.path.exists(os.path.join(ROOT, f)):
             problems.append(f"{f} is missing (run python3 scripts/generate-ledgers.py)")
     problems += check_ledger_links(read("README.md"), read("website/src/RiinaWebsite.jsx"))
+    problems += check_compiler_honesty(read("README.md"), read("website/src/RiinaWebsite.jsx"))
     if t["profiles"] is None:
         problems.append("metrics.json has no compliance block (run scripts/generate-metrics.sh)")
     for rel in SURFACES:
@@ -380,6 +405,10 @@ def self_test(t):
         "A formally verified programming language": r_risky,
         "Security properties, proven before the code runs": r_risky,
         "ten prover lanes": r_risky,
+        "Each program ships with a proof certificate": r_risky,
+        "It can replace manual code review": r_risky,
+        "Backed by Coq formal proofs.": r_risky,
+        "declare kesan SyariahPatuh": r_risky,
         "Coq files: 317 (277 active)": r_coq_files, "333 active Coq files": r_coq_files,
         "4 active Abort sites remain (REQ-21)": r_stale,
         "the Isabelle smoke theory compiles": r_stale,
@@ -393,6 +422,8 @@ def self_test(t):
         "0 `Axiom`, 29 `Parameter`s": r_axiom_caveat,
         "reduction-count independence (the constant-time theorem, reduction model)": r_constant_time,
         "Programming language with a Coq-verified core model": r_risky,
+        "RIINA does not issue a proof certificate": r_risky,
+        "Not a replacement for code review.": r_risky,
         "334 active files; 334 active Coq modules": r_coq_files,
         "0 Admitted, 0 Abort, 0 `Axiom`": r_stale,
         "One of nine such differential links": r_bridge_links,
@@ -423,6 +454,12 @@ def self_test(t):
         failures.append("check_metrics_status flagged the public tree, which has no manifest")
     if not check_metrics_status(dict(good, build="green"), {}, public_tree=True):
         failures.append("check_metrics_status accepted an unknown build status")
+    said = "Unlike CompCert or CakeML, the compiler `riinac` is not itself formally verified."
+    said_js = "Unlike CompCert or CakeML, <span>riinac</span>\n itself is not formally verified."
+    if check_compiler_honesty(said, said_js):
+        failures.append("check_compiler_honesty flagged the S1.13 sentence")
+    if len(check_compiler_honesty(said, "riinac is a compiler.")) != 1:
+        failures.append("check_compiler_honesty missed a website without the S1.13 sentence")
     if check_ledger_links(all_md, all_js):
         failures.append("check_ledger_links flagged complete link lists")
     if len(check_ledger_links(all_md.replace("(TRUSTED_BASE.md)", ""), all_js)) != 1:

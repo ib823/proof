@@ -210,6 +210,15 @@ fn has_if_or_case(expr: &Expr) -> bool {
     }
 }
 
+/// Check whether `expr` mentions the variable `name` at all. Shadowing is
+/// ignored, which can only over-report.
+fn mentions_var(expr: &Expr, name: &str) -> bool {
+    match expr {
+        Expr::Var(v) => v == name,
+        _ => any_child(expr, &mut |c| mentions_var(c, name)),
+    }
+}
+
 /// Check if a Var in the expression matches any of the given keywords.
 fn contains_var_matching(expr: &Expr, keywords: &[String]) -> bool {
     match expr {
@@ -575,7 +584,10 @@ fn sensitive_network_send_rule(
     }
 }
 
-/// Template M: LetRec without If/Case in body (no base case → potential infinite recursion).
+/// Template M: a function that calls itself with no If/Case in its body (no
+/// base case → potential infinite recursion). Every top-level function is a
+/// LetRec, so a body that never mentions its own name is not recursive and is
+/// not flagged; flagging it warned on every straight-line function.
 fn unbounded_recursion_rule(
     id: &'static str,
     profile: ComplianceProfile,
@@ -588,7 +600,7 @@ fn unbounded_recursion_rule(
         description,
         check: Box::new(move |expr| {
             if let Expr::LetRec(name, _, body, _) = expr {
-                if !has_if_or_case(body) {
+                if mentions_var(body, name) && !has_if_or_case(body) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,

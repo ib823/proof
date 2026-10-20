@@ -149,7 +149,7 @@ pub fn generate(
     };
 
     ComplianceReport {
-        riina_version: "0.1.0".into(),
+        riina_version: env!("CARGO_PKG_VERSION").into(),
         file_path: file_path.into(),
         source_sha256,
         timestamp,
@@ -314,7 +314,8 @@ impl ComplianceReport {
 
         out.push_str(&format!("\n{line}\n"));
         out.push_str("  This report is a machine-generated audit artifact.\n");
-        out.push_str("  Compliance rules are backed by Coq formal proofs.\n");
+        out.push_str("  Its rules are heuristic checks: evidence toward each profile,\n");
+        out.push_str("  not a conformity assessment or certification.\n");
         out.push_str(&format!(
             "  Verify integrity: sha256sum <source_file> == {}\n",
             self.source_sha256

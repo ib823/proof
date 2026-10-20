@@ -16,16 +16,14 @@ Every builtin below type-checks. That is ALL it means: type-checking does not im
 | `typed-only` | **Nothing runs it** (0 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
 
 ```
-$ riinac check baca.rii     # Success!  Effect: FileSystem
-$ riinac run   baca.rii     # works — reads the file
-$ riinac build baca.rii     # Codegen Error: unbound variable: fail_baca
+$ riinac check vfs.rii     # Success!  Effect: {Read, Write, FileSystem}
+$ riinac run   vfs.rii     # works: the in-memory VFS
+$ riinac build vfs.rii     # Codegen Error: unbound variable: vfs_tulis
 ```
-
-The example used to be a `jaring_dengar` HTTP server. It is not any more, because that program now COMPILES: as of 2026-08-15 the `jaring`, `http`, `simpan`, `masa` and `json` families are routed, so a networked, persistent service has a native deployment path (master plan REQ-70). The families still interpreter-only are `fail_*`, `vfs_*`, the `keselamatan` sinks, and the `jaring_tls_*` half.
 
 Both refusals are deliberate: a backend that cannot implement a builtin fails closed rather than miscompiling it. Until 2026-08-11 the WASM backend did NOT do this — it emitted a silent stub, so `teks_huruf_besar("halo")` returned `halo` and `panjang("abcd")` returned `abcd`, while the interpreter and C both gave the right answer (master plan REQ-78).
 
-In practice: the WASM surface is printing, string concatenation, `ke_teks` and the numeric-tower constructors. The wider C surface adds strings, lists, maps, sets, math, conversions and test assertions. **Networking, filesystem, VFS, JSON, time, the durable store and the security/taint sinks are interpreter-only** — closing that is master plan REQ-70.
+**Interpreter only** (32): `cipher`, `csrf_generate`, `csrf_jana`, `guna_kripto`, `hash_dengan`, `hash_with`, `jaring_tls_disahkan`, `jaring_tls_hantar`, `jaring_tls_identiti`, `jaring_tls_jabat`, `jaring_tls_jabat_sah`, `jaring_tls_kunci`, `jaring_tls_percaya`, `jaring_tls_terima`, `net_tls_handshake`, `net_tls_handshake_auth`, `net_tls_identity`, `net_tls_is_authenticated`, `net_tls_keys`, `net_tls_recv`, `net_tls_send`, `net_tls_trust`, `pilih_algo`, `select_algorithm`, `sifer`, `use_crypto`, `vfs_baca`, `vfs_delete`, `vfs_padam`, `vfs_read`, `vfs_tulis`, `vfs_write`. Compiling these is master plan REQ-70.
 
 *Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
 

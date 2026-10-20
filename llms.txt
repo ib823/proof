@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,569 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,578 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
@@ -62,9 +62,9 @@ sum counts across lanes: they count different things.
 - Examples: 172 .rii files, of which 84 currently pass `riinac check`; the
   shipped parser accepts a narrower grammar than some examples assume — see
   `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
-  COMPILED: a few effectful builtins (`jaring_tls_*`, the virtual-filesystem trio,
-  the crypto-agility runtime) are still interpreter-only (REQ-70), and
-  `riinac build` fails closed on them.
+  COMPILED: some builtins are still interpreter-only (REQ-70), and
+  `riinac build` fails closed on them. The generated builtin matrix,
+  docs/api/STDLIB.md, is the one place that lists them.
 - An unknown type name (including a typo) is currently accepted as `Any`
   (REQ-93(c)); use only the types in llms-full.txt.
 

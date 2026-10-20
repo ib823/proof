@@ -1,139 +1,32 @@
-# RIINA Certification Output
+# Certification and RIINA
 
-**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3569 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**RIINA issues no certificate.** There is no `--certificate` flag, and no output
+of `riinac` certifies a program against any standard.
 
-## What RIINA Certifies
+Earlier versions of this page made three claims, all withdrawn on 2026-10-20:
 
-When you build a RIINA program, the compiler can produce a **proof certificate** — a machine-readable document that maps your program's security properties to independently verifiable Coq theorems.
+- a "proof certificate" mapping a program to proven regulatory controls (withdrawn: the feature does not exist);
+- that this certificate could stand in for manual code review (withdrawn);
+- that it met Common Criteria EAL5–7, DO-178C DAL A or ISO 26262 ASIL-D requirements (withdrawn).
 
-This is not a test report. This is a mathematical proof that your program satisfies specific security properties.
+## What exists instead
 
-## Certificate Format
+- **A compliance report** (`riinac check --compliance <profiles> --report`):
+  heuristic rules over the exact source, identified by its SHA-256. It is evidence
+  toward a standard, not a conformity assessment. See
+  [COMPLIANCE_GUIDE.md](COMPLIANCE_GUIDE.md).
+- **Ledgers of what is proven and trusted**:
+  [HEADLINE_THEOREMS.md](../../HEADLINE_THEOREMS.md) (theorems about the formal
+  model of the language, with their kernel assumptions),
+  [PROPERTY_LEDGER.md](../../PROPERTY_LEDGER.md) (each property's claim level) and
+  [TRUSTED_BASE.md](../../TRUSTED_BASE.md) (what the guarantees rely on).
+- **Reproduction**: anyone can rebuild the compiler and the Coq lane and re-run the
+  check; [COMPLIANCE_PACKAGING.md](COMPLIANCE_PACKAGING.md) lists the commands.
 
-```
-┌──────────────────────────────────────────────────────┐
-│ RIINA PROOF CERTIFICATE                              │
-├──────────────────────────────────────────────────────┤
-│ Program     : myapp.rii                              │
-│ Compiled    : 2026-01-31T14:30:00Z                   │
-│ Compiler    : riinac 0.3.0                           │
-│ Prover      : Rocq 9.2                    │
-│ Certificate : SHA-256 of proof objects                │
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│ PROVEN PROPERTIES                                    │
-│                                                      │
-│ ✓ Type Safety                                        │
-│   Progress + Preservation theorems                   │
-│   Coq: type_system/TypeSafety.v                      │
-│                                                      │
-│ ✓ Non-Interference                                   │
-│   Secret data cannot flow to public outputs          │
-│   Coq: properties/CumulativeRelation.v                │
-│                                                      │
-│ ✓ Effect Safety                                      │
-│   Functions cannot perform undeclared effects         │
-│   Coq: properties/EffectSafety.v                     │
-│                                                      │
-│ ✓ Declassification Correctness                       │
-│   Secrets only released through authorized policy     │
-│   Coq: properties/Declassification.v                 │
-│                                                      │
-│ AXIOMS (0 — active build is axiom-free)              │
-│   Verified by: grep -r "^Axiom " *.v | wc -l        │
-│                                                      │
-│ VERIFICATION                                         │
-│   To independently verify:                           │
-│   $ cd 02_FORMAL/coq && make                         │
-│   Expected: 259 active files, 0 errors, 0 admits     │
-│                                                      │
-└──────────────────────────────────────────────────────┘
-```
+## Why a compiler cannot certify a program
 
-## Generating Certificates
-
-```bash
-# Type-check and generate certificate
-riinac build --certificate myapp.rii
-
-# Output: myapp.certificate.json
-```
-
-## Certificate Verification (Zero-Trust)
-
-Anyone can verify a RIINA certificate independently:
-
-```bash
-# 1. Clone the RIINA repository
-git clone https://github.com/ib823/riina.git
-
-# 2. Build the Coq proofs from source
-cd riina/02_FORMAL/coq && make
-
-# 3. Check that no proofs use admits
-grep -r "Admitted\|admit" *.v
-# Expected: no output (0 admits)
-
-# 4. Check axiom count
-grep -r "^Axiom " *.v | wc -l
-# Expected: 0 (axiom-free active build)
-
-# 5. Verify specific theorem
-coqc -Q . RIINA properties/EffectSafety.v
-Print Assumptions effect_safety_progress.
-```
-
-If step 2 succeeds with no errors, every theorem in the certificate is valid.
-
-## Use Cases
-
-### Regulatory Compliance
-
-Attach the certificate to compliance submissions. It demonstrates that security controls are **mathematically proven**, satisfying formal methods requirements in:
-
-- **Common Criteria (EAL5-7)** — Formally verified design
-- **DO-178C (DAL-A)** — Formal methods supplement
-- **ISO 26262 (ASIL-D)** — Proven absence of interference
-- **HIPAA** — Proven access control and encryption
-- **PCI-DSS** — Proven cardholder data isolation
-
-### Security Audits
-
-Replace manual code review for covered properties. The certificate proves that:
-
-- No information leaks between security levels (non-interference)
-- No unauthorized side effects (effect safety)
-- No runtime type errors (type safety)
-- No uncontrolled declassification
-
-### Supply Chain Security
-
-The certificate includes:
-
-- SHA-256 hash of the compiled program
-- SHA-256 hash of the Coq proof objects
-- The exact compiler version used
-- Zero external dependencies (auditable from source)
-
-### Insurance / Liability
-
-Proof certificates provide evidence that security was **provably correct** at the time of compilation. This can support:
-
-- Cybersecurity insurance claims
-- Due diligence evidence
-- Liability defense (demonstrated best-in-class security practice)
-
-## What Certificates Do NOT Cover
-
-Certificates prove properties of the **RIINA program** as compiled. They do not cover:
-
-- The correctness of external C libraries called via FFI
-- The security of the deployment environment (OS, hardware)
-- Business logic correctness (only security properties)
-- Physical security of the running system
-
-For hardware-level guarantees, see Track S (Hardware Contracts) and Track U (Runtime Guardian) in the formal proofs.
-
----
-
-*RIINA — Security proven. Mathematically verified. Certifiably correct.*
+Certification is a judgement by an accredited body about a whole system: its
+requirements, design, process, testing and operation. A compiler sees only source
+code. The theorems RIINA proves are about its language model; the shipped compiler
+is tested against that model, not proven to implement it, and no independent audit
+of RIINA has been published.

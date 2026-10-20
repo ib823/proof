@@ -12,6 +12,8 @@ const ACCENT = '#8b2321';
 const EXAMPLES = [
   {
     key: 'leak',
+    // What riinac check does with it; tests/doc_snippets.rs holds the page to it.
+    expect: 'error:Security violation in print sink',
     label: 'Rejected: secret leak',
     file: 'leak.rii',
     code: `// A secret reaching a print sink.
@@ -23,6 +25,7 @@ fungsi utama() -> Unit kesan Tulis {
   },
   {
     key: 'dedah',
+    expect: 'ok',
     label: 'Accepted: declassified',
     file: 'sulit_dedah.rii',
     code: `// Secrets and sanctioned declassification.
@@ -34,6 +37,7 @@ fungsi utama() -> Unit kesan Tulis {
   },
   {
     key: 'effect',
+    expect: 'error:Effect violation: allowed Pure, found Write',
     label: 'Rejected: undeclared effect',
     file: 'bersih.rii',
     code: `// A "pure" function that tries to print.

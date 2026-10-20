@@ -338,6 +338,10 @@ const Str = ({ children }) => <span style={{ color: 'var(--code-str)' }}>{childr
 const Err = ({ children }) => <span style={{ color: 'var(--code-err)' }}>{children}</span>;
 const Dim = ({ children }) => <span style={{ color: 'var(--dark-faint)' }}>{children}</span>;
 const Prompt = () => <span style={{ color: 'var(--code-prompt)' }}>$ </span>;
+// A RIINA program shown on the site. `check` says what `riinac check` does with
+// it ("ok" or "error:<diagnostic>"); 03_PROTO/crates/riinac/tests/doc_snippets.rs
+// extracts the text (minus <Err>/<Dim>) and holds the page to it.
+const Prog = ({ children }) => <>{children}</>;
 
 /* ============================ HEADER / FOOTER ============================ */
 
@@ -450,7 +454,7 @@ function Home({ go, metrics }) {
           <MonoLabel>Verification record &middot; v{metrics.version} &middot; {metrics.git?.commit || ''} &middot; {(metrics.generatedHuman || '').replace(/ at .*$/, '')}</MonoLabel>
           <h1 className="serif-h1" style={{ fontSize: 'clamp(40px, 5.6vw, 76px)', lineHeight: 1.04, textWrap: 'pretty' }}>Core type and effect rules proven in Coq for the language model.</h1>
           <p style={{ margin: 0, fontSize: 'clamp(16.5px, 1.3vw, 18.5px)', lineHeight: 1.62, color: '#3a352d', maxWidth: 560, textWrap: 'pretty' }}>
-            The compiler is tested against that model. RIINA is a programming language with a Coq-verified core model, and the proof corpus is not a report we wrote about our own work. It is an artefact your team re-checks from source, on your hardware, in an afternoon.
+            The compiler is tested against that model; unlike CompCert or CakeML, <span style={{ fontFamily: 'var(--font-mono)' }}>riinac</span> itself is not formally verified. RIINA is a programming language with a Coq-verified core model, and the proof corpus is not a report we wrote about our own work. It is an artefact your team re-checks from source, on your hardware, in an afternoon.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, paddingTop: 2 }}>
             <button onClick={() => go('evidence')} className="hov-fill-accent" style={{ fontSize: 15, fontWeight: 500, background: '#14120f', color: '#f5f3ee', border: '1px solid #14120f', padding: '15px 26px', cursor: 'pointer' }}>
@@ -714,7 +718,7 @@ function Evidence({ metrics }) {
         )}
 
         <div style={{ marginTop: 34, border: '1px solid #c9c3b4', background: '#efece4', padding: '22px 24px', fontSize: 14, lineHeight: 1.68, color: '#4a453d' }}>
-          <strong style={{ color: '#14120f' }}>On honesty.</strong> This ledger indexes the mechanized Coq lane only. The active build has {fmt(cq.axioms)} <span style={{ fontFamily: 'var(--font-mono)' }}>Axiom</span> and {fmt(cq.parameters)} documented <span style={{ fontFamily: 'var(--font-mono)' }}>Parameter</span> declarations &mdash; the trusted hardware interface, with written rationales enforced by <span style={{ fontFamily: 'var(--font-mono)' }}>scripts/audit-docs.sh</span>; none of the capstone theorems depends on them &mdash; and {fmt(cq.excluded)} excluded Qed (proofs our own detector flags as vacuous patterns, plus examples, counterexamples and test files) are kept out of the core and model counts. Kernel attestation goes deeper than the grep counts: <span style={{ fontFamily: 'var(--font-mono)' }}>riinac verify --full</span> runs <span style={{ fontFamily: 'var(--font-mono)' }}>Print Assumptions</span> on ten capstone theorems. Nine must be closed under the global context &mdash; no axiom at all; the tenth, the older full-calculus <span style={{ fontFamily: 'var(--font-mono)' }}>well_typed_SN</span>, may use the Rocq standard library&rsquo;s functional extensionality and is reported as conditional and vacuous. The gate fails the build if anything else ever appears. We publish these distinctions because an assessor would find them anyway.
+          <strong style={{ color: '#14120f' }}>On honesty.</strong> Unlike CompCert or CakeML, the compiler <span style={{ fontFamily: 'var(--font-mono)' }}>riinac</span> is not itself formally verified: these theorems are about the language model, and the compiler is tested against that model, not proven to implement it. This ledger indexes the mechanized Coq lane only. The active build has {fmt(cq.axioms)} <span style={{ fontFamily: 'var(--font-mono)' }}>Axiom</span> and {fmt(cq.parameters)} documented <span style={{ fontFamily: 'var(--font-mono)' }}>Parameter</span> declarations &mdash; the trusted hardware interface, with written rationales enforced by <span style={{ fontFamily: 'var(--font-mono)' }}>scripts/audit-docs.sh</span>; none of the capstone theorems depends on them &mdash; and {fmt(cq.excluded)} excluded Qed (proofs our own detector flags as vacuous patterns, plus examples, counterexamples and test files) are kept out of the core and model counts. Kernel attestation goes deeper than the grep counts: <span style={{ fontFamily: 'var(--font-mono)' }}>riinac verify --full</span> runs <span style={{ fontFamily: 'var(--font-mono)' }}>Print Assumptions</span> on ten capstone theorems. Nine must be closed under the global context &mdash; no axiom at all; the tenth, the older full-calculus <span style={{ fontFamily: 'var(--font-mono)' }}>well_typed_SN</span>, may use the Rocq standard library&rsquo;s functional extensionality and is reported as conditional and vacuous. The gate fails the build if anything else ever appears. We publish these distinctions because an assessor would find them anyway.
         </div>
       </div>
     </div>
@@ -771,7 +775,7 @@ function Language() {
               <DarkCode>
                 <Dim>{'// Secrets and sanctioned declassification\n'}</Dim>
                 <Dim>{'// `cetak(<secret>)` alone is a COMPILE ERROR\n\n'}</Dim>
-                <K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak('}<K>dedah</K>{' ('}<K>sulit</K>{' 1234) '}<K>dengan bukti</K>{' ('}<K>sulit</K>{' 1234))\n}'}
+                <Prog check="ok"><K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak('}<K>dedah</K>{' ('}<K>sulit</K>{' 1234) '}<K>dengan bukti</K>{' ('}<K>sulit</K>{' 1234))\n}'}</Prog>
               </DarkCode>
               <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ fontSize: 14, lineHeight: 1.6, color: '#4a453d' }}><span style={{ fontFamily: 'var(--font-mono)', color: '#14120f' }}>sulit e</span> &mdash; classifies a value into <span style={{ fontFamily: 'var(--font-mono)' }}>Rahsia</span>. From that point it cannot reach a log, a response body or a file without declassification.</div>
@@ -801,10 +805,12 @@ function Language() {
                 <Dim>{'// A conventional language: compiles, leaks\n'}</Dim>
                 <K>fn</K> <Fn>charge</Fn>{'(card: '}<Ty>String</Ty>{') -> '}<Ty>Receipt</Ty>{' {\n    log::info!('}<Str>"{}"</Str>{', card);  '}<Dim>{'// no error'}</Dim>{'\n    gateway::submit(card)\n}\n\n'}
                 <Dim>{'// RIINA: the checker refuses it\n'}</Dim>
-                <K>fungsi</K> <Fn>caj</Fn>{'(kad: '}<Sec>Rahsia</Sec>{'<'}<Ty>Teks</Ty>{'>) -> '}<Ty>Resit</Ty>{' {\n    cetak(kad);\n'}
+                <Prog check="error:Security violation in print sink">
+                <K>fungsi</K> <Fn>caj</Fn>{'(kad: '}<Sec>Rahsia</Sec>{'<'}<Ty>Teks</Ty>{'>) -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak(kad);\n'}
                 <Err>{'    ^^^^^^^^^^ error: Security violation in\n'}</Err>
                 <Dim>{'    print sink: declassify (dedah) the secret\n    before printing it: level Secret does not\n    flow to Public\n'}</Dim>
                 {'}'}
+                </Prog>
               </DarkCode>
               <div style={{ marginTop: 14, fontSize: 14, lineHeight: 1.65, color: '#4a453d' }}>
                 The error text is the compiler&rsquo;s real diagnostic, verbatim. The leak was not detected &mdash; it was made unrepresentable. Laundering through conversion builtins is closed too: <span style={{ fontFamily: 'var(--font-mono)' }}>cetak(ke_teks(pin))</span> is rejected the same way.
@@ -831,11 +837,11 @@ function Language() {
             </div>
             <DarkCode>
               <Dim>{'// The checker’s real diagnostic for an\n// undeclared effect:\n\n'}</Dim>
-              <K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Bersih {\n    cetak('}<Str>"hello"</Str>{');\n}\n\n'}
+              <Prog check="error:Effect violation: allowed Pure, found Write"><K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Bersih {\n    cetak('}<Str>"hello"</Str>{');\n}\n\n'}</Prog>
               <Err>{'error: Effect violation:\n       allowed Pure, found Write'}</Err>
               {'\n\n'}
               <Dim>{'// Declare it and the same body builds:\n'}</Dim>
-              <K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak('}<Str>"hello"</Str>{');\n}'}
+              <Prog check="ok"><K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak('}<Str>"hello"</Str>{');\n}'}</Prog>
             </DarkCode>
           </div>
         )}
@@ -964,7 +970,7 @@ function Compliance() {
         <MonoLabel style={{ marginBottom: 18 }}>Compliance</MonoLabel>
         <h1 className="serif-h1" style={{ marginBottom: 16, fontSize: 'clamp(36px, 4.6vw, 58px)', maxWidth: 900 }}>Controls stop being assertions and become checks.</h1>
         <p style={{ margin: 0, fontSize: 'clamp(15.5px, 1.2vw, 17px)', lineHeight: 1.65, color: '#3a352d', maxWidth: 720 }}>
-          19 profiles, 606 machine-checkable rules. Each rule ships with a violating and a passing test case, so you can see precisely what the checker enforces &mdash; and precisely where it stops.
+          19 profiles, 606 heuristic rules over the program source, each one tested in the <span style={{ fontFamily: 'var(--font-mono)' }}>riina-compliance</span> crate, so you can see precisely what a rule looks for &mdash; and where it stops. The result is evidence toward a profile, not a certification.
         </p>
       </div>
 
@@ -972,7 +978,7 @@ function Compliance() {
         <div className="noscroll" style={{ overflowX: 'auto', border: '1px solid #14120f', background: '#fffdf8' }}>
           <div style={{ minWidth: 720 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.3fr 1.3fr 0.6fr', padding: '13px 20px', background: '#14120f', color: '#e8e4da', fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              <span>Framework</span><span>Compiler-checkable slice</span><span>Discharged by</span><span>Status</span>
+              <span>Framework</span><span>Compiler-checkable slice</span><span>Checked by</span><span>Status</span>
             </div>
             {FRAMEWORKS.map((f, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.3fr 1.3fr 0.6fr', padding: '15px 20px', borderBottom: '1px solid #e6e1d6', alignItems: 'center', gap: 10 }}>
@@ -985,7 +991,7 @@ function Compliance() {
           </div>
         </div>
         <div style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.65, color: '#6b6559', maxWidth: 860 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', color: '#2f6b3f' }}>MODELLED</span> = a mechanized Coq compliance model exists in <span style={{ fontFamily: 'var(--font-mono)' }}>02_FORMAL/coq/compliance/</span> alongside compiler-enforced rules. <span style={{ fontFamily: 'var(--font-mono)', color: '#8a6d1f' }}>CHECKER</span> = compiler-enforced rules, each with a passing and a violating test case, plus build artefacts (SBOM, CBOM, VEX) where named. Passing a profile is evidence toward that profile; not a conformity assessment or certification &mdash; RIINA is a checker, not a conformity assessment body.
+          <span style={{ fontFamily: 'var(--font-mono)', color: '#2f6b3f' }}>MODELLED</span> = a Coq model of the regulation exists in <span style={{ fontFamily: 'var(--font-mono)' }}>02_FORMAL/coq/compliance/</span> alongside the compiler&rsquo;s rules; it proves facts about its own definitions, and the rules are not derived from it. <span style={{ fontFamily: 'var(--font-mono)', color: '#8a6d1f' }}>CHECKER</span> = tested compiler rules only, plus build artefacts (SBOM, CBOM, VEX) where named. Passing a profile is evidence toward that profile; not a conformity assessment or certification &mdash; RIINA is a checker, not a conformity assessment body.
         </div>
       </div>
 
@@ -1010,13 +1016,13 @@ function Compliance() {
             <MonoLabel style={{ marginBottom: 18 }}>The artefact</MonoLabel>
             <h2 className="serif-h2" style={{ marginBottom: 14, fontSize: 'clamp(28px, 3vw, 38px)' }}>A report with an integrity hash, not a slide.</h2>
             <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.68, color: '#4a453d' }}>
-              The compiler emits a report naming each rule checked, the violations found, and the SHA-256 of the exact source it examined. Your assessor re-runs the same command and gets the same file. The block on the right is the real output format, abbreviated.
+              The compiler emits a report naming each rule checked, the violations found, and the SHA-256 of the exact source it examined. Your assessor re-runs the same command on the same file and gets the same hash and verdict. The block on the right is real output, abbreviated.
             </p>
           </div>
           <DarkCode pad="clamp(18px, 2vw, 26px)" style={{ fontSize: 'clamp(11.5px, 1vw, 13px)' }}>
             <Prompt />{'riinac check --compliance hipaa --report app.rii\n\n'}
             <Ty>{'RIINA COMPLIANCE REPORT\n'}</Ty>
-            {'  File:      app.rii\n  SHA-256:   cc786d8b880bf654325a608d…\n  Verdict:   '}<Sec>PASS</Sec>{'\n\n  Rules checked: 33   Violations: 0\n\n  PROFILE: HIPAA — US Health Insurance\n  Portability and Accountability Act\n  Coverage: 33/54 rules (61.1%)\n  Status: 0 error(s), 0 warning(s)'}
+            {'  File:      app.rii\n  SHA-256:   cc786d8b880bf654325a608d…\n  Verdict:   '}<Sec>PASS</Sec>{'\n\n  Rules checked: 33   Violations: 0\n\n  PROFILE: HIPAA: US Health Insurance\n  Portability and Accountability Act\n  Coverage: 33/54 rules (61.1%)\n  Status: CLEAN — no violations\n\n  Its rules are heuristic checks: evidence\n  toward each profile, not a conformity\n  assessment or certification.'}
           </DarkCode>
         </div>
       </div>
@@ -1096,7 +1102,7 @@ function Docs({ go, metrics }) {
               <h2 style={{ margin: '0 0 14px', fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 'clamp(24px, 2.4vw, 30px)' }}>First file</h2>
               <DarkCode pad="clamp(18px, 2vw, 24px)" style={{ marginBottom: 16 }}>
                 <Dim>{'// hello.rii\n'}</Dim>
-                <K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak('}<Str>"Selamat datang ke RIINA!"</Str>{');\n}'}
+                <Prog check="ok"><K>fungsi</K> <Fn>utama</Fn>{'() -> '}<Ty>Unit</Ty> <K>kesan</K>{' Tulis {\n    cetak('}<Str>"Selamat datang ke RIINA!"</Str>{');\n}'}</Prog>
               </DarkCode>
               <DarkCode pad="clamp(18px, 2vw, 24px)">
                 <Prompt />{'riinac check hello.rii  '}<Dim>{'# type-check + security rules\n'}</Dim>

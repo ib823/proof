@@ -645,8 +645,15 @@ fn run() {
                 eprintln!("RIINA Compiler v{VERSION}");
                 eprintln!("Compiling: {}", filename);
                 eprintln!("Success!");
-                println!("Type: {:?}", ty);
-                println!("Effect: {:?}", eff);
+                if opts.report.is_some() && opts.report_output.is_none() {
+                    // The compliance report is on stdout and must be the only
+                    // thing there: `--report-json` output has to parse as JSON.
+                    eprintln!("Type: {:?}", ty);
+                    eprintln!("Effect: {:?}", eff);
+                } else {
+                    println!("Type: {:?}", ty);
+                    println!("Effect: {:?}", eff);
+                }
             }
         }
         Command::Test => {

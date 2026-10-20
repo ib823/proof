@@ -10,6 +10,8 @@
 
 RIINA 是一种**核心模型经 Coq 验证**的编程语言。能够编译通过的程序，即通过了编译器所实现的类型与效果检查。Coq 是唯一完全机械化的证明通道；当前数据见 [README](../../README.md) 与 `website/public/metrics.json`。
 
+**与 CompCert 或 CakeML 不同，编译器 `riinac` 本身并未经过形式化验证。** 在 Coq 中证明的是语言模型（见下表）；编译器依照该模型进行测试，而非被证明实现了该模型。
+
 | 语言模型中的属性 | 状态 |
 |---|---|
 | 安全级别间无信息泄露 | 非干扰性已在 Coq 中针对无引用、无递归的核心得到证明；超出该核心的部分由测试保障 |
@@ -51,25 +53,24 @@ riinac run hello.rii      # 直接运行
 riinac build hello.rii    # 通过 C 编译为本地二进制文件
 ```
 
-### 安全示例（示意——预期模型）
+### 安全示例
 
 ```riina
-// RIINA 在编译时防止信息泄露
-
 fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Kripto {
-    // 'kad' 在语言模型中是 Rahsia（秘密）；编译器/运行时的对齐工作仍在进行中
-
-    biar hash = sha256(kad);           // 正确：对秘密数据进行加密操作
-    biar resit = "Jumlah: " + ke_teks(jumlah);  // 正确：金额是公开的
-
-    // cetakln(kad);                   // 编译错误：秘密数据在 IO 效果中
-    // pulang kad;                     // 编译错误：秘密在公开返回值中
-
-    pulang resit;                      // 正确：只返回公开数据
+    biar cap = cincang(kad);                      // 正确：秘密的哈希值仍是秘密
+    biar resit = "Jumlah: " + ke_teks(jumlah);    // 正确：金额是公开的
+    resit                                         // 正确：只返回公开数据
 }
 ```
 
-以上为预期模型的示意，并非可运行示例：所发布的编译器尚未支持其全部语法与内置函数。
+```riina error="Security violation in print sink"
+fungsi utama() -> Unit kesan Tulis {
+    biar kad = sulit "4111 1111 1111 1111";
+    cetakln(kad)                                  // 编译错误：秘密到达打印输出
+}
+```
+
+以上两段代码均由测试（`03_PROTO/crates/riinac/tests/doc_snippets.rs`）检查：第一段通过，第二段被检查器拒绝。
 
 - **密码学仍属实验性：** RIINA 自研的密码库（`riina-core`）仍属实验性，未经审计——目前请勿用它保护真实的机密。尚未发布任何独立审计。
 - **按设计不支持浮点数：** 浮点字面量是编译错误（P0015）。精确的整数与定点运算使程序保持在证明所建模的范围之内。
