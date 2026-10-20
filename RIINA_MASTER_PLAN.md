@@ -5464,6 +5464,9 @@ task here: Fix builtins that crash on sized integers" (both queued from the trai
   WRITING_SECURE_RIINA's numeric-tower row said "complete across interpreter + C + WASM; every
   type Coq-modeled", and now says what holds; corpus counts.
 - **Before → after metrics:** Rust tests 3,618 → 3,623. Corpus 82 → 83. Coq counts unchanged.
+- **Published:** `5b44f6dd0` pushed with `verify --full` PASS (3,623 tests); recorded in the
+  manifest and `metrics.json` in the next commit. Not republished to `public`, the mirror or
+  the website.
 
 ### Hardening Mandate (owner-adopted 2026-10-19) — tracking
 
