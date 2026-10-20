@@ -98,6 +98,10 @@ INTERNAL_PATHS=(
 
     # --- Confidential specs ---
     "04_SPECS/business/"
+    # The adopted hardening mandate and the licence drafts for counsel (rulings
+    # D1, D5): internal governance. The mandate names the private development
+    # repository; the drafts are not in force and must not read as terms.
+    "04_SPECS/governance/"
     "04_SPECS/RIINA_PRIME_DIRECTIVE_GAP_CLOSURE.md"
     "04_SPECS/scope/RIINA_RESEARCH_EXECUTION_MAP.md"
 
