@@ -15,11 +15,8 @@ const DEFAULTS = {
   verus: { proofs: 0, files: 0, prover: 'Verus' },
   kani: { harnesses: 0, files: 0, prover: 'Kani' },
   tv: { validations: 0, files: 0, prover: 'Translation Validation' },
+  // No cross-prover totals (owner ruling D6, 2026-10-20): never summed.
   multiProver: {
-    tripleProverTheorems: 0,
-    totalProofsAllProvers: 0,
-    totalProvers: 10,
-    sorry: 0,
     status: 'IN_PROGRESS',
   },
   quality: {

@@ -55,11 +55,11 @@ LEAN_THEOREMS=$(grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1)
 LEAN_COMMA=$(add_commas "$LEAN_THEOREMS")
 ISABELLE_LEMMAS=$(grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1)
 ISABELLE_COMMA=$(add_commas "$ISABELLE_LEMMAS")
-TOTAL_PROOFS=$(grep -oP '"totalProofsAllProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROOFS_COMMA=$(add_commas "$TOTAL_PROOFS")
-TRIPLE_PROVER=$(grep -oP '"tripleProverTheorems":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROVERS=$(grep -oP '"totalProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROVERS=${TOTAL_PROVERS:-10}
+# No cross-prover total is read or written (owner ruling D6, 2026-10-20):
+# metrics.json no longer carries totalProofsAllProvers / tripleProverTheorems /
+# totalProvers, because a sum of Qed, generated declarations, asserts and
+# harnesses reads as a proof count. (Grepping a missing key would also abort
+# this `set -euo pipefail` script.)
 # Pinned primary prover label from metrics.json (e.g. "Rocq 9.1.1")
 COQ_PROVER=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['coq']['prover'])" "$METRICS_FILE" 2>/dev/null || true)
 RUST_TESTS=$(grep -oP '"tests":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -98,7 +98,6 @@ echo "  SMT:            $SMT_ASSERTIONS assertions"
 echo "  Verus:          $VERUS_PROOFS proofs"
 echo "  Kani:           $KANI_HARNESSES harnesses"
 echo "  TV:             $TV_VALIDATIONS validations"
-echo "  Total:          $TOTAL_PROOFS_COMMA ($TOTAL_PROVERS provers)"
 echo "  Axioms:         $AXIOMS"
 echo "  Rust tests:     $RUST_TESTS"
 echo "  Session:        $SESSION"
@@ -109,10 +108,6 @@ COQ_TIER1=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d
 COQ_TIER2=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('quality',{}).get('coqTiers',{}).get('domain',0))" 2>/dev/null || echo "0")
 LEAN_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('leanCompiled',False)).lower())" 2>/dev/null || echo "false")
 ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',False)).lower())" 2>/dev/null || echo "false")
-
-# Compute stub prover total
-STUB_TOTAL=$((FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
-LEAN_ISA_TOTAL=$((LEAN_THEOREMS + ISABELLE_LEMMAS))
 
 # The canonical verification banner line — honest framing (Gate D, Path D2,
 # 2026-06-10): Coq is the ONLY mechanized lane; the other prover trees are
@@ -192,7 +187,7 @@ if [ -f "$README" ]; then
     if [ "$DRY_RUN" -eq 0 ]; then
         # Use awk for safe replacements (avoids sed ERE escaping bugs with \*\*)
         tmpfile=$(mktemp)
-        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" -v total="$TOTAL_PROOFS_COMMA" -v prover="$COQ_PROVER" '
+        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" -v prover="$COQ_PROVER" '
         {
             # Update comparison table: "Yes (N Coq + N Lean + N Isabelle)"
             gsub(/Yes \([0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle\)/, "Yes (" qed " Coq + " lean " Lean + " isa " Isabelle)")
@@ -210,11 +205,6 @@ if [ -f "$README" ]; then
             if ($0 !~ /at the tagged commit|at release|[Hh]istorical/) {
                 gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Coq Qed/, qed " Coq Qed")
                 gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Qed/, qed " Qed")
-            }
-
-            # Update phase 3 line with Coq/Lean/Isabelle totals
-            if ($0 ~ /Coq Qed.*Lean.*Isabelle.*total/) {
-                gsub(/[0-9,]+ Coq Qed \+ [0-9]+ Lean \+ [0-9]+ Isabelle = [0-9,]+ total/, qed " Coq Qed + " lean " Lean + " isa " Isabelle = " total " total")
             }
 
             print
@@ -243,7 +233,7 @@ if [ -f "$CLAUDE" ]; then
         tmpfile=$(mktemp)
         awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" \
             -v lean_c="$LEAN_COMMA" -v isa_c="$ISABELLE_COMMA" \
-            -v total="$TOTAL_PROOFS_COMMA" -v lean_files="$LEAN_FILES" \
+            -v lean_files="$LEAN_FILES" \
             -v isa_files="$ISABELLE_FILES" -v examples="$EXAMPLES" \
             -v rust_tests="$RUST_TESTS" -v coq_active="$COQ_FILES_ACTIVE" '
         # §0.5 table: | **Lean 4 Theorems** | 119 | 12 files, 0 sorry |
@@ -253,10 +243,6 @@ if [ -f "$CLAUDE" ]; then
         # §0.5 table: | **Isabelle/HOL Lemmas** | 138 | 10 files, 0 sorry |
         /[|] [*][*]Isabelle[/]HOL Lemmas[*][*]/ {
             gsub(/[|] [0-9]+ [|] [0-9]+ files/, "| " isa " | " isa_files " files")
-        }
-        # §0.5 table: | **Total Proofs (All Provers)** | 8,185 |
-        /[|] [*][*]Total Proofs [(]All Provers[)][*][*]/ {
-            gsub(/[|] [0-9,]+ [|]/, "| " total " |")
         }
         # §0.5 table: | **Example .rii Files** | 120 |
         /[|] [*][*]Example .rii Files[*][*]/ {
@@ -270,9 +256,8 @@ if [ -f "$CLAUDE" ]; then
         /[|] [*][*]Isabelle[/]HOL[*][*] [|] Tertiary/ {
             gsub(/[0-9,]+ lemmas/, isa_c " lemmas")
         }
-        # Footer: 8,185 total proofs: 7,928 Coq + 119 Lean + 138 Isabelle
-        /Last updated:.*total proofs:/ {
-            gsub(/[0-9,]+ total proofs: [0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle/, total " total proofs: " qed " Coq + " lean " Lean + " isa " Isabelle")
+        # Footer file counts: N active .v + N .lean + N .thy
+        /Last updated:.*active .v/ {
             gsub(/[0-9]+ active .v \+ [0-9]+ .lean \+ [0-9]+ .thy/, coq_active " active .v + " lean_files " .lean + " isa_files " .thy")
         }
         { print }
@@ -313,12 +298,12 @@ if [ -f "$PROGRESS" ]; then
 
         # Use awk for safe table row replacements (avoids sed ERE escaping bugs with \*\*)
         tmpfile=$(mktemp)
-        awk -v session="$SESSION" -v total="$TOTAL_PROOFS_COMMA" -v axioms="$AXIOMS" \
+        awk -v session="$SESSION" -v axioms="$AXIOMS" \
             -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" \
             -v coq_active="$COQ_FILES_ACTIVE" -v coq_total="$COQ_FILES_TOTAL" '
         # Update session line: **Session:** N (...)
         /^[*][*]Session:[*][*]/ {
-            gsub(/[*][*]Session:[*][*] [0-9]+ \([^)]+\)/, "**Session:** " session " (Proof Depth 20+ All Files — " total " proofs across 3 provers, 0 sorry, " axioms " axiom)")
+            gsub(/[*][*]Session:[*][*] [0-9]+ \([^)]+\)/, "**Session:** " session " (" qed " Coq Qed, " axioms " axiom)")
         }
         # Update Report Date
         /^[*][*]Report Date:[*][*]/ {
@@ -333,9 +318,6 @@ if [ -f "$PROGRESS" ]; then
         }
         /[|] Isabelle[/]HOL Lemmas/ {
             gsub(/[*][*][0-9]+[*][*]/, "**" isa "**")
-        }
-        /[|] Total Proofs [(]All Provers[)]/ {
-            gsub(/[*][*][0-9,]+[*][*]/, "**" total "**")
         }
         /[|] Files in Build/ {
             gsub(/[*][*][0-9]+[*][*]/, "**" coq_active "**")

@@ -1,6 +1,6 @@
 # RIINA DEFINITIVE SCOPE DOCUMENT
 
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3555 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3559 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
 
 ## Version 1.0.0 — The Single Source of Truth
 

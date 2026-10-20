@@ -714,50 +714,11 @@ while IFS= read -r f; do
     fi
 done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
 
-# Total proofs across ALL 10 provers (excludes quarantined stub lanes)
-TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
-
-# Count triple-prover theorems: min(domain Lean theorems, domain Isabelle lemmas)
-# + foundation triple-prover count from MULTIPROVER_VALIDATION.md
-FOUNDATION_TRIPLE=$(grep -oP '\d+ triple-prover theorems' "$ROOT_DIR/02_FORMAL/MULTIPROVER_VALIDATION.md" 2>/dev/null | grep -oP '^\d+' || echo "86")
-# Domain triple-prover: all domain theorems exist in all 3 provers
-LEAN_DOMAIN_THEOREMS=0
-if [ -d "$ROOT_DIR/02_FORMAL/lean/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FORMAL/lean/RIINA/Industries" ]; then
-    for subdir in Domains Industries; do
-        dir="$ROOT_DIR/02_FORMAL/lean/RIINA/$subdir"
-        if [ -d "$dir" ]; then
-            while IFS= read -r f; do
-                count=$(grep -cP "^\s*(theorem|lemma)\s" "$f" 2>/dev/null || true)
-                if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-                    LEAN_DOMAIN_THEOREMS=$((LEAN_DOMAIN_THEOREMS + count))
-                fi
-            done < <(find "$dir" -name "*.lean" -type f 2>/dev/null)
-        fi
-    done
-fi
-ISA_DOMAIN_LEMMAS=0
-if [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Industries" ]; then
-    for subdir in Domains Industries; do
-        dir="$ROOT_DIR/02_FORMAL/isabelle/RIINA/$subdir"
-        if [ -d "$dir" ]; then
-            while IFS= read -r f; do
-                count=$(grep -cP "^\s*(lemma|theorem)\s" "$f" 2>/dev/null || true)
-                if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-                    ISA_DOMAIN_LEMMAS=$((ISA_DOMAIN_LEMMAS + count))
-                fi
-            done < <(find "$dir" -name "*.thy" -type f 2>/dev/null)
-        fi
-    done
-fi
-# Triple-prover = min(Lean domain, Isabelle domain) + foundation
-# If Isabelle is quarantined as generated stubs, triple-prover claims are zeroed.
-if [ "$ISABELLE_QUARANTINED" = true ]; then
-    DOMAIN_TRIPLE=0
-    TRIPLE_PROVER=0
-else
-    DOMAIN_TRIPLE=$((LEAN_DOMAIN_THEOREMS < ISA_DOMAIN_LEMMAS ? LEAN_DOMAIN_THEOREMS : ISA_DOMAIN_LEMMAS))
-    TRIPLE_PROVER=$((FOUNDATION_TRIPLE + DOMAIN_TRIPLE))
-fi
+# No cross-prover total and no "triple-prover" count (owner ruling D6,
+# 2026-10-20; REQ-29 path D2): adding Qed, generated declarations, asserts and
+# harnesses produced one number that read as proofs (62,413 "across 10
+# provers"), and the triple-prover figure counted generated ports. Per-lane
+# counts stay below, each with its own claim level.
 
 # Count Rust tests
 if [ -f "${HOME}/.cargo/env" ]; then
@@ -1122,7 +1083,6 @@ fi
 [ "$KANI_QUARANTINED" = true ] && KANI_HARNESSES_PUBLIC=0
 [ "$TV_QUARANTINED" = true ] && TV_VALIDATIONS_PUBLIC=0
 
-TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
 
 # Smoke never sets ISABELLE_COMPILED (see HONESTY POLICY below): that flag is
 # quality.isabelleCompiled and the lane's claim, owned by the strict report.
@@ -1390,12 +1350,8 @@ cat > "$OUTPUT_FILE" << EOF
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": $TRIPLE_PROVER,
-    "totalProofsAllProvers": $TOTAL_PROOFS,
-    "totalProvers": 10,
-    "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
-    "sorry": $((LEAN_SORRY + ISABELLE_SORRY)),
-    "status": "$MULTIPROVER_STATUS"
+    "status": "$MULTIPROVER_STATUS",
+    "note": "No cross-prover total is published: counts of different kinds are never summed (owner ruling D6, 2026-10-20). Each lane carries its own claim level under claimLevels."
   },
   "quality": {
     "coqCompiled": $COQ_COMPILED,
@@ -1498,7 +1454,6 @@ echo "  SMT:          $SMT_ASSERTIONS_PUBLIC assertions (raw $SMT_ASSERTIONS), $
 echo "  Verus:        $VERUS_PROOFS_PUBLIC proofs (raw $VERUS_PROOFS), $VERUS_FILES files, quarantined=$VERUS_QUARANTINED"
 echo "  Kani:         $KANI_HARNESSES_PUBLIC harnesses (raw $KANI_HARNESSES), $KANI_FILES files, quarantined=$KANI_QUARANTINED"
 echo "  TV:           $TV_VALIDATIONS_PUBLIC validations (raw $TV_VALIDATIONS), $TV_FILES files, quarantined=$TV_QUARANTINED"
-echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
 echo "  Claim levels: overall=$OVERALL_CLAIM coq=$CLAIM_COQ lean=$CLAIM_LEAN isabelle=$CLAIM_ISABELLE"
 echo "                fstar=$CLAIM_FSTAR tlaplus=$CLAIM_TLAPLUS alloy=$CLAIM_ALLOY smt=$CLAIM_SMT"
 echo "                verus=$CLAIM_VERUS kani=$CLAIM_KANI tv=$CLAIM_TV dim14=$CLAIM_DIM14"

@@ -2301,21 +2301,28 @@ fn verify_metrics_accuracy(
         }
     };
 
-    // Parse key values from JSON (no serde — zero deps)
-    let parse_field = |field: &str| -> Option<u32> {
-        content.find(&format!("\"{field}\"")).and_then(|pos| {
-            let after = &content[pos + field.len() + 3..]; // skip `"field": `
+    // Parse key values from JSON (no serde — zero deps). Each field is read
+    // from INSIDE its own top-level section (`"proofs"`, `"lean"`,
+    // `"isabelle"`): the first `"theorems"` in the file used to be taken as
+    // Lean's, so a Lean section with no such key silently compared another
+    // lane's count (found 2026-10-20 while archiving the generated corpora).
+    let parse_field = |section: &str, field: &str| -> Option<u32> {
+        let start = content.find(&format!("\"{section}\": {{"))?;
+        let body = &content[start..];
+        let body = &body[..body.find("\n  }").unwrap_or(body.len())];
+        body.find(&format!("\"{field}\"")).and_then(|pos| {
+            let after = &body[pos + field.len() + 3..]; // skip `"field": `
             let num_start = after.find(|c: char| c.is_ascii_digit())?;
             let num_end = after[num_start..].find(|c: char| !c.is_ascii_digit())?;
             after[num_start..num_start + num_end].parse().ok()
         })
     };
 
-    let json_qed = parse_field("qedActive").unwrap_or(0);
-    let json_lean = parse_field("theorems").unwrap_or(0);
-    let json_isabelle = parse_field("lemmasRaw").unwrap_or(0);
-    let json_admitted = parse_field("admitted").unwrap_or(u32::MAX);
-    let json_axioms = parse_field("axioms").unwrap_or(u32::MAX);
+    let json_qed = parse_field("proofs", "qedActive").unwrap_or(0);
+    let json_lean = parse_field("lean", "theorems").unwrap_or(0);
+    let json_isabelle = parse_field("isabelle", "lemmasRaw").unwrap_or(0);
+    let json_admitted = parse_field("proofs", "admitted").unwrap_or(u32::MAX);
+    let json_axioms = parse_field("proofs", "axioms").unwrap_or(u32::MAX);
 
     // Live counts
     let live_qed = count_coq_qed(coq_dir);
@@ -2365,9 +2372,15 @@ fn verify_metrics_accuracy(
     }
 }
 
-/// Cross-validate proof counts across all ten provers.
-/// Checks that Lean and Isabelle theorem counts are within 50% of the Coq domain count.
-/// Also aggregates counts from all 7 additional provers.
+/// Inventory of the per-lane declaration counts. Informational only: only Coq
+/// is a mechanized lane, and the generated corpora were archived out of
+/// `main` (owner ruling D6, 2026-10-20 — REQ-29 path D2), so what remains in
+/// the other lanes is the hand-written `RIINA/Active/` material.
+///
+/// There is deliberately NO cross-lane sum and NO cross-lane "parity" check:
+/// a sum adds counts of different kinds (Qed, declarations, asserts,
+/// harnesses) into one number that reads as proofs, and parity rewarded a
+/// generated port for having as many declarations as Coq has proofs.
 fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
     let coq_qed = count_coq_qed(dirs.coq_dir);
     let lean_thm = count_lean_theorems(dirs.lean_dir);
@@ -2380,38 +2393,16 @@ fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
     let kani_pf = count_kani_proofs(dirs.kani_dir);
     let tv_val = count_tv_validations(dirs.tv_dir);
 
-    let grand_total = coq_qed
-        + lean_thm
-        + isa_lem
-        + fstar_lem
-        + tla_thm
-        + alloy_asrt
-        + smt_asrt
-        + verus_pf
-        + kani_pf
-        + tv_val;
-
-    // Check multi-prover parity: Lean and Isabelle should each have
-    // at least 50% of the Coq theorem count (accounting for foundation
-    // proofs that are more detailed in Coq).
-    let threshold = coq_qed / 2;
-    let parity_ok = lean_thm >= threshold && isa_lem >= threshold;
-
     CheckResult {
-        // NOT a validation: these are raw declaration counts. Only Coq is a
-        // mechanized lane; the other trees are largely generated corpora
-        // (e.g. ~12k `admit ()` in F*, Lean files that do not elaborate). The
-        // old name "Cross-Prover Validation ... PASS, Grand total" presented
-        // that sum as verification (2026-10-11 audit).
         name: "Prover Corpus Inventory (raw counts, not verification)".into(),
-        passed: parity_ok,
+        passed: true,
         // Informational only.
         blocking: false,
         details: format!(
-            "Raw declaration counts; only Coq is mechanized. Sum: {grand_total} | Coq: {coq_qed} | Lean: {lean_thm} | Isabelle: {isa_lem} | \
-             F*: {fstar_lem} | TLA+: {tla_thm} | Alloy: {alloy_asrt} | SMT: {smt_asrt} | \
-             Verus: {verus_pf} | Kani: {kani_pf} | TV: {tv_val} | Parity: {}",
-            if parity_ok { "OK" } else { "DRIFT (Lean/Isabelle < 50% of Coq)" }
+            "Per-lane raw declaration counts, NOT summed; only Coq is mechanized. \
+             Coq Qed: {coq_qed} | Lean: {lean_thm} | Isabelle: {isa_lem} | F*: {fstar_lem} | \
+             TLA+: {tla_thm} | Alloy: {alloy_asrt} | SMT: {smt_asrt} | Verus: {verus_pf} | \
+             Kani: {kani_pf} | TV: {tv_val}"
         ),
     }
 }
@@ -4643,30 +4634,43 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
         }
     }
 
+    /// A throwaway corpus directory with exactly `files` (relative path,
+    /// contents), so a counter's test pins an EXACT count rather than a floor
+    /// over the live generated corpora (archived from `main` under ruling D6).
+    fn corpus_fixture(tag: &str, files: &[(&str, &str)]) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("riina_verify_{tag}_{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        for (rel, body) in files {
+            let path = dir.join(rel);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(&path, body).unwrap();
+        }
+        dir
+    }
+
     #[test]
     fn test_count_lean_theorems() {
-        let lean_dir = repo_path("02_FORMAL/lean");
-        assert!(lean_dir.exists(), "missing {}", lean_dir.display());
-        {
-            let count = count_lean_theorems(&lean_dir);
-            assert!(
-                count > 3000,
-                "Expected >3000 Lean theorems (domain+foundation), got {count}"
-            );
-        }
+        let dir = corpus_fixture(
+            "lean",
+            &[
+                ("A.lean", "theorem a : True := trivial\n  lemma b : True := trivial\n-- theorem c\n"),
+                ("_wip/W.lean", "theorem w : True := trivial\n"),
+                ("lakefile.lean", "theorem l : True := trivial\n"),
+            ],
+        );
+        // `theorem`/`lemma` lines only; `_wip` and the lakefile are excluded.
+        assert_eq!(count_lean_theorems(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_count_isabelle_lemmas() {
-        let isa_dir = repo_path("02_FORMAL/isabelle/RIINA");
-        assert!(isa_dir.exists(), "missing {}", isa_dir.display());
-        {
-            let count = count_isabelle_lemmas(&isa_dir);
-            assert!(
-                count > 3000,
-                "Expected >3000 Isabelle lemmas (domain+foundation), got {count}"
-            );
-        }
+        let dir = corpus_fixture(
+            "isa",
+            &[("T.thy", "lemma a: True by simp\ntheorem b: True by simp\n(* lemma c *)\n"), ("x.txt", "lemma z\n")],
+        );
+        assert_eq!(count_isabelle_lemmas(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
@@ -4681,57 +4685,45 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_glob_lean_files_excludes_lakefile_and_wip() {
-        let lean_dir = repo_path("02_FORMAL/lean");
-        assert!(lean_dir.exists(), "missing {}", lean_dir.display());
-        {
-            let files = glob_lean_files(&lean_dir);
-            for f in &files {
-                assert_ne!(
-                    f.file_name().and_then(|n| n.to_str()),
-                    Some("lakefile.lean"),
-                    "lakefile.lean should be excluded"
-                );
-                assert!(
-                    !f.components().any(|c| c.as_os_str() == "_wip"),
-                    "_wip Lean files should be excluded"
-                );
-            }
-            assert!(!files.is_empty(), "Should find at least one .lean file");
-        }
+        let dir = corpus_fixture(
+            "leanglob",
+            &[("A.lean", ""), ("sub/B.lean", ""), ("_wip/W.lean", ""), ("lakefile.lean", ""), ("C.txt", "")],
+        );
+        let mut names: Vec<String> = glob_lean_files(&dir)
+            .iter()
+            .map(|f| f.file_name().unwrap().to_string_lossy().into_owned())
+            .collect();
+        names.sort();
+        assert_eq!(names, vec!["A.lean", "B.lean"]);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_glob_thy_files() {
-        let isa_dir = repo_path("02_FORMAL/isabelle/RIINA");
-        assert!(isa_dir.exists(), "missing {}", isa_dir.display());
-        {
-            let files = glob_thy_files(&isa_dir);
-            assert!(
-                files.len() >= 10,
-                "Expected >=10 .thy files, got {}",
-                files.len()
-            );
-        }
+        let dir = corpus_fixture("thyglob", &[("A.thy", ""), ("d/B.thy", ""), ("ROOT", ""), ("c.ML", "")]);
+        assert_eq!(glob_thy_files(&dir).len(), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_count_fstar_lemmas() {
-        let dir = repo_path("02_FORMAL/fstar");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_fstar_lemmas(&dir);
-            assert!(count > 100, "Expected >100 F* lemmas, got {count}");
-        }
+        let dir = corpus_fixture(
+            "fst",
+            &[("M.fst", "val eq_lemma : unit -> Lemma True\nlet zero_lemma () = ()\nlet plain x = x\n")],
+        );
+        assert_eq!(count_fstar_lemmas(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_count_tla_theorems() {
-        let dir = repo_path("02_FORMAL/tlaplus");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_tla_theorems(&dir);
-            assert!(count > 100, "Expected >100 TLA+ theorems, got {count}");
-        }
+        let dir = corpus_fixture(
+            "tla",
+            &[("S.tla", "THEOREM Safe == TRUE\nTHEOREM Live == TRUE\n  THEOREM Indented == TRUE\n\\* THEOREM c\n")],
+        );
+        // Column-0 `THEOREM` declarations only.
+        assert_eq!(count_tla_theorems(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
@@ -4746,12 +4738,12 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_alloy_assertions() {
-        let dir = repo_path("02_FORMAL/alloy");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_alloy_assertions(&dir);
-            assert!(count > 100, "Expected >100 Alloy assertions, got {count}");
-        }
+        let dir = corpus_fixture(
+            "als",
+            &[("M.als", "check NoLeak for 4\n  check Other\nrun Example\n")],
+        );
+        assert_eq!(count_alloy_assertions(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
@@ -4788,42 +4780,47 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
 
     #[test]
     fn test_count_smt_assertions() {
-        let dir = repo_path("02_FORMAL/smt");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_smt_assertions(&dir);
-            assert!(count > 100, "Expected >100 SMT assertions, got {count}");
-        }
+        let dir = corpus_fixture(
+            "smt",
+            &[
+                ("a.smt2", "(assert (= 1 1))\n(assert (not false))\n(check-sat)\n"),
+                ("b.tv.smt2", "(assert true)\n"),
+            ],
+        );
+        // `.tv.smt2` belongs to the TV lane, not SMT.
+        assert_eq!(count_smt_assertions(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_count_verus_proofs() {
-        let dir = repo_path("02_FORMAL/verus");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_verus_proofs(&dir);
-            assert!(count > 100, "Expected >100 Verus proofs, got {count}");
-        }
+        let dir = corpus_fixture(
+            "verus",
+            &[("v.rs", "proof fn a() {}\n    proof fn b() {}\nfn c() {}\n")],
+        );
+        assert_eq!(count_verus_proofs(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_count_kani_proofs() {
-        let dir = repo_path("02_FORMAL/kani");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_kani_proofs(&dir);
-            assert!(count > 100, "Expected >100 Kani proofs, got {count}");
-        }
+        let dir = corpus_fixture(
+            "kani",
+            &[("k.rs", "#[kani::proof]\nfn a() {}\n#[kani::proof]\nfn b() {}\n#[test]\nfn c() {}\n")],
+        );
+        assert_eq!(count_kani_proofs(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn test_count_tv_validations() {
-        let dir = repo_path("02_FORMAL/tv");
-        assert!(dir.exists(), "missing {}", dir.display());
-        {
-            let count = count_tv_validations(&dir);
-            assert!(count > 100, "Expected >100 TV validations, got {count}");
-        }
+        let dir = corpus_fixture(
+            "tv",
+            &[("t.tv.smt2", "(assert (= a b))\n(assert true)\n"), ("plain.smt2", "(assert true)\n")],
+        );
+        // Only `.tv.smt2` files are TV validations.
+        assert_eq!(count_tv_validations(&dir), 2);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     // =======================================================================
