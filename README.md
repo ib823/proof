@@ -38,7 +38,7 @@ AI agents: See [llms.txt](llms.txt) for a machine-readable language reference.
 RIINA provides first-class support for AI-assisted development:
 
 - **Programmatic compilation:** `riinac check --json --stdin` accepts source on stdin and returns structured JSON diagnostics
-- **Full machine reference:** [llms-full.txt](llms-full.txt) contains the complete language specification, type system, and effect system in a single file
+- **Full machine reference:** [llms-full.txt](llms-full.txt) is llms.txt plus the complete keyword, type, effect and security-level tables and the builtin reference, generated from the compiler's own tables
 - **Stdlib API reference:** [docs/api/STDLIB.md](docs/api/STDLIB.md) — every builtin and its type signature, generated from the compiler's own registry (drift-guarded by a test)
 - **Proof guide:** [docs/guide/PROOF_GUIDE.md](docs/guide/PROOF_GUIDE.md) — how to read, build, and extend the Coq lane
 - **Code patterns:** [07_EXAMPLES/](07_EXAMPLES/) contains 172 example programs across 20 category directories (security, effects, compliance, design patterns, FFI, and more)

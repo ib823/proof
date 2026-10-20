@@ -1,0 +1,25 @@
+{{include:llms.txt.tmpl}}
+
+---
+
+# Full reference (generated from the compiler's own tables)
+
+## All keywords ({{keywords_total}}, from riina-lexer)
+
+{{keyword_table}}
+
+## Types (from riina-parser)
+
+{{type_table}}
+
+## Effects (lowest to highest, with lattice level, from riina-types)
+
+{{effects_order}}
+
+## Security levels (lowest to highest)
+
+{{levels_order}}
+
+## Builtins (docs/api/STDLIB.md, generated from the compiler's registry)
+
+{{file:docs/api/STDLIB.md}}

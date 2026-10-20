@@ -42,7 +42,7 @@ SELF_TEST = "--self-test" in sys.argv[2:]
 SURFACES = [
     "README.md", "docs/i18n/README_ms.md", "docs/i18n/README_zh.md",
     "docs/UNDERSTANDING_RIINA.md", "docs/guide/GETTING_STARTED.md",
-    "07_EXAMPLES/README.md", "llms.txt", "AGENTS.md", "COPILOT.md",
+    "07_EXAMPLES/README.md", "llms.txt", "llms-full.txt", "AGENTS.md", "COPILOT.md",
     ".cursorrules", ".clinerules", ".github/copilot-instructions.md",
     "SECURITY.md", "CONTRIBUTING.md", "website/index.html",
     "website/src/RiinaWebsite.jsx", "riina-vscode/package.json",

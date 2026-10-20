@@ -9,7 +9,7 @@
 3. Run `git status` — must be on `main` branch (or your assigned feature branch), check for dirty files
 4. Re-verify metrics by running the commands in `RIINA_MASTER_PLAN.md` Part 0 — do NOT trust the table below blindly
 
-## Current State (2026-10-20, command-derived)
+## Current State (2026-10-20, generated from `website/public/metrics.json`)
 
 | Metric | Value |
 |--------|-------|
@@ -22,6 +22,7 @@
 | Rust tests | 3,569 tests in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
 | Examples | 172 .rii files; 84 pass `riinac check` |
 | Claims | Coq mechanized; SMT mechanized at the REQ-67(a) scope (37 properties); TLA+/Alloy/Verus/Kani/TV generated (hand-written drafts, quarantined); F*/Isabelle retired; Lean empty |
+| Ledgers | `HEADLINE_THEOREMS.md`, `PROPERTY_LEDGER.md`, `TRUSTED_BASE.md`, `PROOF_STATUS.md`, `AXIOMS.md`, `docs/api/STDLIB.md` (all generated) |
 
 **Scope a new session must NOT forget:**
 - Strong normalization, non-interference and constant time (reduction count) are proven only for the reference-free, `fix`-free core (REQ-89 is the extension). `well_typed_SN` for the full calculus is vacuous: its conclusion is false with higher-order references (REQ-84).
@@ -32,9 +33,9 @@
 
 ## Next-Session Pickup (read this BEFORE picking a task)
 
-1. Open `RIINA_MASTER_PLAN.md` Part 11: the §Active Gate Marker (Gate C — Standard
-   Library Hardening, as of 2026-10-20) and the section "Hardening Mandate (owner-adopted
-   2026-10-19) — tracking". Re-read them; do not trust this line.
+1. Open `RIINA_MASTER_PLAN.md` Part 11: the §Active Gate Marker and the section
+   "Hardening Mandate (owner-adopted 2026-10-19) — tracking". Read the current gate there;
+   this file does not repeat it, so it cannot go stale.
 2. From Part 3 (Requirements Registry), pick the highest-priority open REQ in the active
    gate, P0 before P1 before P2. P0 security and soundness fixes run whatever the gate.
 3. Owner decisions are recorded in Part 11; anything still marked OWNER ACTION (repository
@@ -50,12 +51,18 @@ track. `03_PROTO/crates/riinac/tests/scope_freeze.rs` enforces the pinned counts
 phase roadmap in `RIINA_MASTER_PLAN.md` Part 4 is history and future direction, not the
 current queue.
 
+## Branch Policy
+
+**Default branch is `main`.** Managed-session feature branches (`claude/*`, `codex/*`) are permitted when a session assigns one; they sync back to `main`.
+- Never commit to `public` (managed by `scripts/sync-public.sh` only).
+- Never commit to `gh-pages` (managed by `scripts/deploy-website.sh` only).
+
 ## Critical Operational Rules
 
 ### After EVERY Coq change:
 ```bash
 bash scripts/generate-metrics.sh
-bash scripts/sync-metrics.sh
+bash scripts/sync-metrics.sh     # also regenerates this file (scripts/generate-agent-files.py)
 bash scripts/audit-docs.sh
 ```
 
@@ -65,21 +72,23 @@ bash scripts/audit-docs.sh
 never set a lane's `full_build_ok`, `full_exec_ok` or `mechanized_ready` yourself:
 that would publish a claim no tool has checked.
 
-### Deployment:
-```bash
-git push origin main                      # Pre-push hook validates
-bash scripts/sync-public.sh              # Sync to public + ib823/riina
-bash scripts/deploy-website.sh           # Website (gh-pages)
+### Commit, push, deploy:
 ```
+Stage specific files → commit "[TRACK_X] TYPE: ..." → push (pre-push runs riinac verify --full; never --no-verify)
+→ scripts/sync-public.sh → scripts/generate-metrics.sh + scripts/sync-metrics.sh (when counts change)
+→ scripts/deploy-website.sh
+```
+Numbers flow ONE direction: actual commands → `website/public/metrics.json` → generated docs → website → master plan.
 
 ### Never:
-- Commit with Admitted in Coq
-- Hardcode numbers — always derive from commands
-- Create new planning documents — update RIINA_MASTER_PLAN.md only
+- Do NOT create new planning/roadmap/audit documents. `RIINA_MASTER_PLAN.md` is the only plan.
+- Do NOT commit Coq proofs with `Admitted`.
+- Do NOT count stub prover files as proofs, and never add counts from different provers together.
+- Do NOT hand-type numbers: derive them from commands (`website/public/metrics.json` is the source of truth).
+- Do NOT edit generated files by hand (these instruction files, the ledgers, `PROOF_STATUS.md`, `AXIOMS.md`); edit their sources and regenerate.
+- Do NOT push with `--no-verify`: the in-repo hooks (`riinac verify`, `scripts/audit-docs.sh`) are the source of truth.
+- `.github/workflows/verify.yml` only wraps the internal gates; CI is never the source of truth and must not diverge from them.
 - Change vite base path from `/riina/`
-- Treat CI as the source of truth — `.github/workflows/verify.yml` only wraps the
-  in-repo gates (`make`, `cargo test`, `audit-docs.sh`, `riinac verify`), which
-  remain authoritative; never add CI checks that diverge from them.
 
 ## Build Commands
 
@@ -98,6 +107,9 @@ cargo test --all --manifest-path 03_PROTO/Cargo.toml
 cd website && npm run build   # vite base: /riina/
 ```
 
+Native builds need gcc or clang as `cc` on Linux or macOS (Windows: WSL). MSVC is not
+supported (owner ruling on REQ-102, option B).
+
 ## Commit Signing
 
 Commit signing is **optional** (retracted as a hard gate 2026-06-01): the repo's
@@ -105,3 +117,5 @@ history is unsigned and no signing key is provisioned in CI or ephemeral session
 so the old "signed commits required" gate could never pass. If you sign, great;
 the pre-push secret/trojan-source scans still run regardless. See
 `scripts/security-gates.sh`.
+
+<!-- Generated by scripts/generate-agent-files.py from 04_SPECS/agent_files/AGENTS.md.tmpl. Edit the template, not this file (mandate S5.6). -->

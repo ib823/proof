@@ -1,0 +1,845 @@
+# RIINA™
+
+> Rigorous Immutable Invariant, No Assumptions
+
+RIINA is a programming language with Bahasa Melayu (Malaysian) keywords and a
+Coq-verified core model: its core type and effect rules are proven in Coq for
+the language model, and the compiler is tested against that model (not proven
+to implement it). The shipped compiler enforces a subset of the modelled
+security properties (see Verified State).
+
+- File extension: `.rii`
+- Version: 0.4.0
+- Keywords: Bahasa Melayu (Malaysian) + English dual syntax (132 keywords; full table in llms-full.txt)
+- Repository: https://github.com/ib823/riina
+- License: RIINA Proprietary License (source publicly readable; not open source)
+
+## Verified State (generated from website/public/metrics.json, 2026-10-20)
+
+IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
+other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
+`generate-multiprover.py`) were archived out of `main` on 2026-10-20 (owner ruling
+D6) and are preserved at commit `fd23fbdb8`. What remains is hand-written. Never
+sum counts across lanes: they count different things.
+
+- Coq: 1,679 core Qed, 9,719 model Qed, 1,421 excluded Qed. Core = foundations,
+  type system, properties, effects, termination and the compiler-linked
+  crypto policy; model = domain, industry, compliance, crypto and runtime models
+  (facts about their own definitions, not verified systems); excluded = vacuous
+  patterns, examples, counterexamples or test files. Never quote a raw total.
+  0 Admitted, 0 Abort, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface;
+  none of the capstone theorems depends on them). 334 active .v files.
+- Scope of the headline results (HEADLINE_THEOREMS.md): type safety (progress,
+  preservation) for the full calculus. Strong normalization, non-interference and
+  constant time (reduction-count independence from secrets) are proven only for the
+  reference-free, `fix`-free core; beyond it they are enforced by tests.
+- Lean 4: 0 theorem/lemma declarations. The generated port is archived (at commit
+  `fd23fbdb8` it had 12,576 declarations, of which 215 ever elaborated); the
+  REQ-67(b) hand-written re-proof has not started. Claim: **generated**.
+- SMT/Z3: the REQ-67(a) scoped set — 37 properties (security lattice 25, effect join 12) checked by
+  `scripts/verify-smt.sh` for exact unsat counts. Claim: **mechanized** at that
+  scope only.
+- F*: retired; 1 smoke module (3 trivial lemmas: constant-time eq, zeroize length).
+- Isabelle: retired; no files remain.
+- TLA+ / Alloy: a few hand-written specs and models (1 TLC-checked smoke spec with
+  5 THEOREMs; 1 Alloy smoke model with 6 assertions). Claim: generated
+  (quarantined until wired into CI).
+- Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
+- Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
+  claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
+- Rust: 3,569 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+  third-party runtime dependencies). Dev/CI tools are separate: the Rocq
+  toolchain, cc, wasmtime, z3 and the NIST test vectors.
+- Backends: the C/native backend is not formally verified; it is
+  differential-tested against the interpreter. Native builds need gcc or clang as
+  `cc` on Linux or macOS (Windows: WSL); MSVC is not supported. Floating point is
+  not supported, by design (a float literal is error P0015).
+- Crypto (`riina-core`): experimental and unaudited. Tested against NIST
+  known-answer (ACVP) vectors; not validated (no CMVP/CAVP certificate).
+- Compliance: 19 profiles, 606 heuristic rules in total — evidence toward a
+  standard, not a conformity assessment or certification.
+- Audits: no independent audit has been published.
+- Examples: 172 .rii files, of which 84 currently pass `riinac check`; the
+  shipped parser accepts a narrower grammar than some examples assume — see
+  `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
+  COMPILED: a few effectful builtins (`jaring_tls_*`, the virtual-filesystem trio,
+  the crypto-agility runtime) are still interpreter-only (REQ-70), and
+  `riinac build` fails closed on them.
+- An unknown type name (including a typo) is currently accepted as `Any`
+  (REQ-93(c)); use only the types in llms-full.txt.
+
+## Session Protocol
+
+All LLM CLIs MUST follow RIINA_MASTER_PLAN.md Part 8 (8 mandatory steps):
+ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
+
+During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker and the
+hardening-mandate tracking section in Part 11 for the current gate.
+
+**Default branch is `main`.** Managed-session feature branches (`claude/*`, `codex/*`) are permitted when a session assigns one; they sync back to `main`.
+- Never commit to `public` (managed by `scripts/sync-public.sh` only).
+- Never commit to `gh-pages` (managed by `scripts/deploy-website.sh` only).
+
+```
+Stage specific files → commit "[TRACK_X] TYPE: ..." → push (pre-push runs riinac verify --full; never --no-verify)
+→ scripts/sync-public.sh → scripts/generate-metrics.sh + scripts/sync-metrics.sh (when counts change)
+→ scripts/deploy-website.sh
+```
+Numbers flow ONE direction: actual commands → `website/public/metrics.json` → generated docs → website → master plan.
+
+## Docs
+
+- [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
+- [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
+- [Full reference](llms-full.txt): this file plus the complete keyword, type, effect and builtin tables
+- [Builtin reference](docs/api/STDLIB.md): every builtin and its signature, from the compiler's registry
+- [Headline theorems](HEADLINE_THEOREMS.md): the only theorems a public surface may cite
+- [Language Specs](04_SPECS/): Formal specifications
+- [Examples](07_EXAMPLES/): 172 example .rii files
+- [Formal Proofs](02_FORMAL/coq/): Coq proof library
+
+## Quick Syntax Reference
+
+```riina
+// Functions with effect declarations
+fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    pulang x + y;
+}
+
+// Actors (JALINAN Phase 6)
+pelaku Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)
+
+// Choreography (multiparty session types)
+koreografi Pembelian {
+    peranan Pemohon, Pelulus;
+    Pemohon -> Pelulus: hantar Nombor;
+    Pelulus -> Pemohon: hantar Benar;
+    tamat;
+}
+```
+
+## Keywords
+
+### Core
+fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
+selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
+sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)
+
+### Security
+rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
+tercemar (tainted), bersihkan (sanitize)
+
+### Effects
+kesan (effect), bersih (pure), laku (perform), kendali (handle)
+
+### Linearity
+sekali (linear), paling (affine), mesti (relevant)
+
+### JALINAN (Distributed Computing)
+pelaku (actor), lahir (spawn), hantar (send), terima (recv),
+koreografi (choreography), peranan (role), keadaan (state),
+penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)
+
+### Capabilities
+keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)
+
+### Session Types
+sesi (session), pilih (select), cabang (branch), tamat (end)
+
+## Effects (lowest to highest, with lattice level)
+
+Bersih(0) < Ubah(1) < Baca(2) < Peruntuk(3) < Tulis(4) < SistemFail(5) < Rangkaian(6) < RangkaianSelamat(7) < Kripto(8) < Rawak(9) < Sistem(10) < Masa(11) < Proses(12) < Panel(13) < Zirah(14) < Benteng(15) < Sandi(16) < Menara(17) < Gapura(18)
+
+## Security Levels (lowest to highest)
+
+Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
+
+## CLI (from `riinac --help`)
+
+```bash
+riinac check    # Parse and typecheck only (default)
+riinac run      # Parse, typecheck, and interpret
+riinac build    # Parse, typecheck, emit C/WASM, and compile (--run to execute)
+riinac emit-c   # Parse, typecheck, and emit C to stdout
+riinac emit-ir  # Parse, typecheck, lower, and print IR
+riinac test     # Discover and run inline ujian (test) blocks
+riinac doc      # Generate HTML documentation
+riinac fmt      # Format a .rii file
+riinac lsp      # Start LSP server (stdio)
+riinac mcp      # Start MCP server for AI agents (stdio)
+riinac repl     # Interactive read-eval-print loop
+riinac verify   # Run verification gate [--fast|--full|--coq]
+riinac pkg      # Package manager (init/add/remove/lock/build/...)
+riinac help     # Print this help (also --help, -h)
+riinac version  # Print the compiler version (also --version, -V)
+```
+
+---
+
+# Full reference (generated from the compiler's own tables)
+
+## All keywords (132, from riina-lexer)
+
+| Token | Spellings |
+|---|---|
+| `KwAbort` | `abort`, `batal` |
+| `KwAccessible` | `accessible`, `mudahcapai` |
+| `KwAcqRel` | `acqrel`, `peroleh_lepas` |
+| `KwAcquire` | `acquire`, `peroleh` |
+| `KwActor` | `actor`, `pelaku` |
+| `KwAnd` | `and`, `dan` |
+| `KwAs` | `as`, `sebagai` |
+| `KwAsync` | `async`, `tak_segerak` |
+| `KwAtomic` | `atomic`, `atom` |
+| `KwAwait` | `await`, `tunggu` |
+| `KwBorrow` | `borrow`, `pinjam` |
+| `KwBranch` | `branch`, `cabang` |
+| `KwBreak` | `break`, `putus` |
+| `KwButton` | `button`, `butang` |
+| `KwCapability` | `capability`, `keupayaan` |
+| `KwChannel` | `channel`, `saluran` |
+| `KwChoreography` | `choreography`, `koreografi` |
+| `KwClassify` | `classify`, `sulit` |
+| `KwClone` | `clone`, `klon` |
+| `KwColor` | `color`, `warna` |
+| `KwColumn` | `column`, `lajur` |
+| `KwCombined` | `combined`, `gabungan` |
+| `KwConsensus` | `consensus`, `konsensus` |
+| `KwConst` | `const`, `tetap` |
+| `KwContentHash` | `content_hash`, `cincang` |
+| `KwContinue` | `continue`, `lanjut` |
+| `KwContrast` | `contrast`, `kontras` |
+| `KwCopy` | `copy`, `salin` |
+| `KwCrate` | `crate`, `peti` |
+| `KwCt` | `ct`, `masa_tetap` |
+| `KwDeclassify` | `declassify`, `dedah` |
+| `KwDisplay` | `display`, `paparan` |
+| `KwEffect` | `effect`, `kesan` |
+| `KwElse` | `else`, `lain` |
+| `KwEnd` | `end`, `tamat` |
+| `KwEnum` | `enum`, `pilihan` |
+| `KwErr` | `Err`, `Gagal`, `Ralat` |
+| `KwExpect` | `expect`, `jangkakan` |
+| `KwExtern` | `extern`, `luaran` |
+| `KwFence` | `fence`, `pagar` |
+| `KwFn` | `fn`, `fungsi` |
+| `KwFontSize` | `font_size`, `saiz_fon` |
+| `KwFor` | `for`, `untuk` |
+| `KwFst` | `fst`, `pertama` |
+| `KwGrant` | `grant`, `beri` |
+| `KwGuard` | `guard`, `pastikan` |
+| `KwHandle` | `handle`, `kendali` |
+| `KwIf` | `if`, `kalau` |
+| `KwImage` | `image`, `gambar` |
+| `KwImpl` | `impl`, `laksana` |
+| `KwIn` | `in`, `dalam` |
+| `KwInl` | `inl` |
+| `KwInput` | `input`, `masukan` |
+| `KwInr` | `inr` |
+| `KwIs` | `is`, `ialah` |
+| `KwLayout` | `layout`, `susun` |
+| `KwLet` | `let`, `biar` |
+| `KwLevel` | `level`, `tahap` |
+| `KwLifetime` | `lifetime`, `jangka` |
+| `KwLoop` | `loop`, `ulang` |
+| `KwMatch` | `match`, `padan` |
+| `KwMerge` | `merge`, `gabung` |
+| `KwMesti` | `relevant`, `mesti` |
+| `KwMod` | `mod`, `modul` |
+| `KwMove` | `move`, `pindah` |
+| `KwMudarabah` | `mudarabah` |
+| `KwMusharakah` | `musharakah` |
+| `KwMut` | `mut`, `ubah` |
+| `KwNone` | `None`, `Tiada`, `Tidak` |
+| `KwNot` | `not`, `bukan` |
+| `KwOk` | `Ok`, `Jadi`, `Berjaya` |
+| `KwOr` | `or`, `atau` |
+| `KwPadding` | `padding`, `pelapik` |
+| `KwPaling` | `affine`, `paling` |
+| `KwPerform` | `perform`, `laku` |
+| `KwPolicy` | `policy`, `dasar` |
+| `KwProduct` | `product`, `hasil_darab` |
+| `KwProve` | `prove`, `bukti` |
+| `KwPub` | `pub`, `awam` |
+| `KwPublic` | `public`, `terbuka` |
+| `KwPure` | `pure`, `bersih` |
+| `KwPurify` | `purify`, `tathir` |
+| `KwRecv` | `recv`, `terima` |
+| `KwRef` | `ref`, `ruj` |
+| `KwRelaxed` | `relaxed`, `santai` |
+| `KwRelease` | `release`, `lepas` |
+| `KwRequire` | `require`, `perlukan` |
+| `KwResume` | `resume`, `sambung` |
+| `KwReturn` | `return`, `pulang` |
+| `KwRevoke` | `revoke`, `tarik_balik` |
+| `KwRole` | `role`, `peranan` |
+| `KwRow` | `row`, `baris` |
+| `KwSafe` | `safe`, `selamat` |
+| `KwSanitize` | `sanitize`, `bersihkan` |
+| `KwSecret` | `secret`, `rahsia` |
+| `KwSekali` | `linear`, `sekali` |
+| `KwSelect` | `select`, `pilih` |
+| `KwSelfType` | `Self`, `Diri` |
+| `KwSelfValue` | `self`, `diri` |
+| `KwSend` | `send`, `hantar` |
+| `KwSeqCst` | `seqcst`, `turutan_ketat` |
+| `KwSession` | `session`, `sesi` |
+| `KwShariahCompliant` | `shariah_compliant`, `patuh_syariah` |
+| `KwSmartContract` | `smart_contract`, `kontrak_pintar` |
+| `KwSnd` | `snd`, `kedua` |
+| `KwSome` | `Some`, `Ada` |
+| `KwSpawn` | `spawn`, `lahir` |
+| `KwSpeculationSafe` | `speculation_safe`, `selamat_spekulasi` |
+| `KwState` | `state`, `keadaan` |
+| `KwStatic` | `static`, `statik` |
+| `KwStruct` | `struct`, `bentuk`, `struktur` |
+| `KwStyle` | `style`, `gaya` |
+| `KwSukuk` | `sukuk` |
+| `KwSuper` | `super`, `induk` |
+| `KwSupervisor` | `supervisor`, `penyelia` |
+| `KwTainted` | `tainted`, `tercemar` |
+| `KwTakaful` | `takaful` |
+| `KwTest` | `test`, `ujian` |
+| `KwText_` | `text`, `tulisan` |
+| `KwToken` | `token` |
+| `KwTrait` | `trait`, `sifat` |
+| `KwType` | `type`, `jenis` |
+| `KwUnion` | `union`, `kesatuan` |
+| `KwUnsafe` | `unsafe`, `bahaya` |
+| `KwUse` | `use`, `guna` |
+| `KwVerify` | `verify`, `sahkan` |
+| `KwWakaf` | `wakaf` |
+| `KwWhere` | `where`, `dimana` |
+| `KwWhile` | `while`, `selagi` |
+| `KwWith` | `with`, `dengan` |
+| `KwZakat` | `zakat` |
+| `KwZeroize` | `zeroize`, `kosongkan` |
+
+## Types (from riina-parser)
+
+| Type | Spellings |
+|---|---|
+| Int | `Int`, `Nombor` |
+| u8 | `u8` |
+| u16 | `u16` |
+| u32 | `u32` |
+| u64 | `u64` |
+| i8 | `i8` |
+| i16 | `i16` |
+| i32 | `i32` |
+| i64 | `i64` |
+| Besar | `Besar`, `BigInt` |
+| Perpuluhan | `Perpuluhan`, `Decimal` |
+| Wang | `Wang`, `Money`, `TitikTetap` |
+| Qmn | `Qmn`, `BinaryFixed` |
+| Bool | `Bool`, `Benar` |
+| Unit | `Unit` |
+| String | `String`, `Teks` |
+| Bytes | `Bytes`, `Bait` |
+| List | `List`, `Senarai` |
+| Option | `Option`, `Mungkin` |
+| Secret | `Secret`, `Rahsia` |
+| Proof | `Proof`, `Bukti` |
+| ConstantTime | `ConstantTime`, `MasaTetap` |
+| Zeroizing | `Zeroizing`, `Sifar` |
+| Ref | `Ref`, `Ruj` |
+| Sum | `Sum` |
+| Fn | `Fn`, `fungsi` |
+| Labeled | `Labeled`, `Berlabel` |
+| Tainted | `Tainted`, `Tercemar` |
+| Sanitized | `Sanitized`, `Disanitasi` |
+| CInt | `CInt` |
+| CChar | `CChar` |
+| CVoid | `CVoid` |
+| Capability | `Capability`, `Keupayaan` |
+| Chan | `Chan`, `Saluran` |
+| SecureChan | `SecureChan`, `SaluranSelamat` |
+| SmartContract | `SmartContract` |
+| Token | `Token` |
+| SyariahCompliant | `SyariahCompliant` |
+
+## Effects (lowest to highest, with lattice level, from riina-types)
+
+Bersih(0) < Ubah(1) < Baca(2) < Peruntuk(3) < Tulis(4) < SistemFail(5) < Rangkaian(6) < RangkaianSelamat(7) < Kripto(8) < Rawak(9) < Sistem(10) < Masa(11) < Proses(12) < Panel(13) < Zirah(14) < Benteng(15) < Sandi(16) < Menara(17) < Gapura(18)
+
+## Security levels (lowest to highest)
+
+Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
+
+## Builtins (docs/api/STDLIB.md, generated from the compiler's registry)
+
+# RIINA Standard Library — Builtin API Reference
+
+> **Generated — do not edit by hand.** This file is produced from the compiler's own builtin registry (`register_builtin_types` in `03_PROTO/crates/riina-typechecker/src/lib.rs`) and the compiled-backend boundary (`riina_codegen::codegen_supports_builtin`) by the test `03_PROTO/crates/riina-typechecker/tests/stdlib_doc.rs`, so it cannot drift from what `riinac` actually accepts or compiles. Regenerate with `REGEN_STDLIB_DOC=1 cargo test -p riina-typechecker --test stdlib_doc`.
+
+Total registered builtins: **374**. Grouped by the effect each performs (`kesan` in a function signature). Types are shown in RIINA surface form (`Teks` = string, `Nombor` = integer, `Tercemar`/`Tainted`, `Rahsia`/`Secret`, …).
+
+## ⚠ Read first: type-checking does not imply compiling
+
+Every builtin below type-checks. That is ALL it means: type-checking does not imply compiling, and it does not even imply running. **342** of the 374 compile:
+
+| Backend value | Meaning |
+|---|---|
+| `compiled` | Lowers to C **and** WASM (21 builtins). |
+| `native-only` | Lowers to C. The WASM backend **refuses** it (321 builtins). |
+| `interp-only` | `riinac run` only (32 builtins). `riinac build` fails with `unbound variable`. |
+| `typed-only` | **Nothing runs it** (0 builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |
+
+```
+$ riinac check baca.rii     # Success!  Effect: FileSystem
+$ riinac run   baca.rii     # works — reads the file
+$ riinac build baca.rii     # Codegen Error: unbound variable: fail_baca
+```
+
+The example used to be a `jaring_dengar` HTTP server. It is not any more, because that program now COMPILES: as of 2026-08-15 the `jaring`, `http`, `simpan`, `masa` and `json` families are routed, so a networked, persistent service has a native deployment path (master plan REQ-70). The families still interpreter-only are `fail_*`, `vfs_*`, the `keselamatan` sinks, and the `jaring_tls_*` half.
+
+Both refusals are deliberate: a backend that cannot implement a builtin fails closed rather than miscompiling it. Until 2026-08-11 the WASM backend did NOT do this — it emitted a silent stub, so `teks_huruf_besar("halo")` returned `halo` and `panjang("abcd")` returned `abcd`, while the interpreter and C both gave the right answer (master plan REQ-78).
+
+In practice: the WASM surface is printing, string concatenation, `ke_teks` and the numeric-tower constructors. The wider C surface adds strings, lists, maps, sets, math, conversions and test assertions. **Networking, filesystem, VFS, JSON, time, the durable store and the security/taint sinks are interpreter-only** — closing that is master plan REQ-70.
+
+*Scope note:* this lists the language builtins the typechecker installs. Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, HMAC/HKDF, X25519, Ed25519, ML-KEM/ML-DSA) are documented with their KAT vectors in that crate, not here.
+
+## Bersih (Pure)
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `abs` | `Fn(Nombor, Nombor)` | **native-only** |
+| `adalah_kanan` | `Fn(Any, Benar)` | **native-only** |
+| `adalah_keliru` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `adalah_kiri` | `Fn(Any, Benar)` | **native-only** |
+| `assert` | `Fn(Benar, ())` | **native-only** |
+| `assert_eq` | `Fn((Any, Any), ())` | **native-only** |
+| `assert_false` | `Fn(Benar, ())` | **native-only** |
+| `assert_ne` | `Fn((Any, Any), ())` | **native-only** |
+| `assert_true` | `Fn(Benar, ())` | **native-only** |
+| `baki` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `besar` | `Fn(Teks, Besar)` | compiled |
+| `bigint` | `Fn(Teks, Besar)` | compiled |
+| `binary_fixed` | `Fn((Teks, Nombor), Qmn)` | compiled |
+| `bool_ke_nombor` | `Fn(Benar, Nombor)` | **native-only** |
+| `bool_to_int` | `Fn(Benar, Nombor)` | **native-only** |
+| `buang_null` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
+| `concat` | `Fn((Teks, Teks), Teks)` | compiled |
+| `csrf_check_origin` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_check_referer` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_sahkan` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_semak_origin` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_semak_referer` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `csrf_validate` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `decimal` | `Fn(Teks, Perpuluhan)` | compiled |
+| `deserialize_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
+| `email_set_header` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **native-only** |
+| `emel_tetap_kepala` | `Fn((Teks, Disanitasi<Teks, EmailValidation>), ())` | **native-only** |
+| `fixed` | `Fn((Teks, Nombor), Wang)` | compiled |
+| `gabung_teks` | `Fn((Teks, Teks), Teks)` | compiled |
+| `gcd` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `html_papar` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **native-only** |
+| `html_render` | `Fn(Disanitasi<Teks, HtmlEscape>, Teks)` | **native-only** |
+| `http_balas` | `Fn((Nombor, Teks), Teks)` | **native-only** |
+| `http_build_response` | `Fn((Nombor, Teks), Teks)` | **native-only** |
+| `http_hurai_jasad` | `Fn(Teks, Teks)` | **native-only** |
+| `http_hurai_kaedah` | `Fn(Teks, Teks)` | **native-only** |
+| `http_hurai_kepala` | `Fn((Teks, Teks), Teks)` | **native-only** |
+| `http_hurai_laluan` | `Fn(Teks, Teks)` | **native-only** |
+| `http_parse_body` | `Fn(Teks, Teks)` | **native-only** |
+| `http_parse_header` | `Fn((Teks, Teks), Teks)` | **native-only** |
+| `http_parse_method` | `Fn(Teks, Teks)` | **native-only** |
+| `http_parse_target` | `Fn(Teks, Teks)` | **native-only** |
+| `int_to_string` | `Fn(Nombor, Teks)` | compiled |
+| `is_confusable` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `json_ada` | `Fn(Any, Any)` | **native-only** |
+| `json_dapat` | `Fn(Any, Any)` | **native-only** |
+| `json_get` | `Fn(Any, Any)` | **native-only** |
+| `json_has` | `Fn(Any, Any)` | **native-only** |
+| `json_ke_teks` | `Fn(Any, Any)` | **native-only** |
+| `json_letak` | `Fn(Any, Any)` | **native-only** |
+| `json_parse` | `Fn(Any, Any)` | **native-only** |
+| `json_parse_safe` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
+| `json_set` | `Fn(Any, Any)` | **native-only** |
+| `json_stringify` | `Fn(Any, Any)` | **native-only** |
+| `json_urai` | `Fn(Any, Any)` | **native-only** |
+| `json_urai_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
+| `julat` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **native-only** |
+| `julat_inklusif` | `Fn((Nombor, Nombor), Senarai<Nombor>)` | **native-only** |
+| `ke_bool` | `Fn(Any, Benar)` | **native-only** |
+| `ke_nfc` | `Fn(Teks, Teks)` | **native-only** |
+| `ke_nombor` | `Fn(Teks, Nombor)` | **native-only** |
+| `ke_teks` | `Fn(Any, Teks)` | compiled |
+| `kuasa` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `lcm` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `length` | `Fn(Teks, Nombor)` | **native-only** |
+| `list_concat` | `Fn(Any, Any)` | **native-only** |
+| `list_contains` | `Fn(Any, Any)` | **native-only** |
+| `list_enumerate` | `Fn(Any, Any)` | **native-only** |
+| `list_filter` | `Fn(Any, Any)` | **native-only** |
+| `list_flatten` | `Fn(Any, Any)` | **native-only** |
+| `list_fold` | `Fn(Any, Any)` | **native-only** |
+| `list_get` | `Fn(Any, Any)` | **native-only** |
+| `list_head` | `Fn(Any, Any)` | **native-only** |
+| `list_len` | `Fn(Any, Any)` | **native-only** |
+| `list_map` | `Fn(Any, Any)` | **native-only** |
+| `list_new` | `Fn(Any, Any)` | **native-only** |
+| `list_push` | `Fn(Any, Any)` | **native-only** |
+| `list_reverse` | `Fn(Any, Any)` | **native-only** |
+| `list_slice` | `Fn(Any, Any)` | **native-only** |
+| `list_sort` | `Fn(Any, Any)` | **native-only** |
+| `list_tail` | `Fn(Any, Any)` | **native-only** |
+| `list_unique` | `Fn(Any, Any)` | **native-only** |
+| `list_zip` | `Fn(Any, Any)` | **native-only** |
+| `log2` | `Fn(Nombor, Nombor)` | **native-only** |
+| `maksimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `map_contains` | `Fn(Any, Any)` | **native-only** |
+| `map_get` | `Fn(Any, Any)` | **native-only** |
+| `map_insert` | `Fn(Any, Any)` | **native-only** |
+| `map_keys` | `Fn(Any, Any)` | **native-only** |
+| `map_len` | `Fn(Any, Any)` | **native-only** |
+| `map_new` | `Fn(Any, Any)` | **native-only** |
+| `map_remove` | `Fn(Any, Any)` | **native-only** |
+| `map_values` | `Fn(Any, Any)` | **native-only** |
+| `max` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `min` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `minimum` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `money` | `Fn(Teks, Wang)` | compiled |
+| `mutlak` | `Fn(Nombor, Nombor)` | **native-only** |
+| `nfc` | `Fn(Teks, Teks)` | **native-only** |
+| `nilai_kanan` | `Fn(Any, Any)` | **native-only** |
+| `nilai_kiri` | `Fn(Any, Any)` | **native-only** |
+| `nombor_ke_teks` | `Fn(Nombor, Teks)` | compiled |
+| `normal_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
+| `normalize_unicode` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
+| `nyahsiri_selamat` | `Fn(Disanitasi<Teks, JsonValidation>, Any)` | **native-only** |
+| `panjang` | `Fn(Teks, Nombor)` | **native-only** |
+| `parse_int` | `Fn(Teks, Nombor)` | **native-only** |
+| `perpuluhan` | `Fn(Teks, Perpuluhan)` | compiled |
+| `peta_baru` | `Fn(Any, Any)` | **native-only** |
+| `peta_buang` | `Fn(Any, Any)` | **native-only** |
+| `peta_dapat` | `Fn(Any, Any)` | **native-only** |
+| `peta_kunci` | `Fn(Any, Any)` | **native-only** |
+| `peta_letak` | `Fn(Any, Any)` | **native-only** |
+| `peta_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `peta_nilai` | `Fn(Any, Any)` | **native-only** |
+| `peta_panjang` | `Fn(Any, Any)` | **native-only** |
+| `pow` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `punca` | `Fn(Nombor, Nombor)` | **native-only** |
+| `qmn` | `Fn((Teks, Nombor), Qmn)` | compiled |
+| `rangka` | `Fn(Teks, Teks)` | **native-only** |
+| `rem` | `Fn((Nombor, Nombor), Nombor)` | **native-only** |
+| `sahkan_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **native-only** |
+| `sahkan_panjang` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
+| `sahkan_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
+| `sanitasi_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **native-only** |
+| `sanitasi_emel` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **native-only** |
+| `sanitasi_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **native-only** |
+| `sanitasi_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **native-only** |
+| `sanitasi_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonEscape>)` | **native-only** |
+| `sanitasi_laluan` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **native-only** |
+| `sanitasi_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **native-only** |
+| `sanitasi_perintah` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **native-only** |
+| `sanitasi_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **native-only** |
+| `sanitasi_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **native-only** |
+| `sanitasi_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **native-only** |
+| `sanitize_command` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CommandEscape>)` | **native-only** |
+| `sanitize_css` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, CssEscape>)` | **native-only** |
+| `sanitize_email` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, EmailValidation>)` | **native-only** |
+| `sanitize_html` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, HtmlEscape>)` | **native-only** |
+| `sanitize_js` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsEscape>)` | **native-only** |
+| `sanitize_json` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, JsonValidation>)` | **native-only** |
+| `sanitize_ldap` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, LdapEscape>)` | **native-only** |
+| `sanitize_path` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, PathTraversal>)` | **native-only** |
+| `sanitize_sql` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, SqlParam>)` | **native-only** |
+| `sanitize_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlEncode>)` | **native-only** |
+| `sanitize_xml` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, XmlEscape>)` | **native-only** |
+| `senarai_balik` | `Fn(Any, Any)` | **native-only** |
+| `senarai_baru` | `Fn(Any, Any)` | **native-only** |
+| `senarai_dapat` | `Fn(Any, Any)` | **native-only** |
+| `senarai_ekor` | `Fn(Any, Any)` | **native-only** |
+| `senarai_kepala` | `Fn(Any, Any)` | **native-only** |
+| `senarai_lipat` | `Fn(Any, Any)` | **native-only** |
+| `senarai_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `senarai_nombor` | `Fn(Any, Any)` | **native-only** |
+| `senarai_panjang` | `Fn(Any, Any)` | **native-only** |
+| `senarai_peta` | `Fn(Any, Any)` | **native-only** |
+| `senarai_potong` | `Fn(Any, Any)` | **native-only** |
+| `senarai_rata` | `Fn(Any, Any)` | **native-only** |
+| `senarai_sambung` | `Fn(Any, Any)` | **native-only** |
+| `senarai_susun` | `Fn(Any, Any)` | **native-only** |
+| `senarai_tapis` | `Fn(Any, Any)` | **native-only** |
+| `senarai_tolak` | `Fn(Any, Any)` | **native-only** |
+| `senarai_unik` | `Fn(Any, Any)` | **native-only** |
+| `senarai_zip` | `Fn(Any, Any)` | **native-only** |
+| `set_baru` | `Fn(Any, Any)` | **native-only** |
+| `set_buang` | `Fn(Any, Any)` | **native-only** |
+| `set_contains` | `Fn(Any, Any)` | **native-only** |
+| `set_insert` | `Fn(Any, Any)` | **native-only** |
+| `set_intersect` | `Fn(Any, Any)` | **native-only** |
+| `set_kesatuan` | `Fn(Any, Any)` | **native-only** |
+| `set_len` | `Fn(Any, Any)` | **native-only** |
+| `set_letak` | `Fn(Any, Any)` | **native-only** |
+| `set_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `set_new` | `Fn(Any, Any)` | **native-only** |
+| `set_panjang` | `Fn(Any, Any)` | **native-only** |
+| `set_persilangan` | `Fn(Any, Any)` | **native-only** |
+| `set_remove` | `Fn(Any, Any)` | **native-only** |
+| `set_union` | `Fn(Any, Any)` | **native-only** |
+| `skeleton` | `Fn(Teks, Teks)` | **native-only** |
+| `sqrt` | `Fn(Nombor, Nombor)` | **native-only** |
+| `str_char_at` | `Fn(Any, Any)` | **native-only** |
+| `str_contains` | `Fn(Any, Any)` | **native-only** |
+| `str_ends_with` | `Fn(Any, Any)` | **native-only** |
+| `str_index_of` | `Fn(Any, Any)` | **native-only** |
+| `str_join` | `Fn(Any, Any)` | **native-only** |
+| `str_lines` | `Fn(Any, Any)` | **native-only** |
+| `str_pad_left` | `Fn(Any, Any)` | **native-only** |
+| `str_pad_right` | `Fn(Any, Any)` | **native-only** |
+| `str_repeat` | `Fn(Any, Any)` | **native-only** |
+| `str_replace` | `Fn(Any, Any)` | **native-only** |
+| `str_split` | `Fn(Any, Any)` | **native-only** |
+| `str_starts_with` | `Fn(Any, Any)` | **native-only** |
+| `str_substring` | `Fn(Any, Any)` | **native-only** |
+| `str_to_lower` | `Fn(Any, Any)` | **native-only** |
+| `str_to_upper` | `Fn(Any, Any)` | **native-only** |
+| `str_trim` | `Fn(Any, Any)` | **native-only** |
+| `strip_nulls` | `Fn(Tercemar<Teks, UserInput>, Tercemar<Teks, UserInput>)` | **native-only** |
+| `tegaskan` | `Fn(Benar, ())` | **native-only** |
+| `tegaskan_betul` | `Fn(Benar, ())` | **native-only** |
+| `tegaskan_beza` | `Fn((Any, Any), ())` | **native-only** |
+| `tegaskan_salah` | `Fn(Benar, ())` | **native-only** |
+| `tegaskan_sama` | `Fn((Any, Any), ())` | **native-only** |
+| `teks_akhir_dengan` | `Fn(Any, Any)` | **native-only** |
+| `teks_aksara_di` | `Fn(Any, Any)` | **native-only** |
+| `teks_baris` | `Fn(Any, Any)` | **native-only** |
+| `teks_belah` | `Fn(Any, Any)` | **native-only** |
+| `teks_cantum` | `Fn(Any, Any)` | **native-only** |
+| `teks_ganti` | `Fn(Any, Any)` | **native-only** |
+| `teks_huruf_besar` | `Fn(Any, Any)` | **native-only** |
+| `teks_huruf_kecil` | `Fn(Any, Any)` | **native-only** |
+| `teks_indeks` | `Fn(Any, Any)` | **native-only** |
+| `teks_mengandungi` | `Fn(Any, Any)` | **native-only** |
+| `teks_mula_dengan` | `Fn(Any, Any)` | **native-only** |
+| `teks_pad_kanan` | `Fn(Any, Any)` | **native-only** |
+| `teks_pad_kiri` | `Fn(Any, Any)` | **native-only** |
+| `teks_potong` | `Fn(Any, Any)` | **native-only** |
+| `teks_sub` | `Fn(Any, Any)` | **native-only** |
+| `teks_ulang` | `Fn(Any, Any)` | **native-only** |
+| `titik_tetap` | `Fn((Teks, Nombor), Wang)` | compiled |
+| `tls_dasar_ok` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `tls_policy_ok` | `Fn((Teks, Teks), Benar)` | **native-only** |
+| `to_bool` | `Fn(Any, Benar)` | **native-only** |
+| `to_string` | `Fn(Any, Teks)` | compiled |
+| `validate_length` | `Fn((Tercemar<Teks, UserInput>, Nombor), Mungkin<Tercemar<Teks, UserInput>>)` | **native-only** |
+| `validate_url` | `Fn(Tercemar<Teks, UserInput>, Disanitasi<Teks, UrlAllowlist>)` | **native-only** |
+| `wang` | `Fn(Teks, Wang)` | compiled |
+| `xml_cari` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+| `xml_parse_safe` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+| `xml_query` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+| `xml_urai_selamat` | `Fn(Disanitasi<Teks, XmlEscape>, Any)` | **native-only** |
+
+## Baca (Read)
+
+> **Mixed:** 2 of 4 compile; the rest are interpreter-only (REQ-70).
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `fail_baca_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **native-only** |
+| `file_read_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Any, Baca)` | **native-only** |
+| `vfs_baca` | `Fn(Teks, Teks, Baca)` | **interp-only** |
+| `vfs_read` | `Fn(Teks, Teks, Baca)` | **interp-only** |
+
+## Tulis (Write)
+
+> **Mixed:** 9 of 13 compile; the rest are interpreter-only (REQ-70).
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `cetak` | `Fn(Any, (), Tulis)` | compiled |
+| `cetak_baris` | `Fn(Any, (), Tulis)` | compiled |
+| `cetakln` | `Fn(Any, (), Tulis)` | compiled |
+| `fail_buang_selamat` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **native-only** |
+| `fail_tulis_selamat` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **native-only** |
+| `file_delete_safe` | `Fn(Disanitasi<Teks, PathTraversal>, Benar, Tulis)` | **native-only** |
+| `file_write_safe` | `Fn((Disanitasi<Teks, PathTraversal>, Any), (), Tulis)` | **native-only** |
+| `print` | `Fn(Any, (), Tulis)` | compiled |
+| `println` | `Fn(Any, (), Tulis)` | compiled |
+| `vfs_delete` | `Fn(Teks, Benar, Tulis)` | **interp-only** |
+| `vfs_padam` | `Fn(Teks, Benar, Tulis)` | **interp-only** |
+| `vfs_tulis` | `Fn((Teks, Teks), (), Tulis)` | **interp-only** |
+| `vfs_write` | `Fn((Teks, Teks), (), Tulis)` | **interp-only** |
+
+## SistemFail (FileSystem)
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `fail_ada` | `Fn(Teks, Benar, SistemFail)` | **native-only** |
+| `fail_baca` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `fail_baca_baris` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `fail_buang` | `Fn(Teks, (), SistemFail)` | **native-only** |
+| `fail_panjang` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `fail_senarai` | `Fn(Teks, Any, SistemFail)` | **native-only** |
+| `fail_tambah` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `fail_tulis` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `file_append` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `file_delete` | `Fn(Teks, (), SistemFail)` | **native-only** |
+| `file_exists` | `Fn(Teks, Benar, SistemFail)` | **native-only** |
+| `file_list_dir` | `Fn(Teks, Any, SistemFail)` | **native-only** |
+| `file_read` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `file_read_lines` | `Fn(Teks, Tercemar<Teks, FileSystem>, SistemFail)` | **native-only** |
+| `file_size` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `file_write` | `Fn((Teks, Teks), (), SistemFail)` | **native-only** |
+| `simpan_ada` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `simpan_buka` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `simpan_dapat` | `Fn((Nombor, Teks), Teks, SistemFail)` | **native-only** |
+| `simpan_kunci` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **native-only** |
+| `simpan_letak` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **native-only** |
+| `simpan_padam` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `simpan_padat` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `simpan_tutup` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `store_close` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `store_compact` | `Fn(Nombor, Benar, SistemFail)` | **native-only** |
+| `store_delete` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `store_get` | `Fn((Nombor, Teks), Teks, SistemFail)` | **native-only** |
+| `store_has` | `Fn((Nombor, Teks), Benar, SistemFail)` | **native-only** |
+| `store_keys` | `Fn(Nombor, Senarai<Teks>, SistemFail)` | **native-only** |
+| `store_open` | `Fn(Teks, Nombor, SistemFail)` | **native-only** |
+| `store_put` | `Fn((Nombor, (Teks, Teks)), Benar, SistemFail)` | **native-only** |
+| `vfs_become_user` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+| `vfs_init` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+| `vfs_jadi_pengguna` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+| `vfs_mula` | `Fn(Nombor, (), SistemFail)` | **native-only** |
+
+## Rangkaian (Network)
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `badan_http` | `Fn(Any, Tercemar<Teks, NetworkExternal>, Rangkaian)` | **native-only** |
+| `email_send` | `Fn((Disanitasi<Teks, EmailValidation>, Teks), Benar, Rangkaian)` | **native-only** |
+| `emel_hantar` | `Fn((Disanitasi<Teks, EmailValidation>, Teks), Benar, Rangkaian)` | **native-only** |
+| `http_ambil_selamat` | `Fn(Disanitasi<Teks, UrlAllowlist>, Any, Rangkaian)` | **native-only** |
+| `http_arah_selamat` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **native-only** |
+| `http_body` | `Fn(Any, Tercemar<Teks, NetworkExternal>, Rangkaian)` | **native-only** |
+| `http_dapat` | `Fn(Teks, Any, Rangkaian)` | **native-only** |
+| `http_delete` | `Fn((Teks, Teks), Any, Rangkaian)` | **native-only** |
+| `http_fetch_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, Any, Rangkaian)` | **native-only** |
+| `http_get` | `Fn(Teks, Any, Rangkaian)` | **native-only** |
+| `http_hantar` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_kemaskini` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_minta` | `Fn((Teks, Teks), Teks, Rangkaian)` | **native-only** |
+| `http_padam` | `Fn((Teks, Teks), Any, Rangkaian)` | **native-only** |
+| `http_post` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_put` | `Fn((Teks, (Any, Teks)), Any, Rangkaian)` | **native-only** |
+| `http_redirect_safe` | `Fn(Disanitasi<Teks, UrlAllowlist>, (), Rangkaian)` | **native-only** |
+| `http_request` | `Fn((Teks, Teks), Teks, Rangkaian)` | **native-only** |
+| `jaring_alamat` | `Fn(Nombor, Teks, Rangkaian)` | **native-only** |
+| `jaring_dengar` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `jaring_hantar` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **native-only** |
+| `jaring_sambung` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `jaring_terima` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **native-only** |
+| `jaring_terima_sambungan` | `Fn(Nombor, Nombor, Rangkaian)` | **native-only** |
+| `jaring_tutup` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `jaring_tutup_dengar` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `net_accept` | `Fn(Nombor, Nombor, Rangkaian)` | **native-only** |
+| `net_close` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `net_close_listener` | `Fn(Nombor, Benar, Rangkaian)` | **native-only** |
+| `net_connect` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `net_listen` | `Fn(Teks, Nombor, Rangkaian)` | **native-only** |
+| `net_local_addr` | `Fn(Nombor, Teks, Rangkaian)` | **native-only** |
+| `net_recv` | `Fn((Nombor, Nombor), Teks, Rangkaian)` | **native-only** |
+| `net_send` | `Fn((Nombor, Teks), Nombor, Rangkaian)` | **native-only** |
+
+## RangkaianSelamat (NetworkSecure)
+
+> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `jaring_tls_disahkan` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_hantar` | `Fn((Nombor, Teks), Nombor, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_identiti` | `Fn(Teks, Teks, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_jabat` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_jabat_sah` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_kunci` | `Fn((Nombor, Teks), Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_percaya` | `Fn(Teks, Benar, RangkaianSelamat)` | **interp-only** |
+| `jaring_tls_terima` | `Fn(Nombor, Teks, RangkaianSelamat)` | **interp-only** |
+| `net_tls_handshake` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_handshake_auth` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_identity` | `Fn(Teks, Teks, RangkaianSelamat)` | **interp-only** |
+| `net_tls_is_authenticated` | `Fn(Nombor, Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_keys` | `Fn((Nombor, Teks), Benar, RangkaianSelamat)` | **interp-only** |
+| `net_tls_recv` | `Fn(Nombor, Teks, RangkaianSelamat)` | **interp-only** |
+| `net_tls_send` | `Fn((Nombor, Teks), Nombor, RangkaianSelamat)` | **interp-only** |
+| `net_tls_trust` | `Fn(Teks, Benar, RangkaianSelamat)` | **interp-only** |
+
+## Kripto (Crypto)
+
+> **Entirely interpreter-only.** No builtin in this section compiles — a program using any of them runs under `riinac run` but cannot be built for native or WASM (REQ-70).
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `cipher` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `guna_kripto` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `hash_dengan` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `hash_with` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `pilih_algo` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `select_algorithm` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `sifer` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+| `use_crypto` | `Fn(Teks, Any, Kripto)` | **interp-only** |
+
+## Rawak (Random)
+
+> **Mixed:** 2 of 4 compile; the rest are interpreter-only (REQ-70).
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `csrf_generate` | `Fn((), Teks, Rawak)` | **interp-only** |
+| `csrf_jana` | `Fn((), Teks, Rawak)` | **interp-only** |
+| `random` | `Fn(Nombor, Nombor, Rawak)` | **native-only** |
+| `rawak` | `Fn(Nombor, Nombor, Rawak)` | **native-only** |
+
+## Sistem (System)
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `baca_baris` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **native-only** |
+| `baca_garisan` | `Fn((), Teks, Sistem)` | **native-only** |
+| `dom_set_attr` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **native-only** |
+| `dom_set_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **native-only** |
+| `dom_tetap_atribut` | `Fn((Any, (Teks, Disanitasi<Teks, HtmlEscape>)), (), Sistem)` | **native-only** |
+| `dom_tetap_html` | `Fn((Any, Disanitasi<Teks, HtmlEscape>), (), Sistem)` | **native-only** |
+| `js_eval` | `Fn(Disanitasi<Teks, JsEscape>, Any, Sistem)` | **native-only** |
+| `js_nilai` | `Fn(Disanitasi<Teks, JsEscape>, Any, Sistem)` | **native-only** |
+| `ldap_cari` | `Fn(Disanitasi<Teks, LdapEscape>, Any, Sistem)` | **native-only** |
+| `ldap_search` | `Fn(Disanitasi<Teks, LdapEscape>, Any, Sistem)` | **native-only** |
+| `read_line` | `Fn((), Tercemar<Teks, UserInput>, Sistem)` | **native-only** |
+| `shell_exec` | `Fn(Disanitasi<Teks, CommandEscape>, Nombor, Sistem)` | **native-only** |
+| `shell_laksana` | `Fn(Disanitasi<Teks, CommandEscape>, Nombor, Sistem)` | **native-only** |
+| `sql_execute` | `Fn(Disanitasi<Teks, SqlParam>, Any, Sistem)` | **native-only** |
+| `sql_laksana` | `Fn(Disanitasi<Teks, SqlParam>, Any, Sistem)` | **native-only** |
+
+## Masa (Time)
+
+| Builtin | Type | Backend |
+|---|---|---|
+| `masa_format` | `Fn((Nombor, Teks), Teks, Masa)` | **native-only** |
+| `masa_jam` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_sekarang` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_sekarang_ms` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_tidur` | `Fn(Nombor, (), Masa)` | **native-only** |
+| `masa_unix` | `Fn((), Nombor, Masa)` | **native-only** |
+| `masa_urai` | `Fn((Teks, Teks), Nombor, Masa)` | **native-only** |
+| `time_clock` | `Fn((), Nombor, Masa)` | **native-only** |
+| `time_format` | `Fn((Nombor, Teks), Teks, Masa)` | **native-only** |
+| `time_now` | `Fn((), Nombor, Masa)` | **native-only** |
+| `time_now_ms` | `Fn((), Nombor, Masa)` | **native-only** |
+| `time_parse` | `Fn((Teks, Teks), Nombor, Masa)` | **native-only** |
+| `time_sleep` | `Fn(Nombor, (), Masa)` | **native-only** |
+| `time_unix` | `Fn((), Nombor, Masa)` | **native-only** |
+
+<!-- Generated by scripts/generate-agent-files.py from 04_SPECS/agent_files/llms-full.txt.tmpl. Edit the template, not this file (mandate S5.6). -->

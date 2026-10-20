@@ -1,0 +1,5 @@
+- Function and variable names: snake_case (Bahasa Melayu preferred)
+- Type names: PascalCase
+- Constants: SCREAMING_SNAKE_CASE
+- Indent: 4 spaces
+- Prefer the Bahasa Melayu keyword over the English alias

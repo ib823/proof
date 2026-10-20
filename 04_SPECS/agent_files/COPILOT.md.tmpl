@@ -1,0 +1,48 @@
+# COPILOT.md — RIINA™ Repository Instructions for GitHub Copilot
+
+## Before ANY Action
+
+{{include:_protocol.md}}
+
+## Branch Policy
+
+{{include:_branch_policy.md}}
+
+## Commit-Push-Deploy Chain
+
+{{include:_commit_chain.md}}
+
+## RIINA Language Basics
+
+- RIINA uses Bahasa Melayu (Malaysian) keywords with English aliases
+- File extension: `.rii`
+- All functions MUST declare their effect: `kesan Bersih` (pure), `kesan Tulis` (write), etc.
+- The type checker rejects the information-flow violations it implements (tested; non-interference is proven in Coq only for the reference-free, recursion-free core)
+
+## Key Syntax Rules
+
+{{include:_syntax.md}}
+
+## Types
+
+{{include:_types.md}}
+
+## Effects (declare with `kesan`)
+
+{{effects_list}}
+
+## Security Levels (lowest to highest)
+
+{{levels_order}}
+
+## Style
+
+{{include:_style.md}}
+
+## Rules
+
+{{include:_rules.md}}
+
+## Prover Maturity (be honest in generated docs/comments)
+
+{{include:_prover_maturity.md}}

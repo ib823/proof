@@ -632,6 +632,18 @@ if [ -f "$REPO_ROOT/scripts/check-doc-drift.sh" ]; then
         echo -e "${GREEN}[OK]${NC} $DRIFT_OUT"
     fi
 fi
+# Generated agent instruction files (REQ-109, mandate S5.6): a hand edit, a stale
+# file, or a keyword or type name the compiler does not know fails here.
+if [ -f "$REPO_ROOT/scripts/generate-agent-files.py" ]; then
+    if ! AGENT_OUT=$(python3 -I "$REPO_ROOT/scripts/generate-agent-files.py" --check 2>&1); then
+        while IFS= read -r agent_line; do
+            echo -e "${RED}[AGENT-FILES]${NC} $agent_line"
+        done <<< "$AGENT_OUT"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $AGENT_OUT"
+    fi
+fi
 # Generated ledgers (REQ-103): HEADLINE_THEOREMS.md, PROPERTY_LEDGER.md and
 # TRUSTED_BASE.md must match their sources, the capture must be fresh for the
 # active Coq files, and every named witness and test path must exist.
@@ -647,7 +659,7 @@ if [ -f "$REPO_ROOT/scripts/generate-ledgers.py" ]; then
 fi
 # CHANGELOG.md is release history, so its entries keep the figures they were
 # released with; only its banner is checked (below).
-for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
+for qed_doc in README.md llms.txt llms-full.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
                .cursorrules .clinerules website/index.html website/src/RiinaWebsite.jsx \
                docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md docs/i18n/README_zh.md \
                PROOF_STATUS.md AXIOMS.md VERIFICATION_MANIFEST.md HEADLINE_THEOREMS.md \

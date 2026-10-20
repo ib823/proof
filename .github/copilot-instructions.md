@@ -4,22 +4,23 @@
 
 Read `RIINA_MASTER_PLAN.md` (the ONLY planning authority) and `CLAUDE.md` (operational instructions).
 
-## Mandatory Session Protocol
-
 **Follow `RIINA_MASTER_PLAN.md` Part 8 exactly.** 8 steps, no shortcuts:
 ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
 
 ## Branch Policy
 
-**ALL work on `main` branch.** Never commit to `public` or `gh-pages`.
+**Default branch is `main`.** Managed-session feature branches (`claude/*`, `codex/*`) are permitted when a session assigns one; they sync back to `main`.
+- Never commit to `public` (managed by `scripts/sync-public.sh` only).
+- Never commit to `gh-pages` (managed by `scripts/deploy-website.sh` only).
 
 ## Commit-Push-Deploy Chain
 
 ```
-Stage specific files → commit [TRACK_X] TYPE: → push origin main (never --no-verify)
-→ sync-public.sh → sync-metrics.sh → deploy-website.sh
+Stage specific files → commit "[TRACK_X] TYPE: ..." → push (pre-push runs riinac verify --full; never --no-verify)
+→ scripts/sync-public.sh → scripts/generate-metrics.sh + scripts/sync-metrics.sh (when counts change)
+→ scripts/deploy-website.sh
 ```
-Numbers flow ONE direction: actual commands → metrics.json → all docs → website → master plan.
+Numbers flow ONE direction: actual commands → `website/public/metrics.json` → generated docs → website → master plan.
 
 ## Language Basics
 - RIINA uses Bahasa Melayu (Malaysian) keywords with English aliases
@@ -28,34 +29,38 @@ Numbers flow ONE direction: actual commands → metrics.json → all docs → we
 - Security types: the type checker rejects the information-flow violations it implements (tested; non-interference is proven in Coq only for the reference-free, recursion-free core)
 
 ## Key Syntax Rules
-1. Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
-2. Bindings: `biar name = value;` (semicolons required between statements)
-3. Conditionals: `kalau condition { ... } lain { ... }` (else branch required)
-4. Match: `padan value { pattern => result, _ => default }` (use `=>` not `->`)
-5. Effects: Always declare with `kesan`. Pure = `Bersih`, I/O = `Tulis`/`Baca`
-6. Secrets: the checker rejects printing a `Rahsia<T>` directly; release one with `dedah` and a proof.
-7. Pipe: `value |> function1 |> function2`
-8. Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
+- Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
+- Bindings: `biar name = value;` (semicolons required between statements)
+- Conditionals: `kalau condition { ... } lain { ... }` (`lain` is required when the `kalau` produces a value)
+- Match: `padan value { pattern => result, _ => default }` (use `=>`, not `->`)
+- Effects: always declare with `kesan`. Pure = `Bersih`, I/O = `Tulis`/`Baca`
+- Secrets: the checker rejects printing a `Rahsia<T>`; release one with `dedah` and a proof
+- Pipe: `value |> function1 |> function2`
+- Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
+- An unknown type name (including a typo) is currently accepted as `Any` (REQ-93(c)); use only the type names listed here
 
 ## Style
-- Function/variable names: snake_case (Bahasa Melayu preferred)
+- Function and variable names: snake_case (Bahasa Melayu preferred)
 - Type names: PascalCase
 - Constants: SCREAMING_SNAKE_CASE
 - Indent: 4 spaces
-- Always use Bahasa Melayu keywords over English alternatives
+- Prefer the Bahasa Melayu keyword over the English alias
 
 ## Common Types
-- `Nombor` (Int), `Teks` (String), `Benar` (Bool), `Kosong` (Unit)
-- `Rahsia<T>` (Secret), `Bukti<T>` (Proof), `Ruj<T>@Level` (Reference)
-- `Senarai<T>` (List), `Mungkin<T>` (Option), `Hasil<T,E>` (Result)
+`Nombor` (Int), `Teks` (String), `Benar` (Bool), `Unit`, `Bait` (Bytes), `Besar` (BigInt), `Perpuluhan` (Decimal), `Wang` (Money)
+- `Rahsia<T>` (Secret), `Bukti<T>` (Proof), `Ruj<T>@Level` (Ref), `Tercemar<T>` (Tainted)
+- `Senarai<T>` (List), `Mungkin<T>` (Option)
 
 ## Effects (declare with `kesan`)
-Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSystem) | Rangkaian (Network) | Kripto (Crypto) | Sistem (System) | Masa (Time)
+Bersih (Pure) | Ubah (Mut) | Baca (Read) | Peruntuk (Alloc) | Tulis (Write) | SistemFail (FileSystem) | Rangkaian (Network) | RangkaianSelamat (NetworkSecure) | Kripto (Crypto) | Rawak (Random) | Sistem (System) | Masa (Time) | Proses (Process) | Panel | Zirah | Benteng | Sandi | Menara | Gapura
 
 ## Rules
-- Do NOT create new planning documents. `RIINA_MASTER_PLAN.md` is the only plan.
+- Do NOT create new planning/roadmap/audit documents. `RIINA_MASTER_PLAN.md` is the only plan.
 - Do NOT commit Coq proofs with `Admitted`.
-- Do NOT count stub prover files as real proofs.
-- Do NOT create feature branches — all work on `main`.
-- Do NOT push with `--no-verify` — hooks are the CI/CD.
-- Do NOT commit to `public` or `gh-pages` directly.
+- Do NOT count stub prover files as proofs, and never add counts from different provers together.
+- Do NOT hand-type numbers: derive them from commands (`website/public/metrics.json` is the source of truth).
+- Do NOT edit generated files by hand (these instruction files, the ledgers, `PROOF_STATUS.md`, `AXIOMS.md`); edit their sources and regenerate.
+- Do NOT push with `--no-verify`: the in-repo hooks (`riinac verify`, `scripts/audit-docs.sh`) are the source of truth.
+- `.github/workflows/verify.yml` only wraps the internal gates; CI is never the source of truth and must not diverge from them.
+
+<!-- Generated by scripts/generate-agent-files.py from 04_SPECS/agent_files/copilot-instructions.md.tmpl. Edit the template, not this file (mandate S5.6). -->

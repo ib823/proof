@@ -408,9 +408,11 @@ fi
 # their numbers; CHANGELOG is release history and is not touched (its banner is
 # handled above). audit-docs.sh rejects any other value.
 RUST_TESTS_COMMA=$(add_commas "$RUST_TESTS")
-for rel in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
-           .cursorrules .clinerules docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md \
-           docs/i18n/README_zh.md; do
+# The agent instruction files (AGENTS.md, COPILOT.md, .cursorrules, .clinerules,
+# copilot-instructions, llms.txt, llms-full.txt) are generated from templates by
+# scripts/generate-agent-files.py, run below; they are not patched here.
+for rel in README.md CONTRIBUTING.md SECURITY.md docs/UNDERSTANDING_RIINA.md \
+           docs/i18n/README_ms.md docs/i18n/README_zh.md; do
     f="$REPO_ROOT/$rel"
     [ -f "$f" ] || continue
     if [ "$DRY_RUN" -eq 0 ]; then
@@ -535,6 +537,14 @@ for dir in "${TIER2_DIRS[@]}"; do
 done
 
 echo ""
+
+# ── Agent instruction files (REQ-109, mandate S5.6) ───────────────────
+if [ "$DRY_RUN" -eq 0 ]; then
+    python3 -I "$REPO_ROOT/scripts/generate-agent-files.py" || {
+        echo "ERROR: scripts/generate-agent-files.py failed" >&2
+        exit 1
+    }
+fi
 
 # ── Final report ──────────────────────────────────────────────────────
 

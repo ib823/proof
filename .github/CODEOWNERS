@@ -65,6 +65,10 @@
 /COPILOT.md                                     @ib823
 /.cursorrules                                   @ib823
 /.clinerules                                    @ib823
+/llms-full.txt                                  @ib823
+/.github/copilot-instructions.md                @ib823
+/04_SPECS/agent_files/                          @ib823
+/scripts/generate-agent-files.py                @ib823
 /website/src/                                   @ib823
 /website/index.html                             @ib823
 /riina-vscode/package.json                      @ib823
