@@ -5356,6 +5356,9 @@ Owner request: "Do this task here: Fix stale error codes in error_fix_pairs.json
   fails. Three seeded faults (a wrong code, a valid broken program, a failing fixed program)
   were each caught.
 - **Before → after metrics:** Rust tests 3,615 → 3,616. Coq counts unchanged.
+- **Published:** `ec9135625` pushed with `verify --full` PASS (3,616 tests; the first attempt was
+  rejected by GitHub with `fatal error in commit_refs` after every local check passed, and the
+  retry went through); recorded in the manifest and `metrics.json` in the next commit.
 
 ### Hardening Mandate (owner-adopted 2026-10-19) — tracking
 

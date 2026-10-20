@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-20T13:54:03Z",
-  "generatedHuman": "October 20, 2026 at 13:54 UTC",
+  "generated": "2026-10-20T14:13:18Z",
+  "generatedHuman": "October 20, 2026 at 14:13 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "2041e408a",
+    "commit": "ec9135625",
     "branch": "main"
   },
   "proofs": {
@@ -185,8 +185,8 @@
   "rust": {
     "tests": 3616,
     "testsVerified": 3616,
-    "testsEstimated": 3613,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 18
   },
   "examples": 172,
@@ -210,7 +210,7 @@
   },
   "status": {
     "build": "passing",
-    "verifiedCommit": "2041e408a",
+    "verifiedCommit": "ec9135625",
     "verifiedMode": "full",
     "source": "VERIFICATION_MANIFEST.md, written by riinac verify; passing means a full-mode PASS at verifiedCommit"
   },
