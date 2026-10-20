@@ -586,6 +586,15 @@ if [ -d "$ROOT_DIR/02_FORMAL/alloy" ]; then
 fi
 
 # Count SMT assertions (Z3/CVC5 - assert declarations, excluding .tv.smt2)
+# The SMT lane's PUBLISHED count is its claim: the properties in the REQ-67a
+# scoped set (02_FORMAL/smt/SCOPED_SET.txt, "<file> <expected unsat count>"),
+# which scripts/verify-smt.sh checks exactly. Raw asserts across the lane stay
+# in assertionsRaw. (Publishing the raw count let a "mechanized" lane show 149
+# asserts while 37 properties are what Z3 actually establishes.)
+SMT_SCOPED_PROPERTIES=0
+if [ -f "$ROOT_DIR/02_FORMAL/smt/SCOPED_SET.txt" ]; then
+    SMT_SCOPED_PROPERTIES=$(awk '!/^[[:space:]]*#/ && NF >= 2 && $2 ~ /^[0-9]+$/ { s += $2 } END { print s + 0 }' "$ROOT_DIR/02_FORMAL/smt/SCOPED_SET.txt")
+fi
 SMT_ASSERTIONS=0
 SMT_FILES=0
 if [ -d "$ROOT_DIR/02_FORMAL/smt" ]; then
@@ -661,7 +670,7 @@ ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
 FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
 TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
 ALLOY_ASSERTIONS_PUBLIC=$ALLOY_ASSERTIONS
-SMT_ASSERTIONS_PUBLIC=$SMT_ASSERTIONS
+SMT_ASSERTIONS_PUBLIC=$SMT_SCOPED_PROPERTIES
 VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
 KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
 TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
@@ -1045,7 +1054,7 @@ ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
 FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
 TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
 ALLOY_ASSERTIONS_PUBLIC=$ALLOY_ASSERTIONS
-SMT_ASSERTIONS_PUBLIC=$SMT_ASSERTIONS
+SMT_ASSERTIONS_PUBLIC=$SMT_SCOPED_PROPERTIES
 VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
 KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
 TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
@@ -1247,19 +1256,14 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "lean": {
     "theorems": $LEAN_THEOREMS,
-    "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
+    "theoremsNote": "Declarations in the lane, not verified proofs. The generated port was archived out of main on 2026-10-20 (ruling D6); the REQ-67(b) hand-written re-proof has not started",
     "sorry": $LEAN_SORRY,
     "sorryVerified": $LEAN_COMPILED,
-    "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
+    "sorryNote": "literal sorry tokens in the lane (the generated port, which did not elaborate, is archived)",
     "axioms": $LEAN_AXIOMS,
     "files": $LEAN_FILES,
     "lines": $LEAN_LINES,
-    "elaborationMeasured": "2026-06-01 (Lean 4.16.0)",
-    "filesTotal": 326,
-    "filesElaboratingClean": 7,
-    "theoremsElaborating": 215,
-    "defaultBuildTheorems": 0,
-    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md",
+    "corpusArchived": "2026-10-20: generated port removed from main (ruling D6, REQ-29 path D2); preserved at commit fd23fbdb8",
     "prover": "Lean 4"
   },
   "isabelle": {
@@ -1287,7 +1291,7 @@ cat > "$OUTPUT_FILE" << EOF
     "smokeLemmas": 3,
     "smokeContent": "3 trivial lemmas (constant-time u8 eq reflexive/symmetric, zeroize length) — NOT the named crypto algorithms",
     "smokeModule": "$(escape_json "$FSTAR_SMOKE_MODULE")",
-    "corpusAdmits": 11935,
+    "corpusArchived": "2026-10-20: the generated corpus (~11,935 admits) was removed from main; preserved at commit fd23fbdb8",
     "quarantined": $FSTAR_QUARANTINED,
     "files": $FSTAR_FILES,
     "prover": "F*"
@@ -1323,7 +1327,7 @@ cat > "$OUTPUT_FILE" << EOF
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "assertionsRaw is the generated corpus-wide assert count, not a verified total. compiledAssertions records the historical lattice smoke check; scripts/verify-smt.sh verifies the current separately scoped set.",
+    "smokeNote": "The lane's claim is the REQ-67a scoped set (02_FORMAL/smt/SCOPED_SET.txt), checked by scripts/verify-smt.sh for exact unsat counts. assertionsRaw counts asserts in the remaining hand-written files; the generated corpus was archived 2026-10-20.",
     "quarantined": $SMT_QUARANTINED,
     "files": $SMT_FILES,
     "prover": "Z3/CVC5 (SMT-LIB)"
@@ -1428,6 +1432,7 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "milestones": [
     { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-10-20", "event": "Generated non-Coq corpora archived out of main and cross-prover totals removed (REQ-29 path D2 executed, ruling D6); Coq is the mechanized lane, plus the scoped SMT set" },
     { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
     { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
     { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },

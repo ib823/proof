@@ -179,12 +179,12 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 334 active files, 12,819 Qed, 0 Admitted, 0 Abort, 0 Axiom | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate (`Foundations/Syntax.lean` = 187 errors, reproduced this session). See `02_FORMAL/lean/COMPILATION_STATUS.md`. **W4.4 version-bump attempt (2026-06-01):** tried bumping to Lean **4.30.0** (latest; plan estimated 4.29) — **blocked in this environment**: `elan` cannot fetch/parse `release.lean-lang.org` (network policy returns HTML, not the release manifest: "Unexpected character: H"), so only the pre-installed 4.16.0 toolchain is usable. Deferred — and per the Batch-2 finding, a version bump is the wrong lever anyway: the lane needs **elaboration fixes** (a real port), not a newer toolchain, which would only be stricter. The lane has **no external deps** (self-contained lakefile), so when a port is undertaken the toolchain itself is not the blocker. | Generated (not mechanized) |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep). `metrics.json` records `smokeBuildOk:false` / `compiledLemmas:0` — the `RIINA_CORE` smoke theory is **not currently verified**, and could not be re-checked 2026-06-01 (Isabelle download 403 in this environment). 12,931 = raw grep, unverified | Generated (smoke unverified) |
-| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with **25** Z3-verified security-lattice properties (re-verified 2026-06-01 under Z3 4.8.12 AND 4.15.3: 25 unsat in both). "12,405" = raw corpus-wide asserts; rest generated. (The prior "11,843 verified" figure was a counting error.) | Smoke-verified |
-| **F\* proofs** | `02_FORMAL/fstar/` | 315 files. 1 smoke module **verifies** (3 trivial lemmas; re-verified 2026-06-01, F* 2025.12.15). "22 lemmas" = raw `lemma_`-named decls corpus-wide, not all verified; the corpus carries ~11,935 `admit ()`. Rest generated | Smoke-verified |
-| **TLA+ specs** | `02_FORMAL/tlaplus/` | 317 files, 1 smoke spec TLC-checked (5 theorems; re-verified 2026-06-01, TLA2Tools). 12,282 raw THEOREMs corpus-wide; rest generated | Smoke-verified |
-| **Alloy models** | `02_FORMAL/alloy/` | 306 files, 1 smoke model analyzer-checked (6 assertions), rest generated corpora | Smoke-compiled |
+| **Lean proofs** | `02_FORMAL/lean/` | 0 files. The generated port (326 files, 12,576 declarations, of which only 215 theorems in 7 files ever elaborated under Lean 4.16.0) was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8`. The lane keeps only `lakefile.lean` / `lean-toolchain` for the REQ-67(b) hand-written re-proof, which has not started | Generated (corpus archived) |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 0 files. Retired 2026-08-06 (REQ-67g); the generated corpus (368 files) was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8`. Only the `.RETIRED` marker remains | Retired |
+| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 4 hand-written `.smt2` files. The REQ-67(a) scoped set (`02_FORMAL/smt/SCOPED_SET.txt`: security lattice 25 + effect join 12 = **37** properties) is checked by `scripts/verify-smt.sh` for exact unsat counts (Z3 4.8.12). The generated corpus (~313 files) was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8` | Mechanized (scoped set) |
+| **F\* proofs** | `02_FORMAL/fstar/` | 1 file. Retired (REQ-67g); the smoke module verifies 3 trivial lemmas (re-verified 2026-06-01, F* 2025.12.15). The generated corpus (~11,935 `admit ()`) was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8` | Retired (smoke kept) |
+| **TLA+ specs** | `02_FORMAL/tlaplus/` | 3 hand-written specs; 1 TLC-checked smoke spec (5 theorems, re-verified 2026-06-01). Quarantined until REQ-67 wires them into CI. The generated corpus was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8` | Generated (quarantined) |
+| **Alloy models** | `02_FORMAL/alloy/` | 3 hand-written models; 1 smoke model analyzer-checked (6 assertions). Held at `generated` (`.STUB_QUARANTINED`) until REQ-67 wires them into CI. The generated corpus was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8` | Generated (quarantined) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
 
@@ -252,49 +252,31 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| `.lean` files in `02_FORMAL/lean/RIINA` | 325 | Strict mechanization gate scope (excludes `_wip`) |
-| Theorem/lemma declarations | 12,576 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `lake build RIINA` | PASSES | Default target (`RIINA.lean` → `Domains/All` shim) builds; per-file `lean RIINA/Domains/<X>.lean` still emits elaboration-time sorries in many domain files |
-| `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `axiom` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` — 15 generator port-fallbacks eliminated 2026-05-17 (commit 41b85893) |
-| Mechanized readiness | NOT MET | 0 `sorry` / 0 `axiom` at the source-token level only; measured 2026-06-01 just 7/326 files (215 theorems) elaborate, and `lake build RIINA` builds a 0-theorem shim (corrected 2026-10-11 — this row said MET) |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 0 | The generated port was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8` |
+| Theorem/lemma declarations | 0 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| `lake build RIINA` | NOT APPLICABLE | No sources; `lakefile.lean` and `lean-toolchain` stay for the REQ-67(b) re-proof |
+| Mechanized readiness | NOT MET | The REQ-67(b) hand-written re-proof of the core metatheory has not started |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** The full Lean namespace builds and the strict active lane is
-**audit-grep-mechanized**: **0 `sorry`** and **0 `axiom`** across `02_FORMAL/lean/RIINA`
-excluding `_wip`. The 15 generator port-fallback axioms previously listed across
-`NetworkDefense`, `FullstackSecurity`, `SessionTypes`, `ActorCalculus`,
-`ChoreographyTypes`, `EnterpriseERP`, `TimingSecurity`, `X001_ConcurrencyModel`,
-`SIGMA001_VerifiedStorage`, `MobileOS/ConcurrencyFramework`, and
-`Industries/IndustryFinancial` were replaced with concrete `def`/`partial def`
-ports of the corresponding Coq sources (commit 41b85893, 2026-05-17). Recursive
-`dual`/`project` cases use `partial def` plus an `Inhabited` instance to avoid
-Lean 4 well-founded-recursion limitations through `List.map` while preserving
-Coq semantics. `Domains/AlgebraicEffects.lean` similarly uses a step-indexed
-`Nat → Prop` encoding that avoids Lean 4's strict-positivity restriction.
-
-**Caveat (not captured by grep):** Per-file `lake env lean RIINA/Domains/<X>.lean`
-runs reveal pre-existing elaboration-time sorries (e.g., 60+ in `ActorCalculus.lean`)
-caused by missing/mistyped supporting definitions in the transpiler output. These
-are NOT literal `sorry` tokens (grep returns 0), but Lean inserts them when proofs
-fail to elaborate. The default `lake build RIINA` target routes through the
-near-empty `Domains/All` shim and therefore does NOT exercise the individual
-domain files. The audit-grep "0 sorry / 0 axiom" status is therefore honest about
-*source tokens* but does not reflect true individual-file proof state. Tracked
-under the active gate marker (Part 11) for follow-up.
+**Honest assessment:** the Lean lane held a transpiler-generated port of the Coq tree:
+326 files and 12,576 declarations, of which only 215 theorems in 7 self-contained files
+ever elaborated (measured 2026-06-01, Lean 4.16.0). The core type-safety files did not
+compile, and `lake build RIINA` passed only because its default target was a 0-theorem
+shim. Under owner ruling D6 (2026-10-20) that corpus left `main`; it is preserved at
+commit `fd23fbdb8` (restore with `git checkout fd23fbdb8 -- 02_FORMAL/lean`). The lane's
+claim level stays `generated` until a hand-written REQ-67(b) proof builds in CI with
+0 `sorry` and 0 `axiom`.
 
 ### Isabelle/HOL (Tertiary Prover)
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| .thy files | 368 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
-| Compiled theories | 0 verified | `metrics.json` records `smokeBuildOk:false` / `compiledTheories:0`; the `RIINA_CORE` smoke session (`Syntax.thy`) has not been re-verified (corrected 2026-10-11 — this row said 1/PASSES) |
-| Compilation | UNVERIFIED (`RIINA_CORE`) | `isabelle build -d 02_FORMAL/isabelle/RIINA/Core -b RIINA_CORE` (not run in the last verified environments) |
-| Lemma count (grep) | ~12,931 | Repo-wide grep; mechanized via Isabelle build |
+| .thy files | 0 | Retired 2026-08-06 (REQ-67g); the generated corpus was archived out of `main` on 2026-10-20 (owner ruling D6); preserved at commit `fd23fbdb8` |
+| Compiled theories | 0 | |
 
-**Honest assessment:** the `RIINA_CORE` smoke session (`Syntax.thy`) is claimed to compile in
-Isabelle/HOL but is currently UNVERIFIED (`smokeBuildOk:false`). The Isabelle lane contains 368 `.thy` files; only the `RIINA_CORE`
-smoke session is actually mechanized — the rest are generated corpora awaiting build wiring.
+**Honest assessment:** the Isabelle lane is retired. Its 368 generated `.thy` files
+never had a verified build (`smokeBuildOk:false`). Only the `.RETIRED` marker remains in
+`main`; the corpus is preserved at commit `fd23fbdb8`.
 
 ### Extended Provers (F*, TLA+, Alloy, SMT, Verus, Kani, TV)
 
@@ -371,7 +353,7 @@ research source, and detailed description.
 | REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | DONE | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
-| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom` (NOTE: "build passes" only because the default target is the 0-theorem `Domains/All` shim; 7/326 files actually elaborate — generated, not mechanized; see COMPILATION_STATUS.md) | P1 | PARTIAL | 2 |
+| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom`. The generated port never met it (7/326 files elaborated) and was archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`); superseded by the REQ-67(b) hand-written re-proof | P1 | SUPERSEDED (REQ-67b) | 2 |
 | REQ-07 | Isabelle: first successful build (NOTE: smoke theory `RIINA_CORE` is UNVERIFIED — 0 theories compiled in metrics; generated lane, not mechanized). **RETIRED 2026-08-06 (owner decision, REQ-67g): Lean is the designated independence witness; the generated Isabelle port stays in-tree for the record with claim level `retired`** | P1 | RETIRED | 2 |
 | REQ-08 | F*: first real proof — SMOKE only (3 trivial lemmas: constant-time u8 eq reflexive/symmetric, zeroize length; NOT the named crypto algorithms; 11,935 corpus admits). **RETIRED 2026-08-06 (owner decision, REQ-67h): the 11,935-admit generated corpus is unsalvageable and the crypto claim is carried by the nine Coq⇄Rust equivalences + REQ-47 boundary; stays in-tree with claim level `retired`** | P2 | RETIRED | 2 |
 | REQ-09 | TLA+: first real spec — SMOKE only (5 TLC-checked theorems in `TelusProcurementProtocol`; raw corpus count is generated) | P2 | PARTIAL | 2 |
@@ -574,12 +556,12 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 326 files, 12,576 declarations (0 literal `sorry` outside `_wip`; 2 in `_wip`) | **Generated, NOT mechanized.** Measured 2026-06-01 (Lean 4.16.0): 7/326 files elaborate (215 thms); 304 files carry placeholder tactics; core + `AlgebraicEffects` do not elaborate. `lake build RIINA` only builds the 0-theorem shim. See `COMPILATION_STATUS.md` | Generated | Low |
-| Isabelle | claimed 1 compiled theory (`Syntax` in `RIINA_CORE`) | **Unverified**: `metrics.json` records `smokeBuildOk:false`; could not re-check 2026-06-01 (Isabelle download 403 here) | Unverified | Low |
-| F* | 1 smoke-verified active module (3 trivial lemmas) | constant-time u8 eq (reflexive/symmetric) + zeroize length — **NOT** ML-KEM/ML-DSA/X25519/Ed25519 (those are unproven generated corpora with ~11,935 `admit ()`) | Smoke (re-verified 2026-06-01, F* 2025.12.15) | Low |
-| TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | bounded TELUS procurement smoke model — re-verified 2026-06-01 (TLA2Tools, smoke check passed). 12,282 raw THEOREMs corpus-wide; only these 5 checked | Smoke (re-verified 2026-06-01) | Low |
-| Alloy | 1 smoke-checked active model (6 assertions) | bounded access-control smoke model — re-verified 2026-06-01 (Alloy 6.2.0, smoke check passed). 11,627 raw checks corpus-wide; only these 6 bounded-checked | Smoke (re-verified 2026-06-01) | Low |
-| SMT/Z3 | 1 active verification (**25** Z3-verified lattice properties) | 6-level Denning lattice (reflexivity/transitivity/antisymmetry) — re-verified 2026-06-01, Z3 4.8.12 and 4.15.3 (25 unsat in both). 12,405 raw asserts corpus-wide; prior "11,843" was a counting error | Smoke (re-verified 2026-06-01) | Low |
+| Lean 4 | 0 files (generated port archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`)) | REQ-67(b) hand-written re-proof of the core metatheory, built in CI with 0 `sorry` / 0 `axiom` | Not started | Medium |
+| Isabelle | 0 files (retired REQ-67g; corpus archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`)) | None — retired | Retired | — |
+| F* | 1 smoke-verified module (3 trivial lemmas: constant-time u8 eq, zeroize length) | None — retired (REQ-67g); not the named crypto algorithms | Retired (smoke kept) | — |
+| TLA+ | 3 hand-written specs; 1 TLC-checked smoke spec (5 `THEOREM`s, re-verified 2026-06-01) | Wire the specs into CI so the lane can rise above `generated` | Smoke | High |
+| Alloy | 3 hand-written models; 1 smoke model (6 bounded-checked assertions, re-verified 2026-06-01) | Wire the models into CI so the lane can rise above `generated` | Smoke | High |
+| SMT/Z3 | REQ-67(a) scoped set: 37 properties (lattice 25 + effect join 12) checked by `scripts/verify-smt.sh` for exact unsat counts | Extend the scoped set only with hand-written, CI-checked properties | Mechanized (scoped) | High |
 | Verus | 0 real annotations | Type checker implementation verified | 1,200-2,400 hrs | Medium |
 | Kani | 0 real harnesses | Bounded model checking of type checker | 200-400 hrs | High |
 | TV | 0 real validations | C backend translation validation | 200-400 hrs | High |
@@ -590,12 +572,11 @@ are cheap and fast. Verus is the critical path (most hours, medium achievability
 **Gate:** Each Phase 2 prover (Lean, F*, TLA+, Alloy, Z3) has ≥1 non-trivial compiled/checked
 proof. Verus, Kani, and TV are Phase 3 scope per the effort table.
 
-**Gate status (2026-03-13): PASSED (conditional on tool provisioning for re-verification).**
-Lean (3,895 declarations, mechanized — verified this session), Z3 (25 assertions —
-verified this session). F* (3 lemmas), TLA+ (5 theorems), Alloy (6 assertions),
-Isabelle (1 compiled theory) — all have smoke artifacts from previous sessions but
-their tool binaries are not currently provisioned (`bash scripts/provision-smoke-toolchains.sh`
-required for independent re-verification). Verus/Kani/TV remain at 0 (Phase 3 scope).
+**Gate status: NOT MET** (corrected 2026-10-20). The 2026-03-13 "PASSED" recorded Lean as
+"3,895 declarations, mechanized"; the port did not elaborate (7/326 files, measured
+2026-06-01) and was archived under ruling D6. Today only the SMT scoped set meets the
+gate; F* and Isabelle are retired; TLA+ and Alloy have smoke artifacts outside CI; Lean
+has no sources. Verus/Kani/TV remain at 0 (Phase 3 scope).
 
 ---
 
@@ -1129,12 +1110,9 @@ X = primary role, o = supporting role
 
 | Metric | Value |
 |--------|-------|
-| `.lean` files in `02_FORMAL/lean/RIINA` | 325 (excluding `_wip`) |
-| Theorem/lemma declarations | 12,576 |
-| `sorry` (full lane) | 0 |
-| Axioms (full lane) | 0 (restored 2026-05-17 via commit 41b85893) |
-| `lake build RIINA` | PASSES (default target via `Domains/All` shim) |
-| Mechanized readiness | MET (audit-grep scope; per-file elaboration gaps tracked separately) |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 0 — the generated port (326 files, 215 theorems ever elaborated) was archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`) |
+| Theorem/lemma declarations | 0 |
+| Mechanized readiness | NOT MET — REQ-67(b) hand-written re-proof not started |
 
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress ✓, Preservation ✓, Safety ✓)
@@ -1142,7 +1120,9 @@ X = primary role, o = supporting role
 3. Achieve 0 `axiom` across `02_FORMAL/lean/RIINA` for strict mechanized closure (DONE: `Domains/AlgebraicEffects.lean` now uses a step-indexed typing judgment)
 4. Keep the full RIINA Lean namespace compiling (`lake build RIINA` passes)
 
-**Status: ACTIVE LANE MECHANIZED CLOSURE MET.**
+**Status: NOT MET.** The earlier "closure met" was an audit-grep result over a port that
+did not elaborate (corrected 2026-10-11); the port was archived 2026-10-20 (D6). The
+criteria above now apply to the REQ-67(b) hand-written re-proof.
 **Key gotchas:** `mutual` blocks can't have doc comments, `import` must be first line,
 constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
@@ -1152,10 +1132,9 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
 | Metric | Value |
 |--------|-------|
-| Files | 265 repo-wide `.fst` files |
-| Smoke-compiled active module | 1 (`CryptographicSecurityActive.fst`) |
-| Compiled (smoke) lemmas | 3 |
-| Full-lane mechanization | 0 (generated corpus still quarantined) |
+| Files | 1 (`RIINA/Active/CryptographicSecurityActive.fst`); the generated corpus was archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`) |
+| Compiled (smoke) lemmas | 3 (trivial) |
+| Lane status | RETIRED (REQ-67g) — the crypto closure criteria below are not being pursued in F* |
 
 **Closure criteria:**
 1. Implement and verify 4 crypto primitives: ML-KEM, ML-DSA, X25519, Ed25519
@@ -1174,8 +1153,8 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
 | Metric | Value |
 |--------|-------|
-| Files | 267 |
-| Theorems | 5,893 (SANY+TLC verified) |
+| Files | 3 hand-written specs; the generated corpus was archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`) |
+| Theorems | 5 TLC-checked in the smoke spec (re-verified 2026-06-01). The former "5,893 SANY+TLC verified" was never true |
 
 **Closure criteria:**
 1. Model TELUS procurement protocol in TLA+
@@ -1194,9 +1173,8 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
 | Metric | Value |
 |--------|-------|
-| Files | 307 (repo total) |
-| Compiled | 1 (`Syntax` in `RIINA_CORE`) |
-| Lemma count (grep) | ~12,931 (repo-wide; mechanized) |
+| Files | 0 — retired 2026-08-06 (REQ-67g); the generated corpus was archived out of `main` 2026-10-20 (D6; preserved at `fd23fbdb8`) |
+| Compiled | 0 (the `RIINA_CORE` smoke session was never verified) |
 
 **Closure criteria:**
 1. First successful `isabelle build` on at least one file
@@ -1205,7 +1183,8 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
 **Effort:** 600-1,200 hours
 **Achievability:** High (seL4 precedent proves the methodology)
-**Key value:** Three independent proof kernels. Probability of same bug in all three: <10⁻⁹.
+**Status: RETIRED** (REQ-67g). Independent kernels reduce the chance of a shared kernel
+bug, but no figure can be put on it, and none is claimed.
 
 #### 6. Verus (Rust Implementation Verification)
 
@@ -1252,7 +1231,8 @@ matches the Coq specification directly. This is unprecedented.
 
 ### Stub Quarantine Rules
 
-1. Stub files are NOT deleted (they show architectural intent).
+1. Generated stub corpora are not kept in `main`: they were archived 2026-10-20 (owner
+   ruling D6) and are preserved at commit `fd23fbdb8`. Only hand-written artifacts stay.
 2. Stub files are NEVER counted as proofs or verification.
 3. Any public-facing metric must distinguish "compiled proofs" from "stub files."
 4. The generators (`generate-full-stack.py`, `generate-multiprover.py`) are kept

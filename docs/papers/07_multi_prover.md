@@ -23,14 +23,15 @@ verifying critical properties in independent proof assistants with different
 trusted computing bases. We present the methodology for translating proof
 obligations across provers, maintaining consistency, and resolving discrepancies.
 
-> **Current status (measured 2026-06-01, honest caveat).** Coq is the only
-> fully mechanized lane. The Lean and Isabelle trees are *machine-generated*
-> from the Coq sources and are **not yet independent verification**: only 7 of
-> 326 Lean files elaborate (215 theorems), and the Isabelle smoke theory is
-> unverified. F*/TLA+/Alloy/SMT have only tiny hand-written smoke artifacts.
-> Treat "cross-validated" below as the architecture's goal, not a present claim;
-> see per-lane claim levels in `website/public/metrics.json` and
-> `02_FORMAL/lean/COMPILATION_STATUS.md`.
+> **Current status (2026-10-20, honest caveat).** Coq is the only fully
+> mechanized lane. The Lean and Isabelle trees were *machine-generated* from the
+> Coq sources and were never independent verification (only 7 of 326 Lean files
+> elaborated, 215 theorems; the Isabelle smoke theory was unverified). Those
+> generated trees were archived out of the repository's main branch on
+> 2026-10-20. The other lanes hold small hand-written artifacts, of which only a
+> scoped SMT set (37 properties) is mechanized. Treat "cross-validated" below as
+> the architecture's goal, not a present claim; see per-lane claim levels in
+> `website/public/metrics.json`.
 
 ## Key Results
 

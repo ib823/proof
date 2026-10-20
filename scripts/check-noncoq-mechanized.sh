@@ -296,7 +296,12 @@ HAS_ALLOY_JAR=0
 # ---------------------------------------------------------------------------
 # Lean
 # ---------------------------------------------------------------------------
-LEAN_FILES="$(find "$LEAN_DIR/RIINA" -type f -name "*.lean" ! -path "*/_wip/*" 2>/dev/null | wc -l | tr -d ' ')"
+# The generated Lean port was archived out of `main` (ruling D6, 2026-10-20),
+# so `RIINA/` may not exist; a failing `find` must not abort this script.
+LEAN_FILES=0
+if [ -d "$LEAN_DIR/RIINA" ]; then
+  LEAN_FILES="$(find "$LEAN_DIR/RIINA" -type f -name "*.lean" ! -path "*/_wip/*" 2>/dev/null | wc -l | tr -d ' ')"
+fi
 LEAN_SORRY="$( (grep -RIn '\bsorry\b' "$LEAN_DIR/RIINA" --include="*.lean" --exclude-dir="_wip" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 LEAN_AXIOMS="$( (grep -RIn '^[[:space:]]*axiom\b' "$LEAN_DIR/RIINA" --include="*.lean" --exclude-dir="_wip" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 LEAN_BUILD_OK=0
@@ -533,16 +538,19 @@ fi
 # ---------------------------------------------------------------------------
 SMT_FILES="$(count_files "$SMT_DIR" "*.smt2")"
 SMT_GENERATED_FILES="$(count_grep_files "; Auto-generated from" "$SMT_DIR" "*.smt2")"
+# The SMT claim is the REQ-67a SCOPED SET (02_FORMAL/smt/SCOPED_SET.txt): each
+# listed file must give EXACTLY its recorded number of `unsat` results under
+# Z3, which is what scripts/verify-smt.sh and the CI `smt-scoped` job check.
+# This used to accept any file whose first Z3 line was sat, unsat OR unknown
+# (`z3_file_ok`) across the whole lane, so a file that merely parsed counted
+# toward "mechanized". Tightened 2026-10-20 (owner ruling D6), when archiving
+# the generated corpus left only hand-written files; files outside the scoped
+# set carry no claim.
 SMT_FULL_EXEC=0
 if [ "$HAS_Z3" -eq 1 ] && [ "$SMT_FILES" -gt 0 ]; then
-  SMT_FULL_EXEC=1
-  mapfile -t SMT_LIST < <(find "$SMT_DIR" -type f -name "*.smt2" | sort)
-  for f in "${SMT_LIST[@]}"; do
-    if ! z3_file_ok "$f"; then
-      SMT_FULL_EXEC=0
-      break
-    fi
-  done
+  if bash "$REPO_ROOT/scripts/verify-smt.sh" >/dev/null 2>&1; then
+    SMT_FULL_EXEC=1
+  fi
 fi
 SMT_MECHANIZED=0
 if [ "$SMT_FULL_EXEC" -eq 1 ] && [ "$SMT_GENERATED_FILES" -eq 0 ] && [ "$SMT_FILES" -gt 0 ]; then

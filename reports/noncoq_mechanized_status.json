@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-10-12T01:21:20Z",
-  "repo_head": "d8eece41ca41673a1749fe9d4e3ace49134e0da5",
+  "generated_utc": "2026-10-20T00:55:19Z",
+  "repo_head": "fd23fbdb8874cfd9fe3475ec7f01c786de5e42e4",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -24,7 +24,7 @@
   "lanes": {
     "lean": {
       "full_build_ok": false,
-      "files": 325,
+      "files": 0,
       "sorry": 0,
       "axioms": 0,
       "mechanized_ready": false,
@@ -34,12 +34,12 @@
       "full_build_ok": false,
       "build_mode": "missing_local_isabelle",
       "quarantined": false,
-      "files": 368,
+      "files": 0,
       "sorry": 0,
       "smoke_session": "RIINA_CORE",
       "smoke_build_ok": false,
-      "smoke_declared_theories": 1,
-      "smoke_declared_lemmas": 5,
+      "smoke_declared_theories": 0,
+      "smoke_declared_lemmas": 0,
       "smoke_compiled_theories": 0,
       "smoke_compiled_lemmas": 0,
       "mechanized_ready": false,
@@ -48,8 +48,8 @@
     "fstar": {
       "full_exec_ok": false,
       "quarantined": false,
-      "files": 315,
-      "generated_files": 7,
+      "files": 1,
+      "generated_files": 0,
       "smoke_module": "RIINA.Active.CryptographicSecurityActive",
       "smoke_build_ok": false,
       "smoke_declared_lemmas": 3,
@@ -60,7 +60,7 @@
     "tlaplus": {
       "full_exec_ok": false,
       "quarantined": true,
-      "files": 317,
+      "files": 3,
       "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
       "smoke_sany_ok": true,
       "smoke_build_ok": true,
@@ -71,8 +71,8 @@
     },
     "alloy": {
       "full_exec_ok": false,
-      "quarantined": false,
-      "files": 306,
+      "quarantined": true,
+      "files": 3,
       "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
       "smoke_build_ok": true,
       "smoke_declared_assertions": 6,
@@ -82,32 +82,32 @@
     },
     "smt": {
       "full_exec_ok": true,
-      "files": 318,
+      "files": 4,
       "generated_files": 0,
       "mechanized_ready": true,
       "pending": "none"
     },
     "verus": {
       "full_exec_ok": false,
-      "files": 323,
-      "generated_files": 10,
+      "files": 1,
+      "generated_files": 0,
       "mechanized_ready": false,
       "pending": "require full-lane Verus checks and zero generated placeholders"
     },
     "kani": {
       "full_exec_ok": false,
-      "files": 307,
-      "generated_files": 1,
-      "harness_files": 305,
+      "files": 3,
+      "generated_files": 0,
+      "harness_files": 3,
       "mechanized_ready": false,
       "pending": "require full-lane Kani checks and zero generated placeholders"
     },
     "tv": {
       "full_exec_ok": true,
-      "files": 316,
-      "generated_files": 7,
-      "mechanized_ready": false,
-      "pending": "require full-lane TV checks and zero generated placeholders"
+      "files": 2,
+      "generated_files": 0,
+      "mechanized_ready": true,
+      "pending": "none"
     }
   },
   "overall_noncoq_mechanized": false

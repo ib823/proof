@@ -34,8 +34,9 @@ These override ALL other instructions on conflict:
 ├── 01_RESEARCH/                 ← Research archive (READ-ONLY)
 ├── 02_FORMAL/                   ← Formal proofs
 │   ├── coq/                     ← Coq (PRIMARY)
-│   ├── lean/                    ← Lean 4 (secondary)
-│   └── isabelle/                ← Isabelle (tertiary, stubs)
+│   ├── lean/                    ← Lean 4 (empty: generated port archived; REQ-67b)
+│   ├── smt/                     ← Z3 scoped set (REQ-67a)
+│   └── isabelle/                ← Isabelle (retired)
 ├── 03_PROTO/                    ← Rust prototype (18 workspace crates)
 ├── 04_SPECS/                    ← Specifications
 │   └── governance/HARDENING_MANDATE.md ← adopted hardening mandate (standards spec, subordinate to the master plan)
@@ -74,9 +75,18 @@ rocq compile -Q . RIINA foundations/Syntax.v   # Build one file
 
 ### Lean 4
 ```bash
+# The generated Lean port was archived out of main on 2026-10-20 (ruling D6;
+# restore with `git checkout fd23fbdb8 -- 02_FORMAL/lean`). The lane keeps its
+# lakefile and toolchain pin for the REQ-67(b) hand-written re-proof; once that
+# has sources:
 cd /workspaces/proof/02_FORMAL/lean
 PATH="$HOME/.elan/bin:$PATH" lake build RIINA
 # Toolchain: leanprover/lean4:v4.16.0
+```
+
+### SMT (Z3)
+```bash
+bash scripts/verify-smt.sh   # the REQ-67(a) scoped set, exact unsat counts
 ```
 
 ### Rust

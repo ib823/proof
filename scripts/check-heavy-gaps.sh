@@ -4,6 +4,14 @@
 #
 # Scope intentionally checks FOUNDATION evidence (artifacts + anchor obligations),
 # not full mathematical closure.
+#
+# Items 7, 8, 10 and 11 used to count the generated per-domain stub files in
+# the TV/F*/Verus/Kani/TLA+ lanes (02_FORMAL/<lane>/RIINA/Domains). Stub files
+# are never evidence, and those corpora were archived out of main on
+# 2026-10-20 (owner ruling D6; preserved at commit fd23fbdb8). The items now
+# look for the hand-written drafts under 02_FORMAL/<lane>/RIINA/Active. A
+# present draft is a starting point, not a proof: those lanes stay
+# quarantined (see each lane's .STUB_QUARANTINED / .RETIRED marker).
 # ============================================================================
 
 set -euo pipefail
@@ -28,7 +36,8 @@ has_token() {
 count_files() {
   local dir="$1"
   local ext="$2"
-  find "$dir" -type f -name "*.${ext}" 2>/dev/null | wc -l | tr -d ' '
+  # A missing directory counts as zero files instead of aborting under pipefail.
+  { find "$dir" -type f -name "*.${ext}" 2>/dev/null || true; } | wc -l | tr -d ' '
 }
 
 echo ""
@@ -67,7 +76,7 @@ ITEM6_DETAIL="anchor_hits=$z_hits/${#z_tokens[@]}"
 c_tokens=(backend_003_all_preserve_types compiler_determinism translation_deterministic)
 c_hits=0
 for t in "${c_tokens[@]}"; do has_token "$t" && c_hits=$((c_hits+1)); done
-tv_files=$(count_files "$REPO_ROOT/02_FORMAL/tv/RIINA/Domains" smt2)
+tv_files=$(count_files "$REPO_ROOT/02_FORMAL/tv/RIINA/Active" smt2)
 if [ "$c_hits" -eq "${#c_tokens[@]}" ] && [ "$tv_files" -gt 0 ]; then ITEM7_STATUS="PASS"; fi
 ITEM7_DETAIL="anchor_hits=$c_hits/${#c_tokens[@]} tv_files=$tv_files"
 
@@ -75,13 +84,13 @@ ITEM7_DETAIL="anchor_hits=$c_hits/${#c_tokens[@]} tv_files=$tv_files"
 k_tokens=(riina_complete_crypto_security full_001_riina_full_crypto_secure crypto_constant_time)
 k_hits=0
 for t in "${k_tokens[@]}"; do has_token "$t" && k_hits=$((k_hits+1)); done
-fstar_files=$(count_files "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains" fst)
+fstar_files=$(count_files "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" fst)
 if [ "$k_hits" -eq "${#k_tokens[@]}" ] && [ "$fstar_files" -gt 0 ]; then ITEM8_STATUS="PASS"; fi
 ITEM8_DETAIL="anchor_hits=$k_hits/${#k_tokens[@]} fstar_files=$fstar_files"
 
 # Item 10: Implementation correctness foundation
-verus_files=$(count_files "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains" rs)
-kani_files=$(count_files "$REPO_ROOT/02_FORMAL/kani/RIINA/Domains" rs)
+verus_files=$(count_files "$REPO_ROOT/02_FORMAL/verus/RIINA/Active" rs)
+kani_files=$(count_files "$REPO_ROOT/02_FORMAL/kani/RIINA/Active" rs)
 riinac_src_files=$(find "$REPO_ROOT/03_PROTO/crates/riinac/src" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')
 if [ "$verus_files" -gt 0 ] && [ "$kani_files" -gt 0 ] && [ "$riinac_src_files" -gt 0 ]; then ITEM10_STATUS="PASS"; fi
 ITEM10_DETAIL="verus_files=$verus_files kani_files=$kani_files riinac_src_files=$riinac_src_files"
@@ -91,10 +100,10 @@ p_tokens=(AH_001_01_protocol_specification AH_001_02_implementation_matches_spec
 p_hits=0
 for t in "${p_tokens[@]}"; do has_token "$t" && p_hits=$((p_hits+1)); done
 tla_proto_files=0
-for f in SessionTypes.tla AuthenticationProtocols.tla VerifiedProtocols.tla; do
-  [ -f "$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Domains/$f" ] && tla_proto_files=$((tla_proto_files+1))
+for f in TelusProcurementProtocol.tla; do
+  [ -f "$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/$f" ] && tla_proto_files=$((tla_proto_files+1))
 done
-if [ "$p_hits" -eq "${#p_tokens[@]}" ] && [ "$tla_proto_files" -eq 3 ]; then ITEM11_STATUS="PASS"; fi
+if [ "$p_hits" -eq "${#p_tokens[@]}" ] && [ "$tla_proto_files" -eq 1 ]; then ITEM11_STATUS="PASS"; fi
 ITEM11_DETAIL="anchor_hits=$p_hits/${#p_tokens[@]} tla_proto_files=$tla_proto_files"
 
 # Item 13: Hardware assumptions foundation

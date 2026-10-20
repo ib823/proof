@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-20T00:16:44Z",
-  "generatedHuman": "October 20, 2026 at 00:16 UTC",
+  "generated": "2026-10-20T00:58:50Z",
+  "generatedHuman": "October 20, 2026 at 00:58 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "38a443ed9",
+    "commit": "fd23fbdb8",
     "branch": "main"
   },
   "proofs": {
@@ -31,25 +31,20 @@
     "prover": "Rocq 9.1.1"
   },
   "lean": {
-    "theorems": 12576,
-    "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
+    "theorems": 0,
+    "theoremsNote": "Declarations in the lane, not verified proofs. The generated port was archived out of main on 2026-10-20 (ruling D6); the REQ-67(b) hand-written re-proof has not started",
     "sorry": 0,
     "sorryVerified": false,
-    "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
+    "sorryNote": "literal sorry tokens in the lane (the generated port, which did not elaborate, is archived)",
     "axioms": 0,
-    "files": 325,
-    "lines": 134910,
-    "elaborationMeasured": "2026-06-01 (Lean 4.16.0)",
-    "filesTotal": 326,
-    "filesElaboratingClean": 7,
-    "theoremsElaborating": 215,
-    "defaultBuildTheorems": 0,
-    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md",
+    "files": 0,
+    "lines": 0,
+    "corpusArchived": "2026-10-20: generated port removed from main (ruling D6, REQ-29 path D2); preserved at commit fd23fbdb8",
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 12931,
-    "lemmasRaw": 12931,
+    "lemmas": 0,
+    "lemmasRaw": 0,
     "compiledTheories": 0,
     "compiledLemmas": 0,
     "smokeBuildOk": false,
@@ -58,13 +53,13 @@
     "sorry": 0,
     "sorryVerified": false,
     "axioms": 0,
-    "files": 368,
-    "lines": 126237,
+    "files": 0,
+    "lines": 0,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": 22,
-    "lemmasRaw": 22,
+    "lemmas": 3,
+    "lemmasRaw": 3,
     "lemmasRawNote": "Corpus-wide count of `lemma_`-named declarations; NOT all verified",
     "compiledLemmas": 0,
     "smokeBuildOk": false,
@@ -72,66 +67,66 @@
     "smokeLemmas": 3,
     "smokeContent": "3 trivial lemmas (constant-time u8 eq reflexive/symmetric, zeroize length) — NOT the named crypto algorithms",
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
-    "corpusAdmits": 11935,
+    "corpusArchived": "2026-10-20: the generated corpus (~11,935 admits) was removed from main; preserved at commit fd23fbdb8",
     "quarantined": false,
-    "files": 315,
+    "files": 1,
     "prover": "F*"
   },
   "tlaplus": {
     "theorems": 5,
-    "theoremsRaw": 12284,
+    "theoremsRaw": 15,
     "compiledTheorems": 5,
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (TLA2Tools): smoke check passed",
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "smokeNote": "theoremsRaw is the corpus-wide THEOREM count; only the smoke-spec theorems are TLC-checked",
     "quarantined": true,
-    "files": 317,
+    "files": 3,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 11627,
-    "assertionsRaw": 11627,
+    "assertions": 6,
+    "assertionsRaw": 25,
     "compiledAssertions": 6,
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Alloy 6.2.0): smoke check passed",
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
     "smokeNote": "assertionsRaw is the corpus-wide check count; only the smoke-model assertions are bounded-checked",
-    "quarantined": false,
-    "files": 306,
+    "quarantined": true,
+    "files": 3,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 12433,
-    "assertionsRaw": 12433,
+    "assertions": 37,
+    "assertionsRaw": 149,
     "compiledAssertions": 25,
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "assertionsRaw is the generated corpus-wide assert count, not a verified total. compiledAssertions records the historical lattice smoke check; scripts/verify-smt.sh verifies the current separately scoped set.",
+    "smokeNote": "The lane's claim is the REQ-67a scoped set (02_FORMAL/smt/SCOPED_SET.txt), checked by scripts/verify-smt.sh for exact unsat counts. assertionsRaw counts asserts in the remaining hand-written files; the generated corpus was archived 2026-10-20.",
     "quarantined": false,
-    "files": 318,
+    "files": 4,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
     "proofs": 0,
-    "proofsRaw": 6395,
+    "proofsRaw": 4,
     "quarantined": true,
-    "files": 323,
+    "files": 1,
     "prover": "Verus"
   },
   "kani": {
     "harnesses": 0,
-    "harnessesRaw": 5664,
+    "harnessesRaw": 25,
     "quarantined": true,
-    "files": 307,
+    "files": 3,
     "prover": "Kani"
   },
   "tv": {
     "validations": 0,
-    "validationsRaw": 17463,
+    "validationsRaw": 34,
     "quarantined": true,
-    "files": 316,
+    "files": 2,
     "prover": "Translation Validation"
   },
   "multiProver": {
@@ -163,17 +158,17 @@
         "smt": "none",
         "verus": "require full-lane Verus checks and zero generated placeholders",
         "kani": "require full-lane Kani checks and zero generated placeholders",
-        "tv": "require full-lane TV checks and zero generated placeholders"
+        "tv": "none"
       },
       "backlog": {
         "leanSorry": 0,
         "leanAxioms": 0,
         "isabelleSorry": 0,
-        "fstarGeneratedFiles": 7,
+        "fstarGeneratedFiles": 0,
         "smtGeneratedFiles": 0,
-        "verusGeneratedFiles": 10,
-        "kaniGeneratedFiles": 1,
-        "tvGeneratedFiles": 7
+        "verusGeneratedFiles": 0,
+        "kaniGeneratedFiles": 0,
+        "tvGeneratedFiles": 0
       }
     },
     "coqTiers": {
@@ -199,9 +194,9 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3559,
-    "testsVerified": 3559,
-    "testsEstimated": 3556,
+    "tests": 3560,
+    "testsVerified": 3560,
+    "testsEstimated": 3557,
     "testsSource": "cached_verified",
     "crates": 18
   },
@@ -213,6 +208,7 @@
   },
   "milestones": [
     { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-10-20", "event": "Generated non-Coq corpora archived out of main and cross-prover totals removed (REQ-29 path D2 executed, ruling D6); Coq is the mechanized lane, plus the scoped SMT set" },
     { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
     { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
     { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },

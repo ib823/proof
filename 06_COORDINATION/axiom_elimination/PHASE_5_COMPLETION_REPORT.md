@@ -1,6 +1,6 @@
 # PHASE 5: Store Semantics & Semantic Typing Axioms - COMPLETION REPORT
 
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3559 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only fully mechanized lane | 3560 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 **Mode:** ULTRA KIASU | ZERO TRUST | QED ETERNUM
 **Target:** 12 Admits across 5 files → 0 Admits

@@ -6,6 +6,12 @@ than left presenting a 12,931-lemma figure at claim level "generated": Lean 4
 is the designated independence witness for the core metatheory (REQ-67b), and
 a second redundant port adds no claim value.
 
-The files stay in-tree for the record. generate-metrics.sh reads this marker
+generate-metrics.sh reads this marker
 and sets claimLevels.isabelle = "retired"; the claim-integrity gate ranks
 "retired" below every other level so this lane can never overclaim.
+
+ARCHIVED 2026-10-20 (owner ruling D6, executing REQ-29 path D2): the generated
+corpus was removed from `main`. It is preserved in history at commit fd23fbdb8
+(the last commit that contains it). Restore with
+`git checkout fd23fbdb8 -- 02_FORMAL/<lane>`. Only hand-written `RIINA/Active/` material
+(and build files) remain in this lane.

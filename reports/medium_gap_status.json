@@ -1,9 +1,9 @@
 {
-  "generated_utc": "2026-06-01T22:53:00Z",
+  "generated_utc": "2026-10-20T00:46:11Z",
   "scope": "medium_items_1_2_3_4_9_12",
   "item_1_type_system_soundness": {
     "status": "PASS",
-    "detail": "coq=1 lean=1 isa=1 coq_thm=54 lean_thm=54 isa_thm=54"
+    "detail": "coq=1 coq_thm=58"
   },
   "item_2_non_interference_hygiene": {
     "status": "PASS",
@@ -19,7 +19,7 @@
   },
   "item_9_protocol_foundation": {
     "status": "PASS",
-    "detail": "exists=1 coq_thm=184 tla_thm=184 alloy_assert=368"
+    "detail": "exists=1 coq_thm=184 tla_thm=5 alloy_assert=12"
   },
   "item_12_trust_chain_foundation": {
     "status": "PASS",

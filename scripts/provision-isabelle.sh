@@ -134,7 +134,12 @@ if [[ "$version_line" != *"Isabelle${VERSION}"* ]]; then
 fi
 echo -e "${GREEN}[ok]${NC} version check: ${version_line}"
 
-if [ "${RIINA_ISABELLE_VERIFY_RIINA_CORE:-0}" = "1" ]; then
+if [ "${RIINA_ISABELLE_VERIFY_RIINA_CORE:-0}" = "1" ] && [ ! -f "$REPO_ROOT/02_FORMAL/isabelle/RIINA/Core/ROOT" ]; then
+  # The Isabelle lane is RETIRED (REQ-67g) and its generated corpus, including
+  # the RIINA_CORE smoke session, was archived out of `main` (ruling D6,
+  # 2026-10-20; see 02_FORMAL/isabelle/.RETIRED). Nothing is left to build.
+  echo "RIINA_CORE smoke build skipped: the retired Isabelle lane is archived (02_FORMAL/isabelle/.RETIRED)."
+elif [ "${RIINA_ISABELLE_VERIFY_RIINA_CORE:-0}" = "1" ]; then
   echo "Running RIINA_CORE smoke build..."
   "$BIN_PATH" build -d "$REPO_ROOT/02_FORMAL/isabelle/RIINA/Core" -b RIINA_CORE >/dev/null
   echo -e "${GREEN}[ok]${NC} RIINA_CORE smoke build passed"

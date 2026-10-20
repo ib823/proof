@@ -113,8 +113,10 @@ ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); prin
 # 2026-06-10): Coq is the ONLY mechanized lane; the other prover trees are
 # machine-generated and are NOT independent verification (tracked by claim level
 # in website/public/metrics.json). The banner no longer leads with a "prover
-# lanes" count, which read as multi-prover verification.
-BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) — Coq is the only mechanized lane | ${RUST_TESTS} Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)"
+# lanes" count, which read as multi-prover verification. Since 2026-10-20
+# (ruling D6) the generated mirrors are archived and the other lanes hold only
+# hand-written artifacts, of which the REQ-67(a) SMT set is mechanized.
+BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) — Coq is the only fully mechanized lane | ${RUST_TESTS} Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 

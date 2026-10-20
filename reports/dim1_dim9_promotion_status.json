@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-10-18T02:46:53Z",
-  "repo_head": "b70b7f0b67637d9b75c34b5a3fcd01f25914e380",
+  "generated_utc": "2026-10-20T00:51:29Z",
+  "repo_head": "fd23fbdb8874cfd9fe3475ec7f01c786de5e42e4",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 0,
   "provision": {
@@ -26,29 +26,29 @@
     "checks": {
       "coq_core": true,
       "coq_theorem_count": 58,
-      "lean_core": true,
+      "lean_core": false,
       "lean_build": false,
       "lean_actionable_sorry": 0,
-      "isabelle_core": true,
-      "isabelle_theorem_count": 54,
+      "isabelle_core": false,
+      "isabelle_theorem_count": 0,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=58 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh"
+    "detail": "coq_core=1 coq_thm=58 lean_core=0 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=0 isa_thm=0 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh"
   },
   "dimension_9": {
-    "status": "PASS",
-    "promotion_ready": true,
+    "status": "FAIL",
+    "promotion_ready": false,
     "checks": {
-      "files": true,
+      "files": false,
       "coq_theorem_count": 184,
-      "tla_theorem_count": 184,
-      "alloy_assert_count": 368,
-      "tla_static": true,
-      "alloy_static": true,
-      "tla_exec": true,
-      "alloy_exec": true
+      "tla_theorem_count": 0,
+      "alloy_assert_count": 0,
+      "tla_static": false,
+      "alloy_static": false,
+      "tla_exec": false,
+      "alloy_exec": false
     },
-    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=1 tla_mode=sany_parse alloy_exec=1 alloy_mode=jar_exec"
+    "detail": "files=0 coq_thm=184 tla_thm=0 alloy_assert=0 tla_static=0 alloy_static=0 tla_exec=0 tla_mode=sany_parse_failed alloy_exec=0 alloy_mode=jar_exec_failed"
   },
   "overall_foundation": "FAIL",
   "overall_promotion_ready": false

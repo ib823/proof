@@ -1,16 +1,18 @@
 {
-  "generated_utc": "2026-03-12T07:47:47Z",
-  "repo_head": "5484ac86c37dd627d07cc991a6679a0939a9c459",
+  "generated_utc": "2026-10-20T00:49:38Z",
+  "repo_head": "fd23fbdb8874cfd9fe3475ec7f01c786de5e42e4",
   "repo_branch": "main",
   "scope": "heavy_dims_5_6_7_8_10_11_13_closure",
   "strict_mode": 0,
   "foundation_run_ok": true,
   "foundation_overall": "PASS",
   "tools": {
-    "z3": false,
-    "fstar": true,
-    "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
-    "fstar_local_error": "",
+    "z3": true,
+    "fstar": false,
+    "fstar_bin": "",
+    "fstar_local_error": "ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-fstar.sh",
     "verus": false,
     "kani": false
   },
@@ -24,58 +26,58 @@
   },
   "dimension_5_constant_time": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
     "pending": "close constant-time backend-preservation obligations and extend executable checks beyond representative SMT gates"
   },
   "dimension_6_zeroization": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
     "pending": "close optimizer-preservation proof chain and add binary-level zeroization verification"
   },
   "dimension_7_compiler_correctness": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
     "pending": "publish per-target correctness evidence packs (native/WASM/eBPF/SGX scope) with reproducible reports"
   },
   "dimension_8_crypto_correctness": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
-    "fstar_active_exec": true,
+    "fstar_active_exec": false,
     "fstar_active_files": 1,
     "fstar_active_generated_files": 0,
-    "fstar_domain_files": 202,
+    "fstar_domain_files": 0,
     "fstar_domain_generated_files": 0,
-    "pending": "active F* lane is executable; migrate generated domain corpus to real F* obligations and keep executable lane mandatory"
+    "pending": "F* lane retired (REQ-67g; generated corpus archived 2026-10-20, D6): crypto correctness rests on riina-core known-answer tests; no machine-checked crypto obligations exist"
   },
   "dimension_10_implementation_correctness": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
     "verus_active_exec": false,
     "kani_active_exec": false,
     "verus_active_files": 1,
-    "kani_active_files": 1,
+    "kani_active_files": 3,
     "verus_active_generated_files": 0,
     "kani_active_generated_files": 0,
-    "verus_domain_files": 195,
-    "kani_domain_files": 195,
+    "verus_domain_files": 0,
+    "kani_domain_files": 0,
     "verus_domain_generated_files": 0,
     "kani_domain_generated_files": 0,
-    "riinac_src_files": 5,
-    "pending": "active Verus/Kani lane is executable; migrate generated domain corpus to real obligations bound to production compiler modules"
+    "riinac_src_files": 9,
+    "pending": "Verus/Kani hold hand-written drafts only (quarantined; generated corpus archived 2026-10-20, D6): write real obligations bound to production compiler modules (REQ-67)"
   },
   "dimension_11_protocol_impl_binding": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
     "implementation_binding_hits": 2,
@@ -83,7 +85,7 @@
   },
   "dimension_13_hardware_assumptions": {
     "foundation": "PASS",
-    "artifact_gate": true,
+    "artifact_gate": false,
     "executable_gate": false,
     "closure_ready": false,
     "litmus_files": 3,

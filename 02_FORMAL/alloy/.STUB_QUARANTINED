@@ -1,0 +1,11 @@
+Quarantined: held at claim level `generated` (owner ruling D6, 2026-10-20). With the
+generated corpus archived, only the three hand-written models in RIINA/Active/ remain,
+and the checker would promote the lane to `mechanized` on their bounded runs. A claim
+level must not rise as a side effect of an archive. Promoting Alloy is REQ-67(d)'s own
+decision: remove this marker in that change, with the reason.
+
+ARCHIVED 2026-10-20 (owner ruling D6, executing REQ-29 path D2): the generated
+corpus was removed from `main`. It is preserved in history at commit fd23fbdb8
+(the last commit that contains it). Restore with
+`git checkout fd23fbdb8 -- 02_FORMAL/<lane>`. Only hand-written `RIINA/Active/` material
+(and build files) remain in this lane.

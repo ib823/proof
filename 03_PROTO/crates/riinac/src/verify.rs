@@ -1821,8 +1821,26 @@ fn lean_core_canary_errors(lake_path: &Path, lean_dir: &Path) -> Option<u32> {
     Some(errors.max(1))
 }
 
+/// The non-Coq lanes whose generated corpora were archived out of `main` on
+/// 2026-10-20 (owner ruling D6) can be empty. An empty lane is reported as a
+/// non-blocking WARN that says so, never as a PASS over zero files.
+fn archived_lane_result(name: &str, lane: &str) -> CheckResult {
+    CheckResult {
+        name: name.into(),
+        passed: false,
+        blocking: false,
+        details: format!(
+            "no {lane} sources: the generated corpus was archived out of main on 2026-10-20 \
+             (owner ruling D6; preserved at commit fd23fbdb8). Nothing is verified in this lane"
+        ),
+    }
+}
+
 /// Compile Lean proofs by running `lake build`.
 fn compile_lean(lean_dir: &Path) -> CheckResult {
+    if glob_lean_files(lean_dir).is_empty() {
+        return archived_lane_result("Lean 4 Compilation", "Lean");
+    }
     let lake_path = match detect_lake() {
         ToolStatus::Found(p) => p,
         ToolStatus::NotFound(msg) => {
@@ -1884,7 +1902,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                         details: format!(
                             "GENERATED, not mechanized: default `lake build` builds only the \
                              0-theorem `Domains/All` shim ({:.0}s); core Foundations/Syntax.lean \
-                             does NOT elaborate ({n} errors). See 02_FORMAL/lean/COMPILATION_STATUS.md",
+                             does NOT elaborate ({n} errors). See RIINA_MASTER_PLAN.md Part 2 (Lean 4)",
                             elapsed.as_secs_f64()
                         ),
                     },
@@ -1895,7 +1913,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                         details: format!(
                             "GENERATED, not mechanized: shim build succeeded ({:.0}s) but the core \
                              canary could not be elaborated (lean unavailable/errored). \
-                             See 02_FORMAL/lean/COMPILATION_STATUS.md",
+                             See RIINA_MASTER_PLAN.md Part 2 (Lean 4)",
                             elapsed.as_secs_f64()
                         ),
                     },
@@ -1965,6 +1983,9 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
 /// Static scan of Lean files for `sorry` (skipping comments and strings).
 fn scan_lean(lean_dir: &Path) -> Vec<CheckResult> {
     let files = glob_lean_files(lean_dir);
+    if files.is_empty() {
+        return vec![archived_lane_result("Lean sorry Scan", "Lean")];
+    }
     let mut sorry_count = 0u32;
     let mut generated_stub_sorry = 0u32;
     let mut theorem_count = 0u32;
@@ -2210,6 +2231,9 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
 fn scan_isabelle(isabelle_dir: &Path) -> Vec<CheckResult> {
     let thy_dir = isabelle_dir.join("RIINA");
     let files = glob_thy_files(&thy_dir);
+    if files.is_empty() {
+        return vec![archived_lane_result("Isabelle sorry/oops", "Isabelle")];
+    }
     let mut sorry_count = 0u32;
     let mut oops_count = 0u32;
     let mut lemma_count = 0u32;
@@ -4646,6 +4670,25 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
             fs::write(&path, body).unwrap();
         }
         dir
+    }
+
+    /// An archived (empty) lane is a WARN that says so, never a PASS over
+    /// zero files (ruling D6).
+    #[test]
+    fn empty_lanes_are_reported_as_archived_not_passed() {
+        let dir = corpus_fixture("empty_lane", &[("lakefile.lean", "-- scaffold\n")]);
+        let lean = scan_lean(&dir);
+        let isa = scan_isabelle(&dir);
+        let compiled = compile_lean(&dir);
+        for r in lean.iter().chain(isa.iter()).chain(std::iter::once(&compiled)) {
+            assert!(!r.passed && !r.blocking, "{}: {}", r.name, r.details);
+            assert!(r.details.contains("archived"), "{}: {}", r.name, r.details);
+        }
+        // A lane with sources is still scanned.
+        let with_src = corpus_fixture("lean_src", &[("A.lean", "theorem a : True := trivial\n")]);
+        assert!(scan_lean(&with_src)[0].passed);
+        let _ = fs::remove_dir_all(&dir);
+        let _ = fs::remove_dir_all(&with_src);
     }
 
     #[test]

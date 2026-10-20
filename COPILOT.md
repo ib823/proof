@@ -68,7 +68,9 @@ Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSyste
 
 ## Prover Maturity (be honest in generated docs/comments)
 
-Only **Coq (Rocq 9.1.1)** is a fully mechanized lane. The Lean 4, Isabelle, F\*, TLA+,
-Alloy, SMT, Verus, Kani, and TV trees are **generated or smoke-level** artifacts — do
-NOT describe them as independently verifying RIINA. Per-lane claim levels live in
+Only **Coq (Rocq 9.1.1)** is a fully mechanized lane. Of the others, only the scoped
+SMT set (37 properties) is mechanized; the TLA+, Alloy, F\*, Verus, Kani and TV lanes
+hold hand-written smoke artifacts or drafts, and Lean and Isabelle hold nothing (their
+generated mirrors were archived 2026-10-20). Do NOT describe any of them as
+independently verifying RIINA, and never add counts from different provers together. Per-lane claim levels live in
 `website/public/metrics.json` (the single source of truth); all docs must agree with it.
