@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-20T06:02:26Z
-**Git SHA:** 6b954ce97
+**Generated:** 2026-10-20T06:56:25Z
+**Git SHA:** fe6ff72ee
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3565 tests |
+| Rust Tests | PASS | 3569 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 334 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 334 .vo files compiled in 182s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 334 .vo files compiled in 192s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
@@ -24,7 +24,7 @@
 | Isabelle sorry/oops | WARN | no Isabelle sources: the generated corpus was archived out of main on 2026-10-20 (owner ruling D6; preserved at commit fd23fbdb8). Nothing is verified in this lane |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | PASS | 0 admit in 1 files (0 lemmas) |
-| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 3 files (15 theorems) |
 | Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 7s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 3 files (25 assertions) |
