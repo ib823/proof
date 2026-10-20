@@ -27,7 +27,7 @@ These override ALL other instructions on conflict:
 ├── .cursorrules                 ← Cursor AI instructions
 ├── README.md                    ← Public README
 ├── CHANGELOG.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md
-├── VERSION                      ← Semver (0.1.0)
+├── VERSION                      ← Semver source of truth (read it; never hand-type a version)
 ├── LICENSE
 │
 ├── 00_SETUP/                    ← Setup scripts
@@ -36,8 +36,9 @@ These override ALL other instructions on conflict:
 │   ├── coq/                     ← Coq (PRIMARY)
 │   ├── lean/                    ← Lean 4 (secondary)
 │   └── isabelle/                ← Isabelle (tertiary, stubs)
-├── 03_PROTO/                    ← Rust prototype (15 crates)
+├── 03_PROTO/                    ← Rust prototype (18 workspace crates)
 ├── 04_SPECS/                    ← Specifications
+│   └── governance/HARDENING_MANDATE.md ← adopted hardening mandate (standards spec, subordinate to the master plan)
 ├── 05_TOOLING/                  ← Build tools
 ├── 06_COORDINATION/             ← Cross-track coordination
 ├── 07_EXAMPLES/                 ← Example .rii files
@@ -175,7 +176,9 @@ bash scripts/deploy-website.sh
 2. **NEVER** commit failing tests
 3. **NEVER** use `unsafe` in Rust without documented justification
 4. **NEVER** force push to main
-5. **NEVER** create new planning/roadmap/audit/strategy documents (update `RIINA_MASTER_PLAN.md`)
+5. **NEVER** create new planning/roadmap/audit/strategy documents (update `RIINA_MASTER_PLAN.md`).
+   The one sanctioned exception is `04_SPECS/governance/HARDENING_MANDATE.md` (owner ruling D1,
+   2026-10-19), which is a standards spec. Its execution is tracked only in master plan Part 11, never in that file.
 6. **NEVER** let CI replace internal verification — the GitHub Actions workflow
    (`.github/workflows/verify.yml`) is permitted, but only as a thin wrapper that runs
    RIINA's own gates (`make`, `cargo test`, `scripts/audit-docs.sh`, `riinac verify`).

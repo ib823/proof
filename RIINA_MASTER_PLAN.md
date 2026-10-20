@@ -464,12 +464,24 @@ research source, and detailed description.
 | REQ-91 | **Runtime capability gate disagreed across backends; `[kesan-dibenarkan]` was never checked against the code (2026-10-19). DONE 2026-10-19 (8906129, 0c8b4a6).** C `main` granted `0xFFFFFFFF`; the interpreter granted nothing (07_EXAMPLES/hello_dunia.rii failed `run`, ran natively), used a level order (Network covered Write), and errored on an unhandled `laku` where Coq `ST_PerformValue` returns the payload; C checked after the payload; the C enum lacked MUT/ALLOC; `pkg build` built `IO = false` servers; actor handler effects were dropped by `tc_actor_decl`; the playground's emit-C started with no capabilities. Now: both gates seeded from `check_program`'s `EffectSet` via `EffectSet::covers`, `RequireCap` before the payload, `pkg build` refuses any program/declared effect outside the package's own manifest, handler effects charged at the declaration. Adversarially reviewed (no blocker; findings fixed or recorded). **Residuals (pre-existing):** WASM has no runtime gate; `ujian` bodies are not type-checked and `riinac test` grants no capabilities; an un-imported `src/lib.rii` beside `src/utama.rii` is not checked; `kendali` handler results differ between interpreter, C and WASM (and Coq) — see REQ-97. | P0 | DONE (residuals listed) | Gate C / compiler enforcement parity |
 | REQ-92 | **`riinac fmt` changed program meaning (2026-10-19). PARTIAL 2026-10-19 (4f49769).** It printed `(2 + 3) * 4` as `2 + 3 * 4` (gaji.rii's tax RM 160.00 → RM 4760.00), output failed `check` on 60/98, replaced actor/UI code with a comment and deleted comments. Now fails closed (re-parse + AST compare, comments refused, fixpoint required) with precedence-aware operands; on comment-stripped copies of all 172 examples 30 format and run byte-identically, the rest are refused, none silently changed. **Remaining:** a CST-based formatter that preserves comments (every committed example has comments, so fmt refuses them all today) and printer coverage for desugared forms (`untuk`, `biar` sequencing, actors, UI). | P1 | PARTIAL | Gate E (tooling) |
 | REQ-93 | **The shipped checker accepted programs that fail at runtime (progress) (2026-10-19). PARTIAL 2026-10-19 (22f681b).** (a) DONE: field access on a non-record (`n.f`, `xs.panjang()`, `t.ada("@")`) is T0011 — corpus gate 98 → 84, the 14 examples written against a non-existent method library are listed in `end_to_end.rs` (REQ-55 to rewrite). (b) DONE: arithmetic/comparison on secrets runs on interpreter, C and WASM (result stays secret). **(c) OPEN:** an unknown type name, including a typo (`Nombr`, `Rahsa<Teks>`), parses as `Any`; rejecting it needs a declared-type table across `guna` modules and generic scopes (nominal-type design). Labels survive `Any`, so it is fail-open diagnosis, not a leak. (d) OPEN (REQ-66): the interpreter's `dedah` is syntactic (Coq `declass_ok`) while C compares values. | P1 | PARTIAL | Gate C / compiler enforcement parity |
-| REQ-94 | **Owner-supplied Hardening Mandate (2026-10-19) — integration pending owner rulings D1–D9.** Assessed end to end in session (baseline B1–B14 re-verified on Linux; most hold exactly). Its REQ anchors are stale (REQ-27 closed/Gate C active; REQ-29/33/35 decided 2026-06-10; REQ-44 is the forward-reference gap), and it conflicts with CLAUDE.md Forbidden #5 (new planning docs) and Part 0 precedence; not committed. Rulings needed: D1 where it lives (recommend: fold its standards into this file as REQ rows + a Part 11 section, text under `04_SPECS/governance/`); D2 repo visibility (REQ-98); D3 Gate C criterion 1 while the audit budget is deferred; D4 scope freeze (Syariah exemption) + close stale PRs #32/#36/#37/#41/#44/#45/#46; D5 licence fixes within proprietary (clause (e), runtime-library exception); D6 REQ-29 execution (archive 2,931 generated files, drop `multiProver` aggregates); D7 a human formal-methods/security reviewer; D8 floats / C1 route / backend / crypto backend / Iris; D9 public wording. | P0 | DECISION | Cross-cutting |
+| REQ-94 | **Owner-supplied Hardening Mandate (2026-10-19) — integration pending owner rulings D1–D9.** Assessed end to end in session (baseline B1–B14 re-verified on Linux; most hold exactly). Its REQ anchors are stale (REQ-27 closed/Gate C active; REQ-29/33/35 decided 2026-06-10; REQ-44 is the forward-reference gap), and it conflicts with CLAUDE.md Forbidden #5 (new planning docs) and Part 0 precedence; not committed. Rulings needed: D1 where it lives (recommend: fold its standards into this file as REQ rows + a Part 11 section, text under `04_SPECS/governance/`); D2 repo visibility (REQ-98); D3 Gate C criterion 1 while the audit budget is deferred; D4 scope freeze (Syariah exemption) + close stale PRs #32/#36/#37/#41/#44/#45/#46; D5 licence fixes within proprietary (clause (e), runtime-library exception); D6 REQ-29 execution (archive 2,931 generated files, drop `multiProver` aggregates); D7 a human formal-methods/security reviewer; D8 floats / C1 route / backend / crypto backend / Iris; D9 public wording. | P0 | RULED 2026-10-19 (D1–D9; tracking section "Hardening Mandate (owner-adopted 2026-10-19)") | Cross-cutting |
 | REQ-95 | **`rawak`/`random` is not a CSPRNG (2026-10-19).** C uses a clock-seeded LCG (`emit.rs`, `rawak`), the interpreter hashes `SystemTime` (`builtins/matematik.rs`), both with modulo bias, and STDLIB.md does not warn; its effect is the Crypto permission. OS entropy elsewhere is `/dev/urandom` only, so there is no Windows path. Back it with getrandom/arc4random/BCryptGenRandom, reject-sample, document. | P1 | TODO | Gate G |
 | REQ-96 | **Honesty defects in shipped artefacts (2026-10-19).** Emitted C opens with "Generated by riina-codegen from verified RIINA source. Corresponds to formal proofs" (`emit.rs`); README's Hello World, described as type-checking and running, fails (`allowed System, found Write`); 21 of 47 `riina` doc snippets fail unintentionally; 07_EXAMPLES/README.md, docs/api/STDLIB.md prose (hard-coded in `stdlib_doc.rs`) and llms.txt still say effectful builtins are interpreter-only though 342/374 compile; README/llms link the deleted `llms-full.txt`. Wording changes need owner approval (REQ-94 D9). | P1 | TODO | Gate I |
 | REQ-97 | **Silent wrong answers / divergence outside REQ-78 (2026-10-19).** WASM emits constants for FFICall, Actor*, CRDTMerge and ContentHash (`wasm.rs`); the generated JNI `verify` always returns true (`jni.rs`); `kendali` handlers disagree across backends (`kendali (laku Tulis 5) dengan x => x + 100`: run 105, native 5, wasm nothing; the C runtime pushes frames as `RIINA_EFFECT_PURE` and reads one slot past the frame). Establish reachability from source, then refuse or fix, with differentials. | P1 | TODO | Gate E |
 | REQ-98 | **`ib823/proof` is a PUBLIC repository (2026-10-19, GitHub API: `visibility: public`, default branch `public`, Pages on).** `main` therefore exposes `06_COORDINATION` (786 files), `properties/_archive_deprecated/` (99 Admitted, 87 Axiom), prompt files and 72 branches; `sync-public.sh` curation hides nothing. Owner: make it private, or accept it as public and stop treating `main` as internal (REQ-94 D2). | P0 | DECISION | Gate J |
 | REQ-99 | **Core-calculus v2 — the Coq model must cover the shipped language before conformance can (2026-10-19 assessment).** Coq `expr` has 27 constructors, Rust `Expr` 60 (34 Rust-only: `BinOp`, `While`, `LetMut`, slots, `Return`/`Break`, lists, records, FFI, actors, UI…); `Ty` 22 vs 45; effects are a total order in Coq and sets in Rust; Coq has no builtins (Rust 374) and no output trace (`step` is over `(expr, store, effect_ctx)`); `EInt` is `nat`. Until the core gains Z integers + `BinOp`, mutable locals/loops, an output trace, a builtin-call form typed by a signature table generated from the Rust registry, effect sets and grant/require typing — and the capstones plus `type_check_fn`/`step_fn` are re-proved over it — REQ-54 S3–S5 (extraction, golden compare, fuzz differential) and any NI with observable outputs (REQ-89) apply only to programs with no arithmetic, printing, loops or builtins. | P0 | TODO | Phase 2 / Part 12 axis A |
+| REQ-100 | **Assured mode — Route A (owner ruling D8, 2026-10-19; mandate S1.6).** `riinac check --assured` / `build --assured` run the extracted, Coq-verified `type_check_fn` on every program's `emit-core` term and refuse anything it rejects, with no fallback. The kernel ships as a separately built, pinned binary (OCaml from the same 4.14.2 switch as Rocq; dev/CI-only, so the shipped compiler stays dependency-free), and the Rust checker stays for diagnostics. Depends on REQ-54 S3 (extraction) and REQ-99 (core coverage). No surface may say "proven before the code runs" about the shipped binary until this is done. | P1 | TODO | Part 12 axis A |
+| REQ-101 | **Per-program guarantee report (mandate S1.8).** `check --json` emits a `guarantees` object (type_safety, effect_soundness, noninterference, termination, constant_time, fragment). The fragment classifier is a Coq-defined decidable predicate: a boolean `ref_freeb` with a reflection lemma against `ref_free`, extracted or differentially tested. | P1 | TODO | Part 12 axis A |
+| REQ-102 | **Native toolchain and platforms (mandate S1.10(iii), S3.3(ii)(iii), S3.4, S2.12).** Emitted C is warning-free under `-std=c11 -Wall -Wextra -Werror` on gcc and clang; today it has 207–209 / 12–20 errors (unused prelude functions, `-Wswitch`, missing `_Noreturn`). Needed: a platform layer for sockets/fs/threads/entropy (POSIX headers are included unconditionally today); toolchain detection (`$CC`, cc, gcc, clang, cl, zig cc) with per-OS hints, flags, and an output directory (`cc` is hard-coded and `$CC` ignored); a CI matrix covering Linux x86_64/aarch64, macOS arm64 and Windows (MinGW-clang first; MSVC documented as unsupported until ported) for build, test, clippy, examples, native runs and the Coq build; and a fix for the Windows-only `unused mut` at `private_tmp.rs:34` / `verify.rs:997`. | P1 | TODO | Gate F |
+| REQ-103 | **Headline-theorem registry and generated ledgers (mandate S2.4, S2.9, S1.11, §2).** Generate three ledgers at the repository root next to PROOF_STATUS.md:<br>- `HEADLINE_THEOREMS.md`, from `KERNEL_CAPSTONES`, with captured `Print Assumptions`, a plain-English statement, the fragment, positive and negative witnesses, and the reviewer;<br>- `PROPERTY_LEDGER.md`, claim level per property;<br>- `TRUSTED_BASE.md`: Rocq kernel, funext, extraction toolchain, rustc, C compilers, the 29 Parameters, elaboration, builtins and the 5,588-line C prelude.<br>CI fails on drift or on any entry that is not closed, and public surfaces cite only registry entries. | P0 | TODO | Cross-cutting (M0) |
+| REQ-104 | **Domain triage first, then vacuity and naming (mandate S5.3, S2.5, S2.6, S2.3, S2.8).** Triage each domain file as KEEP, DEMOTE (to `02_FORMAL/research/`, outside `_CoqProject`) or DELETE; the owner approves the table. Candidates: the 9 files that are ≥70% vacuous, the model-only domains, and `PhysicalSecurity.v` with 28 of the 29 Parameters. Then:<br>- P1=P2=P3=0, and P4 ≤5% of counted Qed with annotations;<br>- scanner fixes: it fails open on bad arguments, and ≥8 `True` conclusions are unflagged, including core `properties/ReferenceOps.v`;<br>- a per-pattern ratchet and a hard pre-commit failure;<br>- a naming lint for `mitigated`/`secure`/`safe`/`verified`/`proven`/`correct` on vacuous statements (≈94 today);<br>- `well_typed_SN` and its premises moved to `counterexamples/`;<br>- the premise detector extended to `Variable`/`Context`;<br>- the 74 `Example`/`Remark` excluded from counts. | P1 | TODO | Cross-cutting (M0/M3) |
+| REQ-105 | **No floating point, by design (owner ruling D8, mandate S3.5 option 1). DONE 2026-10-19 (3aa2c64).** A float literal is the dedicated parse error P0015 at the literal (it used to be `Unexpected token: LiteralFloat`, with the caret on the token before). The message names `perpuluhan("…")` and `wang("…")`, and the fix hint gives the rationale: results vary by platform, and float timing on secrets leaks. The rationale is also stated in the README. | P2 | DONE | Gate C |
+| REQ-106 | **Release policy and version single source (mandate S3.8, S3.11).**<br>- `docs/guide/RELEASE_POLICY.md`: SemVer, editions, deprecation, supported versions, security fixes.<br>- `VERSION` as the only source of truth, with `bump-version.sh` covering README, llms, AGENTS, vscode and CHANGELOG, and a drift check.<br>- Signed binaries for three OSes with checksums, SBOM and provenance (the v0.4.0 GitHub release has 0 assets).<br>- A quickstart verified in CI.<br>- 1.0 tagged only against the mandate's criteria, by the owner. | P1 | TODO | Gate F |
+| REQ-107 | **Security-label polymorphism, spec-first (mandate S3.9).** Pure helpers become usable on `Rahsia<T>` with NI preserved. The rule is defined in Coq within the REQ-89/REQ-99 calculus before the Rust change (R12). Today `<T>` generics parse and are discarded to `Any`. | P2 | TODO | Part 12 axis A |
+| REQ-108 | **Scope freeze (owner ruling D4, mandate S5.1/S5.2/S5.8). ACTIVE 2026-10-19.** Nothing new lands in these categories until the mandate's M2 and M3 exits (S5.8): domains, keywords, types, effects, industries, compliance profiles, prover lanes, backends or website verticals. Exemptions: work a hardening standard requires, and the REQ-33 Syariah track.<br>- Enforced by `riinac/tests/scope_freeze.rs` against the `**Scope-freeze pins:**` line below. Changing that line is the owner override.<br>- The seven stale March PRs (#32, #36, #37, #41, #44, #45, #46) were closed 2026-10-19 with their branches kept.<br>- Still TODO: Core vs Extensions maturity labels and `--enable-experimental` gating (S5.2). | P0 | IN PROGRESS | Cross-cutting |
+| REQ-109 | **Generated agent instruction files and a full-surface drift check (mandate S5.6, S5.7).**<br>- AGENTS.md, COPILOT.md, `.cursorrules`, `.clinerules` and llms.txt generated from metrics.json and this file.<br>- A drift check, extending `audit-docs.sh`, that compares every number and version on every public surface with metrics.json/VERSION. Today it checks three fields and passes with all the B12 drift present. | P1 | TODO | Cross-cutting (M0) |
+
+**Scope-freeze pins:** keywords=132 effects=19 types=45 profiles=19 — measured 2026-10-19 and read by `riinac/tests/scope_freeze.rs` (REQ-108). Changing a number here is the owner override that lets the surface grow; record the reason in the REQ-108 row.
 
 ### Extension Protocol
 
@@ -1387,6 +1399,8 @@ All requirement documents from _req_batch1/ and _req_batch2/ are preserved at
 | `VERSION` | Semver source of truth |
 | `LICENSE` | License file |
 | `llms.txt` | AI-readable project summary |
+
+Also sanctioned (owner ruling D1, 2026-10-19): `04_SPECS/governance/HARDENING_MANDATE.md`, the adopted hardening mandate. It is a standards specification subordinate to this file, not a second plan; its execution is tracked only in Part 11 ("Hardening Mandate (owner-adopted 2026-10-19)").
 
 ### Rules for Creating New Documents
 
@@ -2338,7 +2352,7 @@ all four interpret, only **three compile** (`keselamatan_nama` fails codegen wit
 console arithmetic with no file, network, or persistence. A gate whose shipping evidence is a
 console calculator cannot certify that anything ships. Superseded by:
 
-1. **External crypto audit clean** (owner-gated, P0 budget item — **OPEN**, unchanged).
+1. ~~**External crypto audit clean**~~ **MOVED to Gate G (owner ruling D3, 2026-10-19).** The audit budget was deferred on 2026-06-10, and Part 11 forbids skipping a gate, so leaving it here meant no later gate could ever be reached. Gate C now closes on its engineering criteria (2–6). The audit stays P0 (REQ-28), as Gate G's first row and the mandate's S3.7.
 2. **REQ-70 codegen parity** — no builtin family is interpreter-only; every effectful family
    compiles to C, and to WASM wherever the platform allows it, each landed with a byte-equal
    interp/C/WASM differential. Verify: `riinac build` succeeds on a program exercising net +
@@ -2476,7 +2490,7 @@ closed by D2 alone, but the *honesty* obligation (no marketing claim survives un
 
 | Task | Verification |
 |---|---|
-| External crypto audit (riina-core) | Audit report published, 0 findings ≥ Medium |
+| External crypto audit (riina-core) — moved here from Gate C criterion 1 (ruling D3, 2026-10-19); owner-commissioned, budget deferred 2026-06-10 | Audit report published, auditor named, 0 findings ≥ Medium |
 | Formal threat model (STRIDE/PASTA) for compiler + runtime | **DONE 2026-06-10** — `04_SPECS/security/THREAT_MODEL.md`: per-element STRIDE over the shipped TCB (lexer/parser, typechecker/IFC, codegen, `unsafe` inventory, side channels, supply chain), benchmarked to MS SDL + NIST SSDF; a consolidated **Open-Risks register (OR-1…OR-9)** surfacing every residual Medium+, and the **GoFetch/Downfall/Inception** section REQ-32 requires (honestly: source-level CT is necessary-not-sufficient; DMP/transient leaks are accepted+disclosed, deploy-time HW/OS controls). |
 | CVE disclosure: `security@` mailbox + 90-day disclosure policy | **DONE 2026-06-10** — `SECURITY.md` hardened: 90-day coordinated disclosure (Project-Zero/CERT-CC norms), CVSS-band severity, CVE-request + GHSA-advisory process, safe-harbor clause, scope incl. the documented HW side-channel limitations; `security@` alias is the owner-action remainder. |
 | Reproducible verification one-liner for outsiders | **DONE 2026-06-10** — `make verify-all` (root `Makefile`): builds `riinac`, runs `riinac verify --full` (re-compiles the active Coq corpus → Qed count, runs all Rust tests in both workspaces, clippy), then `scripts/audit-docs.sh` (published-counts == source). One command re-derives every public metric. (`make verify` is the fast variant; `make coq` now delegates to the canonical `02_FORMAL/coq` build — the root Makefile was previously a stale, unparseable stub.) |
@@ -2560,8 +2574,8 @@ These cannot be made by a session; they require the project owner:
 | External audit budget (~$100k–$500k) | Gates C, G | REQ-28, REQ-32 — **DEFERRED by owner 2026-06-10 (status quo)** |
 | Maintainer recruitment plan (current bus factor 1) | Gate J | REQ-36 — **still open** (and N/A while proprietary) |
 | Trademark policy publication | Gate J | (new REQ when decided) — **still open** |
-| Hardening Mandate integration and rulings D1–D9 (where it lives, visibility, Gate C criterion 1 vs the deferred audit, freeze, licence fixes, REQ-29 execution, reviewer, technical routes, wording) | All gates | REQ-94 — **open (2026-10-19)** |
-| Repository visibility (`ib823/proof` is public) | Gate J | REQ-98 — **open (2026-10-19)** |
+| ✅ **RULED 2026-10-19: Hardening Mandate D1–D9** (owner: "go with your recommendations") | All gates | REQ-94; owner actions remain for D2, D7 and D5 counsel review |
+| Repository visibility — **RULED 2026-10-19: make `ib823/proof` private** (D2) | Gate J | REQ-98 — owner action in GitHub settings pending |
 
 ### Effort Sizing (rough, calendar time)
 
@@ -4854,6 +4868,80 @@ PRs.
 - The truth-up of this file's own stale cells (Gate C text "148/181", the
   REQ-55/70/73 status cells, the 2026-08-23 "NOT MERGED" label, the 2026-10-12
   deploy note).
+
+### Hardening Mandate (owner-adopted 2026-10-19) — tracking
+
+The mandate text is `04_SPECS/governance/HARDENING_MANDATE.md`, a standards
+specification subordinate to this file; read its adoption record first. This
+section is where its execution is tracked. Its decision memos are the decision
+packages below, and its session handoffs are the dated Part 11 entries.
+
+**Owner rulings, 2026-10-19** ("go with your recommendations for D1 to D9"):
+
+| Ruling | Decision | Status |
+|---|---|---|
+| D1 | The mandate lives at `04_SPECS/governance/`, and this file keeps precedence.<br>Its required artefacts map as follows: DEC memos → decision packages here; `docs/sessions/` → Part 11 entries; `docs/spec/` → `04_SPECS/language/`; generated ledgers → repo root. | DONE |
+| D2 | Make `ib823/proof` private and keep `ib823/riina` as the public face. | OWNER ACTION in GitHub settings; an agent session has no API for it (REQ-98) |
+| D3 | Gate C closes on its engineering criteria; the external audit moves to Gate G. | DONE: Gate C criterion 1 and the Gate G row edited |
+| D4 | Scope freeze, with the REQ-33 Syariah track exempt; close the stale March PRs. | DONE: REQ-108, `scope_freeze.rs` and its pin line; PRs #32/#36/#37/#41/#44/#45/#46 closed with branches kept |
+| D5 | Licence fixes within the proprietary model, subject to counsel review. | See the D5 decision package below |
+| D6 | Archive the generated prover corpora; drop the cross-prover aggregates. | See the D6 decision package below |
+| D7 | Name a human formal-methods and security reviewer. | OWNER ACTION. Interim: `.github/CODEOWNERS` names @ib823 for the security-critical paths, and needs branch protection set to take effect |
+| D8 | - No floats (REQ-105, DONE)<br>- C1 Route A (REQ-100)<br>- Differential testing for the native backend now, translation validation later (REQ-59)<br>- In-house crypto labelled experimental (`--compliance` notice DONE; docs under D9)<br>- Iris deferred until REQ-99 | Recorded |
+| D9 | The mandate's §5 wording table is approved. | See the D9 record below |
+
+**Standards → REQs:**
+
+| Standard | Tracked in |
+|---|---|
+| S1.1 core mapping | REQ-99, REQ-54 |
+| S1.2 / S1.3 / S1.4 / S1.7 / S1.12 (emit-core, oracle, differential, completeness, elaboration) | REQ-54 (S3–S5), REQ-99 |
+| S1.5 semantic differential | REQ-54 S4, REQ-97 |
+| S1.6 assured mode | REQ-100 |
+| S1.8 guarantees JSON | REQ-101 |
+| S1.9 grammar / fmt / fuzz | REQ-92, REQ-30 |
+| S1.10 (i) builtin spec | REQ-99 |
+| S1.10 (ii) capabilities | REQ-91 |
+| S1.10 (iii) C hygiene | REQ-102 |
+| S1.10 (iv) codegen correctness | REQ-59 |
+| S1.11 trusted base / S2.4 registry / S2.9 witnesses | REQ-103 |
+| S1.13 honest comparison / S3.2 docs execute | REQ-96, REQ-34 |
+| S2.1 full NI | REQ-89, REQ-60 |
+| S2.2 declassification | REQ-66 |
+| S2.3 / S2.5 / S2.6 / S2.8 / S5.3 | REQ-104 (triage first), REQ-23 |
+| S2.7 counting / S2.11 lanes | REQ-29 (D6), REQ-67 |
+| S2.10 human review / S5.5 governance | REQ-56, D7 |
+| S2.12 / S3.4 platforms | REQ-102, REQ-31 |
+| S3.1 examples | REQ-55 |
+| S3.3 native and the builtin matrix | REQ-70, REQ-102, REQ-96 |
+| S3.5 floats | REQ-105 |
+| S3.6 crypto | REQ-28, REQ-42, REQ-43, REQ-32, REQ-95 |
+| S3.7 audits | REQ-28, REQ-57 |
+| S3.8 / S3.11 releases | REQ-106, REQ-31 |
+| S3.9 usability | REQ-107, REQ-90 |
+| S3.10 testing depth | REQ-30 |
+| S3.12 security response | REQ-32 |
+| S4.1–S4.8 licence | REQ-35 (D5) |
+| S5.1 / S5.2 / S5.8 | REQ-108 |
+| S5.4 depth metrics | REQ-01 |
+| S5.6 / S5.7 | REQ-109, REQ-26 |
+
+**Order of work** (the mandate's milestones reconciled with gate discipline):
+
+- **Runs now, alongside Gate C (Wave 1):**
+  - P0 security and soundness fixes, whatever the gate.
+  - M0 truth-up, which is the always-on Cross-Cutting Hygiene and Part 12 Wave 0: REQ-103, REQ-109, REQ-96, D6, D9.
+  - S5.3 triage (REQ-104) before any vacuity, naming or Parameter work.
+- **M1 conformance:** the REQ-54 S3–S5 pipeline starts on today's core, and grows with REQ-99. S2.1 (REQ-89) is the long pole, designed during M1.
+- **Exit:** 1.0 only against the mandate's S3.8 criteria. The freeze lifts at S5.8, by owner decision.
+
+**Mandate rules adopted where stricter than this file:**
+- R1, R2 (statement changes go in `02_FORMAL/coq/PROOF_CHANGELOG.md`), R4, R5, R10, R11 (= REQ-108).
+- R3, scoped to `emit-core` and assured mode.
+- R6, scoped to `riinac`, the runtime and the documented user commands. Repo scripts may require WSL or Git Bash on Windows.
+- R8: changes to the S5.5(i) security-critical paths go through a PR the owner reviews (CODEOWNERS) once branch protection is on, plus an adversarial review by a separate reviewer, which was practised on 2026-10-19.
+- R12, for constructs in the Coq core mapping.
+
 
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)
 
