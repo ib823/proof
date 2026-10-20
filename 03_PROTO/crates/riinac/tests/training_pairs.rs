@@ -1,21 +1,30 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
-//! The AI-training error/fix pairs must match the compiler.
+//! The AI-training data in `07_EXAMPLES/08_ai_training/` must match the
+//! compiler.
 //!
-//! `07_EXAMPLES/08_ai_training/error_fix_pairs.jsonl` teaches a model what
-//! `riinac` reports for a mistake and how to fix it. Each `broken_code` must
-//! fail `riinac check` with the pair's `error_code` and `error_message`, and
-//! each `fixed_code` must pass. On 2026-10-20, 61 of the 66 pairs stated a
-//! code the compiler did not report (the codes had been numbered by entry),
-//! nine broken programs had become valid, and four fixed programs failed.
+//! `error_fix_pairs.jsonl` teaches a model what `riinac` reports for a mistake
+//! and how to fix it. Each `broken_code` must fail `riinac check` with the
+//! pair's `error_code` and `error_message`, and each `fixed_code` must pass.
+//! On 2026-10-20, 61 of the 66 pairs stated a code the compiler did not report
+//! (the codes had been numbered by entry), nine broken programs had become
+//! valid, and four fixed programs failed.
+//!
+//! The other three files pair a task, a Python function or a vulnerability
+//! with RIINA code; every RIINA program must check. On 2026-10-20, 32 of the
+//! 151 did not, and 37 `vuln_to_safe` entries cited a proof file that had been
+//! archived as deprecated.
 
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
+fn repo() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..")
+}
+
 fn pairs_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../07_EXAMPLES/08_ai_training/error_fix_pairs.jsonl")
+    repo().join("07_EXAMPLES/08_ai_training/error_fix_pairs.jsonl")
 }
 
 /// Read a JSON string literal at the start of `s` (after its opening `"`
@@ -119,4 +128,74 @@ fn error_fix_pairs_match_the_compiler() {
         "error_fix_pairs.jsonl disagrees with riinac:\n  {}",
         errs.join("\n  ")
     );
+}
+
+/// The non-empty lines of a training file, numbered from 1.
+fn lines(file: &str) -> Vec<(usize, String)> {
+    let path = repo().join("07_EXAMPLES/08_ai_training").join(file);
+    let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {file}: {e}"));
+    text.lines()
+        .enumerate()
+        .filter(|(_, l)| !l.trim().is_empty())
+        .map(|(i, l)| (i + 1, l.to_string()))
+        .collect()
+}
+
+#[test]
+fn every_training_program_checks() {
+    let mut errs = Vec::new();
+    for (file, key, at_least) in [
+        ("intent_code_pairs.jsonl", "code", 50),
+        ("python_to_riina.jsonl", "riina", 50),
+        ("vuln_to_safe.jsonl", "riina_safe_code", 30),
+    ] {
+        let rows = lines(file);
+        assert!(
+            rows.len() >= at_least,
+            "{file}: only {} entries read",
+            rows.len()
+        );
+        for (n, line) in rows {
+            let code = field(&line, key).unwrap_or_else(|| panic!("{file}:{n}: no `{key}`"));
+            if let Some((c, m)) = check(&code) {
+                errs.push(format!("{file}:{n}: {c}: {m}"));
+            }
+        }
+    }
+    assert!(
+        errs.is_empty(),
+        "training programs that riinac rejects:\n  {}",
+        errs.join("\n  ")
+    );
+}
+
+/// A `proof_reference` names a live Coq file (not an archived one) and the
+/// theorem in it: `path/File.v (theorem_name)`, or `none (…)`.
+#[test]
+fn vuln_to_safe_proof_references_exist() {
+    let coq = repo().join("02_FORMAL/coq");
+    let mut errs = Vec::new();
+    for (n, line) in lines("vuln_to_safe.jsonl") {
+        let r = field(&line, "proof_reference")
+            .unwrap_or_else(|| panic!("line {n}: no proof_reference"));
+        if r.starts_with("none") {
+            continue;
+        }
+        let Some((file, rest)) = r.split_once(" (") else {
+            errs.push(format!("line {n}: `{r}` is not `path/File.v (theorem)`"));
+            continue;
+        };
+        let theorem = rest.trim_end_matches(')');
+        match std::fs::read_to_string(coq.join(file)) {
+            Err(_) => errs.push(format!("line {n}: no file 02_FORMAL/coq/{file}")),
+            Ok(_) if file.contains("_archive") => {
+                errs.push(format!("line {n}: {file} is archived"))
+            }
+            Ok(src) if !src.contains(&format!("Theorem {theorem} ")) => {
+                errs.push(format!("line {n}: {file} has no `Theorem {theorem}`"));
+            }
+            Ok(_) => {}
+        }
+    }
+    assert!(errs.is_empty(), "{}", errs.join("\n"));
 }

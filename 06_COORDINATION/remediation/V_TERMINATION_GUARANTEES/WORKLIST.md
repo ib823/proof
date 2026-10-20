@@ -22,4 +22,4 @@
 - [ ] Add negative test: unbounded recursion rejected
 - [ ] Add negative test: unbounded selagi in Bersih rejected
 - [ ] Fix 07_EXAMPLES/00_basics/loops_while.rii overclaims
-- [ ] Fix 07_EXAMPLES/08_ai_training/vuln_to_safe.jsonl overclaims
+- [x] Fix 07_EXAMPLES/08_ai_training/vuln_to_safe.jsonl overclaims (2026-10-20: termination and proof claims removed; master plan REQ-96 follow-up)
