@@ -79,6 +79,8 @@ def load_truth():
         "examples": m["examples"],
         "rust_tests": m["rust"]["tests"],
         "coq_files_active": m["coq"]["filesActive"],
+        "counting": {k: m["proofs"]["countingPolicy"][k] for k in
+                     ("coreMechanizedQed", "modelMechanizedQedNonvacuous", "excludedQed")},
     }
     comp = m.get("compliance") or {}
     t["profiles"] = comp.get("profiles")
@@ -276,8 +278,24 @@ def check_legacy_plans():
     return out
 
 
+def check_site_defaults(t):
+    """The website's fallback counts (shown while metrics.json loads) are the
+    generated ones."""
+    out = []
+    src = read("website/src/useMetrics.js")
+    for key, want in t["counting"].items():
+        mm = re.search(key + r": (\d+)", src)
+        if not mm or int(mm.group(1)) != want:
+            got = mm.group(1) if mm else "missing"
+            out.append(f"website/src/useMetrics.js: default {key} {got} != metrics.json {want}")
+    if re.search(r"\bqedActive\b\s*:", src):
+        out.append("website/src/useMetrics.js: defaults carry the raw qedActive total (mandate S2.7)")
+    return out
+
+
 def check_repo(t):
     problems = check_versions(t)
+    problems += check_site_defaults(t)
     problems += check_legacy_plans()
     for f in LEDGERS:
         if not os.path.exists(os.path.join(ROOT, f)):
