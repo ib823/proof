@@ -1,6 +1,6 @@
 # Contributing to RIINA™
 
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only fully mechanized lane | 3560 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,740 core Qed, 9,744 model Qed, 1,335 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3562 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 3560 passing)
+# Run all tests (should show 3562 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out

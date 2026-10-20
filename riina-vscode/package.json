@@ -1,14 +1,14 @@
 {
     "name": "riina-lang",
     "displayName": "RIINA Language",
-    "description": "Language support for RIINA — Rigorous Immutable Invariant, Normalized Axiom",
+    "description": "Language support for RIINA (Rigorous Immutable Invariant, No Assumptions), a programming language with a Coq-verified core model",
     "version": "0.1.0",
     "publisher": "ib823",
     "repository": {
         "type": "git",
         "url": "https://github.com/ib823/riina"
     },
-    "license": "Proprietary",
+    "license": "SEE LICENSE IN ../LICENSE",
     "engines": {
         "vscode": "^1.85.0"
     },

@@ -25,7 +25,7 @@
             src = ./03_PROTO;
             cargoLock.lockFile = ./03_PROTO/Cargo.lock;
             meta = with pkgs.lib; {
-              description = "RIINA compiler — formally verified, zero-trust programming language";
+              description = "RIINA compiler — a programming language with a Coq-verified core model";
               homepage = "https://github.com/ib823/riina";
               # The repository LICENSE is proprietary (see ./LICENSE); this
               # previously declared MPL-2.0.

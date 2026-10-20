@@ -324,6 +324,49 @@ extract_first_number_from_line() {
     echo "${value:-0}"
 }
 
+# Public-surface count checks (mandate S2.7). Defined here, before the first
+# caller; they read ACTUAL_* values set below at call time.
+check_public_counts() {
+    local file="$1" rel line num label want
+    [ -f "$file" ] || return 0
+    rel="${file#"$REPO_ROOT"/}"
+    while IFS= read -r line; do
+        case "$line" in
+            *"at the tagged commit"*|*"at release"*|*"Historical"*|*"historical"*) continue ;;
+        esac
+        for num in $(printf '%s\n' "$line" | grep -oP '\b\d{1,3}(,\d{3})+(?= (Coq )?Qed\b)'); do
+            echo -e "${RED}[MISMATCH]${NC} raw Qed figure in $rel: $num (publish the core/model/excluded numbers instead, mandate S2.7)"
+            echo "           $(printf '%s' "$line" | cut -c1-160)"
+            DISCREPANCIES=$((DISCREPANCIES + 1))
+        done
+        for label in core model excluded; do
+            case "$label" in
+                core) want="$ACTUAL_CORE_QED" ;;
+                model) want="$ACTUAL_MODEL_QED" ;;
+                excluded) want="$ACTUAL_EXCLUDED_QED" ;;
+            esac
+            for num in $(printf '%s\n' "$line" | grep -oP "\\b\\d{1,3}(,\\d{3})*(?= $label Qed\\b)"); do
+                if [ "${num//,/}" != "$want" ]; then
+                    echo -e "${RED}[MISMATCH]${NC} $label Qed figure in $rel: $num (actual $(add_commas "$want"))"
+                    echo "           $(printf '%s' "$line" | cut -c1-160)"
+                    DISCREPANCIES=$((DISCREPANCIES + 1))
+                fi
+            done
+        done
+    done < "$file"
+}
+# A line or block that is the place a surface states the Coq numbers must state
+# all three, so a surface cannot quietly drop the excluded count.
+require_counts() {
+    local text="$1" where="$2" label
+    for label in core model excluded; do
+        if ! printf '%s\n' "$text" | grep -qP "\\d (?=$label Qed\\b)"; then
+            echo -e "${RED}[MISSING]${NC} $where does not state the $label Qed number (mandate S2.7)"
+            DISCREPANCIES=$((DISCREPANCIES + 1))
+        fi
+    done
+}
+
 # ── Gather actual metrics ─────────────────────────────────────────────
 # Pinned primary prover, read from the provisioning script (the single source of
 # truth for the toolchain pin; CI provisions through the same script).
@@ -359,10 +402,19 @@ ACTUAL_SESSION=$(get_actual_session)
 # Locale-independent thousands separator
 add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
 ACTUAL_QED_COMMA=$(add_commas "$ACTUAL_QED")
+# The three Coq numbers public surfaces may quote (mandate S2.7, ruling D6).
+# A raw Qed total is not one of them.
+COUNTING_JSON=$(python3 "$REPO_ROOT/scripts/coq-counting-policy.py" "$REPO_ROOT") || {
+    echo -e "${RED}[ERROR]${NC} scripts/coq-counting-policy.py failed"; exit 1; }
+read -r ACTUAL_CORE_QED ACTUAL_MODEL_QED ACTUAL_EXCLUDED_QED COUNTED_QED < <(printf '%s' "$COUNTING_JSON" | python3 -c \
+    'import json,sys; d=json.load(sys.stdin); print(d["coreMechanizedQed"], d["modelMechanizedQedNonvacuous"], d["excludedQed"], d["activeQed"])')
+if [ "$COUNTED_QED" != "$ACTUAL_QED" ]; then
+    echo -e "${RED}[ERROR]${NC} counting policy covers $COUNTED_QED Qed, the active build has $ACTUAL_QED"; exit 1
+fi
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo "Actual metrics from codebase:"
-    echo "  Qed (active):  $ACTUAL_QED"
+    echo "  Qed (active):  $ACTUAL_QED (core $ACTUAL_CORE_QED, model $ACTUAL_MODEL_QED, excluded $ACTUAL_EXCLUDED_QED)"
     echo "  Admitted:      $ACTUAL_ADMITTED"
     echo "  Coq files:     $ACTUAL_COQ_FILES"
     echo "  Coq active:    $ACTUAL_COQ_ACTIVE_FILES"
@@ -503,18 +555,17 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     README_TLAPLUS_LINE=$(grep -m1 'TelusProcurementProtocol' "$REPO_ROOT/README.md" || true)
     README_ALLOY_LINE=$(grep -m1 'TelusProcurementAccessControl' "$REPO_ROOT/README.md" || true)
 
-    # The Qed figure itself — the row now starts with a version number.
-    README_QED=$(printf '%s\n' "$README_COQ_LINE" | grep -oP '\d{1,3}(,\d{3})*(?= (Coq )?Qed)' | head -1 | tr -d , || true)
-    README_QED=${README_QED:-0}
+    # The row quotes the three S2.7 numbers; check_public_counts below checks
+    # their values, and here they must all be present.
+    if [ -n "$README_COQ_LINE" ]; then
+        require_counts "$README_COQ_LINE" "README.md primary-prover row"
+    fi
     README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
     README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
     README_FSTAR=$(extract_first_number_from_line "$README_FSTAR_LINE")
     README_TLAPLUS=$(extract_first_number_from_line "$README_TLAPLUS_LINE")
     README_ALLOY=$(extract_first_number_from_line "$README_ALLOY_LINE")
 
-    if [ "$README_QED" != "0" ]; then
-        check_value "Qed in README.md" "$ACTUAL_QED" "$README_QED" "README.md" || true
-    fi
     if [ "$README_LEAN" != "0" ]; then
         check_value "Lean declarations in README.md" "$ACTUAL_LEAN" "$README_LEAN" "README.md" || true
     fi
@@ -535,32 +586,21 @@ else
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
-# ── Every current-state Qed figure in public docs must be the actual count ──
+# ── Public surfaces quote the three S2.7 numbers, never a raw Qed total ──
 # Targeted denylists of old numbers (check_no_stale) cannot catch a NEW stale
 # number: README carried 12,613 and the website meta description 12,646 while
-# this audit passed (2026-10-11). Any "N Qed" / "N Coq Qed" in these files must
-# equal the live count, except lines that are explicitly historical.
-check_qed_mentions() {
-    local file="$1" rel line num
-    [ -f "$file" ] || return 0
-    rel="${file#"$REPO_ROOT"/}"
-    while IFS= read -r line; do
-        case "$line" in
-            *"at the tagged commit"*|*"at release"*|*"Historical"*|*"historical"*) continue ;;
-        esac
-        for num in $(printf '%s\n' "$line" | grep -oP '\b\d{1,2},\d{3}(?= (Coq )?Qed\b)'); do
-            if [ "${num//,/}" != "$ACTUAL_QED" ]; then
-                echo -e "${RED}[MISMATCH]${NC} Qed figure in $rel: $num (actual $ACTUAL_QED_COMMA)"
-                echo "           $(printf '%s' "$line" | cut -c1-160)"
-                DISCREPANCIES=$((DISCREPANCIES + 1))
-            fi
-        done
-    done < <(grep -E '[0-9]{1,2},[0-9]{3}( Coq)? Qed' "$file" 2>/dev/null || true)
-}
+# this audit passed (2026-10-11). Mandate S2.7 (ruling D6) then retired the raw
+# total from public surfaces altogether. So on these files:
+#   - "<N> core Qed", "<N> model Qed" and "<N> excluded Qed" must equal the
+#     live numbers from scripts/coq-counting-policy.py;
+#   - any other "<N> Qed" / "<N> Coq Qed" is an error, whatever N is,
+# except on lines that are explicitly historical.
+# CHANGELOG.md is release history, so its entries keep the figures they were
+# released with; only its banner is checked (below).
 for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
                .cursorrules .clinerules website/index.html website/src/RiinaWebsite.jsx \
-               docs/UNDERSTANDING_RIINA.md; do
-    check_qed_mentions "$REPO_ROOT/$qed_doc"
+               docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md docs/i18n/README_zh.md; do
+    check_public_counts "$REPO_ROOT/$qed_doc"
 done
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
@@ -625,8 +665,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
 fi
 
 if [ -f "$REPO_ROOT/CHANGELOG.md" ]; then
-    CL_QED=$(grep -oP '\d+,?\d* Coq Qed' "$REPO_ROOT/CHANGELOG.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
-    check_value "Qed in CHANGELOG.md banner" "$ACTUAL_QED" "$CL_QED" "CHANGELOG.md" || true
+    require_counts "$(grep -m1 -E '^\*\*Verification:\*\*' "$REPO_ROOT/CHANGELOG.md" || true)" "CHANGELOG.md banner"
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
@@ -651,10 +690,9 @@ if [ "$QUICK_MODE" != "--quick" ]; then
 fi
 
 if [ -f "$REPO_ROOT/AGENTS.md" ]; then
-    AG_QED=$(grep -oP '^\| Coq Qed \| \K[0-9,]+' "$REPO_ROOT/AGENTS.md" | tr -d ',' || echo "0")
     AG_LEAN=$(grep -oP '^\| Lean theorems \| \K[0-9,]+' "$REPO_ROOT/AGENTS.md" | tr -d ',' || echo "0")
     AG_EXAMPLES=$(grep -oP '^\| Examples \| \K\d+' "$REPO_ROOT/AGENTS.md" || echo "0")
-    check_value "Qed in AGENTS.md table" "$ACTUAL_QED" "$AG_QED" "AGENTS.md" || true
+    require_counts "$(grep -m1 -E '^\| Coq proofs \|' "$REPO_ROOT/AGENTS.md" || true)" "AGENTS.md \"Coq proofs\" row"
     check_value "Lean theorems in AGENTS.md table" "$ACTUAL_LEAN" "$AG_LEAN" "AGENTS.md" || true
     check_value "Examples in AGENTS.md table" "$ACTUAL_EXAMPLES" "$AG_EXAMPLES" "AGENTS.md" || true
 fi
@@ -669,10 +707,9 @@ if [ "$QUICK_MODE" != "--quick" ]; then
 fi
 
 if [ -f "$REPO_ROOT/llms.txt" ]; then
-    LT_QED=$(grep -oP '^- Coq: \K[0-9,]+' "$REPO_ROOT/llms.txt" | tr -d ',' || echo "0")
     LT_LEAN=$(grep -oP '^- Lean 4: \K[0-9,]+' "$REPO_ROOT/llms.txt" | tr -d ',' || echo "0")
     LT_EXAMPLES=$(grep -oP '^- Examples: \K\d+' "$REPO_ROOT/llms.txt" || echo "0")
-    check_value "Qed in llms.txt" "$ACTUAL_QED" "$LT_QED" "llms.txt" || true
+    require_counts "$(grep -m1 -E '^- Coq: ' "$REPO_ROOT/llms.txt" || true)" "llms.txt \"- Coq:\" line"
     check_value "Lean theorems in llms.txt" "$ACTUAL_LEAN" "$LT_LEAN" "llms.txt" || true
     check_value "Examples in llms.txt" "$ACTUAL_EXAMPLES" "$LT_EXAMPLES" "llms.txt" || true
 fi
@@ -1093,8 +1130,9 @@ if [ "$QUICK_MODE" != "--quick" ]; then
             */01_RESEARCH/*|*/99_ARCHIVE/*|*/_archive_deprecated/*|*/CLAUDE_WEB_PROMPT_*|*/CLAUDE_AI_*|*/delegation_prompts/*) continue ;;
         esac
         banner_line=$(grep -E "^\*\*(Audit Update|Verification):\*\*" "$file" | head -1)
-        # Check if banner has current Qed count
-        if ! echo "$banner_line" | grep -q "${ACTUAL_QED_COMMA} Coq Qed" 2>/dev/null; then
+        # Current means it carries the three live S2.7 numbers (the banner no
+        # longer quotes a raw Qed total).
+        if ! echo "$banner_line" | grep -q "Coq $(add_commas "$ACTUAL_CORE_QED") core Qed, $(add_commas "$ACTUAL_MODEL_QED") model Qed, $(add_commas "$ACTUAL_EXCLUDED_QED") excluded Qed" 2>/dev/null; then
             STALE_BANNERS=$((STALE_BANNERS + 1))
         fi
     # Restrict to Markdown and skip build/VCS output. Without this the scan

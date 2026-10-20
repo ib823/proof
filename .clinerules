@@ -1,6 +1,6 @@
 # RIINA Language Rules for Cline/Roo Code
 
-You are writing code in RIINA, a formally verified language with Bahasa Melayu keywords.
+You are writing code in RIINA, a programming language with a Coq-verified core model and Bahasa Melayu keywords.
 
 ## File Extension
 .rii

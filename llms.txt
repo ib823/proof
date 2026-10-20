@@ -3,15 +3,16 @@
 > Rigorous Immutable Invariant, No Assumptions
 
 RIINA is a programming language with Bahasa Melayu (Malaysian) keywords and a
-machine-checked Coq proof corpus for its core type/effect system. Note: the
-shipped compiler enforces a subset of the modeled security properties — the full
-proof corpus is not yet wired end-to-end into the compiler (see Verified State).
+Coq-verified core model: its core type and effect rules are proven in Coq for
+the language model, and the compiler is tested against that model (not proven
+to implement it). The shipped compiler enforces a subset of the modelled
+security properties (see Verified State).
 
 - File extension: `.rii`
-- Version: 0.3.0
+- Version: 0.4.0
 - Keywords: Bahasa Melayu (Malaysian) + English dual syntax
 - Repository: https://github.com/ib823/riina
-- License: Proprietary
+- License: RIINA Proprietary License (source publicly readable; not open source)
 
 ## Verified State (command-derived)
 
@@ -21,9 +22,17 @@ other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
 D6) and are preserved at commit `fd23fbdb8`. What remains is hand-written. Never
 sum counts across lanes: they count different things.
 
-- Coq: 12,819 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 334 active .v files.
-  Caveat: 29 active `Parameter` declarations are logically equivalent to axioms
-  (the propositional ones model the trusted hardware interface) — these are the de-facto trusted assumptions.
+- Coq: 1,740 core Qed, 9,744 model Qed, 1,335 excluded Qed. Core = foundations,
+  type system, properties, effects, termination; model = domain, industry,
+  compliance, crypto and runtime models (facts about their own definitions, not
+  verified systems); excluded = vacuous patterns or test files. Never quote a
+  raw total.
+  0 Admitted, 0 Abort, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface;
+  none of the capstone theorems depends on them). 334 active .v files.
+- Scope of the headline results: type safety (progress, preservation) for the
+  full calculus. Strong normalization, non-interference and constant time
+  (reduction-count independence from secrets) are proven only for the
+  reference-free, `fix`-free core; beyond it they are enforced by tests.
 - Lean 4: 0 theorem/lemma declarations. The generated port (12,576 declarations,
   only 215 of which ever elaborated) is archived; the REQ-67(b) hand-written
   re-proof has not started. Claim: **generated**.
@@ -37,22 +46,31 @@ sum counts across lanes: they count different things.
   (quarantined until wired into CI).
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
-- Rust: 2,898 proto tests + 294 tooling tests = 3,192 (all passing), 19 proto +
-  4 tooling crates, 0 external runtime deps (proto). This part is solid.
+- Rust: 3,560 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+  third-party runtime dependencies). Dev/CI tools are separate: the Rocq
+  toolchain, cc, wasmtime, z3 and the NIST test vectors.
+- Backends: the C/native backend is not formally verified; it is
+  differential-tested against the interpreter. Floating point is not
+  supported, by design (a float literal is error P0015).
+- Crypto (`riina-core`): experimental and unaudited. Tested against NIST
+  known-answer (ACVP) vectors; not validated (no CMVP/CAVP certificate).
+- Audits: no independent audit has been published.
 - Examples: 172 .rii files, of which 84 currently pass `riinac check` (19 of the
   28 in `00_basics/`, measured 2026-10-19); the shipped parser accepts a narrower grammar than some examples
   assume — see `07_EXAMPLES/README.md`. Passing `check` does NOT imply the
-  example can be COMPILED: every effectful builtin is interpreter-only
-  (REQ-70), so `riinac build` fails closed on them.
+  example can be COMPILED: a few effectful builtins (`jaring_tls_*`, the
+  virtual-filesystem trio, the crypto-agility runtime) are still
+  interpreter-only (REQ-70), and `riinac build` fails closed on them.
 
 ## Session Protocol
 
 All LLM CLIs MUST follow RIINA_MASTER_PLAN.md Part 8 (8 mandatory steps):
 ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
 
-During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker. Current active gate:
-`B — Compiler Enforcement Parity` (Gate A closed 2026-06-01; REQ-21..26 all DONE).
-Highest-priority open REQ: REQ-27 (compiler enforcement parity, PARTIAL).
+During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker (as of
+2026-10-20 the active gate is C — Standard Library Hardening; Gates A and B are
+closed) and the hardening-mandate tracking section in Part 11. Re-read the
+marker rather than trusting this line.
 
 Work on `main` or your assigned managed-session branch (`claude/*`, syncs back to `main`).
 Never commit to `public` or `gh-pages`.
@@ -65,7 +83,6 @@ Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (ne
 - [Language Specs](04_SPECS/): Formal specifications
 - [Examples](07_EXAMPLES/): 172 example .rii files
 - [Formal Proofs](02_FORMAL/coq/): Coq proof library
-- [llms-full.txt](llms-full.txt): Complete language specification for LLMs
 
 ## Quick Syntax Reference
 

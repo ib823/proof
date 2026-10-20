@@ -1347,6 +1347,13 @@
     },
     {
       "bom-ref": "pkg:cargo/riina-artifact-sign@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-RIINA-Proprietary"
+          }
+        }
+      ],
       "name": "riina-artifact-sign",
       "properties": [
         {
@@ -1361,6 +1368,13 @@
     },
     {
       "bom-ref": "pkg:cargo/riina-build-manifest@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-RIINA-Proprietary"
+          }
+        }
+      ],
       "name": "riina-build-manifest",
       "properties": [
         {
@@ -1375,6 +1389,13 @@
     },
     {
       "bom-ref": "pkg:cargo/riina-build@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-RIINA-Proprietary"
+          }
+        }
+      ],
       "name": "riina-build",
       "properties": [
         {
@@ -1392,7 +1413,7 @@
       "licenses": [
         {
           "license": {
-            "name": "Proprietary"
+            "name": "LicenseRef-RIINA-Proprietary"
           }
         }
       ],
@@ -1410,6 +1431,13 @@
     },
     {
       "bom-ref": "pkg:cargo/riina-effect@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-RIINA-Proprietary"
+          }
+        }
+      ],
       "name": "riina-effect",
       "properties": [
         {
@@ -1427,7 +1455,7 @@
       "licenses": [
         {
           "license": {
-            "name": "Proprietary"
+            "name": "LicenseRef-RIINA-Proprietary"
           }
         }
       ],
@@ -1445,6 +1473,13 @@
     },
     {
       "bom-ref": "pkg:cargo/riina-verify@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-RIINA-Proprietary"
+          }
+        }
+      ],
       "name": "riina-verify",
       "properties": [
         {
@@ -1459,6 +1494,13 @@
     },
     {
       "bom-ref": "pkg:cargo/runtime-proof-verify@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-RIINA-Proprietary"
+          }
+        }
+      ],
       "name": "runtime-proof-verify",
       "properties": [
         {

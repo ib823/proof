@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-20T01:02:22Z",
-  "generatedHuman": "October 20, 2026 at 01:02 UTC",
+  "generated": "2026-10-20T01:46:09Z",
+  "generatedHuman": "October 20, 2026 at 01:46 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "f7d029d3d",
+    "commit": "a2f684eb5",
     "branch": "main"
   },
   "proofs": {
@@ -22,7 +22,13 @@
     "kernelWeakeningConstructs": 0,
     "vacuityFindings": 1318,
     "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
-    "axiomsJustified": true
+    "axiomsJustified": true,
+    "countingPolicy": {
+      "coreMechanizedQed": 1740,
+      "modelMechanizedQedNonvacuous": 9744,
+      "excludedQed": 1335,
+      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py plus listed test files. The three add up to qedActive. Vacuity patterns are heuristics, so excluded is a lower bound; counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
+    }
   },
   "coq": {
     "filesTotal": 374,
@@ -194,10 +200,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3560,
-    "testsVerified": 3560,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 3562,
+    "testsVerified": 3562,
+    "testsEstimated": 3559,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 172,

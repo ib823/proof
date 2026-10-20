@@ -219,13 +219,14 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-10-19 in a managed cloud container on Rust 1.94.1, pinned Rocq 9.1.1 / stdlib 9.1.0 and wasmtime 27.0.0: `riinac verify --full` PASS (334 modules, 0 warnings, ten capstones attested), both Rust workspaces with no backend-tool opt-out, clippy, `scripts/audit-docs.sh`. See the Part 11 entry "Assessment and fail-open fixes — 2026-10-19". Previously: 2026-10-11 in a managed cloud container on Rust 1.94.1 and pinned Rocq 9.1.1 / stdlib 9.1.0: full Coq build (334 active modules, 0 warnings), `riinac verify --coq` kernel attestation of the capstones, `scripts/audit-docs.sh`. See the Part 11 entry "Full audit and remediation — 2026-10-11". Prior full validation incl. both Rust workspaces and `make verify-all`: 2026-09-08 (Codespaces).**
+**Last verified: 2026-10-20 in a managed cloud container on Rust 1.94.1, pinned Rocq 9.1.1 / stdlib 9.1.0 and wasmtime 27.0.0: `riinac verify --full` PASS at `4dcd6f7bb`, both Rust workspaces with no backend-tool opt-out, clippy, `scripts/audit-docs.sh`, `scripts/public-quality-gates.sh`. See the Part 11 entry "Hardening mandate D1–D9 execution — 2026-10-20". Before that: 2026-10-19, `riinac verify --full` PASS (334 modules, 0 warnings, ten capstones attested); see "Assessment and fail-open fixes — 2026-10-19". Previously: 2026-10-11 in a managed cloud container on Rust 1.94.1 and pinned Rocq 9.1.1 / stdlib 9.1.0: full Coq build (334 active modules, 0 warnings), `riinac verify --coq` kernel attestation of the capstones, `scripts/audit-docs.sh`. See the Part 11 entry "Full audit and remediation — 2026-10-11". Prior full validation incl. both Rust workspaces and `make verify-all`: 2026-09-08 (Codespaces).**
 
 ### Coq (Primary Prover)
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 12,819 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 12,819 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology). Internal checksum only: public surfaces quote the three numbers below, never this total (mandate S2.7, ruling D6) |
+| Published counts (S2.7) | 1,740 core / 9,744 model / 1,335 excluded | `python3 scripts/coq-counting-policy.py .`: core = foundations, type_system, properties, effects, termination; model = every other active file; excluded = vacuity-flagged theorems plus listed test files. Sums to the active total; excluded is a lower bound until REQ-104 triage |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
@@ -304,12 +305,12 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 ### Rust Prototype
 
-Measured 2026-10-19 on Rust 1.94.1 in a managed cloud container with `cc` and
+Measured 2026-10-20 on Rust 1.94.1 in a managed cloud container with `cc` and
 wasmtime 27.0.0 present (no backend-tool opt-out). Coverage is from 2026-09-08.
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 3,555 passing, 0 failed, 2 ignored documentation examples |
+| Tests (03_PROTO/) | 3,562 passing, 0 failed, 2 ignored documentation examples |
 | Tests (05_TOOLING/) | 352 passing, 0 failed, 0 ignored |
 | Crates (03_PROTO) | 18 workspace members, derived with `cargo metadata --no-deps` |
 | Crates (05_TOOLING) | 8 workspace members (4 crates and 4 tools), derived with `cargo metadata --no-deps` |
@@ -1380,7 +1381,7 @@ All requirement documents from _req_batch1/ and _req_batch2/ are preserved at
 | `LICENSE` | License file |
 | `llms.txt` | AI-readable project summary |
 
-Also sanctioned (owner ruling D1, 2026-10-19): `04_SPECS/governance/HARDENING_MANDATE.md`, the adopted hardening mandate. It is a standards specification subordinate to this file, not a second plan; its execution is tracked only in Part 11 ("Hardening Mandate (owner-adopted 2026-10-19)").
+Also sanctioned (owner ruling D1, 2026-10-19): `04_SPECS/governance/HARDENING_MANDATE.md`, the adopted hardening mandate. It is a standards specification subordinate to this file, not a second plan; its execution is tracked only in Part 11 ("Hardening Mandate (owner-adopted 2026-10-19)"). Also sanctioned (ruling D5): `04_SPECS/governance/LICENSING_COUNSEL_DRAFT.md`, draft licence, runtime-exception, continuity and trademark texts for counsel review. It is not in force and decides nothing; the D5 decision package in Part 11 holds the analysis.
 
 ### Rules for Creating New Documents
 
@@ -4849,6 +4850,75 @@ PRs.
   REQ-55/70/73 status cells, the 2026-08-23 "NOT MERGED" label, the 2026-10-12
   deploy note).
 
+### Hardening mandate D1–D9 execution — 2026-10-20
+
+Owner instruction (2026-10-19): "Go with your recommendations for D1 to D9 and proceed
+accordingly". This entry records what was executed and verified; the per-ruling detail
+is in the tracking section and decision packages below.
+
+**Done and pushed:**
+- D8 (`3aa2c644c`): a float literal is error P0015 (no floating point, by design);
+  `--compliance` runs flag unvalidated in-house crypto.
+- D1, D3, D4 (`38a443ed9`): mandate adopted at `04_SPECS/governance/`; Gate C
+  re-scoped (the external audit moved to Gate G); scope freeze enforced by
+  `riinac/tests/scope_freeze.rs`; seven stale March PRs closed with branches kept.
+- D6 (`a852e091a`, `f7d029d3d`, `4dcd6f7bb`): no cross-prover totals; 2,900 generated
+  non-Coq files archived out of `main` (archive point `fd23fbdb8`); every gate and
+  doc that assumed them repaired; claim levels unchanged. CI run 345 green.
+
+**Done in the closing commits:**
+- S2.7 counting: `scripts/coq-counting-policy.py` publishes core / model / excluded
+  (1,740 / 9,744 / 1,335; they sum to the 12,819 active Qed); `audit-docs.sh` rejects
+  a raw Qed total on public surfaces and checks the labelled numbers; the synced
+  banner carries them with the 29 `Parameter`s next to "0 `Axiom`".
+- D9: section 5 wording on README (and the Malay and Chinese READMEs), the website,
+  `llms.txt`, `AGENTS.md` (which also told agents to hand-set lanes to mechanized and
+  to re-run the generators; both removed), `COPILOT.md`, `.clinerules`,
+  `.github/copilot-instructions.md`, `SECURITY.md`, the VS Code description,
+  `flake.nix`, and the emitted-C header (which said "verified RIINA source" and
+  "corresponds to formal proofs"). The corpus generators now refuse to run without
+  `RIINA_REGENERATE_ARCHIVED_CORPUS=1`.
+- D5: licence metadata, SBOM licence coverage 148/148, the `licence_consistency.rs` CI
+  test, and the counsel drafts. `LICENSE` itself unchanged.
+- D7: `.github/CODEOWNERS` for the S5.5(i) paths.
+
+**Owner actions outstanding** (none can be done from a session):
+1. D2: make `ib823/proof` private (it is public, default branch `public`).
+2. D6: push the archive tag (`git tag archive/noncoq-generated-2026-10-20 fd23fbdb8`);
+   the session's git proxy refused tag pushes (HTTP 403).
+3. D7: appoint the reviewer; turn on branch protection requiring code-owner review.
+4. D5: counsel review of `04_SPECS/governance/LICENSING_COUNSEL_DRAFT.md`; continuity
+   choice; CLA or DCO; a durable licensing contact; remove the `mpl-2` topic.
+5. D9: replace the `ib823/riina` GitHub description (proposed text in the D9 record).
+6. Enable GitHub private vulnerability reporting (REQ-32).
+
+**Verified before the closing commit** (this container: Rust 1.94.1, Rocq 9.1.1,
+wasmtime 27.0.0, z3 4.8.12): `03_PROTO` cargo test 3,562 passed / 0 failed / 2 ignored;
+`05_TOOLING` 352 passed / 0 failed; clippy `-D warnings` clean on both; `audit-docs.sh`
+PASSED (and fails on an injected raw total and on a wrong core count); `update-proof-ledger
+--check` up to date; `public-quality-gates.sh` PASS; the website builds with `vite build`
+and all seven pages render in headless Chromium with no page or console errors; the
+pre-push `riinac verify --full` PASS at `4dcd6f7bb`.
+
+**Residuals found and left (recorded, not fixed here):**
+- `check-noncoq-mechanized.sh` pending texts for retired lanes still name full-lane
+  builds ("require full Active+Domains F* compilation"); cosmetic, and changing the
+  script needs a two-step report refresh.
+- The `riinac verify` inventory reports F* as 0 while metrics count the smoke module's
+  3 lemmas (different counting rules).
+- `swift_bridge::generate_podspec` writes RIINA's licence and homepage into a podspec
+  for user code.
+- The mandate's `tools/generators/` location is mapped to `scripts/` plus the refusal
+  guard (see the D6 package).
+- Taglines no D9 row covers, left for the owner: "Write with vibes. Ship with proofs."
+  and "the first systems programming language with native Southeast Asian syntax"
+  (README), "Where security is not a feature. It is a theorem." (UNDERSTANDING_RIINA).
+- Doc inconsistencies: UNDERSTANDING_RIINA says phases 1–7 are complete while the
+  README FAQ says phase 4; the README tree says 35K lines for `05_TOOLING`, the body
+  ~23,000 (about 21.4K measured).
+- The security snippets in the Malay and Chinese READMEs are marked as illustrations;
+  they do not compile today (`sha256` is not a builtin).
+
 ### Hardening Mandate (owner-adopted 2026-10-19) — tracking
 
 The mandate text is `04_SPECS/governance/HARDENING_MANDATE.md`, a standards
@@ -4864,11 +4934,11 @@ packages below, and its session handoffs are the dated Part 11 entries.
 | D2 | Make `ib823/proof` private and keep `ib823/riina` as the public face. | OWNER ACTION in GitHub settings; an agent session has no API for it (REQ-98) |
 | D3 | Gate C closes on its engineering criteria; the external audit moves to Gate G. | DONE: Gate C criterion 1 and the Gate G row edited |
 | D4 | Scope freeze, with the REQ-33 Syariah track exempt; close the stale March PRs. | DONE: REQ-108, `scope_freeze.rs` and its pin line; PRs #32/#36/#37/#41/#44/#45/#46 closed with branches kept |
-| D5 | Licence fixes within the proprietary model, subject to counsel review. | See the D5 decision package below |
-| D6 | Archive the generated prover corpora; drop the cross-prover aggregates. | See the D6 decision package below |
-| D7 | Name a human formal-methods and security reviewer. | OWNER ACTION. Interim: `.github/CODEOWNERS` names @ib823 for the security-critical paths, and needs branch protection set to take effect |
+| D5 | Licence fixes within the proprietary model, subject to counsel review. | Metadata DONE; drafts written; OWNER ACTION: counsel review. See the D5 decision package below |
+| D6 | Archive the generated prover corpora; drop the cross-prover aggregates. | DONE (archive tag is an OWNER ACTION). See the D6 decision package below |
+| D7 | Name a human formal-methods and security reviewer. | OWNER ACTION. Interim DONE: `.github/CODEOWNERS` names @ib823 for the S5.5(i) paths; it takes effect once branch protection on `main` requires code-owner review (OWNER ACTION) |
 | D8 | - No floats (REQ-105, DONE)<br>- C1 Route A (REQ-100)<br>- Differential testing for the native backend now, translation validation later (REQ-59)<br>- In-house crypto labelled experimental (`--compliance` notice DONE; docs under D9)<br>- Iris deferred until REQ-99 | Recorded |
-| D9 | The mandate's §5 wording table is approved. | See the D9 record below |
+| D9 | The mandate's §5 wording table is approved. | DONE in the repository; the GitHub description is an OWNER ACTION. See the D9 record below |
 
 **Standards → REQs:**
 
@@ -4921,6 +4991,116 @@ packages below, and its session handoffs are the dated Part 11 entries.
 - R6, scoped to `riinac`, the runtime and the documented user commands. Repo scripts may require WSL or Git Bash on Windows.
 - R8: changes to the S5.5(i) security-critical paths go through a PR the owner reviews (CODEOWNERS) once branch protection is on, plus an adversarial review by a separate reviewer, which was practised on 2026-10-19.
 - R12, for constructs in the Coq core mapping.
+
+#### D5 decision package — licence (REQ-35), 2026-10-20
+
+Ruling: licence fixes within the proprietary model, subject to counsel review. The
+binding `LICENSE` is unchanged; a public grant cannot be withdrawn, so no term changes
+before counsel has reviewed it (mandate rule R10: none of this is legal advice).
+
+**Done now (metadata only, no change to terms):**
+- Cargo: both workspaces set `license-file = "../LICENSE"`, and all 26 member crates
+  inherit it. `license = "Proprietary"` was not an SPDX expression, and six tooling
+  crates (`riina-build`, `riina-effect`, `riina-verify`, `riina-artifact-sign`,
+  `riina-build-manifest`, `runtime-proof-verify`) had no licence field.
+- SBOM: 148 of 148 components now carry a licence (RIINA crates as
+  `LicenseRef-RIINA-Proprietary`); `scripts/_sbom_from_metadata.py` fails on a gap.
+  The 121 external tooling components are all permissive (MIT, Apache-2.0,
+  BSD-2-Clause, Unlicense, Unicode-3.0; `r-efi` offers LGPL-2.1-or-later only as an
+  alternative), so there are 0 incompatibilities. The compiler workspace has none.
+- npm manifests (VS Code extension, website): `SEE LICENSE IN ../LICENSE`.
+- CI check (S4.3): `03_PROTO/crates/riinac/tests/licence_consistency.rs`; the same
+  rules in `scripts/verify-public.sh` step 5.
+- Emitted C names the embedded runtime prelude and points at `LICENSE`.
+- Draft texts for counsel: `04_SPECS/governance/LICENSING_COUNSEL_DRAFT.md` (amended
+  licence, runtime library exception, continuity mechanisms, trademark policy). Not
+  in force.
+
+**S4.1 conflict table** (clause of `LICENSE` v1 against what the project tells people
+to do):
+
+| Clause | Conflicts with | Draft resolution |
+|---|---|---|
+| Restriction (e): no access to the source | README, website ("source is publicly readable"), every audit instruction, and GitHub ToS D.5 for a public repo | Dropped; draft section 2 grants viewing, cloning, building, testing and audit |
+| Restriction (a): no copying or modifying | Cloning and building from source; preparing contributions | Narrowed to distribution; local modification for build, test, audit and contributions allowed |
+| Restriction (b): no distributing the compiler | The embedded runtime prelude ships inside every user binary | Runtime library exception (draft section 4 / Draft 2) |
+| Revocable licence + termination ("destroy all copies") | User binaries that contain runtime code | Output grant irrevocable and survives termination; 30-day cure |
+| Restriction (d): no competing "verification platform" | Auditors' and researchers' own tooling | Narrowed to distributing a competing product derived from the source; owner may drop it |
+| Formal proofs "for transparency and academic verification purposes only" | Paid audit and certification work | Draft section 6 allows verification, audit, research and teaching |
+| `CONTRIBUTING.md`: contributions "licensed under the RIINA Proprietary License" | That is an outbound licence; it grants the authors nothing in a contribution | CLA (or DCO) — owner choice, below |
+| Contact: a personal Telegram link | S3.12 / S4 durable-channel requirement | Draft section 14: project email or GitHub channels |
+
+**S4.5 options memo** (requires review by qualified counsel):
+
+| Option | Enterprise / regulated acceptability | Adoption, contribution, fork | Commercial fit (RIINA Verify) | Patent position | Auditor access |
+|---|---|---|---|---|---|
+| Apache-2.0 or MIT | High | Highest; forkable | Services only; code is free | Apache-2.0 has a patent grant; MIT does not | Full |
+| MPL-2.0 | High | High; file-level copyleft | Services only | Patent grant | Full |
+| GPL-3.0 + runtime exception | Mixed (copyleft review) | High; forkable | Dual licensing possible | Patent grant | Full |
+| BSL-1.1 with a change date | Medium (not OSI until the change date) | Low until the change date, then full | Strong | Owner's choice | Full by grant |
+| Proprietary + runtime exception + continuity (recommended, = ruling D5) | Medium, rising with escrow or a change date | Low; no fork until a continuity trigger | Strongest | Unchanged | Full once draft section 2 is adopted |
+
+Recommendation: keep the proprietary model (the owner's ruling) and adopt Draft 1 with
+the runtime library exception, continuity 3(a) (perpetual rights to every version
+received) plus either 3(b) (a change date to Apache-2.0) or 3(c) (escrow), and the
+trademark policy. 3(b) needs no third party; 3(c) needs an escrow agent and fees. The
+zero-dependency positioning is unaffected by any option. Governing law stays Malaysia;
+counsel to confirm enforceability of the irrevocable output grant and the cure period.
+
+**S4.7 contributions:** a CLA fits a proprietary model (the authors need a licence in
+each contribution); a DCO only certifies origin. Until the owner decides, the
+`CONTRIBUTING.md` sentence stays as written and is flagged to counsel.
+
+**S4.3 surfaces:** `LICENSE` (unchanged), README and website licence text (factual,
+"source-available"), Cargo, npm and SBOM (done), file headers (consistent "Copyright
+(c) 2026 The RIINA Authors"), no package registry listing exists. GitHub topics on
+`ib823/riina` still include `mpl-2`: OWNER ACTION, remove it.
+
+**Owner and counsel actions:** counsel review of the four drafts; choose continuity
+3(b) or 3(c); CLA or DCO; a durable licensing contact; remove the `mpl-2` topic.
+
+#### D6 decision package — archive of the generated prover corpora (REQ-29), 2026-10-20
+
+- Step A (`a852e091a`): no cross-prover total anywhere; lane gates no longer depend on
+  corpus size.
+- Archive point: commit `fd23fbdb8` holds the full generated corpora. Restore a lane
+  with `git checkout fd23fbdb8 -- 02_FORMAL/<lane>`. The tag
+  `archive/noncoq-generated-2026-10-20` could not be pushed from the session (the git
+  proxy refused it, HTTP 403): OWNER ACTION, `git tag
+  archive/noncoq-generated-2026-10-20 fd23fbdb8 && git push origin --tags`.
+- Step B (`f7d029d3d`): 2,900 generated files removed from `main`; 31 hand-written
+  artifacts kept. Gap and promotion scripts rest on Coq and the hand-written artifacts;
+  `riinac verify` reports an empty lane as an archived WARN.
+- Step C (`4dcd6f7bb`): lane report and metrics regenerated. Claim levels did not rise:
+  coq and smt mechanized; lean, tlaplus, alloy, verus, kani and tv generated; isabelle
+  and fstar retired.
+- S2.7 counting (this change): metrics publish exactly three Coq numbers,
+  `proofs.countingPolicy` (core 1,740, model 9,744, excluded 1,335 at this commit,
+  from `scripts/coq-counting-policy.py`, which fails unless they add up to the active
+  Qed count). `audit-docs.sh` rejects a raw Qed total on public surfaces and checks the
+  three labelled numbers. Counterexample triage (REQ-104) can move proofs into
+  `excluded`.
+- S5.5(iv) mapping: the generators stay in `scripts/` (their paths are referenced by
+  `sync-public.sh`) instead of moving to `tools/generators/`; they refuse to run
+  without `RIINA_REGENERATE_ARCHIVED_CORPUS=1`. `riinac verify`'s staleness hint no
+  longer tells anyone to run them.
+
+#### D9 record — truth-in-claims wording, 2026-10-20
+
+The mandate's section 5 table is applied on: README and the Malay and Chinese READMEs,
+the website and its meta tags, `llms.txt`, `AGENTS.md`, `COPILOT.md`, `.cursorrules`,
+`.clinerules`, `.github/copilot-instructions.md`, the VS Code extension description,
+`flake.nix`, the synced banner, and the header of emitted C. Enforced by
+`audit-docs.sh` (`check_public_counts`, `require_counts`). CHANGELOG entries are
+release history and keep their figures; its banner follows the rule.
+
+Not reachable from a session (OWNER ACTION): the GitHub description of `ib823/riina`,
+which reads "Formally verified programming language with security properties proven
+in Coq. Zero external dependencies. Thousands theorems. 0 admits." Proposed
+replacement (R7): "Programming language with a Coq-verified core model and Bahasa
+Melayu keywords. Core type and effect rules are proven in Coq for the language model;
+the compiler is tested against that model. No third-party runtime dependencies."
+`PROPERTY_LEDGER.md` (section 2) does not exist yet; it is REQ-101.
 
 
 ## PART 12: NORTH STAR — THE INDISPUTABILITY PROGRAM (2026-08-06)

@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 // Keep in sync with the *shape* of metrics.json — values here are stale-safe minimums.
 const DEFAULTS = {
   version: '0.0.0',
-  proofs: { qedActive: 0, admitted: 0, axioms: 0, assumptions: 0 },
-  coq: { filesActive: 0, filesTotal: 0, prover: 'Coq 8.20.1' },
+  // countingPolicy holds the only Coq counts the site publishes (owner ruling
+  // D9): core, model and excluded Qed. Never display the raw qedActive total.
+  proofs: {
+    qedActive: 0, admitted: 0, axioms: 0, assumptions: 0, parameters: 29,
+    countingPolicy: { coreMechanizedQed: 1740, modelMechanizedQedNonvacuous: 9744, excludedQed: 1335 },
+  },
+  coq: { filesActive: 0, filesTotal: 0, prover: 'Rocq 9.1.1' },
   lean: { theorems: 0, files: 0, prover: 'Lean 4', sorry: 0, axioms: 0 },
   isabelle: { lemmas: 0, files: 0, prover: 'Isabelle/HOL', sorry: 0 },
   fstar: { lemmas: 0, files: 0, prover: 'F*' },
@@ -96,3 +101,19 @@ export function useMetrics() {
 
 // Format a number with commas: 82982 → "82,982"
 export const fmt = (n) => Number(n).toLocaleString('en-US');
+
+// The labelled Coq counts (core / model / excluded Qed) plus the trust-base
+// figures, falling back to DEFAULTS when a key is missing from metrics.json.
+export function coqCounts(metrics) {
+  const p = metrics?.proofs || {};
+  const cp = p.countingPolicy || {};
+  const d = DEFAULTS.proofs;
+  return {
+    core: cp.coreMechanizedQed ?? d.countingPolicy.coreMechanizedQed,
+    model: cp.modelMechanizedQedNonvacuous ?? d.countingPolicy.modelMechanizedQedNonvacuous,
+    excluded: cp.excludedQed ?? d.countingPolicy.excludedQed,
+    admitted: p.admitted ?? d.admitted,
+    axioms: p.axioms ?? d.axioms,
+    parameters: p.parameters ?? d.parameters,
+  };
+}

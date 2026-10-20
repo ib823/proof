@@ -187,8 +187,10 @@ bash scripts/deploy-website.sh
 3. **NEVER** use `unsafe` in Rust without documented justification
 4. **NEVER** force push to main
 5. **NEVER** create new planning/roadmap/audit/strategy documents (update `RIINA_MASTER_PLAN.md`).
-   The one sanctioned exception is `04_SPECS/governance/HARDENING_MANDATE.md` (owner ruling D1,
-   2026-10-19), which is a standards spec. Its execution is tracked only in master plan Part 11, never in that file.
+   The sanctioned exceptions are `04_SPECS/governance/HARDENING_MANDATE.md` (owner ruling D1,
+   2026-10-19), which is a standards spec, and `04_SPECS/governance/LICENSING_COUNSEL_DRAFT.md`
+   (ruling D5), which holds draft legal text for counsel and is not in force. Their execution
+   is tracked only in master plan Part 11, never in those files.
 6. **NEVER** let CI replace internal verification — the GitHub Actions workflow
    (`.github/workflows/verify.yml`) is permitted, but only as a thin wrapper that runs
    RIINA's own gates (`make`, `cargo test`, `scripts/audit-docs.sh`, `riinac verify`).

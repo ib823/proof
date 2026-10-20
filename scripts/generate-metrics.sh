@@ -410,6 +410,17 @@ SECTION_HYPOTHESES=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Hypothesis Hy
 VACUITY_FINDINGS=$(cd "$ROOT_DIR" && python3 scripts/detect-vacuous-proofs.py --json 2>/dev/null \
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])') || {
     echo "ERROR: proof-vacuity scan failed" >&2; exit 1; }
+# The three published Coq numbers (mandate S2.7, ruling D6): core, model and
+# excluded. No raw Qed total is published on public surfaces; qedActive stays
+# in this file as the partition's checksum.
+COUNTING_JSON=$(python3 "$ROOT_DIR/scripts/coq-counting-policy.py" "$ROOT_DIR") || {
+    echo "ERROR: Coq counting policy failed" >&2; exit 1; }
+read -r CORE_QED MODEL_QED EXCLUDED_QED COUNTED_QED < <(printf '%s' "$COUNTING_JSON" | python3 -c \
+    'import json,sys; d=json.load(sys.stdin); print(d["coreMechanizedQed"], d["modelMechanizedQedNonvacuous"], d["excludedQed"], d["activeQed"])')
+if [ "$COUNTED_QED" != "$QED_ACTIVE" ]; then
+    echo "ERROR: counting policy partitions $COUNTED_QED Qed, but the active build has $QED_ACTIVE" >&2
+    exit 1
+fi
 KERNEL_WEAKENING=$(python3 "$COQ_SCAN" --forbidden "$ROOT_DIR/02_FORMAL/coq" | awk -F'\t' '{s += $2} END {print s + 0}') || {
     echo "ERROR: Coq forbidden-construct scan failed" >&2; exit 1; }
 
@@ -1246,7 +1257,13 @@ cat > "$OUTPUT_FILE" << EOF
     "kernelWeakeningConstructs": $KERNEL_WEAKENING,
     "vacuityFindings": $VACUITY_FINDINGS,
     "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
-    "axiomsJustified": true
+    "axiomsJustified": true,
+    "countingPolicy": {
+      "coreMechanizedQed": $CORE_QED,
+      "modelMechanizedQedNonvacuous": $MODEL_QED,
+      "excludedQed": $EXCLUDED_QED,
+      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py plus listed test files. The three add up to qedActive. Vacuity patterns are heuristics, so excluded is a lower bound; counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
+    }
   },
   "coq": {
     "filesTotal": $COQ_FILES,

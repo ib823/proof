@@ -3,7 +3,7 @@ name = "riina-lexer"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-license.workspace = true
+license-file.workspace = true
 description = "RIINA lexer/tokenizer - Bahasa Melayu syntax"
 
 [dependencies]

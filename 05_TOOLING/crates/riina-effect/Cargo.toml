@@ -2,6 +2,7 @@
 name = "riina-effect"
 version.workspace = true
 edition.workspace = true
+license-file.workspace = true
 description = "RIINA Effect System runtime"
 
 [dependencies]

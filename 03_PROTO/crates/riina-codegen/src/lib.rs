@@ -56,7 +56,9 @@
 //!
 //! Every translation is:
 //! - **Total**: All 25 expression forms handled exhaustively
-//! - **Correct**: Corresponds to Coq small-step semantics
+//! - **Checked, not proven**: intended to match the Coq small-step semantics;
+//!   the interpreter and backends are differential-tested against each other,
+//!   and no proof connects this crate to the Coq model
 //! - **Secure**: Security labels preserved through translation
 //! - **Traced**: Effect annotations maintained for verification
 //!

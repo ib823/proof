@@ -2659,11 +2659,12 @@ fn check_transpiler_staleness(repo: &Path, dirs: &ProverDirs<'_>) -> Vec<CheckRe
 
     if !stale_names.is_empty() {
         let names: Vec<&str> = stale_names.iter().map(|(n, _)| *n).collect();
-        let hint = if stale_names.iter().any(|(_, c)| c.contains("multiprover")) {
-            "run `python3 scripts/generate-multiprover.py` and/or `python3 scripts/generate-full-stack.py`"
-        } else {
-            "run `python3 scripts/generate-full-stack.py`"
-        };
+        // Since the D6 archive (2026-10-20) every remaining lane file is
+        // hand-written, so regenerating is never the fix: the generators would
+        // write the archived corpus back. The lane's own gate is.
+        let hint = "re-check the hand-written lane files against the Coq change with the \
+                    lane's own gate (scripts/verify-smt.sh for SMT); do NOT run the \
+                    generate-*.py transpilers, whose output was archived under ruling D6";
         results.push(CheckResult {
             name: "Transpiler Staleness".into(),
             passed: false,

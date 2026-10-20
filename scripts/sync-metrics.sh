@@ -47,6 +47,17 @@ add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
 # Parse values from metrics.json (use head -1 where fields repeat across sections)
 QED=$(grep -oP '"qedActive":\s*\K\d+' "$METRICS_FILE" | head -1)
 QED_COMMA=$(add_commas "$QED")
+# The three Coq numbers public text may quote (mandate S2.7, ruling D6). The raw
+# total above is kept for internal-only rules; public files get these.
+read -r CORE_QED MODEL_QED EXCLUDED_QED PARAMETERS < <(python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))["proofs"]
+c = d["countingPolicy"]
+print(c["coreMechanizedQed"], c["modelMechanizedQedNonvacuous"], c["excludedQed"], d["parameters"])
+' "$METRICS_FILE")
+CORE_COMMA=$(add_commas "$CORE_QED")
+MODEL_COMMA=$(add_commas "$MODEL_QED")
+EXCLUDED_COMMA=$(add_commas "$EXCLUDED_QED")
 ADMITTED=$(grep -oP '"admitted":\s*\K\d+' "$METRICS_FILE" | head -1)
 AXIOMS=$(grep -oP '"axioms":\s*\K\d+' "$METRICS_FILE" | head -1)
 COQ_FILES_TOTAL=$(grep -oP '"filesTotal":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -116,7 +127,9 @@ ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); prin
 # lanes" count, which read as multi-prover verification. Since 2026-10-20
 # (ruling D6) the generated mirrors are archived and the other lanes hold only
 # hand-written artifacts, of which the REQ-67(a) SMT set is mechanized.
-BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) — Coq is the only fully mechanized lane | ${RUST_TESTS} Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)"
+# The Coq part quotes the three S2.7 numbers, never a raw total, and gives the
+# Parameter count next to "0 Axiom" (mandate section 5).
+BANNER="**Verification:** Coq ${CORE_COMMA} core Qed, ${MODEL_COMMA} model Qed, ${EXCLUDED_COMMA} excluded Qed (vacuous or test); 0 Admitted, ${AXIOMS} \`Axiom\`, ${PARAMETERS} \`Parameter\`s (trusted interface) — Coq is the only fully mechanized lane | ${RUST_TESTS} Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 
@@ -189,10 +202,8 @@ if [ -f "$README" ]; then
     if [ "$DRY_RUN" -eq 0 ]; then
         # Use awk for safe replacements (avoids sed ERE escaping bugs with \*\*)
         tmpfile=$(mktemp)
-        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" -v prover="$COQ_PROVER" '
+        awk -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" -v prover="$COQ_PROVER" '
         {
-            # Update comparison table: "Yes (N Coq + N Lean + N Isabelle)"
-            gsub(/Yes \([0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle\)/, "Yes (" qed " Coq + " lean " Lean + " isa " Isabelle)")
 
             # Primary-prover row: pin the toolchain label. This used to match
             # only a literal **Rocq 9.1.1** row, so once the row said another
@@ -201,12 +212,13 @@ if [ -f "$README" ]; then
                 sub(/[*][*](Coq|Rocq) [0-9.]+[*][*]/, "**" prover "**")
             }
 
-            # Every current-state Qed figure ("N Qed" / "N Coq Qed") tracks the
-            # live count; explicitly historical lines keep their numbers. This
-            # is the same rule audit-docs.sh enforces.
+            # The three labelled Coq numbers track the live counts; explicitly
+            # historical lines keep theirs. A raw "N Qed" total is not
+            # rewritten: audit-docs.sh rejects it on public files (S2.7).
             if ($0 !~ /at the tagged commit|at release|[Hh]istorical/) {
-                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Coq Qed/, qed " Coq Qed")
-                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Qed/, qed " Qed")
+                gsub(/[0-9][0-9,]* core Qed/, core " core Qed")
+                gsub(/[0-9][0-9,]* model Qed/, model " model Qed")
+                gsub(/[0-9][0-9,]* excluded Qed/, excluded " excluded Qed")
             }
 
             print
@@ -280,8 +292,9 @@ if [ -f "$CHANGELOG" ]; then
         # Update banner
         update_banner "$CHANGELOG"
 
-        # Update body metrics: "Active Coq build now at 7,682 Qed proofs"
-        sed -i -E "s|Active Coq build now at [0-9,]+ Qed proofs|Active Coq build now at ${QED_COMMA} Qed proofs|g" "$CHANGELOG"
+        # Release entries are history and keep their figures; only the banner
+        # tracks the live numbers. (A rule here used to rewrite "Active Coq
+        # build now at N Qed proofs" inside old entries.)
 
         echo "    [UPDATED] CHANGELOG.md"
     else
@@ -381,7 +394,7 @@ if [ -f "$INDEX_HTML" ]; then
         # active Coq Qed count. (The old updater rewrote a "proofs across N
         # independent provers" phrase the page no longer contains, so the Qed
         # figure went stale unnoticed.)
-        sed -i -E "s/[0-9]{1,2},[0-9]{3} Coq Qed/${QED_COMMA} Coq Qed/g" "$INDEX_HTML"
+        sed -i -E "s/[0-9][0-9,]* core Qed/${CORE_COMMA} core Qed/g; s/[0-9][0-9,]* model Qed/${MODEL_COMMA} model Qed/g; s/[0-9][0-9,]* excluded Qed/${EXCLUDED_COMMA} excluded Qed/g" "$INDEX_HTML"
 
         echo "    [UPDATED] website/index.html"
     else

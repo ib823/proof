@@ -1,6 +1,6 @@
 # RIINA for AI Assistants
 
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only fully mechanized lane | 3560 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,740 core Qed, 9,744 model Qed, 1,335 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3562 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 ## What is RIINA?
 

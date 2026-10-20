@@ -1,23 +1,23 @@
 # RIINA
 
-**形式化验证编程语言。**
+**核心模型经 Coq 验证的编程语言。**
 
-安全属性不是测试的，不是假设的——而是在编译时*数学证明*的。
+核心类型与效果规则已在 Coq 中针对语言模型得到证明；编译器则依照该模型进行测试。
 
 ---
 
 ## 什么是 RIINA？
 
-RIINA 是一种编程语言，其中**每一个安全保证都有机器检查的数学证明**。如果你的程序能编译通过，它就是安全的——不是靠惯例，不是靠最佳实践，而是靠证明。
+RIINA 是一种**核心模型经 Coq 验证**的编程语言。能够编译通过的程序，即通过了编译器所实现的类型与效果检查。Coq 是唯一完全机械化的证明通道；当前数据见 [README](../../README.md) 与 `website/public/metrics.json`。
 
-| RIINA 在编译时证明什么 | 如何实现 |
+| 语言模型中的属性 | 状态 |
 |---|---|
-| 安全级别间无信息泄露 | 非干扰定理 (Coq) |
-| 无未授权副作用执行 | 效果门代数 (Coq) |
-| 类型安全（无运行时类型错误） | 进展 + 保持定理 (Coq) |
-| 公开输出中无秘密数据 | 解密策略证明 (Coq) |
-| 所有纯计算终止 | 强归一化证明 (Coq) |
-| 无垃圾回收的内存安全 | 分离逻辑证明 (Coq) |
+| 安全级别间无信息泄露 | 非干扰性已在 Coq 中针对无引用、无递归的核心得到证明；超出该核心的部分由测试保障 |
+| 无未授权副作用执行 | 效果门代数与效果可靠性已在 Coq 模型中证明；编译器强制执行所声明的效果 |
+| 类型安全（无运行时类型错误） | 进展 + 保持定理 (Coq)；编译器的类型检查器依照该模型进行测试 |
+| 公开输出中无秘密数据 | 降密（解除保密）模型 (Coq)；编译器的对齐工作仍在进行中 |
+| 终止性（仅限无引用、无 `fix` 的核心） | 强归一化已在 Coq 中针对该核心证明 |
+| 无垃圾回收的内存安全 | 仅为分离逻辑模型 (Coq)——并非对所发布编译器的证明 |
 
 ---
 
@@ -31,17 +31,17 @@ cd riina/03_PROTO
 cargo build --release
 ```
 
-编译器二进制文件为 `riinac`。零外部依赖。
+编译器二进制文件为 `riinac`。所发布的编译器在运行时零外部依赖。开发与 CI 使用另外的工具：Rocq 工具链、`cc`、`wasmtime`、`z3`、模糊测试（fuzz）工具以及 NIST 测试向量。
 
 ### Hello World
 
 创建 `hello.rii`：
 
 ```riina
-fungsi utama() -> Teks kesan IO {
+fungsi utama() -> Teks kesan Tulis {
     biar mesej = "Selamat datang ke RIINA!";
-    cetakln(mesej);
-    pulang mesej;
+    cetak(mesej);          // 'cetak' 用于打印；其效果为 'Tulis'（写）
+    mesej                  // 末尾表达式即返回值（无需 'pulang;'）
 }
 ```
 
@@ -51,13 +51,13 @@ riinac run hello.rii      # 直接运行
 riinac build hello.rii    # 通过 C 编译为本地二进制文件
 ```
 
-### 安全示例
+### 安全示例（示意——预期模型）
 
 ```riina
 // RIINA 在编译时防止信息泄露
 
 fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Kripto {
-    // 'kad' 是 Rahsia（秘密）——编译器证明它永远不会到达公开输出
+    // 'kad' 在语言模型中是 Rahsia（秘密）；编译器/运行时的对齐工作仍在进行中
 
     biar hash = sha256(kad);           // 正确：对秘密数据进行加密操作
     biar resit = "Jumlah: " + ke_teks(jumlah);  // 正确：金额是公开的
@@ -68,6 +68,11 @@ fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Kripto
     pulang resit;                      // 正确：只返回公开数据
 }
 ```
+
+以上为预期模型的示意，并非可运行示例：所发布的编译器尚未支持其全部语法与内置函数。
+
+- **密码学仍属实验性：** RIINA 自研的密码库（`riina-core`）仍属实验性，未经审计——目前请勿用它保护真实的机密。尚未发布任何独立审计。
+- **按设计不支持浮点数：** 浮点字面量是编译错误（P0015）。精确的整数与定点运算使程序保持在证明所建模的范围之内。
 
 ---
 
@@ -85,8 +90,8 @@ RIINA 使用**马来语**关键字。以下是对照表：
 | `pulang` | 返回 | return | `pulang hasil;` |
 | `padan` | 匹配 | match | `padan nilai { ... }` |
 | `rahsia` | 秘密 | secret | `biar kunci: Rahsia<Teks>` |
-| `dedah` | 解密 | declassify | `dedah(nilai)` |
-| `kesan` | 效果 | effect | `kesan IO` |
+| `dedah` | 降密 | declassify | `dedah(nilai)` |
+| `kesan` | 效果 | effect | `kesan Tulis` |
 | `bersih` | 纯 | pure | `kesan Bersih` |
 | `betul` / `salah` | 真 / 假 | true / false | 布尔值 |
 

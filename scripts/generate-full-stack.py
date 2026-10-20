@@ -3849,6 +3849,16 @@ def process_directory(input_dir, base_out, prover, rel_prefix=''):
 
 
 def main():
+    # The corpora this script writes were archived out of main on 2026-10-20
+    # (owner ruling D6; preserved at commit fd23fbdb8). They were never
+    # evidence, and writing them back would re-inflate every count. Running it
+    # needs a deliberate override, for example to regenerate into a scratch
+    # checkout for comparison.
+    if os.environ.get('RIINA_REGENERATE_ARCHIVED_CORPUS') != '1':
+        print('refusing to run: the generated prover corpora were archived under '
+              'owner ruling D6 (2026-10-20). Set RIINA_REGENERATE_ARCHIVED_CORPUS=1 '
+              'only to regenerate outside main.', file=sys.stderr)
+        return 2
     parser = argparse.ArgumentParser(
         description='RIINA 10-Prover Full Stack Generator'
     )

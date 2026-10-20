@@ -126,7 +126,8 @@ we will credit you in our `CHANGELOG.md` and security advisories.
 
 ---
 
-*RIINA takes security seriously. Our formal-verification approach makes many classes of bug
-mathematically impossible within the proven fragment — but we remain vigilant about the components
-that fall outside our proof coverage, and we document those boundaries openly in
+*RIINA takes security seriously. The Coq proofs rule out several classes of bug in the language
+model, for the fragment they cover; the compiler is tested against that model, not proven to
+implement it. So we remain vigilant about everything outside that coverage, and we document those
+boundaries openly in
 [`04_SPECS/security/THREAT_MODEL.md`](04_SPECS/security/THREAT_MODEL.md).*

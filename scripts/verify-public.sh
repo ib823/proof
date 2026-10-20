@@ -68,24 +68,41 @@ else
 fi
 
 # ── 5. License consistency ────────────────────────────────────────────
+# One licence, stated the same way everywhere (mandate S4.3, ruling D5): the
+# custom RIINA licence text is LICENSE, so Cargo points at it with
+# `license-file` (a made-up SPDX name such as "Proprietary" is invalid), npm
+# manifests say "SEE LICENSE IN ../LICENSE", and every crate inherits it.
 echo "[5/9] Checking license consistency..."
 LICENSE_FAIL=0
+license_fail() {
+    echo -e "${RED}FAIL: $1${NC}"
+    FAIL=1
+    LICENSE_FAIL=1
+}
+if ! head -1 "$REPO_ROOT/LICENSE" 2>/dev/null | grep -q 'PROPRIETARY LICENSE'; then
+    license_fail "LICENSE is not the RIINA proprietary licence"
+fi
 for f in riina-vscode/package.json website/package.json; do
-    if [ -f "$REPO_ROOT/$f" ] && ! grep -q '"Proprietary"' "$REPO_ROOT/$f"; then
-        echo -e "${RED}FAIL: $f license is not Proprietary${NC}"
-        FAIL=1
-        LICENSE_FAIL=1
+    if [ -f "$REPO_ROOT/$f" ] && ! grep -q '"license": "SEE LICENSE IN ../LICENSE"' "$REPO_ROOT/$f"; then
+        license_fail "$f does not point at LICENSE"
     fi
 done
 for f in 03_PROTO/Cargo.toml 05_TOOLING/Cargo.toml; do
-    if [ -f "$REPO_ROOT/$f" ] && ! grep -q 'license = "Proprietary"' "$REPO_ROOT/$f"; then
-        echo -e "${RED}FAIL: $f license is not Proprietary${NC}"
-        FAIL=1
-        LICENSE_FAIL=1
+    if [ -f "$REPO_ROOT/$f" ] && ! grep -q '^license-file = "../LICENSE"' "$REPO_ROOT/$f"; then
+        license_fail "$f [workspace.package] does not set license-file = \"../LICENSE\""
     fi
 done
+while IFS= read -r f; do
+    case "$f" in 03_PROTO/Cargo.toml|05_TOOLING/Cargo.toml) continue ;; esac
+    if ! grep -q '^license-file.workspace = true' "$REPO_ROOT/$f"; then
+        license_fail "$f does not inherit the workspace licence file"
+    fi
+done < <(git -C "$REPO_ROOT" ls-files '03_PROTO/*Cargo.toml' '05_TOOLING/*Cargo.toml')
+if git -C "$REPO_ROOT" grep -q -E '^license = "Proprietary"' -- '*Cargo.toml'; then
+    license_fail "a Cargo.toml still uses the non-SPDX license = \"Proprietary\""
+fi
 if [ $LICENSE_FAIL -eq 0 ]; then
-    echo -e "${GREEN}[OK] All licenses Proprietary${NC}"
+    echo -e "${GREEN}[OK] Licence stated consistently (LICENSE, Cargo license-file, npm manifests)${NC}"
 fi
 
 # ── 6. Governance files exist ─────────────────────────────────────────

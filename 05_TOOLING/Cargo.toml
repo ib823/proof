@@ -31,7 +31,8 @@ exclude = [
 version = "0.4.0"
 edition = "2021"
 rust-version = "1.94.1"
-license = "Proprietary"
+# Custom terms: Cargo takes a licence file, not a made-up SPDX name.
+license-file = "../LICENSE"
 repository = "https://github.com/ib823/riina"
 authors = ["RIINA Team <security@riina.my>"]
 
