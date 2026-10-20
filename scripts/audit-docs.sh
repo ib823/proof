@@ -650,7 +650,7 @@ fi
 for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
                .cursorrules .clinerules website/index.html website/src/RiinaWebsite.jsx \
                docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md docs/i18n/README_zh.md \
-               PROOF_STATUS.md AXIOMS.md HEADLINE_THEOREMS.md \
+               PROOF_STATUS.md AXIOMS.md VERIFICATION_MANIFEST.md HEADLINE_THEOREMS.md \
                PROPERTY_LEDGER.md TRUSTED_BASE.md; do
     check_public_counts "$REPO_ROOT/$qed_doc"
 done
