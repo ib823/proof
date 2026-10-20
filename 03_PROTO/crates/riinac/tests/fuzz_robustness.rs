@@ -463,7 +463,7 @@ fn fuzz_tricky_seeds_no_panic() {
 #[test]
 fn parser_terminates_on_unclosed_generic() {
     // Regression for the infinite loop this harness found: `fungsi x<` (an
-    // unclosed generic-parameter `<`) spun `skip_type_argument_list` forever
+    // unclosed generic-parameter `<`) spun the generic-list skip forever
     // because the lexer repeats `Eof` rather than yielding `None`. Must now
     // return a ParseError promptly. (Minimized from a mutated GUARD_CLAUSES.rii.)
     for src in ["fungsi x<", "fungsi f < g", "fungsi uta<a() -> Nombor kesan Tulis {"] {

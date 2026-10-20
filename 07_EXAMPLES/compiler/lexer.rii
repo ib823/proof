@@ -83,7 +83,7 @@ enum TokenJenis {
     Salahan,          // Error token
 }
 
-struktur Token {
+struktur TokenLeks {
     jenis: TokenJenis,
     span: Span,
     teks: Teks,
@@ -106,7 +106,7 @@ struktur Lexer {
 //     pulang Lexer { sumber: sumber, pos: 0, panjang: panjang };
 // }
 //
-// fungsi Lexer::tokenize(&ubah ini) -> Vec<Token> kesan Ubah {
+// fungsi Lexer::tokenize(&ubah ini) -> Vec<TokenLeks> kesan Ubah {
 //     biar ubah tokens = Vec::baru();
 //     selagi ini.pos < ini.panjang {
 //         biar tok = ini.token_seterusnya();

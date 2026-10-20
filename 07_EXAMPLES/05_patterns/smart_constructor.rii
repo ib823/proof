@@ -96,6 +96,6 @@ fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Tulis {
     pulang betul;
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Tulis {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Tulis {
     pulang s;
 }

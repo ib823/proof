@@ -318,7 +318,22 @@ fn examples_root() -> std::path::PathBuf {
 /// crashed under `riinac run`; the other six reached the bad access only on
 /// paths `utama` does not execute. Rewriting them against real builtins is
 /// REQ-55 corpus work.
-const CORPUS_PASSING: usize = 84;
+///
+/// 2026-10-20: 84 -> 82 (type names, REQ-93(c)). An undeclared type name read
+/// as `Any`. It is now an error, `jenis N = T;` means `T`, and `Hasil<T, E>`
+/// is the sum `Jadi`/`Gagal` build. Examples whose declarations were wrong
+/// were corrected (the check was not weakened): 11 helpers in 10 examples
+/// used `T` without `<T>` (fixed the same way in 14 failing ones),
+/// `pdpa_data.rii` used an undeclared `RekodPersetujuan` for its
+/// `Persetujuan` record, `compiler/lexer.rii` declared a record named after
+/// the built-in `Token`, and `choreography_basic.rii` sent two undeclared
+/// message types. Two fail closed: `compiler/typechecker.rii` uses
+/// `TahapKeselamatan`, `Jenis` and `Kesan`, which only `compiler/types.rii`
+/// declares (types are local to their file), and `07_ai_patterns/
+/// state_machine.rii` returns two constructors of one variant type with
+/// different payloads, which the checker cannot join without variant types
+/// (it passed only while `Hasil` was `Any`).
+const CORPUS_PASSING: usize = 82;
 const CORPUS_TOTAL: usize = 172;
 
 #[test]

@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,601 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,615 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
@@ -59,7 +59,7 @@ sum counts across lanes: they count different things.
 - Compliance: 19 profiles, 606 heuristic rules in total — evidence toward a
   standard, not a conformity assessment or certification.
 - Audits: no independent audit has been published.
-- Examples: 172 .rii files, of which 84 currently pass `riinac check`; the
+- Examples: 172 .rii files, of which 82 currently pass `riinac check`; the
   shipped parser accepts a narrower grammar than some examples assume — see
   `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
   COMPILED: some builtins are still interpreter-only (REQ-70), and
@@ -235,7 +235,7 @@ riinac version  # Print the compiler version (also --version, -V)
 | `KwEffect` | `effect`, `kesan` | part |
 | `KwElse` | `else`, `lain` | part |
 | `KwEnd` | `end`, `tamat` | part |
-| `KwEnum` | `enum`, `pilihan` | skipped |
+| `KwEnum` | `enum`, `pilihan` | construct |
 | `KwErr` | `Err`, `Gagal`, `Ralat` | construct |
 | `KwExpect` | `expect`, `jangkakan` | construct |
 | `KwExtern` | `extern`, `luaran` | construct |
@@ -310,7 +310,7 @@ riinac version  # Print the compiler version (also --version, -V)
 | `KwSpeculationSafe` | `speculation_safe`, `selamat_spekulasi` | reserved |
 | `KwState` | `state`, `keadaan` | part |
 | `KwStatic` | `static`, `statik` | reserved |
-| `KwStruct` | `struct`, `bentuk`, `struktur` | skipped |
+| `KwStruct` | `struct`, `bentuk`, `struktur` | construct |
 | `KwStyle` | `style`, `gaya` | construct |
 | `KwSukuk` | `sukuk` | reserved |
 | `KwSuper` | `super`, `induk` | reserved |
@@ -321,7 +321,7 @@ riinac version  # Print the compiler version (also --version, -V)
 | `KwText_` | `text`, `tulisan` | construct |
 | `KwToken` | `token` | construct |
 | `KwTrait` | `trait`, `sifat` | reserved |
-| `KwType` | `type`, `jenis` | skipped |
+| `KwType` | `type`, `jenis` | construct |
 | `KwUnion` | `union`, `kesatuan` | reserved |
 | `KwUnsafe` | `unsafe`, `bahaya` | reserved |
 | `KwUse` | `use`, `guna` | construct |
@@ -351,11 +351,12 @@ riinac version  # Print the compiler version (also --version, -V)
 | Wang | `Wang`, `Money`, `TitikTetap` |
 | Qmn | `Qmn`, `BinaryFixed` |
 | Bool | `Bool`, `Benar` |
-| Unit | `Unit` |
+| Unit | `Unit`, `Kosong` |
 | String | `String`, `Teks` |
 | Bytes | `Bytes`, `Bait` |
 | List | `List`, `Senarai` |
 | Option | `Option`, `Mungkin` |
+| Result | `Result`, `Hasil` |
 | Secret | `Secret`, `Rahsia` |
 | Proof | `Proof`, `Bukti` |
 | ConstantTime | `ConstantTime`, `MasaTetap` |

@@ -951,6 +951,29 @@ fungsi rahsia_dalaman(x: Nombor) -> Nombor kesan Bersih { x * 99 }
         }
     }
 
+    /// Types are local to the file that declares them: `guna` imports
+    /// functions only, so a type from another module is an unknown type (it
+    /// used to read as `Any`, like every unknown name; REQ-93(c)).
+    #[test]
+    fn a_type_is_not_imported_across_a_module_boundary() {
+        let sb = Sandbox::new("types");
+        sb.write(
+            "ukuran.rii",
+            "jenis Umur = Nombor;\nawam fungsi sifar() -> Umur kesan Bersih { 0 }\n",
+        );
+        let main = sb.write(
+            "main.rii",
+            "guna ukuran;\nfungsi utama() -> Umur kesan Bersih { ukuran::sifar() }\n",
+        );
+        match resolve_err(&sb, &main) {
+            ResolveErrorKind::Parse { module, detail } => {
+                assert_eq!(module, "main");
+                assert!(detail.contains("unknown type `Umur`"), "{detail}");
+            }
+            other => panic!("wrong kind: {other:?}"),
+        }
+    }
+
     /// A transitively-loaded module IS in the linked program — it has to be,
     /// for its importer — but it is not silently in scope.
     #[test]

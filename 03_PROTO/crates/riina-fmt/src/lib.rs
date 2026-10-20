@@ -39,6 +39,9 @@ impl Default for FmtConfig {
 ///   actor/UI code replaced by a `/* … */` placeholder);
 /// * the source contains comments, which the AST does not carry and the
 ///   output would silently drop;
+/// * the source declares types (`jenis`, `bentuk`, `pilihan`), which the AST
+///   does not carry either: an alias is replaced by its type where it is used
+///   and its declaration would be dropped (REQ-93(c));
 /// * formatting does not reach a fixpoint (formatting the output again must
 ///   give the output back).
 pub fn format_source(source: &str) -> Result<String, String> {
@@ -46,6 +49,11 @@ pub fn format_source(source: &str) -> Result<String, String> {
     if has_comments(source) {
         return Err("refusing to format: the file contains comments, which the formatter \
                     cannot yet preserve (it would delete them)"
+            .to_string());
+    }
+    if declares_types(source) {
+        return Err("refusing to format: the file declares types (`jenis`, `bentuk`, \
+                    `pilihan`), which the formatter cannot yet print (it would delete them)"
             .to_string());
     }
     let cfg = FmtConfig::default();
@@ -130,6 +138,32 @@ fn has_comments(source: &str) -> bool {
     source
         .get(covered_to..)
         .is_none_or(|rest| rest.chars().any(|c| !c.is_whitespace()))
+}
+
+/// Whether `source` declares a type: `jenis`, `bentuk` or `pilihan` followed
+/// by a name, as the parser's pre-scan reads it (`jenis` alone is also a
+/// variable name).
+fn declares_types(source: &str) -> bool {
+    use riina_lexer::TokenKind;
+    let mut lexer = riina_lexer::Lexer::new(source);
+    let mut after_keyword = false;
+    loop {
+        match lexer.next_token() {
+            Ok(tok) if tok.kind == TokenKind::Eof => return false,
+            Ok(tok) => {
+                if after_keyword && matches!(tok.kind, TokenKind::Identifier(_)) {
+                    return true;
+                }
+                after_keyword = matches!(
+                    tok.kind,
+                    TokenKind::KwType | TokenKind::KwStruct | TokenKind::KwEnum
+                );
+            }
+            // The parser accepted the source, so this is unreachable; treat it
+            // as "cannot prove there is no declaration".
+            Err(_) => return true,
+        }
+    }
 }
 
 /// Render a type to its RIINA (Bahasa Melayu) surface form — e.g. `Ty::String`
@@ -1433,6 +1467,22 @@ mod tests {
         assert!(out.contains("biar x: Nombor = 5;"), "{out}");
         assert!(out.contains("-> Nombor { y }"), "{out}");
         assert_eq!(format_source(&out).expect("fixpoint"), out);
+    }
+
+    /// Type declarations are refused: the AST does not carry them, so the
+    /// alias below would be printed as `Nombor` and its declaration deleted.
+    /// (Before REQ-93(c) the uses printed as `Any` instead.)
+    #[test]
+    fn type_declarations_are_refused() {
+        for src in [
+            "jenis Umur = Nombor;\nfungsi f(x: Umur) -> Umur kesan Bersih { x }\n",
+            "bentuk Titik { x: Nombor }\nfungsi f(p: Titik) -> Nombor kesan Bersih { 1 }\n",
+        ] {
+            let err = format_source(src).expect_err(src);
+            assert!(err.contains("declares types"), "{src}: {err}");
+        }
+        // `jenis` as a variable name is not a declaration.
+        assert!(format_source("fungsi f(jenis: Nombor) -> Nombor { jenis }").is_ok());
     }
 
     /// Constructs the printer cannot reproduce are refused. The CAHAYA block

@@ -114,16 +114,16 @@ fungsi sama_kategori(a: KategoriData, b: KategoriData) -> Benar kesan Bersih {
 }
 
 fungsi buang_persetujuan_pdpa(
-    senarai: Senarai<RekodPersetujuan>,
+    senarai: Senarai<Persetujuan>,
     pengguna_id: Teks,
     kategori_data: KategoriData,
     idx: Nombor
-) -> Senarai<RekodPersetujuan> kesan Bersih {
+) -> Senarai<Persetujuan> kesan Bersih {
     /// Penarikan balik MEMBINA SENARAI BARU (gaya ungkapan, tiada mutasi)
     kalau idx >= senarai_panjang(senarai) {
         pulang [];
     }
-    biar persetujuan: RekodPersetujuan = senarai[idx];
+    biar persetujuan: Persetujuan = senarai[idx];
     biar baki = buang_persetujuan_pdpa(senarai, pengguna_id, kategori_data, idx + 1);
     kalau persetujuan.pengguna_id == pengguna_id && sama_kategori(persetujuan.kategori_data, kategori_data) {
         baki
@@ -133,10 +133,10 @@ fungsi buang_persetujuan_pdpa(
 }
 
 fungsi tarik_balik_persetujuan(
-    senarai: Senarai<RekodPersetujuan>,
+    senarai: Senarai<Persetujuan>,
     pengguna_id: Teks,
     kategori_data: KategoriData
-) -> Senarai<RekodPersetujuan> kesan Tulis {
+) -> Senarai<Persetujuan> kesan Tulis {
     cetak_baris("Persetujuan ditarik balik untuk " + pengguna_id);
     buang_persetujuan_pdpa(senarai, pengguna_id, kategori_data, 0)
 }
@@ -263,7 +263,7 @@ awam fungsi utama() -> kesan (Tulis, SistemFail, Masa) {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }
 

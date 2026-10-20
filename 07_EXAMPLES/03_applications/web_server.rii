@@ -139,6 +139,6 @@ fungsi split_ruang(teks: Teks) -> Senarai<Teks> kesan Bersih {
     pulang teks::pecah_oleh(teks, " ");
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang senarai::panjang(senarai);
 }

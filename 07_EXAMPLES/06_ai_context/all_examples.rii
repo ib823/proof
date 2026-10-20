@@ -7702,7 +7702,7 @@ awam fungsi utama() -> kesan Tulis {
 }
 
 // Helper functions
-fungsi panjang_senarai(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang_senarai<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -8323,7 +8323,7 @@ fungsi kategorikan_jabatan(jabatan: Teks) -> Teks kesan Bersih {
     }
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -8567,7 +8567,7 @@ awam fungsi utama() -> kesan Tulis {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -8887,11 +8887,11 @@ awam fungsi utama() -> kesan Rangkaian {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
-fungsi buang_kepala(senarai: Senarai<T>, jumlah: Nombor) -> Senarai<T> kesan Bersih {
+fungsi buang_kepala<T>(senarai: Senarai<T>, jumlah: Nombor) -> Senarai<T> kesan Bersih {
     pulang [];
 }
 
@@ -9166,11 +9166,11 @@ fungsi saring_kunci(senarai: Senarai<EntriKV>, kunci_buang: Teks) -> Senarai<Ent
     pulang hasil;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
-fungsi taraf_kunci(mungkin: Mungkin<T>) -> Teks kesan Bersih {
+fungsi taraf_kunci<T>(mungkin: Mungkin<T>) -> Teks kesan Bersih {
     padan mungkin {
         Ada(_) => "Ada",
         Tiada => "Tiada",
@@ -9715,7 +9715,7 @@ fungsi ada_simbol(teks: Teks) -> Benar kesan Bersih {
     pulang betul;
 }
 
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -9956,7 +9956,7 @@ awam fungsi utama() -> kesan SistemFail {
 }
 
 // Helper functions
-fungsi tunda_kepala(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
+fungsi tunda_kepala<T>(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
     kalau panjang(senarai) > 1 {
         biar hasil = [];
         untuk i dari 1 hingga panjang(senarai) {
@@ -9968,7 +9968,7 @@ fungsi tunda_kepala(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
     }
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -10539,7 +10539,7 @@ fungsi saring_pengguna(senarai: Senarai<RekodSesi>, pengguna_id: Teks) -> Senara
     pulang hasil;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -10925,7 +10925,7 @@ fungsi split_ruang(teks: Teks) -> Senarai<Teks> kesan Bersih {
     pulang teks::pecah_oleh(teks, " ");
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang senarai::panjang(senarai);
 }
 
@@ -11156,7 +11156,7 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -11418,7 +11418,7 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -11637,7 +11637,7 @@ fungsi teks::mengandungi(senarai: Senarai<Teks>, item: Teks) -> Benar kesan Bers
     pulang betul;
 }
 
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -11863,7 +11863,7 @@ awam fungsi utama() -> kesan Bersih {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -12118,7 +12118,7 @@ fungsi format_catatan_audit_csv(catatan: Senarai<CatatanAudit>) -> Teks kesan Be
     pulang "";
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -12347,7 +12347,7 @@ awam fungsi utama() -> kesan Bersih {
 }
 
 // Helper functions
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -12580,7 +12580,7 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Bersih {
     pulang s;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -12818,7 +12818,7 @@ awam fungsi utama() -> kesan (Kripto | Bersih) {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -13089,7 +13089,7 @@ awam fungsi utama() -> kesan (Bersih | SistemFail) {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -13365,11 +13365,11 @@ fungsi hitung_hash_catatan(catatan: CatatanTransaksi) -> Teks kesan Bersih {
     pulang "hash_" + catatan.id_transaksi;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -13547,7 +13547,7 @@ modul teks {
     }
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -13625,15 +13625,15 @@ awam fungsi utama() -> kesan Bersih {
     cetak_baris(format!("Selepas buat semula: {}", nilai_semasa));
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
-fungsi buang_akhir(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
+fungsi buang_akhir<T>(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
     pulang [];
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -13754,7 +13754,7 @@ awam fungsi utama() -> kesan Bersih {
     };
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -13943,7 +13943,7 @@ modul teks {
     }
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -14208,7 +14208,7 @@ awam fungsi utama() -> kesan Bersih {
     repo.padam("1");
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -14222,7 +14222,7 @@ fungsi saring(senarai: Senarai<Pengguna>, id_buang: Teks) -> Senarai<Pengguna> k
     pulang hasil;
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -14325,7 +14325,7 @@ fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Bersih {
     pulang betul;
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }
 
@@ -14574,7 +14574,7 @@ awam fungsi utama() -> kesan Bersih {
     cetak_baris(format!("Nilai: {}", hasil));
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }
 

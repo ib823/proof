@@ -82,7 +82,7 @@ awam fungsi utama() -> kesan Bersih {
     repo.padam("1");
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
@@ -96,6 +96,6 @@ fungsi saring(senarai: Senarai<Pengguna>, id_buang: Teks) -> Senarai<Pengguna> k
     pulang hasil;
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }

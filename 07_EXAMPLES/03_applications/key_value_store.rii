@@ -264,11 +264,11 @@ fungsi saring_kunci(senarai: Senarai<EntriKV>, kunci_buang: Teks) -> Senarai<Ent
     pulang hasil;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 
-fungsi taraf_kunci(mungkin: Mungkin<T>) -> Teks kesan Bersih {
+fungsi taraf_kunci<T>(mungkin: Mungkin<T>) -> Teks kesan Bersih {
     padan mungkin {
         Ada(_) => "Ada",
         Tiada => "Tiada",

@@ -6,11 +6,13 @@ This directory contains 172 `.rii` example files across 20 category directories.
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **84 of the 172 examples pass
-`riinac check`** end-to-end (re-measured 2026-10-19; 19 of the 28 in `00_basics/`), and closing the
+of the examples assume. As of this writing, **82 of the 172 examples pass
+`riinac check`** end-to-end (re-measured 2026-10-20; 19 of the 28 in `00_basics/`), and closing the
 remaining gap is active work (`RIINA_MASTER_PLAN.md` REQ-55). The 2026-10-19 drop from 98 is
 honest: 14 examples call methods on lists and strings (`senarai.panjang()`, `xs.peta(f)`) —
-RIINA has no methods — and used to pass `check` only to fail when run (REQ-93).
+RIINA has no methods — and used to pass `check` only to fail when run (REQ-93). So is the
+2026-10-20 drop from 84: an undeclared type name used to read as `Any`, and two examples
+relied on it (REQ-93(c); `riinac/tests/end_to_end.rs` names them).
 
 Separately, passing `riinac check` does **not** imply the example can be
 compiled: some builtins run only on the interpreter, and `riinac build` refuses
@@ -54,9 +56,14 @@ Recently added grammar support:
   counting loop stays `kesan Bersih`. See
   [docs/guide/MUTABLE_STATE.md](../docs/guide/MUTABLE_STATE.md).
 - **`!` as logical-not** on booleans (in addition to its deref meaning on refs).
-- **Top-level `jenis` declarations** — record (`jenis Name { ... }`), generic
-  (`jenis Name<T> { ... }`), alias (`jenis Name = T;`), and marker (`jenis Name`)
-  forms parse (no nominal-type semantics yet; skipped like `bentuk`/`pilihan`).
+- **Type names are checked.** A type must be built in, declared in the same
+  file, or a generic parameter of the function (`fungsi f<T>(x: T)`); anything
+  else is error P0020, with the nearest known name. `jenis Name = T;` is an
+  alias for `T` (declare it above its first use). Record and variant types
+  (`jenis Name { ... }`, `jenis Name<T> { ... }`, `bentuk`, `pilihan`) and
+  markers (`jenis Name`) declare a name, but the checker has no record or
+  variant types yet, so the name reads as `Any`. Types are not imported by
+  `guna`. Until 2026-10-20 every unknown name, typos included, read as `Any`.
 
 Still **not** accepted (the remaining Gate B work):
 

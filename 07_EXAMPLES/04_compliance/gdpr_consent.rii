@@ -205,7 +205,7 @@ awam fungsi utama() -> kesan (Tulis, Masa) {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 

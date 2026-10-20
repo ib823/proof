@@ -54,6 +54,6 @@ awam fungsi utama() -> kesan Tulis {
     cetak_baris(format!("Nilai: {}", hasil));
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Tulis {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Tulis {
     pulang s;
 }

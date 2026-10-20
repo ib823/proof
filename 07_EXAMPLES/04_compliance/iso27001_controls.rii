@@ -218,6 +218,6 @@ awam fungsi utama() -> kesan Tulis {
 }
 
 // Helper functions
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Tulis {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Tulis {
     pulang s;
 }
