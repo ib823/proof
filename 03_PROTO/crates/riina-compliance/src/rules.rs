@@ -80,6 +80,23 @@ pub fn rules_for_profiles(profiles: &[ComplianceProfile]) -> Vec<ComplianceRule>
 // Helper functions
 // ===========================================================================
 
+
+/// A `Let`'s name, bound value and body, looking through a type annotation on
+/// the value: `biar x: T = e` is `Let(x, _, Ascribe(e, T), _)`, and a rule
+/// about the bound value is about `e`. Without this, annotating a binding hid
+/// it from every such rule (`biar kata_laluan: Teks = "rahsia123"` escaped the
+/// hardcoded-credential check).
+fn let_binding(expr: &Expr) -> Option<(&str, &Expr, &Expr)> {
+    let Expr::Let(name, _, value, body) = expr else {
+        return None;
+    };
+    let value = match value.as_ref() {
+        Expr::Ascribe(inner, _) => inner.as_ref(),
+        v => v,
+    };
+    Some((name.as_str(), value, body.as_ref()))
+}
+
 /// Check if a name (lowercased) contains any of the given keywords.
 fn name_matches(name: &str, keywords: &[String]) -> bool {
     let lower = name.to_lowercase();
@@ -139,6 +156,7 @@ fn any_child(expr: &Expr, f: &mut dyn FnMut(&Expr) -> bool) -> bool {
         | Expr::ContentHash(e)
         | Expr::ContractDeploy(e)
         | Expr::SlotSet(_, e)
+        | Expr::Ascribe(e, _)
         | Expr::ZakatCalculate(e) => f(e),
 
         // Two sub-expressions.
@@ -259,8 +277,8 @@ fn sensitive_let_rule(
         profile,
         description,
         check: Box::new(move |expr| {
-            if let Expr::Let(name, _, value, _) = expr {
-                if name_matches(name, &kw) && !matches!(value.as_ref(), Expr::Classify(_)) {
+            if let Some((name, value, _)) = let_binding(expr) {
+                if name_matches(name, &kw) && !matches!(value, Expr::Classify(_)) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
@@ -288,8 +306,8 @@ fn hardcoded_credential_rule(
         profile,
         description,
         check: Box::new(move |expr| {
-            if let Expr::Let(name, _, value, _) = expr {
-                if name_matches(name, &kw) && matches!(value.as_ref(), Expr::String(_)) {
+            if let Some((name, value, _)) = let_binding(expr) {
+                if name_matches(name, &kw) && matches!(value, Expr::String(_)) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
@@ -461,7 +479,7 @@ fn audit_trail_rule(
         profile,
         description,
         check: Box::new(move |expr| {
-            if let Expr::Let(_, _, value, body) = expr {
+            if let Some((_, value, body)) = let_binding(expr) {
                 if contains_security_op(value) && !contains_effect(body, Effect::Write) {
                     return Some(ComplianceViolation {
                         rule_id: id,
@@ -631,7 +649,7 @@ fn tainted_input_rule(
         profile,
         description,
         check: Box::new(move |expr| {
-            if let Expr::Let(name, _, value, _) = expr {
+            if let Some((name, value, _)) = let_binding(expr) {
                 if name_matches(name, &kw) && !is_tainted_expr(value) {
                     return Some(ComplianceViolation {
                         rule_id: id,
@@ -786,8 +804,8 @@ fn insecure_default_rule(
         profile,
         description,
         check: Box::new(move |expr| {
-            if let Expr::Let(name, _, value, _) = expr {
-                if name_matches(name, &kw) && matches!(value.as_ref(), Expr::Bool(false)) {
+            if let Some((name, value, _)) = let_binding(expr) {
+                if name_matches(name, &kw) && matches!(value, Expr::Bool(false)) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
@@ -875,8 +893,8 @@ fn classify_without_audit_rule(
         profile,
         description,
         check: Box::new(move |expr| {
-            if let Expr::Let(_, _, value, body) = expr {
-                if matches!(value.as_ref(), Expr::Classify(_))
+            if let Some((_, value, body)) = let_binding(expr) {
+                if matches!(value, Expr::Classify(_))
                     && !contains_effect(body, Effect::Write)
                 {
                     return Some(ComplianceViolation {
@@ -955,10 +973,10 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             profile: ComplianceProfile::PciDss,
             description: "Card data variables must use Secret<_> type",
             check: Box::new(|expr| {
-                if let Expr::Let(name, _, value, _) = expr {
+                if let Some((name, value, _)) = let_binding(expr) {
                     let lower = name.to_lowercase();
                     if (lower.contains("card") || lower.contains("pan") || lower.contains("cvv"))
-                        && !matches!(value.as_ref(), Expr::Classify(_))
+                        && !matches!(value, Expr::Classify(_))
                     {
                         return Some(ComplianceViolation {
                             rule_id: "PCI-DSS-6.5",
@@ -2103,7 +2121,7 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             profile: ComplianceProfile::Pdpa,
             description: "User input must be Tainted<_, UserInput>",
             check: Box::new(|expr| {
-                if let Expr::Let(name, _, value, _) = expr {
+                if let Some((name, value, _)) = let_binding(expr) {
                     let lower = name.to_lowercase();
                     if (lower.contains("user_input") || lower.contains("personal_data"))
                         && !is_tainted_expr(value)
@@ -4025,8 +4043,8 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             profile: ComplianceProfile::Do178c,
             description: "Dead code detection: Unit in non-terminal Let value",
             check: Box::new(|expr| {
-                if let Expr::Let(name, _, value, body) = expr {
-                    if matches!(value.as_ref(), Expr::Unit) && !matches!(body.as_ref(), Expr::Unit)
+                if let Some((name, value, body)) = let_binding(expr) {
+                    if matches!(value, Expr::Unit) && !matches!(body, Expr::Unit)
                     {
                         return Some(ComplianceViolation {
                             rule_id: "DO178C-6.3.2",

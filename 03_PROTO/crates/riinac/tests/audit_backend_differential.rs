@@ -381,10 +381,12 @@ fn unicode_string_builtins_agree() {
 
 #[test]
 fn every_c_runtime_allocation_is_checked() {
-    // Pull in the conditional runtimes too (bigint, case mapping, NFC).
+    // Pull in the conditional runtimes too (bigint, case mapping, NFC). The
+    // bigint operands are `besar("…")`: a bare `99999999999999999999999` has no
+    // 64-bit value, and until REQ-97's literal fix it silently became `0`.
     let src = r#"
 fungsi utama() -> Kosong kesan Tulis {
-    cetakln(ke_teks(99999999999999999999999 * 99999999999999999999999));
+    cetakln(ke_teks(besar("99999999999999999999999") * besar("99999999999999999999999")));
     cetakln(teks_huruf_besar("a"));
     cetakln(nfc("é"));
 }

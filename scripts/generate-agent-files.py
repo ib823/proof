@@ -8,11 +8,14 @@ never edited by hand. A template is the file's text with placeholders:
   {{name}}                 a value from metrics.json, VERSION or the sources below
   {{include:_part.md}}     another file from 04_SPECS/agent_files/
   {{kw:fungsi|fn, ...}}    keyword pairs, rendered as written but checked against
-                           the lexer: both spellings must lex to the same token
+                           the lexer: both spellings must lex to the same token,
+                           and the token must mean something (kind `construct`
+                           or `part` in docs/spec/CORE_MAPPING.md)
   {{kwp:fungsi (fn), ...}} the same, written "malay (english)"
   {{ty:Nombor (Int), ...}} type names, checked against the parser's type table
   {{effects_order}} {{effects_list}} {{levels_order}} {{cli}}
   {{keyword_table}} {{type_table}}          generated from the compiler sources
+  {{reserved_keywords}}    the keywords docs/spec/CORE_MAPPING.md marks reserved
   {{file:docs/api/STDLIB.md}}               a generated file, inlined
 
 Sources: VERSION; website/public/metrics.json; the lexer, parser and type
@@ -85,6 +88,24 @@ def keyword_table():
     if not table:
         raise GenError("no keywords found in riina-lexer/src/lexer.rs")
     return table
+
+
+def keyword_kinds():
+    """{token: (kind, [spellings as the page orders them])} from the keyword
+    table of docs/spec/CORE_MAPPING.md, which core_mapping.rs holds to the
+    lexer and the parser."""
+    kinds = {}
+    for line in read("docs/spec/CORE_MAPPING.md").splitlines():
+        m = re.match(r"\| `(Kw\w+)` \| ([^|]*) \| (\w+) \|", line)
+        if m:
+            kinds[m.group(1)] = (m.group(3), re.findall(r"`([^`]+)`", m.group(2)))
+    if not kinds:
+        raise GenError("no keyword rows in docs/spec/CORE_MAPPING.md")
+    return kinds
+
+
+def reserved_keywords():
+    return ", ".join(f"`{sp[0]}`" for kind, sp in keyword_kinds().values() if kind == "reserved")
 
 
 def type_arms():
@@ -183,6 +204,7 @@ def context():
 # --------------------------------------------------------------------------
 def check_keywords(text, style):
     table = keyword_table()
+    kinds = keyword_kinds()
     token_of = {s: tok for tok, spellings in table.items() for s in spellings}
     pat = r"([a-z_]+)\|([a-z_]+)" if style == "pipe" else r"([a-z_]+) \(([a-z_-]+)\)"
     pairs = re.findall(pat, text)
@@ -199,6 +221,10 @@ def check_keywords(text, style):
             raise GenError(f"`{a}` and `{b}` lex to different tokens ({ta}, {tb})")
         if tb is None and style == "pipe":
             raise GenError(f"`{b}` is not a keyword the lexer knows (paired with `{a}`)")
+        kind = kinds.get(ta, ("unmapped",))[0]
+        if kind not in ("construct", "part"):
+            raise GenError(f"`{a}` is a `{kind}` keyword in docs/spec/CORE_MAPPING.md: it has no "
+                           "meaning, so an agent file must not list it as usable")
     return text
 
 
@@ -231,9 +257,11 @@ def cli():
 
 
 def keyword_table_md():
-    rows = ["| Token | Spellings |", "|---|---|"]
+    kinds = keyword_kinds()
+    rows = ["| Token | Spellings | Kind |", "|---|---|---|"]
     for tok, spellings in sorted(keyword_table().items()):
-        rows.append(f"| `{tok}` | {', '.join(f'`{s}`' for s in dict.fromkeys(spellings))} |")
+        kind = kinds.get(tok, ("unmapped",))[0]
+        rows.append(f"| `{tok}` | {', '.join(f'`{s}`' for s in dict.fromkeys(spellings))} | {kind} |")
     return "\n".join(rows)
 
 
@@ -266,7 +294,8 @@ def render(template_name, ctx, depth=0):
             return check_types(arg)
         generated = {"effects_order": effects_order, "effects_list": effects_list,
                      "levels_order": levels_order, "cli": cli,
-                     "keyword_table": keyword_table_md, "type_table": type_table_md}
+                     "keyword_table": keyword_table_md, "type_table": type_table_md,
+                     "reserved_keywords": reserved_keywords}
         if key in generated and arg is None:
             return generated[key]()
         if key in ctx and arg is None:

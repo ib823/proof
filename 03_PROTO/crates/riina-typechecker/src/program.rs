@@ -225,6 +225,9 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
             callable: None,
         },
         Expr::Break | Expr::Continue => ExprSummary::default(),
+        // An annotation is its expression at run time: same effects, and the
+        // same callable when it annotates a function value.
+        Expr::Ascribe(inner, _) => summarize_expr(inner, env),
         Expr::SlotGet(_) => ExprSummary::default(),
         Expr::SlotSet(_, value) => ExprSummary {
             exec: summarize_expr(value, env).exec,

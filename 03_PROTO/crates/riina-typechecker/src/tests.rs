@@ -56,6 +56,66 @@ mod tests {
 
     // ── Functions ──
 
+    // ── Annotations (`biar x: T = e`, a lambda's `-> T`): REQ-97 ──
+
+    fn ascribe(e: Expr, t: Ty) -> Expr {
+        Expr::Ascribe(Box::new(e), t)
+    }
+
+    #[test]
+    fn an_annotation_must_fit_its_value() {
+        let ctx = Context::new();
+        // biar x: Teks = 5  — used to run and print 5.
+        match type_check(&ctx, &ascribe(Expr::Int(5), Ty::String)) {
+            Err(TypeError::AnnotationMismatch { expected, found }) => {
+                assert_eq!((expected, found), (Ty::String, Ty::Int));
+            }
+            other => panic!("expected AnnotationMismatch, got {other:?}"),
+        }
+        assert_eq!(
+            type_check(&ctx, &ascribe(Expr::Int(5), Ty::Int)).unwrap(),
+            (Ty::Int, EffectSet::PURE)
+        );
+    }
+
+    #[test]
+    fn an_annotation_cannot_declassify() {
+        // biar x: Teks = sulit "pin" — a secret is not plain text.
+        let secret = Expr::Classify(Box::new(Expr::String("pin".into())));
+        let err = type_check(&Context::new(), &ascribe(secret, Ty::String)).unwrap_err();
+        assert!(matches!(err, TypeError::AnnotationMismatch { .. }), "{err:?}");
+    }
+
+    #[test]
+    fn an_annotation_gives_its_type_but_any_never_weakens() {
+        let ctx = Context::new().extend("v".into(), Ty::Any);
+        // An `Any` value annotated `Nombor` is a `Nombor` from then on…
+        let (t, _) = type_check(&ctx, &ascribe(Expr::Var("v".into()), Ty::Int)).unwrap();
+        assert_eq!(t, Ty::Int);
+        // …but an annotation that contains `Any` keeps the value's own type.
+        let (t, _) = type_check(&ctx, &ascribe(Expr::Int(1), Ty::Any)).unwrap();
+        assert_eq!(t, Ty::Int);
+    }
+
+    #[test]
+    fn an_annotated_lambda_checks_its_body_and_every_return() {
+        let ctx = Context::new();
+        // fungsi(x: Nombor) -> Teks { x }
+        let lam = |body: Expr| Expr::Lam("x".into(), Ty::Int, Box::new(ascribe(body, Ty::String)));
+        let err = type_check(&ctx, &lam(Expr::Var("x".into()))).unwrap_err();
+        assert!(matches!(err, TypeError::AnnotationMismatch { .. }), "{err:?}");
+        // fungsi(x: Nombor) -> Teks { pulang x; "a" }
+        let early = Expr::Let(
+            "_".into(),
+            None,
+            Box::new(Expr::Return(Box::new(Expr::Var("x".into())))),
+            Box::new(Expr::String("a".into())),
+        );
+        assert!(type_check(&ctx, &lam(early)).is_err(), "a `pulang` must fit the annotation too");
+        let (t, _) = type_check(&ctx, &lam(Expr::String("a".into()))).unwrap();
+        assert!(matches!(t, Ty::Fn(_, ref r, _) if **r == Ty::String), "{t:?}");
+    }
+
     #[test]
     fn test_lam_app() {
         let ctx = Context::new();

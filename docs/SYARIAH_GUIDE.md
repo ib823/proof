@@ -14,8 +14,8 @@ Every `riina` block below is checked by the test suite
 
 ## What exists
 
-**`zakat`** is a builtin: `zakat(x)` is 2.5% of `x`, rounded down to a whole
-number. The nisab threshold is yours to apply:
+**`zakat`** is a keyword form: `zakat(x)` is 2.5% of `x`, rounded down to a
+whole number. The nisab threshold is yours to apply:
 
 ```riina
 fungsi kira_zakat(harta: Nombor, nisab: Nombor) -> Nombor kesan Bersih {
@@ -34,14 +34,17 @@ profit-sharing or cost-plus calculation needs. See
 
 | Keyword | Meaning | Status |
 |---------|---------|--------|
-| `zakat` | Obligatory charity | Builtin, as above |
+| `zakat` | Obligatory charity | Works, as above |
+| `patuh_syariah` | Syariah-compliant | A type, `patuh_syariah<T>`, distinct from `T`. No expression produces a value of it, and no rule says what it guarantees |
 | `sukuk` | Islamic bond | Reserved: no semantics yet |
 | `mudarabah` | Profit-sharing partnership | Reserved: no semantics yet |
 | `musharakah` | Joint venture | Reserved: no semantics yet |
+| `takaful` | Islamic insurance | Reserved: no semantics yet |
 | `wakaf` | Endowment | Reserved: no semantics yet |
+| `tathir` | Purification | Reserved: no semantics yet |
 
-A reserved keyword cannot be used as a name, and the compiler gives it no
-meaning. The language surface is frozen (REQ-108), so giving these meaning is
+A reserved keyword has no meaning: any use of it is a parse error. Every
+keyword's status is in [docs/spec/CORE_MAPPING.md](spec/CORE_MAPPING.md). The language surface is frozen (REQ-108), so giving these meaning is
 part of REQ-20 and needs an owner decision.
 
 ## The Coq model

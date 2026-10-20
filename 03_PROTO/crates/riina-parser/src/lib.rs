@@ -65,6 +65,11 @@ pub enum ParseErrorKind {
     /// bare `Unexpected token: LiteralFloat("1.5", None)` pointing at the
     /// token BEFORE the literal.
     FloatLiteral(String),
+    /// An integer literal with no `u64` value: a bad digit for its base
+    /// (`0b12`), no digits (`0x`), or too large. Each used to become `0`
+    /// through `unwrap_or(0)`: `0xFF` evaluated to 0, a too-large literal to
+    /// 0, and the pattern `1_000` matched 0 (REQ-97, mandate R3).
+    InvalidIntLiteral { literal: String, reason: &'static str },
     /// `modul Name { … }` with a CAPITALIZED name (REQ-82).
     ///
     /// The declaration and the call site disagreed, silently. A `modul Masa`
@@ -138,6 +143,9 @@ impl fmt::Display for ParseErrorKind {
                 "Floating point is not supported in RIINA (`{lit}`); use perpuluhan(\"{lit}\") \
                  for an exact decimal or wang(\"{lit}\") for money"
             ),
+            ParseErrorKind::InvalidIntLiteral { literal, reason } => {
+                write!(f, "Invalid integer literal `{literal}`: {reason}")
+            }
             ParseErrorKind::Lex(e) => write!(f, "{e}"),
         }
     }
@@ -168,6 +176,7 @@ impl ParseErrorKind {
             ParseErrorKind::CapitalizedFunctionName(_) => "P0013",
             ParseErrorKind::ProgramTooDeep { .. } => "P0014",
             ParseErrorKind::FloatLiteral(_) => "P0015",
+            ParseErrorKind::InvalidIntLiteral { .. } => "P0016",
             ParseErrorKind::Lex(e) => e.error_code(),
         }
     }
@@ -219,6 +228,11 @@ impl ParseErrorKind {
                      (exact decimal), `wang(\"{lit}\")` (money, fixed scale) or a scaled \
                      integer (`Nombor`)"
                 )
+            }
+            ParseErrorKind::InvalidIntLiteral { .. } => {
+                "Integer literals are decimal (`255`, `1_000`), hexadecimal (`0xFF`), octal \
+                 (`0o377`) or binary (`0b1111_1111`), and must fit in 64 bits"
+                    .to_string()
             }
             ParseErrorKind::ProgramTooDeep { limit, .. } => {
                 format!("Every statement in a block, every operator in a chain like `a + b + …`, every `lain kalau` and every top-level declaration adds a level. Split very long blocks or expressions into smaller functions so the program stays under {limit} levels")
@@ -491,6 +505,38 @@ struct MatchArm {
     body: Expr,
 }
 
+/// `e`, checked against the annotation if there is one (`Expr::Ascribe`).
+fn ascribe(e: Expr, annotation: Option<Ty>) -> Expr {
+    match annotation {
+        Some(ty) => Expr::Ascribe(Box::new(e), ty),
+        None => e,
+    }
+}
+
+/// The value of an integer literal token: digit separators stripped, and a
+/// `0x`/`0o`/`0b` prefix read in its base. A literal with no `u64` value is an
+/// error, never 0.
+fn int_literal_value(literal: &str) -> Result<u64, ParseErrorKind> {
+    let digits: String = literal.chars().filter(|c| *c != '_').collect();
+    let (radix, body) = match digits.get(..2) {
+        Some("0x") => (16, &digits[2..]),
+        Some("0o") => (8, &digits[2..]),
+        Some("0b") => (2, &digits[2..]),
+        _ => (10, digits.as_str()),
+    };
+    let fail = |reason| ParseErrorKind::InvalidIntLiteral {
+        literal: literal.to_string(),
+        reason,
+    };
+    if body.is_empty() {
+        return Err(fail("no digits"));
+    }
+    if !body.chars().all(|c| c.is_digit(radix)) {
+        return Err(fail("a digit is not valid in its base"));
+    }
+    u64::from_str_radix(body, radix).map_err(|_| fail("too large for 64 bits"))
+}
+
 /// Map a lexed integer width suffix (`u8`..`u64`, `i8`..`i64`) to its
 /// `(bits, signed)`. The lexer (`peek_int_suffix`) only ever attaches one of
 /// these eight suffixes and already range-checked the magnitude, so this is the
@@ -741,14 +787,9 @@ impl<'a> Parser<'a> {
                     self.consume(TokenKind::KwMut)?;
                 }
                 let name = self.parse_binding_name()?;
-                // Optional type annotation `biar x: T = e` (parsed and discarded;
-                // type is inferred). Mirrors the in-function binding form.
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
-                    self.consume(TokenKind::Colon)?;
-                    let _annotated_ty = self.parse_ty()?;
-                }
+                let annotation = self.parse_binding_annotation()?;
                 self.consume(TokenKind::Eq)?;
-                let value = self.parse_control_flow()?;
+                let value = ascribe(self.parse_control_flow()?, annotation);
                 self.consume(TokenKind::Semi)?;
                 // A top-level binding scopes over every declaration that
                 // follows, so it stays on the scope stack (nothing pops it).
@@ -1271,16 +1312,9 @@ impl<'a> Parser<'a> {
                     continue;
                 }
                 let name = self.parse_binding_name()?;
-                // Optional type annotation: `biar x: T = e`. Accepted for
-                // ergonomics and documentation; the binding's type is inferred
-                // by the typechecker, so the parsed `Ty` is intentionally
-                // discarded (the Let AST node carries no annotation slot).
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
-                    self.consume(TokenKind::Colon)?;
-                    let _annotated_ty = self.parse_ty()?;
-                }
+                let annotation = self.parse_binding_annotation()?;
                 self.consume(TokenKind::Eq)?;
-                let value = self.parse_control_flow()?;
+                let value = ascribe(self.parse_control_flow()?, annotation);
                 self.consume(TokenKind::Semi)?;
                 // The name is in scope for the rest of the sequence, shadowing
                 // any outer binding of the same name.
@@ -2579,16 +2613,12 @@ impl<'a> Parser<'a> {
             }
             Some(TokenKind::LiteralInt(s, suffix)) => {
                 self.next();
-                // Strip digit separators (`1_000`). When a width suffix is present
-                // the lexer guarantees a decimal magnitude and has already
-                // range-checked it, so a sized literal becomes `Expr::IntN`;
-                // otherwise it stays the default `Expr::Int` (`Ty::Int`).
-                let value: u64 = s
-                    .chars()
-                    .filter(|c| *c != '_')
-                    .collect::<String>()
-                    .parse()
-                    .unwrap_or(0);
+                let span = self.current_span;
+                // When a width suffix is present the lexer guarantees a decimal
+                // magnitude and has already range-checked it, so a sized literal
+                // becomes `Expr::IntN`; otherwise it stays the default
+                // `Expr::Int` (`Ty::Int`).
+                let value = int_literal_value(&s).map_err(|kind| ParseError { kind, span })?;
                 match suffix.as_deref().and_then(int_suffix_to_width) {
                     Some((bits, signed)) => Ok(Expr::IntN {
                         value,
@@ -2841,11 +2871,14 @@ impl<'a> Parser<'a> {
         // params curry into nested `Lam`s.
         let params = self.parse_param_list()?;
         self.consume(TokenKind::RParen)?;
-        // Optional return-type annotation `-> T` (accepted; inferred, so ignored).
-        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Arrow)) {
+        // Optional return-type annotation `-> T`: the body is checked against
+        // it (`Expr::Ascribe`), and so is every `pulang` in it.
+        let ret = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Arrow)) {
             self.consume(TokenKind::Arrow)?;
-            let _ret = self.parse_ty()?;
-        }
+            Some(self.parse_ty()?)
+        } else {
+            None
+        };
         // Body: a `{ ... }` block or a bare control-flow expression. As for a
         // named function, parameters shadow an outer `biar ubah` of the same name.
         let scope: Vec<(Ident, bool)> = params.iter().map(|(n, _)| (n.clone(), false)).collect();
@@ -2863,7 +2896,7 @@ impl<'a> Parser<'a> {
             }
         });
         self.loop_depth = outer_loop_depth;
-        let body = body?;
+        let body = ascribe(body?, ret);
         // Curry parameters into nested lambdas (right-fold). A no-parameter
         // `fungsi()` becomes a single Unit-typed parameter (a thunk).
         if params.is_empty() {
@@ -3047,7 +3080,9 @@ impl<'a> Parser<'a> {
             // Literal patterns.
             Some(TokenKind::LiteralInt(s, _)) => {
                 self.next();
-                Ok(Pattern::Int(s.parse().unwrap_or(0)))
+                let span = self.current_span;
+                let value = int_literal_value(&s).map_err(|kind| ParseError { kind, span })?;
+                Ok(Pattern::Int(value))
             }
             Some(TokenKind::LiteralBool(b)) => {
                 self.next();
@@ -3630,6 +3665,18 @@ impl<'a> Parser<'a> {
         })
     }
 
+    /// The optional `: T` of `biar x: T = e`. It is checked: the value becomes
+    /// `Expr::Ascribe(e, T)`. Until 2026-10-20 it was parsed and discarded, so
+    /// `biar x: Teks = 5` ran and printed 5 (REQ-97).
+    fn parse_binding_annotation(&mut self) -> Result<Option<Ty>, ParseError> {
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
+            self.consume(TokenKind::Colon)?;
+            Ok(Some(self.parse_ty()?))
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Parse a binding/parameter/field name. Accepts a normal identifier or a
     /// "soft" keyword (see [`Parser::soft_keyword_spelling`]) used as a name,
     /// which the example corpus does pervasively (`tahap: Teks`, `keadaan: ...`).
@@ -3787,12 +3834,12 @@ impl<'a> Parser<'a> {
                         Ok(Ty::Sum(Box::new(t1), Box::new(t2)))
                     }
                     // Function type. Two surface forms are accepted:
-                    //   Fn(Param) -> Ret            (Rust-style arrow; 0+ params)
-                    //   Fn(ParamTy, RetTy [, Eff])  (legacy comma form)
-                    // The AST `Ty::Fn` is single-argument; for multiple params the
-                    // first is kept as the representative argument type (the type
-                    // layer is not yet fully curried), and an empty `Fn()` uses
-                    // Unit as the argument type.
+                    //   Fn(P0, P1, ...) -> Ret [kesan E]   (0+ params)
+                    //   Fn(ParamTy, RetTy [, Eff])         (legacy comma form)
+                    // Several parameters curry exactly as a `fungsi` declaration's
+                    // type does (`declared_fn_ty`); `Fn()` takes Unit. Until
+                    // 2026-10-20 only the first parameter was kept, so
+                    // `Fn(A, B) -> R` accepted a one-argument function (REQ-97).
                     "Fn" | "fungsi" => {
                         self.consume(TokenKind::LParen)?;
                         // Collect comma-separated types inside the parens. A
@@ -3800,6 +3847,10 @@ impl<'a> Parser<'a> {
                         // 3-arg form `Fn(P, R, Eff)`) is captured separately.
                         let mut tys = Vec::new();
                         let mut legacy_eff: Option<Effect> = None;
+                        // Where a third TYPE starts: legal in the arrow form,
+                        // an error in the legacy form (its third slot is an
+                        // effect, and a type there used to be dropped).
+                        let mut third_ty_span = None;
                         if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
                             tys.push(self.parse_ty()?);
                             while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
@@ -3810,6 +3861,9 @@ impl<'a> Parser<'a> {
                                 if tys.len() >= 2 && self.peek_starts_effect() {
                                     legacy_eff = Some(self.parse_effect()?);
                                     break;
+                                }
+                                if tys.len() == 2 {
+                                    third_ty_span = self.peek().map(|t| t.span);
                                 }
                                 tys.push(self.parse_ty()?);
                             }
@@ -3824,8 +3878,14 @@ impl<'a> Parser<'a> {
                             self.consume(TokenKind::Arrow)?;
                             let ret_ty = self.parse_ty()?;
                             let eff = self.parse_optional_fn_effect()?;
-                            let param_ty = tys.into_iter().next().unwrap_or(Ty::Unit);
-                            Ok(Ty::Fn(Box::new(param_ty), Box::new(ret_ty), eff))
+                            let params: Vec<(Ident, Ty)> =
+                                tys.into_iter().map(|t| (String::new(), t)).collect();
+                            Ok(riina_types::declared_fn_ty(&params, &ret_ty, eff))
+                        } else if let Some(span) = third_ty_span.filter(|_| legacy_eff.is_none()) {
+                            Err(ParseError {
+                                kind: ParseErrorKind::InvalidEffect,
+                                span,
+                            })
                         } else {
                             // Legacy comma form `Fn(ParamTy, RetTy [, Effect])`.
                             let mut it = tys.into_iter();

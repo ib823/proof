@@ -329,12 +329,7 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
         }
         Expr::Lam(param, ty, body) => {
             indent(out, level, cfg);
-            out.push_str("fungsi(");
-            out.push_str(param);
-            out.push_str(": ");
-            fmt_ty(out, ty);
-            out.push_str(") ");
-            fmt_expr_inline(out, body, cfg);
+            fmt_lam(out, param, ty, body, cfg);
         }
         Expr::App(func, arg) => {
             indent(out, level, cfg);
@@ -471,11 +466,16 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             indent(out, level, cfg);
             out.push_str("biar ");
             out.push_str(name);
+            let value = fmt_annotation(out, value);
             out.push_str(" = ");
             fmt_expr_inline(out, value, cfg);
             out.push_str(";\n");
             fmt_expr(out, body, level, cfg);
         }
+        // Only `biar x: T` and a lambda's `-> T` write an annotation, and both
+        // are printed above. Anywhere else it has no surface form: printing the
+        // expression makes the re-parse differ, so `format_source` refuses.
+        Expr::Ascribe(inner, _) => fmt_expr(out, inner, level, cfg),
         Expr::LetRec(name, _ty, value, body) => {
             indent(out, level, cfg);
             out.push_str("biar ulang ");
@@ -641,6 +641,38 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
 
 /// Format an expression inline (no leading indent).
 #[allow(clippy::only_used_in_recursion)]
+/// The `: T` of `biar x: T = e`, which the parser keeps as `Ascribe(e, T)`:
+/// print it and return `e`. Any other value is returned as it is.
+fn fmt_annotation<'e>(out: &mut String, value: &'e Expr) -> &'e Expr {
+    match value {
+        Expr::Ascribe(inner, ty) => {
+            out.push_str(": ");
+            fmt_ty(out, ty);
+            inner
+        }
+        other => other,
+    }
+}
+
+/// `fungsi(x: A) e`, or `fungsi(x: A) -> R { e }` when the body carries the
+/// lambda's return annotation as `Ascribe(e, R)`.
+fn fmt_lam(out: &mut String, param: &str, ty: &Ty, body: &Expr, cfg: &FmtConfig) {
+    out.push_str("fungsi(");
+    out.push_str(param);
+    out.push_str(": ");
+    fmt_ty(out, ty);
+    out.push_str(") ");
+    if let Expr::Ascribe(inner, ret) = body {
+        out.push_str("-> ");
+        fmt_ty(out, ret);
+        out.push_str(" { ");
+        fmt_expr_inline(out, inner, cfg);
+        out.push_str(" }");
+    } else {
+        fmt_expr_inline(out, body, cfg);
+    }
+}
+
 fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
     match expr {
         Expr::Unit => out.push_str("()"),
@@ -666,14 +698,7 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             out.push('"');
         }
         Expr::Var(name) => out.push_str(name),
-        Expr::Lam(param, ty, body) => {
-            out.push_str("fungsi(");
-            out.push_str(param);
-            out.push_str(": ");
-            fmt_ty(out, ty);
-            out.push_str(") ");
-            fmt_expr_inline(out, body, cfg);
-        }
+        Expr::Lam(param, ty, body) => fmt_lam(out, param, ty, body, cfg),
         Expr::App(func, arg) => {
             fmt_expr_inline(out, func, cfg);
             out.push('(');
@@ -771,11 +796,13 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         Expr::Let(name, _, value, body) => {
             out.push_str("biar ");
             out.push_str(name);
+            let value = fmt_annotation(out, value);
             out.push_str(" = ");
             fmt_expr_inline(out, value, cfg);
             out.push_str("; ");
             fmt_expr_inline(out, body, cfg);
         }
+        Expr::Ascribe(inner, _) => fmt_expr_inline(out, inner, cfg),
         Expr::LetRec(name, _ty, value, body) => {
             out.push_str("biar ulang ");
             out.push_str(name);
@@ -1395,6 +1422,17 @@ mod tests {
         }
         // A `//` inside a string literal is not a comment.
         assert!(format_source("fungsi utama() -> Teks { \"http://x\" }").is_ok());
+    }
+
+    /// Annotations survive formatting. They used to be dropped by the parser,
+    /// so `fmt` deleted `: T` and `-> T` from the source without a word.
+    #[test]
+    fn annotations_are_kept() {
+        let src = "fungsi utama() -> Nombor kesan Bersih {\n    biar x: Nombor = 5;\n    biar f = fungsi(y: Nombor) -> Nombor { y };\n    f(x)\n}\n";
+        let out = format_source(src).expect("formats");
+        assert!(out.contains("biar x: Nombor = 5;"), "{out}");
+        assert!(out.contains("-> Nombor { y }"), "{out}");
+        assert_eq!(format_source(&out).expect("fixpoint"), out);
     }
 
     /// Constructs the printer cannot reproduce are refused. The CAHAYA block

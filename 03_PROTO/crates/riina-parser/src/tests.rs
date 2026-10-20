@@ -4124,12 +4124,13 @@ fn test_parse_for_tuple_pattern() {
 
 #[test]
 fn test_parse_fn_type_multi_param_arrow() {
-    // `Fn(A, B) -> C` (multi-param arrow form).
+    // `Fn(A, B) -> C` (multi-param arrow form) curries: `A -> (B -> C)`. It
+    // used to keep only `A`, so the second parameter vanished (REQ-97).
     let mut p = Parser::new("Fn(Nombor, Nombor) -> Nombor");
     match p.parse_ty().unwrap() {
         Ty::Fn(a, r, _) => {
             assert_eq!(*a, Ty::Int);
-            assert_eq!(*r, Ty::Int);
+            assert!(matches!(*r, Ty::Fn(ref b, ref c, _) if **b == Ty::Int && **c == Ty::Int), "{r:?}");
         }
         other => panic!("expected Fn, got {other:?}"),
     }
@@ -4491,6 +4492,96 @@ fn capitalized_function_name_is_rejected() {
     Parser::new("fungsi tokokan(x: Nombor) -> Nombor kesan Bersih { pulang x; }")
         .parse_program()
         .expect("a lowercase function must still parse");
+}
+
+/// Annotations are kept for the checker (REQ-97). `biar x: T = e` and a
+/// lambda's `-> T` were parsed and discarded, and `Fn(A, B) -> R` kept only
+/// its first parameter, so a one-argument function satisfied it.
+#[test]
+fn test_annotations_are_kept_as_ascriptions() {
+    let program = |src: &str| format!("{:?}", Parser::new(src).parse_program().expect(src).desugar());
+    assert!(program("fungsi f() -> Nombor kesan Bersih { biar x: Teks = 5; x }")
+        .contains(r#"Let("x", None, Ascribe(Int(5), String)"#));
+    let lam = format!("{:?}", Parser::new("fungsi(y: Nombor) -> Teks { y }").parse_expr().expect("lambda"));
+    assert!(lam.contains(r#"Lam("y", Int, Ascribe(Var("y"), String))"#), "{lam}");
+    let prog = Parser::new("biar g: Nombor = 1;\nfungsi utama() -> Unit kesan Bersih { () }")
+        .parse_program()
+        .expect("parses");
+    assert!(format!("{:?}", prog.decls[0]).contains("Ascribe(Int(1), Int)"));
+}
+
+#[test]
+fn test_function_types_curry_every_parameter() {
+    let ty = |src: &str| Parser::new(src).parse_ty().expect(src);
+    let pure = riina_types::EffectSet::from(Effect::Pure);
+    assert_eq!(
+        ty("Fn(Nombor, Teks) -> Benar"),
+        Ty::Fn(
+            Box::new(Ty::Int),
+            Box::new(Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), pure)),
+            pure
+        )
+    );
+    assert_eq!(ty("Fn() -> Nombor"), Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), pure));
+    // Legacy comma form: the third slot is an effect; a type there was dropped.
+    assert_eq!(ty("Fn(Nombor, Teks)"), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), pure));
+    let err = Parser::new("Fn(Nombor, Teks, Benar)").parse_ty().expect_err("a third type is not an effect");
+    assert_eq!(err.kind, ParseErrorKind::InvalidEffect);
+}
+
+/// Integer literals keep their value in every base, and a literal with no
+/// `u64` value is an error (REQ-97, mandate R3). Each of these used to become
+/// `0` through `unwrap_or(0)`: `0xFF` evaluated to 0, `99999999999999999999`
+/// to 0, and the pattern `1_000` matched 0, so `padan 1000` took another arm.
+#[test]
+fn test_integer_literals_keep_their_value_in_every_base() {
+    for (src, want) in [
+        ("0xFF", 255u64),
+        ("0x_ff", 255),
+        ("0o17", 15),
+        ("0b1010_1010", 170),
+        ("1_000", 1000),
+        ("18446744073709551615", u64::MAX),
+    ] {
+        let e = Parser::new(src).parse_expr().unwrap_or_else(|e| panic!("{src}: {e:?}"));
+        assert_eq!(e, Expr::Int(want), "{src}");
+    }
+}
+
+#[test]
+fn test_an_integer_literal_without_a_value_is_an_error_not_zero() {
+    for (src, reason) in [
+        ("18446744073709551616", "too large"),
+        ("0xFFFFFFFFFFFFFFFFF", "too large"),
+        ("0b12", "not valid in its base"),
+        ("0o9", "not valid in its base"),
+        ("0x", "no digits"),
+    ] {
+        let err = Parser::new(src)
+            .parse_expr()
+            .expect_err(&format!("{src} must not parse"));
+        assert!(
+            matches!(err.kind, ParseErrorKind::InvalidIntLiteral { ref literal, .. } if literal == src),
+            "{src}: {:?}",
+            err.kind
+        );
+        assert_eq!(err.kind.error_code(), "P0016", "{src}");
+        assert!(err.kind.to_string().contains(reason), "{src}: {}", err.kind);
+        assert_eq!(&src[err.span.start..err.span.end], src, "caret must sit on the literal");
+    }
+}
+
+#[test]
+fn test_integer_pattern_with_separators_matches_its_value() {
+    let src = "padan 1000 { 1_000 -> 1, _ -> 2 }";
+    let e = Parser::new(src).parse_expr().expect("parses");
+    let text = format!("{e:?}");
+    assert!(text.contains("Int(1000)"), "the pattern must test 1000: {text}");
+    assert!(!text.contains("Int(0)"), "the pattern must not become 0: {text}");
+    let err = Parser::new("padan 1 { 0b2 -> 1, _ -> 2 }")
+        .parse_expr()
+        .expect_err("a bad pattern literal must not parse");
+    assert_eq!(err.kind.error_code(), "P0016");
 }
 
 /// No floating point by design (owner ruling D8, REQ-105): a float literal is

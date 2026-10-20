@@ -628,6 +628,9 @@ impl Interpreter {
                     };
                 }
                 Expr::BinOp(..) => return self.eval_binop_chain(env, expr),
+                // A type annotation has no run-time meaning (the checker held
+                // `e` to it): evaluate `e`, in tail position.
+                Expr::Ascribe(inner, _) => expr = inner,
                 _ => return self.eval_node(env, expr),
             }
         }
@@ -659,7 +662,7 @@ impl Interpreter {
         match expr {
             // Evaluated by the tail loop in `eval_with_env`, which never
             // dispatches them here; delegating keeps this match total.
-            Expr::Let(..) | Expr::LetMut(..) | Expr::If(..) | Expr::BinOp(..) => {
+            Expr::Let(..) | Expr::LetMut(..) | Expr::If(..) | Expr::BinOp(..) | Expr::Ascribe(..) => {
                 self.eval_with_env(env, expr)
             }
 

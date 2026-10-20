@@ -4575,6 +4575,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::SlotGet(..) => tc_slot_get(ctx, expr),
         Expr::SlotSet(..) => tc_slot_set(ctx, expr),
         Expr::Let(..) => tc_let(ctx, expr),
+        Expr::Ascribe(..) => tc_ascribe(ctx, expr),
         // `pulang e` — early return. Its operand is type-checked (and its effect
         // propagated), but the return expression itself never yields to its
         // evaluation context, so it has type `Any` (unifies with any sibling
@@ -5349,10 +5350,17 @@ fn tc_let(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeE
     let Expr::Let(x, linearity, e1, e2) = expr else {
         unreachable!("tc_let is only called for Expr::Let")
     };
+    // `biar f: T = fungsi …` binds the lambda through its annotation: the
+    // lambda checks below must see it, or an annotated closure would lose its
+    // write tracking.
+    let bound: &Expr = match &**e1 {
+        Expr::Ascribe(inner, _) => inner,
+        other => other,
+    };
     // M2: a lambda bound DIRECTLY by `biar sekali`/`biar paling` is
     // itself used at most once, so it may capture linear variables —
     // and is then call-only (see Var/App).
-    let closure_lin = match (linearity, &**e1) {
+    let closure_lin = match (linearity, bound) {
         (Some(lin @ (Linearity::Linear | Linearity::Affine)), Expr::Lam(..)) => Some(*lin),
         _ => None,
     };
@@ -5362,7 +5370,7 @@ fn tc_let(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeE
     let checked = type_check_full(ctx, e1);
     ctx.closure_linearity = saved;
     let (t1, eff1) = checked?;
-    let lambda_writes = match &**e1 {
+    let lambda_writes = match bound {
         Expr::Lam(..) => ctx.last_closure_writes.take(),
         _ => None,
     };
@@ -5438,6 +5446,32 @@ fn tc_let_rec(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), T
     }
     let (t2, eff2) = type_check_full(&mut ctx_rec_mut2, e2)?;
     Ok((t2, eff1.join(eff2)))
+}
+
+/// `e : T`: the annotation of `biar x: T = e` or of a lambda's `-> T`.
+///
+/// `e` must fit `T` under the same three checks a `fungsi` declaration gets
+/// (`tc_let_rec_group`): its latent effects, structural compatibility and its
+/// erased results. The result has type `T`, as a call to a function declared
+/// `-> T` does, except when `T` contains `Any` (an unknown type name,
+/// REQ-93(c)): then it keeps `e`'s own type, so an annotation never weakens
+/// what the checker knows. In the core this is `EApp (ELam y T (EVar y)) e`.
+#[inline(never)]
+fn tc_ascribe(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeError> {
+    let Expr::Ascribe(e, ty_ann) = expr else {
+        unreachable!("tc_ascribe is only called for Expr::Ascribe")
+    };
+    let (found, eff) = type_check_full(ctx, e)?;
+    declared_latent_check(ty_ann, &found)?;
+    if !types_compatible(ty_ann, &found) {
+        return Err(TypeError::AnnotationMismatch {
+            expected: ty_ann.clone(),
+            found,
+        });
+    }
+    erased_function_check(ty_ann, &found)?;
+    let ty = if ty_contains_any(ty_ann) { found } else { ty_ann.clone() };
+    Ok((ty, eff))
 }
 
 #[inline(never)]
@@ -6354,6 +6388,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, EffectSet), TypeErr
             }
         }
         Expr::SlotSet(_, _) => type_check_full(&mut ctx.to_typing_context(), expr),
+        Expr::Ascribe(..) => type_check_full(&mut ctx.to_typing_context(), expr),
         Expr::Let(x, _, e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let ctx_new = ctx.extend(x.clone(), t1);

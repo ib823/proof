@@ -586,6 +586,8 @@ fn walk_free_idents<F: FnMut(&mut Ident)>(e: &mut Expr, bound: &mut Vec<Ident>, 
             }
             walk_free_idents(value, bound, f);
         }
+        // An annotation binds nothing; its type names no value.
+        Expr::Ascribe(inner, _) => walk_free_idents(inner, bound, f),
 
         // ── binders ──────────────────────────────────────────────────────
         Expr::LetMut(name, value, body) => {

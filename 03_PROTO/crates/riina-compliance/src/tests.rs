@@ -456,6 +456,24 @@ fn cra_i_2a_weak_crypto() {
     );
 }
 
+/// A type annotation does not hide a binding from the rules about its value:
+/// `biar api_key: Teks = "…"` is `Let(api_key, Ascribe("…", Teks))`, and the
+/// credential rule fires on it as on the bare form (REQ-97 annotation fix).
+#[test]
+fn an_annotated_binding_is_still_inspected() {
+    let annotated = |v: Expr| Expr::Ascribe(Box::new(v), riina_types::Ty::String);
+    assert_violation(
+        &make_let("api_key", annotated(Expr::String("sk-live-1234".into()))),
+        ComplianceProfile::Cra,
+        "CRA-I.2d-cred",
+    );
+    assert_no_violation(
+        &make_let("api_key", annotated(Expr::Perform(Effect::Read, Box::new(Expr::Unit)))),
+        ComplianceProfile::Cra,
+        "CRA-I.2d-cred",
+    );
+}
+
 #[test]
 fn cra_i_2d_hardcoded_credential() {
     assert_violation(

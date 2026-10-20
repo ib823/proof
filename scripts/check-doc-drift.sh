@@ -50,6 +50,7 @@ SURFACES = [
     "docs/JALINAN_GUIDE.md", "docs/SYARIAH_GUIDE.md", "docs/CAHAYA_GUIDE.md",
     "docs/api/STDLIB.md", "docs/enterprise/COMPLIANCE_GUIDE.md",
     "docs/enterprise/COMPLIANCE_PACKAGING.md", "docs/enterprise/CERTIFICATION.md",
+    "docs/spec/CORE_MAPPING.md",
 ]
 HISTORICAL = re.compile(r"historical|at release|at the tagged commit", re.I)
 

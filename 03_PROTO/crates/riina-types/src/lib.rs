@@ -134,7 +134,8 @@ impl Usage {
 /// Effects
 ///
 /// Effects track observable behaviors of computations.
-/// Matches Coq `effect` in `foundations/Syntax.v`.
+/// Coq `effect` in `foundations/Syntax.v` has every variant except `Mut` and
+/// `Alloc`; `docs/spec/CORE_MAPPING.md` maps each one.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum Effect {
     // Base effects
@@ -212,7 +213,11 @@ pub enum EffectCategory {
 }
 
 impl Effect {
-    /// Numeric level matching Coq `effect_level`
+    /// Numeric level. Not Coq's `effect_level` numbers: `Mut` (1) and `Alloc`
+    /// (3) have no Coq counterpart, so every level from `Read` up is higher here
+    /// (`Read` is 2 against 1, `Gapura` 18 against 16). The relative order of
+    /// the effects both sides share is the same, which is all the refinement
+    /// argument on [`EffectSet`] uses.
     #[must_use]
     pub const fn level(self) -> u8 {
         match self {
@@ -521,7 +526,8 @@ pub enum TaintSource {
 }
 
 /// Sanitizer markers for tainted data.
-/// Matches Coq `sanitizer` in `foundations/Syntax.v`.
+/// Coq `sanitizer` in `foundations/Syntax.v` has every variant except
+/// `UrlAllowlist`; `docs/spec/CORE_MAPPING.md` maps each one.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Sanitizer {
     // Web
@@ -753,8 +759,9 @@ pub enum SessionType {
 
 /// Types
 ///
-/// Core type constructors for RIINA.
-/// Matches Coq `ty` in `foundations/Syntax.v`.
+/// Type constructors for RIINA. Coq `ty` in `foundations/Syntax.v` covers a
+/// subset; `docs/spec/CORE_MAPPING.md` maps each variant and
+/// `riinac/tests/core_mapping.rs` fails when one is added without a row.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Ty {
     // Primitive types
@@ -1286,7 +1293,9 @@ impl Program {
 
 /// Expressions
 ///
-/// Core expression forms.
+/// Expression forms. Coq `expr` in `foundations/Syntax.v` covers a subset;
+/// `docs/spec/CORE_MAPPING.md` maps each variant, and
+/// `riinac/tests/core_mapping.rs` fails when one is added without a row.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     // Values
@@ -1331,6 +1340,14 @@ pub enum Expr {
     If(Box<Expr>, Box<Expr>, Box<Expr>),
     /// let x = e1 in e2 (with optional linearity qualifier)
     Let(Ident, Option<Linearity>, Box<Expr>, Box<Expr>),
+    /// `e : T`, a type annotation the checker holds `e` to: `biar x: T = e`
+    /// and a lambda's `-> T` elaborate to it. Its type is `T` (or `e`'s own
+    /// type when `T` contains `Any`), and it has no run-time meaning: every
+    /// backend evaluates `e`. In the core it is `EApp (ELam y T (EVar y)) e`.
+    ///
+    /// Until 2026-10-20 both annotations were parsed and discarded, so
+    /// `biar x: Teks = 5` ran and printed 5 (REQ-97).
+    Ascribe(Box<Expr>, Ty),
     /// Early return: `pulang e`. Evaluating it unwinds to the nearest enclosing
     /// function-application boundary, yielding `e` as that call's result. Its own
     /// type is `Any` (it never returns to its evaluation context), so it unifies

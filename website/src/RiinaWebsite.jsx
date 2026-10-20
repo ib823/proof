@@ -137,23 +137,25 @@ const EV = [
   },
 ];
 
-// Bahasa Melayu keyword reference (RIINA_MASTER_PLAN.md Part 9).
+// Bahasa Melayu keyword reference. Only keywords that mean something (kind
+// `construct` or `part` in docs/spec/CORE_MAPPING.md) and real types: the
+// reserved ones are listed there. 03_PROTO/crates/riinac/tests/core_mapping.rs
+// checks this table.
 const KW = [
   { title: 'Declarations', items: [
-    { bm: 'fungsi', en: 'fn' }, { bm: 'biar', en: 'let' }, { bm: 'ubah', en: 'mut' }, { bm: 'tetap', en: 'const' },
-    { bm: 'bentuk', en: 'struct' }, { bm: 'pilihan', en: 'enum' }, { bm: 'jenis', en: 'type' }, { bm: 'sifat', en: 'trait' },
-    { bm: 'laksana', en: 'impl' }, { bm: 'modul', en: 'mod' }, { bm: 'guna', en: 'use' }, { bm: 'awam', en: 'pub' } ] },
+    { bm: 'fungsi', en: 'fn' }, { bm: 'biar', en: 'let' }, { bm: 'ubah', en: 'mut' }, { bm: 'modul', en: 'mod' },
+    { bm: 'guna', en: 'use' }, { bm: 'awam', en: 'pub' }, { bm: 'luaran', en: 'extern' } ] },
   { title: 'Control flow', items: [
     { bm: 'kalau', en: 'if' }, { bm: 'lain', en: 'else' }, { bm: 'untuk', en: 'for' }, { bm: 'selagi', en: 'while' },
     { bm: 'ulang', en: 'loop' }, { bm: 'pulang', en: 'return' }, { bm: 'padan', en: 'match' }, { bm: 'putus', en: 'break' },
     { bm: 'lanjut', en: 'continue' } ] },
   { title: 'Built-in types', items: [
     { bm: 'Nombor', en: 'Int' }, { bm: 'Teks', en: 'String' }, { bm: 'Benar', en: 'Bool' },
-    { bm: 'Bait', en: 'Bytes' }, { bm: 'Senarai', en: 'Vec' }, { bm: 'Peta', en: 'Map' }, { bm: 'Mungkin', en: 'Option' },
-    { bm: 'Hasil', en: 'Result' } ] },
+    { bm: 'Bait', en: 'Bytes' }, { bm: 'Senarai', en: 'List' }, { bm: 'Mungkin', en: 'Option' },
+    { bm: 'Rahsia', en: 'Secret' }, { bm: 'Wang', en: 'Money' } ] },
   { title: 'Security', items: [
     { bm: 'sulit', en: 'classify' }, { bm: 'dedah', en: 'declassify' }, { bm: 'bukti', en: 'proof' },
-    { bm: 'masa_tetap', en: 'const-time' }, { bm: 'kesan', en: 'effect' }, { bm: 'sekali', en: 'linear' }, { bm: 'selamat', en: 'safe' } ] },
+    { bm: 'kesan', en: 'effect' }, { bm: 'sekali', en: 'linear' } ] },
   { title: 'Distributed (JALINAN)', items: [
     { bm: 'pelaku', en: 'actor' }, { bm: 'lahir', en: 'spawn' }, { bm: 'hantar', en: 'send' }, { bm: 'terima', en: 'recv' },
     { bm: 'koreografi', en: 'choreography' }, { bm: 'peranan', en: 'role' }, { bm: 'keadaan', en: 'state' },
@@ -163,7 +165,7 @@ const KW = [
 const SEC_TYPES = [
   { name: 'Rahsia<T>', en: 'Secret', desc: 'Wraps a sensitive value. It cannot reach a print, network or file sink — the checker rejects the flow as a SecurityViolation, including attempts to launder it through conversion builtins. The only exit is an explicit declassification.' },
   { name: 'dedah … dengan bukti', en: 'declassify', desc: 'The sanctioned exit. Declassification demands a matching proof term, mirroring the mechanized rule in Declassification.v — the compiler is tested against that model, not proven to implement it.' },
-  { name: 'masa_tetap { … }', en: 'constant-time', desc: 'A block checked for the constant-time discipline: secret-dependent branching and variable-time operations such as division on secrets are rejected, and a per-program constant-time pass runs at codegen.' },
+  { name: 'MasaTetap<T>', en: 'constant-time', desc: 'A value of this type cannot decide a branch or be divided or taken modulo: the checker rejects the program (CT0001), and a constant-time pass runs again at codegen.' },
   { name: 'sekali', en: 'linear', desc: 'Linear values must be used exactly once — using one twice is a compile error, with positive and negative tests pinning the behaviour. The basis for resource- and double-spend-safety arguments.' },
   { name: 'Taint tracking', en: 'untrusted input', desc: 'Data from untrusted sources is tracked through the program and must pass a sanitiser before reaching a security-sensitive position; taint violations and sanitizer mismatches are live compiler errors at the sinks.' },
 ];
