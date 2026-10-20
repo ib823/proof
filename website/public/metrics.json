@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-20T01:46:09Z",
-  "generatedHuman": "October 20, 2026 at 01:46 UTC",
+  "generated": "2026-10-20T02:41:38Z",
+  "generatedHuman": "October 20, 2026 at 02:41 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "a2f684eb5",
+    "commit": "1d6ddd0f9",
     "branch": "main"
   },
   "proofs": {
@@ -24,10 +24,10 @@
     "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
     "axiomsJustified": true,
     "countingPolicy": {
-      "coreMechanizedQed": 1740,
-      "modelMechanizedQedNonvacuous": 9744,
-      "excludedQed": 1335,
-      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py plus listed test files. The three add up to qedActive. Vacuity patterns are heuristics, so excluded is a lower bound; counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
+      "coreMechanizedQed": 1685,
+      "modelMechanizedQedNonvacuous": 9725,
+      "excludedQed": 1409,
+      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py, every Example and Remark proof, and listed test files. The three add up to qedActive. Vacuity patterns are heuristics, so excluded is a lower bound; counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
     }
   },
   "coq": {
@@ -200,9 +200,9 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3562,
-    "testsVerified": 3562,
-    "testsEstimated": 3559,
+    "tests": 3564,
+    "testsVerified": 3564,
+    "testsEstimated": 3561,
     "testsSource": "cached_verified",
     "crates": 18
   },

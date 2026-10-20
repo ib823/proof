@@ -40,7 +40,7 @@ Every country needs a constitution — the foundational law that all other laws 
 - **Effect Safety** — Every side effect (reading a file, sending a network request, accessing the clock) must be declared, and the compiler rejects a function that performs an undeclared one. In Coq, every configuration reachable by evaluating a well-typed term performs only effects within its *declared* effect (`effect_sound_multi_step_declared`). That bound orders effects by a single level (a total order); separately, Coq proves a set-based fact that needs no ordering: evaluation never produces an effect that is not written somewhere in the program or its initial store (`reachable_effects_from_program_text`).
 - **Declassification Correctness** — When secrets do need to be revealed (e.g., showing the last 4 digits of a credit card), this can only happen through an explicit, auditable process with a proof that the policy is followed. This is proven in the Coq model; aligning the shipped compiler with it is still in progress.
 
-**Current state:** 1,740 core Qed (foundations, type system, properties, effects, termination), 9,744 model Qed (domain, industry, compliance, crypto and runtime models — facts about their own definitions, not verified systems), 1,335 excluded Qed (vacuous patterns or test files); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them); 334 active proof files.
+**Current state:** 1,685 core Qed (foundations, type system, properties, effects, termination), 9,725 model Qed (domain, industry, compliance, crypto and runtime models — facts about their own definitions, not verified systems), 1,409 excluded Qed (vacuous patterns or test files); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them); 334 active proof files.
 **Last synced:** 2026-10-20, from `website/public/metrics.json`. No independent audit published yet.
 
 Nine capstone theorems are kernel-attested closed under the global context (axiom-free): `type_safety`, `progress`, `preservation`, `accepts_uses_only_current`, `effect_sound_multi_step_declared`, `reachable_effects_from_program_text`, `ref_free_well_typed_SN`, `ref_free_noninterference` and `ref_free_constant_time`. The 29 `Parameter`s are the build's named trusted assumptions; historical/archived files may still contain others.
@@ -57,7 +57,7 @@ The constitution means nothing without a government to enforce it. Track B is RI
 - **Standard Library** — 88 built-in functions across 9 modules (strings, lists, math, maps, sets, testing, time, files, JSON).
 - **Developer Tools** — Formatter (`riina-fmt`), language server (`riina-lsp`), documentation generator (`riina-doc`), VS Code extension, package manager (`riina-pkg`), REPL.
 
-**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,560 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
+**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,564 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
 
 ### Track C — The Legal Code (Specifications)
 
@@ -178,7 +178,7 @@ RIINA was constructed in eight phases, each building on the previous:
 |-------|------|---------------|--------|
 | 1 | Compiler Completion | The core compiler: lexer, parser, type checker, code generator, REPL | Done |
 | 2 | Standard Library | 88 built-in functions across 9 modules | Done |
-| 3 | Formal Verification | Coq (mechanized): 1,740 core Qed, 9,744 model Qed, 1,335 excluded Qed; 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) | Stable |
+| 3 | Formal Verification | Coq (mechanized): 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed; 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) | Stable |
 | 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, examples (172 today; 84 pass `riinac check`) | Done |
 | 5 | Ecosystem | Package manager, CI/CD, Docker, Nix, release system, Proprietary license | Done |
 | 6 | Adoption | C FFI, demo apps, community setup, enterprise compliance-profile checks, public repository | Done |
@@ -219,7 +219,7 @@ These numbers reflect the current verified state of the codebase:
 
 | Metric | Value |
 |--------|-------|
-| Coq proofs (Qed, active build) | 1,740 core Qed; 9,744 model Qed (facts about their own definitions, not verified systems); 1,335 excluded Qed (vacuous patterns or test files) |
+| Coq proofs (Qed, active build) | 1,685 core Qed; 9,725 model Qed (facts about their own definitions, not verified systems); 1,409 excluded Qed (vacuous patterns or test files) |
 | Incomplete proofs (Admitted) | 0 |
 | Axioms (active build) | 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) |
 | Active proof files | 334 |

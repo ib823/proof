@@ -19,6 +19,12 @@
 /scripts/check-noncoq-mechanized.sh             @ib823
 /scripts/security-gates.sh                      @ib823
 /scripts/verify-smt.sh                          @ib823
+/scripts/verify-public.sh                       @ib823
+/scripts/generate-sbom.sh                       @ib823
+/website/public/metrics.json                    @ib823
+/03_PROTO/crates/riinac/tests/scope_freeze.rs           @ib823
+/03_PROTO/crates/riinac/tests/licence_consistency.rs    @ib823
+/03_PROTO/crates/riinac/tests/mandate_traceability.rs   @ib823
 
 # Core Coq statements: the metatheory every headline claim rests on.
 /02_FORMAL/coq/foundations/                     @ib823

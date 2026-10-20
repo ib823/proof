@@ -403,6 +403,39 @@ if [ -f "$INDEX_HTML" ]; then
     CHANGED=$((CHANGED + 1))
 fi
 
+# --- Generated numbers on public surfaces (mandate R5, S2.7, S5.7) ---
+# The three labelled Coq numbers ("<N> core Qed", "<N> model Qed", "<N> excluded
+# Qed") and the compiler test count ("<N,NNN> tests") track metrics.json on every
+# public file audit-docs.sh checks. Lines that are explicitly historical keep
+# their numbers; CHANGELOG is release history and is not touched (its banner is
+# handled above). audit-docs.sh rejects any other value.
+RUST_TESTS_COMMA=$(add_commas "$RUST_TESTS")
+for rel in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
+           .cursorrules .clinerules docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md \
+           docs/i18n/README_zh.md; do
+    f="$REPO_ROOT/$rel"
+    [ -f "$f" ] || continue
+    if [ "$DRY_RUN" -eq 0 ]; then
+        tmpfile=$(mktemp)
+        awk -v n="$RUST_TESTS_COMMA" -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" '
+            $0 !~ /at the tagged commit|at release|[Hh]istorical/ {
+                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] tests/, n " tests")
+                gsub(/[0-9][0-9,]* core Qed/, core " core Qed")
+                gsub(/[0-9][0-9,]* model Qed/, model " model Qed")
+                gsub(/[0-9][0-9,]* excluded Qed/, excluded " excluded Qed")
+            }
+            { print }
+        ' "$f" > "$tmpfile"
+        if ! cmp -s "$tmpfile" "$f"; then
+            mv "$tmpfile" "$f"
+            echo "    [UPDATED] $rel (generated numbers)"
+            CHANGED=$((CHANGED + 1))
+        else
+            rm -f "$tmpfile"
+        fi
+    fi
+done
+
 # --- Enterprise docs ---
 CERT="$REPO_ROOT/docs/enterprise/CERTIFICATION.md"
 if [ -f "$CERT" ]; then

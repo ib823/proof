@@ -14,12 +14,12 @@
 | Metric | Value |
 |--------|-------|
 | Version | 0.4.0 |
-| Coq proofs | 1,740 core Qed, 9,744 model Qed, 1,335 excluded Qed (vacuous or test). 0 Admitted, 0 Abort, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; no capstone theorem depends on them). 334 active files. Never quote a raw Qed total (mandate S2.7) |
+| Coq proofs | 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed (vacuous or test). 0 Admitted, 0 Abort, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; no capstone theorem depends on them). 334 active files. Never quote a raw Qed total (mandate S2.7) |
 | Lean theorems | 0 — the generated port was archived 2026-10-20 (D6, preserved at `fd23fbdb8`); REQ-67(b) re-proof not started |
 | Isabelle lemmas | 0 — lane retired (REQ-67g), corpus archived |
 | F* / TLA+ / Alloy / SMT | Hand-written artifacts only; SMT scoped set (37 properties) is mechanized; the rest are smoke-level (`metrics.json` is authoritative) |
 | Cross-prover total | None. Counts from different provers are never added together (ruling D6) |
-| Rust tests | 3,560 in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
+| Rust tests | 3,564 tests in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
 | Examples | 172 .rii files; 84 pass `riinac check` |
 | Claims | Coq mechanized; SMT mechanized at the REQ-67(a) scope (37 properties); TLA+/Alloy/Verus/Kani/TV generated (hand-written drafts, quarantined); F*/Isabelle retired; Lean empty |
 

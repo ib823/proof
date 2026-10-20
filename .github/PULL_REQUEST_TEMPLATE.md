@@ -19,7 +19,7 @@ Brief description of changes.
 
 ## Testing
 
-- [ ] `cargo test --all` passes (679+ tests)
+- [ ] `cargo test --all` passes with 0 failures (the current count is in `website/public/metrics.json`)
 - [ ] `cargo clippy -- -D warnings` passes
 - [ ] Coq build passes (`make` in `02_FORMAL/coq/`) — if proofs changed
 - [ ] New tests added for new functionality

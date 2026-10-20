@@ -394,9 +394,6 @@ ACTUAL_ABORT=$(count_abort_active)
 ACTUAL_PARAMETER=$(count_parameter_active)
 ACTUAL_LEAN_AXIOM=$(count_lean_axiom_active)
 ACTUAL_LEAN_SORRY=$(count_lean_sorry_active)
-# Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
-# The full 10-prover total is in metrics.json and includes generated stubs.
-ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
 ACTUAL_EXAMPLES=$(count_examples)
 ACTUAL_SESSION=$(get_actual_session)
 # Locale-independent thousands separator
@@ -427,7 +424,6 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo "  Coq Parameter: $ACTUAL_PARAMETER (active; TCB; pinned in master plan Part 2)"
     echo "  Lean axiom:    $ACTUAL_LEAN_AXIOM (active lane; must be 0)"
     echo "  Lean sorry:    $ACTUAL_LEAN_SORRY (active lane; must be 0)"
-    echo "  Total proofs:  $ACTUAL_TOTAL"
     echo "  Examples:      $ACTUAL_EXAMPLES"
     echo "  Session:       $ACTUAL_SESSION"
     echo ""
@@ -595,6 +591,23 @@ if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 #     live numbers from scripts/coq-counting-policy.py;
 #   - any other "<N> Qed" / "<N> Coq Qed" is an error, whatever N is,
 # except on lines that are explicitly historical.
+# The compiler test count is generated too (mandate R5): every "<N,NNN> tests"
+# on these surfaces must equal rust.tests in metrics.json.
+METRICS_RUST_TESTS=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['rust']['tests'])" "$REPO_ROOT/website/public/metrics.json" 2>/dev/null || echo "")
+for test_doc in README.md llms.txt AGENTS.md docs/UNDERSTANDING_RIINA.md; do
+    [ -f "$REPO_ROOT/$test_doc" ] && [ -n "$METRICS_RUST_TESTS" ] || continue
+    while IFS= read -r line; do
+        case "$line" in
+            *"at the tagged commit"*|*"at release"*|*"Historical"*|*"historical"*) continue ;;
+        esac
+        for num in $(printf '%s\n' "$line" | grep -oP '\b\d{1,2},\d{3}(?= tests\b)'); do
+            if [ "${num//,/}" != "$METRICS_RUST_TESTS" ]; then
+                echo -e "${RED}[MISMATCH]${NC} test count in $test_doc: $num (metrics.json rust.tests = $METRICS_RUST_TESTS)"
+                DISCREPANCIES=$((DISCREPANCIES + 1))
+            fi
+        done
+    done < "$REPO_ROOT/$test_doc"
+done
 # CHANGELOG.md is release history, so its entries keep the figures they were
 # released with; only its banner is checked (below).
 for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \

@@ -1,6 +1,6 @@
 # Claude AI Web Integration Supplement
 
-**Verification:** Coq 1,740 core Qed, 9,744 model Qed, 1,335 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3562 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3564 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 ## Purpose
 This document provides all auxiliary definitions, lemma signatures, and helper functions needed to complete the remaining 18 admits in NonInterference_v2.v with 100% integration compatibility.

@@ -199,7 +199,7 @@ const PIPELINE_STATIC = [
 
 const RESEARCH = [
   { name: 'Core type theory', desc: 'Type safety, logical relations, declassification, general recursion in the mechanized core' },
-  { name: 'Compiler', desc: '18 crates, 3,560 tests, zero third-party runtime dependencies in the shipped compiler (per its SBOM); the dev/CI tools (Coq/Rocq toolchain, cc, wasmtime, z3, fuzz harnesses, NIST test vectors) are separate' },
+  { name: 'Compiler', desc: '18 crates, every test passing, zero third-party runtime dependencies in the shipped compiler (per its SBOM); the dev/CI tools (Coq/Rocq toolchain, cc, wasmtime, z3, fuzz harnesses, NIST test vectors) are separate' },
   { name: 'Attack surface', desc: '1,231+ threats modelled across the research corpus' },
   { name: 'Termination and memory', desc: 'Sized types, premise-free strong normalisation for the reference-free, fix-free core, separation-logic models' },
   { name: 'Concurrency and effects', desc: 'Session types, effect algebra, choreography projection' },
@@ -223,7 +223,7 @@ const FRAMEWORKS = [
 ];
 
 const SECTORS = [
-  { name: 'Defence and military', regs: 'CMMC · ITAR · NIST 800-53', desc: 'Compartmentalisation typed rather than reviewed: classified data in Rahsia types, capability-gated operations, a compiler-checked constant-time discipline for signals work.' },
+  { name: 'Defence and military', regs: 'CMMC · ITAR · NIST 800-53', desc: 'Compartmentalisation typed rather than reviewed: classified data in Rahsia types, capability-gated operations, a compiler-checked constant-time discipline for signals work (the proof covers only reduction-count independence from secrets in the model, for the core fragment).' },
   { name: 'Healthcare', regs: 'HIPAA · FDA 21 CFR 11', desc: 'PHI carried in secret types that cannot reach an unauthorised sink; audit-trail preconditions checked; a mechanized Coq model of the §164.312 slice.' },
   { name: 'Financial services', regs: 'PCI-DSS · SOX · BNM RMiT', desc: 'Cardholder data isolated by construction, hardcoded-credential rules, a compiler-checked constant-time discipline (the proof covers only reduction-count independence from secrets in the model, for the core fragment). DORA composes for EU entities.' },
   { name: 'Aerospace and aviation', regs: 'DO-178C', desc: 'Deterministic evaluation is a mechanized theorem of the language model, and termination is proven for the reference-free, fix-free core (not for general recursion or code using references); the do-178c profile checks the code-level slice.' },
@@ -274,7 +274,7 @@ const RULES = [
 const RELEASES = [
   { version: 'v0.4.0', date: '05 Aug 2026', items: [
     { text: 'Nine Coq executable models of crypto primitives, differential-tested against the shipping Rust — GHASH (×2), AES field + full cipher, SHA-256, SHA3-256, Curve25519 field, ML-KEM NTT, X25519 ladder' },
-    { text: 'Constant-time hardening, CI-gated — including a real variable-time leak found and fixed in Ed25519 signing' },
+    { text: 'Constant-time hardening checked by statistical timing tests in CI (not a proof) — including a real variable-time leak found and fixed in Ed25519 signing' },
     { text: '328 active Coq files at the tagged commit — 0 Admitted, 0 Axiom (the documented Parameter interface is counted separately)' },
     { text: 'Set union/intersect O(n·m) → O(n+m) with a fast-path-equals-naive guard' } ] },
   { version: 'v0.3.0', date: '19 Mar 2026', items: [
