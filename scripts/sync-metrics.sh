@@ -417,9 +417,12 @@ for rel in README.md CONTRIBUTING.md SECURITY.md docs/UNDERSTANDING_RIINA.md \
     [ -f "$f" ] || continue
     if [ "$DRY_RUN" -eq 0 ]; then
         tmpfile=$(mktemp)
-        awk -v n="$RUST_TESTS_COMMA" -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" '
+        awk -v n="$RUST_TESTS_COMMA" -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" \
+            -v coq_active="$COQ_FILES_ACTIVE" -v coq_total="$COQ_FILES_TOTAL" '
             $0 !~ /at the tagged commit|at release|[Hh]istorical/ {
                 gsub(/[0-9][0-9]?,[0-9][0-9][0-9] tests/, n " tests")
+                gsub(/[0-9]+ Coq proof files \([0-9]+ active\)/, coq_total " Coq proof files (" coq_active " active)")
+                gsub(/[0-9]+ active proof files/, coq_active " active proof files")
                 gsub(/[0-9][0-9,]* core Qed/, core " core Qed")
                 gsub(/[0-9][0-9,]* model Qed/, model " model Qed")
                 gsub(/[0-9][0-9,]* excluded Qed/, excluded " excluded Qed")

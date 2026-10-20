@@ -57,5 +57,5 @@ No property is PROVEN-IMPL today: that needs assured mode (REQ-100).
 | compiled | none published today |
 | independently_audited | none (false today) |
 
-PROVEN-MODEL rows were last checked in the kernel at commit `07e5821e5`;
+PROVEN-MODEL rows were last checked in the kernel at commit `e788f601f`;
 ENFORCED-TESTED rows run on every commit (`cargo test` in CI).

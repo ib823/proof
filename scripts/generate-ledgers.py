@@ -147,12 +147,24 @@ def parameter_sites():
     return sites
 
 
-def capture_targets(cited):
-    """The theorems the capture runs Print Assumptions on: the capstones, then
-    every cited Coq theorem named exactly (families are MODELLED facts)."""
-    extra = [(c["module"], c["name"]) for c in cited
-             if c.get("kind") == "coq" and not c.get("name", "").endswith("*")]
-    return kernel_capstones() + extra
+def witnesses(theorems):
+    return sorted({t[w] for t in theorems for w in ("positive_witness", "negative_witness")
+                   if t.get(w) not in (None, "", "PENDING", "IMPOSSIBLE")})
+
+
+def capture_targets(theorems, cited):
+    """The theorems the capture runs Print Assumptions on: the capstones, every
+    cited Coq theorem named exactly (families are MODELLED facts), and every
+    witness."""
+    targets = kernel_capstones() + [(c["module"], c["name"]) for c in cited
+                                    if c.get("kind") == "coq" and not c.get("name", "").endswith("*")]
+    decls = active_declarations()
+    seen = {n for _, n in targets}
+    for w in witnesses(theorems):
+        if w in decls and w not in seen:
+            rel = decls[w].split(":", 1)[0].split("02_FORMAL/coq/", 1)[1]
+            targets.append((rel[:-2].replace("/", "."), w))
+    return targets
 
 
 def capture_sources_hash(targets):
@@ -264,7 +276,8 @@ SIZE_GROUPS = {
 
 
 def capture():
-    capstones = capture_targets(load_sources()[1])
+    theorems_, cited_, _ = load_sources()
+    capstones = capture_targets(theorems_, cited_)
     rocq = run(["rocq", "--version"])
     if rocq is None or rocq.returncode != 0:
         die("--capture needs `rocq` on PATH (eval $(opam env --switch=rocq))")
@@ -399,9 +412,17 @@ def validate(theorems, cited, props, cap):
         mod = dict((n, m) for m, n in capstones).get(t.get("name"))
         if mod and mod != t.get("module"):
             problems.append(f"{t['name']}: module {t.get('module')} != KERNEL_CAPSTONES {mod}")
+        # Every capstone has both witnesses (mandate S2.9). The only exception
+        # is a CONDITIONAL theorem whose premise the build refutes: it cannot
+        # have a positive witness, and says so.
         for w in ("positive_witness", "negative_witness"):
             v = t.get(w, "")
-            if v and v != "PENDING" and v not in decls:
+            if v == "IMPOSSIBLE" and w == "positive_witness" and t.get("status") == "CONDITIONAL":
+                continue
+            if v in ("", "PENDING", "IMPOSSIBLE"):
+                problems.append(f"{t['name']}: {w} is `{v or 'missing'}`; name a witness lemma "
+                                "(IMPOSSIBLE is allowed only as the positive witness of a CONDITIONAL theorem)")
+            elif v not in decls:
                 problems.append(f"{t['name']}: {w} `{v}` is not declared in the active build")
         if t.get("status") not in ("HEADLINE", "CONDITIONAL"):
             problems.append(f"{t['name']}: status must be HEADLINE or CONDITIONAL")
@@ -422,12 +443,18 @@ def validate(theorems, cited, props, cap):
     if cap is None:
         problems.append("reports/ledger_capture.json is missing (run --capture)")
     else:
-        if cap.get("sources_sha256") != capture_sources_hash(capture_targets(cited)):
+        if cap.get("sources_sha256") != capture_sources_hash(capture_targets(theorems, cited)):
             problems.append("reports/ledger_capture.json is stale: the captured theorems or the active Coq "
                             "files changed since it was captured (run --capture where Coq is built)")
         for n in want:
             if n not in cap.get("print_assumptions", {}):
                 problems.append(f"capture has no Print Assumptions for {n}")
+        for w in witnesses(theorems):
+            axioms = cap.get("print_assumptions", {}).get(w)
+            if axioms is None:
+                problems.append(f"capture has no Print Assumptions for witness {w} (run --capture)")
+            elif axioms:
+                problems.append(f"witness {w} uses {', '.join(axioms)}; a witness must be closed")
     return problems
 
 
@@ -481,7 +508,9 @@ def render_headline(theorems, cited, cap):
         rel, line = theorem_location(t["module"], n)
         axioms = pa[n]
         kern = "closed under the global context" if not axioms else ", ".join(f"`{a}`" for a in axioms)
-        wit = f"{t['positive_witness']} / {t['negative_witness']}"
+        pos = ("none: a premise is refuted in the build" if t["positive_witness"] == "IMPOSSIBLE"
+               else f"`{t['positive_witness']}`")
+        wit = f"{pos} / `{t['negative_witness']}`"
         rev = "PENDING (D7 reviewer)" if t["reviewer"] == "PENDING" else f"{t['reviewer']}, {t['review_date']}"
         out.append(f"| `{n}` | `{rel}:{line}` | {t['status']} | {md_cell(kern)} | {md_cell(wit)} | {md_cell(rev)} |")
     out.append("")
@@ -498,10 +527,13 @@ def render_headline(theorems, cited, cap):
             out.append(f"- **Note:** {t['note']}")
         out += [f"- **Verify:** `riinac verify --coq` (kernel `Print Assumptions`)", ""]
     out += render_cited(cited, cap)
-    pending_w = sum(1 for t in theorems for w in ("positive_witness", "negative_witness") if t[w] == "PENDING")
     pending_r = sum(1 for t in theorems if t["reviewer"] == "PENDING")
-    out += ["## Open items", "",
-            f"- {pending_w} of {2 * len(theorems)} witnesses are PENDING (S2.9).",
+    out += ["## Witnesses and open items", "",
+            "- Every capstone has a positive witness (its premises hold for a concrete term) and a",
+            "  negative witness (its conclusion fails for a term that violates a premise), except the",
+            "  positive witness of a CONDITIONAL theorem whose premise the build refutes (S2.9). Most",
+            "  are in `02_FORMAL/coq/properties/HeadlineWitnesses.v`; the counting policy excludes",
+            "  them, since they test statements rather than cover anything.",
             f"- {pending_r} of {len(theorems)} statements await a named human review (S2.10, owner ruling D7).",
             ""]
     return "\n".join(out)

@@ -8,7 +8,7 @@ const DEFAULTS = {
   // D9): core, model and excluded Qed. Never display the raw qedActive total.
   proofs: {
     admitted: 0, axioms: 0, assumptions: 0, parameters: 29,
-    countingPolicy: { coreMechanizedQed: 1679, modelMechanizedQedNonvacuous: 9719, excludedQed: 1421 },
+    countingPolicy: { coreMechanizedQed: 1679, modelMechanizedQedNonvacuous: 9719, excludedQed: 1443 },
   },
   coq: { filesActive: 0, filesTotal: 0, prover: 'Rocq 9.1.1' },
   lean: { theorems: 0, files: 0, prover: 'Lean 4', sorry: 0, axioms: 0 },

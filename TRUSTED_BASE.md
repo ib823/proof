@@ -1,7 +1,7 @@
 # Trusted base
 
 > **Generated — do not edit by hand.** Regenerate with `python3 scripts/generate-ledgers.py`;
-> sizes and tool versions measured by `--capture` at commit `07e5821e5`. REQ-103.
+> sizes and tool versions measured by `--capture` at commit `e788f601f`. REQ-103.
 
 Everything a RIINA guarantee depends on that is not itself proven (mandate S1.11). Sizes
 are non-blank lines of Rust source, excluding test files.
