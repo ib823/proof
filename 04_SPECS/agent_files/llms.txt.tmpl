@@ -1,0 +1,163 @@
+# RIINA™
+
+> Rigorous Immutable Invariant, No Assumptions
+
+RIINA is a programming language with Bahasa Melayu (Malaysian) keywords and a
+Coq-verified core model: its core type and effect rules are proven in Coq for
+the language model, and the compiler is tested against that model (not proven
+to implement it). The shipped compiler enforces a subset of the modelled
+security properties (see Verified State).
+
+- File extension: `.rii`
+- Version: {{version}}
+- Keywords: Bahasa Melayu (Malaysian) + English dual syntax ({{keywords_total}} keywords; full table in llms-full.txt)
+- Repository: https://github.com/ib823/riina
+- License: RIINA Proprietary License (source publicly readable; not open source)
+
+## Verified State (generated from website/public/metrics.json, {{date}})
+
+IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
+other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
+`generate-multiprover.py`) were archived out of `main` on 2026-10-20 (owner ruling
+D6) and are preserved at commit `fd23fbdb8`. What remains is hand-written. Never
+sum counts across lanes: they count different things.
+
+- Coq: {{core}} core Qed, {{model}} model Qed, {{excluded}} excluded Qed. Core = foundations,
+  type system, properties, effects, termination and the compiler-linked
+  crypto policy; model = domain, industry, compliance, crypto and runtime models
+  (facts about their own definitions, not verified systems); excluded = vacuous
+  patterns, examples, counterexamples or test files. Never quote a raw total.
+  {{admitted}} Admitted, 0 Abort, {{axioms}} `Axiom`, {{parameters}} `Parameter`s (trusted hardware interface;
+  none of the capstone theorems depends on them). {{coq_files_active}} active .v files.
+- Scope of the headline results (HEADLINE_THEOREMS.md): type safety (progress,
+  preservation) for the full calculus. Strong normalization, non-interference and
+  constant time (reduction-count independence from secrets) are proven only for the
+  reference-free, `fix`-free core; beyond it they are enforced by tests.
+- Lean 4: 0 theorem/lemma declarations. The generated port is archived (at commit
+  `fd23fbdb8` it had 12,576 declarations, of which 215 ever elaborated); the
+  REQ-67(b) hand-written re-proof has not started. Claim: **generated**.
+- SMT/Z3: the REQ-67(a) scoped set — {{smt}} properties ({{smt_breakdown}}) checked by
+  `scripts/verify-smt.sh` for exact unsat counts. Claim: **mechanized** at that
+  scope only.
+- F*: retired; 1 smoke module ({{fstar_lemmas}} trivial lemmas: constant-time eq, zeroize length).
+- Isabelle: retired; no files remain.
+- TLA+ / Alloy: a few hand-written specs and models (1 TLC-checked smoke spec with
+  {{tlaplus_theorems}} THEOREMs; 1 Alloy smoke model with {{alloy_assertions}} assertions). Claim: generated
+  (quarantined until wired into CI).
+- Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
+- Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
+  claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
+- Rust: {{rust_tests}} tests pass in the compiler workspace (`03_PROTO`, {{crates}} crates, 0
+  third-party runtime dependencies). Dev/CI tools are separate: the Rocq
+  toolchain, cc, wasmtime, z3 and the NIST test vectors.
+- Backends: the C/native backend is not formally verified; it is
+  differential-tested against the interpreter. Native builds need gcc or clang as
+  `cc` on Linux or macOS (Windows: WSL); MSVC is not supported. Floating point is
+  not supported, by design (a float literal is error P0015).
+- Crypto (`riina-core`): experimental and unaudited. Tested against NIST
+  known-answer (ACVP) vectors; not validated (no CMVP/CAVP certificate).
+- Compliance: {{profiles}} profiles, {{rules}} heuristic rules in total — evidence toward a
+  standard, not a conformity assessment or certification.
+- Audits: no independent audit has been published.
+- Examples: {{examples}} .rii files, of which {{corpus_passing}} currently pass `riinac check`; the
+  shipped parser accepts a narrower grammar than some examples assume — see
+  `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
+  COMPILED: a few effectful builtins (`jaring_tls_*`, the virtual-filesystem trio,
+  the crypto-agility runtime) are still interpreter-only (REQ-70), and
+  `riinac build` fails closed on them.
+- An unknown type name (including a typo) is currently accepted as `Any`
+  (REQ-93(c)); use only the types in llms-full.txt.
+
+## Session Protocol
+
+All LLM CLIs MUST follow RIINA_MASTER_PLAN.md Part 8 (8 mandatory steps):
+ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
+
+During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker and the
+hardening-mandate tracking section in Part 11 for the current gate.
+
+{{include:_branch_policy.md}}
+
+{{include:_commit_chain.md}}
+
+## Docs
+
+- [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
+- [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
+- [Full reference](llms-full.txt): this file plus the complete keyword, type, effect and builtin tables
+- [Builtin reference](docs/api/STDLIB.md): every builtin and its signature, from the compiler's registry
+- [Headline theorems](HEADLINE_THEOREMS.md): the only theorems a public surface may cite
+- [Language Specs](04_SPECS/): Formal specifications
+- [Examples](07_EXAMPLES/): {{examples}} example .rii files
+- [Formal Proofs](02_FORMAL/coq/): Coq proof library
+
+## Quick Syntax Reference
+
+```riina
+// Functions with effect declarations
+fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    pulang x + y;
+}
+
+// Actors (JALINAN Phase 6)
+pelaku Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)
+
+// Choreography (multiparty session types)
+koreografi Pembelian {
+    peranan Pemohon, Pelulus;
+    Pemohon -> Pelulus: hantar Nombor;
+    Pelulus -> Pemohon: hantar Benar;
+    tamat;
+}
+```
+
+## Keywords
+
+### Core
+{{kwp:fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
+selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
+sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)}}
+
+### Security
+{{kwp:rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
+tercemar (tainted), bersihkan (sanitize)}}
+
+### Effects
+{{kwp:kesan (effect), bersih (pure), laku (perform), kendali (handle)}}
+
+### Linearity
+{{kwp:sekali (linear), paling (affine), mesti (relevant)}}
+
+### JALINAN (Distributed Computing)
+{{kwp:pelaku (actor), lahir (spawn), hantar (send), terima (recv),
+koreografi (choreography), peranan (role), keadaan (state),
+penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)}}
+
+### Capabilities
+{{kwp:keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)}}
+
+### Session Types
+{{kwp:sesi (session), pilih (select), cabang (branch), tamat (end)}}
+
+## Effects (lowest to highest, with lattice level)
+
+{{effects_order}}
+
+## Security Levels (lowest to highest)
+
+{{levels_order}}
+
+## CLI (from `riinac --help`)
+
+```bash
+{{cli}}
+```

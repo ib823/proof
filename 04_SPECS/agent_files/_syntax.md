@@ -1,0 +1,9 @@
+- Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
+- Bindings: `biar name = value;` (semicolons required between statements)
+- Conditionals: `kalau condition { ... } lain { ... }` (`lain` is required when the `kalau` produces a value)
+- Match: `padan value { pattern => result, _ => default }` (use `=>`, not `->`)
+- Effects: always declare with `kesan`. Pure = `Bersih`, I/O = `Tulis`/`Baca`
+- Secrets: the checker rejects printing a `Rahsia<T>`; release one with `dedah` and a proof
+- Pipe: `value |> function1 |> function2`
+- Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
+- An unknown type name (including a typo) is currently accepted as `Any` (REQ-93(c)); use only the type names listed here

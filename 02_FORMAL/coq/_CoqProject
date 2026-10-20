@@ -65,6 +65,7 @@ termination/ReducibilityFull.v
 termination/StrongNormRefFree.v
 # Non-interference + constant time (timing contract) for that core (REQ-85, REQ-86)
 properties/NonInterferenceRefFree.v
+properties/HeadlineWitnesses.v
 
 # Properties - Phase 5 Store Semantics (WORKER_ζ)
 properties/StoreRelation.v

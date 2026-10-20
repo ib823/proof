@@ -1,0 +1,34 @@
+# RIINA Language — Copilot Instructions
+
+## Before ANY Action
+
+{{include:_protocol.md}}
+
+## Branch Policy
+
+{{include:_branch_policy.md}}
+
+## Commit-Push-Deploy Chain
+
+{{include:_commit_chain.md}}
+
+## Language Basics
+- RIINA uses Bahasa Melayu (Malaysian) keywords with English aliases
+- File extension: `.rii`
+- All functions MUST declare their effect: `kesan Bersih` (pure), `kesan Tulis` (write), etc.
+- Security types: the type checker rejects the information-flow violations it implements (tested; non-interference is proven in Coq only for the reference-free, recursion-free core)
+
+## Key Syntax Rules
+{{include:_syntax.md}}
+
+## Style
+{{include:_style.md}}
+
+## Common Types
+{{include:_types.md}}
+
+## Effects (declare with `kesan`)
+{{effects_list}}
+
+## Rules
+{{include:_rules.md}}

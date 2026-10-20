@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** Source: `04_SPECS/ledgers/headline_theorems.toml`,
 > the `KERNEL_CAPSTONES` list in `03_PROTO/crates/riinac/src/verify.rs` and the Coq
-> sources; `Print Assumptions` captured at commit `4026d7f2c`. Regenerate with
+> sources; `Print Assumptions` captured at commit `e788f601f`. Regenerate with
 > `python3 scripts/generate-ledgers.py` (`--capture` re-measures). REQ-103.
 
 These are the only theorems public surfaces may cite as guarantees (mandate S2.4). Every
@@ -12,16 +12,16 @@ list in the kernel.
 
 | Theorem | File | Status | Kernel assumptions | Witnesses (+ / −) | Reviewed |
 |---|---|---|---|---|---|
-| `type_safety` | `02_FORMAL/coq/type_system/TypeSafety.v:27` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `progress` | `02_FORMAL/coq/type_system/Progress.v:118` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `preservation` | `02_FORMAL/coq/type_system/Preservation.v:1229` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `well_typed_SN` | `02_FORMAL/coq/termination/ReducibilityFull.v:1288` | CONDITIONAL | `FunctionalExtensionality.functional_extensionality_dep` | PENDING / well_typed_SN_conclusion_is_false | PENDING (D7 reviewer) |
-| `accepts_uses_only_current` | `02_FORMAL/coq/crypto/AlgorithmPolicy.v:90` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `effect_sound_multi_step_declared` | `02_FORMAL/coq/effects/EffectGate.v:608` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `reachable_effects_from_program_text` | `02_FORMAL/coq/effects/EffectContainment.v:195` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `ref_free_well_typed_SN` | `02_FORMAL/coq/termination/StrongNormRefFree.v:704` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
-| `ref_free_noninterference` | `02_FORMAL/coq/properties/NonInterferenceRefFree.v:656` | HEADLINE | closed under the global context | ref_free_noninterference_nonvacuous / PENDING | PENDING (D7 reviewer) |
-| `ref_free_constant_time` | `02_FORMAL/coq/properties/NonInterferenceRefFree.v:690` | HEADLINE | closed under the global context | PENDING / PENDING | PENDING (D7 reviewer) |
+| `type_safety` | `02_FORMAL/coq/type_system/TypeSafety.v:27` | HEADLINE | closed under the global context | `type_safety_premises_satisfiable` / `type_safety_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `progress` | `02_FORMAL/coq/type_system/Progress.v:118` | HEADLINE | closed under the global context | `progress_premises_satisfiable` / `progress_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `preservation` | `02_FORMAL/coq/type_system/Preservation.v:1229` | HEADLINE | closed under the global context | `preservation_premises_satisfiable` / `preservation_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `well_typed_SN` | `02_FORMAL/coq/termination/ReducibilityFull.v:1288` | CONDITIONAL | `FunctionalExtensionality.functional_extensionality_dep` | none: a premise is refuted in the build / `well_typed_SN_conclusion_is_false` | PENDING (D7 reviewer) |
+| `accepts_uses_only_current` | `02_FORMAL/coq/crypto/AlgorithmPolicy.v:90` | HEADLINE | closed under the global context | `pqc_program_accepted` / `accepts_uses_only_current_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `effect_sound_multi_step_declared` | `02_FORMAL/coq/effects/EffectGate.v:608` | HEADLINE | closed under the global context | `effect_sound_multi_step_declared_premises_satisfiable` / `effect_sound_multi_step_declared_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `reachable_effects_from_program_text` | `02_FORMAL/coq/effects/EffectContainment.v:195` | HEADLINE | closed under the global context | `reachable_effects_from_program_text_premises_satisfiable` / `reachable_effects_from_program_text_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `ref_free_well_typed_SN` | `02_FORMAL/coq/termination/StrongNormRefFree.v:704` | HEADLINE | closed under the global context | `ref_free_well_typed_SN_premises_satisfiable` / `ref_free_well_typed_SN_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `ref_free_noninterference` | `02_FORMAL/coq/properties/NonInterferenceRefFree.v:656` | HEADLINE | closed under the global context | `ref_free_noninterference_nonvacuous` / `ref_free_noninterference_conclusion_not_trivial` | PENDING (D7 reviewer) |
+| `ref_free_constant_time` | `02_FORMAL/coq/properties/NonInterferenceRefFree.v:690` | HEADLINE | closed under the global context | `ref_free_noninterference_nonvacuous` / `ref_free_constant_time_conclusion_not_trivial` | PENDING (D7 reviewer) |
 
 ## `type_safety`
 
@@ -114,7 +114,29 @@ list in the kernel.
 - **Status:** HEADLINE
 - **Verify:** `riinac verify --coq` (kernel `Print Assumptions`)
 
-## Open items
+## Cited on the website, not headline
 
-- 18 of 20 witnesses are PENDING (S2.9).
+The website's evidence ledger also shows these. None is a guarantee: each carries its own
+claim level (§2), and cited families report how many of their proofs the vacuity detector
+flags (those count as excluded Qed).
+
+| Cited as | Level | Source | Kernel assumptions | Role |
+|---|---|---|---|---|
+| `Semantics.step_deterministic` | PROVEN-MODEL | `02_FORMAL/coq/foundations/Semantics.v:502` | closed under the global context | Evaluation in the formal semantics is deterministic. A building block the capstones rest on, not a security property. |
+| `Declassification.logical_relation_declassify_proven` | PROVEN-MODEL | `02_FORMAL/coq/properties/Declassification.v:130` | closed under the global context | A declassification step lemma. A building block; the non-interference guarantee is ref_free_noninterference. |
+| `X25519.x25519_rfc7748_vector1` | MODELLED | `02_FORMAL/coq/crypto/X25519.v:125` | closed under the global context | The Coq X25519 model computes the RFC 7748 test vector. A fact about the model, not about the shipped implementation. |
+| `montgomery::tests::test_x25519_matches_coq_model` | ENFORCED-TESTED | `05_TOOLING/crates/riina-core/src/crypto/montgomery.rs` | — | Compares the shipped X25519 with the Coq model on test vectors. Testing, not a proof that the Rust implements the model. |
+| `verification_boundary.json` | ENFORCED-TESTED | `05_TOOLING/crates/riina-core/verification_boundary.json` | — | States, per crypto primitive, what is modelled, trusted and not covered; a test fails when a primitive gains a proof without a boundary entry. |
+| `HIPAACompliance.COMPLY_001_*` | MODELLED | `02_FORMAL/coq/compliance/HIPAACompliance.v` (15 theorems, 0 flagged vacuous) | — | HIPAA obligations as Coq facts about the file's own definitions. Evidence toward HIPAA, not a conformity assessment. |
+| `PCIDSSCompliance.COMPLY_002_*` | MODELLED | `02_FORMAL/coq/compliance/PCIDSSCompliance.v` (37 theorems, 1 flagged vacuous) | — | PCI-DSS obligations as Coq facts about the file's own definitions. Evidence toward PCI-DSS, not a conformity assessment. |
+| `DO178CCompliance.COMPLY_003_*` | MODELLED | `02_FORMAL/coq/compliance/DO178CCompliance.v` (20 theorems, 0 flagged vacuous) | — | DO-178C objectives as Coq facts about the file's own definitions. Evidence toward DO-178C, not certification. |
+| `ConstantTimeCrypto.CT_001_branch_free` | MODELLED | `02_FORMAL/coq/domains/ConstantTimeCrypto.v:115` | closed under the global context | Models the masa_tetap branch-freedom discipline. The compiler's masa_tetap check is ENFORCED-TESTED separately (PROPERTY_LEDGER.md). |
+
+## Witnesses and open items
+
+- Every capstone has a positive witness (its premises hold for a concrete term) and a
+  negative witness (its conclusion fails for a term that violates a premise), except the
+  positive witness of a CONDITIONAL theorem whose premise the build refutes (S2.9). Most
+  are in `02_FORMAL/coq/properties/HeadlineWitnesses.v`; the counting policy excludes
+  them, since they test statements rather than cover anything.
 - 10 of 10 statements await a named human review (S2.10, owner ruling D7).

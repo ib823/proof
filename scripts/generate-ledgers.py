@@ -6,7 +6,10 @@ repository root are generated, never hand-edited:
 
   HEADLINE_THEOREMS.md   from 04_SPECS/ledgers/headline_theorems.toml, the
                          KERNEL_CAPSTONES list in riinac's verify.rs, the Coq
-                         sources (file and line) and captured Print Assumptions
+                         sources (file and line) and captured Print Assumptions;
+                         its "cited, not headline" section lists everything else
+                         the website's evidence ledger shows, and the check fails
+                         if the website cites anything outside the registry
   PROPERTY_LEDGER.md     from 04_SPECS/ledgers/properties.toml
   TRUSTED_BASE.md        from the repository and the capture
 
@@ -42,6 +45,10 @@ LEVELS = ("PROVEN-IMPL", "PROVEN-MODEL", "ENFORCED-TESTED", "MODELLED", "GENERAT
 THEOREM_FIELDS = ("name", "module", "statement", "fragment", "public_claim", "positive_witness",
                   "negative_witness", "reviewer", "review_date", "status")
 PROPERTY_FIELDS = ("id", "property", "level", "fragment", "theorem", "tests", "command")
+CITED_FIELDS = {"coq": ("cited_as", "module", "name", "file", "level", "role"),
+                "rust-test": ("cited_as", "name", "file", "level", "role"),
+                "artifact": ("cited_as", "file", "level", "role")}
+WEBSITE = "website/src/RiinaWebsite.jsx"
 # metrics.json claimLevels values, mapped onto the mandate's §2 vocabulary.
 CLAIM_LEVEL_MAP = [
     ("mechanized (Coq)", "PROVEN-MODEL"),
@@ -140,11 +147,31 @@ def parameter_sites():
     return sites
 
 
-def capture_sources_hash(capstones):
-    """What the captured Print Assumptions depends on: the capstone list and
+def witnesses(theorems):
+    return sorted({t[w] for t in theorems for w in ("positive_witness", "negative_witness")
+                   if t.get(w) not in (None, "", "PENDING", "IMPOSSIBLE")})
+
+
+def capture_targets(theorems, cited):
+    """The theorems the capture runs Print Assumptions on: the capstones, every
+    cited Coq theorem named exactly (families are MODELLED facts), and every
+    witness."""
+    targets = kernel_capstones() + [(c["module"], c["name"]) for c in cited
+                                    if c.get("kind") == "coq" and not c.get("name", "").endswith("*")]
+    decls = active_declarations()
+    seen = {n for _, n in targets}
+    for w in witnesses(theorems):
+        if w in decls and w not in seen:
+            rel = decls[w].split(":", 1)[0].split("02_FORMAL/coq/", 1)[1]
+            targets.append((rel[:-2].replace("/", "."), w))
+    return targets
+
+
+def capture_sources_hash(targets):
+    """What the captured Print Assumptions depends on: the target list and
     every active Coq file (a dependency can change an assumption set)."""
     h = hashlib.sha256()
-    for module, name in capstones:
+    for module, name in targets:
         h.update(f"{module}.{name}\n".encode())
     for rel in sorted(active_coq_files()):
         h.update(rel.encode())
@@ -153,9 +180,29 @@ def capture_sources_hash(capstones):
 
 
 def load_sources():
-    th = tomllib.loads(read("04_SPECS/ledgers/headline_theorems.toml"))["theorem"]
+    reg = tomllib.loads(read("04_SPECS/ledgers/headline_theorems.toml"))
     props = tomllib.loads(read("04_SPECS/ledgers/properties.toml"))["property"]
-    return th, props
+    return reg["theorem"], reg.get("cited", []), props
+
+
+def website_citations():
+    """(name, file) for every entry of the website's evidence ledger `EV`."""
+    src = read(WEBSITE)
+    block = src.split("const EV = [", 1)[1].split("\n];", 1)[0]
+    return re.findall(r"name: '([^']+)'.*?file: '([^']+)'", block, re.S)
+
+
+def family_members(rel, prefix):
+    return [m.group(1) for m in DECL.finditer(coq_code(rel)) if m.group(1).startswith(prefix)]
+
+
+def vacuity_flags():
+    """{coq-relative file: set of theorem names} flagged by detect-vacuous-proofs.py."""
+    r = subprocess.run([sys.executable, "-I", os.path.join(ROOT, "scripts", "detect-vacuous-proofs.py"),
+                        "--json"], cwd=ROOT, capture_output=True, text=True)
+    report = json.loads(r.stdout)
+    return {e["path"].split("02_FORMAL/coq/", 1)[-1]: {f["name"] for f in e["findings"]}
+            for e in report["files"]}
 
 
 # --------------------------------------------------------------------------
@@ -229,11 +276,12 @@ SIZE_GROUPS = {
 
 
 def capture():
-    capstones = kernel_capstones()
+    theorems_, cited_, _ = load_sources()
+    capstones = capture_targets(theorems_, cited_)
     rocq = run(["rocq", "--version"])
     if rocq is None or rocq.returncode != 0:
         die("--capture needs `rocq` on PATH (eval $(opam env --switch=rocq))")
-    scratch = "".join(f"From RIINA Require Import {m}.\n" for m, _ in capstones)
+    scratch = "".join(f"From RIINA Require Import {m}.\n" for m in dict.fromkeys(m for m, _ in capstones))
     scratch += "".join(f"Print Assumptions RIINA.{m}.{n}.\n" for m, n in capstones)
     with tempfile.TemporaryDirectory(prefix="riina_ledger_") as d:
         path = os.path.join(d, "ledger_capture.v")
@@ -287,8 +335,68 @@ def capture():
 # --------------------------------------------------------------------------
 # Validation and rendering
 # --------------------------------------------------------------------------
-def validate(theorems, props, cap):
+def validate_cited(cited, cap):
     problems = []
+    capstones = kernel_capstones()
+    active = {f"02_FORMAL/coq/{rel}" for rel in active_coq_files()}
+    seen = set()
+    for c in cited:
+        who = c.get("cited_as", "?")
+        kind = c.get("kind")
+        if kind not in CITED_FIELDS:
+            problems.append(f"cited {who}: kind must be one of {', '.join(CITED_FIELDS)}")
+            continue
+        for f in CITED_FIELDS[kind]:
+            if not str(c.get(f, "")).strip():
+                problems.append(f"cited {who}: missing field `{f}`")
+        if c.get("level") not in LEVELS:
+            problems.append(f"cited {who}: level `{c.get('level')}` is not a §2 claim level")
+        if who in seen:
+            problems.append(f"cited {who}: listed twice")
+        seen.add(who)
+        path = c.get("file", "")
+        if not os.path.exists(os.path.join(ROOT, path)):
+            problems.append(f"cited {who}: file `{path}` does not exist")
+            continue
+        if kind == "coq":
+            if path != "02_FORMAL/coq/" + c["module"].replace(".", "/") + ".v":
+                problems.append(f"cited {who}: file `{path}` is not module {c['module']}")
+            elif path not in active:
+                problems.append(f"cited {who}: `{path}` is not in the active build")
+            elif c["name"].endswith("*"):
+                if not family_members(path, c["name"][:-1]):
+                    problems.append(f"cited {who}: no theorem in {path} starts with {c['name'][:-1]}")
+            elif c["name"] not in family_members(path, c["name"]):
+                problems.append(f"cited {who}: {c['name']} is not declared in {path}")
+            elif cap is not None and c["level"] == "PROVEN-MODEL":
+                axioms = cap.get("print_assumptions", {}).get(c["name"])
+                if axioms is None:
+                    problems.append(f"cited {who}: no Print Assumptions captured (run --capture)")
+                elif axioms:
+                    problems.append(f"cited {who}: PROVEN-MODEL but uses {', '.join(axioms)}")
+        elif kind == "rust-test" and not re.search(rf"\bfn {re.escape(c['name'])}\s*\(", read(path)):
+            problems.append(f"cited {who}: no test fn {c['name']} in {path}")
+    # The website cites only registry entries (mandate S2.4), and the registry
+    # lists nothing the website no longer cites.
+    capstone_files = {}
+    for module, name in capstones:
+        capstone_files[f"{module.rsplit('.', 1)[-1]}.{name}"] = theorem_location(module, name)[0]
+    cited_files = {c.get("cited_as"): c.get("file") for c in cited}
+    site = website_citations()
+    for name, path in site:
+        want = capstone_files.get(name, cited_files.get(name))
+        if want is None:
+            problems.append(f"{WEBSITE} cites {name}, which is neither a capstone nor a cited registry "
+                            "entry (mandate S2.4)")
+        elif want != path:
+            problems.append(f"{WEBSITE} links {name} to {path}; the registry has {want}")
+    for name in sorted(set(cited_files) - {n for n, _ in site}):
+        problems.append(f"cited {name}: no longer cited on the website; remove it from the registry")
+    return problems
+
+
+def validate(theorems, cited, props, cap):
+    problems = validate_cited(cited, cap)
     capstones = kernel_capstones()
     want = {n for _, n in capstones}
     have = {t.get("name") for t in theorems}
@@ -304,9 +412,17 @@ def validate(theorems, props, cap):
         mod = dict((n, m) for m, n in capstones).get(t.get("name"))
         if mod and mod != t.get("module"):
             problems.append(f"{t['name']}: module {t.get('module')} != KERNEL_CAPSTONES {mod}")
+        # Every capstone has both witnesses (mandate S2.9). The only exception
+        # is a CONDITIONAL theorem whose premise the build refutes: it cannot
+        # have a positive witness, and says so.
         for w in ("positive_witness", "negative_witness"):
             v = t.get(w, "")
-            if v and v != "PENDING" and v not in decls:
+            if v == "IMPOSSIBLE" and w == "positive_witness" and t.get("status") == "CONDITIONAL":
+                continue
+            if v in ("", "PENDING", "IMPOSSIBLE"):
+                problems.append(f"{t['name']}: {w} is `{v or 'missing'}`; name a witness lemma "
+                                "(IMPOSSIBLE is allowed only as the positive witness of a CONDITIONAL theorem)")
+            elif v not in decls:
                 problems.append(f"{t['name']}: {w} `{v}` is not declared in the active build")
         if t.get("status") not in ("HEADLINE", "CONDITIONAL"):
             problems.append(f"{t['name']}: status must be HEADLINE or CONDITIONAL")
@@ -327,12 +443,18 @@ def validate(theorems, props, cap):
     if cap is None:
         problems.append("reports/ledger_capture.json is missing (run --capture)")
     else:
-        if cap.get("sources_sha256") != capture_sources_hash(capstones):
-            problems.append("reports/ledger_capture.json is stale: the capstones or the active Coq "
+        if cap.get("sources_sha256") != capture_sources_hash(capture_targets(theorems, cited)):
+            problems.append("reports/ledger_capture.json is stale: the captured theorems or the active Coq "
                             "files changed since it was captured (run --capture where Coq is built)")
         for n in want:
             if n not in cap.get("print_assumptions", {}):
                 problems.append(f"capture has no Print Assumptions for {n}")
+        for w in witnesses(theorems):
+            axioms = cap.get("print_assumptions", {}).get(w)
+            if axioms is None:
+                problems.append(f"capture has no Print Assumptions for witness {w} (run --capture)")
+            elif axioms:
+                problems.append(f"witness {w} uses {', '.join(axioms)}; a witness must be closed")
     return problems
 
 
@@ -340,7 +462,33 @@ def md_cell(s):
     return str(s).replace("|", "/").replace("\n", " ")
 
 
-def render_headline(theorems, cap):
+def render_cited(cited, cap):
+    flags = vacuity_flags()
+    out = ["## Cited on the website, not headline", "",
+           "The website's evidence ledger also shows these. None is a guarantee: each carries its own",
+           "claim level (§2), and cited families report how many of their proofs the vacuity detector",
+           "flags (those count as excluded Qed).", "",
+           "| Cited as | Level | Source | Kernel assumptions | Role |", "|---|---|---|---|---|"]
+    for c in cited:
+        path = c["file"]
+        kern = "—"
+        if c["kind"] == "coq":
+            rel = path.split("02_FORMAL/coq/", 1)[1]
+            if c["name"].endswith("*"):
+                members = family_members(path, c["name"][:-1])
+                flagged = len(set(members) & flags.get(rel, set()))
+                src = f"`{path}` ({len(members)} theorems, {flagged} flagged vacuous)"
+            else:
+                src = f"`{path}:{theorem_location(c['module'], c['name'])[1]}`"
+                axioms = cap["print_assumptions"].get(c["name"])
+                kern = "closed under the global context" if axioms == [] else ", ".join(f"`{a}`" for a in axioms or [])
+        else:
+            src = f"`{path}`"
+        out.append(f"| `{c['cited_as']}` | {c['level']} | {src} | {md_cell(kern)} | {md_cell(c['role'])} |")
+    return out + [""]
+
+
+def render_headline(theorems, cited, cap):
     order = [n for _, n in kernel_capstones()]
     by = {t["name"]: t for t in theorems}
     pa = cap["print_assumptions"]
@@ -360,7 +508,9 @@ def render_headline(theorems, cap):
         rel, line = theorem_location(t["module"], n)
         axioms = pa[n]
         kern = "closed under the global context" if not axioms else ", ".join(f"`{a}`" for a in axioms)
-        wit = f"{t['positive_witness']} / {t['negative_witness']}"
+        pos = ("none: a premise is refuted in the build" if t["positive_witness"] == "IMPOSSIBLE"
+               else f"`{t['positive_witness']}`")
+        wit = f"{pos} / `{t['negative_witness']}`"
         rev = "PENDING (D7 reviewer)" if t["reviewer"] == "PENDING" else f"{t['reviewer']}, {t['review_date']}"
         out.append(f"| `{n}` | `{rel}:{line}` | {t['status']} | {md_cell(kern)} | {md_cell(wit)} | {md_cell(rev)} |")
     out.append("")
@@ -376,10 +526,14 @@ def render_headline(theorems, cap):
         if t.get("note"):
             out.append(f"- **Note:** {t['note']}")
         out += [f"- **Verify:** `riinac verify --coq` (kernel `Print Assumptions`)", ""]
-    pending_w = sum(1 for t in theorems for w in ("positive_witness", "negative_witness") if t[w] == "PENDING")
+    out += render_cited(cited, cap)
     pending_r = sum(1 for t in theorems if t["reviewer"] == "PENDING")
-    out += ["## Open items", "",
-            f"- {pending_w} of {2 * len(theorems)} witnesses are PENDING (S2.9).",
+    out += ["## Witnesses and open items", "",
+            "- Every capstone has a positive witness (its premises hold for a concrete term) and a",
+            "  negative witness (its conclusion fails for a term that violates a premise), except the",
+            "  positive witness of a CONDITIONAL theorem whose premise the build refutes (S2.9). Most",
+            "  are in `02_FORMAL/coq/properties/HeadlineWitnesses.v`; the counting policy excludes",
+            "  them, since they test statements rather than cover anything.",
             f"- {pending_r} of {len(theorems)} statements await a named human review (S2.10, owner ruling D7).",
             ""]
     return "\n".join(out)
@@ -462,9 +616,9 @@ def render_trusted(theorems, cap):
     return "\n".join(out)
 
 
-def generate(theorems, props, cap):
+def generate(theorems, cited, props, cap):
     return {
-        "HEADLINE_THEOREMS.md": render_headline(theorems, cap),
+        "HEADLINE_THEOREMS.md": render_headline(theorems, cited, cap),
         "PROPERTY_LEDGER.md": render_properties(props, cap),
         "TRUSTED_BASE.md": render_trusted(theorems, cap),
     }
@@ -482,12 +636,12 @@ def main():
         capture()
         if args == ["--capture"]:
             args = []
-    theorems, props = load_sources()
+    theorems, cited, props = load_sources()
     cap = json.load(open(CAPTURE, encoding="utf-8")) if os.path.exists(CAPTURE) else None
-    problems = validate(theorems, props, cap)
+    problems = validate(theorems, cited, props, cap)
     if "--check" in args:
         if cap is not None:
-            for name, text in generate(theorems, props, cap).items():
+            for name, text in generate(theorems, cited, props, cap).items():
                 path = os.path.join(ROOT, name)
                 if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
                     problems.append(f"{name} differs from its sources (run python3 scripts/generate-ledgers.py)")
@@ -499,7 +653,7 @@ def main():
         return
     if problems:
         die("cannot generate:\n" + "\n".join("  " + p for p in problems))
-    for name, text in generate(theorems, props, cap).items():
+    for name, text in generate(theorems, cited, props, cap).items():
         with open(os.path.join(ROOT, name), "w", encoding="utf-8") as fh:
             fh.write(text)
     print("Wrote " + ", ".join(OUTPUTS))

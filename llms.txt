@@ -10,11 +10,11 @@ security properties (see Verified State).
 
 - File extension: `.rii`
 - Version: 0.4.0
-- Keywords: Bahasa Melayu (Malaysian) + English dual syntax
+- Keywords: Bahasa Melayu (Malaysian) + English dual syntax (132 keywords; full table in llms-full.txt)
 - Repository: https://github.com/ib823/riina
 - License: RIINA Proprietary License (source publicly readable; not open source)
 
-## Verified State (command-derived)
+## Verified State (generated from website/public/metrics.json, 2026-10-20)
 
 IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
 other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
@@ -22,65 +22,78 @@ other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
 D6) and are preserved at commit `fd23fbdb8`. What remains is hand-written. Never
 sum counts across lanes: they count different things.
 
-- Coq: 1,679 core Qed, 9,719 model Qed, 1,421 excluded Qed. Core = foundations,
+- Coq: 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed. Core = foundations,
   type system, properties, effects, termination and the compiler-linked
-  crypto policy; model = domain, industry,
-  compliance, crypto and runtime models (facts about their own definitions, not
-  verified systems); excluded = vacuous patterns, examples, counterexamples or test files. Never quote a
-  raw total.
+  crypto policy; model = domain, industry, compliance, crypto and runtime models
+  (facts about their own definitions, not verified systems); excluded = vacuous
+  patterns, examples, counterexamples or test files. Never quote a raw total.
   0 Admitted, 0 Abort, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface;
-  none of the capstone theorems depends on them). 334 active .v files.
-- Scope of the headline results: type safety (progress, preservation) for the
-  full calculus. Strong normalization, non-interference and constant time
-  (reduction-count independence from secrets) are proven only for the
+  none of the capstone theorems depends on them). 335 active .v files.
+- Scope of the headline results (HEADLINE_THEOREMS.md): type safety (progress,
+  preservation) for the full calculus. Strong normalization, non-interference and
+  constant time (reduction-count independence from secrets) are proven only for the
   reference-free, `fix`-free core; beyond it they are enforced by tests.
-- Lean 4: 0 theorem/lemma declarations. The generated port (12,576 declarations,
-  only 215 of which ever elaborated) is archived; the REQ-67(b) hand-written
-  re-proof has not started. Claim: **generated**.
-- SMT/Z3: the REQ-67(a) scoped set — 37 properties (security lattice 25, effect
-  join 12) checked by `scripts/verify-smt.sh` for exact unsat counts. Claim:
-  **mechanized** at that scope only.
+- Lean 4: 0 theorem/lemma declarations. The generated port is archived (at commit
+  `fd23fbdb8` it had 12,576 declarations, of which 215 ever elaborated); the
+  REQ-67(b) hand-written re-proof has not started. Claim: **generated**.
+- SMT/Z3: the REQ-67(a) scoped set — 37 properties (security lattice 25, effect join 12) checked by
+  `scripts/verify-smt.sh` for exact unsat counts. Claim: **mechanized** at that
+  scope only.
 - F*: retired; 1 smoke module (3 trivial lemmas: constant-time eq, zeroize length).
 - Isabelle: retired; no files remain.
 - TLA+ / Alloy: a few hand-written specs and models (1 TLC-checked smoke spec with
   5 THEOREMs; 1 Alloy smoke model with 6 assertions). Claim: generated
   (quarantined until wired into CI).
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
-- Authoritative per-lane claim levels: `website/public/metrics.json`.
+- Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
+  claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
 - Rust: 3,569 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
-  differential-tested against the interpreter. Floating point is not
-  supported, by design (a float literal is error P0015).
+  differential-tested against the interpreter. Native builds need gcc or clang as
+  `cc` on Linux or macOS (Windows: WSL); MSVC is not supported. Floating point is
+  not supported, by design (a float literal is error P0015).
 - Crypto (`riina-core`): experimental and unaudited. Tested against NIST
   known-answer (ACVP) vectors; not validated (no CMVP/CAVP certificate).
+- Compliance: 19 profiles, 606 heuristic rules in total — evidence toward a
+  standard, not a conformity assessment or certification.
 - Audits: no independent audit has been published.
-- Examples: 172 .rii files, of which 84 currently pass `riinac check` (19 of the
-  28 in `00_basics/`, measured 2026-10-19); the shipped parser accepts a narrower grammar than some examples
-  assume — see `07_EXAMPLES/README.md`. Passing `check` does NOT imply the
-  example can be COMPILED: a few effectful builtins (`jaring_tls_*`, the
-  virtual-filesystem trio, the crypto-agility runtime) are still
-  interpreter-only (REQ-70), and `riinac build` fails closed on them.
+- Examples: 172 .rii files, of which 84 currently pass `riinac check`; the
+  shipped parser accepts a narrower grammar than some examples assume — see
+  `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
+  COMPILED: a few effectful builtins (`jaring_tls_*`, the virtual-filesystem trio,
+  the crypto-agility runtime) are still interpreter-only (REQ-70), and
+  `riinac build` fails closed on them.
+- An unknown type name (including a typo) is currently accepted as `Any`
+  (REQ-93(c)); use only the types in llms-full.txt.
 
 ## Session Protocol
 
 All LLM CLIs MUST follow RIINA_MASTER_PLAN.md Part 8 (8 mandatory steps):
 ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
 
-During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker (as of
-2026-10-20 the active gate is C — Standard Library Hardening; Gates A and B are
-closed) and the hardening-mandate tracking section in Part 11. Re-read the
-marker rather than trusting this line.
+During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker and the
+hardening-mandate tracking section in Part 11 for the current gate.
 
-Work on `main` or your assigned managed-session branch (`claude/*`, syncs back to `main`).
-Never commit to `public` or `gh-pages`.
-Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (never --no-verify) → sync-public.sh → sync-metrics.sh → deploy-website.sh
+**Default branch is `main`.** Managed-session feature branches (`claude/*`, `codex/*`) are permitted when a session assigns one; they sync back to `main`.
+- Never commit to `public` (managed by `scripts/sync-public.sh` only).
+- Never commit to `gh-pages` (managed by `scripts/deploy-website.sh` only).
+
+```
+Stage specific files → commit "[TRACK_X] TYPE: ..." → push (pre-push runs riinac verify --full; never --no-verify)
+→ scripts/sync-public.sh → scripts/generate-metrics.sh + scripts/sync-metrics.sh (when counts change)
+→ scripts/deploy-website.sh
+```
+Numbers flow ONE direction: actual commands → `website/public/metrics.json` → generated docs → website → master plan.
 
 ## Docs
 
 - [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
 - [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
+- [Full reference](llms-full.txt): this file plus the complete keyword, type, effect and builtin tables
+- [Builtin reference](docs/api/STDLIB.md): every builtin and its signature, from the compiler's registry
+- [Headline theorems](HEADLINE_THEOREMS.md): the only theorems a public surface may cite
 - [Language Specs](04_SPECS/): Formal specifications
 - [Examples](07_EXAMPLES/): 172 example .rii files
 - [Formal Proofs](02_FORMAL/coq/): Coq proof library
@@ -142,22 +155,32 @@ keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)
 ### Session Types
 sesi (session), pilih (select), cabang (branch), tamat (end)
 
-## CLI
+## Effects (lowest to highest, with lattice level)
+
+Bersih(0) < Ubah(1) < Baca(2) < Peruntuk(3) < Tulis(4) < SistemFail(5) < Rangkaian(6) < RangkaianSelamat(7) < Kripto(8) < Rawak(9) < Sistem(10) < Masa(11) < Proses(12) < Panel(13) < Zirah(14) < Benteng(15) < Sandi(16) < Menara(17) < Gapura(18)
+
+## Security Levels (lowest to highest)
+
+Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
+
+## CLI (from `riinac --help`)
 
 ```bash
-riinac check file.rii     # Type-check + verify security
-riinac run file.rii       # Execute directly
-riinac build file.rii     # Compile to native via C
-riinac emit-c file.rii    # Generate C source
-riinac emit-ir file.rii   # Generate IR
-riinac repl               # Interactive mode
-riinac fmt file.rii       # Format source
-riinac doc file.rii       # Generate HTML docs
-riinac lsp                # Language server
-riinac verify --fast      # Quick verification (pre-commit)
-riinac verify --full      # Full verification (pre-push)
-riinac pkg init           # Initialize package
-riinac pkg add dep        # Add dependency
-riinac pkg build          # Build with dependencies
-riinac mcp                # MCP server for AI tools
+riinac check    # Parse and typecheck only (default)
+riinac run      # Parse, typecheck, and interpret
+riinac build    # Parse, typecheck, emit C/WASM, and compile (--run to execute)
+riinac emit-c   # Parse, typecheck, and emit C to stdout
+riinac emit-ir  # Parse, typecheck, lower, and print IR
+riinac test     # Discover and run inline ujian (test) blocks
+riinac doc      # Generate HTML documentation
+riinac fmt      # Format a .rii file
+riinac lsp      # Start LSP server (stdio)
+riinac mcp      # Start MCP server for AI agents (stdio)
+riinac repl     # Interactive read-eval-print loop
+riinac verify   # Run verification gate [--fast|--full|--coq]
+riinac pkg      # Package manager (init/add/remove/lock/build/...)
+riinac help     # Print this help (also --help, -h)
+riinac version  # Print the compiler version (also --version, -V)
 ```
+
+<!-- Generated by scripts/generate-agent-files.py from 04_SPECS/agent_files/llms.txt.tmpl. Edit the template, not this file (mandate S5.6). -->

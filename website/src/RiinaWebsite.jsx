@@ -419,7 +419,7 @@ function Footer({ go, metrics }) {
           <span>&copy; 2026 RIINA &middot; v{metrics.version} &middot; {metrics.git?.commit || ''}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: metrics.status?.build === 'passing' ? '#4a7a52' : '#8a6d1f' }}></span>
-            build {metrics.status?.build || 'unknown'} &middot; record written {metrics.generatedHuman || '—'}
+            build {metrics.status?.build || 'unknown'}{metrics.status?.build === 'passing' && metrics.status?.verifiedCommit ? ` (riinac verify --full at ${metrics.status.verifiedCommit})` : ''} &middot; record written {metrics.generatedHuman || '—'}
           </span>
         </div>
       </div>

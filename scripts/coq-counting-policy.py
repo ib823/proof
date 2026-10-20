@@ -87,6 +87,9 @@ EXCLUDED_FILES = {
     # A feasibility test of an encoding ("If this file compiles, Phase 1 can
     # proceed"), not a property of RIINA.
     "properties/AhmedStyleTest.v",
+    # Satisfiability and non-triviality witnesses for the headline theorems
+    # (mandate S2.9): tests of the statements, not coverage.
+    "properties/HeadlineWitnesses.v",
 }
 
 # Vacuity patterns that flag a proved theorem. P3 flags `:= False`

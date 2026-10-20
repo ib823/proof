@@ -408,16 +408,21 @@ fi
 # their numbers; CHANGELOG is release history and is not touched (its banner is
 # handled above). audit-docs.sh rejects any other value.
 RUST_TESTS_COMMA=$(add_commas "$RUST_TESTS")
-for rel in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
-           .cursorrules .clinerules docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md \
-           docs/i18n/README_zh.md; do
+# The agent instruction files (AGENTS.md, COPILOT.md, .cursorrules, .clinerules,
+# copilot-instructions, llms.txt, llms-full.txt) are generated from templates by
+# scripts/generate-agent-files.py, run below; they are not patched here.
+for rel in README.md CONTRIBUTING.md SECURITY.md docs/UNDERSTANDING_RIINA.md \
+           docs/i18n/README_ms.md docs/i18n/README_zh.md; do
     f="$REPO_ROOT/$rel"
     [ -f "$f" ] || continue
     if [ "$DRY_RUN" -eq 0 ]; then
         tmpfile=$(mktemp)
-        awk -v n="$RUST_TESTS_COMMA" -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" '
+        awk -v n="$RUST_TESTS_COMMA" -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" \
+            -v coq_active="$COQ_FILES_ACTIVE" -v coq_total="$COQ_FILES_TOTAL" '
             $0 !~ /at the tagged commit|at release|[Hh]istorical/ {
                 gsub(/[0-9][0-9]?,[0-9][0-9][0-9] tests/, n " tests")
+                gsub(/[0-9]+ Coq proof files \([0-9]+ active\)/, coq_total " Coq proof files (" coq_active " active)")
+                gsub(/[0-9]+ active proof files/, coq_active " active proof files")
                 gsub(/[0-9][0-9,]* core Qed/, core " core Qed")
                 gsub(/[0-9][0-9,]* model Qed/, model " model Qed")
                 gsub(/[0-9][0-9,]* excluded Qed/, excluded " excluded Qed")
@@ -535,6 +540,14 @@ for dir in "${TIER2_DIRS[@]}"; do
 done
 
 echo ""
+
+# ── Agent instruction files (REQ-109, mandate S5.6) ───────────────────
+if [ "$DRY_RUN" -eq 0 ]; then
+    python3 -I "$REPO_ROOT/scripts/generate-agent-files.py" || {
+        echo "ERROR: scripts/generate-agent-files.py failed" >&2
+        exit 1
+    }
+fi
 
 # ── Final report ──────────────────────────────────────────────────────
 

@@ -1,0 +1,7 @@
+- Do NOT create new planning/roadmap/audit documents. `RIINA_MASTER_PLAN.md` is the only plan.
+- Do NOT commit Coq proofs with `Admitted`.
+- Do NOT count stub prover files as proofs, and never add counts from different provers together.
+- Do NOT hand-type numbers: derive them from commands (`website/public/metrics.json` is the source of truth).
+- Do NOT edit generated files by hand (these instruction files, the ledgers, `PROOF_STATUS.md`, `AXIOMS.md`); edit their sources and regenerate.
+- Do NOT push with `--no-verify`: the in-repo hooks (`riinac verify`, `scripts/audit-docs.sh`) are the source of truth.
+- `.github/workflows/verify.yml` only wraps the internal gates; CI is never the source of truth and must not diverge from them.

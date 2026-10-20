@@ -42,7 +42,7 @@ SELF_TEST = "--self-test" in sys.argv[2:]
 SURFACES = [
     "README.md", "docs/i18n/README_ms.md", "docs/i18n/README_zh.md",
     "docs/UNDERSTANDING_RIINA.md", "docs/guide/GETTING_STARTED.md",
-    "07_EXAMPLES/README.md", "llms.txt", "AGENTS.md", "COPILOT.md",
+    "07_EXAMPLES/README.md", "llms.txt", "llms-full.txt", "AGENTS.md", "COPILOT.md",
     ".cursorrules", ".clinerules", ".github/copilot-instructions.md",
     "SECURITY.md", "CONTRIBUTING.md", "website/index.html",
     "website/src/RiinaWebsite.jsx", "riina-vscode/package.json",
@@ -99,6 +99,18 @@ def load_truth():
     e2e = re.search(r"const CORPUS_PASSING: usize = (\d+);",
                     read("03_PROTO/crates/riinac/tests/end_to_end.rs"))
     t["corpus_passing"] = int(e2e.group(1)) if e2e else None
+    # Rust crypto tests that compare an implementation with its Coq model.
+    links = 0
+    for d, _, fs in os.walk(os.path.join(ROOT, "05_TOOLING/crates/riina-core/src")):
+        for f in fs:
+            if f.endswith(".rs"):
+                with open(os.path.join(d, f), encoding="utf-8") as fh:
+                    links += len(re.findall(r"\bfn test_\w+_matches_coq_model\s*\(", fh.read()))
+    t["bridge_links"] = links
+    t["status"] = m.get("status", {})
+    man = read("VERIFICATION_MANIFEST.md") if os.path.exists(os.path.join(ROOT, "VERIFICATION_MANIFEST.md")) else ""
+    t["manifest"] = {k: (re.search(rf"^\*\*{k}:\*\* (\S+)", man, re.M) or [None, None])[1]
+                     for k in ("Git SHA", "Mode", "Status")}
     t["cargo_versions"] = {}
     for ws in ("03_PROTO/Cargo.toml", "05_TOOLING/Cargo.toml"):
         sec = read(ws).split("[workspace.package]", 1)[1]
@@ -222,8 +234,22 @@ def r_stale(line, t):
         yield "Isabelle is retired (REQ-67g); it does not 'compile' as a lane"
 
 
+NUMBER_WORDS = {w: i for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve".split())}
+
+
+def r_bridge_links(line, t):
+    for mm in re.finditer(r"\b(\w+) such differential links", line):
+        word = mm.group(1).lower()
+        n = int(word) if word.isdigit() else NUMBER_WORDS.get(word)
+        if n is not None and n != t["bridge_links"]:
+            yield (f"{mm.group(1)} differential links, but riina-core has {t['bridge_links']} "
+                   "*_matches_coq_model tests")
+
+
 LINE_RULES = [r_test_count, r_parameters, r_crates, r_examples, r_rocq, r_smt,
-              r_compliance, r_axiom_caveat, r_constant_time, r_risky, r_coq_files, r_stale]
+              r_compliance, r_axiom_caveat, r_constant_time, r_risky, r_coq_files, r_stale,
+              r_bridge_links]
 
 
 def check_text(rel, text, t):
@@ -278,6 +304,23 @@ def check_legacy_plans():
     return out
 
 
+def check_metrics_status(status, manifest):
+    """metrics.json `status` is derived from the riinac verify manifest, never
+    hand-typed (it once carried "grade": "A" and "threats": "1231+")."""
+    out = []
+    allowed = {"build", "verifiedCommit", "verifiedMode", "source"}
+    for k in sorted(set(status) - allowed):
+        out.append(f"metrics.json status.{k} is not measured by anything; remove it")
+    want = ("passing" if manifest.get("Mode") == "full" and manifest.get("Status") == "PASS"
+            else "failing" if manifest.get("Status") == "FAIL" else "unverified")
+    if status.get("build") != want:
+        out.append(f"metrics.json status.build is {status.get('build')!r}; the manifest says {want!r}")
+    if manifest.get("Git SHA") and status.get("verifiedCommit") != manifest["Git SHA"]:
+        out.append(f"metrics.json status.verifiedCommit {status.get('verifiedCommit')} != manifest "
+                   f"{manifest['Git SHA']} (run scripts/generate-metrics.sh)")
+    return out
+
+
 def check_site_defaults(t):
     """The website's fallback counts (shown while metrics.json loads) are the
     generated ones."""
@@ -296,6 +339,7 @@ def check_site_defaults(t):
 def check_repo(t):
     problems = check_versions(t)
     problems += check_site_defaults(t)
+    problems += check_metrics_status(t["status"], t["manifest"])
     problems += check_legacy_plans()
     for f in LEDGERS:
         if not os.path.exists(os.path.join(ROOT, f)):
@@ -315,7 +359,7 @@ def self_test(t):
     """Every rule must flag a seeded fault, and leave a correct line alone."""
     t = dict(t, rust_tests=3564, parameters=29, crates=18, examples=172, corpus_passing=84,
              rocq="9.1.1", smt=37, profiles=19, rules=606, per_profile={"hipaa": 33},
-             coq_files_active=334)
+             coq_files_active=334, bridge_links=9)
     seeded = {
         "3,560 tests pass": r_test_count, "29 `Parameter`s ok / 30 Parameters": r_parameters,
         "Rust compiler (19 crates)": r_crates, "171 example programs": r_examples,
@@ -329,6 +373,7 @@ def self_test(t):
         "Coq files: 317 (277 active)": r_coq_files, "333 active Coq files": r_coq_files,
         "4 active Abort sites remain (REQ-21)": r_stale,
         "the Isabelle smoke theory compiles": r_stale,
+        "One of eight such differential links": r_bridge_links,
     }
     clean = {
         "3,564 tests pass": r_test_count, "29 `Parameter`s (trusted interface)": r_parameters,
@@ -340,6 +385,7 @@ def self_test(t):
         "Programming language with a Coq-verified core model": r_risky,
         "334 active files; 334 active Coq modules": r_coq_files,
         "0 Admitted, 0 Abort, 0 `Axiom`": r_stale,
+        "One of nine such differential links": r_bridge_links,
     }
     failures = []
     for text, rule in seeded.items():
@@ -353,6 +399,14 @@ def self_test(t):
         failures.append("historical lines must be exempt")
     all_md = "".join(f"[x]({f}) " for f in LEDGERS)
     all_js = "".join(f"['{f}', 'x'] " for f in LEDGERS)
+    full_pass = {"Git SHA": "abc1234", "Mode": "full", "Status": "PASS"}
+    good = {"build": "passing", "verifiedCommit": "abc1234", "verifiedMode": "full", "source": "x"}
+    if check_metrics_status(good, full_pass):
+        failures.append("check_metrics_status flagged a status derived from the manifest")
+    if not check_metrics_status(dict(good, grade="A"), full_pass):
+        failures.append("check_metrics_status missed a hand-typed status.grade")
+    if not check_metrics_status(good, dict(full_pass, Mode="fast")):
+        failures.append("check_metrics_status missed 'passing' backed only by a fast-mode run")
     if check_ledger_links(all_md, all_js):
         failures.append("check_ledger_links flagged complete link lists")
     if len(check_ledger_links(all_md.replace("(TRUSTED_BASE.md)", ""), all_js)) != 1:
