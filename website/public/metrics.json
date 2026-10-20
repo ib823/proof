@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-20T11:01:06Z",
-  "generatedHuman": "October 20, 2026 at 11:01 UTC",
+  "generated": "2026-10-20T11:23:12Z",
+  "generatedHuman": "October 20, 2026 at 11:23 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "4277a575a",
+    "commit": "2cd43026e",
     "branch": "main"
   },
   "proofs": {
@@ -183,9 +183,9 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3587,
-    "testsVerified": 3587,
-    "testsEstimated": 3584,
+    "tests": 3595,
+    "testsVerified": 3595,
+    "testsEstimated": 3592,
     "testsSource": "cached_verified",
     "crates": 18
   },
@@ -210,7 +210,7 @@
   },
   "status": {
     "build": "passing",
-    "verifiedCommit": "6812b4e91",
+    "verifiedCommit": "2cd43026e",
     "verifiedMode": "full",
     "source": "VERIFICATION_MANIFEST.md, written by riinac verify; passing means a full-mode PASS at verifiedCommit"
   },

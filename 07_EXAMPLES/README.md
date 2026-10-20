@@ -28,8 +28,9 @@ before they pass.
 
 Recently added grammar support:
 
-- **`biar x: T = e` type annotations** (in-function and top-level). Accepted and
-  inferred.
+- **`biar x: T = e` type annotations** (in-function and top-level), and a
+  lambda's `-> T`. Checked: the value must fit `T`, or the program is rejected
+  (`Annotation mismatch`). Until 2026-10-20 they were parsed and ignored.
 - **Trailing `;` before a block close**, including a final `pulang x;` — now
   returns `x`.
 - **True early return.** `pulang e;` unwinds to the enclosing function boundary.

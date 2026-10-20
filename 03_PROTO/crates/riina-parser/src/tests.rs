@@ -4124,12 +4124,13 @@ fn test_parse_for_tuple_pattern() {
 
 #[test]
 fn test_parse_fn_type_multi_param_arrow() {
-    // `Fn(A, B) -> C` (multi-param arrow form).
+    // `Fn(A, B) -> C` (multi-param arrow form) curries: `A -> (B -> C)`. It
+    // used to keep only `A`, so the second parameter vanished (REQ-97).
     let mut p = Parser::new("Fn(Nombor, Nombor) -> Nombor");
     match p.parse_ty().unwrap() {
         Ty::Fn(a, r, _) => {
             assert_eq!(*a, Ty::Int);
-            assert_eq!(*r, Ty::Int);
+            assert!(matches!(*r, Ty::Fn(ref b, ref c, _) if **b == Ty::Int && **c == Ty::Int), "{r:?}");
         }
         other => panic!("expected Fn, got {other:?}"),
     }
@@ -4491,6 +4492,41 @@ fn capitalized_function_name_is_rejected() {
     Parser::new("fungsi tokokan(x: Nombor) -> Nombor kesan Bersih { pulang x; }")
         .parse_program()
         .expect("a lowercase function must still parse");
+}
+
+/// Annotations are kept for the checker (REQ-97). `biar x: T = e` and a
+/// lambda's `-> T` were parsed and discarded, and `Fn(A, B) -> R` kept only
+/// its first parameter, so a one-argument function satisfied it.
+#[test]
+fn test_annotations_are_kept_as_ascriptions() {
+    let program = |src: &str| format!("{:?}", Parser::new(src).parse_program().expect(src).desugar());
+    assert!(program("fungsi f() -> Nombor kesan Bersih { biar x: Teks = 5; x }")
+        .contains(r#"Let("x", None, Ascribe(Int(5), String)"#));
+    let lam = format!("{:?}", Parser::new("fungsi(y: Nombor) -> Teks { y }").parse_expr().expect("lambda"));
+    assert!(lam.contains(r#"Lam("y", Int, Ascribe(Var("y"), String))"#), "{lam}");
+    let prog = Parser::new("biar g: Nombor = 1;\nfungsi utama() -> Unit kesan Bersih { () }")
+        .parse_program()
+        .expect("parses");
+    assert!(format!("{:?}", prog.decls[0]).contains("Ascribe(Int(1), Int)"));
+}
+
+#[test]
+fn test_function_types_curry_every_parameter() {
+    let ty = |src: &str| Parser::new(src).parse_ty().expect(src);
+    let pure = riina_types::EffectSet::from(Effect::Pure);
+    assert_eq!(
+        ty("Fn(Nombor, Teks) -> Benar"),
+        Ty::Fn(
+            Box::new(Ty::Int),
+            Box::new(Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), pure)),
+            pure
+        )
+    );
+    assert_eq!(ty("Fn() -> Nombor"), Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), pure));
+    // Legacy comma form: the third slot is an effect; a type there was dropped.
+    assert_eq!(ty("Fn(Nombor, Teks)"), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), pure));
+    let err = Parser::new("Fn(Nombor, Teks, Benar)").parse_ty().expect_err("a third type is not an effect");
+    assert_eq!(err.kind, ParseErrorKind::InvalidEffect);
 }
 
 /// Integer literals keep their value in every base, and a literal with no

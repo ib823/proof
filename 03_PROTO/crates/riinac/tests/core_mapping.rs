@@ -424,17 +424,21 @@ fn the_stated_elaborations_are_what_the_parser_produces() {
             "fungsi f() -> Nombor kesan Bersih { pastikan betul lain { 0 }; 1 }",
             r#"LetRecGroup([("f", Fn(Unit, Int, Pure), Lam("_unit", Unit, If(Bool(true), Int(1), Int(0))))], Unit)"#,
         ),
-        // The REQ-97 / REQ-93(c) rows: an annotation, a second parameter type
-        // and a declared type name are dropped. These pin today's behaviour so
-        // the page cannot go on saying so once it is fixed.
+        // Annotations are kept and checked (`Ascribe`), and a function type
+        // with two parameters curries (REQ-97, fixed 2026-10-20).
         (
             "fungsi f() -> Nombor kesan Bersih { biar x: Teks = 5; x }",
-            r#"LetRecGroup([("f", Fn(Unit, Int, Pure), Lam("_unit", Unit, Let("x", None, Int(5), Var("x"))))], Unit)"#,
+            r#"LetRecGroup([("f", Fn(Unit, Int, Pure), Lam("_unit", Unit, Let("x", None, Ascribe(Int(5), String), Var("x"))))], Unit)"#,
+        ),
+        (
+            "fungsi f() -> Nombor kesan Bersih { biar g = fungsi(y: Nombor) -> Teks { y }; 1 }",
+            r#"LetRecGroup([("f", Fn(Unit, Int, Pure), Lam("_unit", Unit, Let("g", None, Lam("y", Int, Ascribe(Var("y"), String)), Int(1))))], Unit)"#,
         ),
         (
             "fungsi f(g: Fn(Nombor, Teks) -> Nombor) -> Nombor kesan Bersih { 1 }",
-            r#"LetRecGroup([("f", Fn(Fn(Int, Int, Pure), Int, Pure), Lam("g", Fn(Int, Int, Pure), Int(1)))], Unit)"#,
+            r#"LetRecGroup([("f", Fn(Fn(Int, Fn(String, Int, Pure), Pure), Int, Pure), Lam("g", Fn(Int, Fn(String, Int, Pure), Pure), Int(1)))], Unit)"#,
         ),
+        // REQ-93(c), still open: a declared type name reads as `Any`.
         (
             "jenis W = Nombor;\nfungsi f(x: W) -> W kesan Bersih { x }",
             r#"LetRecGroup([("f", Fn(Any, Any, Pure), Lam("x", Any, Var("x")))], Unit)"#,

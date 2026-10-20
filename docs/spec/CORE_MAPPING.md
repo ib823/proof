@@ -53,6 +53,7 @@ S1.2, S1.6).
 | `Expr::Case` | `ECase` | core | T_Case |
 | `Expr::If` | `EIf` | core | T_If |
 | `Expr::Let` | `ELet` | core | the optional linearity qualifier is unmodelled; Coq `ELet` has none |
+| `Expr::Ascribe` | `EApp`, `ELam`, `EVar` | elaborated | `e : T` (from `biar x: T = e` and a lambda's `-> T`) is `EApp (ELam y T (EVar y)) e`; the Rust checker also allows its subsumptions (e.g. a `Sanitized` value where plain text is expected) |
 | `Expr::Return` | — | unmodelled | early return (`pulang`); the core has no control effects |
 | `Expr::While` | — | unmodelled | loops (`selagi`, `ulang`, `untuk`) |
 | `Expr::Break` | — | unmodelled | `putus` |
@@ -471,8 +472,8 @@ and the test holds the website's keyword list to the same rule.
 
 | Token | Spellings | Kind | Elaborates to |
 |---|---|---|---|
-| `KwFn` | `fungsi`, `fn` | construct | Top level: `fungsi f(x: A, y: B) -> R kesan E { b }` is a `TopLevelDecl::Function`; `Program::desugar` puts each run of consecutive functions in one `LetRecGroup` of curried `Lam`s (no parameters: `Lam(_unit, Unit, b)`). In a block: `LetRec(f, T, Lam…, rest)`. `fungsi(x: A) { b }` is a `Lam`; its `-> R` is parsed and not checked (REQ-97) |
-| `KwLet` | `biar`, `let` | construct | `biar x = e; rest` is `Let(x, None, e, rest)`; an annotation `biar x: T = e` is parsed and not checked (REQ-97). `biar (a, b) = e` binds a fresh name and projects with `Fst`/`Snd`. At top level, `TopLevelDecl::Binding`, then `Let` |
+| `KwFn` | `fungsi`, `fn` | construct | Top level: `fungsi f(x: A, y: B) -> R kesan E { b }` is a `TopLevelDecl::Function`; `Program::desugar` puts each run of consecutive functions in one `LetRecGroup` of curried `Lam`s (no parameters: `Lam(_unit, Unit, b)`). In a block: `LetRec(f, T, Lam…, rest)`. `fungsi(x: A) -> R { b }` is `Lam(x, A, Ascribe(b, R))`, so `b` and every `pulang` in it are checked against `R` |
+| `KwLet` | `biar`, `let` | construct | `biar x = e; rest` is `Let(x, None, e, rest)`; with an annotation, `biar x: T = e` binds `Ascribe(e, T)`, which the checker holds `e` to. `biar (a, b) = e` binds a fresh name and projects with `Fst`/`Snd`. At top level, `TopLevelDecl::Binding`, then `Let` |
 | `KwMut` | `ubah`, `mut` | part | `biar ubah x = e; rest` is `LetMut(x, e, rest)`; later reads of `x` are `SlotGet`, and `x = e` is `SlotSet`. Ignored on a parameter |
 | `KwConst` | `tetap`, `const` | reserved | |
 | `KwStatic` | `statik`, `static` | reserved | |
@@ -633,7 +634,7 @@ and the test holds the website's keyword list to the same rule.
 | `format!("…{}…", a)` | a `BinOp::Add` chain of the pieces and `ke_teks(a)` |
 | `{ s1; s2; e }` (a block body) | `Let(_, s1, Let(_, s2, e))` |
 | `kesan E`, `kesan (A, B)`, `kesan ()` | the function's latent `EffectSet`; `()` is pure |
-| `Fn(A) -> R kesan E` (type) | `Ty::Fn(A, R, E)`. With several parameter types only the first is kept, so `Fn(A, B) -> R` accepts a one-argument function (REQ-97) |
+| `Fn(A) -> R kesan E` (type) | `Ty::Fn(A, R, E)`; `Fn(A, B) -> R kesan E` curries to `Ty::Fn(A, Fn(B, R, E), E)`, as a `fungsi` type does; `Fn() -> R` takes `Unit`. The legacy `Fn(A, R, E)` form takes an effect third, and a type there is an error |
 | an unknown type name, or `Peta<…>`, `Hasil<…>` | `Ty::Any` (REQ-93(c)) |
 
 ### Builtins

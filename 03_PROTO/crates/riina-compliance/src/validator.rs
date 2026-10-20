@@ -48,6 +48,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         | Expr::Require(_, body)
         | Expr::Grant(_, body)
         | Expr::SlotSet(_, body)
+        | Expr::Ascribe(body, _)
         | Expr::Perform(_, body) => {
             walk_inner(body, rules, out);
         }

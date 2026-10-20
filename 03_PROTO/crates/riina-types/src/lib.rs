@@ -1340,6 +1340,14 @@ pub enum Expr {
     If(Box<Expr>, Box<Expr>, Box<Expr>),
     /// let x = e1 in e2 (with optional linearity qualifier)
     Let(Ident, Option<Linearity>, Box<Expr>, Box<Expr>),
+    /// `e : T`, a type annotation the checker holds `e` to: `biar x: T = e`
+    /// and a lambda's `-> T` elaborate to it. Its type is `T` (or `e`'s own
+    /// type when `T` contains `Any`), and it has no run-time meaning: every
+    /// backend evaluates `e`. In the core it is `EApp (ELam y T (EVar y)) e`.
+    ///
+    /// Until 2026-10-20 both annotations were parsed and discarded, so
+    /// `biar x: Teks = 5` ran and printed 5 (REQ-97).
+    Ascribe(Box<Expr>, Ty),
     /// Early return: `pulang e`. Evaluating it unwinds to the nearest enclosing
     /// function-application boundary, yielding `e` as that call's result. Its own
     /// type is `Any` (it never returns to its evaluation context), so it unifies

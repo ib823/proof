@@ -610,6 +610,7 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
         | Expr::Classify(e)
         | Expr::Prove(e)
         | Expr::Return(e)
+        | Expr::Ascribe(e, _)
         | Expr::Ref(e, _) => free_vars(e),
         Expr::Perform(_, e) | Expr::Require(_, e) | Expr::Grant(_, e) => free_vars(e),
         Expr::Handle(e, x, h) => {
@@ -796,6 +797,7 @@ impl Lower {
             | Expr::Inl(b, _)
             | Expr::Inr(b, _)
             | Expr::Return(b)
+            | Expr::Ascribe(b, _)
             | Expr::Perform(_, b)
             | Expr::Ref(b, _)
             | Expr::Deref(b)
@@ -896,6 +898,7 @@ impl Lower {
             Expr::RecordLit(name, _) => Some(name.clone()),
             Expr::Lam(_, _, b)
             | Expr::Return(b)
+            | Expr::Ascribe(b, _)
             | Expr::Let(_, _, _, b)
             | Expr::LetMut(_, _, b)
             | Expr::LetRec(_, _, _, b)
@@ -925,7 +928,7 @@ impl Lower {
                 Expr::Var(fname) => self.fn_returns_struct.get(fname).cloned(),
                 _ => None,
             },
-            Expr::Return(b) => self.struct_name_of(b),
+            Expr::Return(b) | Expr::Ascribe(b, _) => self.struct_name_of(b),
             _ => None,
         }
     }
@@ -1164,6 +1167,8 @@ impl Lower {
             ),
             // `pulang e` has type Any (it never yields to its own context).
             Expr::Return(_) => Ty::Any,
+            // An annotation is erased: the value is `e`'s, in `e`'s representation.
+            Expr::Ascribe(e, _) => self.infer_type(e),
             Expr::Classify(e) => Ty::Secret(Box::new(self.infer_type(e))),
             Expr::Declassify(e, _) => {
                 if let Ty::Secret(t) = self.infer_type(e) {
@@ -1348,7 +1353,7 @@ impl Lower {
                 .infer_effect(e1)
                 .join(self.infer_effect(e2))
                 .join(Effect::Write),
-            Expr::Return(e) => self.infer_effect(e),
+            Expr::Return(e) | Expr::Ascribe(e, _) => self.infer_effect(e),
             Expr::Classify(e) | Expr::Declassify(e, _) | Expr::Prove(e) => self.infer_effect(e),
             Expr::Require(eff, e) => self.infer_effect(e).join(*eff),
             Expr::Grant(_, e) => self.infer_effect(e),
@@ -2466,6 +2471,8 @@ impl Lower {
             // still close that block with a `Branch` to its merge, which is why
             // closing uses `terminate_if_open`: overwriting the `Return` here
             // would restore the fall-through bug.
+            // A type annotation has no run-time meaning: lower `e` itself.
+            Expr::Ascribe(inner, _) => self.lower_expr(inner),
             Expr::Return(inner) => {
                 let value = self.lower_expr(inner)?;
                 if self.honour_return {

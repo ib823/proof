@@ -58,6 +58,7 @@ macro_rules! push_children {
             | Expr::Inl(a, _)
             | Expr::Inr(a, _)
             | Expr::Return(a)
+            | Expr::Ascribe(a, _)
             | Expr::SlotSet(_, a)
             | Expr::Perform(_, a)
             | Expr::Ref(a, _)
