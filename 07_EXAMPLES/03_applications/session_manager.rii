@@ -338,7 +338,7 @@ fungsi saring_pengguna(senarai: Senarai<RekodSesi>, pengguna_id: Teks) -> Senara
     pulang hasil;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 

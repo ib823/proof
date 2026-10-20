@@ -279,7 +279,7 @@ fungsi hitung_hash_catatan(catatan: CatatanTransaksi) -> Teks kesan Bersih {
 }
 
 
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Tulis {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Tulis {
     pulang s;
 }
 

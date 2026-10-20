@@ -1,6 +1,10 @@
 // choreography_basic.rii — JALINAN Choreography Example
 // Global multiparty session protocol
 
+// The messages: an amount requested, and whether it is approved.
+jenis Permintaan = Nombor;
+jenis Keputusan = Benar;
+
 koreografi Pembelian {
     peranan Pemohon, Pelulus;
 

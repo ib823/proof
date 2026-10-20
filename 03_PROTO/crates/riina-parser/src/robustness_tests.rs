@@ -168,11 +168,12 @@ fn trailing_skipped_declarations_keep_the_program_intact() {
 
 #[test]
 fn a_long_run_of_skipped_declarations_is_iterative() {
-    // Each skipped declaration used to recurse once.
-    let src = format!(
-        "{}fungsi utama() -> Nombor kesan Bersih {{ 0 }}",
-        "guna std::teks;\njenis T = Nombor;\n".repeat(50_000)
-    );
+    // Each `guna`/`jenis` declaration used to recurse once. (Each alias needs
+    // its own name: a type declared twice is an error.)
+    let decls: String = (0..50_000)
+        .map(|i| format!("guna std::teks;\njenis T{i} = Nombor;\n"))
+        .collect();
+    let src = format!("{decls}fungsi utama() -> Nombor kesan Bersih {{ 0 }}");
     match parse_bounded(&src, NEST_STACK, 30) {
         Outcome::Parsed { decls, .. } => assert_eq!(decls, ["fn utama"]),
         other => panic!("{other:?}"),

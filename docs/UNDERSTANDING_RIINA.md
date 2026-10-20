@@ -57,7 +57,7 @@ The constitution means nothing without a government to enforce it. Track B is RI
 - **Standard Library** — 88 built-in functions across 9 modules (strings, lists, math, maps, sets, testing, time, files, JSON).
 - **Developer Tools** — Formatter (`riina-fmt`), language server (`riina-lsp`), documentation generator (`riina-doc`), VS Code extension, package manager (`riina-pkg`), REPL.
 
-**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,601 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
+**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,616 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
 
 ### Track C — The Legal Code (Specifications)
 
@@ -179,7 +179,7 @@ RIINA was constructed in eight phases, each building on the previous:
 | 1 | Compiler Completion | The core compiler: lexer, parser, type checker, code generator, REPL | Done |
 | 2 | Standard Library | 88 built-in functions across 9 modules | Done |
 | 3 | Formal Verification | Coq (mechanized): 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed; 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) | Stable |
-| 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, examples (172 today; 84 pass `riinac check`) | Done |
+| 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, examples (172 today; 82 pass `riinac check`) | Done |
 | 5 | Ecosystem | Package manager, CI/CD, Docker, Nix, release system, Proprietary license | Done |
 | 6 | Adoption | C FFI, demo apps, community setup, enterprise compliance-profile checks, public repository | Done |
 | 7 | Platform Universality | WASM backend, mobile backends (scaffolding), in-browser playground, backend differential tests | Done |
@@ -225,7 +225,7 @@ These numbers reflect the current verified state of the codebase:
 | Active proof files | 334 |
 | Rust tests | 3,560 (compiler workspace), plus the tooling workspace's own tests |
 | Compiler crates | 18 |
-| Example programs | 172 (84 pass `riinac check`) |
+| Example programs | 172 (82 pass `riinac check`) |
 | Standard library builtins | 88 |
 | Compliance profiles | 15 (3 with implemented heuristic checks; evidence toward a profile, not a conformity assessment or certification) |
 | Target platforms | 4 (native, WASM, Android, iOS; WASM and mobile are scaffolding) |

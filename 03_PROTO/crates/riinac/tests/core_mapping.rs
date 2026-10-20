@@ -64,7 +64,7 @@ const COQ_INDUCTIVES: &[&str] = &[
 
 const RUST_STATUSES: &[&str] = &["core", "refined", "elaborated", "unmodelled"];
 const COQ_STATUSES: &[&str] = &["core", "refined", "coq-only"];
-const KINDS: &[&str] = &["construct", "part", "soft", "skipped", "reserved"];
+const KINDS: &[&str] = &["construct", "part", "soft", "reserved"];
 
 fn repo_root() -> PathBuf {
     // .../03_PROTO/crates/riinac -> repo root
@@ -325,7 +325,7 @@ fn page_errors(page: &Page, t: &Truth) -> Vec<String> {
         if !KINDS.contains(&kind) {
             errs.push(format!("{at}: kind `{kind}` is not one of {KINDS:?}"));
         }
-        if matches!(kind, "construct" | "part" | "skipped") && row.cells[3].is_empty() {
+        if matches!(kind, "construct" | "part") && row.cells[3].is_empty() {
             errs.push(format!("{at}: a `{kind}` keyword says what it elaborates to"));
         }
     }
@@ -438,10 +438,15 @@ fn the_stated_elaborations_are_what_the_parser_produces() {
             "fungsi f(g: Fn(Nombor, Teks) -> Nombor) -> Nombor kesan Bersih { 1 }",
             r#"LetRecGroup([("f", Fn(Fn(Int, Fn(String, Int, Pure), Pure), Int, Pure), Lam("g", Fn(Int, Fn(String, Int, Pure), Pure), Int(1)))], Unit)"#,
         ),
-        // REQ-93(c), still open: a declared type name reads as `Any`.
+        // A type alias means its type; a record or variant type name reads
+        // as `Any` (REQ-93(c), 2026-10-20). Both used to be `Any`.
         (
             "jenis W = Nombor;\nfungsi f(x: W) -> W kesan Bersih { x }",
-            r#"LetRecGroup([("f", Fn(Any, Any, Pure), Lam("x", Any, Var("x")))], Unit)"#,
+            r#"LetRecGroup([("f", Fn(Int, Int, Pure), Lam("x", Int, Var("x")))], Unit)"#,
+        ),
+        (
+            "bentuk T { x: Nombor }\nfungsi f(x: T) -> Hasil<Nombor, Kosong> kesan Bersih { Jadi(1) }",
+            r#"LetRecGroup([("f", Fn(Any, Sum(Int, Unit), Pure), Lam("x", Any, Inl(Int(1), Any)))], Unit)"#,
         ),
         (
             "fungsi f() -> Unit kesan Bersih { fungsi g(y: Nombor) -> Nombor kesan Bersih { y } () }",

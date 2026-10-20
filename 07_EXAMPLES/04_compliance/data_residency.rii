@@ -255,6 +255,6 @@ fungsi format(s: Teks, arg: Teks) -> Teks kesan Tulis {
     pulang s;
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Tulis {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Tulis {
     pulang 0;
 }

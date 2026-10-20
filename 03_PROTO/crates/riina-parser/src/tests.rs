@@ -1871,27 +1871,18 @@ fn test_parse_syariah_compliant_type_keyword() {
 }
 
 #[test]
-fn test_parse_unknown_type_is_nominal_any() {
-    // User-defined nominal types (e.g. `jenis`-declared records) have no nominal
-    // semantics yet, so an unknown type name parses as the structural `Any` type
-    // rather than erroring. This mirrors the top-level `jenis` skip.
-    let mut p = Parser::new("FooBarBaz");
-    assert_eq!(p.parse_ty().unwrap(), Ty::Any);
-}
-
-#[test]
-fn test_parse_unknown_generic_type_is_any() {
-    // Generic argument lists on unknown nominal types are consumed and discarded.
-    // (Names like `Keupayaan` are *known* parameterized types with their own
-    // argument grammar, so they are intentionally not covered here.)
-    for src in [
-        "JejakAudit<Teks>",
-        "Hasil<Rahsia<Teks>, Teks>",
-        "MyMap<K, List<V>>",
-    ] {
-        let mut p = Parser::new(src);
-        assert_eq!(p.parse_ty().unwrap(), Ty::Any, "should parse `{src}` as Any");
+fn test_parse_unknown_type_is_an_error() {
+    // An undeclared type name used to parse as `Any`, with any `<…>`
+    // arguments discarded, so it accepted every value (REQ-93(c)).
+    for src in ["FooBarBaz", "JejakAudit<Teks>", "MyMap<K, List<V>>"] {
+        let err = Parser::new(src).parse_ty().expect_err(src);
+        assert!(matches!(err.kind, ParseErrorKind::UnknownType { .. }), "{src}: {err:?}");
     }
+    // `Hasil` is the built-in result type.
+    assert_eq!(
+        Parser::new("Hasil<Rahsia<Teks>, Teks>").parse_ty().unwrap(),
+        Ty::Sum(Box::new(Ty::Secret(Box::new(Ty::String))), Box::new(Ty::String))
+    );
 }
 
 // =============================================================================
@@ -2442,7 +2433,7 @@ fn test_parse_linearity_paling_in_function() {
 
 #[test]
 fn test_parse_choreography_basic() {
-    let source = "koreografi Proto { peranan A, B; A -> B: hantar Msg; tamat; }";
+    let source = "koreografi Proto { peranan A, B; A -> B: hantar Nombor; tamat; }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2456,7 +2447,7 @@ fn test_parse_choreography_basic() {
                 assert_eq!(roles, &["A".to_string(), "B".to_string()]);
                 match protocol {
                     SessionType::Send(ty, cont) => {
-                        assert_eq!(**ty, Ty::Any); // Msg → Any
+                        assert_eq!(**ty, Ty::Int);
                         assert_eq!(**cont, SessionType::End);
                     }
                     other => panic!("Expected Send, got {:?}", other),
@@ -2491,7 +2482,7 @@ fn test_parse_choreography_multi_role() {
 #[test]
 fn test_parse_choreography_multi_interaction() {
     let source =
-        "koreografi Proto { peranan A, B; A -> B: hantar Req; B -> A: hantar Resp; tamat; }";
+        "koreografi Proto { peranan A, B; A -> B: hantar Teks; B -> A: hantar Benar; tamat; }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2514,7 +2505,7 @@ fn test_parse_choreography_multi_interaction() {
 
 #[test]
 fn test_parse_choreography_with_choice() {
-    let source = "koreografi Proto { peranan A, B; pilih { Lulus -> { A -> B: hantar Respon; tamat; }, Tolak -> { A -> B: hantar Sebab; tamat; } } }";
+    let source = "koreografi Proto { peranan A, B; pilih { Lulus -> { A -> B: hantar Nombor; tamat; }, Tolak -> { A -> B: hantar Teks; tamat; } } }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -3043,7 +3034,10 @@ fn test_parse_jalinan_send_to_spawned() {
 
 #[test]
 fn test_parse_jalinan_choreography_program() {
-    let source = r#"koreografi Beli {
+    // Message types may be aliases declared in the file.
+    let source = r#"jenis Pesanan = Nombor;
+    jenis Pengesahan = Benar;
+    koreografi Beli {
         peranan Pembeli, Penjual;
         Pembeli -> Penjual: hantar Pesanan;
         Penjual -> Pembeli: hantar Pengesahan;
@@ -3902,11 +3896,15 @@ fn test_parse_nested_generic_double() {
 }
 
 #[test]
-fn test_parse_nested_generic_triple_unknown_inner() {
-    // Innermost `Peta<..>` is an unknown nominal type (uses the skip path);
-    // the `>>>` must close all three levels without over-consuming.
-    let mut p = Parser::new("Mungkin<Senarai<Peta<Teks, Nombor>>>");
-    assert!(p.parse_ty().is_ok());
+fn test_parse_nested_generic_triple_declared_inner() {
+    // Innermost `Peta<..>` is a declared generic record (its arguments are
+    // parsed, then the name reads as `Any`); the `>>>` must close all three
+    // levels without over-consuming.
+    let (params, _) = fn_sig(
+        "jenis Peta<K, V> { k: K, v: V }\n\
+         fungsi f(x: Mungkin<Senarai<Peta<Teks, Nombor>>>, y: Nombor) -> Nombor { 0 }",
+    );
+    assert_eq!(params, vec![Ty::Option(Box::new(Ty::List(Box::new(Ty::Any)))), Ty::Int]);
 }
 
 #[test]
@@ -4655,4 +4653,247 @@ fn test_float_literal_is_a_dedicated_error_at_the_literal() {
     let msg = err.kind.to_string();
     assert!(msg.contains("perpuluhan(\"1.5\")") && msg.contains("wang("), "{msg}");
     assert_eq!(&src[err.span.start..err.span.end], "1.5", "caret must sit on the literal");
+}
+
+// =============================================================================
+// TYPE NAMES (REQ-93(c))
+// =============================================================================
+//
+// A type name that was not built in used to parse as `Any`, so a typo
+// accepted every value and `jenis Umur = Nombor;` meant nothing.
+
+fn type_err(source: &str) -> ParseErrorKind {
+    Parser::new(source).parse_program().expect_err("expected a type error").kind
+}
+
+/// The parameter and return types of the first function in `source`.
+fn fn_sig(source: &str) -> (Vec<Ty>, Ty) {
+    let program = Parser::new(source).parse_program().expect("parses");
+    for decl in program.decls {
+        if let TopLevelDecl::Function { params, return_ty, .. } = decl {
+            return (params.into_iter().map(|(_, t)| t).collect(), return_ty);
+        }
+    }
+    panic!("no function in {source:?}");
+}
+
+#[test]
+fn test_unknown_type_is_an_error_with_a_suggestion() {
+    let kind = type_err("fungsi f(x: Nombr) -> Nombor { x }");
+    assert_eq!(
+        kind,
+        ParseErrorKind::UnknownType { name: "Nombr".into(), suggestion: Some("Nombor".into()) }
+    );
+    assert_eq!(kind.error_code(), "P0020");
+    // Inside a generic argument, and with no close match.
+    assert_eq!(
+        type_err("fungsi f(x: Senarai<Rahsa<Teks>>) -> Nombor { 0 }"),
+        ParseErrorKind::UnknownType { name: "Rahsa".into(), suggestion: Some("Rahsia".into()) }
+    );
+    assert_eq!(
+        type_err("biar x: Zxqwv = 5;"),
+        ParseErrorKind::UnknownType { name: "Zxqwv".into(), suggestion: None }
+    );
+}
+
+#[test]
+fn test_unknown_type_is_reported_where_it_is_written() {
+    let source = "fungsi f(x: Nombor) -> Titk { x }";
+    let err = Parser::new(source).parse_program().expect_err("unknown type");
+    assert_eq!(&source[err.span.start..err.span.end], "Titk");
+}
+
+#[test]
+fn test_type_alias_means_its_type() {
+    let (params, ret) = fn_sig("jenis Umur = Nombor; fungsi f(x: Umur) -> Umur { x }");
+    assert_eq!(params, vec![Ty::Int]);
+    assert_eq!(ret, Ty::Int);
+    // An alias may use an earlier alias.
+    let (params, _) = fn_sig(
+        "jenis Kod = Teks; jenis Senarai_Kod = Senarai<Kod>; \
+         fungsi f(x: Senarai_Kod) -> Nombor { 0 }",
+    );
+    assert_eq!(params, vec![Ty::List(Box::new(Ty::String))]);
+    // A function type, whose effect `|` is not a variant bar.
+    let (params, _) = fn_sig(
+        "jenis Penapis = Fn(Teks) -> Benar kesan (Baca | Tulis); \
+         fungsi f(p: Penapis) -> Nombor { 0 }",
+    );
+    assert!(matches!(params[0], Ty::Fn(..)), "{params:?}");
+}
+
+#[test]
+fn test_type_alias_must_be_declared_before_use() {
+    let kind = type_err("fungsi f(x: Umur) -> Nombor { 0 } jenis Umur = Nombor;");
+    assert_eq!(kind, ParseErrorKind::TypeAliasBeforeDeclaration("Umur".into()));
+    assert_eq!(kind.error_code(), "P0021");
+    // Including inside its own definition.
+    assert_eq!(
+        type_err("jenis Pokok = Senarai<Pokok>;"),
+        ParseErrorKind::TypeAliasBeforeDeclaration("Pokok".into())
+    );
+}
+
+#[test]
+fn test_record_and_variant_names_read_as_any_anywhere_in_the_file() {
+    // The checker has no record or variant types, so these names are `Any`,
+    // but only once declared (above or below the use).
+    for decl in [
+        "bentuk Titik { x: Nombor, y: Nombor }",
+        "struktur Titik { x: Nombor }",
+        "pilihan Titik { Asal, Lain(Nombor) }",
+        "jenis Titik { x: Nombor }",
+        "jenis Titik = { x: Nombor };",
+        "jenis Titik = | Asal | Lain(Nombor);",
+        "jenis Titik = Asal | Lain(Nombor);",
+        "jenis Titik = Titik(Nombor);",
+    ] {
+        let before = format!("fungsi f(p: Titik) -> Nombor {{ 0 }} {decl}");
+        let after = format!("{decl} fungsi f(p: Titik) -> Nombor {{ 0 }}");
+        for source in [before, after] {
+            assert_eq!(fn_sig(&source).0, vec![Ty::Any], "{source}");
+        }
+    }
+}
+
+#[test]
+fn test_generic_record_arguments_are_checked() {
+    let decl = "jenis Kotak<T> { nilai: T }";
+    let (params, _) = fn_sig(&format!(
+        "{decl} fungsi f(a: Kotak<Rahsia<Teks>>, b: Kotak<Senarai<Senarai<Nombor>>>) -> Nombor {{ 0 }}"
+    ));
+    assert_eq!(params, vec![Ty::Any, Ty::Any]);
+    assert_eq!(
+        type_err(&format!("{decl} fungsi f(a: Kotak<Nombr>) -> Nombor {{ 0 }}")),
+        ParseErrorKind::UnknownType { name: "Nombr".into(), suggestion: Some("Nombor".into()) }
+    );
+    // A non-generic type takes no arguments.
+    assert!(matches!(
+        type_err("bentuk Titik { x: Nombor } fungsi f(p: Titik<Nombor>) -> Nombor { 0 }"),
+        ParseErrorKind::UnexpectedToken(_)
+    ));
+}
+
+#[test]
+fn test_generic_parameters_are_scoped_to_their_function() {
+    let (params, ret) = fn_sig("fungsi id<T>(x: T) -> T { x }");
+    assert_eq!(params, vec![Ty::Any]);
+    assert_eq!(ret, Ty::Any);
+    let (params, _) = fn_sig("fungsi f<K, V>(k: K, v: Senarai<V>) -> Nombor { 0 }");
+    assert_eq!(params, vec![Ty::Any, Ty::List(Box::new(Ty::Any))]);
+    // Inside the body too.
+    assert!(Parser::new("fungsi f<T>(x: T) -> T { biar y: T = x; y }")
+        .parse_program()
+        .is_ok());
+    // Not outside it.
+    assert_eq!(
+        type_err("fungsi id<T>(x: T) -> T { x } fungsi g(y: T) -> Nombor { 0 }"),
+        ParseErrorKind::UnknownType { name: "T".into(), suggestion: None }
+    );
+}
+
+#[test]
+fn test_unsupported_type_syntax_is_rejected() {
+    // A bound was skipped; nothing would check it.
+    let kind = type_err("fungsi f<T: Sifat>(x: T) -> T { x }");
+    assert_eq!(
+        kind,
+        ParseErrorKind::UnsupportedTypeSyntax {
+            name: "T".into(),
+            what: "bounds on generic parameters"
+        }
+    );
+    assert_eq!(kind.error_code(), "P0023");
+    // A generic alias would need substitution at each use.
+    assert_eq!(
+        type_err("jenis Pasangan<A> = (A, A);"),
+        ParseErrorKind::UnsupportedTypeSyntax { name: "Pasangan".into(), what: "generic type aliases" }
+    );
+    assert_eq!(
+        type_err("fungsi f(p: Pasangan<Nombor>) -> Nombor { 0 } jenis Pasangan<A> = (A, A);"),
+        ParseErrorKind::UnsupportedTypeSyntax { name: "Pasangan".into(), what: "generic type aliases" }
+    );
+}
+
+#[test]
+fn test_awam_type_declaration_is_rejected_not_moved() {
+    // `awam` before a type used to skip the type and make the NEXT declaration
+    // public instead.
+    assert_eq!(
+        type_err("awam bentuk Titik { x: Nombor } fungsi rahsia() -> Nombor { 0 }"),
+        ParseErrorKind::UnsupportedTypeSyntax {
+            name: "Titik".into(),
+            what: "exported (`awam`) type declarations"
+        }
+    );
+}
+
+#[test]
+fn test_type_redeclaration_is_rejected() {
+    let kind = type_err("bentuk Token { x: Nombor }");
+    assert_eq!(kind, ParseErrorKind::TypeRedeclared { name: "Token".into(), builtin: true });
+    assert_eq!(kind.error_code(), "P0022");
+    assert_eq!(
+        type_err("bentuk Titik { x: Nombor } pilihan Titik { A }"),
+        ParseErrorKind::TypeRedeclared { name: "Titik".into(), builtin: false }
+    );
+    assert_eq!(
+        type_err("jenis Umur = Nombor; jenis Umur = Teks;"),
+        ParseErrorKind::TypeRedeclared { name: "Umur".into(), builtin: false }
+    );
+    // A generic parameter named like a built-in type would never be used.
+    assert_eq!(
+        type_err("fungsi f<Nombor>(x: Nombor) -> Nombor { x }"),
+        ParseErrorKind::TypeRedeclared { name: "Nombor".into(), builtin: true }
+    );
+}
+
+#[test]
+fn test_kosong_and_hasil_are_built_in() {
+    let (params, ret) = fn_sig(
+        "fungsi f(a: Hasil<Nombor, Teks>, b: Result<Benar, Teks>) -> Kosong { () }",
+    );
+    assert_eq!(
+        params,
+        vec![
+            Ty::Sum(Box::new(Ty::Int), Box::new(Ty::String)),
+            Ty::Sum(Box::new(Ty::Bool), Box::new(Ty::String)),
+        ]
+    );
+    assert_eq!(ret, Ty::Unit);
+    // `Hasil` takes both arguments.
+    assert!(Parser::new("fungsi f(a: Hasil<Nombor>) -> Nombor { 0 }")
+        .parse_program()
+        .is_err());
+}
+
+#[test]
+fn test_jenis_as_a_variable_declares_no_type() {
+    // `jenis` is also a variable name; only `jenis Name` declares a type.
+    let source = "fungsi f(jenis: Teks) -> Teks { biar x = { jenis: jenis }; jenis }";
+    assert!(Parser::new(source).parse_program().is_ok());
+    assert_eq!(
+        type_err("fungsi f(jenis: Teks) -> jenis { jenis }"),
+        ParseErrorKind::ExpectedType
+    );
+}
+
+#[test]
+fn builtin_type_names_match_the_parser() {
+    // `BUILTIN_TYPE_NAMES` (redeclaration check, suggestions) must name
+    // exactly the string arms of `parse_ty_inner`, in order.
+    let src = include_str!("lib.rs");
+    let start = src.find("fn parse_ty_inner(").expect("parse_ty_inner");
+    let end = src[start..].find("\n    fn ").map_or(src.len(), |i| start + i);
+    let mut arms = Vec::new();
+    for line in src[start..end].lines() {
+        let line = line.trim();
+        let Some(pat) = line.split("=>").next().filter(|_| line.starts_with('"')) else {
+            continue;
+        };
+        for name in pat.split('|') {
+            arms.push(name.trim().trim_matches('"').to_string());
+        }
+    }
+    assert_eq!(arms, crate::BUILTIN_TYPE_NAMES);
 }

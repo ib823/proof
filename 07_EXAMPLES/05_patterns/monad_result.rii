@@ -75,6 +75,6 @@ modul teks {
     }
 }
 
-fungsi format(s: Teks, arg: T) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, arg: T) -> Teks kesan Bersih {
     pulang s;
 }

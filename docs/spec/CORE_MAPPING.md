@@ -130,7 +130,7 @@ S1.2, S1.6).
 | `Ty::SecureChan` | `TSecureChan` | core | |
 | `Ty::ConstantTime` | `TConstantTime` | core | |
 | `Ty::Zeroizing` | `TZeroizing` | core | |
-| `Ty::Any` | — | unmodelled | matches every type; used by polymorphic builtins, and today also for an unknown type name (REQ-93(c)) |
+| `Ty::Any` | — | unmodelled | matches every type; used by polymorphic builtins, generic parameters (`fungsi f<T>`) and the names of record and variant types, which the checker does not type (REQ-93(c)) |
 | `Ty::RawPtr` | — | unmodelled | FFI |
 | `Ty::CChar` | — | unmodelled | FFI |
 | `Ty::CInt` | — | unmodelled | FFI |
@@ -461,13 +461,12 @@ every spelling. Kind:
 | `construct` | Starts a construct; Elaborates to says into what. |
 | `part` | Valid only inside another construct, named in the row. |
 | `soft` | No construct of its own: used as a name, it is an ordinary name. |
-| `skipped` | Parsed and discarded: the declaration has no effect (REQ-93). |
 | `reserved` | No production: any use is a parse error. |
 
 `core_mapping.rs` checks the last two kinds against the compiler: every
 spelling of a `reserved` keyword must fail `riinac check`, and every spelling of
 a `soft` one must work as a name. `scripts/generate-agent-files.py` refuses to
-list a `reserved`, `skipped` or `soft` keyword as usable in the agent files,
+list a `reserved` or `soft` keyword as usable in the agent files,
 and the test holds the website's keyword list to the same rule.
 
 | Token | Spellings | Kind | Elaborates to |
@@ -477,9 +476,9 @@ and the test holds the website's keyword list to the same rule.
 | `KwMut` | `ubah`, `mut` | part | `biar ubah x = e; rest` is `LetMut(x, e, rest)`; later reads of `x` are `SlotGet`, and `x = e` is `SlotSet`. Ignored on a parameter |
 | `KwConst` | `tetap`, `const` | reserved | |
 | `KwStatic` | `statik`, `static` | reserved | |
-| `KwType` | `jenis`, `type` | skipped | `jenis N = T;` and `jenis N { … }` are discarded, and `N` then reads as `Ty::Any`, so `f(x: N)` accepts anything (REQ-93(c)). Elsewhere `jenis` is a name |
-| `KwStruct` | `bentuk`, `struktur`, `struct` | skipped | discarded; the name reads as `Ty::Any` (REQ-93(c)) |
-| `KwEnum` | `pilihan`, `enum` | skipped | discarded; the name reads as `Ty::Any` (REQ-93(c)) |
+| `KwType` | `jenis`, `type` | construct | Declares the type name `N` for this file. `jenis N = T;` is an alias: `N` means `T`. `jenis N { … }`, `jenis N = { … };`, `jenis N = \| A \| B(T);` and `jenis N = N(T);` declare a record or variant type, and `jenis N` a marker: `N` reads as `Ty::Any` and the body is discarded, because the checker has no record or variant types (REQ-93(c)). Elsewhere `jenis` is a name |
+| `KwStruct` | `bentuk`, `struktur`, `struct` | construct | `bentuk N { … }` declares the record type name `N` for this file; `N` reads as `Ty::Any` and the body is discarded (REQ-93(c)) |
+| `KwEnum` | `pilihan`, `enum` | construct | `pilihan N { … }` declares the variant type name `N` for this file; `N` reads as `Ty::Any` and the body is discarded (REQ-93(c)) |
 | `KwUnion` | `kesatuan`, `union` | reserved | |
 | `KwTrait` | `sifat`, `trait` | reserved | |
 | `KwImpl` | `laksana`, `impl` | reserved | |
@@ -635,7 +634,12 @@ and the test holds the website's keyword list to the same rule.
 | `{ s1; s2; e }` (a block body) | `Let(_, s1, Let(_, s2, e))` |
 | `kesan E`, `kesan (A, B)`, `kesan ()` | the function's latent `EffectSet`; `()` is pure |
 | `Fn(A) -> R kesan E` (type) | `Ty::Fn(A, R, E)`; `Fn(A, B) -> R kesan E` curries to `Ty::Fn(A, Fn(B, R, E), E)`, as a `fungsi` type does; `Fn() -> R` takes `Unit`. The legacy `Fn(A, R, E)` form takes an effect third, and a type there is an error |
-| an unknown type name, or `Peta<…>`, `Hasil<…>` | `Ty::Any` (REQ-93(c)) |
+| `Hasil<T, E>` (`Result`), `Kosong` (types) | `Ty::Sum(T, E)`, the type `Jadi`/`Gagal` build; `Ty::Unit` |
+| an alias `N` (`jenis N = T;`) | `T`. Used above its declaration, or in its own definition, it is error P0021 |
+| a record or variant type name, or a generic parameter `T` of `fungsi f<T>` | `Ty::Any`: the checker has no record or variant types, and generics are not instantiated (REQ-93(c)) |
+| any other type name, including `Peta<…>` | error P0020, with the nearest known name. Types are local to the file that declares them: `guna` imports functions only |
+| a type declared twice, or a type or generic parameter with a built-in type's name | error P0022 |
+| a generic alias `jenis N<T> = …;`, `awam` on a type, a bound `fungsi f<T: S>` | error P0023 (the bound and `awam` used to be skipped, and `awam` then applied to the next declaration) |
 
 ### Builtins
 

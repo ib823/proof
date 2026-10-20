@@ -231,7 +231,7 @@ awam fungsi utama() -> kesan (Kripto | Bersih) {
 }
 
 // Helper functions
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 

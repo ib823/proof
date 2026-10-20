@@ -18,6 +18,7 @@ use riina_types::{
     SecurityLevel, SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
 };
 use std::cell::RefCell;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::iter::Peekable;
 use std::rc::Rc;
@@ -83,6 +84,22 @@ pub enum ParseErrorKind {
     /// into a value the checker then rejected with "Expected function type,
     /// found Unit".
     MultipleActorHandlers(String),
+    /// A type name that is not built in, not declared in this file and not a
+    /// generic parameter in scope. It used to parse as `Any`, so a typo
+    /// (`Nombr`, `Rahsa<Teks>`) accepted every value (REQ-93(c)).
+    UnknownType {
+        name: String,
+        suggestion: Option<String>,
+    },
+    /// A `jenis N = T;` alias used above its declaration, or inside its own
+    /// definition. Its type is known only once the declaration is parsed.
+    TypeAliasBeforeDeclaration(String),
+    /// A type declared twice in one file, or with a built-in type's name.
+    TypeRedeclared { name: String, builtin: bool },
+    /// Type syntax the compiler does not implement, rejected rather than read
+    /// as `Any` or dropped: a generic alias, `awam` on a type declaration and
+    /// a bound on a generic parameter.
+    UnsupportedTypeSyntax { name: String, what: &'static str },
     /// `modul Name { … }` with a CAPITALIZED name (REQ-82).
     ///
     /// The declaration and the call site disagreed, silently. A `modul Masa`
@@ -171,6 +188,26 @@ impl fmt::Display for ParseErrorKind {
                 f,
                 "`pelaku {actor}` has more than one `kendalikan`; an actor has one handler"
             ),
+            ParseErrorKind::UnknownType { name, suggestion } => {
+                write!(f, "unknown type `{name}`")?;
+                match suggestion {
+                    Some(s) => write!(f, "; did you mean `{s}`?"),
+                    None => Ok(()),
+                }
+            }
+            ParseErrorKind::TypeAliasBeforeDeclaration(name) => write!(
+                f,
+                "type alias `{name}` is used before its declaration"
+            ),
+            ParseErrorKind::TypeRedeclared { name, builtin: true } => {
+                write!(f, "`{name}` is a built-in type and cannot be declared again")
+            }
+            ParseErrorKind::TypeRedeclared { name, builtin: false } => {
+                write!(f, "type `{name}` is declared more than once")
+            }
+            ParseErrorKind::UnsupportedTypeSyntax { name, what } => {
+                write!(f, "{what} are not supported (`{name}`)")
+            }
             ParseErrorKind::Lex(e) => write!(f, "{e}"),
         }
     }
@@ -205,6 +242,10 @@ impl ParseErrorKind {
             ParseErrorKind::NestedModulePath(_) => "P0017",
             ParseErrorKind::UnsupportedModuleItem(_) => "P0018",
             ParseErrorKind::MultipleActorHandlers(_) => "P0019",
+            ParseErrorKind::UnknownType { .. } => "P0020",
+            ParseErrorKind::TypeAliasBeforeDeclaration(_) => "P0021",
+            ParseErrorKind::TypeRedeclared { .. } => "P0022",
+            ParseErrorKind::UnsupportedTypeSyntax { .. } => "P0023",
             ParseErrorKind::Lex(e) => e.error_code(),
         }
     }
@@ -270,6 +311,33 @@ impl ParseErrorKind {
             ParseErrorKind::UnsupportedModuleItem(_) => {
                 "Move the item out of the `modul` block to the top level of the file, or \
                  put the module in its own file and import it with `guna`"
+                    .to_string()
+            }
+            ParseErrorKind::UnknownType { name, .. } => {
+                format!(
+                    "Use a built-in type (Nombor, Teks, Benar, Kosong, Senarai<T>, \
+                     Mungkin<T>, Hasil<T, E>, Rahsia<T>) or declare `{name}` in this file \
+                     (`jenis {name} = Nombor;`, `bentuk {name} {{ … }}`, `pilihan {name} \
+                     {{ … }}`). Types are local to the file that declares them: `guna` \
+                     imports functions, not types"
+                )
+            }
+            ParseErrorKind::TypeAliasBeforeDeclaration(name) => {
+                format!(
+                    "Move `jenis {name} = …;` above its first use. An alias cannot refer \
+                     to itself; a recursive type needs `bentuk` or `pilihan`"
+                )
+            }
+            ParseErrorKind::TypeRedeclared { builtin: true, .. } => {
+                "Choose another name: this one already means a built-in type".to_string()
+            }
+            ParseErrorKind::TypeRedeclared { builtin: false, .. } => {
+                "Remove or rename one of the declarations".to_string()
+            }
+            ParseErrorKind::UnsupportedTypeSyntax { .. } => {
+                "Generic parameters carry no bounds and an alias takes no parameters; \
+                 write the aliased type out where it is used. A type is local to its \
+                 file, so it has no `awam`"
                     .to_string()
             }
             ParseErrorKind::InvalidIntLiteral { .. } => {
@@ -435,6 +503,150 @@ pub struct Parser<'a> {
     loop_depth: usize,
     /// The token stream's first lexical error (see [`LexerIter::error`]).
     lex_error: Rc<RefCell<Option<LexError>>>,
+    /// Every type this file declares, from a pre-scan of the whole source in
+    /// [`Parser::new`], so a type may be used above its declaration. An alias
+    /// gets its type when its declaration is parsed (REQ-93(c)).
+    type_decls: HashMap<Ident, TypeDecl>,
+    /// Type names whose declaration has been parsed, to reject a second one.
+    declared_types: HashSet<Ident>,
+    /// Generic parameters of the function being parsed (`fungsi f<T>`).
+    type_params: Vec<Ident>,
+}
+
+/// What a declared type name means where it is used.
+#[derive(Debug, Clone)]
+enum TypeDecl {
+    /// `jenis N = T;`: `T`, once the declaration has been parsed.
+    Alias(Option<Ty>),
+    /// `jenis N<T> = T;`, rejected wherever it appears.
+    GenericAlias,
+    /// A record (`bentuk`, `jenis N { … }`, `jenis N = { … }`), a variant type
+    /// (`pilihan`, `jenis N = | A | B(T)`, `jenis N = N(T)`) or a marker
+    /// (`jenis N`). The checker has no record or variant types (a record
+    /// literal is typed `Any`), so the name reads as `Any`. `generic` says
+    /// whether `<…>` arguments may follow it.
+    Untyped { generic: bool },
+}
+
+/// Every type name `parse_ty_inner` knows, in its match order. The
+/// `builtin_type_names_match_the_parser` test holds this list to the match
+/// arms, so a new built-in type cannot be missing here.
+const BUILTIN_TYPE_NAMES: &[&str] = &[
+    "Int", "Nombor", "u8", "u16", "u32", "u64", "i8", "i16", "i32", "i64", "Besar", "BigInt",
+    "Perpuluhan", "Decimal", "Wang", "Money", "TitikTetap", "Qmn", "BinaryFixed", "Bool",
+    "Benar", "Unit", "Kosong", "String", "Teks", "Bytes", "Bait", "List", "Senarai", "Option",
+    "Mungkin", "Result", "Hasil", "Secret", "Rahsia", "Proof", "Bukti", "ConstantTime",
+    "MasaTetap", "Zeroizing", "Sifar", "Ref", "Ruj", "Sum", "Fn", "fungsi", "Labeled",
+    "Berlabel", "Tainted", "Tercemar", "Sanitized", "Disanitasi", "CInt", "CChar", "CVoid",
+    "Capability", "Keupayaan", "Chan", "Saluran", "SecureChan", "SaluranSelamat",
+    "SmartContract", "Token", "SyariahCompliant",
+];
+
+/// Find every type the source declares. A `jenis`/`bentuk`/`pilihan` keyword
+/// followed by a name is a declaration: `jenis` is also a variable name, but
+/// a variable is never directly followed by another name. The first
+/// declaration of a name wins; the parser rejects the second.
+fn scan_type_decls(source: &str) -> HashMap<Ident, TypeDecl> {
+    let mut lexer = Lexer::new(source);
+    let mut toks = Vec::new();
+    // A lexical error ends the scan; the parser reports it at that point.
+    while let Ok(t) = lexer.next_token() {
+        if t.kind == TokenKind::Eof {
+            break;
+        }
+        toks.push(t.kind);
+    }
+    let mut decls = HashMap::new();
+    for (i, kind) in toks.iter().enumerate() {
+        if !matches!(kind, TokenKind::KwType | TokenKind::KwStruct | TokenKind::KwEnum) {
+            continue;
+        }
+        let Some(TokenKind::Identifier(name)) = toks.get(i + 1) else {
+            continue;
+        };
+        let decl = classify_type_decl(kind, toks[i + 2..].iter().cloned());
+        decls.entry(name.clone()).or_insert(decl);
+    }
+    decls
+}
+
+/// Classify a type declaration from its keyword and the tokens after its
+/// name. The declaration parser reads this classification back from the
+/// pre-scan rather than deciding again, so the two cannot disagree.
+fn classify_type_decl(keyword: &TokenKind, mut rest: impl Iterator<Item = TokenKind>) -> TypeDecl {
+    let mut next = rest.next();
+    let generic = matches!(next, Some(TokenKind::Lt));
+    if generic {
+        let mut depth = 1u32;
+        while depth > 0 {
+            match rest.next() {
+                Some(TokenKind::Lt) => depth += 1,
+                Some(TokenKind::Gt) => depth -= 1,
+                Some(TokenKind::Shr) => depth = depth.saturating_sub(2),
+                Some(TokenKind::Eof) | None => return TypeDecl::Untyped { generic },
+                Some(_) => {}
+            }
+        }
+        next = rest.next();
+    }
+    if *keyword != TokenKind::KwType || next != Some(TokenKind::Eq) {
+        return TypeDecl::Untyped { generic };
+    }
+    // `jenis N = …`: a record, a variant type or an alias.
+    let first = rest.next();
+    let second = rest.next();
+    match (&first, &second) {
+        (Some(TokenKind::LBrace | TokenKind::Or), _) => return TypeDecl::Untyped { generic },
+        // `jenis Emel = Emel(Teks);`, a one-constructor variant. `Fn(A) -> R`
+        // is the one built-in type written with parentheses.
+        (Some(TokenKind::Identifier(c)), Some(TokenKind::LParen)) if c != "Fn" => {
+            return TypeDecl::Untyped { generic };
+        }
+        _ => {}
+    }
+    // `jenis N = A | B(T);`: a `|` outside any brackets before the `;`.
+    // `kesan` ends the scan: a `|` in an effect set is not a variant bar.
+    let mut depth = 0u32;
+    for tok in [first, second].into_iter().flatten().chain(rest) {
+        match tok {
+            TokenKind::LParen | TokenKind::LBracket | TokenKind::LBrace | TokenKind::Lt => {
+                depth += 1;
+            }
+            TokenKind::RParen | TokenKind::RBracket | TokenKind::RBrace | TokenKind::Gt => {
+                depth = depth.saturating_sub(1);
+            }
+            TokenKind::Shr => depth = depth.saturating_sub(2),
+            TokenKind::Or if depth == 0 => return TypeDecl::Untyped { generic },
+            TokenKind::KwEffect if depth == 0 => break,
+            TokenKind::Semi | TokenKind::Eof => break,
+            _ => {}
+        }
+    }
+    if generic {
+        TypeDecl::GenericAlias
+    } else {
+        TypeDecl::Alias(None)
+    }
+}
+
+/// Edit distance, for "did you mean" suggestions.
+fn edit_distance(a: &str, b: &str) -> usize {
+    let b: Vec<char> = b.chars().collect();
+    let mut row: Vec<usize> = (0..=b.len()).collect();
+    for (i, ca) in a.chars().enumerate() {
+        let mut prev = row[0];
+        row[0] = i + 1;
+        for (j, cb) in b.iter().enumerate() {
+            let cur = row[j + 1];
+            row[j + 1] = if ca == *cb {
+                prev
+            } else {
+                1 + prev.min(row[j]).min(cur)
+            };
+            prev = cur;
+        }
+    }
+    row[b.len()]
 }
 
 /// A surface match pattern, used only during `padan` compilation. The AST has
@@ -636,6 +848,9 @@ impl<'a> Parser<'a> {
             pending_pub: false,
             binding_scope: Vec::new(),
             loop_depth: 0,
+            type_decls: scan_type_decls(source),
+            declared_types: HashSet::new(),
+            type_params: Vec::new(),
         }
     }
 
@@ -814,6 +1029,23 @@ impl<'a> Parser<'a> {
                 // (rather than special-casing `fungsi` here) keeps `awam` working
                 // for every decl form the parser already supports.
                 self.consume(TokenKind::KwPub)?;
+                // A type is local to its file, so `awam` cannot apply to one.
+                // The loop below used to skip the type declaration and make
+                // the NEXT declaration public instead.
+                if matches!(
+                    self.peek().map(|t| &t.kind),
+                    Some(TokenKind::KwType | TokenKind::KwStruct | TokenKind::KwEnum)
+                ) {
+                    self.next();
+                    let name = self.parse_ident()?;
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnsupportedTypeSyntax {
+                            name,
+                            what: "exported (`awam`) type declarations",
+                        },
+                        span: self.current_span,
+                    });
+                }
                 self.pending_pub = true;
                 // `nested`: `awam awam awam …` must not recurse unboundedly.
                 let decl = self.nested(Self::parse_top_level_decl);
@@ -992,21 +1224,25 @@ impl<'a> Parser<'a> {
                 Ok(true)
             }
             Some(TokenKind::KwStruct) | Some(TokenKind::KwEnum) => {
-                // bentuk/pilihan — skip declaration (no struct/enum semantics yet)
+                // bentuk/pilihan: the name is declared (it reads as `Any`, see
+                // `TypeDecl::Untyped`); the body has no meaning yet.
                 self.next(); // consume KwStruct or KwEnum
-                let _name = self.parse_ident()?;
+                self.declare_type()?;
                 self.consume(TokenKind::LBrace)?;
                 self.skip_balanced_braces()?;
                 Ok(true)
             }
             Some(TokenKind::KwType) => {
-                // jenis — skip type/record declaration (no nominal type semantics
-                // yet; the typechecker infers structurally). Forms handled:
-                //   jenis Name { ... }
+                // jenis. Forms handled:
+                //   jenis Name = Type;          (alias: Name means Type)
+                //   jenis Name { ... }          (record, reads as `Any`)
                 //   jenis Name<T, ...> { ... }
-                //   jenis Name            (marker type, no body)
+                //   jenis Name = { ... };  jenis Name = | A | B(T);
+                //   jenis Name = Name(T);       (record and variant types)
+                //   jenis Name                  (marker type, no body)
                 self.next(); // consume KwType
-                let _name = self.parse_ident()?;
+                let name = self.declare_type()?;
+                let name_span = self.current_span;
                 // Optional generic parameter list `<...>` — skip balanced angles.
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
                     self.next();
@@ -1050,13 +1286,32 @@ impl<'a> Parser<'a> {
                         self.next();
                         self.skip_balanced_braces()?;
                     }
-                    // Type alias: `jenis Name = SomeType;` — skip to the `;`.
-                    // The scan stops at `Eof` as well: the lexer repeats `Eof`
-                    // forever, so `jenis T =` with no `;` used to spin at 100%
-                    // CPU (hanging `check`, `fmt`, the LSP and MCP). A missing
-                    // `;` is now an error instead of being silently accepted.
+                    // Type alias `jenis Name = SomeType;`: parse the type.
+                    // It used to be skipped, so `Name` read as `Any`.
                     Some(TokenKind::Eq) => {
                         self.next();
+                        match self.type_decls.get(&name) {
+                            Some(TypeDecl::Alias(_)) => {
+                                let ty = self.parse_ty()?;
+                                self.consume(TokenKind::Semi)?;
+                                self.type_decls.insert(name, TypeDecl::Alias(Some(ty)));
+                                return Ok(true);
+                            }
+                            Some(TypeDecl::GenericAlias) => {
+                                return Err(ParseError {
+                                    kind: ParseErrorKind::UnsupportedTypeSyntax {
+                                        name,
+                                        what: "generic type aliases",
+                                    },
+                                    span: name_span,
+                                });
+                            }
+                            Some(TypeDecl::Untyped { .. }) | None => {}
+                        }
+                        // A record or variant body: skip to the `;`. The scan
+                        // stops at `Eof` as well: the lexer repeats `Eof`
+                        // forever, so `jenis T =` with no `;` used to spin at
+                        // 100% CPU (hanging `check`, `fmt`, the LSP and MCP).
                         while !matches!(
                             self.peek().map(|t| &t.kind),
                             Some(TokenKind::Semi) | Some(TokenKind::Eof) | None
@@ -1071,6 +1326,114 @@ impl<'a> Parser<'a> {
                 Ok(true)
             }
             _ => Ok(false),
+        }
+    }
+
+    /// Parse the name of a type declaration, rejecting a built-in type's name
+    /// and a name this file already declared.
+    fn declare_type(&mut self) -> Result<Ident, ParseError> {
+        let name = self.parse_ident()?;
+        let builtin = BUILTIN_TYPE_NAMES.contains(&name.as_str());
+        if builtin || !self.declared_types.insert(name.clone()) {
+            return Err(ParseError {
+                kind: ParseErrorKind::TypeRedeclared { name, builtin },
+                span: self.current_span,
+            });
+        }
+        Ok(name)
+    }
+
+    /// Resolve a type name that is not built in: a generic parameter, an
+    /// alias, or a declared record or variant type. Anything else is an
+    /// error. It used to be `Any`, which accepted every value.
+    fn resolve_named_type(&mut self, name: Ident) -> Result<Ty, ParseError> {
+        let span = self.current_span;
+        if self.type_params.contains(&name) {
+            // Generic parameters have no semantics yet: `T` is `Any`.
+            return Ok(Ty::Any);
+        }
+        let kind = match self.type_decls.get(&name) {
+            Some(TypeDecl::Alias(Some(ty))) => return Ok(ty.clone()),
+            Some(TypeDecl::Untyped { generic }) => {
+                // The arguments of a generic record have no meaning yet either,
+                // but they are parsed, so a name in them is checked.
+                if *generic && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
+                    self.next();
+                    self.parse_ty()?;
+                    // A pending `>` (from an argument's `>>`) closes this
+                    // list: the `,` after it belongs to the enclosing one.
+                    while !self.pending_gt
+                        && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma))
+                    {
+                        self.next();
+                        self.parse_ty()?;
+                    }
+                    self.consume_type_close()?;
+                }
+                return Ok(Ty::Any);
+            }
+            Some(TypeDecl::Alias(None)) => ParseErrorKind::TypeAliasBeforeDeclaration(name),
+            Some(TypeDecl::GenericAlias) => ParseErrorKind::UnsupportedTypeSyntax {
+                name,
+                what: "generic type aliases",
+            },
+            None => {
+                let suggestion = self.nearest_type_name(&name);
+                ParseErrorKind::UnknownType { name, suggestion }
+            }
+        };
+        Err(ParseError { kind, span })
+    }
+
+    /// The known type name closest to `name`, if it is close enough to be a
+    /// likely typo.
+    fn nearest_type_name(&self, name: &str) -> Option<String> {
+        let limit = (name.chars().count() / 3).max(1);
+        BUILTIN_TYPE_NAMES
+            .iter()
+            .copied()
+            .chain(self.type_decls.keys().map(String::as_str))
+            .chain(self.type_params.iter().map(String::as_str))
+            .map(|cand| (edit_distance(name, cand), cand))
+            .filter(|(d, _)| *d <= limit)
+            .min()
+            .map(|(_, cand)| cand.to_string())
+    }
+
+    /// `<T, U>` after a function name: the parameter names. A bound
+    /// (`<T: Sifat>`) is an error, since nothing would check it.
+    fn parse_generic_params(&mut self) -> Result<Vec<Ident>, ParseError> {
+        let mut names = Vec::new();
+        if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
+            return Ok(names);
+        }
+        self.next();
+        loop {
+            let name = self.parse_ident()?;
+            // A built-in name would be read as the built-in type, never as
+            // the parameter.
+            if BUILTIN_TYPE_NAMES.contains(&name.as_str()) {
+                return Err(ParseError {
+                    kind: ParseErrorKind::TypeRedeclared { name, builtin: true },
+                    span: self.current_span,
+                });
+            }
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
+                return Err(ParseError {
+                    kind: ParseErrorKind::UnsupportedTypeSyntax {
+                        name,
+                        what: "bounds on generic parameters",
+                    },
+                    span: self.current_span,
+                });
+            }
+            names.push(name);
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                self.next();
+            } else {
+                self.consume(TokenKind::Gt)?;
+                return Ok(names);
+            }
         }
     }
 
@@ -1106,10 +1469,18 @@ impl<'a> Parser<'a> {
             });
         }
         // Optional generic parameter list `<T>`, `<E, T>`, `<T1, T2>`, etc.
-        // RIINA's type system is monomorphic at this layer; generic parameters
-        // carry no semantics yet, so the list is skipped (balanced-angle aware,
-        // so bounds like `<T: Sifat>` and nested `<Map<K, V>>` are consumed).
-        self.skip_type_argument_list();
+        // RIINA's type system is monomorphic at this layer: each parameter
+        // reads as `Any` in the signature and body.
+        let generics = self.parse_generic_params()?;
+        let outer_params = self.type_params.len();
+        self.type_params.extend(generics);
+        let decl = self.parse_function_rest(name);
+        self.type_params.truncate(outer_params);
+        decl
+    }
+
+    /// The parameters, return type, effect and body of a `fungsi`.
+    fn parse_function_rest(&mut self, name: Ident) -> Result<TopLevelDecl, ParseError> {
         self.consume(TokenKind::LParen)?;
         let params = self.parse_param_list()?;
         self.consume(TokenKind::RParen)?;
@@ -1583,55 +1954,6 @@ impl<'a> Parser<'a> {
             self.peek().map(|t| &t.kind),
             Some(TokenKind::RBrace) | Some(TokenKind::Eof) | None
         )
-    }
-
-    /// Skip a `<...>` generic argument list (the leading `<` is still on the
-    /// input). Tracks `<`/`>` nesting so e.g. `Map<K, List<V>>` is consumed
-    /// fully. Used for unknown nominal types where generics carry no semantics
-    /// yet. `Shr` (`>>`) closes two levels at once.
-    fn skip_type_argument_list(&mut self) {
-        // A pending `>` (left over from a `>>` split by an enclosing generic's
-        // close) accounts for this list's opening `<` having no real `<` token —
-        // but here we always require a real `<`, so just clear any stale pending
-        // first via the normal close path rather than special-casing it.
-        if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
-            return;
-        }
-        self.next(); // consume opening `<`
-        let mut depth = 1u32;
-        while depth > 0 {
-            match self.peek().map(|t| &t.kind) {
-                Some(TokenKind::Lt) => {
-                    self.next();
-                    depth += 1;
-                }
-                Some(TokenKind::Gt) => {
-                    self.next();
-                    depth -= 1;
-                }
-                Some(TokenKind::Shr) => {
-                    self.next();
-                    if depth >= 2 {
-                        // `>>` closes two levels that both belong to this list.
-                        depth -= 2;
-                    } else {
-                        // Only one level remains here; the second `>` belongs to
-                        // an enclosing generic — leave it pending so nested types
-                        // like `Peta<.., ..>>>` don't over-consume the outer `>`s.
-                        depth -= 1;
-                        self.pending_gt = true;
-                    }
-                }
-                // The lexer yields `Eof` repeatedly (never `None`) at end of
-                // input, so an Eof here must terminate the skip — otherwise the
-                // `_` arm consumes it without progress and loops forever on
-                // unclosed input like `fungsi x<` (REQ-30, fuzz-found).
-                Some(TokenKind::Eof) | None => break,
-                _ => {
-                    self.next();
-                }
-            }
-        }
     }
 
     /// Skip tokens up to and including the `}` that closes an already-consumed
@@ -3847,7 +4169,7 @@ impl<'a> Parser<'a> {
                     // Binary fixed-point / Q-format (numeric-tower fixed-point slice).
                     "Qmn" | "BinaryFixed" => Ok(Ty::FixedBin),
                     "Bool" | "Benar" => Ok(Ty::Bool),
-                    "Unit" => Ok(Ty::Unit),
+                    "Unit" | "Kosong" => Ok(Ty::Unit),
                     "String" | "Teks" => Ok(Ty::String),
                     "Bytes" | "Bait" => Ok(Ty::Bytes),
 
@@ -3863,6 +4185,16 @@ impl<'a> Parser<'a> {
                         let inner = self.parse_ty()?;
                         self.consume_type_close()?;
                         Ok(Ty::Option(Box::new(inner)))
+                    }
+                    // Result<T, E>: the sum `Jadi(x)` (left) and `Gagal(e)`
+                    // (right) build.
+                    "Result" | "Hasil" => {
+                        self.consume(TokenKind::Lt)?;
+                        let ok = self.parse_ty()?;
+                        self.consume(TokenKind::Comma)?;
+                        let err = self.parse_ty()?;
+                        self.consume_type_close()?;
+                        Ok(Ty::Sum(Box::new(ok), Box::new(err)))
                     }
                     "Secret" | "Rahsia" => {
                         self.consume(TokenKind::Lt)?;
@@ -4043,18 +4375,9 @@ impl<'a> Parser<'a> {
                         self.consume_type_close()?;
                         Ok(Ty::SyariahCompliant(Box::new(inner)))
                     }
-                    // User-defined nominal type (e.g. a `jenis`-declared record
-                    // like `JejakAudit`, `Taint`, or a generic `Keupayaan<HakBaca>`).
-                    // RIINA has no nominal-type semantics yet (matching the `jenis`
-                    // skip in top-level parsing), so an unknown type name is treated
-                    // structurally as `Any`. Any `<...>` generic argument list is
-                    // consumed (and discarded) so it parses.
-                    _ => {
-                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
-                            self.skip_type_argument_list();
-                        }
-                        Ok(Ty::Any)
-                    }
+                    // A declared type or generic parameter; anything else is
+                    // an error (REQ-93(c)).
+                    _ => self.resolve_named_type(s),
                 }
             }
             Some(TokenKind::KwSmartContract) => {

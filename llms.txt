@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,601 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,616 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
@@ -59,7 +59,7 @@ sum counts across lanes: they count different things.
 - Compliance: 19 profiles, 606 heuristic rules in total — evidence toward a
   standard, not a conformity assessment or certification.
 - Audits: no independent audit has been published.
-- Examples: 172 .rii files, of which 84 currently pass `riinac check`; the
+- Examples: 172 .rii files, of which 82 currently pass `riinac check`; the
   shipped parser accepts a narrower grammar than some examples assume — see
   `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
   COMPILED: some builtins are still interpreter-only (REQ-70), and

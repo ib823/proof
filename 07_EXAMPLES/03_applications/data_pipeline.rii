@@ -191,7 +191,7 @@ fungsi kategorikan_jabatan(jabatan: Teks) -> Teks kesan Bersih {
     }
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }
 

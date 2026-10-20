@@ -234,7 +234,7 @@ awam fungsi utama() -> kesan SistemFail {
 }
 
 // Helper functions
-fungsi tunda_kepala(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
+fungsi tunda_kepala<T>(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
     kalau panjang(senarai) > 1 {
         biar hasil = [];
         untuk i dari 1 hingga panjang(senarai) {
@@ -246,6 +246,6 @@ fungsi tunda_kepala(senarai: Senarai<T>) -> Senarai<T> kesan Bersih {
     }
 }
 
-fungsi panjang(senarai: Senarai<T>) -> Nombor kesan Bersih {
+fungsi panjang<T>(senarai: Senarai<T>) -> Nombor kesan Bersih {
     pulang 0;
 }

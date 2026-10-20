@@ -37,7 +37,7 @@ Numbers flow ONE direction: actual commands â†’ `website/public/metrics.json` â†
 - Secrets: the checker rejects printing a `Rahsia<T>`; release one with `dedah` and a proof
 - Pipe: `value |> function1 |> function2`
 - Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
-- An unknown type name (including a typo) is currently accepted as `Any` (REQ-93(c)); use only the type names listed here
+- Types: use the built-in names listed here, an alias declared in the same file (`jenis Umur = Nombor;`), or a generic parameter (`fungsi f<T>(x: T)`). Any other type name is error P0020. A record or variant type (`bentuk`, `pilihan`) is not checked yet: its name reads as `Any` (REQ-93(c))
 
 ## Style
 - Function and variable names: snake_case (Bahasa Melayu preferred)

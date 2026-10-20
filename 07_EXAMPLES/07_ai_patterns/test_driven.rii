@@ -21,7 +21,7 @@ jenis Tindanan<T> = {
 /// Helper stubs (di atas supaya kumpulan fungsi pertama nampak mereka)
 fungsi panjang_teks(t: Teks) -> Nombor kesan Bersih { pulang 0; }
 fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
-fungsi potong(s: Senarai<T>, mula: Nombor, hujung: Nombor) -> Senarai<T> kesan Bersih { pulang []; }
+fungsi potong<T>(s: Senarai<T>, mula: Nombor, hujung: Nombor) -> Senarai<T> kesan Bersih { pulang []; }
 
 fungsi tindanan_baru() -> Tindanan<Nombor> kesan Bersih {
     pulang { elemen: [] };
@@ -290,4 +290,4 @@ ujian "kalkulator_mula_sifar" {
 }
 
 /// Helpers
-fungsi panjang(s: Senarai<T>) -> Nombor kesan Bersih { pulang 0; }
+fungsi panjang<T>(s: Senarai<T>) -> Nombor kesan Bersih { pulang 0; }

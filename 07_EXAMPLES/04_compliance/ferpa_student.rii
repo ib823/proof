@@ -212,6 +212,6 @@ fungsi teks::mengandungi(senarai: Senarai<Teks>, item: Teks) -> Benar kesan Bers
     pulang betul;
 }
 
-fungsi format(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
+fungsi format<T>(s: Teks, args: Senarai<T>) -> Teks kesan Bersih {
     pulang s;
 }
