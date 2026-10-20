@@ -337,7 +337,6 @@ fn generate_bridging_header(module_name: &str) -> String {
 
 // RIINA C runtime declarations
 extern int riina_main(void);
-extern int riina_verify(void);
 
 // Platform callbacks (implemented in Swift)
 void riina_ios_log(const char *message);

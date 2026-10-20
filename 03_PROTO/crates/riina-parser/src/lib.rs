@@ -70,6 +70,19 @@ pub enum ParseErrorKind {
     /// through `unwrap_or(0)`: `0xFF` evaluated to 0, a too-large literal to
     /// 0, and the pattern `1_000` matched 0 (REQ-97, mandate R3).
     InvalidIntLiteral { literal: String, reason: &'static str },
+    /// `a::b::c`: a path through a module inside a module. Modules are one
+    /// level deep (`m::f`). The path used to keep its first and last segments,
+    /// so `a::b::c()` silently called `a_c` (REQ-97).
+    NestedModulePath(String),
+    /// An item inside `modul m { … }` other than a `fungsi`. It used to be
+    /// skipped token by token, so `modul m { biar x = 5; … }` silently lost
+    /// the binding (REQ-97).
+    UnsupportedModuleItem(String),
+    /// A `pelaku` with more than one `kendalikan`. Messages are not dispatched
+    /// by name, so the extra handlers had no meaning: the parser chained them
+    /// into a value the checker then rejected with "Expected function type,
+    /// found Unit".
+    MultipleActorHandlers(String),
     /// `modul Name { … }` with a CAPITALIZED name (REQ-82).
     ///
     /// The declaration and the call site disagreed, silently. A `modul Masa`
@@ -146,6 +159,18 @@ impl fmt::Display for ParseErrorKind {
             ParseErrorKind::InvalidIntLiteral { literal, reason } => {
                 write!(f, "Invalid integer literal `{literal}`: {reason}")
             }
+            ParseErrorKind::NestedModulePath(path) => write!(
+                f,
+                "`{path}` names a module inside a module; modules are one level deep (`m::f`)"
+            ),
+            ParseErrorKind::UnsupportedModuleItem(item) => write!(
+                f,
+                "only `fungsi` declarations are supported inside `modul {{ }}`, found {item}"
+            ),
+            ParseErrorKind::MultipleActorHandlers(actor) => write!(
+                f,
+                "`pelaku {actor}` has more than one `kendalikan`; an actor has one handler"
+            ),
             ParseErrorKind::Lex(e) => write!(f, "{e}"),
         }
     }
@@ -177,6 +202,9 @@ impl ParseErrorKind {
             ParseErrorKind::ProgramTooDeep { .. } => "P0014",
             ParseErrorKind::FloatLiteral(_) => "P0015",
             ParseErrorKind::InvalidIntLiteral { .. } => "P0016",
+            ParseErrorKind::NestedModulePath(_) => "P0017",
+            ParseErrorKind::UnsupportedModuleItem(_) => "P0018",
+            ParseErrorKind::MultipleActorHandlers(_) => "P0019",
             ParseErrorKind::Lex(e) => e.error_code(),
         }
     }
@@ -228,6 +256,21 @@ impl ParseErrorKind {
                      (exact decimal), `wang(\"{lit}\")` (money, fixed scale) or a scaled \
                      integer (`Nombor`)"
                 )
+            }
+            ParseErrorKind::NestedModulePath(_) => {
+                "A path is `module::name`, or `Namespace::builtin`. Import the module that \
+                 defines the function (`guna m;`) and call it as `m::f`"
+                    .to_string()
+            }
+            ParseErrorKind::MultipleActorHandlers(_) => {
+                "Messages are not dispatched by name yet: give the actor one `kendalikan` \
+                 and branch on the message inside it (`padan`)"
+                    .to_string()
+            }
+            ParseErrorKind::UnsupportedModuleItem(_) => {
+                "Move the item out of the `modul` block to the top level of the file, or \
+                 put the module in its own file and import it with `guna`"
+                    .to_string()
             }
             ParseErrorKind::InvalidIntLiteral { .. } => {
                 "Integer literals are decimal (`255`, `1_000`), hexadecimal (`0xFF`), octal \
@@ -503,6 +546,24 @@ struct MatchArm {
     pattern: Pattern,
     guard: Option<Expr>,
     body: Expr,
+}
+
+/// `s` followed by `k`: every place `s` ends (`End`) continues as `k`. A
+/// choreography step after a `pilih` follows each of its branches.
+fn then_session(s: SessionType, k: &SessionType) -> SessionType {
+    match s {
+        SessionType::End => k.clone(),
+        SessionType::Send(t, rest) => SessionType::Send(t, Box::new(then_session(*rest, k))),
+        SessionType::Recv(t, rest) => SessionType::Recv(t, Box::new(then_session(*rest, k))),
+        SessionType::Select(a, b) => {
+            SessionType::Select(Box::new(then_session(*a, k)), Box::new(then_session(*b, k)))
+        }
+        SessionType::Branch(a, b) => {
+            SessionType::Branch(Box::new(then_session(*a, k)), Box::new(then_session(*b, k)))
+        }
+        SessionType::Rec(x, body) => SessionType::Rec(x, Box::new(then_session(*body, k))),
+        SessionType::Var(x) => SessionType::Var(x),
+    }
 }
 
 /// `e`, checked against the annotation if there is one (`Expr::Ascribe`).
@@ -818,8 +879,8 @@ impl<'a> Parser<'a> {
                 // `modul name { ...decls }` is FLATTENED: each inner `fungsi f`
                 // becomes a top-level `name_f` so the existing `name::f` ->
                 // `name_f` qualified-call resolution (parse_module_path) finds
-                // the user definition. Non-function inner items are skipped
-                // (struct/enum/let have no top-level semantics yet).
+                // the user definition. Any other item is an error (it used to
+                // be skipped token by token).
                 self.consume(TokenKind::KwMod)?;
                 // Span of the NAME, not of the `modul` keyword, so the caret
                 // lands on the thing the user has to change.
@@ -872,10 +933,16 @@ impl<'a> Parser<'a> {
                                     body,
                                 });
                             }
-                        } else {
-                            // Skip a non-function inner item up to the next
-                            // top-level boundary within the module.
+                        } else if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwPub)) {
+                            // `awam fungsi …`: a module's functions are all
+                            // reachable as `m::f`, so the marker adds nothing.
                             self.next();
+                        } else {
+                            let tok = self.peek().expect("not at end");
+                            return Err(ParseError {
+                                kind: ParseErrorKind::UnsupportedModuleItem(format!("{:?}", tok.kind)),
+                                span: tok.span,
+                            });
                         }
                     }
                     self.consume(TokenKind::RBrace)?;
@@ -1824,6 +1891,12 @@ impl<'a> Parser<'a> {
         }
         if segments.len() == 1 {
             return Ok(segments.pop().unwrap());
+        }
+        if segments.len() > 2 {
+            return Err(ParseError {
+                kind: ParseErrorKind::NestedModulePath(segments.join("::")),
+                span: self.current_span,
+            });
         }
         let module = &segments[0];
         let func = segments.last().unwrap();
@@ -4304,15 +4377,14 @@ impl<'a> Parser<'a> {
                 let s2 = self.parse_choreography_protocol(viewpoint)?;
                 self.consume(TokenKind::RBrace)?;
                 self.consume(TokenKind::RBrace)?;
-                // Check for continuation after choice block
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace)) {
-                    // End of enclosing block, no continuation
-                    Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
-                } else {
-                    // There is a continuation (e.g. tamat;)
-                    let _cont = self.parse_choreography_protocol(viewpoint)?;
-                    Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
-                }
+                // Steps after the choice follow EACH branch. They used to be
+                // parsed and dropped, so a protocol that went on after a
+                // `pilih` lost its tail (REQ-97).
+                let cont = self.parse_choreography_protocol(viewpoint)?;
+                Ok(SessionType::Select(
+                    Box::new(then_session(s1, &cont)),
+                    Box::new(then_session(s2, &cont)),
+                ))
             }
             // RBrace → implicit end (closing an enclosing block)
             Some(TokenKind::RBrace) => Ok(SessionType::End),
@@ -4323,9 +4395,11 @@ impl<'a> Parser<'a> {
                 let receiver = self.parse_ident()?;
                 self.consume(TokenKind::Colon)?;
                 self.consume(TokenKind::KwSend)?;
-                let msg_ident = self.parse_ident()?;
+                // Any type, read like every other type annotation. Only four
+                // names used to be recognised, and every other one (a list,
+                // a record, `Rahsia<T>`) became `Any`.
+                let msg_ty = self.parse_ty()?;
                 self.consume(TokenKind::Semi)?;
-                let msg_ty = self.ident_to_ty(&msg_ident);
                 let continuation = self.parse_choreography_protocol(viewpoint)?;
                 // Role-relative projection of a single message onto `viewpoint`.
                 if sender == viewpoint {
@@ -4341,17 +4415,6 @@ impl<'a> Parser<'a> {
                 kind: ParseErrorKind::ExpectedExpression,
                 span: self.current_span,
             }),
-        }
-    }
-
-    /// Map an identifier to a Ty for choreography message types.
-    fn ident_to_ty(&self, ident: &str) -> Ty {
-        match ident {
-            "Nombor" | "Int" => Ty::Int,
-            "Benar" | "Bool" => Ty::Bool,
-            "Teks" | "String" => Ty::String,
-            "Unit" => Ty::Unit,
-            _ => Ty::Any,
         }
     }
 
@@ -4393,18 +4456,10 @@ impl<'a> Parser<'a> {
             let (_msg, param, body) = handlers.into_iter().next().unwrap();
             Expr::Lam(param, Ty::Any, Box::new(body))
         } else {
-            // Multiple handlers: chain as nested Let bindings of lambdas
-            let mut result = Expr::Unit;
-            for (_msg, param, body) in handlers.into_iter().rev() {
-                let lam = Expr::Lam(param, Ty::Any, Box::new(body));
-                result = Expr::Let(
-                    "_handler".to_string(),
-                    None,
-                    Box::new(lam),
-                    Box::new(result),
-                );
-            }
-            result
+            return Err(ParseError {
+                kind: ParseErrorKind::MultipleActorHandlers(name),
+                span: self.current_span,
+            });
         };
 
         // Default init state based on state type

@@ -1223,7 +1223,9 @@ impl Lower {
                     Ty::Unit
                 }
             }
-            Expr::Perform(_, e) | Expr::Handle(e, _, _) => self.infer_type(e),
+            Expr::Perform(_, e) => self.infer_type(e),
+            // The handler's value is the expression's (T_Handle).
+            Expr::Handle(_, _, h) => self.infer_type(h),
             Expr::Require(eff, _) => Ty::Capability(eff.to_capability_kind()),
             Expr::Grant(_, e) => self.infer_type(e),
             Expr::Var(name) => self
@@ -2317,75 +2319,18 @@ impl Lower {
                 ))
             }
 
-            Expr::Handle(body, handler_var, handler) => {
-                // Create blocks for body and handler
-                let body_block = if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        func.new_block()
-                    } else {
-                        return Err(Error::InvalidOperation("No current function".to_string()));
-                    }
-                } else {
-                    return Err(Error::InvalidOperation("No current function".to_string()));
-                };
-
-                let handler_block = if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        func.new_block()
-                    } else {
-                        return Err(Error::InvalidOperation("No current function".to_string()));
-                    }
-                } else {
-                    return Err(Error::InvalidOperation("No current function".to_string()));
-                };
-
-                let result_block = if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        func.new_block()
-                    } else {
-                        return Err(Error::InvalidOperation("No current function".to_string()));
-                    }
-                } else {
-                    return Err(Error::InvalidOperation("No current function".to_string()));
-                };
-
-                // Terminate with handle
-                if let Some(func) = self.current_func {
-                    if let Some(func) = self.program.function_mut(func) {
-                        if let Some(block) = func.block_mut(self.current_block) {
-                            block.terminate(Terminator::Handle {
-                                body_block,
-                                handler_block,
-                                resume_var: handler_var.clone(),
-                                result_block,
-                            });
-                        }
-                    }
-                }
-
-                // Lower body
-                self.current_block = body_block;
-                let body_result = self.lower_expr(body)?;
-
-                self.terminate_if_open(self.current_block, Terminator::Branch(result_block));
-
-                // Lower handler
-                self.current_block = handler_block;
-                let handler_param = self.fresh_var();
-                self.env.bind(
-                    handler_var.clone(),
-                    handler_param,
-                    Ty::Unit,
-                    SecurityLevel::Public,
-                );
-                let _handler_result = self.lower_expr(handler)?;
-
-                self.terminate_if_open(self.current_block, Terminator::Branch(result_block));
-
-                // Result block
-                self.current_block = result_block;
-                Ok(body_result)
-            }
+            // Coq `EHandle e x h` steps the body to a value `v` and then to
+            // `h[x := v]` (ST_HandleStep, ST_HandleValue), so it lowers exactly
+            // as `let x = e in h`. It used to install a C handler frame that a
+            // `laku` could longjmp to, and returned the BODY's value, while the
+            // checker (T_Handle) types the expression as the HANDLER's: the
+            // native result of `kendali 5 dengan x => "teks"` was 5 (REQ-97).
+            Expr::Handle(body, handler_var, handler) => self.lower_expr(&Expr::Let(
+                handler_var.clone(),
+                None,
+                body.clone(),
+                handler.clone(),
+            )),
 
             // ═══════════════════════════════════════════════════════════════
             // REFERENCES (Expr::Ref, Expr::Deref, Expr::Assign)

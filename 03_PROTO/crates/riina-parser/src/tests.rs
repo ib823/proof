@@ -2601,20 +2601,13 @@ fn test_parse_actor_basic() {
 
 #[test]
 fn test_parse_actor_multi_handler() {
+    // Several `kendalikan` used to be chained into a `Let` nothing could call,
+    // which the checker then rejected as "Expected function type, found Unit".
+    // Messages are not dispatched by name, so the parser says so (P0019).
     let source =
         "pelaku MyActor { keadaan: Benar kendalikan MsgA(a) { a } kendalikan MsgB(b) { b } }";
-    let mut p = Parser::new(source);
-    let program = p.parse_program().unwrap();
-    match &program.decls[0] {
-        TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ActorDecl { name, handler, .. } => {
-                assert_eq!(name, "MyActor");
-                assert!(matches!(handler.as_ref(), Expr::Let(_, _, _, _)));
-            }
-            other => panic!("Expected ActorDecl, got {:?}", other),
-        },
-        other => panic!("Expected Expr, got {:?}", other),
-    }
+    let err = Parser::new(source).parse_program().expect_err("two handlers");
+    assert_eq!(err.kind, ParseErrorKind::MultipleActorHandlers("MyActor".into()));
 }
 
 #[test]
@@ -4527,6 +4520,65 @@ fn test_function_types_curry_every_parameter() {
     assert_eq!(ty("Fn(Nombor, Teks)"), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), pure));
     let err = Parser::new("Fn(Nombor, Teks, Benar)").parse_ty().expect_err("a third type is not an effect");
     assert_eq!(err.kind, ParseErrorKind::InvalidEffect);
+}
+
+/// REQ-97: constructs that used to be silently dropped are errors now.
+#[test]
+fn test_dropped_constructs_are_errors() {
+    let code = |src: &str| {
+        Parser::new(src)
+            .parse_program()
+            .expect_err(src)
+            .kind
+            .error_code()
+    };
+    // `a::b::c` kept `a` and `c`, calling `a_c`.
+    assert_eq!(code("fungsi f() -> Nombor kesan Bersih { a::b::c() }"), "P0017");
+    assert_eq!(code("fungsi f() -> Nombor kesan Bersih { std::a::b::c() }"), "P0017");
+    // `modul m { biar x = 5; … }` skipped the binding token by token.
+    assert_eq!(code("modul m { biar x = 5; fungsi f() -> Nombor kesan Bersih { x } }"), "P0018");
+    // Several `kendalikan` were chained into a value nothing could call.
+    let actor = "pelaku P { keadaan: Nombor kendalikan A(n) { n } kendalikan B(n) { n } }";
+    assert_eq!(code(actor), "P0019");
+    // What stays valid: `m::f`, `std::f`, `Ns::f`, and `awam fungsi` in a module.
+    for ok in [
+        "fungsi f() -> Nombor kesan Bersih { m::g() }",
+        "fungsi f() -> Nombor kesan Bersih { std::g() }",
+        "fungsi f() -> Nombor kesan Bersih { Masa::masa_unix(()) }",
+        "modul m { awam fungsi g() -> Nombor kesan Bersih { 1 } }",
+    ] {
+        assert!(Parser::new(ok).parse_program().is_ok(), "{ok}");
+    }
+}
+
+/// A `koreografi` step after a `pilih` follows each branch (it used to be
+/// parsed and dropped), and message types are read as types (only four names
+/// were recognised; the rest became `Any`).
+#[test]
+fn test_choreography_keeps_steps_after_a_choice_and_real_types() {
+    let block = |src: &str| match Parser::new(src).parse_program().expect(src).decls.remove(0) {
+        TopLevelDecl::Expr(e) => match *e {
+            Expr::ChoreographyBlock { protocol, .. } => protocol,
+            other => panic!("{other:?}"),
+        },
+        other => panic!("{other:?}"),
+    };
+    let p = block(
+        "koreografi P { peranan A, B; pilih { L -> { A -> B: hantar Nombor; }, R -> { tamat; } } A -> B: hantar Teks; tamat; }",
+    );
+    let tail = SessionType::Send(Box::new(Ty::String), Box::new(SessionType::End));
+    assert_eq!(
+        p,
+        SessionType::Select(
+            Box::new(SessionType::Send(Box::new(Ty::Int), Box::new(tail.clone()))),
+            Box::new(tail)
+        )
+    );
+    let q = block("koreografi Q { peranan A, B; A -> B: hantar Senarai<Nombor>; tamat; }");
+    assert_eq!(
+        q,
+        SessionType::Send(Box::new(Ty::List(Box::new(Ty::Int))), Box::new(SessionType::End))
+    );
 }
 
 /// Integer literals keep their value in every base, and a literal with no

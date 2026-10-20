@@ -693,18 +693,6 @@ pub enum Terminator {
         else_block: BlockId,
     },
 
-    /// Effect handler installation
-    ///
-    /// ```text
-    /// handle body_block handler_block resume_var result_block
-    /// ```
-    Handle {
-        body_block: BlockId,
-        handler_block: BlockId,
-        resume_var: Ident,
-        result_block: BlockId,
-    },
-
     /// Unreachable (type error or proven impossible)
     Unreachable,
 }
@@ -720,17 +708,6 @@ impl std::fmt::Display for Terminator {
                 else_block,
             } => {
                 write!(f, "br_if {cond} {then_block} {else_block}")
-            }
-            Self::Handle {
-                body_block,
-                handler_block,
-                resume_var,
-                result_block,
-            } => {
-                write!(
-                    f,
-                    "handle {body_block} {handler_block} {resume_var} -> {result_block}"
-                )
             }
             Self::Unreachable => write!(f, "unreachable"),
         }

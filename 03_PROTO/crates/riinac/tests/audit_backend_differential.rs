@@ -200,6 +200,52 @@ fn string_literals_survive_c_escaping() {
     assert_all_backends("literals", &src, &expected, true);
 }
 
+/// `kendali e dengan x => h` is Coq `EHandle e x h` on every backend: the
+/// handler runs once, on the body's value, and `laku` yields its payload
+/// (ST_HandleValue, ST_PerformValue). Before REQ-97 the three disagreed:
+/// `kendali (laku Tulis 5) dengan x => x + 100` gave 105 in the interpreter,
+/// 5 natively and nothing on WASM, and `kendali 5 dengan x => "teks"`, typed
+/// `Teks` by the checker, evaluated to the integer 5.
+#[test]
+fn kendali_follows_the_coq_rule_on_every_backend() {
+    let src = r#"fungsi teks() -> Teks kesan Bersih { kendali 5 dengan x => "teks" }
+fungsi utama() -> Kosong kesan Tulis {
+    cetakln(ke_teks(kendali (laku Tulis 5) dengan x => x + 100));
+    cetakln(ke_teks(kendali (laku Tulis 1) + (laku Tulis 2) dengan x => x + 100));
+    cetakln(ke_teks(kendali 7 dengan y => y * 2));
+    cetakln(teks() + "!");
+}
+"#;
+    assert_all_backends("kendali", src, b"105\n103\n14\nteks!\n", true);
+}
+
+/// The WASM backend refuses what it cannot implement instead of pushing a
+/// placeholder. A constant `cincang` made `sahkan(cincang(d), e)` hold for
+/// every `e`; actor operations and foreign calls returned 0 or 1.
+#[test]
+fn wasm_refuses_what_it_cannot_implement() {
+    let cases = [
+        ("hash", "fungsi utama() -> Kosong kesan Kripto { biar c = cincang(\"a\"); () }\n", "content hashing"),
+        (
+            "actor",
+            "pelaku P {\n    keadaan: Nombor\n    kendalikan T(n) { n + 1 }\n}\nbiar k = lahir P(0);\nhantar(k, 5);\nterima(k)\n",
+            "actors",
+        ),
+    ];
+    for (tag, src, what) in cases {
+        let sb = Sandbox::new(tag);
+        let path = sb.src(src);
+        let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+            .args(["build", "--target", "wasm32"])
+            .arg(&path)
+            .output()
+            .expect("riinac build");
+        assert!(!out.status.success(), "{tag}: WASM must refuse");
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert!(err.contains(what) && err.contains("REQ-97"), "{tag}: {err}");
+    }
+}
+
 #[test]
 fn a_nul_in_a_literal_is_a_c_compile_error_not_a_truncation() {
     let src = "fungsi utama() -> Kosong kesan Tulis {\n    cetakln(\"A\\0B|\");\n}\n";

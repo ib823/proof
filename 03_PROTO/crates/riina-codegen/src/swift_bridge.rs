@@ -23,10 +23,10 @@ pub fn generate_swift_bridge(module_name: &str) -> String {
 
 import Foundation
 
-/// Swift interface to verified RIINA code.
+/// Swift interface to RIINA code compiled to native code by the C backend.
 ///
-/// All methods call into RIINA compiled native code. Security properties
-/// (non-interference, effect safety, type safety) are preserved by construction.
+/// The compiler is not formally verified: the C backend is tested against the
+/// interpreter, not proven.
 public class {module_name} {{
 
     /// Shared singleton instance.
@@ -205,8 +205,8 @@ pub fn generate_podspec(module_name: &str, version: &str) -> String {
 Pod::Spec.new do |s|
   s.name         = '{module_name}'
   s.version      = '{version}'
-  s.summary      = 'RIINA verified native library'
-  s.description  = 'Formally verified code compiled from RIINA. Security properties proven in Coq.'
+  s.summary      = 'RIINA native library'
+  s.description  = 'Native code compiled from RIINA by the riinac C backend. The compiler is not formally verified.'
   s.homepage     = 'https://github.com/ib823/riina'
   s.license      = {{ :type => 'Proprietary', :file => 'LICENSE' }}
   s.author       = 'RIINA Authors'

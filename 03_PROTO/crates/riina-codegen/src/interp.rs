@@ -237,21 +237,6 @@ impl Store {
     }
 }
 
-/// Effect handler context
-#[derive(Debug, Clone)]
-struct HandlerContext {
-    // NB: handler matching is LIFO and effect-agnostic (the most recently
-    // installed handler runs for any `perform`), matching the Coq `T_Handle`
-    // rule which joins effects rather than discriminating by effect tag.
-    // There is therefore no per-handler effect to track here.
-    /// Handler variable name
-    handler_var: String,
-    /// Handler expression
-    handler: Rc<Expr>,
-    /// Handler environment
-    handler_env: Env,
-}
-
 /// Capability context
 ///
 /// Held capabilities are an [`EffectSet`] and are checked with the type
@@ -295,7 +280,6 @@ pub struct Interpreter {
     /// Global store (heap)
     store: Store,
     /// Effect handlers
-    handlers: Vec<HandlerContext>,
     /// Capabilities
     caps: Capabilities,
     /// Current security context
@@ -391,7 +375,6 @@ impl Interpreter {
     pub fn new() -> Self {
         Self {
             store: Store::new(),
-            handlers: Vec::new(),
             caps: Capabilities::new(),
             security_context: SecurityLevel::Public,
             next_actor_id: 0,
@@ -631,6 +614,20 @@ impl Interpreter {
                 // A type annotation has no run-time meaning (the checker held
                 // `e` to it): evaluate `e`, in tail position.
                 Expr::Ascribe(inner, _) => expr = inner,
+                // E_Handle, Coq `ST_HandleStep`/`ST_HandleValue`: evaluate the
+                // body to a value `v`, then the handler with `x = v`
+                // (`EHandle v x h --> h[x := v]`). Until 2026-10-20 this
+                // installed a handler that ran at each `laku` instead, so a
+                // body with no `laku` returned its OWN value while the checker
+                // (T_Handle) typed the expression as the handler's:
+                // `kendali 5 dengan x => "teks"` was `Teks` and evaluated to 5
+                // (REQ-97).
+                Expr::Handle(body, x, handler) => {
+                    let v = self.eval_with_env(env, body)?;
+                    tail_env = env.extend(x.clone(), v);
+                    env = &tail_env;
+                    expr = handler;
+                }
                 _ => return self.eval_node(env, expr),
             }
         }
@@ -662,7 +659,12 @@ impl Interpreter {
         match expr {
             // Evaluated by the tail loop in `eval_with_env`, which never
             // dispatches them here; delegating keeps this match total.
-            Expr::Let(..) | Expr::LetMut(..) | Expr::If(..) | Expr::BinOp(..) | Expr::Ascribe(..) => {
+            Expr::Let(..)
+            | Expr::LetMut(..)
+            | Expr::If(..)
+            | Expr::BinOp(..)
+            | Expr::Ascribe(..)
+            | Expr::Handle(..) => {
                 self.eval_with_env(env, expr)
             }
 
@@ -1043,44 +1045,10 @@ impl Interpreter {
                     return Err(Error::MissingCapability(*effect));
                 }
 
-                let payload_val = self.eval_with_env(env, payload)?;
-
-                // Look for a handler
-                if let Some(handler_ctx) = self.handlers.pop() {
-                    // Run handler with payload
-                    let handler_env = handler_ctx
-                        .handler_env
-                        .extend(handler_ctx.handler_var.clone(), payload_val);
-                    let result = self.eval_with_env(&handler_env, &handler_ctx.handler)?;
-                    self.handlers.push(handler_ctx);
-                    Ok(result)
-                } else {
-                    // No handler: the payload IS the result — Coq
-                    // `ST_PerformValue` (`EPerform eff v --> v`), and what the C
-                    // runtime's `riina_perform` returns. This used to be an
-                    // "unhandled effect" error, so `laku Tulis cetak(..)` printed
-                    // and then failed under `riinac run` but not natively.
-                    Ok(payload_val)
-                }
-            }
-
-            // E_Handle: Install effect handler (LIFO, effect-agnostic — see
-            // HandlerContext; the topmost handler runs for any `perform`).
-            Expr::Handle(body, handler_var, handler) => {
-                // Push handler context
-                self.handlers.push(HandlerContext {
-                    handler_var: handler_var.clone(),
-                    handler: Rc::new((**handler).clone()),
-                    handler_env: env.clone(),
-                });
-
-                // Evaluate body
-                let result = self.eval_with_env(env, body);
-
-                // Pop handler
-                self.handlers.pop();
-
-                result
+                // The payload IS the result: Coq `ST_PerformValue`
+                // (`EPerform eff v --> v`). `laku` does not call an enclosing
+                // `kendali`; see `Expr::Handle` in the tail loop.
+                self.eval_with_env(env, payload)
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -2761,12 +2729,34 @@ mod tests {
         ));
     }
 
+    /// `kendali e dengan x => h` is Coq `EHandle e x h`: the handler runs ONCE,
+    /// on the body's value (ST_HandleValue), and `laku` yields its payload
+    /// (ST_PerformValue). The interpreter used to run the handler at each
+    /// `laku` instead, which disagreed with Coq, with the C backend (which
+    /// returned the body's value) and with the checker's T_Handle typing.
+    #[test]
+    fn handle_follows_the_coq_rule() {
+        let mut interp = Interpreter::new();
+        interp.grant_capabilities(EffectSet::single(Effect::Write));
+        let x = || Box::new(Expr::Var("x".to_string()));
+        let plus_100 = || Box::new(Expr::BinOp(BinOp::Add, x(), Box::new(Expr::Int(100))));
+        // No `laku` in the body: the handler still runs on its value.
+        let no_perform = Expr::Handle(Box::new(Expr::Int(5)), "x".into(), plus_100());
+        assert_eq!(interp.eval(&no_perform), Ok(Value::Int(105)));
+        // Two `laku`: 1 + 2 = 3, then 3 + 100. (Per-`laku` handling gave 101 + 102.)
+        let laku = |n| Box::new(Expr::Perform(Effect::Write, Box::new(Expr::Int(n))));
+        let two = Expr::Handle(Box::new(Expr::BinOp(BinOp::Add, laku(1), laku(2))), "x".into(), plus_100());
+        assert_eq!(interp.eval(&two), Ok(Value::Int(103)));
+        // The handler's type is the expression's type.
+        let to_text = Expr::Handle(Box::new(Expr::Int(5)), "x".into(), Box::new(Expr::String("teks".into())));
+        assert_eq!(interp.eval(&to_text), Ok(Value::String("teks".into())));
+    }
+
     #[test]
     fn test_eval_handle_perform_runs_handler() {
         // grant Network in (handle (perform Network 7) with x => x)  ==> 7
-        // Verifies that the installed handler receives the performed payload.
-        // Regression for the HandlerContext effect-field cleanup: handler
-        // matching is LIFO / effect-agnostic and must still run the handler.
+        // `perform` yields its payload, and the handler receives the body's
+        // value (Coq ST_PerformValue, ST_HandleValue).
         let mut interp = Interpreter::new();
         let perform = Expr::Perform(Effect::Network, Box::new(Expr::Int(7)));
         let handle = Expr::Handle(
