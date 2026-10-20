@@ -108,6 +108,10 @@ def load_truth():
                     links += len(re.findall(r"\bfn test_\w+_matches_coq_model\s*\(", fh.read()))
     t["bridge_links"] = links
     t["status"] = m.get("status", {})
+    # The manifest and the master plan are internal: the public tree has
+    # neither, and there status.build was already checked on main before the
+    # sync. A missing manifest on a tree that has the plan is an error.
+    t["public_tree"] = not os.path.exists(os.path.join(ROOT, "RIINA_MASTER_PLAN.md"))
     man = read("VERIFICATION_MANIFEST.md") if os.path.exists(os.path.join(ROOT, "VERIFICATION_MANIFEST.md")) else ""
     t["manifest"] = {k: (re.search(rf"^\*\*{k}:\*\* (\S+)", man, re.M) or [None, None])[1]
                      for k in ("Git SHA", "Mode", "Status")}
@@ -304,13 +308,19 @@ def check_legacy_plans():
     return out
 
 
-def check_metrics_status(status, manifest):
+def check_metrics_status(status, manifest, public_tree=False):
     """metrics.json `status` is derived from the riinac verify manifest, never
     hand-typed (it once carried "grade": "A" and "threats": "1231+")."""
     out = []
     allowed = {"build", "verifiedCommit", "verifiedMode", "source"}
     for k in sorted(set(status) - allowed):
         out.append(f"metrics.json status.{k} is not measured by anything; remove it")
+    if status.get("build") not in ("passing", "failing", "unverified"):
+        out.append(f"metrics.json status.build {status.get('build')!r} is not passing/failing/unverified")
+    if not manifest.get("Git SHA"):
+        if not public_tree:
+            out.append("VERIFICATION_MANIFEST.md is missing; status.build cannot be checked")
+        return out
     want = ("passing" if manifest.get("Mode") == "full" and manifest.get("Status") == "PASS"
             else "failing" if manifest.get("Status") == "FAIL" else "unverified")
     if status.get("build") != want:
@@ -339,7 +349,7 @@ def check_site_defaults(t):
 def check_repo(t):
     problems = check_versions(t)
     problems += check_site_defaults(t)
-    problems += check_metrics_status(t["status"], t["manifest"])
+    problems += check_metrics_status(t["status"], t["manifest"], t["public_tree"])
     problems += check_legacy_plans()
     for f in LEDGERS:
         if not os.path.exists(os.path.join(ROOT, f)):
@@ -407,6 +417,12 @@ def self_test(t):
         failures.append("check_metrics_status missed a hand-typed status.grade")
     if not check_metrics_status(good, dict(full_pass, Mode="fast")):
         failures.append("check_metrics_status missed 'passing' backed only by a fast-mode run")
+    if not check_metrics_status(good, {}, public_tree=False):
+        failures.append("check_metrics_status accepted a missing manifest on a tree with the plan")
+    if check_metrics_status(good, {}, public_tree=True):
+        failures.append("check_metrics_status flagged the public tree, which has no manifest")
+    if not check_metrics_status(dict(good, build="green"), {}, public_tree=True):
+        failures.append("check_metrics_status accepted an unknown build status")
     if check_ledger_links(all_md, all_js):
         failures.append("check_ledger_links flagged complete link lists")
     if len(check_ledger_links(all_md.replace("(TRUSTED_BASE.md)", ""), all_js)) != 1:

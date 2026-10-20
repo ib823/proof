@@ -102,6 +102,11 @@ INTERNAL_PATHS=(
     # D1, D5): internal governance. The mandate names the private development
     # repository; the drafts are not in force and must not read as terms.
     "04_SPECS/governance/"
+    # Gates over the internal plan and mandate (RIINA_MASTER_PLAN.md,
+    # 04_SPECS/governance/), neither of which ships: they gate main, and on the
+    # public tree they could only fail for want of their inputs.
+    "03_PROTO/crates/riinac/tests/mandate_traceability.rs"
+    "03_PROTO/crates/riinac/tests/scope_freeze.rs"
     "04_SPECS/RIINA_PRIME_DIRECTIVE_GAP_CLOSURE.md"
     "04_SPECS/scope/RIINA_RESEARCH_EXECUTION_MAP.md"
 
