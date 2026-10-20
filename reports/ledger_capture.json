@@ -1,31 +1,35 @@
 {
-  "commit": "4026d7f2c",
+  "commit": "07e5821e5",
   "emitted_c_lines_minimal_program": 5705,
   "print_assumptions": {
+    "CT_001_branch_free": [],
     "accepts_uses_only_current": [],
     "effect_sound_multi_step_declared": [],
+    "logical_relation_declassify_proven": [],
     "preservation": [],
     "progress": [],
     "reachable_effects_from_program_text": [],
     "ref_free_constant_time": [],
     "ref_free_noninterference": [],
     "ref_free_well_typed_SN": [],
+    "step_deterministic": [],
     "type_safety": [],
     "well_typed_SN": [
       "FunctionalExtensionality.functional_extensionality_dep"
-    ]
+    ],
+    "x25519_rfc7748_vector1": []
   },
   "sizes_nonblank_lines": {
     "c_backend": 13112,
     "compliance": 7721,
     "crypto": 14704,
-    "driver": 7281,
+    "driver": 7430,
     "frontend": 20032,
     "interpreter": 14498,
     "package_manager": 6400,
     "wasm_backend": 8728
   },
-  "sources_sha256": "1f6b3343b2eefd4ace7b84f4f35805b52d8005d8cd003f71e93a092e4d2b1426",
+  "sources_sha256": "b0ce8a550b2eadf8289111f23f5d688c7eb2ffa73af6a96828e6dbc24775cb37",
   "tools": {
     "cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
     "host": "Linux 6.18.44-fc-v139 x86_64",

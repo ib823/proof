@@ -1,7 +1,7 @@
 # Trusted base
 
 > **Generated — do not edit by hand.** Regenerate with `python3 scripts/generate-ledgers.py`;
-> sizes and tool versions measured by `--capture` at commit `4026d7f2c`. REQ-103.
+> sizes and tool versions measured by `--capture` at commit `07e5821e5`. REQ-103.
 
 Everything a RIINA guarantee depends on that is not itself proven (mandate S1.11). Sizes
 are non-blank lines of Rust source, excluding test files.
@@ -23,7 +23,7 @@ are non-blank lines of Rust source, excluding test files.
 | Package manager | riina-pkg | 6400 | Enforces manifest effect permissions (tested). |
 | Compliance checker | riina-compliance | 7721 | Heuristic rules; evidence, not certification. |
 | Cryptography | riina-core (05_TOOLING) | 14704 | Experimental, not audited, not validated. |
-| Compiler driver | riinac | 7281 | Includes `riinac verify`. |
+| Compiler driver | riinac | 7430 | Includes `riinac verify`. |
 | Operating system and hardware | the host OS, libc and CPU; captured host: Linux 6.18.44-fc-v139 x86_64 | external | No hardware-level guarantee; constant time holds only in the reduction-count model. |
 | Development and CI tools (not shipped) | wasmtime (wasmtime 27.0.0 (8eefa236f 2024-11-20)), z3 (Z3 version 4.8.12 - 64 bit) | external | Used by tests and the SMT lane only. |
 

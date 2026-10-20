@@ -81,7 +81,7 @@ const DEFAULTS = {
   },
   rust: { tests: 0, crates: 0 },
   examples: 0,
-  status: { threats: 'unknown', build: 'unknown', grade: 'unverified' },
+  status: { build: 'unknown', verifiedCommit: '', verifiedMode: '' },
 };
 
 export function useMetrics() {

@@ -142,3 +142,100 @@ reviewer = "PENDING"
 review_date = "PENDING"
 status = "CONDITIONAL"
 note = "Vacuous (REQ-84): well_typed_SN_premise_store_values_are_values_refutable disproves a premise, and well_typed_SN_conclusion_is_false (Landin's knot) shows the conclusion fails. Leaves KERNEL_CAPSTONES when REQ-104 moves it to counterexamples/ (REQ-116). The guarantee that holds is ref_free_well_typed_SN."
+
+# --------------------------------------------------------------------------
+# Cited, not headline (mandate S2.4: a public surface cites only registry
+# entries). Everything the website's evidence ledger (`EV` in
+# website/src/RiinaWebsite.jsx) shows that is not a capstone. None of these is
+# a guarantee; each carries its own §2 claim level. scripts/generate-ledgers.py
+# fails when the website cites something that is not a capstone or listed
+# here, when an entry here is no longer cited, when a file or name does not
+# exist, and when a PROVEN-MODEL entry is not closed under the global context.
+#
+# Fields:
+#   cited_as    the name exactly as the website shows it
+#   kind        coq | rust-test | artifact
+#   module      (coq) the Coq module; `name` may end in `*` for a family
+#   name        (coq, rust-test) the theorem, family prefix or test function
+#   file        the file the website links
+#   level       one of the seven §2 claim levels
+#   role        why it is shown and why it is not a headline guarantee
+# --------------------------------------------------------------------------
+
+[[cited]]
+cited_as = "Semantics.step_deterministic"
+kind = "coq"
+module = "foundations.Semantics"
+name = "step_deterministic"
+file = "02_FORMAL/coq/foundations/Semantics.v"
+level = "PROVEN-MODEL"
+role = "Evaluation in the formal semantics is deterministic. A building block the capstones rest on, not a security property."
+
+[[cited]]
+cited_as = "Declassification.logical_relation_declassify_proven"
+kind = "coq"
+module = "properties.Declassification"
+name = "logical_relation_declassify_proven"
+file = "02_FORMAL/coq/properties/Declassification.v"
+level = "PROVEN-MODEL"
+role = "A declassification step lemma. A building block; the non-interference guarantee is ref_free_noninterference."
+
+[[cited]]
+cited_as = "X25519.x25519_rfc7748_vector1"
+kind = "coq"
+module = "crypto.X25519"
+name = "x25519_rfc7748_vector1"
+file = "02_FORMAL/coq/crypto/X25519.v"
+level = "MODELLED"
+role = "The Coq X25519 model computes the RFC 7748 test vector. A fact about the model, not about the shipped implementation."
+
+[[cited]]
+cited_as = "montgomery::tests::test_x25519_matches_coq_model"
+kind = "rust-test"
+name = "test_x25519_matches_coq_model"
+file = "05_TOOLING/crates/riina-core/src/crypto/montgomery.rs"
+level = "ENFORCED-TESTED"
+role = "Compares the shipped X25519 with the Coq model on test vectors. Testing, not a proof that the Rust implements the model."
+
+[[cited]]
+cited_as = "verification_boundary.json"
+kind = "artifact"
+file = "05_TOOLING/crates/riina-core/verification_boundary.json"
+level = "ENFORCED-TESTED"
+role = "States, per crypto primitive, what is modelled, trusted and not covered; a test fails when a primitive gains a proof without a boundary entry."
+
+[[cited]]
+cited_as = "HIPAACompliance.COMPLY_001_*"
+kind = "coq"
+module = "compliance.HIPAACompliance"
+name = "COMPLY_001_*"
+file = "02_FORMAL/coq/compliance/HIPAACompliance.v"
+level = "MODELLED"
+role = "HIPAA obligations as Coq facts about the file's own definitions. Evidence toward HIPAA, not a conformity assessment."
+
+[[cited]]
+cited_as = "PCIDSSCompliance.COMPLY_002_*"
+kind = "coq"
+module = "compliance.PCIDSSCompliance"
+name = "COMPLY_002_*"
+file = "02_FORMAL/coq/compliance/PCIDSSCompliance.v"
+level = "MODELLED"
+role = "PCI-DSS obligations as Coq facts about the file's own definitions. Evidence toward PCI-DSS, not a conformity assessment."
+
+[[cited]]
+cited_as = "DO178CCompliance.COMPLY_003_*"
+kind = "coq"
+module = "compliance.DO178CCompliance"
+name = "COMPLY_003_*"
+file = "02_FORMAL/coq/compliance/DO178CCompliance.v"
+level = "MODELLED"
+role = "DO-178C objectives as Coq facts about the file's own definitions. Evidence toward DO-178C, not certification."
+
+[[cited]]
+cited_as = "ConstantTimeCrypto.CT_001_branch_free"
+kind = "coq"
+module = "domains.ConstantTimeCrypto"
+name = "CT_001_branch_free"
+file = "02_FORMAL/coq/domains/ConstantTimeCrypto.v"
+level = "MODELLED"
+role = "Models the masa_tetap branch-freedom discipline. The compiler's masa_tetap check is ENFORCED-TESTED separately (PROPERTY_LEDGER.md)."

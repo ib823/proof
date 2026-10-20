@@ -1251,6 +1251,22 @@ MULTIPROVER_STATUS="IN_PROGRESS"
 [ "$INDEPENDENTLY_AUDITED" = true ] && MULTIPROVER_STATUS="INDEPENDENTLY_AUDITED"
 
 # Generate JSON
+# Build status comes from the last recorded `riinac verify` run (the manifest it
+# writes), never a literal: "passing" only for a full-mode PASS, with the
+# commit it verified. (This block used to hard-code "build": "passing",
+# "grade": "A" and "threats": "1231+", which nothing measured.)
+MANIFEST_FILE="$ROOT_DIR/VERIFICATION_MANIFEST.md"
+VERIFIED_COMMIT="$(sed -n 's/^\*\*Git SHA:\*\* //p' "$MANIFEST_FILE" 2>/dev/null | head -1)"
+VERIFIED_MODE="$(sed -n 's/^\*\*Mode:\*\* //p' "$MANIFEST_FILE" 2>/dev/null | head -1)"
+VERIFIED_STATUS="$(sed -n 's/^\*\*Status:\*\* //p' "$MANIFEST_FILE" 2>/dev/null | head -1)"
+if [ "$VERIFIED_MODE" = "full" ] && [ "$VERIFIED_STATUS" = "PASS" ]; then
+    BUILD_STATUS="passing"
+elif [ "$VERIFIED_STATUS" = "FAIL" ]; then
+    BUILD_STATUS="failing"
+else
+    BUILD_STATUS="unverified"
+fi
+
 cat > "$OUTPUT_FILE" << EOF
 {
   "generated": "$TIMESTAMP",
@@ -1463,12 +1479,13 @@ cat > "$OUTPUT_FILE" << EOF
     "tvValidationsRaw": $TV_VALIDATIONS
   },
   "status": {
-    "build": "passing",
-    "grade": "A",
-    "threats": "1231+"
+    "build": "$BUILD_STATUS",
+    "verifiedCommit": "${VERIFIED_COMMIT:-none}",
+    "verifiedMode": "${VERIFIED_MODE:-none}",
+    "source": "VERIFICATION_MANIFEST.md, written by riinac verify; passing means a full-mode PASS at verifiedCommit"
   },
   "milestones": [
-    { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-02-07", "event": "Generated multi-prover corpus published: Coq plus nine machine-generated mirrors, never independent verification (archived 2026-10-20)" },
     { "date": "2026-10-20", "event": "Generated non-Coq corpora archived out of main and cross-prover totals removed (REQ-29 path D2 executed, ruling D6); Coq is the mechanized lane, plus the scoped SMT set" },
     { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
     { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
