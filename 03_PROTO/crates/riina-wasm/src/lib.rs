@@ -121,8 +121,16 @@ fn do_parse(source: &str) -> Result<riina_types::Program, String> {
 }
 
 fn do_typecheck(program: &riina_types::Program) -> Result<(riina_types::Expr, String), String> {
+    do_typecheck_with_effects(program).map(|(expr, info, _)| (expr, info))
+}
+
+/// [`do_typecheck`], also returning the effect set the checker verified — the
+/// capabilities emitted C must start with, exactly as `riinac emit-c` seeds them.
+fn do_typecheck_with_effects(
+    program: &riina_types::Program,
+) -> Result<(riina_types::Expr, String, riina_types::EffectSet), String> {
     match riina_typechecker::check_program(program) {
-        Ok((expr, ty, eff)) => Ok((expr, format!("Type: {ty:?}, Effect: {eff:?}"))),
+        Ok((expr, ty, eff)) => Ok((expr, format!("Type: {ty:?}, Effect: {eff:?}"), eff)),
         Err(e) => Err(format!("Type error: {e}")),
     }
 }
@@ -132,8 +140,11 @@ fn do_compile_ir(expr: &riina_types::Expr) -> Result<String, String> {
     Ok(format!("{program:#?}"))
 }
 
-fn do_compile_c(expr: &riina_types::Expr) -> Result<String, String> {
-    riina_codegen::compile_to_c(expr).map_err(|e| format!("Codegen error: {e:?}"))
+fn do_compile_c(expr: &riina_types::Expr, caps: riina_types::EffectSet) -> Result<String, String> {
+    let program = riina_codegen::compile(expr)
+        .map_err(|e| format!("Codegen error: {e:?}"))?
+        .with_capabilities(caps);
+    riina_codegen::emit_c(&program).map_err(|e| format!("Codegen error: {e:?}"))
 }
 
 // ---------------------------------------------------------------------------
@@ -165,8 +176,8 @@ pub extern "C" fn riina_emit_c(ptr: *const u8, len: usize) -> *mut u8 {
     let result = (|| -> Result<String, String> {
         let source = read_input(ptr, len)?;
         let program = do_parse(&source)?;
-        let (expr, _ty_info) = do_typecheck(&program)?;
-        do_compile_c(&expr)
+        let (expr, _ty_info, caps) = do_typecheck_with_effects(&program)?;
+        do_compile_c(&expr, caps)
     })();
 
     let json = match result {
@@ -196,7 +207,26 @@ pub extern "C" fn riina_emit_ir(ptr: *const u8, len: usize) -> *mut u8 {
 
 #[cfg(test)]
 mod tests {
-    use super::{do_parse, do_typecheck};
+    use super::{do_compile_c, do_parse, do_typecheck, do_typecheck_with_effects};
+
+    /// The playground's emitted C starts with the verified capabilities, as
+    /// `riinac emit-c` does — never with none (every `laku` would abort) or
+    /// all of them.
+    #[test]
+    fn emitted_c_is_seeded_with_the_verified_capabilities() {
+        let program = do_parse(
+            "fungsi utama() -> Unit kesan Tulis { laku Tulis cetak(\"hai\"); () }",
+        )
+        .expect("program should parse");
+        let (expr, _, caps) = do_typecheck_with_effects(&program).expect("type-checks");
+        let c = do_compile_c(&expr, caps).expect("emits C");
+        let seed = c
+            .lines()
+            .find(|l| l.contains("riina_ctx.capabilities = "))
+            .expect("capability seed");
+        assert!(seed.contains("RIINA_EFFECT_WRITE"), "{seed}");
+        assert!(!seed.contains("0xFFFFFFFF"), "{seed}");
+    }
 
     #[test]
     fn do_typecheck_rejects_missing_capability() {

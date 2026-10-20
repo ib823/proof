@@ -7224,4 +7224,60 @@ mod audit_soundness {
              fungsi utama() -> Nombor kesan Bersih { 0 }",
         );
     }
+
+    /// Only records (which type as `Any`) have fields. `n.f` on an `Int`,
+    /// `xs.panjang()` on a list and `t.ada("@")` on a string type-checked as
+    /// `Any` and failed only when run (2026-10-19 assessment).
+    #[test]
+    fn field_access_on_a_non_record_is_rejected() {
+        for (decl, access) in [
+            ("biar n = 5;", "n.apa_apa"),
+            ("biar t = \"teks\";", "t.panjang"),
+            ("biar xs = [1, 2, 3];", "xs.panjang"),
+            ("biar b = betul;", "b.x"),
+            ("biar s = sulit 7;", "s.nilai"),
+        ] {
+            let src = format!(
+                "fungsi utama() -> Unit kesan Bersih {{ {decl} biar m = {access}; () }}"
+            );
+            let e = rejects(&src);
+            assert!(matches!(e, TypeError::ExpectedRecord { .. }), "{access}: {e:?}");
+            assert_eq!(e.error_code(), "T0011");
+        }
+    }
+
+    #[test]
+    fn field_access_on_a_record_still_type_checks() {
+        accepts(
+            "fungsi utama() -> Unit kesan Bersih {\n\
+             \x20   biar k = Kotak { isi: 1, nama: \"a\" };\n\
+             \x20   biar i = k.isi;\n\
+             \x20   biar r = Rahsia { isi: sulit 2 };\n\
+             \x20   biar j = r.isi;\n\
+             \x20   ()\n\
+             }",
+        );
+    }
+
+    /// An actor's message handler effects are charged where the actor is
+    /// declared. They were dropped (`Ty::Fn(arg, ret, _)`), and `hantar`
+    /// charges only Network, so a handler that wrote files left no trace in
+    /// the program's effect set (2026-10-19 adversarial review).
+    #[test]
+    fn actor_handler_effects_reach_the_program_effect_set() {
+        let src = "pelaku P {\n\
+                   \x20   keadaan: Nombor\n\
+                   \x20   kendalikan M(n) {\n\
+                   \x20       fail_tulis((\"x.txt\", \"y\"));\n\
+                   \x20       n\n\
+                   \x20   }\n\
+                   }\n\
+                   biar k = lahir P(0);\n\
+                   hantar(k, 1);\n\
+                   0\n";
+        let mut parser = Parser::new(src);
+        let program = parser.parse_program().expect("parses");
+        let (_, _, eff) = crate::check_program(&program).expect("type-checks");
+        assert!(eff.contains(riina_types::Effect::FileSystem), "{eff:?}");
+    }
 }

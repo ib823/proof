@@ -25,7 +25,7 @@ Numbers flow ONE direction: actual commands → metrics.json → all docs → we
 - RIINA uses Bahasa Melayu (Malaysian) keywords with English aliases
 - File extension: `.rii`
 - All functions MUST declare their effect: `kesan Bersih` (pure), `kesan Tulis` (write), etc.
-- Security types prevent information leaks at compile time
+- Security types: the type checker rejects the information-flow violations it implements (tested; non-interference is proven in Coq only for the reference-free, recursion-free core)
 
 ## Key Syntax Rules
 1. Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
@@ -33,7 +33,7 @@ Numbers flow ONE direction: actual commands → metrics.json → all docs → we
 3. Conditionals: `kalau condition { ... } lain { ... }` (else branch required)
 4. Match: `padan value { pattern => result, _ => default }` (use `=>` not `->`)
 5. Effects: Always declare with `kesan`. Pure = `Bersih`, I/O = `Tulis`/`Baca`
-6. Secrets: `Rahsia<T>` cannot be printed or leaked. Use `dedah` with proof.
+6. Secrets: the checker rejects printing a `Rahsia<T>` directly; release one with `dedah` and a proof.
 7. Pipe: `value |> function1 |> function2`
 8. Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
 

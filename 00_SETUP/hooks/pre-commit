@@ -241,10 +241,15 @@ for candidate in \
     fi
 done
 
-# Staleness check: rebuild if any riinac crate source is newer than the binary
+# Staleness check: rebuild if any workspace source is newer than the binary.
+# Every crate is linked into riinac (typechecker, codegen, parser, ...), so
+# watching only crates/riinac verified a change to, say, riina-typechecker
+# with the binary built before it.
 REBUILD_NEEDED=0
 if [ -n "$RIINAC" ]; then
-    NEWEST_SRC=$(find "${REPO_ROOT}/03_PROTO/crates/riinac" -name "*.rs" -newer "$RIINAC" 2>/dev/null | head -1)
+    NEWEST_SRC=$(find "${REPO_ROOT}/03_PROTO/crates" "${REPO_ROOT}/03_PROTO/Cargo.toml" \
+        "${REPO_ROOT}/03_PROTO/Cargo.lock" \( -name "*.rs" -o -name "Cargo.toml" -o -name "Cargo.lock" \) \
+        -newer "$RIINAC" 2>/dev/null | head -1)
     if [ -n "$NEWEST_SRC" ]; then
         echo "  riinac binary is stale ($(basename "$NEWEST_SRC") is newer) — rebuilding..."
         REBUILD_NEEDED=1

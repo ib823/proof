@@ -56,7 +56,9 @@
 //!
 //! Every translation is:
 //! - **Total**: All 25 expression forms handled exhaustively
-//! - **Correct**: Corresponds to Coq small-step semantics
+//! - **Checked, not proven**: intended to match the Coq small-step semantics;
+//!   the interpreter and backends are differential-tested against each other,
+//!   and no proof connects this crate to the Coq model
 //! - **Secure**: Security labels preserved through translation
 //! - **Traced**: Effect annotations maintained for verification
 //!
@@ -308,6 +310,19 @@ pub fn eval(expr: &riina_types::Expr) -> Result<Value> {
 /// Evaluate with built-in functions (cetak, panjang, etc.) pre-registered.
 pub fn eval_with_builtins(expr: &riina_types::Expr) -> Result<Value> {
     let mut interp = Interpreter::new();
+    interp.eval_with_builtins(expr)
+}
+
+/// Evaluate with builtins, starting with the runtime capabilities `caps` —
+/// the effect set the type checker verified for the program. This is what
+/// `riinac run` uses; [`eval_with_builtins`] starts with none, so any
+/// `laku`/`perlukan` in its program fails closed.
+pub fn eval_with_capabilities(
+    expr: &riina_types::Expr,
+    caps: riina_types::EffectSet,
+) -> Result<Value> {
+    let mut interp = Interpreter::new();
+    interp.grant_capabilities(caps);
     interp.eval_with_builtins(expr)
 }
 

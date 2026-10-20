@@ -18,6 +18,12 @@
 #   - --strict: fail unless every heavy dimension is closure-ready
 # ============================================================================
 
+# The generated per-domain corpora (02_FORMAL/<lane>/RIINA/Domains) that some
+# artifact and executable gates below name were archived out of main on
+# 2026-10-20 (owner ruling D6; preserved at commit fd23fbdb8). They were never
+# closure evidence; a gate that names one now reads false, which is the honest
+# state. Directory counts treat a missing directory as zero files.
+
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -300,9 +306,9 @@ D8_ARTIFACT=0
 D8_EXEC=0
 D8_READY=0
 
-FSTAR_DOMAIN_FILES="$(find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains" -type f -name "*.fst" 2>/dev/null | wc -l | tr -d ' ')"
+FSTAR_DOMAIN_FILES="$( { find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains" -type f -name "*.fst" 2>/dev/null || true; } | wc -l | tr -d ' ')"
 FSTAR_DOMAIN_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/" "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains" --include="*.fst" 2>/dev/null || true) | wc -l | tr -d ' ' )"
-FSTAR_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" -type f -name "*.fst" 2>/dev/null | wc -l | tr -d ' ')"
+FSTAR_ACTIVE_FILES="$( { find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" -type f -name "*.fst" 2>/dev/null || true; } | wc -l | tr -d ' ')"
 FSTAR_ACTIVE_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/" "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" --include="*.fst" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 FSTAR_ACTIVE_EXEC=0
 if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_ACTIVE_FILES" -gt 0 ] \
@@ -343,7 +349,7 @@ fi
 
 D8_PENDING="none"
 if [ "$D8_READY" -eq 0 ]; then
-  D8_PENDING="active F* lane is executable; migrate generated domain corpus to real F* obligations and keep executable lane mandatory"
+  D8_PENDING="F* lane retired (REQ-67g; generated corpus archived 2026-10-20, D6): crypto correctness rests on riina-core known-answer tests; no machine-checked crypto obligations exist"
 fi
 
 # ---------------------------------------------------------------------------
@@ -353,17 +359,17 @@ D10_ARTIFACT=0
 D10_EXEC=0
 D10_READY=0
 
-VERUS_DOMAIN_FILES="$(find "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
-KANI_DOMAIN_FILES="$(find "$REPO_ROOT/02_FORMAL/kani/RIINA/Domains" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
+VERUS_DOMAIN_FILES="$( { find "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains" -type f -name "*.rs" 2>/dev/null || true; } | wc -l | tr -d ' ')"
+KANI_DOMAIN_FILES="$( { find "$REPO_ROOT/02_FORMAL/kani/RIINA/Domains" -type f -name "*.rs" 2>/dev/null || true; } | wc -l | tr -d ' ')"
 VERUS_DOMAIN_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 KANI_DOMAIN_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/kani/RIINA/Domains" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
-VERUS_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/verus/RIINA/Active" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
-KANI_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/kani/RIINA/Active" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
+VERUS_ACTIVE_FILES="$( { find "$REPO_ROOT/02_FORMAL/verus/RIINA/Active" -type f -name "*.rs" 2>/dev/null || true; } | wc -l | tr -d ' ')"
+KANI_ACTIVE_FILES="$( { find "$REPO_ROOT/02_FORMAL/kani/RIINA/Active" -type f -name "*.rs" 2>/dev/null || true; } | wc -l | tr -d ' ')"
 VERUS_ACTIVE_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/verus/RIINA/Active" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 KANI_ACTIVE_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/kani/RIINA/Active" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 VERUS_ACTIVE_EXEC=0
 KANI_ACTIVE_EXEC=0
-RIINAC_SRC_FILES="$(find "$REPO_ROOT/03_PROTO/crates/riinac/src" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
+RIINAC_SRC_FILES="$( { find "$REPO_ROOT/03_PROTO/crates/riinac/src" -type f -name "*.rs" 2>/dev/null || true; } | wc -l | tr -d ' ')"
 
 if [ "$HAS_VERUS" -eq 1 ] && [ "$VERUS_ACTIVE_FILES" -gt 0 ] \
   && file_exists "$REPO_ROOT/02_FORMAL/verus/RIINA/Active/riinac_verify_mode.rs"; then
@@ -398,7 +404,7 @@ fi
 
 D10_PENDING="none"
 if [ "$D10_READY" -eq 0 ]; then
-  D10_PENDING="active Verus/Kani lane is executable; migrate generated domain corpus to real obligations bound to production compiler modules"
+  D10_PENDING="Verus/Kani hold hand-written drafts only (quarantined; generated corpus archived 2026-10-20, D6): write real obligations bound to production compiler modules (REQ-67)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -444,7 +450,7 @@ D13_ARTIFACT=0
 D13_EXEC=0
 D13_READY=0
 
-HW_LITMUS_FILES="$(find "$REPO_ROOT" -type f \( -name "*litmus*" -o -name "*memory_order*" \) 2>/dev/null | wc -l | tr -d ' ')"
+HW_LITMUS_FILES="$( { find "$REPO_ROOT" -type f \( -name "*litmus*" -o -name "*memory_order*" \) 2>/dev/null || true; } | wc -l | tr -d ' ')"
 
 if file_exists "$REPO_ROOT/02_FORMAL/coq/domains/S001_HardwareContracts.v" \
   && file_exists "$REPO_ROOT/02_FORMAL/coq/domains/HardwareSecurity.v" \

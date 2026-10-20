@@ -3,7 +3,7 @@ name = "riina-receipt"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-license.workspace = true
+license-file.workspace = true
 description = "RIINA execution receipts and verifiable effect chains"
 
 # Law 8 (zero third-party RUNTIME deps) holds: the ONLY dependency is the

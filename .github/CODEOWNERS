@@ -1,0 +1,73 @@
+# Human approval for security-critical paths (hardening mandate S5.5(i);
+# owner ruling D7, 2026-10-19).
+#
+# This takes effect only once branch protection on `main` requires a review
+# from code owners. Until a named formal-methods / security reviewer is
+# appointed (D7, an owner action), the owner reviews these paths. When a
+# reviewer is appointed, add them next to @ib823 on each line.
+
+# The gates themselves: hooks, CI, the verification driver and the metric and
+# claim checkers. Weakening one weakens every check behind it.
+/.github/                                       @ib823
+/00_SETUP/hooks/                                @ib823
+/03_PROTO/crates/riinac/src/verify.rs           @ib823
+/scripts/audit-docs.sh                          @ib823
+/scripts/generate-metrics.sh                    @ib823
+/scripts/sync-metrics.sh                        @ib823
+/scripts/coq-counting-policy.py                 @ib823
+/scripts/detect-vacuous-proofs.py               @ib823
+/scripts/check-noncoq-mechanized.sh             @ib823
+/scripts/security-gates.sh                      @ib823
+/scripts/verify-smt.sh                          @ib823
+/scripts/verify-public.sh                       @ib823
+/scripts/generate-sbom.sh                       @ib823
+/website/public/metrics.json                    @ib823
+/03_PROTO/crates/riinac/tests/scope_freeze.rs           @ib823
+/03_PROTO/crates/riinac/tests/licence_consistency.rs    @ib823
+/03_PROTO/crates/riinac/tests/mandate_traceability.rs   @ib823
+
+# Core Coq statements: the metatheory every headline claim rests on.
+/02_FORMAL/coq/foundations/                     @ib823
+/02_FORMAL/coq/type_system/                     @ib823
+/02_FORMAL/coq/properties/                      @ib823
+/02_FORMAL/coq/effects/                         @ib823
+/02_FORMAL/coq/termination/                     @ib823
+/02_FORMAL/coq/_CoqProject                      @ib823
+/02_FORMAL/coq/PROOF_CHANGELOG.md               @ib823
+
+# Type checker: IFC, effect and declassification rules.
+/03_PROTO/crates/riina-typechecker/             @ib823
+
+# Runtime capability gates and the package manifest that grants capabilities.
+/03_PROTO/crates/riina-codegen/src/interp.rs    @ib823
+/03_PROTO/crates/riina-codegen/src/lower.rs     @ib823
+/03_PROTO/crates/riina-codegen/src/emit.rs      @ib823
+/03_PROTO/crates/riina-codegen/src/ir.rs        @ib823
+/03_PROTO/crates/riinac/src/pkg_compile.rs      @ib823
+/03_PROTO/crates/riina-pkg/src/manifest.rs      @ib823
+
+# Cryptography (experimental and unaudited; ruling D8).
+/05_TOOLING/crates/riina-core/                  @ib823
+/02_FORMAL/coq/crypto/                          @ib823
+
+# Trusted base (created under REQ-103).
+/TRUSTED_BASE.md                                @ib823
+
+# Licence and public claim surfaces (rulings D5 and D9).
+/LICENSE                                        @ib823
+/README.md                                      @ib823
+/docs/i18n/                                     @ib823
+/SECURITY.md                                    @ib823
+/CHANGELOG.md                                   @ib823
+/CONTRIBUTING.md                                @ib823
+/llms.txt                                       @ib823
+/AGENTS.md                                      @ib823
+/COPILOT.md                                     @ib823
+/.cursorrules                                   @ib823
+/.clinerules                                    @ib823
+/website/src/                                   @ib823
+/website/index.html                             @ib823
+/riina-vscode/package.json                      @ib823
+/sbom/                                          @ib823
+/04_SPECS/governance/                           @ib823
+/RIINA_MASTER_PLAN.md                           @ib823

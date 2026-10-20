@@ -1,6 +1,6 @@
 # RIINA™ Specifications (Track C)
 
-**Verification:** 12,819 Coq Qed (compiled, 0 Admitted, 0 active axioms) — Coq is the only mechanized lane | 3530 Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)
+**Verification:** Coq 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3564 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 This directory contains formal specifications for RIINA.
 

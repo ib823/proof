@@ -3,12 +3,17 @@
 # check-medium-gaps.sh — Closure checks for medium strategic gaps (1,2,3,4,9,12)
 #
 # Items covered:
-#   1) Type system soundness (cross-lane core presence)
+#   1) Type system soundness (Coq core presence)
 #   2) Non-interference active-scope hygiene
 #   3) Effect soundness foundation (Coq effect gate + backend preservation hooks)
 #   4) Linear soundness foundation (Coq linear invariants + compiler signal)
-#   9) Protocol correctness foundation (Coq + TLA+ + Alloy artifacts)
+#   9) Protocol correctness foundation (Coq + the hand-written TLA+/Alloy models)
 #  12) Trust-chain foundation (DDC/hermetic + secret/Trojan-source gates; signing retracted)
+#
+# Items 1, 9 and 12 no longer require the generated Lean/Isabelle/TLA+/Alloy/
+# SMT/Verus mirrors of the Coq files: those were never evidence and were
+# archived out of main on 2026-10-20 (owner ruling D6; preserved at commit
+# fd23fbdb8). See scripts/check-easier-gaps.sh for the same change.
 #
 # Usage:
 #   bash scripts/check-medium-gaps.sh
@@ -25,10 +30,8 @@ NC='\033[0m'
 
 COQ_DIR="$REPO_ROOT/02_FORMAL/coq"
 COQ_PROJECT="$COQ_DIR/_CoqProject"
-LEAN_DIR="$REPO_ROOT/02_FORMAL/lean/RIINA"
-ISA_DIR="$REPO_ROOT/02_FORMAL/isabelle/RIINA"
-TLA_DIR="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Domains"
-ALLOY_DIR="$REPO_ROOT/02_FORMAL/alloy/RIINA/Domains"
+TLA_SMOKE="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
+ALLOY_SMOKE="$REPO_ROOT/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als"
 TYPECHECKER_RS="$REPO_ROOT/03_PROTO/crates/riina-typechecker/src/lib.rs"
 
 escape_json() {
@@ -65,16 +68,6 @@ coq_type_files=(
   "type_system/Preservation.v"
   "type_system/TypeSafety.v"
 )
-lean_type_files=(
-  "TypeSystem/Progress.lean"
-  "TypeSystem/Preservation.lean"
-  "TypeSystem/TypeSafety.lean"
-)
-isa_type_files=(
-  "TypeSystem/Progress.thy"
-  "TypeSystem/Preservation.thy"
-  "TypeSystem/TypeSafety.thy"
-)
 
 coq_ok=1
 for rel in "${coq_type_files[@]}"; do
@@ -83,25 +76,12 @@ for rel in "${coq_type_files[@]}"; do
   fi
 done
 
-lean_ok=1
-for rel in "${lean_type_files[@]}"; do
-  [ -f "$LEAN_DIR/$rel" ] || lean_ok=0
-done
+coq_thm=$( (grep -Eh '^(Theorem|Lemma) ' "${coq_type_files[@]/#/$COQ_DIR/}" 2>/dev/null || true) | wc -l | tr -d ' ')
 
-isa_ok=1
-for rel in "${isa_type_files[@]}"; do
-  [ -f "$ISA_DIR/$rel" ] || isa_ok=0
-done
-
-coq_thm=$(grep -Eh '^(Theorem|Lemma) ' "${coq_type_files[@]/#/$COQ_DIR/}" 2>/dev/null | wc -l | tr -d ' ')
-lean_thm=$(grep -Eh '^(theorem|lemma) ' "${lean_type_files[@]/#/$LEAN_DIR/}" 2>/dev/null | wc -l | tr -d ' ')
-isa_thm=$(grep -Eh '^(theorem|lemma) ' "${isa_type_files[@]/#/$ISA_DIR/}" 2>/dev/null | wc -l | tr -d ' ')
-
-if [ "$coq_ok" -eq 1 ] && [ "$lean_ok" -eq 1 ] && [ "$isa_ok" -eq 1 ] \
-  && [ "$coq_thm" -gt 0 ] && [ "$lean_thm" -gt 0 ] && [ "$isa_thm" -gt 0 ]; then
+if [ "$coq_ok" -eq 1 ] && [ "$coq_thm" -gt 0 ]; then
   ITEM1_STATUS="PASS"
 fi
-ITEM1_DETAIL="coq=$coq_ok lean=$lean_ok isa=$isa_ok coq_thm=$coq_thm lean_thm=$lean_thm isa_thm=$isa_thm"
+ITEM1_DETAIL="coq=$coq_ok coq_thm=$coq_thm"
 
 # ---------------------------------------------------------------------------
 # Item 2: Non-interference active-scope hygiene
@@ -220,28 +200,23 @@ ITEM4_DETAIL="files=$linear_files_ok tokens=$linear_tokens_ok compiler_signal=$c
 protocols=(SessionTypes AuthenticationProtocols VerifiedProtocols)
 protocol_exists=1
 coq_protocol_paths=()
-tla_protocol_paths=()
-alloy_protocol_paths=()
 
 for name in "${protocols[@]}"; do
   coq_path="$COQ_DIR/domains/${name}.v"
-  tla_path="$TLA_DIR/${name}.tla"
-  alloy_path="$ALLOY_DIR/${name}.als"
   coq_protocol_paths+=("$coq_path")
-  tla_protocol_paths+=("$tla_path")
-  alloy_protocol_paths+=("$alloy_path")
-  if [ ! -f "$coq_path" ] || [ ! -f "$tla_path" ] || [ ! -f "$alloy_path" ]; then
-    protocol_exists=0
-  fi
+  [ -f "$coq_path" ] || protocol_exists=0
 done
+if [ ! -f "$TLA_SMOKE" ] || [ ! -f "$ALLOY_SMOKE" ]; then
+  protocol_exists=0
+fi
 
 coq_protocol_theorems=0
 tla_protocol_theorems=0
 alloy_protocol_assertions=0
 if [ "$protocol_exists" -eq 1 ]; then
   coq_protocol_theorems="$( (grep -Eh '^(Theorem|Lemma) ' "${coq_protocol_paths[@]}" || true) | wc -l | tr -d ' ' )"
-  tla_protocol_theorems="$( (grep -Eh '^[[:space:]]*THEOREM[[:space:]]' "${tla_protocol_paths[@]}" || true) | wc -l | tr -d ' ' )"
-  alloy_protocol_assertions="$( (grep -Eh '^[[:space:]]*(assert|check)[[:space:]]' "${alloy_protocol_paths[@]}" || true) | wc -l | tr -d ' ' )"
+  tla_protocol_theorems="$( (grep -Eh '^[[:space:]]*THEOREM[[:space:]]' "$TLA_SMOKE" || true) | wc -l | tr -d ' ' )"
+  alloy_protocol_assertions="$( (grep -Eh '^[[:space:]]*(assert|check)[[:space:]]' "$ALLOY_SMOKE" || true) | wc -l | tr -d ' ' )"
 fi
 
 if [ "$protocol_exists" -eq 1 ] && [ "$coq_protocol_theorems" -gt 0 ] && [ "$tla_protocol_theorems" -gt 0 ] && [ "$alloy_protocol_assertions" -gt 0 ]; then
@@ -255,10 +230,6 @@ ITEM9_DETAIL="exists=$protocol_exists coq_thm=$coq_protocol_theorems tla_thm=$tl
 trust_paths=(
   "$COQ_DIR/domains/T001_HermeticBuild.v"
   "$COQ_DIR/domains/SupplyChainSecurity.v"
-  "$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Domains/T001_HermeticBuild.tla"
-  "$REPO_ROOT/02_FORMAL/smt/RIINA/Domains/T001_HermeticBuild.smt2"
-  "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains/t001__hermetic_build.rs"
-  "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains/supply_chain_security.rs"
   "$REPO_ROOT/05_TOOLING/tools/verify_integrity.sh"
 )
 
@@ -270,7 +241,7 @@ done
 # Signed-commit gate retracted 2026-06-01 (unenforceable); trust chain now rests
 # on the enforceable secret + Trojan-source scans.
 security_gates=0
-if grep -q 'Scanning changed files for secrets' "$REPO_ROOT/scripts/security-gates.sh" \
+if grep -q 'Scanning outgoing commits for secrets' "$REPO_ROOT/scripts/security-gates.sh" \
    && grep -q 'Trojan source' "$REPO_ROOT/scripts/security-gates.sh"; then
   security_gates=1
 fi

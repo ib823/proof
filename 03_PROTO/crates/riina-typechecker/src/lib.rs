@@ -100,6 +100,14 @@ pub enum TypeError {
         usage: Usage,
         message: String,
     },
+    /// Field access on a value that cannot be a record (`n.x` with `n: Int`).
+    /// Records are structural and type as `Any`, so the base of `e.f` must be
+    /// `Any` (possibly labelled); any other type has no fields, and the access
+    /// failed only at runtime ("type mismatch in field access").
+    ExpectedRecord {
+        found: Ty,
+        field: Ident,
+    },
     /// Expected an actor type but found something else
     ExpectedActor(Ty),
     /// Expected a CRDT type but found something else
@@ -140,6 +148,12 @@ impl std::fmt::Display for TypeError {
             TypeError::ExpectedRef(ty) => write!(f, "Expected reference type, found {:?}", ty),
             TypeError::ExpectedSecret(ty) => write!(f, "Expected secret type, found {:?}", ty),
             TypeError::ExpectedProof(ty) => write!(f, "Expected proof type, found {:?}", ty),
+            TypeError::ExpectedRecord { found, field } => write!(
+                f,
+                "Field access `.{field}` on a value of type {found:?}, which has no fields: \
+                 only records do, and RIINA has no methods (REQ-80) — call the function \
+                 instead, e.g. `{field}(x)` rather than `x.{field}()`"
+            ),
             TypeError::EffectViolation { allowed, found } => {
                 write!(
                     f,
@@ -322,6 +336,10 @@ impl TypeError {
             TypeError::ExpectedProof(_) => {
                 "Expected a Bukti<T> proof type. Use bukti(expr) to create one".to_string()
             }
+            TypeError::ExpectedRecord { field, .. } => format!(
+                "Only records have fields. RIINA has no methods: call the function \
+                 instead, e.g. `{field}(x)` rather than `x.{field}`"
+            ),
             TypeError::ImplicitFlowViolation {
                 branch_level,
                 target_level,
@@ -391,6 +409,7 @@ impl TypeError {
             TypeError::ExpectedRef(_) => "T0006",
             TypeError::ExpectedSecret(_) => "T0007",
             TypeError::ExpectedProof(_) => "T0008",
+            TypeError::ExpectedRecord { .. } => "T0011",
             TypeError::EffectViolation { .. } => "E0001",
             TypeError::AnnotationMismatch { .. } => "T0009",
             TypeError::SecurityViolation { .. } => "S0001",
@@ -4391,8 +4410,20 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // Field access — the base is checked (for effects); the field type is
         // `Any` (records are structural with no field-type table yet). The
         // field re-carries whatever the base record carries (H1).
-        Expr::FieldAccess(base, _field) => {
+        //
+        // A record types as `Any`, so a base whose type, under its security /
+        // taint / constant-time wrappers, is anything else cannot have fields.
+        // That used to type-check anyway (the result was `Any`) and fail only
+        // when run: `biar m: Nombor = n.apa_apa;` with `n = 5` passed `check`.
+        Expr::FieldAccess(base, field) => {
             let (t, eff) = type_check_full(ctx, base)?;
+            let (core, _) = peel(&t);
+            if !matches!(core, Ty::Any) {
+                return Err(TypeError::ExpectedRecord {
+                    found: t.clone(),
+                    field: field.clone(),
+                });
+            }
             Ok((rewrap(Ty::Any, &latent_info(&t).data()), eff))
         }
 
@@ -5818,6 +5849,16 @@ fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet)
     }
     // Type-check handler: must be Fn(message_ty) -> state_ty
     let (handler_ty, eff2) = type_check_full(ctx, handler)?;
+    // What the handler DOES when a message arrives. It used to be dropped
+    // (`Ty::Fn(arg, ret, _)`), and `hantar` charges only Network, so an
+    // actor whose handler wrote files type-checked as if it did not — and a
+    // package with `IO = false` built (2026-10-19 adversarial review). It is
+    // charged here, where the actor is declared: an over-approximation (the
+    // handler may never run) that is sound for every send.
+    let handler_latent = match &handler_ty {
+        Ty::Fn(_, _, latent) => *latent,
+        _ => EffectSet::PURE,
+    };
     match &handler_ty {
         Ty::Fn(arg, ret, _) => {
             if !types_compatible(message_ty, arg) {
@@ -5837,7 +5878,7 @@ fn tc_actor_decl(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet)
     }
     Ok((
         Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone())),
-        eff1.join(eff2),
+        eff1.join(eff2).join(handler_latent),
     ))
 }
 

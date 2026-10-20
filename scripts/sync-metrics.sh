@@ -47,6 +47,17 @@ add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
 # Parse values from metrics.json (use head -1 where fields repeat across sections)
 QED=$(grep -oP '"qedActive":\s*\K\d+' "$METRICS_FILE" | head -1)
 QED_COMMA=$(add_commas "$QED")
+# The three Coq numbers public text may quote (mandate S2.7, ruling D6). The raw
+# total above is kept for internal-only rules; public files get these.
+read -r CORE_QED MODEL_QED EXCLUDED_QED PARAMETERS < <(python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))["proofs"]
+c = d["countingPolicy"]
+print(c["coreMechanizedQed"], c["modelMechanizedQedNonvacuous"], c["excludedQed"], d["parameters"])
+' "$METRICS_FILE")
+CORE_COMMA=$(add_commas "$CORE_QED")
+MODEL_COMMA=$(add_commas "$MODEL_QED")
+EXCLUDED_COMMA=$(add_commas "$EXCLUDED_QED")
 ADMITTED=$(grep -oP '"admitted":\s*\K\d+' "$METRICS_FILE" | head -1)
 AXIOMS=$(grep -oP '"axioms":\s*\K\d+' "$METRICS_FILE" | head -1)
 COQ_FILES_TOTAL=$(grep -oP '"filesTotal":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -55,11 +66,11 @@ LEAN_THEOREMS=$(grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1)
 LEAN_COMMA=$(add_commas "$LEAN_THEOREMS")
 ISABELLE_LEMMAS=$(grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1)
 ISABELLE_COMMA=$(add_commas "$ISABELLE_LEMMAS")
-TOTAL_PROOFS=$(grep -oP '"totalProofsAllProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROOFS_COMMA=$(add_commas "$TOTAL_PROOFS")
-TRIPLE_PROVER=$(grep -oP '"tripleProverTheorems":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROVERS=$(grep -oP '"totalProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROVERS=${TOTAL_PROVERS:-10}
+# No cross-prover total is read or written (owner ruling D6, 2026-10-20):
+# metrics.json no longer carries totalProofsAllProvers / tripleProverTheorems /
+# totalProvers, because a sum of Qed, generated declarations, asserts and
+# harnesses reads as a proof count. (Grepping a missing key would also abort
+# this `set -euo pipefail` script.)
 # Pinned primary prover label from metrics.json (e.g. "Rocq 9.1.1")
 COQ_PROVER=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['coq']['prover'])" "$METRICS_FILE" 2>/dev/null || true)
 RUST_TESTS=$(grep -oP '"tests":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -98,7 +109,6 @@ echo "  SMT:            $SMT_ASSERTIONS assertions"
 echo "  Verus:          $VERUS_PROOFS proofs"
 echo "  Kani:           $KANI_HARNESSES harnesses"
 echo "  TV:             $TV_VALIDATIONS validations"
-echo "  Total:          $TOTAL_PROOFS_COMMA ($TOTAL_PROVERS provers)"
 echo "  Axioms:         $AXIOMS"
 echo "  Rust tests:     $RUST_TESTS"
 echo "  Session:        $SESSION"
@@ -110,16 +120,16 @@ COQ_TIER2=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d
 LEAN_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('leanCompiled',False)).lower())" 2>/dev/null || echo "false")
 ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',False)).lower())" 2>/dev/null || echo "false")
 
-# Compute stub prover total
-STUB_TOTAL=$((FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
-LEAN_ISA_TOTAL=$((LEAN_THEOREMS + ISABELLE_LEMMAS))
-
 # The canonical verification banner line — honest framing (Gate D, Path D2,
 # 2026-06-10): Coq is the ONLY mechanized lane; the other prover trees are
 # machine-generated and are NOT independent verification (tracked by claim level
 # in website/public/metrics.json). The banner no longer leads with a "prover
-# lanes" count, which read as multi-prover verification.
-BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) — Coq is the only mechanized lane | ${RUST_TESTS} Rust tests | the other prover trees are machine-generated (claim-level tracked, not independent verification)"
+# lanes" count, which read as multi-prover verification. Since 2026-10-20
+# (ruling D6) the generated mirrors are archived and the other lanes hold only
+# hand-written artifacts, of which the REQ-67(a) SMT set is mechanized.
+# The Coq part quotes the three S2.7 numbers, never a raw total, and gives the
+# Parameter count next to "0 Axiom" (mandate section 5).
+BANNER="**Verification:** Coq ${CORE_COMMA} core Qed, ${MODEL_COMMA} model Qed, ${EXCLUDED_COMMA} excluded Qed (vacuous or test); 0 Admitted, ${AXIOMS} \`Axiom\`, ${PARAMETERS} \`Parameter\`s (trusted interface) — Coq is the only fully mechanized lane | ${RUST_TESTS} Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 
@@ -192,10 +202,8 @@ if [ -f "$README" ]; then
     if [ "$DRY_RUN" -eq 0 ]; then
         # Use awk for safe replacements (avoids sed ERE escaping bugs with \*\*)
         tmpfile=$(mktemp)
-        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" -v total="$TOTAL_PROOFS_COMMA" -v prover="$COQ_PROVER" '
+        awk -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" -v prover="$COQ_PROVER" '
         {
-            # Update comparison table: "Yes (N Coq + N Lean + N Isabelle)"
-            gsub(/Yes \([0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle\)/, "Yes (" qed " Coq + " lean " Lean + " isa " Isabelle)")
 
             # Primary-prover row: pin the toolchain label. This used to match
             # only a literal **Rocq 9.1.1** row, so once the row said another
@@ -204,17 +212,13 @@ if [ -f "$README" ]; then
                 sub(/[*][*](Coq|Rocq) [0-9.]+[*][*]/, "**" prover "**")
             }
 
-            # Every current-state Qed figure ("N Qed" / "N Coq Qed") tracks the
-            # live count; explicitly historical lines keep their numbers. This
-            # is the same rule audit-docs.sh enforces.
+            # The three labelled Coq numbers track the live counts; explicitly
+            # historical lines keep theirs. A raw "N Qed" total is not
+            # rewritten: audit-docs.sh rejects it on public files (S2.7).
             if ($0 !~ /at the tagged commit|at release|[Hh]istorical/) {
-                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Coq Qed/, qed " Coq Qed")
-                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] Qed/, qed " Qed")
-            }
-
-            # Update phase 3 line with Coq/Lean/Isabelle totals
-            if ($0 ~ /Coq Qed.*Lean.*Isabelle.*total/) {
-                gsub(/[0-9,]+ Coq Qed \+ [0-9]+ Lean \+ [0-9]+ Isabelle = [0-9,]+ total/, qed " Coq Qed + " lean " Lean + " isa " Isabelle = " total " total")
+                gsub(/[0-9][0-9,]* core Qed/, core " core Qed")
+                gsub(/[0-9][0-9,]* model Qed/, model " model Qed")
+                gsub(/[0-9][0-9,]* excluded Qed/, excluded " excluded Qed")
             }
 
             print
@@ -243,7 +247,7 @@ if [ -f "$CLAUDE" ]; then
         tmpfile=$(mktemp)
         awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" \
             -v lean_c="$LEAN_COMMA" -v isa_c="$ISABELLE_COMMA" \
-            -v total="$TOTAL_PROOFS_COMMA" -v lean_files="$LEAN_FILES" \
+            -v lean_files="$LEAN_FILES" \
             -v isa_files="$ISABELLE_FILES" -v examples="$EXAMPLES" \
             -v rust_tests="$RUST_TESTS" -v coq_active="$COQ_FILES_ACTIVE" '
         # §0.5 table: | **Lean 4 Theorems** | 119 | 12 files, 0 sorry |
@@ -253,10 +257,6 @@ if [ -f "$CLAUDE" ]; then
         # §0.5 table: | **Isabelle/HOL Lemmas** | 138 | 10 files, 0 sorry |
         /[|] [*][*]Isabelle[/]HOL Lemmas[*][*]/ {
             gsub(/[|] [0-9]+ [|] [0-9]+ files/, "| " isa " | " isa_files " files")
-        }
-        # §0.5 table: | **Total Proofs (All Provers)** | 8,185 |
-        /[|] [*][*]Total Proofs [(]All Provers[)][*][*]/ {
-            gsub(/[|] [0-9,]+ [|]/, "| " total " |")
         }
         # §0.5 table: | **Example .rii Files** | 120 |
         /[|] [*][*]Example .rii Files[*][*]/ {
@@ -270,9 +270,8 @@ if [ -f "$CLAUDE" ]; then
         /[|] [*][*]Isabelle[/]HOL[*][*] [|] Tertiary/ {
             gsub(/[0-9,]+ lemmas/, isa_c " lemmas")
         }
-        # Footer: 8,185 total proofs: 7,928 Coq + 119 Lean + 138 Isabelle
-        /Last updated:.*total proofs:/ {
-            gsub(/[0-9,]+ total proofs: [0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle/, total " total proofs: " qed " Coq + " lean " Lean + " isa " Isabelle")
+        # Footer file counts: N active .v + N .lean + N .thy
+        /Last updated:.*active .v/ {
             gsub(/[0-9]+ active .v \+ [0-9]+ .lean \+ [0-9]+ .thy/, coq_active " active .v + " lean_files " .lean + " isa_files " .thy")
         }
         { print }
@@ -293,8 +292,9 @@ if [ -f "$CHANGELOG" ]; then
         # Update banner
         update_banner "$CHANGELOG"
 
-        # Update body metrics: "Active Coq build now at 7,682 Qed proofs"
-        sed -i -E "s|Active Coq build now at [0-9,]+ Qed proofs|Active Coq build now at ${QED_COMMA} Qed proofs|g" "$CHANGELOG"
+        # Release entries are history and keep their figures; only the banner
+        # tracks the live numbers. (A rule here used to rewrite "Active Coq
+        # build now at N Qed proofs" inside old entries.)
 
         echo "    [UPDATED] CHANGELOG.md"
     else
@@ -313,12 +313,12 @@ if [ -f "$PROGRESS" ]; then
 
         # Use awk for safe table row replacements (avoids sed ERE escaping bugs with \*\*)
         tmpfile=$(mktemp)
-        awk -v session="$SESSION" -v total="$TOTAL_PROOFS_COMMA" -v axioms="$AXIOMS" \
+        awk -v session="$SESSION" -v axioms="$AXIOMS" \
             -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" \
             -v coq_active="$COQ_FILES_ACTIVE" -v coq_total="$COQ_FILES_TOTAL" '
         # Update session line: **Session:** N (...)
         /^[*][*]Session:[*][*]/ {
-            gsub(/[*][*]Session:[*][*] [0-9]+ \([^)]+\)/, "**Session:** " session " (Proof Depth 20+ All Files — " total " proofs across 3 provers, 0 sorry, " axioms " axiom)")
+            gsub(/[*][*]Session:[*][*] [0-9]+ \([^)]+\)/, "**Session:** " session " (" qed " Coq Qed, " axioms " axiom)")
         }
         # Update Report Date
         /^[*][*]Report Date:[*][*]/ {
@@ -333,9 +333,6 @@ if [ -f "$PROGRESS" ]; then
         }
         /[|] Isabelle[/]HOL Lemmas/ {
             gsub(/[*][*][0-9]+[*][*]/, "**" isa "**")
-        }
-        /[|] Total Proofs [(]All Provers[)]/ {
-            gsub(/[*][*][0-9,]+[*][*]/, "**" total "**")
         }
         /[|] Files in Build/ {
             gsub(/[*][*][0-9]+[*][*]/, "**" coq_active "**")
@@ -397,7 +394,7 @@ if [ -f "$INDEX_HTML" ]; then
         # active Coq Qed count. (The old updater rewrote a "proofs across N
         # independent provers" phrase the page no longer contains, so the Qed
         # figure went stale unnoticed.)
-        sed -i -E "s/[0-9]{1,2},[0-9]{3} Coq Qed/${QED_COMMA} Coq Qed/g" "$INDEX_HTML"
+        sed -i -E "s/[0-9][0-9,]* core Qed/${CORE_COMMA} core Qed/g; s/[0-9][0-9,]* model Qed/${MODEL_COMMA} model Qed/g; s/[0-9][0-9,]* excluded Qed/${EXCLUDED_COMMA} excluded Qed/g" "$INDEX_HTML"
 
         echo "    [UPDATED] website/index.html"
     else
@@ -405,6 +402,39 @@ if [ -f "$INDEX_HTML" ]; then
     fi
     CHANGED=$((CHANGED + 1))
 fi
+
+# --- Generated numbers on public surfaces (mandate R5, S2.7, S5.7) ---
+# The three labelled Coq numbers ("<N> core Qed", "<N> model Qed", "<N> excluded
+# Qed") and the compiler test count ("<N,NNN> tests") track metrics.json on every
+# public file audit-docs.sh checks. Lines that are explicitly historical keep
+# their numbers; CHANGELOG is release history and is not touched (its banner is
+# handled above). audit-docs.sh rejects any other value.
+RUST_TESTS_COMMA=$(add_commas "$RUST_TESTS")
+for rel in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
+           .cursorrules .clinerules docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md \
+           docs/i18n/README_zh.md; do
+    f="$REPO_ROOT/$rel"
+    [ -f "$f" ] || continue
+    if [ "$DRY_RUN" -eq 0 ]; then
+        tmpfile=$(mktemp)
+        awk -v n="$RUST_TESTS_COMMA" -v core="$CORE_COMMA" -v model="$MODEL_COMMA" -v excluded="$EXCLUDED_COMMA" '
+            $0 !~ /at the tagged commit|at release|[Hh]istorical/ {
+                gsub(/[0-9][0-9]?,[0-9][0-9][0-9] tests/, n " tests")
+                gsub(/[0-9][0-9,]* core Qed/, core " core Qed")
+                gsub(/[0-9][0-9,]* model Qed/, model " model Qed")
+                gsub(/[0-9][0-9,]* excluded Qed/, excluded " excluded Qed")
+            }
+            { print }
+        ' "$f" > "$tmpfile"
+        if ! cmp -s "$tmpfile" "$f"; then
+            mv "$tmpfile" "$f"
+            echo "    [UPDATED] $rel (generated numbers)"
+            CHANGED=$((CHANGED + 1))
+        else
+            rm -f "$tmpfile"
+        fi
+    fi
+done
 
 # --- Enterprise docs ---
 CERT="$REPO_ROOT/docs/enterprise/CERTIFICATION.md"

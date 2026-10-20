@@ -44,7 +44,7 @@
 //! | `Case(e, x, e1, y, e2)` | Branch on `IsLeft`, then `UnwrapLeft/Right` |
 //! | `If(c, t, f)` | `CondBranch` with phi node for result |
 //! | `Let(x, e1, e2)` | `v1 = lower(e1); extend env; lower(e2)` |
-//! | `Perform(eff, e)` | `v = lower(e); Perform(eff, v)` |
+//! | `Perform(eff, e)` | `RequireCap(eff); v = lower(e); Perform(eff, v)` |
 //! | `Handle(e, x, h)` | `Handle` terminator with handler block |
 //! | `Ref(e, l)` | `v = lower(e); Alloc(v, l)` |
 //! | `Deref(e)` | `v = lower(e); Load(v)` |
@@ -2288,6 +2288,17 @@ impl Lower {
             // EFFECTS (Expr::Perform, Expr::Handle)
             // ═══════════════════════════════════════════════════════════════
             Expr::Perform(effect, payload) => {
+                // Check the capability BEFORE evaluating the payload, as the
+                // interpreter does (`interp.rs`, E_Perform): the C runtime's
+                // `riina_perform` checks only after its argument exists, so a
+                // `laku Tulis cetak(..)` without the capability printed first
+                // and aborted second.
+                let _cap = self.emit(
+                    Instruction::RequireCap(*effect),
+                    Ty::Capability(effect.to_capability_kind()),
+                    SecurityLevel::Public,
+                    *effect,
+                );
                 let payload_var = self.lower_expr(payload)?;
                 let payload_ty = self.infer_type(payload);
                 Ok(self.emit(

@@ -11,6 +11,14 @@
 //! * `test --update` replaced the first matching quoted string ANYWHERE in the
 //!   file, rewriting an unrelated function's literal.
 //! * `doc` pasted test names, doc comments and the title into HTML raw.
+//!
+//! And argument handling, as found by the 2026-10-19 assessment:
+//!
+//! * a second input file silently replaced the first, so `riinac check
+//!   leaky.rii ok.rii` checked only `ok.rii` and exited 0;
+//! * an unknown command fell through to `check` on the next argument, so
+//!   `riinac emit-core x.rii` printed "Success!";
+//! * `--version`/`--help` were "Unknown option" and every banner said v0.1.0.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -198,4 +206,103 @@ fn doc_output_escapes_program_text() {
             "unsafe anchor {id:?}"
         );
     }
+}
+
+const LEAKS_A_SECRET: &str = "fungsi utama() -> Unit kesan Tulis {\n    biar pin = sulit 1234;\n    cetak(pin)\n}\n";
+const WELL_TYPED: &str = "fungsi utama() -> Unit kesan Tulis { cetak(\"hai\") }\n";
+
+fn riinac(dir: &Path, args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(args)
+        .current_dir(dir)
+        .output()
+        .expect("riinac")
+}
+
+/// Every extra input file is refused, in either order and with or without an
+/// explicit command — never resolved by checking only one of them.
+#[test]
+fn a_second_input_file_is_refused_not_silently_dropped() {
+    let sb = Sandbox::new("twofiles");
+    sb.file("leak.rii", LEAKS_A_SECRET);
+    sb.file("ok.rii", WELL_TYPED);
+    // Control: each file alone gives its own verdict.
+    assert!(!riinac(&sb.dir, &["check", "leak.rii"]).status.success());
+    assert!(riinac(&sb.dir, &["check", "ok.rii"]).status.success());
+    for args in [
+        &["check", "leak.rii", "ok.rii"][..],
+        &["check", "ok.rii", "leak.rii"][..],
+        &["leak.rii", "ok.rii"][..],
+        &["run", "ok.rii", "leak.rii"][..],
+        &["build", "ok.rii", "leak.rii"][..],
+    ] {
+        let out = riinac(&sb.dir, args);
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(!out.status.success(), "{args:?} succeeded: {stderr}");
+        assert!(stderr.contains("Only one input file"), "{args:?}: {stderr}");
+    }
+}
+
+/// An unknown command is an error. The documented `riinac <file.rii>`
+/// shorthand for `check` keeps working.
+#[test]
+fn an_unknown_command_is_an_error_not_a_silent_check() {
+    let sb = Sandbox::new("unknowncmd");
+    sb.file("ok.rii", WELL_TYPED);
+    for cmd in ["emit-core", "chek", "totally-bogus"] {
+        let out = riinac(&sb.dir, &[cmd, "ok.rii"]);
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(!out.status.success(), "`riinac {cmd}` succeeded");
+        assert!(stderr.contains("Unknown command"), "{cmd}: {stderr}");
+        assert!(!stderr.contains("Success"), "{cmd}: {stderr}");
+    }
+    let out = riinac(&sb.dir, &["ok.rii"]);
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+}
+
+/// `--version` and `--help` (and their short and bare-word forms) succeed and
+/// print to stdout; banners carry the real crate version.
+#[test]
+fn version_and_help_work_and_banners_carry_the_crate_version() {
+    let sb = Sandbox::new("version");
+    let expected = format!("riinac {}", env!("CARGO_PKG_VERSION"));
+    for flag in ["--version", "-V", "version"] {
+        let out = riinac(&sb.dir, &[flag]);
+        assert!(out.status.success(), "{flag}");
+        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), expected, "{flag}");
+    }
+    for flag in ["--help", "-h", "help"] {
+        let out = riinac(&sb.dir, &[flag]);
+        assert!(out.status.success(), "{flag}");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert!(stdout.contains("Usage: riinac"), "{flag}: {stdout}");
+        assert!(stdout.contains("Exactly one input file"), "{flag}: {stdout}");
+    }
+    sb.file("ok.rii", WELL_TYPED);
+    let out = riinac(&sb.dir, &["check", "ok.rii"]);
+    let banner = format!("RIINA Compiler v{}", env!("CARGO_PKG_VERSION"));
+    assert!(String::from_utf8_lossy(&out.stderr).contains(&banner));
+}
+
+/// A compliance run over a program that uses RIINA's crypto says the crypto
+/// is experimental and not validated (owner ruling D8); one without crypto
+/// does not.
+#[test]
+fn compliance_runs_flag_unvalidated_crypto() {
+    let sb = Sandbox::new("cryptonotice");
+    sb.file(
+        "k.rii",
+        "fungsi utama() -> Unit kesan Kripto { biar h = hash_dengan(\"sha3-256\"); () }\n",
+    );
+    sb.file("ok.rii", WELL_TYPED);
+    let out = riinac(&sb.dir, &["check", "--compliance", "pci-dss", "k.rii"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("not validated"), "{stderr}");
+    let out = riinac(&sb.dir, &["check", "--compliance", "pci-dss", "ok.rii"]);
+    assert!(!String::from_utf8_lossy(&out.stderr).contains("not validated"));
+    let out = riinac(&sb.dir, &["check", "k.rii"]);
+    assert!(
+        !String::from_utf8_lossy(&out.stderr).contains("not validated"),
+        "the notice belongs to compliance runs"
+    );
 }

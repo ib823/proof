@@ -4492,3 +4492,24 @@ fn capitalized_function_name_is_rejected() {
         .parse_program()
         .expect("a lowercase function must still parse");
 }
+
+/// No floating point by design (owner ruling D8, REQ-105): a float literal is
+/// a dedicated error AT the literal, naming the fixed-point alternatives. It
+/// used to be `Unexpected token: LiteralFloat("1.5", None)` with a span on the
+/// token before it.
+#[test]
+fn test_float_literal_is_a_dedicated_error_at_the_literal() {
+    let src = "biar x = 1.5; x";
+    let err = Parser::new(src)
+        .parse_expr()
+        .expect_err("a float literal must not parse");
+    assert!(
+        matches!(err.kind, ParseErrorKind::FloatLiteral(ref lit) if lit == "1.5"),
+        "{:?}",
+        err.kind
+    );
+    assert_eq!(err.kind.error_code(), "P0015");
+    let msg = err.kind.to_string();
+    assert!(msg.contains("perpuluhan(\"1.5\")") && msg.contains("wang("), "{msg}");
+    assert_eq!(&src[err.span.start..err.span.end], "1.5", "caret must sit on the literal");
+}

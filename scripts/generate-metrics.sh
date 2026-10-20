@@ -410,6 +410,17 @@ SECTION_HYPOTHESES=$(python3 "$COQ_SCAN" "$ROOT_DIR/02_FORMAL/coq" Hypothesis Hy
 VACUITY_FINDINGS=$(cd "$ROOT_DIR" && python3 scripts/detect-vacuous-proofs.py --json 2>/dev/null \
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])') || {
     echo "ERROR: proof-vacuity scan failed" >&2; exit 1; }
+# The three published Coq numbers (mandate S2.7, ruling D6): core, model and
+# excluded. No raw Qed total is published on public surfaces; qedActive stays
+# in this file as the partition's checksum.
+COUNTING_JSON=$(python3 "$ROOT_DIR/scripts/coq-counting-policy.py" "$ROOT_DIR") || {
+    echo "ERROR: Coq counting policy failed" >&2; exit 1; }
+read -r CORE_QED MODEL_QED EXCLUDED_QED COUNTED_QED < <(printf '%s' "$COUNTING_JSON" | python3 -c \
+    'import json,sys; d=json.load(sys.stdin); print(d["coreMechanizedQed"], d["modelMechanizedQedNonvacuous"], d["excludedQed"], d["activeQed"])')
+if [ "$COUNTED_QED" != "$QED_ACTIVE" ]; then
+    echo "ERROR: counting policy partitions $COUNTED_QED Qed, but the active build has $QED_ACTIVE" >&2
+    exit 1
+fi
 KERNEL_WEAKENING=$(python3 "$COQ_SCAN" --forbidden "$ROOT_DIR/02_FORMAL/coq" | awk -F'\t' '{s += $2} END {print s + 0}') || {
     echo "ERROR: Coq forbidden-construct scan failed" >&2; exit 1; }
 
@@ -586,6 +597,15 @@ if [ -d "$ROOT_DIR/02_FORMAL/alloy" ]; then
 fi
 
 # Count SMT assertions (Z3/CVC5 - assert declarations, excluding .tv.smt2)
+# The SMT lane's PUBLISHED count is its claim: the properties in the REQ-67a
+# scoped set (02_FORMAL/smt/SCOPED_SET.txt, "<file> <expected unsat count>"),
+# which scripts/verify-smt.sh checks exactly. Raw asserts across the lane stay
+# in assertionsRaw. (Publishing the raw count let a "mechanized" lane show 149
+# asserts while 37 properties are what Z3 actually establishes.)
+SMT_SCOPED_PROPERTIES=0
+if [ -f "$ROOT_DIR/02_FORMAL/smt/SCOPED_SET.txt" ]; then
+    SMT_SCOPED_PROPERTIES=$(awk '!/^[[:space:]]*#/ && NF >= 2 && $2 ~ /^[0-9]+$/ { s += $2 } END { print s + 0 }' "$ROOT_DIR/02_FORMAL/smt/SCOPED_SET.txt")
+fi
 SMT_ASSERTIONS=0
 SMT_FILES=0
 if [ -d "$ROOT_DIR/02_FORMAL/smt" ]; then
@@ -661,7 +681,7 @@ ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
 FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
 TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
 ALLOY_ASSERTIONS_PUBLIC=$ALLOY_ASSERTIONS
-SMT_ASSERTIONS_PUBLIC=$SMT_ASSERTIONS
+SMT_ASSERTIONS_PUBLIC=$SMT_SCOPED_PROPERTIES
 VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
 KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
 TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
@@ -714,50 +734,11 @@ while IFS= read -r f; do
     fi
 done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
 
-# Total proofs across ALL 10 provers (excludes quarantined stub lanes)
-TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
-
-# Count triple-prover theorems: min(domain Lean theorems, domain Isabelle lemmas)
-# + foundation triple-prover count from MULTIPROVER_VALIDATION.md
-FOUNDATION_TRIPLE=$(grep -oP '\d+ triple-prover theorems' "$ROOT_DIR/02_FORMAL/MULTIPROVER_VALIDATION.md" 2>/dev/null | grep -oP '^\d+' || echo "86")
-# Domain triple-prover: all domain theorems exist in all 3 provers
-LEAN_DOMAIN_THEOREMS=0
-if [ -d "$ROOT_DIR/02_FORMAL/lean/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FORMAL/lean/RIINA/Industries" ]; then
-    for subdir in Domains Industries; do
-        dir="$ROOT_DIR/02_FORMAL/lean/RIINA/$subdir"
-        if [ -d "$dir" ]; then
-            while IFS= read -r f; do
-                count=$(grep -cP "^\s*(theorem|lemma)\s" "$f" 2>/dev/null || true)
-                if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-                    LEAN_DOMAIN_THEOREMS=$((LEAN_DOMAIN_THEOREMS + count))
-                fi
-            done < <(find "$dir" -name "*.lean" -type f 2>/dev/null)
-        fi
-    done
-fi
-ISA_DOMAIN_LEMMAS=0
-if [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Industries" ]; then
-    for subdir in Domains Industries; do
-        dir="$ROOT_DIR/02_FORMAL/isabelle/RIINA/$subdir"
-        if [ -d "$dir" ]; then
-            while IFS= read -r f; do
-                count=$(grep -cP "^\s*(lemma|theorem)\s" "$f" 2>/dev/null || true)
-                if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-                    ISA_DOMAIN_LEMMAS=$((ISA_DOMAIN_LEMMAS + count))
-                fi
-            done < <(find "$dir" -name "*.thy" -type f 2>/dev/null)
-        fi
-    done
-fi
-# Triple-prover = min(Lean domain, Isabelle domain) + foundation
-# If Isabelle is quarantined as generated stubs, triple-prover claims are zeroed.
-if [ "$ISABELLE_QUARANTINED" = true ]; then
-    DOMAIN_TRIPLE=0
-    TRIPLE_PROVER=0
-else
-    DOMAIN_TRIPLE=$((LEAN_DOMAIN_THEOREMS < ISA_DOMAIN_LEMMAS ? LEAN_DOMAIN_THEOREMS : ISA_DOMAIN_LEMMAS))
-    TRIPLE_PROVER=$((FOUNDATION_TRIPLE + DOMAIN_TRIPLE))
-fi
+# No cross-prover total and no "triple-prover" count (owner ruling D6,
+# 2026-10-20; REQ-29 path D2): adding Qed, generated declarations, asserts and
+# harnesses produced one number that read as proofs (62,413 "across 10
+# provers"), and the triple-prover figure counted generated ports. Per-lane
+# counts stay below, each with its own claim level.
 
 # Count Rust tests
 if [ -f "${HOME}/.cargo/env" ]; then
@@ -1084,7 +1065,7 @@ ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
 FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
 TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
 ALLOY_ASSERTIONS_PUBLIC=$ALLOY_ASSERTIONS
-SMT_ASSERTIONS_PUBLIC=$SMT_ASSERTIONS
+SMT_ASSERTIONS_PUBLIC=$SMT_SCOPED_PROPERTIES
 VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
 KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
 TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
@@ -1122,7 +1103,6 @@ fi
 [ "$KANI_QUARANTINED" = true ] && KANI_HARNESSES_PUBLIC=0
 [ "$TV_QUARANTINED" = true ] && TV_VALIDATIONS_PUBLIC=0
 
-TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
 
 # Smoke never sets ISABELLE_COMPILED (see HONESTY POLICY below): that flag is
 # quality.isabelleCompiled and the lane's claim, owned by the strict report.
@@ -1277,7 +1257,13 @@ cat > "$OUTPUT_FILE" << EOF
     "kernelWeakeningConstructs": $KERNEL_WEAKENING,
     "vacuityFindings": $VACUITY_FINDINGS,
     "vacuityFindingsNote": "scripts/detect-vacuous-proofs.py patterns (True conclusions, reflexivity on hard-coded records, := False definitions, definitional tautologies); ratcheted by audit-docs.sh",
-    "axiomsJustified": true
+    "axiomsJustified": true,
+    "countingPolicy": {
+      "coreMechanizedQed": $CORE_QED,
+      "modelMechanizedQedNonvacuous": $MODEL_QED,
+      "excludedQed": $EXCLUDED_QED,
+      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py, every Example and Remark proof, and listed test files. The three add up to qedActive. Vacuity patterns are heuristics, so excluded is a lower bound; counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
+    }
   },
   "coq": {
     "filesTotal": $COQ_FILES,
@@ -1287,19 +1273,14 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "lean": {
     "theorems": $LEAN_THEOREMS,
-    "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
+    "theoremsNote": "Declarations in the lane, not verified proofs. The generated port was archived out of main on 2026-10-20 (ruling D6); the REQ-67(b) hand-written re-proof has not started",
     "sorry": $LEAN_SORRY,
     "sorryVerified": $LEAN_COMPILED,
-    "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
+    "sorryNote": "literal sorry tokens in the lane (the generated port, which did not elaborate, is archived)",
     "axioms": $LEAN_AXIOMS,
     "files": $LEAN_FILES,
     "lines": $LEAN_LINES,
-    "elaborationMeasured": "2026-06-01 (Lean 4.16.0)",
-    "filesTotal": 326,
-    "filesElaboratingClean": 7,
-    "theoremsElaborating": 215,
-    "defaultBuildTheorems": 0,
-    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md",
+    "corpusArchived": "2026-10-20: generated port removed from main (ruling D6, REQ-29 path D2); preserved at commit fd23fbdb8",
     "prover": "Lean 4"
   },
   "isabelle": {
@@ -1327,7 +1308,7 @@ cat > "$OUTPUT_FILE" << EOF
     "smokeLemmas": 3,
     "smokeContent": "3 trivial lemmas (constant-time u8 eq reflexive/symmetric, zeroize length) — NOT the named crypto algorithms",
     "smokeModule": "$(escape_json "$FSTAR_SMOKE_MODULE")",
-    "corpusAdmits": 11935,
+    "corpusArchived": "2026-10-20: the generated corpus (~11,935 admits) was removed from main; preserved at commit fd23fbdb8",
     "quarantined": $FSTAR_QUARANTINED,
     "files": $FSTAR_FILES,
     "prover": "F*"
@@ -1363,7 +1344,7 @@ cat > "$OUTPUT_FILE" << EOF
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "assertionsRaw is the generated corpus-wide assert count, not a verified total. compiledAssertions records the historical lattice smoke check; scripts/verify-smt.sh verifies the current separately scoped set.",
+    "smokeNote": "The lane's claim is the REQ-67a scoped set (02_FORMAL/smt/SCOPED_SET.txt), checked by scripts/verify-smt.sh for exact unsat counts. assertionsRaw counts asserts in the remaining hand-written files; the generated corpus was archived 2026-10-20.",
     "quarantined": $SMT_QUARANTINED,
     "files": $SMT_FILES,
     "prover": "Z3/CVC5 (SMT-LIB)"
@@ -1390,12 +1371,8 @@ cat > "$OUTPUT_FILE" << EOF
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": $TRIPLE_PROVER,
-    "totalProofsAllProvers": $TOTAL_PROOFS,
-    "totalProvers": 10,
-    "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
-    "sorry": $((LEAN_SORRY + ISABELLE_SORRY)),
-    "status": "$MULTIPROVER_STATUS"
+    "status": "$MULTIPROVER_STATUS",
+    "note": "No cross-prover total is published: counts of different kinds are never summed (owner ruling D6, 2026-10-20). Each lane carries its own claim level under claimLevels."
   },
   "quality": {
     "coqCompiled": $COQ_COMPILED,
@@ -1472,6 +1449,7 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "milestones": [
     { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-10-20", "event": "Generated non-Coq corpora archived out of main and cross-prover totals removed (REQ-29 path D2 executed, ruling D6); Coq is the mechanized lane, plus the scoped SMT set" },
     { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
     { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
     { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },
@@ -1498,7 +1476,6 @@ echo "  SMT:          $SMT_ASSERTIONS_PUBLIC assertions (raw $SMT_ASSERTIONS), $
 echo "  Verus:        $VERUS_PROOFS_PUBLIC proofs (raw $VERUS_PROOFS), $VERUS_FILES files, quarantined=$VERUS_QUARANTINED"
 echo "  Kani:         $KANI_HARNESSES_PUBLIC harnesses (raw $KANI_HARNESSES), $KANI_FILES files, quarantined=$KANI_QUARANTINED"
 echo "  TV:           $TV_VALIDATIONS_PUBLIC validations (raw $TV_VALIDATIONS), $TV_FILES files, quarantined=$TV_QUARANTINED"
-echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
 echo "  Claim levels: overall=$OVERALL_CLAIM coq=$CLAIM_COQ lean=$CLAIM_LEAN isabelle=$CLAIM_ISABELLE"
 echo "                fstar=$CLAIM_FSTAR tlaplus=$CLAIM_TLAPLUS alloy=$CLAIM_ALLOY smt=$CLAIM_SMT"
 echo "                verus=$CLAIM_VERUS kani=$CLAIM_KANI tv=$CLAIM_TV dim14=$CLAIM_DIM14"

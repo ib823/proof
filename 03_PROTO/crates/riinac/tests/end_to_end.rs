@@ -302,7 +302,23 @@ fn examples_root() -> std::path::PathBuf {
 /// (`Tulis`, an IO effect); the old total order let System (10) cover Write
 /// (4). They failed closed and now declare what they perform (`kesan Tulis`);
 /// output unchanged.
-const CORPUS_PASSING: usize = 98;
+///
+/// 2026-10-19: 98 -> 84 (field access, 2026-10-19 assessment). The checker
+/// typed every `e.f` as `Any` whatever `e` was, so method-call syntax on
+/// lists, strings and options (`senarai.panjang()`, `xs.peta(f)`,
+/// `teks.ada("@")`) passed `check` and then failed at runtime with "type
+/// mismatch in field access: expected record". RIINA has no methods, and
+/// most of these names (`peta`, `tapis`, `lipat`, `ekor`, `ada`, ...) are not
+/// builtins at all. Only records (`Any`) now have fields. 14 examples written
+/// against that imagined method library now fail closed: 00_basics/
+/// {closures, functions_higher, guard_clauses, lists, loops_for,
+/// loops_while, options, pipe_operator, type_annotations}, 01_security/
+/// {sanitized_data, tainted_data}, 02_effects/{pure_functions,
+/// pure_io_boundary}, 07_ai_patterns/data_pipeline. Eight of them already
+/// crashed under `riinac run`; the other six reached the bad access only on
+/// paths `utama` does not execute. Rewriting them against real builtins is
+/// REQ-55 corpus work.
+const CORPUS_PASSING: usize = 84;
 const CORPUS_TOTAL: usize = 172;
 
 #[test]

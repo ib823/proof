@@ -1,1 +1,7 @@
 Quarantined: bulk content is auto-generated tautologies, not compiled by prover. See metrics.json quarantineReason.
+
+ARCHIVED 2026-10-20 (owner ruling D6, executing REQ-29 path D2): the generated
+corpus was removed from `main`. It is preserved in history at commit fd23fbdb8
+(the last commit that contains it). Restore with
+`git checkout fd23fbdb8 -- 02_FORMAL/<lane>`. Only hand-written `RIINA/Active/` material
+(and build files) remain in this lane.

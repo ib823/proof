@@ -6,9 +6,11 @@ This directory contains 172 `.rii` example files across 20 category directories.
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **98 of the 172 examples pass
-`riinac check`** end-to-end (re-measured 2026-10-11; and all 28 of `00_basics/`), and closing the
-remaining gap is active work (`RIINA_MASTER_PLAN.md` Gate B).
+of the examples assume. As of this writing, **84 of the 172 examples pass
+`riinac check`** end-to-end (re-measured 2026-10-19; 19 of the 28 in `00_basics/`), and closing the
+remaining gap is active work (`RIINA_MASTER_PLAN.md` REQ-55). The 2026-10-19 drop from 98 is
+honest: 14 examples call methods on lists and strings (`senarai.panjang()`, `xs.peta(f)`) —
+RIINA has no methods — and used to pass `check` only to fail when run (REQ-93).
 
 Separately, passing `riinac check` does **not** imply the example can be
 compiled: every `jaring_*`/`http_*`/`simpan_*`/`fail_*`/`vfs_*`/`json_*`/`masa_*`

@@ -31,7 +31,7 @@ or call it directly.
 Create `hello.rii`:
 
 ```riina
-fungsi utama() -> Teks kesan Sistem {
+fungsi utama() -> Teks kesan Tulis {
     biar mesej = "Selamat datang ke RIINA!";
     cetak(mesej);
     mesej

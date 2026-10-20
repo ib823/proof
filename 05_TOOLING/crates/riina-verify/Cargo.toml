@@ -2,6 +2,7 @@
 name = "riina-verify"
 version.workspace = true
 edition.workspace = true
+license-file.workspace = true
 description = "RIINA verification orchestrator"
 
 [[bin]]

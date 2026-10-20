@@ -14,6 +14,12 @@
 #
 # Strict mode:
 #   --strict-tools => fail unless promotion readiness is true for both dims.
+#
+# Since 2026-10-20 (owner ruling D6) the generated Lean/Isabelle/TLA+/Alloy
+# mirrors of the Coq type-system and protocol files are archived out of main
+# (preserved at commit fd23fbdb8). Both dimensions therefore report FAIL until
+# hand-written counterparts exist (REQ-67). Dim 9's earlier PASS rested on
+# those generated mirrors (SANY parse + grep parity), which was never evidence.
 # ============================================================================
 
 set -euo pipefail
@@ -245,7 +251,7 @@ for rel in "${coq_type_files[@]}"; do
   grep -Fxq "$rel" "$COQ_PROJECT" || coq_type_ok=0
 done
 
-coq_type_theorems="$(grep -Eh '^(Theorem|Lemma) ' "${coq_type_files[@]/#/$COQ_DIR/}" 2>/dev/null | wc -l | tr -d ' ')"
+coq_type_theorems="$( (grep -Eh '^(Theorem|Lemma) ' "${coq_type_files[@]/#/$COQ_DIR/}" 2>/dev/null || true) | wc -l | tr -d ' ')"
 
 lean_type_ok=1
 for f in "${lean_type_files[@]}"; do
@@ -284,11 +290,11 @@ isa_type_ok=1
 for f in "${isa_type_files[@]}"; do
   [ -f "$f" ] || isa_type_ok=0
 done
-isa_type_theorems="$(grep -Eh '^(theorem|lemma) ' "${isa_type_files[@]}" 2>/dev/null | wc -l | tr -d ' ')"
+isa_type_theorems="$( (grep -Eh '^(theorem|lemma) ' "${isa_type_files[@]}" 2>/dev/null || true) | wc -l | tr -d ' ')"
 
 isabelle_build_ok=0
 isabelle_build_mode="missing_local_isabelle"
-if [ "$HAS_ISABELLE" -eq 1 ]; then
+if [ "$HAS_ISABELLE" -eq 1 ] && [ "$isa_type_ok" -eq 1 ]; then
   isa_tmp="$(mktemp)"
   isa_core_tmp="$(mktemp -d "$REPO_ROOT/.isabelle-core.XXXXXX")"
 

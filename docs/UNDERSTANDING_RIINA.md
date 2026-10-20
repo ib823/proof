@@ -1,6 +1,6 @@
 # Understanding RIINA
 
-## The Complete Guide to the World's First Formally Verified Programming Language
+## The Complete Guide to a Programming Language with a Coq-Verified Core Model
 
 ---
 
@@ -10,11 +10,11 @@
 
 ## What Is RIINA?
 
-RIINA stands for **Rigorous Immutable Invariant, No Assumptions**. It is a programming language where every security guarantee is backed by a mathematical proof — verified by machine, not by human opinion.
+RIINA stands for **Rigorous Immutable Invariant, No Assumptions**. It is a programming language with a Coq-verified core model: its core type and effect rules are proven in Coq for the language model — checked by machine, not by human opinion — and the compiler is tested against that model.
 
-Most software security today works like a lock on a door: it deters attackers, but a sufficiently skilled person can pick it. RIINA works like a room with no door at all. The vulnerability does not exist because mathematics proves it cannot exist.
+Most software security today works like a lock on a door: it deters attackers, but a sufficiently skilled person can pick it. RIINA aims to build a room with no door at all. For the core of the language model, a class of vulnerability does not exist there because mathematics proves it cannot; outside that core, and in the shipped compiler, the checks are tested rather than proven.
 
-RIINA is also the first programming language with native **Bahasa Melayu** (Malaysian language) syntax — its keywords are in Malay, making it the first formally verified language built from a non-English foundation.
+RIINA is also the first programming language with native **Bahasa Melayu** (Malaysian language) syntax — its keywords are in Malay, so its Coq-verified core model is built on a non-English foundation.
 
 ---
 
@@ -22,7 +22,7 @@ RIINA is also the first programming language with native **Bahasa Melayu** (Mala
 
 To understand RIINA's architecture, imagine building an entire country from scratch — not just its laws, but its physics. In this country, crime is not merely illegal; it is physically impossible. A thief cannot steal because the laws of physics in this country prevent objects from being moved without authorization. A spy cannot eavesdrop because sound waves in this country cannot travel to unauthorized ears.
 
-This is not science fiction. This is what formal verification does for software. RIINA does not hope its security works. It proves it works, the same way mathematicians prove that 2 + 2 = 4. No amount of cleverness, funding, or computing power can make 2 + 2 equal 5 — and no amount of hacking can break a mathematically proven security guarantee.
+This is not science fiction. This is what formal verification aims to do for software. For the core of its language model, RIINA does not hope its rules work: Coq proves they do, the same way mathematicians prove that 2 + 2 = 4. No amount of cleverness, funding, or computing power can make 2 + 2 equal 5 — but a proof covers only the model it is about. RIINA's proofs cover the core of the language model; the compiler that turns your program into machine code is tested against that model, not proven.
 
 Every part of RIINA maps to a part of this country:
 
@@ -35,15 +35,15 @@ Every part of RIINA maps to a part of this country:
 Every country needs a constitution — the foundational law that all other laws derive from. Track A is RIINA's constitution, written not in legal language but in mathematical logic, verified by a proof assistant called Coq (now Rocq).
 
 **What it contains:**
-- **Type Safety** — Every value in a RIINA program has a guaranteed type. You cannot accidentally treat a number as a password or a password as a public message. This is proven as a mathematical theorem, not enforced by a runtime check.
-- **Non-Interference (proven for the core without references)** — Secret data should not flow to public outputs. For the reference-free, `fix`-free core, Coq proves it (`ref_free_noninterference`, closed under the global context): two runs that differ only in their secret inputs return the same observable result, and take the same number of evaluation steps (`ref_free_constant_time`). With references or general recursion it is not yet a theorem (REQ-89); the compiler's information-flow rules enforce it on its typing rules today.
+- **Type Safety** — Every value in a RIINA program has a guaranteed type. You cannot accidentally treat a number as a password or a password as a public message. This is proven as a mathematical theorem about the language model, not enforced by a runtime check; the compiler's type checker is tested against that model.
+- **Non-Interference (proven for the reference-free, recursion-free core; enforced by tests beyond it)** — Secret data should not flow to public outputs. For the reference-free, `fix`-free core, Coq proves it (`ref_free_noninterference`, closed under the global context): two runs that differ only in their secret inputs return the same observable result, and take the same number of evaluation steps (`ref_free_constant_time`: reduction-count independence from secrets in the model, for the core fragment — not a wall-clock timing guarantee). With references or general recursion it is not yet a theorem (REQ-89); beyond the core it is enforced by tests of the compiler's information-flow typing rules.
 - **Effect Safety** — Every side effect (reading a file, sending a network request, accessing the clock) must be declared, and the compiler rejects a function that performs an undeclared one. In Coq, every configuration reachable by evaluating a well-typed term performs only effects within its *declared* effect (`effect_sound_multi_step_declared`). That bound orders effects by a single level (a total order); separately, Coq proves a set-based fact that needs no ordering: evaluation never produces an effect that is not written somewhere in the program or its initial store (`reachable_effects_from_program_text`).
-- **Declassification Correctness** — When secrets do need to be revealed (e.g., showing the last 4 digits of a credit card), this can only happen through an explicit, auditable process with a proof that the policy is followed.
+- **Declassification Correctness** — When secrets do need to be revealed (e.g., showing the last 4 digits of a credit card), this can only happen through an explicit, auditable process with a proof that the policy is followed. This is proven in the Coq model; aligning the shipped compiler with it is still in progress.
 
-**Current state:** 7,740 completed proofs (Qed), 0 incomplete proofs (admits), 0 active axioms, 244 active proof files.
-**Audit update:** 2026-02-04 (Codex audit sync).
+**Current state:** 1,685 core Qed (foundations, type system, properties, effects, termination), 9,725 model Qed (domain, industry, compliance, crypto and runtime models — facts about their own definitions, not verified systems), 1,409 excluded Qed (vacuous patterns or test files); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them); 334 active proof files.
+**Last synced:** 2026-10-20, from `website/public/metrics.json`. No independent audit published yet.
 
-The production-active build is now axiom-free. Historical/archived files may still contain assumptions, but active security guarantees are proved without active axioms.
+Nine capstone theorems are kernel-attested closed under the global context (axiom-free): `type_safety`, `progress`, `preservation`, `accepts_uses_only_current`, `effect_sound_multi_step_declared`, `reachable_effects_from_program_text`, `ref_free_well_typed_SN`, `ref_free_noninterference` and `ref_free_constant_time`. The 29 `Parameter`s are the build's named trusted assumptions; historical/archived files may still contain others.
 
 ### Track B — The Government (Compiler & Runtime)
 
@@ -52,12 +52,12 @@ The constitution means nothing without a government to enforce it. Track B is RI
 **What it contains:**
 - **Lexer** — Reads RIINA source code character by character and identifies tokens (keywords, numbers, strings). Recognizes Bahasa Melayu keywords like `fungsi` (function), `biar` (let), `kalau` (if).
 - **Parser** — Arranges tokens into a structured tree (Abstract Syntax Tree) that represents the program's logic.
-- **Type Checker** — Verifies that the program obeys all type rules, security labels, and effect declarations. This is where the constitution's theorems become enforceable law.
-- **Code Generator** — Translates the verified program into executable code. Currently targets C (native), WASM (web), Android (JNI), and iOS (Swift bridge).
+- **Type Checker** — Verifies that the program obeys all type rules, security labels, and effect declarations. This is where the constitution's rules become enforceable law; the checker is tested against the Coq model, not proven to match it.
+- **Code Generator** — Translates the type-checked program into executable code. Currently targets C (native), WASM (web), Android (JNI), and iOS (Swift bridge); the WASM and mobile backends are scaffolding. The C/native backend is not formally verified; it is differential-tested against the interpreter.
 - **Standard Library** — 88 built-in functions across 9 modules (strings, lists, math, maps, sets, testing, time, files, JSON).
 - **Developer Tools** — Formatter (`riina-fmt`), language server (`riina-lsp`), documentation generator (`riina-doc`), VS Code extension, package manager (`riina-pkg`), REPL.
 
-**Current state:** 15 crates (Rust packages), 852 tests, all passing.
+**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,564 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
 
 ### Track C — The Legal Code (Specifications)
 
@@ -76,7 +76,7 @@ Every country needs infrastructure — roads, utilities, communication networks.
 
 **What it contains:**
 - Build orchestrator, verification orchestrator
-- Cryptographic primitives (HMAC-SHA256, AES-256-GCM, SHA-2/SHA-3, X25519, Ed25519, ML-KEM-768, ML-DSA-65 — all implemented without third-party dependencies; ChaCha20-Poly1305 is not implemented)
+- Cryptographic primitives (HMAC-SHA256, AES-256-GCM, SHA-2/SHA-3, X25519, Ed25519, ML-KEM-768, ML-DSA-65 — all implemented without third-party dependencies; ChaCha20-Poly1305 is not implemented). This in-house cryptography (`riina-core`) is experimental and has not been audited — do not use it to protect real secrets yet. ML-KEM and ML-DSA are tested against NIST known-answer (ACVP) vectors; not validated (no CMVP/CAVP certificate)
 - Release system (versioning, changelog, deployment scripts)
 - Docker and Nix packaging
 
@@ -84,21 +84,21 @@ Every country needs infrastructure — roads, utilities, communication networks.
 
 ## The Zero-Trust Bureau: Tracks R, S, T, U
 
-Most security systems trust something — the compiler, the hardware, the operating system, the build tools. RIINA trusts nothing. Tracks R through U are the country's anti-corruption agencies, each responsible for ensuring that no component of the system can silently betray the user.
+Most security systems trust something — the compiler, the hardware, the operating system, the build tools. RIINA aims to trust as little as possible and to name what it does trust: today its Coq build declares 29 `Parameter`s for the trusted hardware interface. Tracks R through U are the country's anti-corruption agencies, each responsible for ensuring that no component of the system can silently betray the user.
 
 ### Track R — The Inspector General (Certified Compilation)
 
 **Question it answers:** "How do we know the compiler did not secretly insert a backdoor?"
 
-When the compiler translates RIINA source code into machine code, Track R verifies that the translation is faithful. The compiled program must behave identically to the source code — proven mathematically. This prevents the "trusting trust" attack (where a compromised compiler inserts vulnerabilities that persist even when the compiler is recompiled).
+When the compiler translates RIINA source code into machine code, Track R's goal is to verify that the translation is faithful: the compiled program must behave identically to the source code, proven mathematically. This would prevent the "trusting trust" attack (where a compromised compiler inserts vulnerabilities that persist even when the compiler is recompiled).
 
-**Current state:** Translation validation framework with 15 Qed proofs in `TranslationValidation.v`. WASM backend verification adds 13 more proofs. Research foundation complete; production hardening is Phase 8 work.
+**Current state:** Translation validation is modelled in Coq (`TranslationValidation.v`, plus a WASM backend model); these are model results about their own definitions, not a verified compiler. The shipped C/native backend is not formally verified; it is differential-tested against the interpreter. Research foundation complete; production hardening is Phase 8 work.
 
 ### Track S — The Physics Inspector (Hardware Contracts)
 
 **Question it answers:** "How do we know the CPU itself is not leaking secrets?"
 
-Modern CPUs can leak information through timing differences, power consumption, and speculative execution (Spectre, Meltdown). Track S models these hardware behaviors mathematically and proves that RIINA's generated code does not expose secrets through these side channels.
+Modern CPUs can leak information through timing differences, power consumption, and speculative execution (Spectre, Meltdown). Track S models these hardware behaviors mathematically, with the goal of proving that RIINA's generated code does not expose secrets through these side channels. That is not proven today: what Coq proves is reduction-count independence from secrets in the model, for the core fragment (`ref_free_constant_time`), not timing on a real CPU.
 
 **Current state:** Research foundation complete. Constant-time operation types exist in the compiler. Full hardware contract verification is Phase 8 work.
 
@@ -106,7 +106,7 @@ Modern CPUs can leak information through timing differences, power consumption, 
 
 **Question it answers:** "How do we know the build tools themselves were not compromised?"
 
-Track T ensures that RIINA can be built from nothing — bootstrapped from a minimal, auditable seed (conceptually from raw hex). This means you do not need to trust any existing software to verify RIINA. You can rebuild everything from scratch and check that the result matches.
+Track T aims to ensure that RIINA can be built from nothing — bootstrapped from a minimal, auditable seed (conceptually from raw hex). This means you do not need to trust any existing software to verify RIINA. You can rebuild everything from scratch and check that the result matches.
 
 **Current state:** Research foundation complete. Production implementation is Phase 8 work.
 
@@ -114,7 +114,7 @@ Track T ensures that RIINA can be built from nothing — bootstrapped from a min
 
 **Question it answers:** "How do we know the operating system is not tampering with our program at runtime?"
 
-Even after compilation, a malicious OS could modify program memory, intercept system calls, or tamper with I/O. Track U designs a verified micro-hypervisor — a minimal, mathematically proven runtime environment that protects RIINA programs from the OS itself.
+Even after compilation, a malicious OS could modify program memory, intercept system calls, or tamper with I/O. Track U designs a micro-hypervisor meant to be verified — a minimal runtime environment that protects RIINA programs from the OS itself. Today it is a Coq model only.
 
 **Current state:** Research foundation complete. Production implementation is Phase 8 work.
 
@@ -122,7 +122,7 @@ Even after compilation, a malicious OS could modify program memory, intercept sy
 
 ## The Completeness Bureau: Tracks V, W, X, Y, Z
 
-Security alone is not enough if the program can crash, leak memory, or deadlock. Tracks V through Z ensure RIINA programs are not just secure but correct and complete.
+Security alone is not enough if the program can crash, leak memory, or deadlock. Tracks V through Z aim to ensure RIINA programs are not just secure but correct and complete.
 
 ### Track V — The Termination Office
 
@@ -130,7 +130,7 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track W — The Memory Authority
 
-**What it proves:** Memory is always used correctly. No buffer overflows, no use-after-free, no double-free, no memory leaks. Uses separation logic — a mathematical framework for reasoning about memory ownership.
+**What it models:** Memory is always used correctly. No buffer overflows, no use-after-free, no double-free, no memory leaks. Uses separation logic — a mathematical framework for reasoning about memory ownership. Today this is a Coq model about its own definitions, not a proof about the shipped compiler or runtime.
 
 ### Track X — The Traffic Controller (Concurrency)
 
@@ -138,33 +138,33 @@ Security alone is not enough if the program can crash, leak memory, or deadlock.
 
 ### Track Y — The Standards Bureau (Verified Standard Library)
 
-**What it proves:** Every function in the standard library does exactly what its specification says. The sort function actually sorts. The search function actually finds. The encryption function actually encrypts.
+**What it models:** Every function in the standard library does exactly what its specification says. The sort function actually sorts. The search function actually finds. The encryption function actually encrypts. Today this is a Coq model of a standard library, not a proof about the shipped builtins.
 
 ### Track Z — The Declassification Authority
 
-**What it proves:** When secrets must be partially revealed (e.g., showing a masked credit card number), the revelation follows a strict, auditable policy with mathematical budget constraints on how much information can be released.
+**What it models:** When secrets must be partially revealed (e.g., showing a masked credit card number), the revelation follows a strict, auditable policy with mathematical budget constraints on how much information can be released. This is a Coq model; the shipped compiler's alignment with it is still in progress.
 
-**Current state for V-Z:** Research foundations complete. Type safety and dynamic effect soundness are fully proven in the active build; strong normalization, non-interference and constant time (reduction count) are proven for the reference-free, `fix`-free core. Extending them to references and recursion is REQ-89. Extended properties are Phase 8 work.
+**Current state for V-Z:** Research foundations complete. Type safety and dynamic effect soundness are fully proven in the active build; strong normalization, non-interference and reduction-count independence from secrets in the model are proven for the reference-free, recursion-free (`fix`-free) core, and enforced by tests beyond it. Extending them to references and recursion is REQ-89. Extended properties are Phase 8 work.
 
 ---
 
 ## Industry Compliance: Domain Tracks
 
-RIINA does not just prove generic security properties. It maps those proofs to specific industry regulations, so compliance is not a checkbox exercise but a mathematical guarantee.
+RIINA does not just model generic security properties. It maps them to specific industry regulations as Coq models of each regulation's rules — facts about their own definitions — and as compiler checks. The result is evidence toward a profile; not a conformity assessment or certification.
 
-| Domain | Regulation | What RIINA Proves |
+| Domain | Regulation | What RIINA Models |
 |--------|-----------|-------------------|
-| Military & Defense | CMMC, ITAR | Classified data cannot leak; export-controlled code stays controlled |
-| Healthcare | HIPAA | Patient data flows only to authorized recipients |
-| Financial Services | PCI-DSS, SOX | Card data is always encrypted; audit trails are tamper-proof |
-| Data Protection | GDPR, PDPA | Personal data processing follows consent and purpose limitations |
-| Aviation | DO-178C | Safety-critical software meets airborne certification requirements |
-| Industrial | IEC 62443 | Control system code meets industrial security standards |
-| Energy | NERC CIP | Critical infrastructure protection rules are enforced |
-| Pharmaceutical | FDA 21 CFR Part 11 | Electronic records meet regulatory integrity requirements |
-| Government | NIST 800-53, ISO 27001 | Federal and international security controls are implemented |
+| Military & Defense | CMMC, ITAR | Classified-data flow and export-control rules |
+| Healthcare | HIPAA | Patient data flowing only to authorized recipients |
+| Financial Services | PCI-DSS, SOX | Card-data encryption and tamper-evident audit trails |
+| Data Protection | GDPR, PDPA | Consent and purpose limitations on personal-data processing |
+| Aviation | DO-178C | Selected airborne-software objectives (no certification) |
+| Industrial | IEC 62443 | Selected control-system security requirements |
+| Energy | NERC CIP | Selected critical-infrastructure protection rules |
+| Pharmaceutical | FDA 21 CFR Part 11 | Electronic-record integrity requirements |
+| Government | NIST 800-53, ISO 27001 | Selected federal and international security controls |
 
-The compiler itself enforces these rules. Running `riinac check --compliance pci-dss` does not call an external scanner — the compiler validates your code against regulation-specific rules backed by formal proofs.
+The compiler checks a subset of these rules itself. Running `riinac check --compliance pci-dss` does not call an external scanner — the compiler runs regulation-specific heuristic checks on your code. Their output is evidence toward the profile; not a conformity assessment or certification.
 
 **Current state:** 6 rules implemented across 3 profiles (PCI-DSS, PDPA, BNM). Framework in place for all 15 profiles. Community contributions welcome for additional rules.
 
@@ -178,11 +178,11 @@ RIINA was constructed in eight phases, each building on the previous:
 |-------|------|---------------|--------|
 | 1 | Compiler Completion | The core compiler: lexer, parser, type checker, code generator, REPL | Done |
 | 2 | Standard Library | 88 built-in functions across 9 modules | Done |
-| 3 | Formal Verification | 7,740 machine-verified proofs, 0 incomplete proofs, 0 active axioms | Stable |
-| 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, 130 examples | Done |
+| 3 | Formal Verification | Coq (mechanized): 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed; 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) | Stable |
+| 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, examples (172 today; 84 pass `riinac check`) | Done |
 | 5 | Ecosystem | Package manager, CI/CD, Docker, Nix, release system, Proprietary license | Done |
-| 6 | Adoption | C FFI, demo apps, community setup, enterprise compliance, public repository | Done |
-| 7 | Platform Universality | WASM backend, mobile backends, in-browser playground, backend verification | Done |
+| 6 | Adoption | C FFI, demo apps, community setup, enterprise compliance-profile checks, public repository | Done |
+| 7 | Platform Universality | WASM backend, mobile backends (scaffolding), in-browser playground, backend differential tests | Done |
 | 8 | Long-term Vision | Self-hosting compiler, hardware verification, verified OS | Future |
 
 Phases 1 through 7 are complete. Phase 8 represents the long-term vision where RIINA becomes fully self-sufficient — compiling itself, verifying its own hardware, and running on a verified operating system.
@@ -195,21 +195,21 @@ Phases 1 through 7 are complete. Phase 8 represents the long-term vision where R
 
 | Traditional Approach | RIINA Approach |
 |---------------------|----------------|
-| Penetration testing finds *some* bugs | Mathematical proof eliminates *entire classes* of bugs |
-| Code review depends on human attention | Machine verification checks every possible execution path |
-| Security scanners detect known patterns | Formal proofs cover all patterns, including unknown ones |
-| Compliance is audited periodically | Compliance is enforced at every compilation |
-| Updates can introduce new vulnerabilities | Proven properties hold forever — they are mathematical theorems |
+| Penetration testing finds *some* bugs | For the core language model, mathematical proof rules out *entire classes* of bugs |
+| Code review depends on human attention | For the core model, machine-checked proof covers every possible execution path |
+| Security scanners detect known patterns | Within the core model, formal proofs cover all patterns, including unknown ones |
+| Compliance is audited periodically | Compliance-profile checks run at every compilation (evidence toward a profile; not a conformity assessment or certification) |
+| Updates can introduce new vulnerabilities | Proven properties of the model stay proven — the proofs are re-checked on every build |
 
-### Compared to Other Formally Verified Systems
+### Compared to Formally Verified Systems
 
-RIINA is not the first project to use formal verification. Operating systems (seL4), compilers (CompCert), and cryptographic libraries (HACL*) have been formally verified. RIINA is the first **programming language** where the security properties are part of the type system itself — every program written in RIINA automatically inherits these guarantees.
+RIINA is not the first project to use formal verification. Operating systems (seL4), compilers (CompCert), and cryptographic libraries (HACL*) have been formally verified. In RIINA the security properties are part of the type system itself: programs that compile pass the type and effect checks the compiler implements, and for the core fragment those rules are proven in Coq. The compiler itself is tested against that model, not verified.
 
 ### The Quantum and AI Argument
 
-Quantum computers threaten current encryption. AI can find vulnerabilities faster than humans can patch them. Neither threatens RIINA's core guarantees. A mathematical proof that "secret data cannot flow to public outputs" does not depend on encryption strength or human response time. It is a property of the program's structure, verified at compile time, immune to advances in attack capability.
+Quantum computers threaten current encryption. AI can find vulnerabilities faster than humans can patch them. Neither threatens a proven property of RIINA's core model. A mathematical proof that "secret data cannot flow to public outputs" does not depend on encryption strength or human response time. In RIINA that proof covers the reference-free, recursion-free core of the language model; beyond it the property is enforced by tests, and the compiler is tested against the model, not proven.
 
-Post-quantum cryptographic algorithms can be implemented in RIINA and their correct usage is enforced by the same type system. AI-discovered attack vectors that exploit type confusion, buffer overflows, or information leaks are irrelevant — these vulnerability classes are mathematically eliminated.
+Post-quantum cryptographic algorithms can be implemented in RIINA and their usage is checked by the same type system, for rules the compiler implements. Attack vectors — AI-discovered or not — that exploit type confusion or information leaks are ruled out in the proven core model and blocked by the checks the compiler implements; they are not mathematically eliminated from the shipped compiler.
 
 ---
 
@@ -219,18 +219,19 @@ These numbers reflect the current verified state of the codebase:
 
 | Metric | Value |
 |--------|-------|
-| Machine-verified proofs (Qed) | 7,740 (active build) |
-| Incomplete proofs (admits) | 0 |
-| Active axioms (production-active build) | 0 |
-| Active proof files | 244 |
-| Rust tests | 852 |
-| Compiler crates | 15 |
-| Example programs | 130 |
+| Coq proofs (Qed, active build) | 1,685 core Qed; 9,725 model Qed (facts about their own definitions, not verified systems); 1,409 excluded Qed (vacuous patterns or test files) |
+| Incomplete proofs (Admitted) | 0 |
+| Axioms (active build) | 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) |
+| Active proof files | 334 |
+| Rust tests | 3,560 (compiler workspace), plus the tooling workspace's own tests |
+| Compiler crates | 18 |
+| Example programs | 172 (84 pass `riinac check`) |
 | Standard library builtins | 88 |
-| Compliance profiles | 15 |
-| Target platforms | 4 (native, WASM, Android, iOS) |
+| Compliance profiles | 15 (3 with implemented heuristic checks; evidence toward a profile, not a conformity assessment or certification) |
+| Target platforms | 4 (native, WASM, Android, iOS; WASM and mobile are scaffolding) |
+| Independent audit | No independent audit published yet |
 
-*These numbers are updated as the codebase evolves. Verification methodology: comment-free counting of Coq proof files listed in the active build configuration.*
+*These numbers are updated as the codebase evolves. `website/public/metrics.json` is the source of truth; the Coq counts follow its counting policy (core, model and excluded Qed are never summed into one public total).*
 
 ---
 
@@ -238,10 +239,10 @@ These numbers reflect the current verified state of the codebase:
 
 **RIINA** — Rigorous Immutable Invariant, No Assumptions.
 
-- **Rigorous**: Every claim is backed by formal proof.
-- **Immutable**: Security guarantees cannot be weakened or bypassed.
-- **Invariant**: Properties that hold true in every possible execution.
-- **No Assumptions**: Zero-trust from compiler to hardware to build chain.
+- **Rigorous**: Every claim is either backed by a Coq proof or labelled as tested, modelled or open.
+- **Immutable**: Proven properties cannot be weakened without the proof failing to build; checks cannot be bypassed, for rules the compiler implements.
+- **Invariant**: Properties that hold true in every possible execution of the model they are proved for.
+- **No Assumptions**: The goal is zero trust from compiler to hardware to build chain; today the remaining assumptions are named — 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them).
 
 The language syntax uses **Bahasa Melayu** — the Malaysian national language. Functions are `fungsi`, variables are bound with `biar`, conditionals are `kalau`. This is not decoration; it is a statement that formal verification and world-class security are not exclusive to any language or culture.
 

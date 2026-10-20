@@ -51,7 +51,7 @@
 
 use crate::value::{Closure, Env, Location, RefCell, Sum, Value};
 use crate::{Error, Result};
-use riina_types::{BinOp, Effect, Expr, SecurityLevel};
+use riina_types::{BinOp, Effect, EffectSet, Expr, SecurityLevel};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -253,30 +253,37 @@ struct HandlerContext {
 }
 
 /// Capability context
+///
+/// Held capabilities are an [`EffectSet`] and are checked with the type
+/// checker's own coverage order ([`EffectSet::covers`]: same category, level
+/// at most the held one). The old total-order test (`held.level() >=
+/// eff.level()`) let an unrelated higher-level capability stand in for a
+/// lower one — holding `Rangkaian` passed the gate for `Tulis` — which the
+/// checker stopped accepting in the effect-set rework.
 #[derive(Debug, Clone, Default)]
 struct Capabilities {
     /// Set of held capabilities
-    held: Vec<Effect>,
+    held: EffectSet,
 }
 
 impl Capabilities {
     fn new() -> Self {
-        Self { held: Vec::new() }
+        Self {
+            held: EffectSet::PURE,
+        }
     }
 
     fn grant(&mut self, eff: Effect) {
-        if !self.held.contains(&eff) {
-            self.held.push(eff);
-        }
+        self.held = self.held.join(eff);
+    }
+
+    fn grant_all(&mut self, effs: EffectSet) {
+        self.held = self.held.join(effs);
     }
 
     fn has(&self, eff: Effect) -> bool {
-        // Pure always allowed
-        if eff == Effect::Pure {
-            return true;
-        }
-        // Check if any held capability subsumes this effect
-        self.held.iter().any(|h| h.level() >= eff.level())
+        // Pure always allowed (`covers` treats it as the identity)
+        self.held.covers(eff)
     }
 }
 
@@ -397,6 +404,17 @@ impl Interpreter {
             stack_base: 0,
             eval_nesting: 0,
         }
+    }
+
+    /// Start the program holding `caps` — the effect set the type checker
+    /// verified it may exercise (`check_program`). `riinac run` seeds the gate
+    /// this way, as `riinac build` seeds the native one, so a program the
+    /// checker accepted is never refused at runtime for a capability its own
+    /// signature declared (`laku Tulis` inside `utama kesan Tulis` used to
+    /// fail with "missing capability for effect: Write", while the native
+    /// binary — then granted everything — ran it).
+    pub fn grant_capabilities(&mut self, caps: EffectSet) {
+        self.caps.grant_all(caps);
     }
 
     /// An interpreter for UNTRUSTED programs: a step budget, a nesting-depth
@@ -1034,8 +1052,12 @@ impl Interpreter {
                     self.handlers.push(handler_ctx);
                     Ok(result)
                 } else {
-                    // No handler, return payload
-                    Err(Error::UnhandledEffect(*effect))
+                    // No handler: the payload IS the result — Coq
+                    // `ST_PerformValue` (`EPerform eff v --> v`), and what the C
+                    // runtime's `riina_perform` returns. This used to be an
+                    // "unhandled effect" error, so `laku Tulis cetak(..)` printed
+                    // and then failed under `riinac run` but not natively.
+                    Ok(payload_val)
                 }
             }
 
@@ -1398,6 +1420,21 @@ fn branch_condition(v: Value, context: &str) -> Result<bool> {
 
 /// Apply a binary operator to its two evaluated operands (E_BinOp).
 fn apply_binop(op: BinOp, l: Value, r: Value) -> Result<Value> {
+    // A secret (`sulit`) operand: compute on the underlying values and keep
+    // the result secret. The type checker types `pin + 1` as
+    // `Labeled(Int, Secret)` and controls where it may flow; the evaluator
+    // used to reject the operation outright ("expected matching operand types
+    // for binary op, found Secret(Int(1234)) Add Int(1)"), so a program the
+    // checker accepted could not run. The C runtime does the same.
+    if l.is_secret() || r.is_secret() {
+        let unwrap = |mut v: Value| {
+            while let Value::Secret(inner) = v {
+                v = *inner;
+            }
+            v
+        };
+        return apply_binop(op, unwrap(l), unwrap(r)).map(Value::secret);
+    }
     let op = &op;
     // Numeric tower: if either operand is a sized integer, arithmetic
     // and comparisons wrap/interpret at that width (a plain `Int`
@@ -2678,6 +2715,46 @@ mod tests {
         assert!(matches!(
             result,
             Err(Error::MissingCapability(Effect::Network))
+        ));
+    }
+
+    /// A `perform` with no handler evaluates to its payload (Coq
+    /// `ST_PerformValue`), as in the C runtime — not "unhandled effect".
+    #[test]
+    fn perform_without_a_handler_returns_its_payload() {
+        let mut interp = Interpreter::new();
+        interp.grant_capabilities(EffectSet::single(Effect::Write));
+        let perform = Expr::Perform(Effect::Write, Box::new(Expr::Int(7)));
+        assert_eq!(interp.eval(&perform), Ok(Value::Int(7)));
+    }
+
+    /// Runtime capabilities use the type checker's coverage order: a held
+    /// capability covers lower effects of its OWN category only. Holding
+    /// `Rangkaian` used to pass the gate for `Tulis` (level order).
+    #[test]
+    fn held_capabilities_cover_only_their_own_category() {
+        let mut interp = Interpreter::new();
+        interp.grant_capabilities(EffectSet::single(Effect::Network));
+        let write = Expr::Perform(Effect::Write, Box::new(Expr::Int(1)));
+        assert!(matches!(
+            interp.eval(&write),
+            Err(Error::MissingCapability(Effect::Write))
+        ));
+        let mut interp = Interpreter::new();
+        interp.grant_capabilities(EffectSet::single(Effect::FileSystem));
+        let read = Expr::Perform(Effect::Read, Box::new(Expr::Int(2)));
+        assert_eq!(interp.eval(&read), Ok(Value::Int(2)));
+    }
+
+    /// With nothing granted, `laku` fails BEFORE its payload is evaluated.
+    #[test]
+    fn missing_capability_stops_perform_before_its_payload() {
+        let mut interp = Interpreter::new();
+        // The payload would fail differently (unbound variable) if it ran.
+        let perform = Expr::Perform(Effect::Write, Box::new(Expr::Var("tiada".to_string())));
+        assert!(matches!(
+            interp.eval(&perform),
+            Err(Error::MissingCapability(Effect::Write))
         ));
     }
 
