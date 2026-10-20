@@ -325,11 +325,10 @@ fn as_str(v: &Value, ctx: &str) -> Result<String> {
 }
 
 fn as_int(v: &Value, ctx: &str) -> Result<u64> {
-    match v {
-        Value::Int(n) => Ok(*n),
-        Value::IntN { value, .. } => Ok(*value),
-        _ => Err(Error::TypeMismatch {
-            expected: "int".to_string(),
+    match v.as_unsigned() {
+        Some(n) => Ok(n),
+        None => Err(Error::TypeMismatch {
+            expected: "non-negative int".to_string(),
             found: format!("{v:?}"),
             context: ctx.to_string(),
         }),

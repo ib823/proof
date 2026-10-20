@@ -333,7 +333,15 @@ fn examples_root() -> std::path::PathBuf {
 /// state_machine.rii` returns two constructors of one variant type with
 /// different payloads, which the checker cannot join without variant types
 /// (it passed only while `Hasil` was `Any`).
-const CORPUS_PASSING: usize = 82;
+///
+/// 2026-10-20: 82 -> 83 (keyword bindings). Eight construct keywords
+/// (`token`, `tulisan`, `paparan`, `baris`, `lajur`, `gabung`, `warna`,
+/// `gaya`) could be bound with `biar` or as a parameter, but every read
+/// parsed as the construct. A bound name now shadows the construct, so
+/// `03_advanced/linear_resources.rii` (`biar sekali token = 42; token`)
+/// checks. Six failing examples that read such a name get further, to their
+/// next error.
+const CORPUS_PASSING: usize = 83;
 const CORPUS_TOTAL: usize = 172;
 
 #[test]

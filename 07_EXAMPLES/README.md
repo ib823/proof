@@ -6,13 +6,14 @@ This directory contains 172 `.rii` example files across 20 category directories.
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **82 of the 172 examples pass
+of the examples assume. As of this writing, **83 of the 172 examples pass
 `riinac check`** end-to-end (re-measured 2026-10-20; 19 of the 28 in `00_basics/`), and closing the
 remaining gap is active work (`RIINA_MASTER_PLAN.md` REQ-55). The 2026-10-19 drop from 98 is
 honest: 14 examples call methods on lists and strings (`senarai.panjang()`, `xs.peta(f)`) —
 RIINA has no methods — and used to pass `check` only to fail when run (REQ-93). So is the
-2026-10-20 drop from 84: an undeclared type name used to read as `Any`, and two examples
-relied on it (REQ-93(c); `riinac/tests/end_to_end.rs` names them).
+2026-10-20 drop from 84 to 82: an undeclared type name used to read as `Any`, and two examples
+relied on it (REQ-93(c); `riinac/tests/end_to_end.rs` names them). One example came back the
+same day, when a variable named after a keyword (`token`) became readable.
 
 Separately, passing `riinac check` does **not** imply the example can be
 compiled: some builtins run only on the interpreter, and `riinac build` refuses

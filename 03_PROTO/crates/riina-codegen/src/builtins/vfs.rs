@@ -186,10 +186,9 @@ pub fn apply(name: &str, arg: &Value) -> Result<Option<Value>> {
 }
 
 fn as_int(v: &Value, ctx: &str) -> Result<u64> {
-    match v {
-        Value::Int(n) => Ok(*n),
-        Value::IntN { value, .. } => Ok(*value),
-        _ => Err(type_err("int", v, ctx)),
+    match v.as_unsigned() {
+        Some(n) => Ok(n),
+        None => Err(type_err("non-negative int", v, ctx)),
     }
 }
 

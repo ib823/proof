@@ -574,26 +574,26 @@ and the test holds the website's keyword list to the same rule.
 | `KwRole` | `peranan`, `role` | part | in `koreografi` |
 | `KwState` | `keadaan`, `state` | part | in `pelaku` (`keadaan: T`); elsewhere a name |
 | `KwSupervisor` | `penyelia`, `supervisor` | reserved | |
-| `KwMerge` | `gabung`, `merge` | construct | `CRDTMerge(a, b)` |
+| `KwMerge` | `gabung`, `merge` | construct | `CRDTMerge(a, b)`. A binding of the same name (`biar gabung = …`, a parameter) shadows it in its scope, where the name reads as the variable |
 | `KwContentHash` | `cincang`, `content_hash` | construct | `ContentHash(e)` |
 | `KwVerify` | `sahkan`, `verify` | construct | `ContentVerify(h, e)` |
 | `KwSpawn` | `lahir`, `spawn` | construct | `lahir N(e)` is `Spawn(Var(N), e)` |
-| `KwDisplay` | `paparan`, `display` | construct | `UIDisplay([…])` |
+| `KwDisplay` | `paparan`, `display` | construct | `UIDisplay([…])`. A binding of the same name (`biar paparan = …`, a parameter) shadows it in its scope, where the name reads as the variable |
 | `KwLayout` | `susun`, `layout` | reserved | |
-| `KwColor` | `warna`, `color` | construct | `warna(r, g, b)` is `UIColor(r, g, b)`, each a literal of at most 255 |
-| `KwText_` | `tulisan`, `text` | construct | `UIText(a, c)` |
+| `KwColor` | `warna`, `color` | construct | `warna(r, g, b)` is `UIColor(r, g, b)`, each a literal of at most 255. A binding of the same name (`biar warna = …`, a parameter) shadows it in its scope, where the name reads as the variable |
+| `KwText_` | `tulisan`, `text` | construct | `UIText(a, c)`. A binding of the same name (`biar tulisan = …`, a parameter) shadows it in its scope, where the name reads as the variable |
 | `KwButton` | `butang`, `button` | construct | `UIButton(label, handler)` |
 | `KwInput` | `masukan`, `input` | soft | |
 | `KwImage` | `gambar`, `image` | reserved | |
-| `KwStyle` | `gaya`, `style` | construct | `UIStyleDecl { padding, font_size }` |
+| `KwStyle` | `gaya`, `style` | construct | `UIStyleDecl { padding, font_size }`. A binding of the same name (`biar gaya = …`, a parameter) shadows it in its scope, where the name reads as the variable |
 | `KwContrast` | `kontras`, `contrast` | construct | `UIContrastCheck(fg, bg)` |
 | `KwAccessible` | `mudahcapai`, `accessible` | reserved | |
-| `KwRow` | `baris`, `row` | construct | `UIRow([…])` |
-| `KwColumn` | `lajur`, `column` | construct | `UIColumn([…])` |
+| `KwRow` | `baris`, `row` | construct | `UIRow([…])`. A binding of the same name (`biar baris = …`, a parameter) shadows it in its scope, where the name reads as the variable |
+| `KwColumn` | `lajur`, `column` | construct | `UIColumn([…])`. A binding of the same name (`biar lajur = …`, a parameter) shadows it in its scope, where the name reads as the variable |
 | `KwPadding` | `pelapik`, `padding` | part | in `gaya` |
 | `KwFontSize` | `saiz_fon`, `font_size` | part | in `gaya` |
 | `KwSmartContract` | `kontrak_pintar`, `smart_contract` | construct | `ContractDeploy(e)`; in a type, `Ty::SmartContract` |
-| `KwToken` | `token` | construct | `token::pindah(a, b, n)` is `TokenTransfer { from, to, amount }`; in a type, `Ty::Token` |
+| `KwToken` | `token` | construct | `token::pindah(a, b, n)` is `TokenTransfer { from, to, amount }`; in a type, `Ty::Token`. A binding of the same name (`biar token = …`, a parameter) shadows it in its scope, where the name reads as the variable |
 | `KwConsensus` | `konsensus`, `consensus` | reserved | |
 | `KwShariahCompliant` | `patuh_syariah`, `shariah_compliant` | construct | types only: `patuh_syariah<T>` is `Ty::SyariahCompliant`, which no expression produces |
 | `KwMudarabah` | `mudarabah` | reserved | |
@@ -609,7 +609,7 @@ and the test holds the website's keyword list to the same rule.
 | Surface | Elaborates to |
 |---|---|
 | integer literal: `42`, `1_000`, `0xFF`, `0o17`, `0b1010` | `Int(n)`; a literal with no 64-bit value is error P0016 |
-| sized literal: `42u8` … `7i64` | `IntN { value, bits, signed }`, range-checked by the lexer |
+| sized literal: `42u8` … `7i64` | `IntN { value, bits, signed }`, range-checked by the lexer. A sized value and a `Nombor` do not mix in either direction, in arguments, annotations or operators: `biar x: i64 = 7` and `x > 0` are type errors (write `7i64`, `0i64`) |
 | float literal: `1.5` | error P0015: RIINA has no floating point |
 | `"teks"` | `String` |
 | `betul`, `salah` (`true`, `false`) | `Bool` |

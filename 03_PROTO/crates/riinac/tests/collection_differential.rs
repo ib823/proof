@@ -228,3 +228,19 @@ fn sum_rendering_uses_display_not_format_value() {
          \x20   cetakln(ke_teks([\"teks\"]));",
     );
 }
+
+/// A sized index or count reaches builtins typed `Any`, which the checker cannot
+/// hold to `Nombor`. The interpreter refused every sized value (`type mismatch
+/// in senarai_dapat: expected int`) while C read its bits, so `1i64` worked
+/// natively only. A non-negative sized value now reads as itself on both.
+#[test]
+fn sized_index_and_count_agree() {
+    assert_backends_agree(
+        "sized_index",
+        "    cetakln(ke_teks(senarai_dapat(([10, 20, 30], 1i64))));",
+    );
+    assert_backends_agree(
+        "sized_count",
+        "    cetakln(teks_ulang((\"ab\", 3u8)));",
+    );
+}

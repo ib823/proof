@@ -241,7 +241,7 @@ Honesty is the product. As of 2026-06-10:
 | Full non-interference | Proven in Coq for the model language; compiler enforcement is **partial** (REQ-27 tracks the parity gap) |
 | Taint/sanitizers, path hardening | Enforced at the type boundary (§3) |
 | Verified VFS | Enforced for `vfs_*` (interpreter, in-memory); host `file_*` are path-only |
-| Numeric tower | Complete across interpreter + C + WASM backends; every type Coq-modeled |
+| Numeric tower | Implemented on the interpreter, C and WASM. Sized integers (`u8` … `i64`), `Besar`, `Perpuluhan`, `Wang` and `Qmn` are each their own domain and never mix with `Nombor` implicitly; until 2026-10-20 sized integers did, and gave different answers on the interpreter and C. Sized integers are modelled in `foundations/SizedInt.v`, outside the Coq core |
 | Example corpus | `00_basics/` + `03_applications/` run today; parts of the wider corpus are aspirational and do not compile yet |
 | Crypto primitives | Implemented + KAT-tested (`riina-core`); **external audit not yet performed** (REQ-28) |
 

@@ -2280,6 +2280,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_control_flow_inner(&mut self) -> Result<Expr, ParseError> {
+        let bound = self.peek_is_bound_keyword();
         match self.peek().map(|t| &t.kind) {
             Some(TokenKind::KwIf) => self.parse_if(),
             Some(TokenKind::KwFn) => self.parse_lam(),
@@ -2332,11 +2333,12 @@ impl<'a> Parser<'a> {
                 }
                 Ok(if is_break { Expr::Break } else { Expr::Continue })
             }
-            // CAHAYA Phase J5 block forms
-            Some(TokenKind::KwDisplay) => self.parse_display(),
-            Some(TokenKind::KwRow) => self.parse_row(),
-            Some(TokenKind::KwColumn) => self.parse_column(),
-            Some(TokenKind::KwStyle) => self.parse_style_decl(),
+            // CAHAYA Phase J5 block forms. A name bound in scope with the
+            // same spelling shadows the form (see `peek_is_bound_keyword`).
+            Some(TokenKind::KwDisplay) if !bound => self.parse_display(),
+            Some(TokenKind::KwRow) if !bound => self.parse_row(),
+            Some(TokenKind::KwColumn) if !bound => self.parse_column(),
+            Some(TokenKind::KwStyle) if !bound => self.parse_style_decl(),
             _ => self.parse_pipe(),
         }
     }
@@ -2843,6 +2845,7 @@ impl<'a> Parser<'a> {
 
     fn parse_unary_inner(&mut self) -> Result<Expr, ParseError> {
         let kind = self.peek().map(|t| t.kind.clone());
+        let bound = self.peek_is_bound_keyword();
         match kind {
             Some(TokenKind::Not) => {
                 // `!e` is dereference (ML-style), not logical negation. The
@@ -2980,16 +2983,16 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwSpawn) => self.parse_spawn(),
             Some(TokenKind::KwSend) => self.parse_actor_send(),
             Some(TokenKind::KwRecv) => self.parse_actor_recv(),
-            Some(TokenKind::KwMerge) => self.parse_crdt_merge(),
+            Some(TokenKind::KwMerge) if !bound => self.parse_crdt_merge(),
             Some(TokenKind::KwContentHash) => self.parse_content_hash(),
             Some(TokenKind::KwVerify) => self.parse_content_verify(),
             Some(TokenKind::KwSmartContract) => self.parse_contract_deploy(),
-            Some(TokenKind::KwToken) => self.parse_token_transfer(),
+            Some(TokenKind::KwToken) if !bound => self.parse_token_transfer(),
             Some(TokenKind::KwZakat) => self.parse_zakat_calculate(),
             // CAHAYA Phase J5 prefix forms
-            Some(TokenKind::KwText_) => self.parse_ui_text(),
+            Some(TokenKind::KwText_) if !bound => self.parse_ui_text(),
             Some(TokenKind::KwButton) => self.parse_ui_button(),
-            Some(TokenKind::KwColor) => self.parse_ui_color(),
+            Some(TokenKind::KwColor) if !bound => self.parse_ui_color(),
             Some(TokenKind::KwContrast) => self.parse_ui_contrast(),
             _ => self.parse_atom(),
         }
@@ -4070,6 +4073,19 @@ impl<'a> Parser<'a> {
         } else {
             Ok(None)
         }
+    }
+
+    /// True when the next token is a soft keyword whose spelling names a
+    /// binding in scope (`biar baris = …`, a parameter `token`). That binding
+    /// shadows the keyword's construct, so a read of it is the variable. Eight
+    /// construct keywords (`token`, `tulisan`, `paparan`, `baris`, `lajur`,
+    /// `gabung`, `warna`, `gaya`) were accepted as binding names while every
+    /// read parsed as the construct, so the binding could never be used.
+    fn peek_is_bound_keyword(&mut self) -> bool {
+        let Some(name) = self.peek().and_then(|t| Self::soft_keyword_spelling(&t.kind)) else {
+            return false;
+        };
+        self.binding_scope.iter().any(|(n, _)| n == name)
     }
 
     /// Parse a binding/parameter/field name. Accepts a normal identifier or a

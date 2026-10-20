@@ -636,6 +636,27 @@ impl Value {
         }
     }
 
+    /// The value as a non-negative integer: a `Nombor`, or a sized integer
+    /// that is not negative, unchanged. `None` for a negative signed sized
+    /// value or a non-integer. Builtins that take a count or an index read
+    /// their argument with this, so `senarai_dapat((xs, 1i64))` gives the same
+    /// element as natively, and a negative sized value is refused rather than
+    /// read as a huge unsigned number.
+    #[must_use]
+    pub const fn as_unsigned(&self) -> Option<u64> {
+        match self {
+            Self::Int(n) => Some(*n),
+            Self::IntN { value, bits, signed } => {
+                if *signed && (*value >> (*bits as u32 - 1)) & 1 == 1 {
+                    None
+                } else {
+                    Some(*value)
+                }
+            }
+            _ => None,
+        }
+    }
+
     /// Extract integer value
     #[must_use]
     pub const fn as_int(&self) -> Option<u64> {
@@ -961,6 +982,19 @@ mod tests {
     // ═══════════════════════════════════════════════════════════════════
     // VALUE CONSTRUCTOR TESTS
     // ═══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn as_unsigned_keeps_non_negative_values_and_refuses_negative_ones() {
+        let sized = |value, bits, signed| Value::IntN { value, bits, signed };
+        assert_eq!(Value::int(7).as_unsigned(), Some(7));
+        assert_eq!(sized(1, 64, true).as_unsigned(), Some(1));
+        assert_eq!(sized(255, 8, false).as_unsigned(), Some(255));
+        assert_eq!(sized(127, 8, true).as_unsigned(), Some(127));
+        // -1 as i64 and as i8 (bit patterns reduced to the width).
+        assert_eq!(sized(u64::MAX, 64, true).as_unsigned(), None);
+        assert_eq!(sized(255, 8, true).as_unsigned(), None);
+        assert_eq!(Value::string("1").as_unsigned(), None);
+    }
 
     #[test]
     fn test_value_constructors() {

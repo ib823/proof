@@ -1224,20 +1224,29 @@ mod formalized_tests {
     }
 
     #[test]
-    fn numeric_tower_plain_int_adapts_to_sized() {
+    fn numeric_tower_plain_int_does_not_mix_with_sized() {
+        // A sized value and a plain `Int` (`Nombor`) do not mix, in operators
+        // or as a value of the other type. They used to, and the two have
+        // different runtime representations: `mutlak(0i64 - 7i64)` crashed
+        // the interpreter and printed 18446744073709551609 natively.
         let mut ctx = TypingContext::new();
-        // A plain `Int` literal mixed with a sized operand adopts the width.
-        let lhs = Expr::BinOp(BinOp::Add, Box::new(u8n(200)), Box::new(Expr::Int(100)));
-        let rhs = Expr::BinOp(BinOp::Add, Box::new(Expr::Int(100)), Box::new(u8n(200)));
-        for e in [lhs, rhs] {
-            assert_eq!(
-                type_check_full(&mut ctx, &e).unwrap().0,
-                Ty::IntN {
-                    bits: 8,
-                    signed: false
-                }
-            );
+        for op in [BinOp::Add, BinOp::Sub, BinOp::Mul, BinOp::Lt, BinOp::Eq] {
+            let lhs = Expr::BinOp(op, Box::new(u8n(200)), Box::new(Expr::Int(100)));
+            let rhs = Expr::BinOp(op, Box::new(Expr::Int(100)), Box::new(u8n(200)));
+            for e in [lhs, rhs] {
+                assert!(
+                    matches!(type_check_full(&mut ctx, &e), Err(TypeError::TypeMismatch { .. })),
+                    "{op:?}: a sized operand must not mix with a plain Int"
+                );
+            }
         }
+        let u8_ty = Ty::IntN { bits: 8, signed: false };
+        assert!(!crate::types_compatible(&Ty::Int, &u8_ty));
+        assert!(!crate::types_compatible(&u8_ty, &Ty::Int));
+        assert!(crate::types_compatible(&u8_ty, &u8_ty));
+        // The mismatch error points at the suffix.
+        let err = TypeError::TypeMismatch { expected: u8_ty, found: Ty::Int };
+        assert!(err.fix_hint().unwrap().contains("suffix"), "{:?}", err.fix_hint());
     }
 
     #[test]
