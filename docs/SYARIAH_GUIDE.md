@@ -1,73 +1,58 @@
-# Syariah Compliance Guide
+# Syariah and RIINA
 
-RIINA provides type-level Islamic finance regulation, enabling Syariah compliance to be verified at compile time.
+**RIINA does not check Syariah compliance today.** There is no Syariah effect,
+no type that rules out riba, gharar or maysir, and no compile-time check of a
+financial contract against AAOIFI or IFSB standards. A Syariah-compliant
+financial type library is planned as REQ-20; the project's choice of fintech
+with PCI-DSS and Syariah as its first target is recorded as REQ-33.
 
-## What is Syariah Compliance in RIINA?
+Withdrawn on 2026-10-20: earlier versions of this page described a `kesan SyariahPatuh` effect
+that enforced those rules, and keywords with proven semantics. Neither existed.
 
-RIINA encodes Islamic finance principles as type constraints and effect restrictions. The compiler proves that financial code adheres to Syariah rules — no riba (interest), no gharar (excessive uncertainty), no maysir (gambling).
+Every `riina` block below is checked by the test suite
+(`03_PROTO/crates/riinac/tests/doc_snippets.rs`).
 
-**Grounded in standards:** AAOIFI SS 1-62, IFSB guidelines, BNM RMiT (Risk Management in Technology). Approximately 80% of Syariah rules are formalizable as type constraints.
+## What exists
 
-## Keywords
-
-| Keyword | Meaning | Usage |
-|---------|---------|-------|
-| `sukuk` | Islamic bond | Asset-backed securities with proven ownership transfer |
-| `mudarabah` | Profit-sharing | Investment partnership with type-checked profit/loss distribution |
-| `musharakah` | Joint venture | Shared ownership with proven proportional returns |
-| `murabahah` | Cost-plus sale | Transparent markup with compile-time disclosure proof |
-| `zakat` | Obligatory charity | Automatic calculation with proven thresholds (nisab) |
-| `wakaf` | Endowment | Irrevocable dedication with type-enforced permanence |
-
-## Effect Constraints
-
-Syariah-compliant code operates under the `SyariahPatuh` effect constraint:
+**`zakat`** is a builtin: `zakat(x)` is 2.5% of `x`, rounded down to a whole
+number. The nisab threshold is yours to apply:
 
 ```riina
-fungsi pindah_dana(dari: Akaun, ke: Akaun, jumlah: Nombor) -> Hasil<(), Ralat> kesan SyariahPatuh {
-    // Compiler enforces:
-    // - No interest accumulation (riba)
-    // - No excessive uncertainty (gharar)
-    // - No gambling mechanics (maysir)
-    // - Transparent pricing (murabahah disclosure)
-    pulang Ok(());
+fungsi kira_zakat(harta: Nombor, nisab: Nombor) -> Nombor kesan Bersih {
+    kalau harta >= nisab { zakat(harta) } lain { 0 }
 }
 ```
 
-The `kesan SyariahPatuh` annotation tells the compiler to:
-1. Reject any interest calculation on principal
-2. Require transparent pricing in all transactions
-3. Enforce asset-backing for all financial instruments
-4. Verify profit/loss sharing ratios match contract terms
+`kira_zakat(10000, 5000)` is `250`; `kira_zakat(4000, 5000)` is `0`.
 
-## Escrow Example
+**Exact money.** `wang` (fixed-scale decimal with banker's rounding) and
+`perpuluhan` (arbitrary-precision decimal) keep amounts exact, which any
+profit-sharing or cost-plus calculation needs. See
+[GETTING_STARTED.md](guide/GETTING_STARTED.md#5-money-that-does-not-lose-sen-1-minute).
 
-```riina
-// Wakaf-style escrow: irrevocable deposit until conditions met
-// No riba — funds held, not lent
+## Reserved keywords
 
-biar deposit = 1000;
-biar released = kalau deposit > 0 { deposit } lain { 0 };
-released
-```
+| Keyword | Meaning | Status |
+|---------|---------|--------|
+| `zakat` | Obligatory charity | Builtin, as above |
+| `sukuk` | Islamic bond | Reserved: no semantics yet |
+| `mudarabah` | Profit-sharing partnership | Reserved: no semantics yet |
+| `musharakah` | Joint venture | Reserved: no semantics yet |
+| `wakaf` | Endowment | Reserved: no semantics yet |
 
-## Zakat Calculation
+A reserved keyword cannot be used as a name, and the compiler gives it no
+meaning. The language surface is frozen (REQ-108), so giving these meaning is
+part of REQ-20 and needs an owner decision.
 
-```riina
-// Automatic zakat at 2.5% when wealth exceeds nisab
-fungsi kira_zakat(harta: Nombor, nisab: Nombor) -> Nombor kesan SyariahPatuh {
-    kalau harta >= nisab {
-        harta * 25 / 1000
-    } lain {
-        0
-    }
-}
-```
+## The Coq model
+
+`02_FORMAL/coq/domains/SyariahCompliance.v` models Syariah rules as boolean
+properties of contract records and proves facts about those definitions. It is
+a model: no RIINA program is checked against it, and the project counts its
+results as model Qed, not as guarantees.
 
 ## Disclaimer
 
-> **This is not a fatwa.** RIINA's Syariah type system is a technical tool for enforcing formalizable rules. It does not constitute religious guidance. All Syariah-compliant software should be reviewed and certified by a qualified Syariah Advisory Board before deployment in production financial systems.
-
-## Examples
-
-See `07_EXAMPLES/08_jalinan/syariah_escrow.rii` for a conceptual escrow example.
+> **This is not a fatwa.** Nothing RIINA produces is religious guidance or a
+> Syariah certification. Financial software intended to be Syariah-compliant
+> must be reviewed by a qualified Syariah Advisory Board.

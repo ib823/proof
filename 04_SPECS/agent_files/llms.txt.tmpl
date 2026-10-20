@@ -62,9 +62,9 @@ sum counts across lanes: they count different things.
 - Examples: {{examples}} .rii files, of which {{corpus_passing}} currently pass `riinac check`; the
   shipped parser accepts a narrower grammar than some examples assume — see
   `07_EXAMPLES/README.md`. Passing `check` does NOT imply the example can be
-  COMPILED: a few effectful builtins (`jaring_tls_*`, the virtual-filesystem trio,
-  the crypto-agility runtime) are still interpreter-only (REQ-70), and
-  `riinac build` fails closed on them.
+  COMPILED: some builtins are still interpreter-only (REQ-70), and
+  `riinac build` fails closed on them. The generated builtin matrix,
+  docs/api/STDLIB.md, is the one place that lists them.
 - An unknown type name (including a typo) is currently accepted as `Any`
   (REQ-93(c)); use only the types in llms-full.txt.
 

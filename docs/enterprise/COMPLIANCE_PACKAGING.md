@@ -1,137 +1,59 @@
-# RIINA Compliance Packaging
+# Packaging RIINA Evidence for a Review
 
-## Overview
+RIINA does not produce a certificate, and its compliance output is not a
+conformity assessment. What it can give an assessor is **evidence**: a report of
+heuristic checks over the exact source, plus the project's own ledgers of what is
+proven, enforced and trusted. This page lists what to hand over and how a reviewer
+can reproduce each part.
 
-RIINA programs carry **machine-checkable proof certificates** that satisfy regulatory requirements. When you compile a RIINA program, the compiler can generate a compliance report mapping your code's proven properties to specific regulatory controls.
-
-## Supported Regulations
-
-| Regulation | Jurisdiction | RIINA Coverage |
-|-----------|-------------|----------------|
-| HIPAA | United States | PHI access control, audit trails, encryption at rest/transit, de-identification |
-| PCI-DSS | Global | Cardholder data isolation, key management, access logging |
-| GDPR | European Union | Data minimization, purpose limitation, right to erasure |
-| PDPA | Malaysia | Personal data protection, cross-border transfer controls |
-| PDPA | Singapore | Data protection obligations, breach notification |
-| SOX | United States | Financial data integrity, audit trails |
-| DO-178C | Aviation | Deterministic execution, formal verification evidence |
-| ISO 26262 | Automotive | ASIL-D systematic capability, absence of interference |
-| Common Criteria (EAL7) | International | Formally verified design, complete testing |
-| NIST 800-53 | United States | Security controls (AC, AU, SC families) |
-| CCPA | California | Consumer data rights, sale opt-out |
-| FERPA | United States | Student record protection |
-| BNM RMiT | Malaysia | Financial institution technology risk |
-| MAS TRM | Singapore | Technology risk management |
-| ISO 27001 | International | Information security management |
-
-## How It Works
-
-### 1. Write Your Program
+## 1. The program and its compliance report
 
 ```riina
-// Your application code uses RIINA's security types naturally
-fungsi simpan_rekod(data: Rahsia<Teks>) -> kesan (Tulis | Kripto) {
-    biar terenkripsi = kripto::aes_256_gcm_sulit(kunci, data);
-    fail_tulis(laluan, terenkripsi);
+fungsi simpan_rekod(laluan: Teks, rekod: Teks) -> Unit kesan SistemFail {
+    fail_tulis((laluan, rekod))
+}
+
+fungsi utama() -> Unit kesan SistemFail {
+    simpan_rekod("rekod.txt", "pesakit 42: temujanji")
 }
 ```
 
-### 2. Generate Compliance Report
+```bash
+riinac check --compliance hipaa --report-json --report-output report.json rekod.rii
+```
+
+`report.json` carries the source's SHA-256, the verdict and every rule that fired.
+See [COMPLIANCE_GUIDE.md](COMPLIANCE_GUIDE.md) for the fields and what the rules
+can and cannot see.
+
+## 2. What the language guarantees, and at what level
+
+- [PROPERTY_LEDGER.md](../../PROPERTY_LEDGER.md): every advertised property with its
+  claim level. Most are *enforced by the compiler and tested*; a few are *proven
+  in Coq for the language model*; none is yet proven about the shipped compiler.
+- [HEADLINE_THEOREMS.md](../../HEADLINE_THEOREMS.md): the only theorems a public
+  surface may cite, each with its fragment and kernel assumptions.
+- [TRUSTED_BASE.md](../../TRUSTED_BASE.md): what those guarantees rely on without
+  proof (the compiler itself, the C compiler, the OS and so on).
+
+## 3. Supply chain
+
+`sbom/` holds the CycloneDX SBOMs for both Rust workspaces, a cryptography BOM and
+a VEX file.
+
+## 4. Reproduction commands for the reviewer
 
 ```bash
-riinac verify --compliance hipaa,pci-dss myapp.rii
+cd 03_PROTO && cargo build --release && cargo test --all   # the compiler and its tests
+riinac check --compliance hipaa --report rekod.rii           # same hash, same verdict
+riinac verify --coq                                         # rebuild the Coq lane, attest the capstones
 ```
 
-### 3. Output: Machine-Checkable Certificate
+## What this evidence is not
 
-The compiler generates a structured report:
-
-```
-RIINA COMPLIANCE CERTIFICATE
-============================
-Program: myapp.rii
-Date: 2026-01-31
-Compiler: riinac 0.3.0
-Prover: Rocq 9.2
-
-HIPAA §164.312(a) — Access Control
-  PROVEN: All PHI access gated by role-based authorization
-  Theorem: access_control_enforced (Coq: properties/HIPAACompliance.v:42)
-
-HIPAA §164.312(b) — Audit Controls
-  PROVEN: Every PHI access logged with timestamp, user, action
-  Theorem: audit_trail_complete (Coq: properties/HIPAACompliance.v:87)
-
-HIPAA §164.312(e) — Transmission Security
-  PROVEN: PHI encrypted in transit (Rahsia type prevents plaintext transmission)
-  Theorem: transmission_encrypted (Coq: properties/HIPAACompliance.v:112)
-
-PCI-DSS Req 3 — Protect Stored Cardholder Data
-  PROVEN: Cardholder data type is Rahsia, encrypted at rest
-  Theorem: stored_data_encrypted (Coq: properties/PCIDSSCompliance.v:34)
-```
-
-### 4. Auditor Verification
-
-Auditors can independently verify the certificate:
-
-```bash
-# Verify that the Coq proofs compile (zero-trust)
-cd 02_FORMAL/coq && make
-
-# Check specific theorems
-coqc -Q . RIINA properties/HIPAACompliance.v
-Print Assumptions access_control_enforced.
-# Output: "Closed under the global context" (no unproven assumptions)
-```
-
-## Integration with Existing Compliance Workflows
-
-### For Security Auditors
-
-RIINA compliance certificates can supplement or replace manual code review for specific controls. The certificate provides:
-
-- **Which controls are covered** — mapped to specific regulation sections
-- **The proof** — a Coq theorem that can be independently verified
-- **The assumptions** — active build uses 0 axioms; historical assumptions are archived and auditable
-
-### For Compliance Officers
-
-Include RIINA certificates in your compliance package alongside traditional evidence. The certificate demonstrates that security properties are **mathematically guaranteed**, not merely tested.
-
-### For Procurement
-
-RIINA programs meet the "formal methods" requirement in:
-- Common Criteria EAL5-EAL7
-- DO-178C Design Assurance Level A
-- ISO 26262 ASIL-D Tool Confidence Level 1
-
-## Coq Proof Files (15 Industry Compliance Proofs)
-
-All proofs are in `02_FORMAL/coq/Industries/`:
-
-| File | Regulation | Theorems |
-|------|-----------|----------|
-| MalaysiaPDPA.v | Malaysia PDPA | 10 |
-| BNM_RMiT.v | Malaysia BNM | 10 |
-| SingaporePDPA.v | Singapore PDPA | 10 |
-| MAS_TRM.v | Singapore MAS | 10 |
-| HIPAACompliance.v | US HIPAA | 10 |
-| PCIDSSCompliance.v | PCI-DSS | 10 |
-| GDPRCompliance.v | EU GDPR | 10 |
-| SOXCompliance.v | US SOX | 10 |
-| DO178CCompliance.v | Aviation DO-178C | 10 |
-| ISO26262Compliance.v | Automotive ISO 26262 | 10 |
-| CommonCriteriaEAL7.v | CC EAL7 | 10 |
-| NISTCompliance.v | US NIST 800-53 | 10 |
-| CCPACompliance.v | California CCPA | 10 |
-| FERPACompliance.v | US FERPA | 10 |
-| CyberTrustCompliance.v | Singapore CyberTrust | 10 |
-
-**Total: 150 proven compliance theorems, 0 admits, 0 unjustified axioms.**
-
----
-
-**For detailed CLI usage, rule coverage, and contributing rules, see [COMPLIANCE_GUIDE.md](COMPLIANCE_GUIDE.md).**
-
-*RIINA — Write code. Get compliance proofs. For free.*
+- Not a certification against Common Criteria, DO-178C, ISO 26262, HIPAA, PCI-DSS
+  or any other standard: that needs an accredited assessor and evidence about the
+  whole system, not only its source.
+- Not a replacement for code review.
+- Not independently audited: no external audit of RIINA has been published, and
+  its in-house cryptography is experimental.

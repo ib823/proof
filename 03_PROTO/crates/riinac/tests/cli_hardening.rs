@@ -339,3 +339,22 @@ fn build_with_only_msvc_on_path_fails_closed_naming_the_supported_set() {
     assert!(!stdout.contains("MSVC-RAN"), "invoked cl: {stdout}");
     assert!(!sb.dir.join("hai").exists(), "left an artifact behind");
 }
+
+/// `check --report-json` writes the JSON report to stdout, and nothing else:
+/// the type/effect summary used to follow it on stdout, so the output did not
+/// parse as JSON.
+#[test]
+fn report_json_on_stdout_is_only_the_report() {
+    let sb = Sandbox::new("report_json");
+    sb.file("app.rii", "fungsi utama() -> Unit kesan Tulis { cetak(\"hai\") }\n");
+    let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["check", "--compliance", "hipaa", "--report-json", "app.rii"])
+        .current_dir(&sb.dir)
+        .output()
+        .expect("riinac check --report-json");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let trimmed = stdout.trim();
+    assert!(trimmed.starts_with('{') && trimmed.ends_with('}'), "not a JSON object: {stdout}");
+    assert!(!stdout.contains("Type:"), "summary leaked into the report: {stdout}");
+    assert!(stdout.contains(&format!("\"riina_version\": \"{}\"", env!("CARGO_PKG_VERSION"))), "{stdout}");
+}

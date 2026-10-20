@@ -1,107 +1,103 @@
 # JALINAN Guide
 
-JALINAN (Jaringan Autonomi, Logik Integrasi, Notari, Aktor, Nod) is RIINA's distributed computing framework. It unifies five concepts under formal verification.
+JALINAN (Jaringan Autonomi, Logik Integrasi, Notari, Aktor, Nod) is RIINA's
+surface for distributed programs: actors, choreographies, content hashing and
+CRDT merge. This page says what each one does in the shipped compiler today,
+and what is proven about it and where.
 
-## The 5 Unifications
+Every `riina` block below is checked by the test suite
+(`03_PROTO/crates/riinac/tests/doc_snippets.rs`).
 
-1. **Code = Security** — Security properties are part of the type system, not separate middleware
-2. **Session-Typed Protocols** — Communication follows type-checked session types; no malformed messages
-3. **Content-Addressed State** — All state is Merkle-hashed; every change is traceable and tamper-evident
-4. **Actors + Supervision** — Lightweight actors with fault-tolerant supervision trees
-5. **Formal Verification** — All distributed properties proven at compile time via Coq/Lean
+## What is proven, and what is not
 
-## Quick Start: Actors
+- **Proven in Coq, about models.** Actor semantics (`domains/ActorCalculus.v`,
+  `domains/ActorSupervision.v`), choreography projection and deadlock freedom
+  (`domains/ChoreographyTypes.v`, `domains/ChoreographyProjection.v`), CRDT merge
+  laws (`domains/CRDTFoundations.v`: `gc_merge_comm` and its siblings) and
+  content-addressed state (`domains/MerkleDAG.v`, `domains/ContentAddressedState.v`).
+  These are theorems about each file's own definitions; the project counts them
+  as model results, not as guarantees about the compiler.
+- **Not proven.** That `riinac` implements those models. The compiler's
+  choreography projection *mirrors* the Coq definitions; it is tested, not
+  verified.
+- **Backends.** Which constructs run on the interpreter, C and WASM is stated
+  only in the generated builtin matrix, [docs/api/STDLIB.md](api/STDLIB.md).
 
-### Define an Actor
+## Actors
 
 ```riina
 pelaku Pembilang {
     keadaan: Nombor
     kendalikan Tambah(n) {
-        n + keadaan
+        n + 1
     }
 }
+
+biar k = lahir Pembilang(0);   // spawn, with initial state 0
+hantar(k, 5);                  // send 5
+terima(k)                      // receive the reply: 6
 ```
 
-- `pelaku` — declares an actor type
-- `keadaan` — actor's internal state
-- `kendalikan` — message handler
-
-### Spawn, Send, Receive
-
-```riina
-biar k = lahir Pembilang(0);   // Spawn with initial state 0
-hantar(k, 10);                  // Send message 10
-biar hasil = terima(k);         // Receive result
-```
-
-- `lahir` — spawn a new actor instance
-- `hantar` — send a message to an actor
-- `terima` — receive (await) the actor's response
+- `pelaku` declares an actor type, `keadaan` its state and `kendalikan` a
+  message handler.
+- `lahir` spawns an instance, `hantar` sends it a message and `terima` waits for
+  the reply.
+- A handler cannot read `keadaan` yet: the checker reports
+  `Variable not found: keadaan`. Stateful handlers are part of the example
+  corpus work (REQ-55).
 
 ## Choreography
 
-Choreographic programming makes multi-party protocols deadlock-free by construction — **at
-the level RIINA proves it**: the deadlock-freedom theorems are mechanized in Coq over the
-session calculus (`ST_020`/`CT_117`: 2-party projection duality ⇒ deadlock-free), and the
-compiler's projection (`riina-typechecker`'s `project_choreography`/`multiparty::project`)
-*mirrors* those Coq definitions. The projection implementation itself is **not** a verified
-compiler — for that stronger bar, see Kalas (a choreographic language with an end-to-end
-verified compiler to CakeML, including verified endpoint projection), which is the state of
-the art RIINA does not yet meet. Per-statement channel-operation checking also does not
-exist yet (RIINA has no session-channel surface operations; the projected local *type* is
-checked, not an operation sequence).
+A choreography is a protocol between named roles. The compiler projects it to
+each role's local session type and checks that the projections fit.
 
 ```riina
 koreografi Pembelian {
-    peranan Pembeli, Penjual, Eskrow;
+    peranan Pemohon, Pelulus;
 
-    Pembeli -> Eskrow: deposit(jumlah);
-    Penjual -> Pembeli: hantar_barang(item);
-    Eskrow -> Penjual: lepas_bayaran(jumlah);
+    Pemohon -> Pelulus: hantar Nombor;
+    Pelulus -> Pemohon: hantar Benar;
+    tamat;
 }
 ```
 
-- `koreografi` — defines a multi-party protocol
-- `peranan` — declares participant roles
-- `->` — directed message flow between roles
+- `koreografi` defines the protocol and `peranan` its roles.
+- `A -> B: hantar T;` sends a value of type `T` from `A` to `B`; `tamat` ends it.
 
-## Content-Addressing
+Deadlock freedom is proven in Coq for the session calculus (`ST_020` in
+`domains/SessionTypes.v`, `CT_117_choreography_deadlock_free` in
+`domains/ChoreographyTypes.v`). The compiler's projection
+(`project_choreography` / `multiparty::project` in `riina-typechecker`) follows
+those definitions but is not a verified compiler: for that bar, see Kalas, a
+choreographic language with an end-to-end verified compiler to CakeML. RIINA
+also has no session-channel operations in source yet, so the projected local
+type is checked, not a sequence of channel operations.
 
-Every value can be content-addressed for tamper evidence.
-
-```riina
-biar data = "Maklumat penting";
-biar hash = cincang(data);           // Hash the data
-sahkan(hash, data);                   // Verify integrity
-```
-
-- `cincang` — compute content hash
-- `sahkan` — verify data matches a hash
-
-## CRDTs (Conflict-Free Replicated Data Types)
-
-Distributed state that merges without conflicts.
+## Content addressing
 
 ```riina
-biar a = kaunter(5);
-biar b = kaunter(3);
-biar gabungan = gabung(a, b);    // Merge: result is 8
+fungsi semak() -> Benar kesan Kripto {
+    biar data = "Maklumat penting";
+    biar cap = cincang(data);   // hash the data
+    sahkan(cap, data)           // re-hash and compare: betul
+}
 ```
 
-- `gabung` — merge two CRDT values (commutative, associative, idempotent)
+- `cincang` hashes a value and `sahkan` checks a value against a hash. Both
+  need the `Kripto` effect.
+- The hash comes from RIINA's own cryptography, which is experimental and has
+  not been externally audited.
+
+## CRDTs
+
+`gabung` is the CRDT merge builtin, and its laws (commutative, associative,
+idempotent) are proven in Coq for the model's counters. **It cannot be used from
+a program yet:** no source syntax produces a CRDT value, so
+`07_EXAMPLES/08_jalinan/crdt_merge.rii` fails `riinac check` with
+`Expected CRDT type, found Int`. Making it usable is tracked as REQ-55.
 
 ## Examples
 
-See `07_EXAMPLES/08_jalinan/` for complete working examples:
-
-- `actor_simple.rii` — Minimal actor
-- `actor_counter.rii` — Counter actor
-- `distributed_counter.rii` — Multi-node distributed counter
-- `choreography_basic.rii` — Multi-party protocol
-- `content_hash.rii` — Content addressing
-- `merkle_audit.rii` — Merkle audit trail
-- `crdt_merge.rii` — CRDT merge operations
-- `session_types.rii` — Session-typed channels
-- `supervisor.rii` — Supervision trees
-- `syariah_escrow.rii` — Syariah-compliant escrow
+`07_EXAMPLES/08_jalinan/` holds the examples. Not all of them pass
+`riinac check` yet; run it on a file to see. The ones that fail are tracked
+under REQ-55.

@@ -10,6 +10,8 @@ Peraturan jenis dan kesan teras dibuktikan dalam Coq untuk model bahasa; pengkom
 
 RIINA ialah bahasa pengaturcaraan dengan **model teras yang disahkan dalam Coq**. Program yang berjaya dikompilasi lulus semakan jenis dan kesan yang dilaksanakan oleh pengkompil. Coq ialah satu-satunya laluan bukti yang dimekanikkan sepenuhnya; angka semasa ada dalam [README](../../README.md) dan `website/public/metrics.json`.
 
+**Tidak seperti CompCert atau CakeML, pengkompil `riinac` sendiri tidak disahkan secara formal.** Yang dibuktikan dalam Coq ialah model bahasa (jadual di bawah); pengkompil diuji terhadap model itu, bukan dibuktikan melaksanakannya.
+
 | Sifat dalam model bahasa | Status |
 |---|---|
 | Tiada kebocoran maklumat antara tahap keselamatan | Bukan-gangguan dibuktikan (Coq) untuk teras tanpa rujukan dan tanpa rekursi; dikuatkuasakan oleh ujian di luarnya |
@@ -51,25 +53,24 @@ riinac run hello.rii      # Jalankan terus
 riinac build hello.rii    # Kompilasi ke binari natif melalui C
 ```
 
-### Keselamatan dalam Tindakan (ilustrasi — model yang dimaksudkan)
+### Keselamatan dalam Tindakan
 
 ```riina
-// RIINA menghalang kebocoran maklumat pada masa kompilasi
-
 fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Kripto {
-    // 'kad' ialah Rahsia dalam model bahasa; penjajaran pengkompil/masa larian masih dalam proses
-
-    biar hash = sha256(kad);           // OK: kripto pada data rahsia
-    biar resit = "Jumlah: " + ke_teks(jumlah);  // OK: jumlah ialah awam
-
-    // cetakln(kad);                   // RALAT KOMPILASI: data rahsia dalam kesan IO
-    // pulang kad;                     // RALAT KOMPILASI: rahsia dalam pulangan awam
-
-    pulang resit;                      // OK: hanya data awam dikembalikan
+    biar cap = cincang(kad);                      // OK: cincangan rahsia kekal rahsia
+    biar resit = "Jumlah: " + ke_teks(jumlah);    // OK: jumlah ialah awam
+    resit                                         // OK: hanya data awam dikembalikan
 }
 ```
 
-Ini ilustrasi model yang dimaksudkan, bukan contoh yang boleh dijalankan: pengkompil yang dikeluarkan belum menyokong semua sintaks dan fungsi terbina dalamnya.
+```riina error="Security violation in print sink"
+fungsi utama() -> Unit kesan Tulis {
+    biar kad = sulit "4111 1111 1111 1111";
+    cetakln(kad)                                  // RALAT KOMPILASI: rahsia pada sink cetakan
+}
+```
+
+Kedua-dua blok di atas disemak oleh ujian (`03_PROTO/crates/riinac/tests/doc_snippets.rs`): yang pertama lulus, yang kedua ditolak oleh penyemak.
 
 - **Kriptografi masih eksperimen:** kriptografi dalaman RIINA (`riina-core`) masih eksperimen dan belum diaudit — jangan gunakannya untuk melindungi rahsia sebenar buat masa ini. Tiada audit bebas diterbitkan lagi.
 - **Tiada titik terapung, mengikut reka bentuk:** literal titik terapung ialah ralat kompilasi (P0015). Aritmetik integer dan titik tetap yang tepat mengekalkan program dalam lingkungan yang dimodelkan oleh bukti.

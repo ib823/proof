@@ -78,13 +78,15 @@ Each lesson includes:
 
 ### Example Exercise (Lesson 3)
 
-```
+The student sees the signature with an empty body; this is the model answer
+the check compares against:
+
+```riina
 // Latihan: Tulis fungsi yang mengira faktorial
 // Exercise: Write a function that computes factorial
 
 fungsi faktorial(n: Nombor) -> Nombor kesan Bersih {
-    // Tulis kod anda di sini / Write your code here
-    ___
+    kalau n == 0 { 1 } lain { n * faktorial(n - 1) }
 }
 
 // Semakan / Check:

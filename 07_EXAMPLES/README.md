@@ -13,15 +13,15 @@ honest: 14 examples call methods on lists and strings (`senarai.panjang()`, `xs.
 RIINA has no methods — and used to pass `check` only to fail when run (REQ-93).
 
 Separately, passing `riinac check` does **not** imply the example can be
-compiled: every `jaring_*`/`http_*`/`simpan_*`/`fail_*`/`vfs_*`/`json_*`/`masa_*`
-and security builtin is **interpreter-only**, so `riinac build` on a program
-using them fails closed with `unbound variable` (master plan REQ-70).
+compiled: some builtins run only on the interpreter, and `riinac build` refuses
+a program that uses them with `unbound variable`. Which builtins those are is
+stated in one place, the generated builtin matrix in
+[docs/api/STDLIB.md](../docs/api/STDLIB.md).
 
-`11_servis/` is the persistent-service reference: a multi-file (REQ-71),
-networked (REQ-73 HTTP/1.1), durable (REQ-73 store) guest book whose visit
-counter survives a restart. Run `riinac run 11_servis/pelayan.rii` twice and
-curl it — the count continues. It runs on the interpreter; compiling it needs
-REQ-70's codegen half. The parser is
+`11_servis/` is the persistent-service reference: a package that is multi-file
+(REQ-71), networked (REQ-73 HTTP/1.1) and durable (REQ-73 store), a guest book
+whose visit counter survives a restart. `riinac pkg build` in that directory
+produces a native binary (REQ-75). The parser is
 being extended incrementally; the forms below are **now accepted** but some
 example files stack several advanced constructs and need all of them supported
 before they pass.

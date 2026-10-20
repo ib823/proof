@@ -360,6 +360,28 @@ fn cra_i_2i_unbounded_recursion() {
         ComplianceProfile::Cra,
         "CRA-I.2i",
     );
+    // Every top-level function is a LetRec. One that never calls itself is
+    // not recursive and must not be flagged (it used to be, for every
+    // straight-line function in a program).
+    assert_no_violation(
+        &Expr::LetRec(
+            "utama".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure.into()),
+            Box::new(Expr::Lam("_".into(), Ty::Unit, Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cra,
+        "CRA-I.2i",
+    );
+}
+
+#[test]
+fn report_states_the_real_version_and_no_proof_claim() {
+    let report = crate::report::generate("x.rii", "", &[ComplianceProfile::Hipaa], &[]).to_text();
+    assert!(report.contains(env!("CARGO_PKG_VERSION")), "{report}");
+    assert!(!report.contains("0.1.0"), "{report}");
+    assert!(!report.contains("Coq formal proofs"), "{report}");
+    assert!(report.contains("not a conformity assessment"), "{report}");
 }
 
 #[test]

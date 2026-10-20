@@ -50,6 +50,8 @@ RIINA provides first-class support for AI-assisted development:
 
 RIINA is a programming language with a machine-checked Coq proof corpus and a security-oriented compiler. **Coq is the only fully mechanized lane.** The other prover lanes hold only small hand-written artifacts: a scoped SMT set of 37 Z3-checked properties, and single smoke specs for TLA+ and Alloy (F\* and Isabelle are retired; Lean 4 is empty). The machine-generated mirrors of the Coq tree that used to fill them were archived out of `main` on 2026-10-20. Each lane has its own claim level in `website/public/metrics.json`; none is presented as independent verification of RIINA. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
 
+**Unlike CompCert or CakeML, the compiler `riinac` is not itself formally verified.** What is proven in Coq is the language model: type safety, effect soundness against the declared effect, and, for the reference-free, recursion-free core, non-interference and termination (the table below and [HEADLINE_THEOREMS.md](HEADLINE_THEOREMS.md)). The compiler is tested against that model, not proven to implement it. An assured mode that runs the Coq-verified checker on every program is planned (REQ-100).
+
 Most languages ask you to *trust* that your code is secure. RIINA asks you to *verify* it.
 
 | What RIINA has today | Current status |
@@ -150,52 +152,49 @@ riinac run hello.rii      # Run directly
 riinac build hello.rii    # Compile to native binary via C
 ```
 
-### Security in Action (illustrative — intended model)
+### Security in Action
 
-> The snippet below shows the *intended* information-flow model. It uses syntax
-> (`kesan Crypto`, `pulang …;`) that the shipped parser does not yet fully accept;
-> treat it as a design illustration, not a runnable example.
+Every block in this section is checked by the test suite (`03_PROTO/crates/riinac/tests/doc_snippets.rs`).
+A secret can be hashed and kept, but the checker refuses to let it reach an output:
 
 ```riina
-// RIINA prevents information leaks at compile time
-
-fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Crypto {
-    // 'kad' is Secret in the language model; compiler/runtime alignment is ongoing
-
-    biar hash = sha256(kad);           // OK: crypto on secret data
-    biar resit = "Jumlah: " + ke_teks(jumlah);  // OK: amount is public
-
-    // cetakln(kad);                   // COMPILE ERROR: secret data in IO effect
-    // pulang kad;                     // COMPILE ERROR: secret in public return
-
-    pulang resit;                      // OK: only public data returned
+fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Kripto {
+    biar cap = cincang(kad);                      // OK: a hash of the secret stays secret
+    biar resit = "Jumlah: " + ke_teks(jumlah);    // OK: the amount is public
+    resit                                         // OK: only public data is returned
 }
 ```
 
-This is the intended security model. Current compiler enforcement is narrower than the full proof corpus; see `RIINA_MASTER_PLAN.md` Part 2 for the verified state and current gaps.
+```riina error="Security violation in print sink"
+fungsi utama() -> Unit kesan Tulis {
+    biar kad = sulit "4111 1111 1111 1111";
+    cetakln(kad)                                  // COMPILE ERROR: a secret at a print sink
+}
+```
 
-### Effect System (illustrative — intended model)
+Returning `kad` as plain `Teks` is refused too (`Annotation mismatch: expected String, found Secret(String)`).
+The compiler enforces the information-flow rules it implements and is tested against the Coq
+model; [PROPERTY_LEDGER.md](PROPERTY_LEDGER.md) lists what is proven, enforced and tested.
 
-> As above, this illustrates the intended effect syntax; `kesan IO` and `pulang …;`
-> are not accepted by the shipped parser yet. Valid effect names today include
-> `Bersih`, `Tulis`, `Baca`, `Kripto`, `Rangkaian`, `Rawak`, `Masa`, `Sistem`.
+### Effect System
+
+A function declares its effects with `kesan`, and the checker rejects a body that does more:
 
 ```riina
-// Effects are explicit in the language and formal model
-
-fungsi baca_config(laluan: Teks) -> Teks kesan IO {
-    biar kandungan = fail_baca(laluan);
-    pulang kandungan;
+fungsi baca_config(laluan: Teks) -> Tercemar<Teks, FileSystem> kesan SistemFail {
+    fail_baca(laluan)                             // file contents are tainted at birth
 }
 
 fungsi kira_cukai(pendapatan: Nombor) -> Nombor kesan Bersih {
-    // This function is intended to remain pure
-    // The effect annotation documents that contract
-    pulang pendapatan * 6 / 100;       // integer arithmetic: a float literal such as 0.06 is a compile error (P0015)
+    pendapatan * 6 / 100                          // integer arithmetic; a float literal is error P0015
 }
+```
 
-// Dependencies cannot escalate effects without explicit permission
-// A crypto library cannot secretly open network connections
+```riina error="Effect violation: allowed Pure, found FileSystem"
+fungsi kira_cukai(pendapatan: Nombor) -> Nombor kesan Bersih {
+    biar _ = fail_baca("cukai.txt");              // COMPILE ERROR: a pure function reads a file
+    pendapatan * 6 / 100
+}
 ```
 
 ---
@@ -259,7 +258,7 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 18 in the compiler workspace (`03_PROTO`), plus the tooling workspace's own crates |
-| Test count | 3,569 tests in the compiler workspace, all passing (from `website/public/metrics.json`), plus the tooling workspace's own tests |
+| Test count | 3,578 tests in the compiler workspace, all passing (from `website/public/metrics.json`), plus the tooling workspace's own tests |
 | External dependencies | **0** third-party at runtime in the shipped compiler (dev/CI tools are separate, see Install) |
 | Lines of Rust | ~73,500 (proto) |
 | Standard library builtins | 88 across 9 modules |
@@ -337,7 +336,7 @@ riina/
 │   └── ...                  (alloy, fstar, verus, kani, tv: hand-written drafts, quarantined or retired;
 │                             lean is empty pending REQ-67b — see metrics.json)
 │
-├── 03_PROTO/               Rust compiler (18 crates, 3,569 tests, 0 third-party runtime deps)
+├── 03_PROTO/               Rust compiler (18 crates, 3,578 tests, 0 third-party runtime deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -402,11 +401,11 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3569 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3578 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 | Area | Status |
 |------|--------|
-| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,569 tests (plus the tooling workspace's own tests); the C/native backend is not formally verified — it is differential-tested against the interpreter; end-to-end security alignment still in progress |
+| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,578 tests (plus the tooling workspace's own tests); the C/native backend is not formally verified — it is differential-tested against the interpreter; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
 | Formal verification | **Coq active lane is the only real machine-checked verification** (0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them)). Of the other lanes only the scoped SMT set (37 properties) is mechanized; the rest hold single smoke artifacts or nothing, and the generated mirrors were archived — see `metrics.json`. No independent audit published yet |
 | WASM/mobile backends | Present as scaffolding, not full production backends |

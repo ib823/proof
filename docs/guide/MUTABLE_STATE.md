@@ -16,8 +16,11 @@ The default. Rebinding the same name shadows it for the rest of the block; the
 old binding is untouched, and nothing outside the block sees either.
 
 ```riina
-biar x = 1;
-biar x = x + 1;   // a NEW binding, shadowing the first
+fungsi bayangan() -> Nombor kesan Bersih {
+    biar x = 1;
+    biar x = x + 1;   // a NEW binding, shadowing the first
+    x                 // 2
+}
 ```
 
 ## `biar ubah` — a mutable local slot
@@ -49,8 +52,11 @@ encapsulated-state argument (the same reason Haskell's `runST` is pure).
 An inner binding shadows an outer slot, as you would expect:
 
 ```riina
-biar ubah x = 1;
-biar x = 100;   // ordinary immutable binding; the slot is untouched
+fungsi bayangan_slot() -> Nombor kesan Bersih {
+    biar ubah x = 1;
+    biar x = 100;   // ordinary immutable binding; the slot is untouched
+    x               // 100: the inner binding
+}
 ```
 
 ### History

@@ -183,6 +183,23 @@ fn generate() -> String {
     // Reading this file without the warning below is the single most likely way
     // for a human or an AI agent to write a program that typechecks, runs, and
     // then cannot be built. State it before the tables, not after.
+    // Which builtins only the interpreter runs, and which nothing runs, are
+    // listed from the registry: prose that named the families by hand went
+    // stale (it said `fail_*` was interpreter-only after it compiled to C).
+    let names_of = |want: Backend| -> String {
+        rows.iter()
+            .filter(|(_, _, _, b)| *b == want)
+            .map(|(n, _, _, _)| format!("`{n}`"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    // The worked example must stay true: if `vfs_tulis` ever compiles, this
+    // fails and the example is rewritten rather than left wrong.
+    assert_eq!(
+        Backend::of("vfs_tulis"),
+        Backend::Interp,
+        "the STDLIB.md example assumes vfs_tulis is interpreter-only; pick another"
+    );
     out.push_str(&format!(
         "## ⚠ Read first: type-checking does not imply compiling\n\n\
          Every builtin below type-checks. That is ALL it means: type-checking \
@@ -194,35 +211,32 @@ fn generate() -> String {
          | `interp-only` | `riinac run` only ({interp} builtins). `riinac build` fails with `unbound variable`. |\n\
          | `typed-only` | **Nothing runs it** ({typed} builtins). The name is in the type registry, but neither the interpreter nor any backend binds it, so `riinac run` fails with `unbound variable` too. |\n\n\
          ```\n\
-         $ riinac check baca.rii     # Success!  Effect: FileSystem\n\
-         $ riinac run   baca.rii     # works — reads the file\n\
-         $ riinac build baca.rii     # Codegen Error: unbound variable: fail_baca\n\
+         $ riinac check vfs.rii     # Success!  Effect: {{Read, Write, FileSystem}}\n\
+         $ riinac run   vfs.rii     # works: the in-memory VFS\n\
+         $ riinac build vfs.rii     # Codegen Error: unbound variable: vfs_tulis\n\
          ```\n\n\
-         The example used to be a `jaring_dengar` HTTP server. It is not any \
-         more, because that program now COMPILES: as of 2026-08-15 the `jaring`, \
-         `http`, `simpan`, `masa` and `json` families are routed, so a networked, \
-         persistent service has a native deployment path (master plan REQ-70). \
-         The families still interpreter-only are `fail_*`, `vfs_*`, the \
-         `keselamatan` sinks, and the `jaring_tls_*` half.\n\n\
          Both refusals are deliberate: a backend that cannot implement a builtin \
          fails closed rather than miscompiling it. Until 2026-08-11 the WASM \
          backend did NOT do this — it emitted a silent stub, so \
          `teks_huruf_besar(\"halo\")` returned `halo` and `panjang(\"abcd\")` \
          returned `abcd`, while the interpreter and C both gave the right answer \
          (master plan REQ-78).\n\n\
-         In practice: the WASM surface is printing, string concatenation, \
-         `ke_teks` and the numeric-tower constructors. The wider C surface adds \
-         strings, lists, maps, sets, math, conversions and test assertions. \
-         **Networking, filesystem, VFS, JSON, time, the durable store and the \
-         security/taint sinks are interpreter-only** — closing that is master \
-         plan REQ-70.\n\n",
+         **Interpreter only** ({interp}): {interp_names}. Compiling these is \
+         master plan REQ-70.\n\n",
         compiled = compiled_count,
         wasm = wasm_count,
         native = native_count,
         total = rows.len(),
         interp = interp_only_count,
         typed = typed_only_count,
+        interp_names = names_of(Backend::Interp),
     ));
+    if typed_only_count > 0 {
+        out.push_str(&format!(
+            "**Typed only, nothing runs them** ({typed_only_count}): {}.\n\n",
+            names_of(Backend::TypedOnly)
+        ));
+    }
     out.push_str(
         "*Scope note:* this lists the language builtins the typechecker installs. \
          Crypto primitives in `05_TOOLING/crates/riina-core` (AES, SHA-2/3, \

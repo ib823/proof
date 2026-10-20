@@ -75,7 +75,7 @@ fungsi utama() -> Nombor kesan Tulis {
 `kesan Bersih` means **pure** — `tambah` is not allowed to print, touch files,
 or do anything observable. This is enforced, not advisory. If you try:
 
-```riina
+```riina error="Effect violation: allowed Pure, found Write"
 fungsi senyap() -> Unit kesan Bersih {
     cetak("bocor")        // COMPILE ERROR
 }
@@ -132,7 +132,7 @@ shows why this matters.
 
 ## 6. Secrets cannot reach a print statement (~1 minute)
 
-```riina
+```riina error="Security violation in print sink"
 fungsi utama() -> Unit kesan Tulis {
     biar pin = sulit 1234;     // classify: pin is now Secret
     cetak(pin)                 // COMPILE ERROR
@@ -162,7 +162,7 @@ guide.
 Data read from the filesystem is **tainted at birth** and refuses to flow
 into sensitive sinks until sanitized:
 
-```riina
+```riina error="Taint violation in sink argument"
 fungsi utama() -> Unit kesan SistemFail {
     biar kandungan = fail_baca("data.sql");
     sql_execute(kandungan)     // COMPILE ERROR
@@ -174,10 +174,11 @@ error: Taint violation in sink argument: FileSystem data requires
        SqlParam sanitization before use
 ```
 
-Sanitize explicitly (and declare the wider effect the SQL builtin needs):
+Sanitize explicitly, and declare both effects: `SistemFail` for the read and
+`Sistem` for the SQL builtin. One effect does not cover the other; a list does:
 
 ```riina
-fungsi utama() -> Unit kesan Sistem {
+fungsi utama() -> Unit kesan (SistemFail, Sistem) {
     biar kandungan = fail_baca("data.sql");
     sql_execute(sanitasi_sql(kandungan))    // OK
 }
@@ -187,7 +188,7 @@ fungsi utama() -> Unit kesan Sistem {
 
 `guna <name>;` imports the sibling file `<name>.rii`. Create `kira.rii`:
 
-```riina
+```riina file=kira.rii
 awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
 awam fungsi dua_kali(x: Nombor) -> Nombor kesan Bersih { tambah(x, x) }
 
@@ -197,7 +198,7 @@ fungsi pembantu(x: Nombor) -> Nombor kesan Bersih { x * 99 }
 
 and `main.rii` beside it:
 
-```riina
+```riina file=main.rii
 guna kira;
 
 fungsi utama() -> Nombor kesan Tulis {
@@ -245,12 +246,12 @@ That writes `riina.toml` and `src/lib.rii`. The entry module is
 `src/utama.rii` for a binary, or `src/lib.rii` for a library. Replace the
 scaffold with a two-file binary:
 
-```riina
+```riina file=src/kira.rii
 // src/kira.rii
 awam fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }
 ```
 
-```riina
+```riina file=src/utama.rii
 // src/utama.rii
 guna kira;
 fungsi utama() -> Nombor kesan Tulis {
