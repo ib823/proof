@@ -14,7 +14,7 @@ compiler. File extension: `.rii`.
 
 ## 1. Build the compiler (~3 minutes)
 
-You need a Rust toolchain (1.94+) and a C compiler (`cc`) for native builds.
+You need a Rust toolchain (1.94+) and, for native builds, gcc or clang as `cc` on Linux or macOS. On Windows, use WSL. MSVC is not supported: the emitted C uses POSIX headers.
 There are **zero external dependencies** — everything builds from source:
 
 ```bash

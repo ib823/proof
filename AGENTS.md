@@ -19,7 +19,7 @@
 | Isabelle lemmas | 0 — lane retired (REQ-67g), corpus archived |
 | F* / TLA+ / Alloy / SMT | Hand-written artifacts only; SMT scoped set (37 properties) is mechanized; the rest are smoke-level (`metrics.json` is authoritative) |
 | Cross-prover total | None. Counts from different provers are never added together (ruling D6) |
-| Rust tests | 3,565 tests in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
+| Rust tests | 3,569 tests in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
 | Examples | 172 .rii files; 84 pass `riinac check` |
 | Claims | Coq mechanized; SMT mechanized at the REQ-67(a) scope (37 properties); TLA+/Alloy/Verus/Kani/TV generated (hand-written drafts, quarantined); F*/Isabelle retired; Lean empty |
 

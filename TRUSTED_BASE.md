@@ -19,7 +19,7 @@ are non-blank lines of Rust source, excluding test files.
 | C backend and runtime prelude | riina-codegen `lower.rs`, `ir.rs`, `emit.rs`; a minimal program emits 5705 lines of C | 13112 | Not formally verified; differential-tested (REQ-59). |
 | WASM backend | riina-codegen `wasm.rs`, `wasm_encode.rs` | 8728 | No runtime capability gate yet (REQ-114). |
 | Builtins | 374 registered, 342 compile (`docs/api/STDLIB.md`) | in the interpreter and C backend rows | Builtin semantics are not modelled in Coq (REQ-99). |
-| C compiler | the host `cc`; captured: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 | external | gcc or clang on Linux and macOS; Windows only under WSL (the emitted C uses POSIX headers). |
+| C compiler | the host `cc`; captured: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 | external | Supported: gcc or clang on Linux and macOS; Windows only under WSL. MSVC is unsupported (the emitted C uses POSIX headers; owner ruling on REQ-102, option B). |
 | Package manager | riina-pkg | 6400 | Enforces manifest effect permissions (tested). |
 | Compliance checker | riina-compliance | 7721 | Heuristic rules; evidence, not certification. |
 | Cryptography | riina-core (05_TOOLING) | 14704 | Experimental, not audited, not validated. |

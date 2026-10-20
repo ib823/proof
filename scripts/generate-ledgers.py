@@ -440,7 +440,7 @@ def render_trusted(theorems, cap):
         ("C backend and runtime prelude", f"riina-codegen `lower.rs`, `ir.rs`, `emit.rs`; a minimal program emits {prelude if prelude else '?'} lines of C", sizes["c_backend"], "Not formally verified; differential-tested (REQ-59)."),
         ("WASM backend", "riina-codegen `wasm.rs`, `wasm_encode.rs`", sizes["wasm_backend"], "No runtime capability gate yet (REQ-114)."),
         ("Builtins", f"{stdlib.group(1) if stdlib else '?'} registered, {compiled.group(1) if compiled else '?'} compile (`docs/api/STDLIB.md`)", "in the interpreter and C backend rows", "Builtin semantics are not modelled in Coq (REQ-99)."),
-        ("C compiler", f"the host `cc`; captured: {tools['cc']}", "external", "gcc or clang on Linux and macOS; Windows only under WSL (the emitted C uses POSIX headers)."),
+        ("C compiler", f"the host `cc`; captured: {tools['cc']}", "external", "Supported: gcc or clang on Linux and macOS; Windows only under WSL. MSVC is unsupported (the emitted C uses POSIX headers; owner ruling on REQ-102, option B)."),
         ("Package manager", "riina-pkg", sizes["package_manager"], "Enforces manifest effect permissions (tested)."),
         ("Compliance checker", "riina-compliance", sizes["compliance"], "Heuristic rules; evidence, not certification."),
         ("Cryptography", "riina-core (05_TOOLING)", sizes["crypto"], "Experimental, not audited, not validated."),

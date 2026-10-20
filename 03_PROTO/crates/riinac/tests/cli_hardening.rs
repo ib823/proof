@@ -306,3 +306,36 @@ fn compliance_runs_flag_unvalidated_crypto() {
         "the notice belongs to compliance runs"
     );
 }
+
+/// MSVC is not a supported compiler (owner ruling on REQ-102, option B). A
+/// machine with `cl` but no `cc` gets a message saying so and naming the
+/// supported set, not just "No such file or directory"; the build fails.
+#[test]
+fn build_with_only_msvc_on_path_fails_closed_naming_the_supported_set() {
+    let sb = Sandbox::new("msvc");
+    sb.file(
+        "hai.rii",
+        "fungsi utama() -> Unit kesan Tulis { cetak(\"hai\") }\n",
+    );
+    let bin = sb.dir.join("msvc-bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    let cl = bin.join("cl");
+    std::fs::write(&cl, "#!/bin/sh\necho MSVC-RAN\n").unwrap();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&cl, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    let out = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["build", "hai.rii"])
+        .current_dir(&sb.dir)
+        .env("PATH", &bin)
+        .output()
+        .expect("riinac build");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(!out.status.success(), "built without a supported compiler: {stderr}");
+    assert!(stderr.contains("only MSVC") && stderr.contains("gcc or clang"), "{stderr}");
+    assert!(!stdout.contains("MSVC-RAN"), "invoked cl: {stdout}");
+    assert!(!sb.dir.join("hai").exists(), "left an artifact behind");
+}
