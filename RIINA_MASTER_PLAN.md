@@ -5262,6 +5262,10 @@ Owner request: "once pushed, republish and fix the remaining REQ-97 items".
   construction" or "proven in Coq"); CORE_MAPPING rows for `laku`, `kendali`, `modul`, `pilih`,
   `koreografi`, `pelaku` and paths; BIJAK_SPEC's description of `kendali`.
 - **Still open under R3:** REQ-93(c), unknown and declared type names reading as `Any`.
+- **Republished after the fix:** `d29c978b6` pushed with `verify --full` PASS; `origin/public`
+  reconciled at `35baffca1` (3,597 tests and audit-docs pass on an exact checkout of it);
+  `ib823/riina` fast-forwarded to it, CI run 67 green; the website redeployed (gh-pages
+  `305135b`), with the playground WASM rebuilt from the fixed compiler.
 
 ### Hardening Mandate (owner-adopted 2026-10-19) — tracking
 
