@@ -5088,6 +5088,15 @@ REQ-119.
   - The pre-push hook cannot verify the public tree, because that tree lacks the master plan
     and the mandate the gate tests read.
   - REQ-119 is DONE and S2.7 is MET.
+  - The mirror's own CI (ib823/riina run 63) then failed, reproduced on an exact checkout of
+    `origin/public`. Rust failed 3567/2 and audit-docs failed, because two gate tests added
+    today (`mandate_traceability.rs`, `scope_freeze.rs`) and the new metrics-status drift
+    rule read internal files that never ship.
+  - Fixed in `184bcbcc0`: those tests stay off the public branch and keep gating main
+    unchanged, and the drift rule skips its manifest comparison only on the public tree.
+  - Re-mirrored to `d59c4b904`: 3,565 tests and audit-docs passed locally on the public tree,
+    and ib823/riina run 64 is green.
+  - Lesson: any check reading internal files must be tried on the public tree before a sync.
 - **Next highest-priority step:** REQ-96 (docs execute: 21 of 47 snippets pass), the last
   engineering item of M0. Then M1, starting with REQ-99 CORE_MAPPING.
 
