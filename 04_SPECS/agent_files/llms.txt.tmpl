@@ -122,17 +122,23 @@ koreografi Pembelian {
 
 ## Keywords
 
+Only keywords that mean something are listed. Their elaborations, and the
+status of every other keyword, are in docs/spec/CORE_MAPPING.md.
+
 ### Core
 {{kwp:fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
-selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
-sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)}}
+selagi (while), ulang (loop), putus (break), lanjut (continue), pulang (return),
+padan (match), awam (pub), modul (mod), guna (use), luaran (extern)}}
 
 ### Security
-{{kwp:rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
-tercemar (tainted), bersihkan (sanitize)}}
+{{kwp:sulit (classify), dedah (declassify), bukti (prove)}}
+
+Security types are capitalized type names, not keywords: `Rahsia<T>`,
+`Tercemar<T, Src>`, `MasaTetap<T>`, `Sifar<T>` (see the type table in
+llms-full.txt).
 
 ### Effects
-{{kwp:kesan (effect), bersih (pure), laku (perform), kendali (handle)}}
+{{kwp:kesan (effect), laku (perform), kendali (handle)}}
 
 ### Linearity
 {{kwp:sekali (linear), paling (affine), mesti (relevant)}}
@@ -140,13 +146,16 @@ tercemar (tainted), bersihkan (sanitize)}}
 ### JALINAN (Distributed Computing)
 {{kwp:pelaku (actor), lahir (spawn), hantar (send), terima (recv),
 koreografi (choreography), peranan (role), keadaan (state),
-penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)}}
+gabung (merge), cincang (hash), sahkan (verify)}}
 
 ### Capabilities
-{{kwp:keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)}}
+{{kwp:perlukan (require), beri (grant)}}
 
-### Session Types
-{{kwp:sesi (session), pilih (select), cabang (branch), tamat (end)}}
+### Choreography steps (inside `koreografi`)
+{{kwp:pilih (select), tamat (end)}}
+
+### Reserved: no meaning yet, any use is a parse error
+{{reserved_keywords}}
 
 ## Effects (lowest to highest, with lattice level)
 

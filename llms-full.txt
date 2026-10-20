@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,578 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,587 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
@@ -129,17 +129,23 @@ koreografi Pembelian {
 
 ## Keywords
 
+Only keywords that mean something are listed. Their elaborations, and the
+status of every other keyword, are in docs/spec/CORE_MAPPING.md.
+
 ### Core
 fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
-selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
-sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)
+selagi (while), ulang (loop), putus (break), lanjut (continue), pulang (return),
+padan (match), awam (pub), modul (mod), guna (use), luaran (extern)
 
 ### Security
-rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
-tercemar (tainted), bersihkan (sanitize)
+sulit (classify), dedah (declassify), bukti (prove)
+
+Security types are capitalized type names, not keywords: `Rahsia<T>`,
+`Tercemar<T, Src>`, `MasaTetap<T>`, `Sifar<T>` (see the type table in
+llms-full.txt).
 
 ### Effects
-kesan (effect), bersih (pure), laku (perform), kendali (handle)
+kesan (effect), laku (perform), kendali (handle)
 
 ### Linearity
 sekali (linear), paling (affine), mesti (relevant)
@@ -147,13 +153,16 @@ sekali (linear), paling (affine), mesti (relevant)
 ### JALINAN (Distributed Computing)
 pelaku (actor), lahir (spawn), hantar (send), terima (recv),
 koreografi (choreography), peranan (role), keadaan (state),
-penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)
+gabung (merge), cincang (hash), sahkan (verify)
 
 ### Capabilities
-keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)
+perlukan (require), beri (grant)
 
-### Session Types
-sesi (session), pilih (select), cabang (branch), tamat (end)
+### Choreography steps (inside `koreografi`)
+pilih (select), tamat (end)
+
+### Reserved: no meaning yet, any use is a parse error
+`tetap`, `statik`, `kesatuan`, `sifat`, `laksana`, `dimana`, `sebagai`, `diri`, `Diri`, `induk`, `peti`, `tak_segerak`, `tunggu`, `bahaya`, `sambung`, `batal`, `terbuka`, `tercemar`, `bersihkan`, `ialah`, `bersih`, `pinjam`, `salin`, `klon`, `jangka`, `dan`, `atau`, `sesi`, `cabang`, `tarik_balik`, `atom`, `pagar`, `peroleh`, `lepas`, `turutan_ketat`, `santai`, `peroleh_lepas`, `hasil_darab`, `masa_tetap`, `selamat_spekulasi`, `kosongkan`, `penyelia`, `susun`, `gambar`, `mudahcapai`, `konsensus`, `mudarabah`, `musharakah`, `sukuk`, `takaful`, `wakaf`, `tathir`
 
 ## Effects (lowest to highest, with lattice level)
 
@@ -189,140 +198,140 @@ riinac version  # Print the compiler version (also --version, -V)
 
 ## All keywords (132, from riina-lexer)
 
-| Token | Spellings |
-|---|---|
-| `KwAbort` | `abort`, `batal` |
-| `KwAccessible` | `accessible`, `mudahcapai` |
-| `KwAcqRel` | `acqrel`, `peroleh_lepas` |
-| `KwAcquire` | `acquire`, `peroleh` |
-| `KwActor` | `actor`, `pelaku` |
-| `KwAnd` | `and`, `dan` |
-| `KwAs` | `as`, `sebagai` |
-| `KwAsync` | `async`, `tak_segerak` |
-| `KwAtomic` | `atomic`, `atom` |
-| `KwAwait` | `await`, `tunggu` |
-| `KwBorrow` | `borrow`, `pinjam` |
-| `KwBranch` | `branch`, `cabang` |
-| `KwBreak` | `break`, `putus` |
-| `KwButton` | `button`, `butang` |
-| `KwCapability` | `capability`, `keupayaan` |
-| `KwChannel` | `channel`, `saluran` |
-| `KwChoreography` | `choreography`, `koreografi` |
-| `KwClassify` | `classify`, `sulit` |
-| `KwClone` | `clone`, `klon` |
-| `KwColor` | `color`, `warna` |
-| `KwColumn` | `column`, `lajur` |
-| `KwCombined` | `combined`, `gabungan` |
-| `KwConsensus` | `consensus`, `konsensus` |
-| `KwConst` | `const`, `tetap` |
-| `KwContentHash` | `content_hash`, `cincang` |
-| `KwContinue` | `continue`, `lanjut` |
-| `KwContrast` | `contrast`, `kontras` |
-| `KwCopy` | `copy`, `salin` |
-| `KwCrate` | `crate`, `peti` |
-| `KwCt` | `ct`, `masa_tetap` |
-| `KwDeclassify` | `declassify`, `dedah` |
-| `KwDisplay` | `display`, `paparan` |
-| `KwEffect` | `effect`, `kesan` |
-| `KwElse` | `else`, `lain` |
-| `KwEnd` | `end`, `tamat` |
-| `KwEnum` | `enum`, `pilihan` |
-| `KwErr` | `Err`, `Gagal`, `Ralat` |
-| `KwExpect` | `expect`, `jangkakan` |
-| `KwExtern` | `extern`, `luaran` |
-| `KwFence` | `fence`, `pagar` |
-| `KwFn` | `fn`, `fungsi` |
-| `KwFontSize` | `font_size`, `saiz_fon` |
-| `KwFor` | `for`, `untuk` |
-| `KwFst` | `fst`, `pertama` |
-| `KwGrant` | `grant`, `beri` |
-| `KwGuard` | `guard`, `pastikan` |
-| `KwHandle` | `handle`, `kendali` |
-| `KwIf` | `if`, `kalau` |
-| `KwImage` | `image`, `gambar` |
-| `KwImpl` | `impl`, `laksana` |
-| `KwIn` | `in`, `dalam` |
-| `KwInl` | `inl` |
-| `KwInput` | `input`, `masukan` |
-| `KwInr` | `inr` |
-| `KwIs` | `is`, `ialah` |
-| `KwLayout` | `layout`, `susun` |
-| `KwLet` | `let`, `biar` |
-| `KwLevel` | `level`, `tahap` |
-| `KwLifetime` | `lifetime`, `jangka` |
-| `KwLoop` | `loop`, `ulang` |
-| `KwMatch` | `match`, `padan` |
-| `KwMerge` | `merge`, `gabung` |
-| `KwMesti` | `relevant`, `mesti` |
-| `KwMod` | `mod`, `modul` |
-| `KwMove` | `move`, `pindah` |
-| `KwMudarabah` | `mudarabah` |
-| `KwMusharakah` | `musharakah` |
-| `KwMut` | `mut`, `ubah` |
-| `KwNone` | `None`, `Tiada`, `Tidak` |
-| `KwNot` | `not`, `bukan` |
-| `KwOk` | `Ok`, `Jadi`, `Berjaya` |
-| `KwOr` | `or`, `atau` |
-| `KwPadding` | `padding`, `pelapik` |
-| `KwPaling` | `affine`, `paling` |
-| `KwPerform` | `perform`, `laku` |
-| `KwPolicy` | `policy`, `dasar` |
-| `KwProduct` | `product`, `hasil_darab` |
-| `KwProve` | `prove`, `bukti` |
-| `KwPub` | `pub`, `awam` |
-| `KwPublic` | `public`, `terbuka` |
-| `KwPure` | `pure`, `bersih` |
-| `KwPurify` | `purify`, `tathir` |
-| `KwRecv` | `recv`, `terima` |
-| `KwRef` | `ref`, `ruj` |
-| `KwRelaxed` | `relaxed`, `santai` |
-| `KwRelease` | `release`, `lepas` |
-| `KwRequire` | `require`, `perlukan` |
-| `KwResume` | `resume`, `sambung` |
-| `KwReturn` | `return`, `pulang` |
-| `KwRevoke` | `revoke`, `tarik_balik` |
-| `KwRole` | `role`, `peranan` |
-| `KwRow` | `row`, `baris` |
-| `KwSafe` | `safe`, `selamat` |
-| `KwSanitize` | `sanitize`, `bersihkan` |
-| `KwSecret` | `secret`, `rahsia` |
-| `KwSekali` | `linear`, `sekali` |
-| `KwSelect` | `select`, `pilih` |
-| `KwSelfType` | `Self`, `Diri` |
-| `KwSelfValue` | `self`, `diri` |
-| `KwSend` | `send`, `hantar` |
-| `KwSeqCst` | `seqcst`, `turutan_ketat` |
-| `KwSession` | `session`, `sesi` |
-| `KwShariahCompliant` | `shariah_compliant`, `patuh_syariah` |
-| `KwSmartContract` | `smart_contract`, `kontrak_pintar` |
-| `KwSnd` | `snd`, `kedua` |
-| `KwSome` | `Some`, `Ada` |
-| `KwSpawn` | `spawn`, `lahir` |
-| `KwSpeculationSafe` | `speculation_safe`, `selamat_spekulasi` |
-| `KwState` | `state`, `keadaan` |
-| `KwStatic` | `static`, `statik` |
-| `KwStruct` | `struct`, `bentuk`, `struktur` |
-| `KwStyle` | `style`, `gaya` |
-| `KwSukuk` | `sukuk` |
-| `KwSuper` | `super`, `induk` |
-| `KwSupervisor` | `supervisor`, `penyelia` |
-| `KwTainted` | `tainted`, `tercemar` |
-| `KwTakaful` | `takaful` |
-| `KwTest` | `test`, `ujian` |
-| `KwText_` | `text`, `tulisan` |
-| `KwToken` | `token` |
-| `KwTrait` | `trait`, `sifat` |
-| `KwType` | `type`, `jenis` |
-| `KwUnion` | `union`, `kesatuan` |
-| `KwUnsafe` | `unsafe`, `bahaya` |
-| `KwUse` | `use`, `guna` |
-| `KwVerify` | `verify`, `sahkan` |
-| `KwWakaf` | `wakaf` |
-| `KwWhere` | `where`, `dimana` |
-| `KwWhile` | `while`, `selagi` |
-| `KwWith` | `with`, `dengan` |
-| `KwZakat` | `zakat` |
-| `KwZeroize` | `zeroize`, `kosongkan` |
+| Token | Spellings | Kind |
+|---|---|---|
+| `KwAbort` | `abort`, `batal` | reserved |
+| `KwAccessible` | `accessible`, `mudahcapai` | reserved |
+| `KwAcqRel` | `acqrel`, `peroleh_lepas` | reserved |
+| `KwAcquire` | `acquire`, `peroleh` | reserved |
+| `KwActor` | `actor`, `pelaku` | construct |
+| `KwAnd` | `and`, `dan` | reserved |
+| `KwAs` | `as`, `sebagai` | reserved |
+| `KwAsync` | `async`, `tak_segerak` | reserved |
+| `KwAtomic` | `atomic`, `atom` | reserved |
+| `KwAwait` | `await`, `tunggu` | reserved |
+| `KwBorrow` | `borrow`, `pinjam` | reserved |
+| `KwBranch` | `branch`, `cabang` | reserved |
+| `KwBreak` | `break`, `putus` | construct |
+| `KwButton` | `button`, `butang` | construct |
+| `KwCapability` | `capability`, `keupayaan` | soft |
+| `KwChannel` | `channel`, `saluran` | soft |
+| `KwChoreography` | `choreography`, `koreografi` | construct |
+| `KwClassify` | `classify`, `sulit` | construct |
+| `KwClone` | `clone`, `klon` | reserved |
+| `KwColor` | `color`, `warna` | construct |
+| `KwColumn` | `column`, `lajur` | construct |
+| `KwCombined` | `combined`, `gabungan` | soft |
+| `KwConsensus` | `consensus`, `konsensus` | reserved |
+| `KwConst` | `const`, `tetap` | reserved |
+| `KwContentHash` | `content_hash`, `cincang` | construct |
+| `KwContinue` | `continue`, `lanjut` | construct |
+| `KwContrast` | `contrast`, `kontras` | construct |
+| `KwCopy` | `copy`, `salin` | reserved |
+| `KwCrate` | `crate`, `peti` | reserved |
+| `KwCt` | `ct`, `masa_tetap` | reserved |
+| `KwDeclassify` | `declassify`, `dedah` | construct |
+| `KwDisplay` | `display`, `paparan` | construct |
+| `KwEffect` | `effect`, `kesan` | part |
+| `KwElse` | `else`, `lain` | part |
+| `KwEnd` | `end`, `tamat` | part |
+| `KwEnum` | `enum`, `pilihan` | skipped |
+| `KwErr` | `Err`, `Gagal`, `Ralat` | construct |
+| `KwExpect` | `expect`, `jangkakan` | construct |
+| `KwExtern` | `extern`, `luaran` | construct |
+| `KwFence` | `fence`, `pagar` | reserved |
+| `KwFn` | `fn`, `fungsi` | construct |
+| `KwFontSize` | `font_size`, `saiz_fon` | part |
+| `KwFor` | `for`, `untuk` | construct |
+| `KwFst` | `fst`, `pertama` | construct |
+| `KwGrant` | `grant`, `beri` | construct |
+| `KwGuard` | `guard`, `pastikan` | construct |
+| `KwHandle` | `handle`, `kendali` | construct |
+| `KwIf` | `if`, `kalau` | construct |
+| `KwImage` | `image`, `gambar` | reserved |
+| `KwImpl` | `impl`, `laksana` | reserved |
+| `KwIn` | `in`, `dalam` | part |
+| `KwInl` | `inl` | construct |
+| `KwInput` | `input`, `masukan` | soft |
+| `KwInr` | `inr` | construct |
+| `KwIs` | `is`, `ialah` | reserved |
+| `KwLayout` | `layout`, `susun` | reserved |
+| `KwLet` | `let`, `biar` | construct |
+| `KwLevel` | `level`, `tahap` | soft |
+| `KwLifetime` | `lifetime`, `jangka` | reserved |
+| `KwLoop` | `loop`, `ulang` | construct |
+| `KwMatch` | `match`, `padan` | construct |
+| `KwMerge` | `merge`, `gabung` | construct |
+| `KwMesti` | `relevant`, `mesti` | part |
+| `KwMod` | `mod`, `modul` | construct |
+| `KwMove` | `move`, `pindah` | part |
+| `KwMudarabah` | `mudarabah` | reserved |
+| `KwMusharakah` | `musharakah` | reserved |
+| `KwMut` | `mut`, `ubah` | part |
+| `KwNone` | `None`, `Tiada`, `Tidak` | construct |
+| `KwNot` | `not`, `bukan` | construct |
+| `KwOk` | `Ok`, `Jadi`, `Berjaya` | construct |
+| `KwOr` | `or`, `atau` | reserved |
+| `KwPadding` | `padding`, `pelapik` | part |
+| `KwPaling` | `affine`, `paling` | part |
+| `KwPerform` | `perform`, `laku` | construct |
+| `KwPolicy` | `policy`, `dasar` | soft |
+| `KwProduct` | `product`, `hasil_darab` | reserved |
+| `KwProve` | `prove`, `bukti` | construct |
+| `KwPub` | `pub`, `awam` | construct |
+| `KwPublic` | `public`, `terbuka` | reserved |
+| `KwPure` | `pure`, `bersih` | reserved |
+| `KwPurify` | `purify`, `tathir` | reserved |
+| `KwRecv` | `recv`, `terima` | construct |
+| `KwRef` | `ref`, `ruj` | construct |
+| `KwRelaxed` | `relaxed`, `santai` | reserved |
+| `KwRelease` | `release`, `lepas` | reserved |
+| `KwRequire` | `require`, `perlukan` | construct |
+| `KwResume` | `resume`, `sambung` | reserved |
+| `KwReturn` | `return`, `pulang` | construct |
+| `KwRevoke` | `revoke`, `tarik_balik` | reserved |
+| `KwRole` | `role`, `peranan` | part |
+| `KwRow` | `row`, `baris` | construct |
+| `KwSafe` | `safe`, `selamat` | soft |
+| `KwSanitize` | `sanitize`, `bersihkan` | reserved |
+| `KwSecret` | `secret`, `rahsia` | soft |
+| `KwSekali` | `linear`, `sekali` | part |
+| `KwSelect` | `select`, `pilih` | part |
+| `KwSelfType` | `Self`, `Diri` | reserved |
+| `KwSelfValue` | `self`, `diri` | reserved |
+| `KwSend` | `send`, `hantar` | construct |
+| `KwSeqCst` | `seqcst`, `turutan_ketat` | reserved |
+| `KwSession` | `session`, `sesi` | reserved |
+| `KwShariahCompliant` | `shariah_compliant`, `patuh_syariah` | construct |
+| `KwSmartContract` | `smart_contract`, `kontrak_pintar` | construct |
+| `KwSnd` | `snd`, `kedua` | construct |
+| `KwSome` | `Some`, `Ada` | construct |
+| `KwSpawn` | `spawn`, `lahir` | construct |
+| `KwSpeculationSafe` | `speculation_safe`, `selamat_spekulasi` | reserved |
+| `KwState` | `state`, `keadaan` | part |
+| `KwStatic` | `static`, `statik` | reserved |
+| `KwStruct` | `struct`, `bentuk`, `struktur` | skipped |
+| `KwStyle` | `style`, `gaya` | construct |
+| `KwSukuk` | `sukuk` | reserved |
+| `KwSuper` | `super`, `induk` | reserved |
+| `KwSupervisor` | `supervisor`, `penyelia` | reserved |
+| `KwTainted` | `tainted`, `tercemar` | reserved |
+| `KwTakaful` | `takaful` | reserved |
+| `KwTest` | `test`, `ujian` | construct |
+| `KwText_` | `text`, `tulisan` | construct |
+| `KwToken` | `token` | construct |
+| `KwTrait` | `trait`, `sifat` | reserved |
+| `KwType` | `type`, `jenis` | skipped |
+| `KwUnion` | `union`, `kesatuan` | reserved |
+| `KwUnsafe` | `unsafe`, `bahaya` | reserved |
+| `KwUse` | `use`, `guna` | construct |
+| `KwVerify` | `verify`, `sahkan` | construct |
+| `KwWakaf` | `wakaf` | reserved |
+| `KwWhere` | `where`, `dimana` | reserved |
+| `KwWhile` | `while`, `selagi` | construct |
+| `KwWith` | `with`, `dengan` | part |
+| `KwZakat` | `zakat` | construct |
+| `KwZeroize` | `zeroize`, `kosongkan` | reserved |
 
 ## Types (from riina-parser)
 

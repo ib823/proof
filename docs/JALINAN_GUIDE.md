@@ -90,7 +90,7 @@ fungsi semak() -> Benar kesan Kripto {
 
 ## CRDTs
 
-`gabung` is the CRDT merge builtin, and its laws (commutative, associative,
+`gabung` is the CRDT merge form, and its laws (commutative, associative,
 idempotent) are proven in Coq for the model's counters. **It cannot be used from
 a program yet:** no source syntax produces a CRDT value, so
 `07_EXAMPLES/08_jalinan/crdt_merge.rii` fails `riinac check` with

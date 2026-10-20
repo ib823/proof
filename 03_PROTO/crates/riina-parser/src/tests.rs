@@ -4493,6 +4493,61 @@ fn capitalized_function_name_is_rejected() {
         .expect("a lowercase function must still parse");
 }
 
+/// Integer literals keep their value in every base, and a literal with no
+/// `u64` value is an error (REQ-97, mandate R3). Each of these used to become
+/// `0` through `unwrap_or(0)`: `0xFF` evaluated to 0, `99999999999999999999`
+/// to 0, and the pattern `1_000` matched 0, so `padan 1000` took another arm.
+#[test]
+fn test_integer_literals_keep_their_value_in_every_base() {
+    for (src, want) in [
+        ("0xFF", 255u64),
+        ("0x_ff", 255),
+        ("0o17", 15),
+        ("0b1010_1010", 170),
+        ("1_000", 1000),
+        ("18446744073709551615", u64::MAX),
+    ] {
+        let e = Parser::new(src).parse_expr().unwrap_or_else(|e| panic!("{src}: {e:?}"));
+        assert_eq!(e, Expr::Int(want), "{src}");
+    }
+}
+
+#[test]
+fn test_an_integer_literal_without_a_value_is_an_error_not_zero() {
+    for (src, reason) in [
+        ("18446744073709551616", "too large"),
+        ("0xFFFFFFFFFFFFFFFFF", "too large"),
+        ("0b12", "not valid in its base"),
+        ("0o9", "not valid in its base"),
+        ("0x", "no digits"),
+    ] {
+        let err = Parser::new(src)
+            .parse_expr()
+            .expect_err(&format!("{src} must not parse"));
+        assert!(
+            matches!(err.kind, ParseErrorKind::InvalidIntLiteral { ref literal, .. } if literal == src),
+            "{src}: {:?}",
+            err.kind
+        );
+        assert_eq!(err.kind.error_code(), "P0016", "{src}");
+        assert!(err.kind.to_string().contains(reason), "{src}: {}", err.kind);
+        assert_eq!(&src[err.span.start..err.span.end], src, "caret must sit on the literal");
+    }
+}
+
+#[test]
+fn test_integer_pattern_with_separators_matches_its_value() {
+    let src = "padan 1000 { 1_000 -> 1, _ -> 2 }";
+    let e = Parser::new(src).parse_expr().expect("parses");
+    let text = format!("{e:?}");
+    assert!(text.contains("Int(1000)"), "the pattern must test 1000: {text}");
+    assert!(!text.contains("Int(0)"), "the pattern must not become 0: {text}");
+    let err = Parser::new("padan 1 { 0b2 -> 1, _ -> 2 }")
+        .parse_expr()
+        .expect_err("a bad pattern literal must not parse");
+    assert_eq!(err.kind.error_code(), "P0016");
+}
+
 /// No floating point by design (owner ruling D8, REQ-105): a float literal is
 /// a dedicated error AT the literal, naming the fixed-point alternatives. It
 /// used to be `Unexpected token: LiteralFloat("1.5", None)` with a span on the

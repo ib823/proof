@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,578 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,587 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
@@ -129,17 +129,23 @@ koreografi Pembelian {
 
 ## Keywords
 
+Only keywords that mean something are listed. Their elaborations, and the
+status of every other keyword, are in docs/spec/CORE_MAPPING.md.
+
 ### Core
 fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
-selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
-sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)
+selagi (while), ulang (loop), putus (break), lanjut (continue), pulang (return),
+padan (match), awam (pub), modul (mod), guna (use), luaran (extern)
 
 ### Security
-rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
-tercemar (tainted), bersihkan (sanitize)
+sulit (classify), dedah (declassify), bukti (prove)
+
+Security types are capitalized type names, not keywords: `Rahsia<T>`,
+`Tercemar<T, Src>`, `MasaTetap<T>`, `Sifar<T>` (see the type table in
+llms-full.txt).
 
 ### Effects
-kesan (effect), bersih (pure), laku (perform), kendali (handle)
+kesan (effect), laku (perform), kendali (handle)
 
 ### Linearity
 sekali (linear), paling (affine), mesti (relevant)
@@ -147,13 +153,16 @@ sekali (linear), paling (affine), mesti (relevant)
 ### JALINAN (Distributed Computing)
 pelaku (actor), lahir (spawn), hantar (send), terima (recv),
 koreografi (choreography), peranan (role), keadaan (state),
-penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)
+gabung (merge), cincang (hash), sahkan (verify)
 
 ### Capabilities
-keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)
+perlukan (require), beri (grant)
 
-### Session Types
-sesi (session), pilih (select), cabang (branch), tamat (end)
+### Choreography steps (inside `koreografi`)
+pilih (select), tamat (end)
+
+### Reserved: no meaning yet, any use is a parse error
+`tetap`, `statik`, `kesatuan`, `sifat`, `laksana`, `dimana`, `sebagai`, `diri`, `Diri`, `induk`, `peti`, `tak_segerak`, `tunggu`, `bahaya`, `sambung`, `batal`, `terbuka`, `tercemar`, `bersihkan`, `ialah`, `bersih`, `pinjam`, `salin`, `klon`, `jangka`, `dan`, `atau`, `sesi`, `cabang`, `tarik_balik`, `atom`, `pagar`, `peroleh`, `lepas`, `turutan_ketat`, `santai`, `peroleh_lepas`, `hasil_darab`, `masa_tetap`, `selamat_spekulasi`, `kosongkan`, `penyelia`, `susun`, `gambar`, `mudahcapai`, `konsensus`, `mudarabah`, `musharakah`, `sukuk`, `takaful`, `wakaf`, `tathir`
 
 ## Effects (lowest to highest, with lattice level)
 

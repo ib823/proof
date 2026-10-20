@@ -65,6 +65,11 @@ pub enum ParseErrorKind {
     /// bare `Unexpected token: LiteralFloat("1.5", None)` pointing at the
     /// token BEFORE the literal.
     FloatLiteral(String),
+    /// An integer literal with no `u64` value: a bad digit for its base
+    /// (`0b12`), no digits (`0x`), or too large. Each used to become `0`
+    /// through `unwrap_or(0)`: `0xFF` evaluated to 0, a too-large literal to
+    /// 0, and the pattern `1_000` matched 0 (REQ-97, mandate R3).
+    InvalidIntLiteral { literal: String, reason: &'static str },
     /// `modul Name { … }` with a CAPITALIZED name (REQ-82).
     ///
     /// The declaration and the call site disagreed, silently. A `modul Masa`
@@ -138,6 +143,9 @@ impl fmt::Display for ParseErrorKind {
                 "Floating point is not supported in RIINA (`{lit}`); use perpuluhan(\"{lit}\") \
                  for an exact decimal or wang(\"{lit}\") for money"
             ),
+            ParseErrorKind::InvalidIntLiteral { literal, reason } => {
+                write!(f, "Invalid integer literal `{literal}`: {reason}")
+            }
             ParseErrorKind::Lex(e) => write!(f, "{e}"),
         }
     }
@@ -168,6 +176,7 @@ impl ParseErrorKind {
             ParseErrorKind::CapitalizedFunctionName(_) => "P0013",
             ParseErrorKind::ProgramTooDeep { .. } => "P0014",
             ParseErrorKind::FloatLiteral(_) => "P0015",
+            ParseErrorKind::InvalidIntLiteral { .. } => "P0016",
             ParseErrorKind::Lex(e) => e.error_code(),
         }
     }
@@ -219,6 +228,11 @@ impl ParseErrorKind {
                      (exact decimal), `wang(\"{lit}\")` (money, fixed scale) or a scaled \
                      integer (`Nombor`)"
                 )
+            }
+            ParseErrorKind::InvalidIntLiteral { .. } => {
+                "Integer literals are decimal (`255`, `1_000`), hexadecimal (`0xFF`), octal \
+                 (`0o377`) or binary (`0b1111_1111`), and must fit in 64 bits"
+                    .to_string()
             }
             ParseErrorKind::ProgramTooDeep { limit, .. } => {
                 format!("Every statement in a block, every operator in a chain like `a + b + …`, every `lain kalau` and every top-level declaration adds a level. Split very long blocks or expressions into smaller functions so the program stays under {limit} levels")
@@ -489,6 +503,30 @@ struct MatchArm {
     pattern: Pattern,
     guard: Option<Expr>,
     body: Expr,
+}
+
+/// The value of an integer literal token: digit separators stripped, and a
+/// `0x`/`0o`/`0b` prefix read in its base. A literal with no `u64` value is an
+/// error, never 0.
+fn int_literal_value(literal: &str) -> Result<u64, ParseErrorKind> {
+    let digits: String = literal.chars().filter(|c| *c != '_').collect();
+    let (radix, body) = match digits.get(..2) {
+        Some("0x") => (16, &digits[2..]),
+        Some("0o") => (8, &digits[2..]),
+        Some("0b") => (2, &digits[2..]),
+        _ => (10, digits.as_str()),
+    };
+    let fail = |reason| ParseErrorKind::InvalidIntLiteral {
+        literal: literal.to_string(),
+        reason,
+    };
+    if body.is_empty() {
+        return Err(fail("no digits"));
+    }
+    if !body.chars().all(|c| c.is_digit(radix)) {
+        return Err(fail("a digit is not valid in its base"));
+    }
+    u64::from_str_radix(body, radix).map_err(|_| fail("too large for 64 bits"))
 }
 
 /// Map a lexed integer width suffix (`u8`..`u64`, `i8`..`i64`) to its
@@ -2579,16 +2617,12 @@ impl<'a> Parser<'a> {
             }
             Some(TokenKind::LiteralInt(s, suffix)) => {
                 self.next();
-                // Strip digit separators (`1_000`). When a width suffix is present
-                // the lexer guarantees a decimal magnitude and has already
-                // range-checked it, so a sized literal becomes `Expr::IntN`;
-                // otherwise it stays the default `Expr::Int` (`Ty::Int`).
-                let value: u64 = s
-                    .chars()
-                    .filter(|c| *c != '_')
-                    .collect::<String>()
-                    .parse()
-                    .unwrap_or(0);
+                let span = self.current_span;
+                // When a width suffix is present the lexer guarantees a decimal
+                // magnitude and has already range-checked it, so a sized literal
+                // becomes `Expr::IntN`; otherwise it stays the default
+                // `Expr::Int` (`Ty::Int`).
+                let value = int_literal_value(&s).map_err(|kind| ParseError { kind, span })?;
                 match suffix.as_deref().and_then(int_suffix_to_width) {
                     Some((bits, signed)) => Ok(Expr::IntN {
                         value,
@@ -3047,7 +3081,9 @@ impl<'a> Parser<'a> {
             // Literal patterns.
             Some(TokenKind::LiteralInt(s, _)) => {
                 self.next();
-                Ok(Pattern::Int(s.parse().unwrap_or(0)))
+                let span = self.current_span;
+                let value = int_literal_value(&s).map_err(|kind| ParseError { kind, span })?;
+                Ok(Pattern::Int(value))
             }
             Some(TokenKind::LiteralBool(b)) => {
                 self.next();
