@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-20T06:56:25Z
-**Git SHA:** fe6ff72ee
+**Generated:** 2026-10-20T08:11:52Z
+**Git SHA:** 5c0ab4795
 **Mode:** full
 **Status:** PASS
 
@@ -10,8 +10,8 @@
 |-------|--------|---------|
 | Rust Tests | PASS | 3569 tests |
 | Clippy | PASS | 0 warnings |
-| _CoqProject Completeness | PASS | all 334 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 334 .vo files compiled in 192s; 0 warning(s) (budget 2) |
+| _CoqProject Completeness | PASS | all 335 .v files listed in _CoqProject |
+| Coq Compilation | PASS | 335 .vo files compiled in 190s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
@@ -24,7 +24,7 @@
 | Isabelle sorry/oops | WARN | no Isabelle sources: the generated corpus was archived out of main on 2026-10-20 (owner ruling D6; preserved at commit fd23fbdb8). Nothing is verified in this lane |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | PASS | 0 admit in 1 files (0 lemmas) |
-| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 3 files (15 theorems) |
 | Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 7s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 3 files (25 assertions) |
@@ -33,6 +33,6 @@
 | Kani Scan | PASS | 3 files (25 harnesses) |
 | TV Scan | PASS | 2 files (34 validations) |
 | Prover Corpus Inventory (raw counts, not verification) | PASS | Raw declaration counts of the non-Coq lanes: internal, NOT summed, not proofs (Coq's three published numbers are in the Metrics Accuracy row). Lean: 0 | Isabelle: 0 | F*: 0 | TLA+: 15 | Alloy: 25 | SMT: 149 | Verus: 4 | Kani: 25 | TV: 34 |
-| Transpiler Staleness | PASS | all checked prover files up-to-date with Coq sources (checked: SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Alloy, Verus, Kani, TV) |
-| Metrics Accuracy | PASS | metrics.json matches live counts (Coq: 1679 core / 9719 model / 1421 excluded Qed, partition checked; Lean=0, Isabelle=0, Admitted=0, Axioms=0) |
+| Transpiler Staleness | WARN | 1 prover(s) may be stale: SMT — re-check the hand-written lane files against the Coq change with the lane's own gate (scripts/verify-smt.sh for SMT); do NOT run the generate-*.py transpilers, whose output was archived under ruling D6 (checked: SMT; skipped generated/non-compiled: Lean, Isabelle, F*, TLA+, Alloy, Verus, Kani, TV) |
+| Metrics Accuracy | PASS | metrics.json matches live counts (Coq: 1679 core / 9719 model / 1443 excluded Qed, partition checked; Lean=0, Isabelle=0, Admitted=0, Axioms=0) |
 | Primary Verifier (Coq) Present | PASS | Coq/Rocq prover available at /root/.opam/rocq/bin/rocq |
