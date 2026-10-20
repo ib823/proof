@@ -4967,7 +4967,7 @@ impl WasmBackend {
                         }
                     }
                 }
-                Some(Terminator::Handle { .. }) | None => return Ok(None),
+                None => return Ok(None),
             }
         }
     }
@@ -6710,41 +6710,26 @@ impl WasmBackend {
                 // Capability instructions are compile-time checks; emit unit at runtime
                 wasm_i64c(code, 0);
             }
-            Instruction::FFICall { name, args } => {
-                // FFI calls are routed to WASM imports.
-                // Push args, then call named import (not yet in import table — stub)
-                for arg in args {
-                    Self::emit_local_get(arg, ctx.var_map, code);
-                }
-                let _ = name;
-                wasm_i64c(code, 0);
-            }
-
-            // JALINAN Phase 6: simplified WASM actor support
+            // A declaration has no run-time value of its own: the interpreter's
+            // is `()` as well.
             Instruction::ActorDecl { .. } | Instruction::ChoreographyDecl { .. } => {
-                // Declaration: push 0 (unit)
                 wasm_i64c(code, 0);
             }
-            Instruction::ActorSpawn(_, _) => {
-                // Spawn: push actor ID (incrementing counter via global)
-                // For simplicity, just push 1 as the actor ref
-                wasm_i64c(code, 1);
+            // FAIL CLOSED (REQ-97), as for builtins (REQ-78). These arms used
+            // to push a constant: an FFI call and an actor receive returned 0,
+            // a spawn returned 1, and `cincang` returned 0, so `sahkan(cincang(d),
+            // e)` held for ANY `e` and tamper evidence was silently off.
+            Instruction::FFICall { name, .. } => {
+                return Err(Self::refuse(&format!("the foreign call `{name}`")));
             }
-            Instruction::ActorSend(_, _) => {
-                // Send: no-op in single-threaded WASM, push 0
-                wasm_i64c(code, 0);
-            }
-            Instruction::ActorRecv(_) => {
-                // Recv: return 0 (placeholder — no real mailbox in WASM)
-                wasm_i64c(code, 0);
+            Instruction::ActorSpawn(_, _) | Instruction::ActorSend(_, _) | Instruction::ActorRecv(_) => {
+                return Err(Self::refuse("actors (`lahir`, `hantar`, `terima`)"));
             }
             Instruction::CRDTMerge(_, _) => {
-                // CRDT merge: for integers, take max (simplified)
-                wasm_i64c(code, 0);
+                return Err(Self::refuse("CRDT merge (`gabung`)"));
             }
             Instruction::ContentHash(_) => {
-                // Content hash: return 0 (placeholder)
-                wasm_i64c(code, 0);
+                return Err(Self::refuse("content hashing (`cincang`, `sahkan`)"));
             }
         }
 
@@ -6763,6 +6748,16 @@ impl WasmBackend {
         }
 
         Ok(())
+    }
+
+    /// The error for a construct this backend cannot implement. A backend that
+    /// quietly disagrees with the others is worse than one that refuses.
+    fn refuse(what: &str) -> Error {
+        Error::InvalidOperation(format!(
+            "{what} is not implemented by the WASM backend. Refusing to emit a \
+             placeholder that would silently return a wrong value (master plan \
+             REQ-97); build for the native target instead."
+        ))
     }
 
     /// Generate JavaScript glue code for loading the WASM module.

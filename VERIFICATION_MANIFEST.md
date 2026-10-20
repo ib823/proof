@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-20T11:11:59Z
-**Git SHA:** 2cd43026e
+**Generated:** 2026-10-20T11:34:13Z
+**Git SHA:** e6857d443
 **Mode:** full
 **Status:** PASS
 
@@ -8,10 +8,10 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3587 tests |
+| Rust Tests | PASS | 3595 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 335 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 335 .vo files compiled in 198s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 335 .vo files compiled in 188s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |

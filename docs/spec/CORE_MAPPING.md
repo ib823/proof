@@ -484,7 +484,7 @@ and the test holds the website's keyword list to the same rule.
 | `KwTrait` | `sifat`, `trait` | reserved | |
 | `KwImpl` | `laksana`, `impl` | reserved | |
 | `KwWhere` | `dimana`, `where` | reserved | |
-| `KwMod` | `modul`, `mod` | construct | `modul m { fungsi f … }` defines `f` as the top-level `m_f`. Anything else inside the block is discarded (REQ-97) |
+| `KwMod` | `modul`, `mod` | construct | `modul m { fungsi f … }` defines `f` as the top-level `m_f`; `awam` before a `fungsi` is accepted. Any other item in the block is error P0018 (it used to be discarded) |
 | `KwPub` | `awam`, `pub` | construct | no node: marks the name exported from its module |
 | `KwUse` | `guna`, `use` | construct | `guna m;` imports the sibling file `m.rii`, whose names become `m_f`. A path of several segments (`guna std::teks;`) is ignored: builtins need no import |
 | `KwExtern` | `luaran`, `extern` | construct | `luaran "C" { fungsi f(x: A) -> R; }` is `Let(f, Lam(x, A, FFICall{f, [x], R}), rest)` |
@@ -509,8 +509,8 @@ and the test holds the website's keyword list to the same rule.
 | `KwAwait` | `tunggu`, `await` | reserved | |
 | `KwUnsafe` | `bahaya`, `unsafe` | reserved | |
 | `KwEffect` | `kesan`, `effect` | part | the effect clause of a `fungsi` signature and of a `Fn(…) -> R` type |
-| `KwPerform` | `laku`, `perform` | construct | `Perform(effect, e)` |
-| `KwHandle` | `kendali`, `handle` | construct | `kendali e dengan x => h` is `Handle(e, x, h)` |
+| `KwPerform` | `laku`, `perform` | construct | `Perform(effect, e)`: checks the capability, then yields the value of `e` (Coq ST_PerformValue) on every backend |
+| `KwHandle` | `kendali`, `handle` | construct | `kendali e dengan x => h` is `Handle(e, x, h)`: as in Coq (ST_HandleValue), `h` runs once with `x` bound to the value of `e`, on every backend; it does not intercept a `laku` |
 | `KwResume` | `sambung`, `resume` | reserved | |
 | `KwAbort` | `batal`, `abort` | reserved | |
 | `KwSecret` | `rahsia`, `secret` | soft | (the type `Rahsia<T>` is a capitalized type name, not this keyword) |
@@ -553,7 +553,7 @@ and the test holds the website's keyword list to the same rule.
 | `KwSession` | `sesi`, `session` | reserved | |
 | `KwSend` | `hantar`, `send` | construct | `hantar(a, m)` is `ActorSend(a, m)`; in `koreografi`, `A -> B: hantar T;` |
 | `KwRecv` | `terima`, `recv` | construct | `ActorRecv(a)` |
-| `KwSelect` | `pilih`, `select` | part | in `koreografi`: `pilih { … }` is `SessionType::Select` of exactly two branches |
+| `KwSelect` | `pilih`, `select` | part | in `koreografi`: `pilih { … }` is `SessionType::Select` of exactly two branches, and the steps after it follow each branch |
 | `KwBranch` | `cabang`, `branch` | reserved | |
 | `KwEnd` | `tamat`, `end` | part | in `koreografi`: `SessionType::End` |
 | `KwCapability` | `keupayaan`, `capability` | soft | (the type `Keupayaan<K>` is a capitalized type name) |
@@ -570,8 +570,8 @@ and the test holds the website's keyword list to the same rule.
 | `KwSpeculationSafe` | `selamat_spekulasi`, `speculation_safe` | reserved | |
 | `KwCombined` | `gabungan`, `combined` | soft | |
 | `KwZeroize` | `kosongkan`, `zeroize` | reserved | (the type `Sifar<T>` is a capitalized type name) |
-| `KwChoreography` | `koreografi`, `choreography` | construct | `ChoreographyBlock { roles, protocol }`, where `protocol` is the local session type of the first role. A message type other than `Nombor`, `Benar`, `Teks` or `Unit` reads as `Ty::Any`, and steps after a `pilih` are discarded (REQ-97) |
-| `KwActor` | `pelaku`, `actor` | construct | `ActorDecl` with message type `Ty::Any`, an initial state of the state type's default, and the handler `Lam(p, Any, body)` |
+| `KwChoreography` | `koreografi`, `choreography` | construct | `ChoreographyBlock { roles, protocol }`, where `protocol` is the local session type of the first role. A message type is read as any type annotation is |
+| `KwActor` | `pelaku`, `actor` | construct | `ActorDecl` with message type `Ty::Any`, an initial state of the state type's default, and the handler `Lam(p, Any, body)`. More than one `kendalikan` is error P0019 |
 | `KwRole` | `peranan`, `role` | part | in `koreografi` |
 | `KwState` | `keadaan`, `state` | part | in `pelaku` (`keadaan: T`); elsewhere a name |
 | `KwSupervisor` | `penyelia`, `supervisor` | reserved | |
@@ -623,7 +623,7 @@ and the test holds the website's keyword list to the same rule.
 | `f(a, b)`, `f a b` | `App(App(f, a), b)`; `f()` is `App(f, Unit)` |
 | builtin call `cetak(x)` | `App(Var("cetak"), x)`: a builtin is a name, resolved later (see Builtins) |
 | `Nama(a, b)` (capitalized) | `Pair(String("Nama"), Pair(a, b))`, a tagged tuple |
-| `a::b`, `std::x` | `Var("a_b")`, `Var("x")`. With three or more segments only the first and last are kept: `a::b::c` is `a_c` (REQ-97) |
+| `a::b`, `std::x` | `Var("a_b")`, `Var("x")`; `Ns::f` with a capitalized namespace is the builtin `f`. A path of three or more segments is error P0017 (it used to keep only the first and last) |
 | `+ - * / %`, `== != < <= > >=`, `&&`, `\|\|` | `BinOp`; `+` also concatenates strings |
 | `!e` | `Deref(e)` (dereference, not negation; negation is `bukan`) |
 | unary `-e` | no production: write `0 - e` |

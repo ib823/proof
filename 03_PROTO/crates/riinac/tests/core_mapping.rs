@@ -404,7 +404,7 @@ fn the_stated_elaborations_are_what_the_parser_produces() {
         ("x |> f", r#"App(Var("f"), Var("x"))"#),
         ("1..5", r#"App(Var("julat"), Pair(Int(1), Int(5)))"#),
         ("Titik(1, 2)", r#"Pair(String("Titik"), Pair(Int(1), Int(2)))"#),
-        ("a::b::c", r#"Var("a_c")"#),
+        ("a::b", r#"Var("a_b")"#),
         ("dedah(a, b)", r#"Declassify(Var("a"), Var("b"))"#),
         ("lahir P(0)", r#"Spawn(Var("P"), Int(0))"#),
         ("token::pindah(a, b, 5)", r#"TokenTransfer { from: Var("a"), to: Var("b"), amount: Int(5) }"#),

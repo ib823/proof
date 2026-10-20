@@ -28,9 +28,9 @@ package {package};
 /**
  * JNI bridge to RIINA native library.
  *
- * <p>All methods in this class call into verified RIINA code compiled
- * to native ARM64 via the C backend. Security properties (non-interference,
- * effect safety, type safety) are preserved by construction.</p>
+ * <p>All methods in this class call into RIINA code compiled to native
+ * ARM64 by the C backend. The compiler is not formally verified: the C
+ * backend is tested against the interpreter, not proven.</p>
  */
 public class {class_name} {{
 
@@ -44,14 +44,6 @@ public class {class_name} {{
      * @return The program's exit code (0 = success).
      */
     public static native int main();
-
-    /**
-     * Run RIINA verification on a source string.
-     *
-     * @param source The RIINA source code to verify.
-     * @return true if verification passes.
-     */
-    public static native boolean verify(String source);
 
     // ================================================================
     // Runtime support methods (called FROM native code)
@@ -98,8 +90,6 @@ extern "C" {{
 #endif
 
 JNIEXPORT jint JNICALL {jni_prefix}_main(JNIEnv *env, jclass clazz);
-
-JNIEXPORT jboolean JNICALL {jni_prefix}_verify(JNIEnv *env, jclass clazz, jstring source);
 
 #ifdef __cplusplus
 }}
@@ -169,19 +159,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {{
 // Type marshaling helpers
 // ================================================================
 
-/** Convert jstring to C string (caller must release). */
-static const char *jstring_to_cstr(JNIEnv *env, jstring str) {{
-    if (str == NULL) return NULL;
-    return (*env)->GetStringUTFChars(env, str, NULL);
-}}
-
-/** Release C string obtained from jstring_to_cstr. */
-static void release_cstr(JNIEnv *env, jstring str, const char *cstr) {{
-    if (cstr != NULL) {{
-        (*env)->ReleaseStringUTFChars(env, str, cstr);
-    }}
-}}
-
 /** Convert C string to jstring. */
 static jstring cstr_to_jstring(JNIEnv *env, const char *cstr) {{
     if (cstr == NULL) return NULL;
@@ -235,18 +212,6 @@ JNIEXPORT jint JNICALL {jni_prefix}_main(JNIEnv *env, jclass clazz) {{
     (void)clazz;
     g_env = env;
     jint result = (jint)riina_main();
-    g_env = NULL;
-    return result;
-}}
-
-JNIEXPORT jboolean JNICALL {jni_prefix}_verify(JNIEnv *env, jclass clazz, jstring source) {{
-    (void)clazz;
-    g_env = env;
-    const char *src = jstring_to_cstr(env, source);
-    // Verification stub — always returns true for now
-    (void)src;
-    jboolean result = JNI_TRUE;
-    release_cstr(env, source, src);
     g_env = NULL;
     return result;
 }}
@@ -327,9 +292,7 @@ mod tests {
         assert!(impl_c.contains("JNI_OnLoad"));
         assert!(impl_c.contains("riina_cetak"));
         assert!(impl_c.contains("riina_panic"));
-        assert!(impl_c.contains("jstring_to_cstr"));
         assert!(impl_c.contains("cstr_to_jstring"));
-        assert!(impl_c.contains("GetStringUTFChars"));
         assert!(impl_c.contains("NewStringUTF"));
     }
 
@@ -345,7 +308,22 @@ mod tests {
     fn test_jni_impl_has_correct_jni_prefix() {
         let impl_c = generate_jni_impl("my.pkg", "Bridge");
         assert!(impl_c.contains("Java_my_pkg_Bridge_main"));
-        assert!(impl_c.contains("Java_my_pkg_Bridge_verify"));
+    }
+
+    /// The bridge used to export `verify(String source)`, whose native body
+    /// ignored its argument and returned `JNI_TRUE`: an app calling it was told
+    /// any source verified. The library holds no compiler, so it cannot
+    /// verify anything, and the method is gone (REQ-97).
+    #[test]
+    fn test_no_verify_stub_and_no_proof_claim() {
+        let java = generate_jni_bridge("my.pkg", "Bridge");
+        let header = generate_jni_header("my.pkg", "Bridge");
+        let impl_c = generate_jni_impl("my.pkg", "Bridge");
+        for text in [&java, &header, &impl_c] {
+            assert!(!text.contains("verify"), "{text}");
+            assert!(!text.contains("JNI_TRUE"), "{text}");
+        }
+        assert!(!java.contains("by construction") && !java.contains("verified RIINA code"));
     }
 
     #[test]

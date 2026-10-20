@@ -44,7 +44,7 @@ that teaches formal verification concepts through hands-on coding in Bahasa Mela
 ### 7. Kesan — Effects
 - Effect lattice: `Bersih` through `Masa`
 - `laku` (perform) to trigger effects
-- `kendali` (handle) to intercept effects
+- `kendali` (handle) to run a handler on the result of a computation
 - Effect composition and subsumption
 
 ### 8. Jenis Linear — Linear Types
