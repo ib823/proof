@@ -22,10 +22,11 @@ other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
 D6) and are preserved at commit `fd23fbdb8`. What remains is hand-written. Never
 sum counts across lanes: they count different things.
 
-- Coq: 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed. Core = foundations,
-  type system, properties, effects, termination; model = domain, industry,
+- Coq: 1,679 core Qed, 9,719 model Qed, 1,421 excluded Qed. Core = foundations,
+  type system, properties, effects, termination and the compiler-linked
+  crypto policy; model = domain, industry,
   compliance, crypto and runtime models (facts about their own definitions, not
-  verified systems); excluded = vacuous patterns or test files. Never quote a
+  verified systems); excluded = vacuous patterns, examples, counterexamples or test files. Never quote a
   raw total.
   0 Admitted, 0 Abort, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface;
   none of the capstone theorems depends on them). 334 active .v files.
@@ -46,7 +47,7 @@ sum counts across lanes: they count different things.
   (quarantined until wired into CI).
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
-- Rust: 3,564 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,569 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is

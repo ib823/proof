@@ -45,7 +45,7 @@ fi
 add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
 
 # Parse values from metrics.json (use head -1 where fields repeat across sections)
-QED=$(grep -oP '"qedActive":\s*\K\d+' "$METRICS_FILE" | head -1)
+QED=$(grep -oP '"coqQedActive":\s*\K\d+' "$METRICS_FILE" | head -1)
 QED_COMMA=$(add_commas "$QED")
 # The three Coq numbers public text may quote (mandate S2.7, ruling D6). The raw
 # total above is kept for internal-only rules; public files get these.
@@ -115,8 +115,6 @@ echo "  Session:        $SESSION"
 echo ""
 
 # Parse quality tiers from metrics.json
-COQ_TIER1=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('quality',{}).get('coqTiers',{}).get('core',0))" 2>/dev/null || echo "0")
-COQ_TIER2=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('quality',{}).get('coqTiers',{}).get('domain',0))" 2>/dev/null || echo "0")
 LEAN_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('leanCompiled',False)).lower())" 2>/dev/null || echo "false")
 ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',False)).lower())" 2>/dev/null || echo "false")
 
@@ -129,7 +127,7 @@ ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); prin
 # hand-written artifacts, of which the REQ-67(a) SMT set is mechanized.
 # The Coq part quotes the three S2.7 numbers, never a raw total, and gives the
 # Parameter count next to "0 Axiom" (mandate section 5).
-BANNER="**Verification:** Coq ${CORE_COMMA} core Qed, ${MODEL_COMMA} model Qed, ${EXCLUDED_COMMA} excluded Qed (vacuous or test); 0 Admitted, ${AXIOMS} \`Axiom\`, ${PARAMETERS} \`Parameter\`s (trusted interface) — Coq is the only fully mechanized lane | ${RUST_TESTS} Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)"
+BANNER="**Verification:** Coq ${CORE_COMMA} core Qed, ${MODEL_COMMA} model Qed, ${EXCLUDED_COMMA} excluded Qed (vacuous, example, counterexample or test); 0 Admitted, ${AXIOMS} \`Axiom\`, ${PARAMETERS} \`Parameter\`s (trusted interface) — Coq is the only fully mechanized lane | ${RUST_TESTS} Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 

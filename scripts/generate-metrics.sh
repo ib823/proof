@@ -411,8 +411,8 @@ VACUITY_FINDINGS=$(cd "$ROOT_DIR" && python3 scripts/detect-vacuous-proofs.py --
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_findings"])') || {
     echo "ERROR: proof-vacuity scan failed" >&2; exit 1; }
 # The three published Coq numbers (mandate S2.7, ruling D6): core, model and
-# excluded. No raw Qed total is published on public surfaces; qedActive stays
-# in this file as the partition's checksum.
+# excluded. No raw Qed total is published on public surfaces; the raw count
+# stays in this file's `internal` block as the partition's checksum.
 COUNTING_JSON=$(python3 "$ROOT_DIR/scripts/coq-counting-policy.py" "$ROOT_DIR") || {
     echo "ERROR: Coq counting policy failed" >&2; exit 1; }
 read -r CORE_QED MODEL_QED EXCLUDED_QED COUNTED_QED < <(printf '%s' "$COUNTING_JSON" | python3 -c \
@@ -421,6 +421,25 @@ if [ "$COUNTED_QED" != "$QED_ACTIVE" ]; then
     echo "ERROR: counting policy partitions $COUNTED_QED Qed, but the active build has $QED_ACTIVE" >&2
     exit 1
 fi
+# Compliance profiles and rule counts, from riina-compliance itself: the slug of
+# each profile (lib.rs `slug`) and its rule count (rules.rs `rule_count`, which
+# the test `rule_count_matches_actual` pins to the real rule lists). Public
+# surfaces quote these numbers; scripts/check-doc-drift.sh checks them.
+COMPLIANCE_JSON=$(python3 - "$ROOT_DIR/03_PROTO/crates/riina-compliance/src" <<'PYCOMP'
+import json, re, sys
+src = sys.argv[1]
+lib = open(f"{src}/lib.rs", encoding="utf-8").read()
+rules = open(f"{src}/rules.rs", encoding="utf-8").read()
+slug_fn = lib.split("pub fn slug(self)", 1)[1].split("\n    }\n", 1)[0]
+slugs = dict(re.findall(r"Self::(\w+) => \"([a-z0-9-]+)\"", slug_fn))
+count_fn = rules.split("pub fn rule_count(", 1)[1].split("\n}\n", 1)[0]
+counts = dict((k, int(v)) for k, v in re.findall(r"ComplianceProfile::(\w+) => (\d+)", count_fn))
+if not slugs or set(slugs) != set(counts):
+    sys.exit("compliance: slug() and rule_count() disagree on the profile set")
+per = {slugs[k]: counts[k] for k in sorted(counts, key=lambda k: slugs[k])}
+print(json.dumps({"profiles": len(per), "rules": sum(per.values()), "perProfile": per}, sort_keys=True))
+PYCOMP
+) || { echo "ERROR: compliance count extraction failed" >&2; exit 1; }
 KERNEL_WEAKENING=$(python3 "$COQ_SCAN" --forbidden "$ROOT_DIR/02_FORMAL/coq" | awk -F'\t' '{s += $2} END {print s + 0}') || {
     echo "ERROR: Coq forbidden-construct scan failed" >&2; exit 1; }
 
@@ -1243,9 +1262,6 @@ cat > "$OUTPUT_FILE" << EOF
     "branch": "$GIT_BRANCH"
   },
   "proofs": {
-    "qedActive": $QED_ACTIVE,
-    "qedDeprecated": $QED_DEPRECATED,
-    "qedTotal": $((QED_ACTIVE + QED_DEPRECATED)),
     "admitted": $ADMITTED,
     "axioms": $AXIOMS,
     "assumptions": $ASSUMPTIONS,
@@ -1262,7 +1278,7 @@ cat > "$OUTPUT_FILE" << EOF
       "coreMechanizedQed": $CORE_QED,
       "modelMechanizedQedNonvacuous": $MODEL_QED,
       "excludedQed": $EXCLUDED_QED,
-      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py, every Example and Remark proof, and listed test files. The three add up to qedActive. Vacuity patterns are heuristics, so excluded is a lower bound; counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
+      "note": "The only Coq numbers to publish (mandate S2.7). core = Qed in foundations, type_system, properties, effects and termination, plus the compiler-link file crypto/AlgorithmPolicy.v; model = every other active file (domain, industry, compliance, crypto and runtime models: facts about their own definitions, not verified systems); excluded = proofs flagged by scripts/detect-vacuous-proofs.py, proofs resting on a premise the build refutes, counterexample proofs, every Example and Remark proof, and listed test files. The three add up to internal.coqQedActive. Vacuity patterns are heuristics, so excluded is a lower bound; the full counterexample triage is REQ-104. Computed by scripts/coq-counting-policy.py"
     }
   },
   "coq": {
@@ -1285,7 +1301,6 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "isabelle": {
     "lemmas": $ISABELLE_LEMMAS_PUBLIC,
-    "lemmasRaw": $ISABELLE_LEMMAS,
     "compiledTheories": $ISABELLE_COMPILED_THEORIES,
     "compiledLemmas": $ISABELLE_COMPILED_LEMMAS,
     "smokeBuildOk": $ISABELLE_SMOKE_BUILD_OK,
@@ -1300,8 +1315,6 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "fstar": {
     "lemmas": $FSTAR_LEMMAS_PUBLIC,
-    "lemmasRaw": $FSTAR_LEMMAS,
-    "lemmasRawNote": "Corpus-wide count of \`lemma_\`-named declarations; NOT all verified",
     "compiledLemmas": $FSTAR_COMPILED_LEMMAS,
     "smokeBuildOk": $FSTAR_SMOKE_BUILD_OK,
     "smokeVerified": "2026-06-01 (F* 2025.12.15): 'All verification conditions discharged successfully'",
@@ -1315,57 +1328,51 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "tlaplus": {
     "theorems": $TLAPLUS_THEOREMS_PUBLIC,
-    "theoremsRaw": $TLAPLUS_THEOREMS,
     "compiledTheorems": $TLAPLUS_COMPILED_THEOREMS,
     "smokeBuildOk": $TLAPLUS_SMOKE_BUILD_OK,
     "smokeVerified": "2026-06-01 (TLA2Tools): smoke check passed",
     "smokeSpec": "$(escape_json "$TLAPLUS_SMOKE_SPEC")",
-    "smokeNote": "theoremsRaw is the corpus-wide THEOREM count; only the smoke-spec theorems are TLC-checked",
+    "smokeNote": "Only the smoke-spec theorems are TLC-checked",
     "quarantined": $TLAPLUS_QUARANTINED,
     "files": $TLAPLUS_FILES,
     "prover": "TLA+"
   },
   "alloy": {
     "assertions": $ALLOY_ASSERTIONS_PUBLIC,
-    "assertionsRaw": $ALLOY_ASSERTIONS,
     "compiledAssertions": $ALLOY_COMPILED_ASSERTIONS,
     "smokeBuildOk": $ALLOY_SMOKE_BUILD_OK,
     "smokeVerified": "2026-06-01 (Alloy 6.2.0): smoke check passed",
     "smokeModel": "$(escape_json "$ALLOY_SMOKE_MODEL")",
-    "smokeNote": "assertionsRaw is the corpus-wide check count; only the smoke-model assertions are bounded-checked",
+    "smokeNote": "Only the smoke-model assertions are bounded-checked",
     "quarantined": $ALLOY_QUARANTINED,
     "files": $ALLOY_FILES,
     "prover": "Alloy 6"
   },
   "smt": {
     "assertions": $SMT_ASSERTIONS_PUBLIC,
-    "assertionsRaw": $SMT_ASSERTIONS,
     "compiledAssertions": 25,
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "The lane's claim is the REQ-67a scoped set (02_FORMAL/smt/SCOPED_SET.txt), checked by scripts/verify-smt.sh for exact unsat counts. assertionsRaw counts asserts in the remaining hand-written files; the generated corpus was archived 2026-10-20.",
+    "smokeNote": "The lane's claim is the REQ-67a scoped set (02_FORMAL/smt/SCOPED_SET.txt), checked by scripts/verify-smt.sh for exact unsat counts; the generated corpus was archived 2026-10-20.",
     "quarantined": $SMT_QUARANTINED,
     "files": $SMT_FILES,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
     "proofs": $VERUS_PROOFS_PUBLIC,
-    "proofsRaw": $VERUS_PROOFS,
     "quarantined": $VERUS_QUARANTINED,
     "files": $VERUS_FILES,
     "prover": "Verus"
   },
   "kani": {
     "harnesses": $KANI_HARNESSES_PUBLIC,
-    "harnessesRaw": $KANI_HARNESSES,
     "quarantined": $KANI_QUARANTINED,
     "files": $KANI_FILES,
     "prover": "Kani"
   },
   "tv": {
     "validations": $TV_VALIDATIONS_PUBLIC,
-    "validationsRaw": $TV_VALIDATIONS,
     "quarantined": $TV_QUARANTINED,
     "files": $TV_FILES,
     "prover": "Translation Validation"
@@ -1411,11 +1418,6 @@ cat > "$OUTPUT_FILE" << EOF
         "kaniGeneratedFiles": $KANI_GENERATED_BACKLOG,
         "tvGeneratedFiles": $TV_GENERATED_BACKLOG
       }
-    },
-    "coqTiers": {
-      "core": $COQ_TIER1_CORE,
-      "domain": $COQ_TIER2_DOMAIN,
-      "domainTrivial": $COQ_TRIVIAL
     }
   },
   "claimLevels": {
@@ -1442,6 +1444,24 @@ cat > "$OUTPUT_FILE" << EOF
     "crates": $RUST_CRATES
   },
   "examples": $EXAMPLE_FILES,
+  "compliance": $COMPLIANCE_JSON,
+  "internal": {
+    "note": "Inputs to the repository's own checks, not claims; never quote them on a public surface (mandate S2.7, REQ-119). A raw Qed total mixes proved, vacuous, example and counterexample proofs; a lane's raw count is declarations, not proofs.",
+    "coqQedActive": $QED_ACTIVE,
+    "coqQedDeprecated": $QED_DEPRECATED,
+    "coqQedTotal": $((QED_ACTIVE + QED_DEPRECATED)),
+    "coqTierCore": $COQ_TIER1_CORE,
+    "coqTierDomain": $COQ_TIER2_DOMAIN,
+    "coqTierDomainTrivial": $COQ_TRIVIAL,
+    "isabelleLemmasRaw": $ISABELLE_LEMMAS,
+    "fstarLemmasRaw": $FSTAR_LEMMAS,
+    "tlaplusTheoremsRaw": $TLAPLUS_THEOREMS,
+    "alloyAssertionsRaw": $ALLOY_ASSERTIONS,
+    "smtAssertionsRaw": $SMT_ASSERTIONS,
+    "verusProofsRaw": $VERUS_PROOFS,
+    "kaniHarnessesRaw": $KANI_HARNESSES,
+    "tvValidationsRaw": $TV_VALIDATIONS
+  },
   "status": {
     "build": "passing",
     "grade": "A",

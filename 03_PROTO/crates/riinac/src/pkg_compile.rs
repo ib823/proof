@@ -146,7 +146,7 @@ pub fn compile_package(
     std::fs::write(&tmp_c, &output.primary)
         .map_err(|e| format!("cannot write {}: {e}", tmp_c.display()))?;
 
-    let status = std::process::Command::new("cc")
+    let status = std::process::Command::new(crate::c_toolchain::C_COMPILER)
         .args(["-o", &binary.to_string_lossy(), &tmp_c.to_string_lossy()])
         .status();
     // Keep the emitted C on failure so the error is diagnosable; remove it on
@@ -163,6 +163,9 @@ pub fn compile_package(
             "cc exited with {s} (emitted C kept at {})",
             tmp_c.display()
         )),
-        Err(e) => Err(format!("failed to invoke cc: {e}")),
+        Err(e) => {
+            let path = std::env::var_os("PATH");
+            Err(crate::c_toolchain::invoke_error(&e, path.as_deref()))
+        }
     }
 }

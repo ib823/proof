@@ -1,6 +1,6 @@
 # Contributing to RIINA™
 
-**Verification:** Coq 1,685 core Qed, 9,725 model Qed, 1,409 excluded Qed (vacuous or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3564 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,421 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3569 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
@@ -33,8 +33,8 @@ cd 03_PROTO && cargo test --all && cd ..
 
 | Directory | What | Language |
 |-----------|------|---------|
-| `02_FORMAL/` | Formal proofs (Coq primary, Lean secondary, additional smoke lanes) | Coq/Lean/Isabelle + 7 more |
-| `03_PROTO/crates/` | Compiler (15 crates) | Rust |
+| `02_FORMAL/` | Formal proofs (Coq primary and the only fully mechanized lane; a scoped Z3 set; smoke artifacts) | Coq, Z3 |
+| `03_PROTO/crates/` | Compiler (18 crates) | Rust |
 | `04_SPECS/` | Language specifications | Markdown |
 | `05_TOOLING/` | Crypto primitives, build tools | Rust |
 | `07_EXAMPLES/` | Example `.rii` programs | RIINA |

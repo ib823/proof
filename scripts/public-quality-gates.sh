@@ -193,7 +193,7 @@ else
   HYGIENE_STATUS="FAIL"
   OVERALL="FAIL"
 fi
-HYGIENE_DETAIL="active_files=$active_files qed=$active_qed admitted=$active_admitted axioms=$active_axioms assumptions=$active_assumptions"
+HYGIENE_DETAIL="active_files=$active_files raw_qed_internal=$active_qed admitted=$active_admitted axioms=$active_axioms assumptions=$active_assumptions"
 
 # ---------------------------------------------------------------------------
 # 6) metrics.json alignment
@@ -209,7 +209,7 @@ if [ -f "$metrics_file" ]; then
   metrics_admitted="$(grep -m1 -E '"admitted"[[:space:]]*:[[:space:]]*[0-9]+' "$metrics_file" | sed -E 's/[^0-9]*([0-9]+).*/\1/' || true)"
   metrics_axioms="$(grep -m1 -E '"axioms"[[:space:]]*:[[:space:]]*[0-9]+' "$metrics_file" | sed -E 's/[^0-9]*([0-9]+).*/\1/' || true)"
   metrics_assumptions="$(grep -m1 -E '"assumptions"[[:space:]]*:[[:space:]]*[0-9]+' "$metrics_file" | sed -E 's/[^0-9]*([0-9]+).*/\1/' || true)"
-  metrics_qed="$(python3 -c "import json; print(json.load(open('$metrics_file'))['proofs']['qedActive'])" 2>/dev/null || echo "NA")"
+  metrics_qed="$(python3 -c "import json; print(json.load(open('$metrics_file'))['internal']['coqQedActive'])" 2>/dev/null || echo "NA")"
   metrics_active_files="$(python3 -c "import json; print(json.load(open('$metrics_file'))['coq']['filesActive'])" 2>/dev/null || echo "NA")"
 fi
 
@@ -223,7 +223,7 @@ else
   METRICS_STATUS="FAIL"
   OVERALL="FAIL"
 fi
-METRICS_DETAIL="metrics_qed=$metrics_qed metrics_active_files=$metrics_active_files metrics_admitted=$metrics_admitted metrics_axioms=$metrics_axioms metrics_assumptions=$metrics_assumptions"
+METRICS_DETAIL="metrics_raw_qed_internal=$metrics_qed metrics_active_files=$metrics_active_files metrics_admitted=$metrics_admitted metrics_axioms=$metrics_axioms metrics_assumptions=$metrics_assumptions"
 
 # ---------------------------------------------------------------------------
 # 7) VERSION has a matching tag

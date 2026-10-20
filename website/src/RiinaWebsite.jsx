@@ -110,7 +110,7 @@ const EV = [
   {
     name: 'HIPAACompliance.COMPLY_001_*', tier: 'domain', sign: '⊢',
     claim: 'The HIPAA §164.312 slice, modelled as Coq obligations',
-    statement: 'The compiler-checkable slice of HIPAA §164.312 (access control, audit controls) modelled as mechanized obligations, alongside the hipaa checker profile (54 rules, each with a passing and a violating test case). Evidence toward HIPAA; not a conformity assessment or certification.',
+    statement: 'The compiler-checkable slice of HIPAA §164.312 (access control, audit controls) modelled as mechanized obligations, alongside the hipaa checker profile (33 rules, each with a passing and a violating test case). Evidence toward HIPAA; not a conformity assessment or certification.',
     file: '02_FORMAL/coq/compliance/HIPAACompliance.v',
     cmd: 'cd 02_FORMAL/coq && make compliance/HIPAACompliance.vo',
   },
@@ -181,6 +181,17 @@ const EFFECTS = [
   { name: 'Rawak', en: 'Random', desc: 'Randomness.' },
 ];
 
+// Generated ledgers at the repository root (REQ-103); scripts/check-doc-drift.sh
+// fails if one of these links is missing here or in README.md.
+const LEDGERS = [
+  ['HEADLINE_THEOREMS.md', 'Headline theorems'],
+  ['PROPERTY_LEDGER.md', 'Property ledger'],
+  ['TRUSTED_BASE.md', 'Trusted base'],
+  ['PROOF_STATUS.md', 'Proof status'],
+  ['AXIOMS.md', 'Axioms and Parameters'],
+  ['docs/api/STDLIB.md', 'Builtin matrix'],
+];
+
 // Builtin families — names verified against the typechecker registry.
 const STDLIB = [
   { mod: 'teks', en: 'String', fns: 'teks_ganti, teks_belah, teks_cantum, gabung_teks, teks_baris, ke_teks' },
@@ -213,7 +224,7 @@ const RESEARCH = [
 // exists alongside checker rules; CHECKER = compiler-enforced rules with
 // pos+neg tests; ARTIFACT = build-time evidence emission. None is an assessment.
 const FRAMEWORKS = [
-  { fw: 'HIPAA', req: '§164.312 access & audit slice', th: 'COMPLY_001_* + hipaa profile (54 rules)', status: 'MODELLED' },
+  { fw: 'HIPAA', req: '§164.312 access & audit slice', th: 'COMPLY_001_* + hipaa profile (33 rules)', status: 'MODELLED' },
   { fw: 'PCI-DSS', req: 'PAN masking / encryption slice', th: 'COMPLY_002_* + pci-dss profile (56 rules)', status: 'MODELLED' },
   { fw: 'DO-178C', req: 'Deterministic-execution evidence', th: 'COMPLY_003_* + do-178c profile', status: 'MODELLED' },
   { fw: 'EU CRA', req: 'Annex I conditions + SBOM/CBOM/VEX', th: 'cra profile (15 rules) + build artefacts', status: 'CHECKER' },
@@ -389,6 +400,12 @@ function Footer({ go, metrics }) {
           <a href="https://github.com/ib823/riina/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>License</a>
         </div>
         <div style={col}>
+          <div style={head}>Ledgers</div>
+          {LEDGERS.map(([file, label]) => (
+            <a key={file} href={`https://github.com/ib823/riina/blob/main/${file}`} target="_blank" rel="noopener noreferrer" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>{label}</a>
+          ))}
+        </div>
+        <div style={col}>
           <div style={head}>Contact</div>
           <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Inquiry" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>Email</a>
           <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" className="hov-ink" style={{ fontSize: 14, color: '#4a453d' }}>Request a review</a>
@@ -452,7 +469,7 @@ function Home({ go, metrics }) {
           </div>
           <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Core Qed &mdash; foundations, type system, properties, effects, termination</span><span style={num}>{fmt(cq.core)}</span></div>
           <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Model Qed &mdash; domain, industry, compliance, crypto and runtime models (facts about their own definitions, not verified systems)</span><span style={num}>{fmt(cq.model)}</span></div>
-          <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Excluded Qed &mdash; flagged as vacuous patterns or test files</span><span style={num}>{fmt(cq.excluded)}</span></div>
+          <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Excluded Qed &mdash; vacuous patterns, examples, counterexamples or test files</span><span style={num}>{fmt(cq.excluded)}</span></div>
           <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Admitted / unfinished</span><span style={{ ...num, color: ACCENT }}>{fmt(cq.admitted)}</span></div>
           <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Axiom / Parameter declarations (Parameters: trusted hardware interface; none of the capstone theorems depends on them)</span><span style={{ ...num, color: ACCENT, whiteSpace: 'nowrap' }}>{fmt(cq.axioms)} / {fmt(cq.parameters)}</span></div>
           <div style={row}><span style={{ fontSize: 14, color: '#4a453d' }}>Proof files in active build</span><span style={num}>{fmt(files)}</span></div>
@@ -639,7 +656,7 @@ function Evidence({ metrics }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 1, background: '#d8d3c7', border: '1px solid #d8d3c7' }}>
           {stat(fmt(cq.core), 'core Qed — foundations, type system, properties, effects, termination')}
           {stat(fmt(cq.model), 'model Qed — domain, industry, compliance, crypto and runtime models; facts about their own definitions, not verified systems')}
-          {stat(fmt(cq.excluded), 'excluded Qed — flagged as vacuous patterns or test files')}
+          {stat(fmt(cq.excluded), 'excluded Qed — vacuous patterns, examples, counterexamples or test files')}
           {stat(fmt(cq.admitted), `admitted · ${fmt(cq.axioms)} Axiom · ${fmt(cq.parameters)} Parameter declarations (trusted hardware interface; none of the capstone theorems depends on them)`, true)}
         </div>
       </div>
@@ -697,7 +714,7 @@ function Evidence({ metrics }) {
         )}
 
         <div style={{ marginTop: 34, border: '1px solid #c9c3b4', background: '#efece4', padding: '22px 24px', fontSize: 14, lineHeight: 1.68, color: '#4a453d' }}>
-          <strong style={{ color: '#14120f' }}>On honesty.</strong> This ledger indexes the mechanized Coq lane only. The active build has {fmt(cq.axioms)} <span style={{ fontFamily: 'var(--font-mono)' }}>Axiom</span> and {fmt(cq.parameters)} documented <span style={{ fontFamily: 'var(--font-mono)' }}>Parameter</span> declarations &mdash; the trusted hardware interface, with written rationales enforced by <span style={{ fontFamily: 'var(--font-mono)' }}>scripts/audit-docs.sh</span>; none of the capstone theorems depends on them &mdash; and {fmt(cq.excluded)} excluded Qed (proofs our own detector flags as vacuous patterns, plus test files) are kept out of the core and model counts. Kernel attestation goes deeper than the grep counts: <span style={{ fontFamily: 'var(--font-mono)' }}>riinac verify --full</span> runs <span style={{ fontFamily: 'var(--font-mono)' }}>Print Assumptions</span> on ten capstone theorems. Nine must be closed under the global context &mdash; no axiom at all; the tenth, the older full-calculus <span style={{ fontFamily: 'var(--font-mono)' }}>well_typed_SN</span>, may use the Rocq standard library&rsquo;s functional extensionality and is reported as conditional and vacuous. The gate fails the build if anything else ever appears. We publish these distinctions because an assessor would find them anyway.
+          <strong style={{ color: '#14120f' }}>On honesty.</strong> This ledger indexes the mechanized Coq lane only. The active build has {fmt(cq.axioms)} <span style={{ fontFamily: 'var(--font-mono)' }}>Axiom</span> and {fmt(cq.parameters)} documented <span style={{ fontFamily: 'var(--font-mono)' }}>Parameter</span> declarations &mdash; the trusted hardware interface, with written rationales enforced by <span style={{ fontFamily: 'var(--font-mono)' }}>scripts/audit-docs.sh</span>; none of the capstone theorems depends on them &mdash; and {fmt(cq.excluded)} excluded Qed (proofs our own detector flags as vacuous patterns, plus examples, counterexamples and test files) are kept out of the core and model counts. Kernel attestation goes deeper than the grep counts: <span style={{ fontFamily: 'var(--font-mono)' }}>riinac verify --full</span> runs <span style={{ fontFamily: 'var(--font-mono)' }}>Print Assumptions</span> on ten capstone theorems. Nine must be closed under the global context &mdash; no axiom at all; the tenth, the older full-calculus <span style={{ fontFamily: 'var(--font-mono)' }}>well_typed_SN</span>, may use the Rocq standard library&rsquo;s functional extensionality and is reported as conditional and vacuous. The gate fails the build if anything else ever appears. We publish these distinctions because an assessor would find them anyway.
         </div>
       </div>
     </div>
@@ -852,7 +869,7 @@ function Architecture({ metrics }) {
   const cq = coqCounts(metrics);
   const pipeline = [
     ...PIPELINE_STATIC,
-    { num: '04', title: 'Proof artefacts ship with the code', desc: `The Coq proofs live in the repository: ${fmt(cq.core)} core Qed, ${fmt(cq.model)} model Qed (facts about the models’ own definitions, not verified systems) and ${fmt(cq.excluded)} excluded Qed (flagged as vacuous patterns or test files). The active build has ${fmt(cq.admitted)} Admitted, ${fmt(cq.axioms)} Axiom and ${fmt(cq.parameters)} Parameters (trusted hardware interface; none of the capstone theorems depends on them), and a kernel-attestation gate (Print Assumptions over ten capstone theorems, nine of which must be axiom-free) runs on every full verify. You clone them and re-check them. The machine-generated mirrors of the Coq tree in other prover lanes were archived out of main on 2026-10-20.` },
+    { num: '04', title: 'Proof artefacts ship with the code', desc: `The Coq proofs live in the repository: ${fmt(cq.core)} core Qed, ${fmt(cq.model)} model Qed (facts about the models’ own definitions, not verified systems) and ${fmt(cq.excluded)} excluded Qed (vacuous patterns, examples, counterexamples or test files). The active build has ${fmt(cq.admitted)} Admitted, ${fmt(cq.axioms)} Axiom and ${fmt(cq.parameters)} Parameters (trusted hardware interface; none of the capstone theorems depends on them), and a kernel-attestation gate (Print Assumptions over ten capstone theorems, nine of which must be axiom-free) runs on every full verify. You clone them and re-check them. The machine-generated mirrors of the Coq tree in other prover lanes were archived out of main on 2026-10-20.` },
     { num: '05', title: 'The differential keeps the backends honest', desc: 'The C and WASM backends are not formally verified. They are byte-differential-tested against the interpreter on the example corpus, and a missing test tool fails the build rather than silently skipping — a silently-skipping test counts as unverified, not green. Hardware-rooted attestation is on the roadmap and is not claimed today.' },
   ];
   const lanes = [

@@ -2342,9 +2342,15 @@ fn verify_metrics_accuracy(
         })
     };
 
-    let json_qed = parse_field("proofs", "qedActive").unwrap_or(0);
+    // Raw counts live in the `internal` block: they are checksums for this
+    // gate, never published (mandate S2.7, REQ-119).
+    let json_qed = parse_field("internal", "coqQedActive").unwrap_or(0);
     let json_lean = parse_field("lean", "theorems").unwrap_or(0);
-    let json_isabelle = parse_field("isabelle", "lemmasRaw").unwrap_or(0);
+    let json_isabelle = parse_field("internal", "isabelleLemmasRaw").unwrap_or(0);
+    let json_core = parse_field("countingPolicy", "coreMechanizedQed");
+    let json_model = parse_field("countingPolicy", "modelMechanizedQedNonvacuous");
+    let json_excluded = parse_field("countingPolicy", "excludedQed");
+    let json_partition = [json_core, json_model, json_excluded].into_iter().sum::<Option<u32>>();
     let json_admitted = parse_field("proofs", "admitted").unwrap_or(u32::MAX);
     let json_axioms = parse_field("proofs", "axioms").unwrap_or(u32::MAX);
 
@@ -2356,6 +2362,12 @@ fn verify_metrics_accuracy(
     let mut drifts = Vec::new();
     if json_qed != live_qed {
         drifts.push(format!("Coq Qed: json={json_qed} live={live_qed}"));
+    }
+    if json_partition != Some(live_qed) {
+        drifts.push(format!(
+            "countingPolicy core+model+excluded = {json_partition:?}, but the active build has \
+             {live_qed} Qed (run scripts/generate-metrics.sh)"
+        ));
     }
     if json_lean != live_lean {
         drifts.push(format!("Lean: json={json_lean} live={live_lean}"));
@@ -2383,7 +2395,10 @@ fn verify_metrics_accuracy(
             passed: true,
             blocking: true,
             details: format!(
-                "metrics.json matches live counts (Qed={live_qed}, Lean={live_lean}, Isabelle={live_isabelle}, Admitted={json_admitted}, Axioms={json_axioms})"
+                "metrics.json matches live counts (Coq: {} core / {} model / {} excluded Qed, partition checked; Lean={live_lean}, Isabelle={live_isabelle}, Admitted={json_admitted}, Axioms={json_axioms})",
+                json_core.unwrap_or(0),
+                json_model.unwrap_or(0),
+                json_excluded.unwrap_or(0)
             ),
         }
     } else {
@@ -2406,7 +2421,6 @@ fn verify_metrics_accuracy(
 /// harnesses) into one number that reads as proofs, and parity rewarded a
 /// generated port for having as many declarations as Coq has proofs.
 fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
-    let coq_qed = count_coq_qed(dirs.coq_dir);
     let lean_thm = count_lean_theorems(dirs.lean_dir);
     let isa_lem = count_isabelle_lemmas(&dirs.isabelle_dir.join("RIINA"));
     let fstar_lem = count_fstar_lemmas(dirs.fstar_dir);
@@ -2423,8 +2437,9 @@ fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
         // Informational only.
         blocking: false,
         details: format!(
-            "Per-lane raw declaration counts, NOT summed; only Coq is mechanized. \
-             Coq Qed: {coq_qed} | Lean: {lean_thm} | Isabelle: {isa_lem} | F*: {fstar_lem} | \
+            "Raw declaration counts of the non-Coq lanes: internal, NOT summed, not proofs \
+             (Coq's three published numbers are in the Metrics Accuracy row). \
+             Lean: {lean_thm} | Isabelle: {isa_lem} | F*: {fstar_lem} | \
              TLA+: {tla_thm} | Alloy: {alloy_asrt} | SMT: {smt_asrt} | Verus: {verus_pf} | \
              Kani: {kani_pf} | TV: {tv_val}"
         ),
@@ -4671,6 +4686,36 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
             fs::write(&path, body).unwrap();
         }
         dir
+    }
+
+    /// The raw Qed count is read from metrics.json's `internal` block, and the
+    /// three published numbers must partition the live build (REQ-119).
+    #[test]
+    fn metrics_accuracy_checks_the_published_partition() {
+        let metrics = |core: u32, model: u32, excluded: u32| {
+            format!(
+                "{{\n  \"proofs\": {{\n    \"admitted\": 0,\n    \"axioms\": 0,\n    \
+                 \"countingPolicy\": {{\n      \"coreMechanizedQed\": {core},\n      \
+                 \"modelMechanizedQedNonvacuous\": {model},\n      \"excludedQed\": {excluded}\n    }}\n  }},\n  \
+                 \"lean\": {{\n    \"theorems\": 0\n  }},\n  \
+                 \"internal\": {{\n    \"coqQedActive\": 3,\n    \"isabelleLemmasRaw\": 0\n  }}\n}}\n"
+            )
+        };
+        let coq = ("02_FORMAL/coq/_CoqProject", "A.v\n");
+        let src = ("02_FORMAL/coq/A.v", "Lemma a : True. Proof. exact I. Qed.\nLemma b : True. Proof. exact I. Qed.\nLemma c : True. Proof. exact I. Qed.\n");
+        for (tag, (core, model, excluded), ok) in [("ok", (1, 1, 1), true), ("short", (1, 1, 0), false)] {
+            let body = metrics(core, model, excluded);
+            let repo = corpus_fixture(&format!("metrics_{tag}"), &[coq, src, ("website/public/metrics.json", &body)]);
+            let r = verify_metrics_accuracy(&repo, &repo.join("02_FORMAL/coq"), &repo.join("lean"), &repo.join("isabelle"));
+            assert_eq!(r.passed, ok, "{tag}: {}", r.details);
+            if ok {
+                assert!(r.details.contains("1 core / 1 model / 1 excluded Qed"), "{}", r.details);
+                assert!(!r.details.contains("Qed=3"), "raw total in details: {}", r.details);
+            } else {
+                assert!(r.details.contains("countingPolicy"), "{}", r.details);
+            }
+            let _ = fs::remove_dir_all(&repo);
+        }
     }
 
     /// An archived (empty) lane is a WARN that says so, never a PASS over

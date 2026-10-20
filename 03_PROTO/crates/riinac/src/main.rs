@@ -9,6 +9,7 @@
 
 #![forbid(unsafe_code)]
 
+mod c_toolchain;
 mod diagnostics;
 mod expect_update;
 mod frontend;
@@ -870,7 +871,7 @@ fn run() {
                     }
                 };
 
-                let status = process::Command::new("cc")
+                let status = process::Command::new(c_toolchain::C_COMPILER)
                     .arg("-o")
                     .arg(&output_name)
                     .arg(&tmp_c)
@@ -904,7 +905,8 @@ fn run() {
                         process::exit(1);
                     }
                     Err(e) => {
-                        eprintln!("Failed to invoke cc: {}", e);
+                        let path = std::env::var_os("PATH");
+                        eprintln!("Error: {}", c_toolchain::invoke_error(&e, path.as_deref()));
                         process::exit(1);
                     }
                 }

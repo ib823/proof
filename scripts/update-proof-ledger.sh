@@ -115,7 +115,16 @@ fi
   echo "- Coq files (active via \`_CoqProject\`): $active_files_count"
   echo "- Coq files (total in repository): $total_coq_files"
   echo "- Coq files (inactive or archived): $inactive_files_count"
-  echo "- Qed proofs (active): $active_qed"
+  # The three S2.7 numbers, never the raw total ($active_qed is their checksum).
+  python3 -I "$REPO_ROOT/scripts/coq-counting-policy.py" "$REPO_ROOT" | python3 -I -c '
+import json, sys
+d = json.load(sys.stdin)
+if d["activeQed"] != int(sys.argv[1]):
+    sys.exit("counting policy and this scan disagree on the active-build Qed count")
+c, m, e = d["coreMechanizedQed"], d["modelMechanizedQedNonvacuous"], d["excludedQed"]
+print(f"- Coq Qed (mandate S2.7; no raw total is published): {c:,} core Qed, {m:,} model Qed, "
+      f"{e:,} excluded Qed (vacuous, example, counterexample or test)")
+' "$active_qed"
   echo "- Admitted (active): $active_admitted"
   echo "- Abort (active, incomplete proof attempts): $active_abort"
   echo "- Axioms (active, declared with \`Axiom\`): $active_axioms"
@@ -193,6 +202,13 @@ fi
   else
     echo "- None."
   fi
+  echo ""
+  echo "### Trusted Interface (\`Parameter\`) Sites"
+  echo "A \`Parameter\` is logically an axiom. These are the trusted hardware and crypto"
+  echo "interface (mandate S2.8); no headline theorem depends on them (HEADLINE_THEOREMS.md)."
+  python3 -I "$REPO_ROOT/scripts/generate-ledgers.py" --list-parameters | while IFS=' ' read -r site name; do
+    echo "- \`$name\` — \`$site\`"
+  done
   echo ""
   echo "## Global Repository $global_scope_suffix"
   echo "- Axioms (global): $global_axioms"

@@ -339,6 +339,13 @@ check_public_counts() {
             echo "           $(printf '%s' "$line" | cut -c1-160)"
             DISCREPANCIES=$((DISCREPANCIES + 1))
         done
+        # The live raw total in any spelling ("Qed=12819", "Qed proofs: 12,819").
+        if [ -n "${ACTUAL_QED:-}" ] && printf '%s\n' "$line" \
+               | grep -qP "(?<![\d,])(${ACTUAL_QED}|$(add_commas "$ACTUAL_QED"))(?![\d,])"; then
+            echo -e "${RED}[MISMATCH]${NC} raw Qed total in $rel (publish the core/model/excluded numbers instead, mandate S2.7)"
+            echo "           $(printf '%s' "$line" | cut -c1-160)"
+            DISCREPANCIES=$((DISCREPANCIES + 1))
+        fi
         for label in core model excluded; do
             case "$label" in
                 core) want="$ACTUAL_CORE_QED" ;;
@@ -608,11 +615,43 @@ for test_doc in README.md llms.txt AGENTS.md docs/UNDERSTANDING_RIINA.md; do
         done
     done < "$REPO_ROOT/$test_doc"
 done
+# Every other number, version and scoped claim on the public surfaces
+# (mandate S5.7, R5; REQ-109). The self-test runs first so a rule that has
+# stopped catching its seeded fault fails here instead of passing silently.
+if [ -f "$REPO_ROOT/scripts/check-doc-drift.sh" ]; then
+    if ! bash "$REPO_ROOT/scripts/check-doc-drift.sh" --self-test >/dev/null 2>&1; then
+        echo -e "${RED}[ERROR]${NC} scripts/check-doc-drift.sh --self-test failed"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    fi
+    if ! DRIFT_OUT=$(bash "$REPO_ROOT/scripts/check-doc-drift.sh" 2>&1); then
+        while IFS= read -r drift_line; do
+            echo -e "${RED}[DRIFT]${NC} $drift_line"
+        done <<< "$DRIFT_OUT"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $DRIFT_OUT"
+    fi
+fi
+# Generated ledgers (REQ-103): HEADLINE_THEOREMS.md, PROPERTY_LEDGER.md and
+# TRUSTED_BASE.md must match their sources, the capture must be fresh for the
+# active Coq files, and every named witness and test path must exist.
+if [ -f "$REPO_ROOT/scripts/generate-ledgers.py" ]; then
+    if ! LEDGER_OUT=$(python3 -I "$REPO_ROOT/scripts/generate-ledgers.py" --check 2>&1); then
+        while IFS= read -r ledger_line; do
+            echo -e "${RED}[LEDGER]${NC} $ledger_line"
+        done <<< "$LEDGER_OUT"
+        DISCREPANCIES=$((DISCREPANCIES + 1))
+    elif [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $LEDGER_OUT"
+    fi
+fi
 # CHANGELOG.md is release history, so its entries keep the figures they were
 # released with; only its banner is checked (below).
 for qed_doc in README.md llms.txt AGENTS.md CONTRIBUTING.md SECURITY.md COPILOT.md \
                .cursorrules .clinerules website/index.html website/src/RiinaWebsite.jsx \
-               docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md docs/i18n/README_zh.md; do
+               docs/UNDERSTANDING_RIINA.md docs/i18n/README_ms.md docs/i18n/README_zh.md \
+               PROOF_STATUS.md AXIOMS.md VERIFICATION_MANIFEST.md HEADLINE_THEOREMS.md \
+               PROPERTY_LEDGER.md TRUSTED_BASE.md; do
     check_public_counts "$REPO_ROOT/$qed_doc"
 done
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
@@ -736,27 +775,27 @@ fi
 
 METRICS_FILE="$REPO_ROOT/website/public/metrics.json"
 if [ -f "$METRICS_FILE" ]; then
-    WEB_QED=$(grep -oP '"qedActive":\s*\K\d+' "$METRICS_FILE" || echo "0")
+    WEB_QED=$(grep -oP '"coqQedActive":\s*\K\d+' "$METRICS_FILE" || echo "0")
     WEB_COQ_ACTIVE=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['coq']['filesActive'])" 2>/dev/null || echo "0")
     WEB_SESSION=$(grep -oP '"session":\s*\K\d+' "$METRICS_FILE" || echo "0")
     WEB_LEAN=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['theorems'])" 2>/dev/null || grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
     WEB_ISABELLE=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['lemmas'])" 2>/dev/null || grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
-    WEB_ISABELLE_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['isabelle']['lemmas']))" 2>/dev/null || echo "$WEB_ISABELLE")
+    WEB_ISABELLE_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['internal']['isabelleLemmasRaw'])" 2>/dev/null || echo "$WEB_ISABELLE")
     WEB_ISABELLE_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
     WEB_ISABELLE_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_ISABELLE_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
     WEB_FSTAR=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar']['lemmas'])" 2>/dev/null || echo "0")
-    WEB_FSTAR_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['fstar']['lemmas']))" 2>/dev/null || echo "$WEB_FSTAR")
+    WEB_FSTAR_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['internal']['fstarLemmasRaw'])" 2>/dev/null || echo "$WEB_FSTAR")
     WEB_FSTAR_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
     WEB_FSTAR_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_FSTAR_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
     WEB_TLAPLUS=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus']['theorems'])" 2>/dev/null || echo "0")
-    WEB_TLAPLUS_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('theoremsRaw', json.load(open('$METRICS_FILE'))['tlaplus']['theorems']))" 2>/dev/null || echo "$WEB_TLAPLUS")
+    WEB_TLAPLUS_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['internal']['tlaplusTheoremsRaw'])" 2>/dev/null || echo "$WEB_TLAPLUS")
     WEB_TLAPLUS_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('compiledTheorems', 0))" 2>/dev/null || echo "0")
     WEB_TLAPLUS_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_TLAPLUS_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
     WEB_ALLOY=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy']['assertions'])" 2>/dev/null || echo "0")
-    WEB_ALLOY_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy'].get('assertionsRaw', json.load(open('$METRICS_FILE'))['alloy']['assertions']))" 2>/dev/null || echo "$WEB_ALLOY")
+    WEB_ALLOY_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['internal']['alloyAssertionsRaw'])" 2>/dev/null || echo "$WEB_ALLOY")
     WEB_ALLOY_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy'].get('compiledAssertions', 0))" 2>/dev/null || echo "0")
     WEB_ALLOY_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['alloy'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_ALLOY_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['alloy'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")

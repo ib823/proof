@@ -1,0 +1,37 @@
+{
+  "commit": "4026d7f2c",
+  "emitted_c_lines_minimal_program": 5705,
+  "print_assumptions": {
+    "accepts_uses_only_current": [],
+    "effect_sound_multi_step_declared": [],
+    "preservation": [],
+    "progress": [],
+    "reachable_effects_from_program_text": [],
+    "ref_free_constant_time": [],
+    "ref_free_noninterference": [],
+    "ref_free_well_typed_SN": [],
+    "type_safety": [],
+    "well_typed_SN": [
+      "FunctionalExtensionality.functional_extensionality_dep"
+    ]
+  },
+  "sizes_nonblank_lines": {
+    "c_backend": 13112,
+    "compliance": 7721,
+    "crypto": 14704,
+    "driver": 7281,
+    "frontend": 20032,
+    "interpreter": 14498,
+    "package_manager": 6400,
+    "wasm_backend": 8728
+  },
+  "sources_sha256": "1f6b3343b2eefd4ace7b84f4f35805b52d8005d8cd003f71e93a092e4d2b1426",
+  "tools": {
+    "cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "host": "Linux 6.18.44-fc-v139 x86_64",
+    "rocq": "The Rocq Prover, version 9.1.1",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "wasmtime": "wasmtime 27.0.0 (8eefa236f 2024-11-20)",
+    "z3": "Z3 version 4.8.12 - 64 bit"
+  }
+}
