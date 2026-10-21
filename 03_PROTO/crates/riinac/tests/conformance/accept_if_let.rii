@@ -1,0 +1,9 @@
+// A curried three-argument function and a conditional.
+fungsi pilih_satu(b: Benar, x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    kalau b { x } lain { y }
+}
+
+fungsi utama() -> Nombor kesan Bersih {
+    biar r = pilih_satu(betul, 1, 2);
+    r
+}

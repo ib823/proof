@@ -1,0 +1,4 @@
+// An effect performed in a function that declares it.
+fungsi utama() -> () kesan Tulis {
+    laku Tulis ()
+}

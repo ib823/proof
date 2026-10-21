@@ -1,0 +1,5 @@
+// String literals, including a quote and non-ASCII text.
+fungsi utama() -> Teks kesan Bersih {
+    biar a = "kata \"petik\"";
+    "Selamat datang ke RIINA — ä"
+}

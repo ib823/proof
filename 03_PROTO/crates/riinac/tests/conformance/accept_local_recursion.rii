@@ -1,0 +1,5 @@
+// A recursive function declared inside a block (LetRec, EFix).
+fungsi utama() -> () kesan Bersih {
+    fungsi ulangi(n: Nombor) -> () kesan Bersih { ulangi(n) }
+    ()
+}

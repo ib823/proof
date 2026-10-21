@@ -1,0 +1,6 @@
+// A reference cell: allocate, write, read.
+fungsi utama() -> Nombor kesan (Baca, Tulis) {
+    biar r = ruj 1 @Awam;
+    biar _ = (r := 2);
+    !r
+}

@@ -1,0 +1,4 @@
+// An effect performed in a function declared pure.
+fungsi utama() -> () kesan Bersih {
+    laku Rangkaian ()
+}

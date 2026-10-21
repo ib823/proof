@@ -121,9 +121,10 @@ fn error_row(err: &str) -> Option<String> {
 }
 
 /// A row an error may name although CORE_MAPPING does not mark it
-/// `unmodelled`: builtins have their own section, and a group of mutually
-/// recursive functions is the one `LetRecGroup` shape with no encoding.
-const SPECIAL_ROWS: &[&str] = &["Builtins", "Expr::LetRecGroup"];
+/// `unmodelled`: builtins have their own section, a group of mutually
+/// recursive functions is the one `LetRecGroup` shape with no encoding, and an
+/// injection annotated with a non-sum type has no Coq form.
+const SPECIAL_ROWS: &[&str] = &["Builtins", "Expr::LetRecGroup", "Expr::Inl", "Expr::Inr"];
 
 fn assert_names_an_unmodelled_row(err: &str, rows: &std::collections::BTreeSet<String>) {
     let row = error_row(err).unwrap_or_else(|| panic!("error names no CORE_MAPPING row: {err}"));

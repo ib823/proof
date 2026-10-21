@@ -44,6 +44,12 @@ compare riinac's verdict with the Coq checker's on any program.
   error naming its row or section (`[CORE_MAPPING.md: Expr::BinOp]`). It is
   never dropped or approximated (mandate R3).
 
+- **Conformance.** `riinac verify --full` and `--coq` type-check every
+  emitted program in Coq too, with the executable checker `type_check_fn`
+  (`foundations/TypeCheckFn.v`), and fail if Coq rejects a program riinac
+  accepts, or gives it another type or effect (REQ-111). The fixtures in
+  `riinac/tests/conformance/` are written to stay inside the core.
+
 The core cannot yet express the corpus: 0 of the 83 checked examples emit.
 `riinac/tests/emit_core.rs` records that count and prints each example's first
 unmodelled construct.
@@ -75,8 +81,8 @@ unmodelled construct.
 | `Expr::Pair` | `EPair` | core | T_Pair |
 | `Expr::Fst` | `EFst` | core | T_Fst |
 | `Expr::Snd` | `ESnd` | core | T_Snd |
-| `Expr::Inl` | `EInl` | core | T_Inl |
-| `Expr::Inr` | `EInr` | core | T_Inr |
+| `Expr::Inl` | `EInl` | refined | T_Inl. Rust's annotation is the whole sum type `A + B`, and the checker requires the payload to have type `A`; Coq's `EInl e B` carries only the other side and infers `A`. `emit-core` writes `EInl e B` ascribed to `A + B`, which keeps the check of `A` (found by the REQ-111 fixtures, 2026-10-21) |
+| `Expr::Inr` | `EInr` | refined | T_Inr. As `Inl`, mirrored: Rust's `Inr(e, A + B)` is Coq's `EInr e A` ascribed to `A + B` |
 | `Expr::Case` | `ECase` | core | T_Case |
 | `Expr::If` | `EIf` | core | T_If |
 | `Expr::Let` | `ELet` | core | the optional linearity qualifier is unmodelled; Coq `ELet` has none, so `emit-core` rejects a `Let` that carries one |
@@ -341,8 +347,8 @@ These have no Coq inductive; every variant is `unmodelled`.
 | `EPair` | `Expr::Pair` | core | |
 | `EFst` | `Expr::Fst` | core | |
 | `ESnd` | `Expr::Snd` | core | |
-| `EInl` | `Expr::Inl` | core | |
-| `EInr` | `Expr::Inr` | core | |
+| `EInl` | `Expr::Inl` | refined | the Rust annotation is the whole sum type (see `Expr::Inl`) |
+| `EInr` | `Expr::Inr` | refined | the Rust annotation is the whole sum type (see `Expr::Inr`) |
 | `ECase` | `Expr::Case` | core | |
 | `EIf` | `Expr::If` | core | |
 | `ELet` | `Expr::Let` | core | |

@@ -1,0 +1,5 @@
+// A number applied as a function.
+fungsi utama() -> Nombor kesan Bersih {
+    biar x = 1;
+    x(2)
+}

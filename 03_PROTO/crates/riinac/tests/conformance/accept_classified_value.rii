@@ -1,0 +1,7 @@
+// A classified value passed through a function typed Rahsia.
+fungsi simpan(x: Rahsia<Nombor>) -> Rahsia<Nombor> kesan Bersih { x }
+
+fungsi utama() -> () kesan Bersih {
+    biar s = simpan(sulit 3);
+    ()
+}

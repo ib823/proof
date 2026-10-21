@@ -1,0 +1,7 @@
+// A match of injection patterns on a number.
+fungsi utama() -> Nombor kesan Bersih {
+    padan 5 {
+        inl x => x,
+        inr y => 0,
+    }
+}

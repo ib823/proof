@@ -1,0 +1,4 @@
+// A handler binds the value of its body.
+fungsi utama() -> Nombor kesan Bersih {
+    kendali 1 dengan x => x
+}

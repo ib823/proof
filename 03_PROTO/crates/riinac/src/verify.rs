@@ -1554,6 +1554,68 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
 /// Verify every `.v` file on disk (excluding `_archive_deprecated/`) is listed
 /// in `_CoqProject`.  Catches drift where a file exists but the build system
 /// (and therefore `verify.rs`) never sees it.
+/// REQ-111, first slice: every program riinac can write in the core is type
+/// checked by riinac and by Coq's `type_check_fn`, and the verdicts must agree
+/// (see `conformance.rs`).
+fn check_core_conformance(coq_dir: &Path) -> CheckResult {
+    let name = "Core Conformance (REQ-111)".to_string();
+    let rocq = match detect_coqc() {
+        ToolStatus::Found(p) => match p.parent().map(|d| d.join("rocq")) {
+            Some(r) if r.exists() => r,
+            _ => p,
+        },
+        ToolStatus::NotFound(msg) => {
+            return CheckResult { name, passed: false, blocking: false, details: format!("SKIPPED ({msg})") };
+        }
+    };
+    let Some(repo) = coq_dir.parent().and_then(Path::parent) else {
+        return CheckResult { name, passed: false, blocking: true, details: "no repository root above the Coq tree".into() };
+    };
+    let scratch = match private_temp_dir("riina_conformance") {
+        Ok(d) => d,
+        Err(e) => {
+            return CheckResult { name, passed: false, blocking: true, details: format!("cannot create scratch dir: {e}") };
+        }
+    };
+    let result = crate::conformance::run(repo, coq_dir, &rocq, &scratch);
+    let _ = fs::remove_dir_all(&scratch);
+    let report = match result {
+        Ok(r) => r,
+        Err(e) => return CheckResult { name, passed: false, blocking: true, details: e },
+    };
+    use crate::conformance::Outcome;
+    let failures = report.failures();
+    let outside: usize = report.outside.values().sum();
+    let mut top: Vec<(&String, &usize)> = report.outside.iter().collect();
+    top.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+    let top: Vec<String> = top.iter().take(4).map(|(r, n)| format!("{r} {n}")).collect();
+    let summary = format!(
+        "{} programs compared with Coq's type_check_fn: {} both accept, {} both reject, {} soundness \
+         discrepancies, {} type/effect mismatches, {} completeness gaps ({} tracked); {} programs outside \
+         the core (first constructs: {}), {} not compared, {} unparsed; expr constructors exercised {}/{} \
+         (not: {}); planted controls caught",
+        report.compared.len(),
+        report.count(Outcome::BothAccept),
+        report.count(Outcome::BothReject),
+        report.count(Outcome::Soundness),
+        report.count(Outcome::Mismatch),
+        report.count(Outcome::Completeness),
+        crate::conformance::KNOWN_COMPLETENESS_GAPS.len(),
+        outside,
+        top.join(", "),
+        report.not_compared.len(),
+        report.unparsed,
+        report.exercised.len(),
+        report.exercised.len() + report.unexercised().len(),
+        report.unexercised().join(", "),
+    );
+    if failures.is_empty() {
+        CheckResult { name, passed: true, blocking: true, details: summary }
+    } else {
+        CheckResult { name, passed: false, blocking: true, details: format!("{}; {summary}", failures.join("; ")) }
+    }
+}
+
 fn verify_coqproject_completeness(coq_dir: &Path) -> CheckResult {
     let project_file = coq_dir.join("_CoqProject");
     let project_content = match fs::read_to_string(&project_file) {
@@ -3924,6 +3986,9 @@ fn coq_lane_checks(coq_dir: &Path) -> Vec<CheckResult> {
 
     eprintln!("Attesting kernel-level assumptions (Print Assumptions)...");
     results.push(check_kernel_assumptions(coq_dir));
+
+    eprintln!("Comparing riinac with Coq's type checker on the core programs (REQ-111)...");
+    results.push(check_core_conformance(coq_dir));
 
     eprintln!("Scanning Coq proofs...");
     results.extend(scan_coq(coq_dir));
