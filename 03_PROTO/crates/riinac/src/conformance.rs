@@ -108,9 +108,16 @@ const MAX_NAT: u64 = 100_000;
 /// mandate asks for at least 10,000 per change (S1.4).
 pub const GENERATED_PER_RUN: usize = 10_000;
 
+/// What the comparison reads, so what the seed is derived from: the compiler
+/// and its fixtures, the Coq sources, and the example corpus.
+const SEED_INPUTS: &[&str] = &["03_PROTO", "02_FORMAL/coq", "07_EXAMPLES"];
+
 /// The generator's seed: `RIINA_CONFORMANCE_SEED` if set, else derived from
-/// the commit being verified, so each change sees new programs and any run can
-/// be repeated.
+/// the committed content of [`SEED_INPUTS`], prose aside. Every change to the
+/// compiler, the proofs or the corpus sees new programs, and any run can be
+/// repeated. A commit that only records results or edits prose sees the same
+/// programs and so writes the same manifest row: deriving it from the commit
+/// id rewrote VERIFICATION_MANIFEST.md on every push, record commits included.
 pub fn seed(repo: &Path) -> u64 {
     if let Some(s) = std::env::var("RIINA_CONFORMANCE_SEED")
         .ok()
@@ -118,16 +125,21 @@ pub fn seed(repo: &Path) -> u64 {
     {
         return s;
     }
-    let head = std::process::Command::new("git")
-        .args(["-C", &repo.to_string_lossy(), "rev-parse", "HEAD"])
+    let listing = std::process::Command::new("git")
+        .args(["-C", &repo.to_string_lossy(), "ls-tree", "-r", "HEAD", "--"])
+        .args(SEED_INPUTS)
         .output()
         .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
         .unwrap_or_default();
-    // FNV-1a of the commit id.
-    head.bytes().fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
-        (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)
-    })
+    // FNV-1a of each input's blob id and path.
+    listing
+        .lines()
+        .filter(|l| !l.ends_with(".md"))
+        .flat_map(|l| l.bytes().chain(std::iter::once(b'\n')))
+        .fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
+            (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)
+        })
 }
 
 /// Mutants per run (`RIINA_CONFORMANCE_FUZZ` overrides it), of the
