@@ -1,0 +1,8 @@
+// A function passed as an argument.
+fungsi terap(f: Fn(Nombor) -> Nombor kesan Bersih, x: Nombor) -> Nombor kesan Bersih {
+    f(x)
+}
+
+fungsi utama() -> Nombor kesan Bersih {
+    terap(fn(n: Nombor) -> Nombor { n }, 3)
+}

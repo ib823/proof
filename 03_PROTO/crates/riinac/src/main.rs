@@ -10,6 +10,7 @@
 #![forbid(unsafe_code)]
 
 mod c_toolchain;
+mod conformance;
 mod diagnostics;
 mod emit_core;
 mod expect_update;

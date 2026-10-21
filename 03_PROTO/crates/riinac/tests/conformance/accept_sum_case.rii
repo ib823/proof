@@ -1,0 +1,8 @@
+// A sum value taken apart by a match.
+fungsi utama() -> Nombor kesan Bersih {
+    biar s = inl 5 : Hasil<Nombor, Teks>;
+    padan s {
+        inl x => x,
+        inr y => 0,
+    }
+}

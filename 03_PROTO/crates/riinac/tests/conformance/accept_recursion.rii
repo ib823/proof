@@ -1,0 +1,4 @@
+// A self-recursive function (EFix), declared after its caller.
+fungsi utama() -> () kesan Bersih { sendiri(0) }
+
+fungsi sendiri(n: Nombor) -> () kesan Bersih { sendiri(n) }

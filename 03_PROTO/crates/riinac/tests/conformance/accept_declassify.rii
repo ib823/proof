@@ -1,0 +1,5 @@
+// A secret declassified with its matching proof.
+fungsi utama() -> Nombor kesan Bersih {
+    biar s = dedah (sulit 7) dengan bukti (sulit 7);
+    s
+}

@@ -1,0 +1,5 @@
+// A reference is allocated (Tulis) in a function declared pure.
+fungsi utama() -> () kesan Bersih {
+    biar r = ruj 1 @Awam;
+    ()
+}

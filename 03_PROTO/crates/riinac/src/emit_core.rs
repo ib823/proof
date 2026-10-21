@@ -489,6 +489,22 @@ pub fn elaborate(e: &Expr, is_builtin: &dyn Fn(&str) -> bool) -> Result<Term, Un
     Elab { is_builtin }.expr(e, &mut Vec::new())
 }
 
+/// The core type of a Rust type (the `Ty` table of CORE_MAPPING).
+pub fn core_ty(t: &Ty) -> Result<Term, Unmodelled> {
+    Elab {
+        is_builtin: &|_| false,
+    }
+    .ty(t)
+}
+
+/// A Rust effect set as one Coq effect: its join in Coq's order.
+pub fn core_effect_set(set: EffectSet) -> Result<Term, Unmodelled> {
+    Elab {
+        is_builtin: &|_| false,
+    }
+    .effect_set(set)
+}
+
 /// The text `riinac emit-core` prints. Before printing, the term is checked
 /// against [`SIGNATURES`] and its text is parsed back and compared, so a term
 /// that is not well-sorted Coq, or that would not round-trip, is never written.
@@ -540,8 +556,8 @@ impl Elab<'_> {
             Expr::Pair(a, b) => c("EPair", vec![self.expr(a, scope)?, self.expr(b, scope)?]),
             Expr::Fst(a) => c("EFst", vec![self.expr(a, scope)?]),
             Expr::Snd(a) => c("ESnd", vec![self.expr(a, scope)?]),
-            Expr::Inl(a, ty) => c("EInl", vec![self.expr(a, scope)?, self.ty(ty)?]),
-            Expr::Inr(a, ty) => c("EInr", vec![self.expr(a, scope)?, self.ty(ty)?]),
+            Expr::Inl(a, ty) => self.inject(true, a, ty, scope)?,
+            Expr::Inr(a, ty) => self.inject(false, a, ty, scope)?,
             Expr::Case(scrut, x, l, y, r) => c(
                 "ECase",
                 vec![
@@ -603,6 +619,34 @@ impl Elab<'_> {
         let t = self.expr(body, scope);
         scope.pop();
         t
+    }
+
+    /// Rust's `Inl(e, A + B)` carries the whole sum type and checks `e : A`;
+    /// Coq's `EInl e B` carries only the other side. So `inl` is written
+    /// `EInl e B` ascribed to `A + B`, which keeps riinac's check of `A`
+    /// (and `inr` likewise, with `EInr e A`).
+    fn inject(
+        &self,
+        left: bool,
+        e: &Expr,
+        ty: &Ty,
+        scope: &mut Vec<Ident>,
+    ) -> Result<Term, Unmodelled> {
+        let Ty::Sum(l, r) = ty else {
+            self.ty(ty)?;
+            let which = if left { "Expr::Inl" } else { "Expr::Inr" };
+            return Err(unmodelled(
+                which,
+                format!("an injection annotated with the non-sum type `{ty:?}`"),
+            ));
+        };
+        let payload = self.expr(e, scope)?;
+        let inj = if left {
+            c("EInl", vec![payload, self.ty(r)?])
+        } else {
+            c("EInr", vec![payload, self.ty(l)?])
+        };
+        self.ascribe(inj, ty)
     }
 
     fn ascribe(&self, e: Term, ty: &Ty) -> Result<Term, Unmodelled> {
@@ -1127,6 +1171,34 @@ mod tests {
         assert_eq!(
             el(&lr),
             r#"(ELet "f" (EFix (ELam "f" (TFn TInt TInt EffPure) (ELam "n" TInt (EApp (EVar "f") (EVar "n"))))) (EApp (EVar "f") (EInt 0)))"#
+        );
+    }
+
+    /// Rust's injection carries the whole sum type; Coq's carries the other
+    /// side. The sum type is kept as an ascription (REQ-111 found the first
+    /// mapping wrote the whole sum type where Coq expects one side).
+    #[test]
+    fn an_injection_keeps_its_sum_type_as_an_ascription() {
+        let sum = Ty::Sum(Box::new(Ty::Int), Box::new(Ty::String));
+        assert_eq!(
+            el(&Expr::Inl(Box::new(Expr::Int(5)), sum.clone())),
+            r#"(EApp (ELam "ascribed" (TSum TInt TString) (EVar "ascribed")) (EInl (EInt 5) TString))"#
+        );
+        assert_eq!(
+            el(&Expr::Inr(Box::new(Expr::String("t".into())), sum)),
+            r#"(EApp (ELam "ascribed" (TSum TInt TString) (EVar "ascribed")) (EInr (EString "t") TInt))"#
+        );
+        assert_eq!(
+            elaborate(&Expr::Inl(Box::new(Expr::Int(5)), Ty::Any), &none)
+                .unwrap_err()
+                .row,
+            "Ty::Any"
+        );
+        assert_eq!(
+            elaborate(&Expr::Inl(Box::new(Expr::Int(5)), Ty::String), &none)
+                .unwrap_err()
+                .row,
+            "Expr::Inl"
         );
     }
 

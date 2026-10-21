@@ -1,0 +1,6 @@
+// Pairs and projections.
+fungsi utama() -> Teks kesan Bersih {
+    biar p = (1, "satu");
+    biar n = fst p;
+    snd p
+}

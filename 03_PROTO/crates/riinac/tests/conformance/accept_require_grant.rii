@@ -1,0 +1,4 @@
+// A capability granted around code that requires it.
+fungsi utama() -> () kesan Tulis {
+    beri Tulis (perlukan Tulis (laku Tulis ()))
+}

@@ -1,0 +1,4 @@
+// The two branches have different types.
+fungsi utama() -> Nombor kesan Bersih {
+    kalau betul { 1 } lain { "dua" }
+}

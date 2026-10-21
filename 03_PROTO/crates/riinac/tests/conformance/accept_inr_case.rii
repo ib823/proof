@@ -1,0 +1,8 @@
+// The right injection and both arms of a match.
+fungsi utama() -> Teks kesan Bersih {
+    biar s = inr "kanan" : Hasil<Nombor, Teks>;
+    padan s {
+        inl n => "kiri",
+        inr t => t,
+    }
+}
