@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-21T01:58:38Z
-**Git SHA:** fe3b97fa2
+**Generated:** 2026-10-21T03:10:05Z
+**Git SHA:** b13e080b4
 **Mode:** full
 **Status:** PASS
 
@@ -8,12 +8,12 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3648 tests |
+| Rust Tests | PASS | 3653 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 335 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 335 .vo files compiled in 169s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 335 .vo files compiled in 171s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
-| Core Conformance (REQ-111) | PASS | 27 programs compared with Coq's type_check_fn: 15 both accept, 12 both reject, 0 soundness discrepancies, 0 type/effect mismatches, 0 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught |
+| Core Conformance (REQ-111) | PASS | 10032 programs compared with Coq's type_check_fn: 4804 both accept, 5227 both reject, 1 soundness discrepancies, 0 type/effect mismatches, 0 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught; of these, 10000 generated (seed 2758332502654418179; RIINA_CONFORMANCE_SEED repeats a run): well-typed: 4500 BothAccept; type-error: 286 BothAccept, 2714 BothReject; flow-violation: 2500 BothReject; KNOWN soundness discrepancies awaiting a decision (1): accept_branch_on_secret.rii |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
 | Coq Aborts | PASS | 0 (target: 0) |
@@ -27,7 +27,7 @@
 | F* admit Scan | PASS | 0 admit in 1 files (0 lemmas) |
 | TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 1s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 3 files (15 theorems) |
-| Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 6s (6 checked assertions, local_active) |
+| Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 7s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 3 files (25 assertions) |
 | SMT Scan | PASS | 4 files (149 assertions) |
 | Verus admit Scan | PASS | 0 admit in 1 files (4 proof fns) |
