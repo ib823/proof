@@ -213,7 +213,7 @@ const PIPELINE_STATIC = [
 const RESEARCH = [
   { name: 'Core type theory', desc: 'Type safety, logical relations, declassification, general recursion in the mechanized core' },
   { name: 'Compiler', desc: '18 crates, every test passing, zero third-party runtime dependencies in the shipped compiler (per its SBOM); the dev/CI tools (Coq/Rocq toolchain, cc, wasmtime, z3, fuzz harnesses, NIST test vectors) are separate' },
-  { name: 'Attack surface', desc: '1,231+ threats modelled across the research corpus' },
+  { name: 'Attack surface', desc: 'Threat enumerations in the research corpus: research documents, not verified properties' },
   { name: 'Termination and memory', desc: 'Sized types, premise-free strong normalisation for the reference-free, fix-free core, separation-logic models' },
   { name: 'Concurrency and effects', desc: 'Session types, effect algebra, choreography projection' },
   { name: 'Runtime and hardware', desc: 'Constant time, side-channel models, leakage contracts (Guarnieri et al.)' },
@@ -222,17 +222,18 @@ const RESEARCH = [
   { name: 'Compliance research', desc: '19 profiles across 606 machine-checkable rules, EU CRA/DORA/NIS2 current' },
 ];
 
-// Status vocabulary is deliberate: MODELLED = a mechanized Coq compliance model
-// exists alongside checker rules; CHECKER = compiler-enforced rules with
-// pos+neg tests; ARTIFACT = build-time evidence emission. None is an assessment.
+// Status uses the hardening mandate's §2 claim levels (check-doc-drift.sh
+// rejects any other): MODELLED = a mechanized Coq compliance model exists
+// alongside checker rules; ENFORCED-TESTED = compiler-enforced heuristic rules
+// with passing and violating tests. None is an assessment.
 const FRAMEWORKS = [
   { fw: 'HIPAA', req: '§164.312 access & audit slice', th: 'COMPLY_001_* + hipaa profile (33 rules)', status: 'MODELLED' },
   { fw: 'PCI-DSS', req: 'PAN masking / encryption slice', th: 'COMPLY_002_* + pci-dss profile (56 rules)', status: 'MODELLED' },
   { fw: 'DO-178C', req: 'Deterministic-execution evidence', th: 'COMPLY_003_* + do-178c profile', status: 'MODELLED' },
-  { fw: 'EU CRA', req: 'Annex I conditions + SBOM/CBOM/VEX', th: 'cra profile (15 rules) + build artefacts', status: 'CHECKER' },
-  { fw: 'EU DORA', req: 'ICT-risk articles slice', th: 'dora profile (14 rules)', status: 'CHECKER' },
-  { fw: 'NIS2', req: 'Art. 21(2) measures slice', th: 'nis2 profile (13 rules)', status: 'CHECKER' },
-  { fw: 'GDPR / PDPA', req: 'Data-protection slices', th: 'gdpr + pdpa profiles (PDPA 2024-current)', status: 'CHECKER' },
+  { fw: 'EU CRA', req: 'Annex I conditions + SBOM/CBOM/VEX', th: 'cra profile (15 rules) + build artefacts', status: 'ENFORCED-TESTED' },
+  { fw: 'EU DORA', req: 'ICT-risk articles slice', th: 'dora profile (14 rules)', status: 'ENFORCED-TESTED' },
+  { fw: 'NIS2', req: 'Art. 21(2) measures slice', th: 'nis2 profile (13 rules)', status: 'ENFORCED-TESTED' },
+  { fw: 'GDPR / PDPA', req: 'Data-protection slices', th: 'gdpr + pdpa profiles (PDPA 2024-current)', status: 'ENFORCED-TESTED' },
 ];
 
 const SECTORS = [
@@ -993,7 +994,7 @@ function Compliance() {
           </div>
         </div>
         <div style={{ marginTop: 14, fontSize: 13.5, lineHeight: 1.65, color: '#6b6559', maxWidth: 860 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', color: '#2f6b3f' }}>MODELLED</span> = a Coq model of the regulation exists in <span style={{ fontFamily: 'var(--font-mono)' }}>02_FORMAL/coq/compliance/</span> alongside the compiler&rsquo;s rules; it proves facts about its own definitions, and the rules are not derived from it. <span style={{ fontFamily: 'var(--font-mono)', color: '#8a6d1f' }}>CHECKER</span> = tested compiler rules only, plus build artefacts (SBOM, CBOM, VEX) where named. Passing a profile is evidence toward that profile; not a conformity assessment or certification &mdash; RIINA is a checker, not a conformity assessment body.
+          <span style={{ fontFamily: 'var(--font-mono)', color: '#2f6b3f' }}>MODELLED</span> = a Coq model of the regulation exists in <span style={{ fontFamily: 'var(--font-mono)' }}>02_FORMAL/coq/compliance/</span> alongside the compiler&rsquo;s rules; it proves facts about its own definitions, and the rules are not derived from it. <span style={{ fontFamily: 'var(--font-mono)', color: '#8a6d1f' }}>ENFORCED-TESTED</span> = compiler rules with passing and violating tests only (tested, not proven), plus build artefacts (SBOM, CBOM, VEX) where named. Passing a profile is evidence toward that profile; not a conformity assessment or certification &mdash; RIINA is a checker, not a conformity assessment body.
         </div>
       </div>
 

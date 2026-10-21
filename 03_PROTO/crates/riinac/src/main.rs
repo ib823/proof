@@ -11,6 +11,7 @@
 
 mod c_toolchain;
 mod diagnostics;
+mod emit_core;
 mod expect_update;
 mod frontend;
 mod pkg_compile;
@@ -33,6 +34,7 @@ enum Command {
     Build,
     EmitC,
     EmitIR,
+    EmitCore,
     Repl,
     Fmt,
     Doc,
@@ -78,21 +80,22 @@ const USAGE: &str = "\
 Usage: riinac [command] [options] <file.rii>
 
 Commands:
-  check    Parse and typecheck only (default)
-  run      Parse, typecheck, and interpret
-  build    Parse, typecheck, emit C/WASM, and compile (--run to execute)
-  emit-c   Parse, typecheck, and emit C to stdout
-  emit-ir  Parse, typecheck, lower, and print IR
-  test     Discover and run inline ujian (test) blocks
-  doc      Generate HTML documentation
-  fmt      Format a .rii file
-  lsp      Start LSP server (stdio)
-  mcp      Start MCP server for AI agents (stdio)
-  repl     Interactive read-eval-print loop
-  verify   Run verification gate [--fast|--full|--coq]
-  pkg      Package manager (init/add/remove/lock/build/...)
-  help     Print this help (also --help, -h)
-  version  Print the compiler version (also --version, -V)
+  check      Parse and typecheck only (default)
+  run        Parse, typecheck, and interpret
+  build      Parse, typecheck, emit C/WASM, and compile (--run to execute)
+  emit-c     Parse, typecheck, and emit C to stdout
+  emit-ir    Parse, typecheck, lower, and print IR
+  emit-core  Parse and print the Coq core term the program elaborates to
+  test       Discover and run inline ujian (test) blocks
+  doc        Generate HTML documentation
+  fmt        Format a .rii file
+  lsp        Start LSP server (stdio)
+  mcp        Start MCP server for AI agents (stdio)
+  repl       Interactive read-eval-print loop
+  verify     Run verification gate [--fast|--full|--coq]
+  pkg        Package manager (init/add/remove/lock/build/...)
+  help       Print this help (also --help, -h)
+  version    Print the compiler version (also --version, -V)
 
 Options:
   --json                   Output structured JSON (for AI agents)
@@ -114,7 +117,7 @@ fn usage() -> ! {
 
 /// `true` when the first argument names a source file rather than a command,
 /// so the documented `riinac <file.rii>` shorthand for `check` still works but
-/// a mistyped or unknown command (`riinac chek x.rii`, `riinac emit-core
+/// a mistyped or unknown command (`riinac chek x.rii`, `riinac emit-coq
 /// x.rii`) is an error instead of a silent `check` that reports success.
 fn looks_like_source_file(arg: &str) -> bool {
     arg.ends_with(".rii") || arg.ends_with(".riih") || std::path::Path::new(arg).is_file()
@@ -171,6 +174,7 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
         "build" => (Command::Build, &args[2..]),
         "emit-c" => (Command::EmitC, &args[2..]),
         "emit-ir" => (Command::EmitIR, &args[2..]),
+        "emit-core" => (Command::EmitCore, &args[2..]),
         "test" => (Command::Test, &args[2..]),
         "doc" => (Command::Doc, &args[2..]),
         "fmt" => (Command::Fmt, &args[2..]),
@@ -411,6 +415,36 @@ fn main() {
     }
 }
 
+/// `riinac emit-core` (REQ-110): print the core term the program elaborates
+/// to. The program is not type-checked first, so the differential conformance
+/// gate (REQ-111) can compare riinac's verdict with the Coq oracle's on any
+/// program, including one riinac rejects.
+fn emit_core_and_exit(program: riina_types::Program, opts: &Options) -> ! {
+    if opts.json
+        || opts.update
+        || opts.run_after_build
+        || opts.report.is_some()
+        || opts.report_output.is_some()
+        || opts.target.is_some()
+        || !opts.compliance.is_empty()
+    {
+        eprintln!("emit-core takes no options other than --stdin");
+        process::exit(1);
+    }
+    let builtins = riina_typechecker::register_builtin_types(&riina_typechecker::Context::new());
+    let is_builtin = |x: &str| builtins.lookup(&x.to_string()).is_some();
+    match emit_core::emit(&program.desugar(), &is_builtin) {
+        Ok(text) => {
+            println!("{text}");
+            process::exit(0);
+        }
+        Err(e) => {
+            eprintln!("error: {e}");
+            process::exit(1);
+        }
+    }
+}
+
 fn run() {
     let (command, input, opts) = parse_args();
 
@@ -544,6 +578,10 @@ fn run() {
             process::exit(1);
         }
     };
+
+    if let Command::EmitCore = command {
+        emit_core_and_exit(program, &opts);
+    }
 
     // Extract test blocks before desugaring (desugar() consumes the Program)
     let test_blocks: Vec<(String, riina_types::Expr)> = program
@@ -987,5 +1025,6 @@ fn run() {
         Command::Verify(_) => unreachable!("handled above"),
         Command::Pkg(_) => unreachable!("handled above"),
         Command::ListCompliance => unreachable!("handled above"),
+        Command::EmitCore => unreachable!("handled above, before type checking"),
     }
 }

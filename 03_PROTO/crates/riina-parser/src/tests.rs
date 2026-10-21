@@ -4897,3 +4897,59 @@ fn builtin_type_names_match_the_parser() {
     }
     assert_eq!(arms, crate::BUILTIN_TYPE_NAMES);
 }
+
+// =============================================================================
+// KEYWORD SPELLINGS AS NAMES
+// =============================================================================
+
+/// The body of the first function in `source`, desugared.
+fn first_body(source: &str) -> Expr {
+    let program = Parser::new(source).parse_program().expect("parses");
+    for decl in program.decls {
+        if let TopLevelDecl::Function { body, .. } = decl {
+            return *body;
+        }
+    }
+    panic!("no function in {source:?}");
+}
+
+#[test]
+fn test_bound_construct_keyword_reads_as_the_variable() {
+    // These eight could be bound but never read: every read parsed as the
+    // construct (`baris` became a UI row and then failed on the next token).
+    for kw in ["token", "tulisan", "paparan", "baris", "lajur", "gabung", "warna", "gaya"] {
+        let body = first_body(&format!("fungsi f() -> Nombor kesan Bersih {{ biar {kw} = 1; {kw} }}"));
+        match body {
+            Expr::Let(name, _, _, rest) => {
+                assert_eq!(name, kw);
+                assert_eq!(*rest, Expr::Var(kw.to_string()), "{kw}");
+            }
+            other => panic!("{kw}: expected Let, got {other:?}"),
+        }
+        // A parameter, read inside a tuple and as a call argument.
+        let source = format!(
+            "fungsi g(x: Nombor) -> Nombor kesan Bersih {{ x }} \
+             fungsi f({kw}: Nombor) -> (Nombor, Nombor) kesan Bersih {{ ({kw}, g({kw})) }}"
+        );
+        assert!(Parser::new(&source).parse_program().is_ok(), "{kw}");
+    }
+}
+
+#[test]
+fn test_bound_keyword_shadows_its_construct_only_in_scope() {
+    // Bound: `warna(3)` calls the variable.
+    let body = first_body("fungsi f() -> Nombor kesan Bersih { biar warna = fungsi(x: Nombor) x; warna(3) }");
+    match body {
+        Expr::Let(_, _, _, rest) => assert_eq!(
+            *rest,
+            Expr::App(Box::new(Expr::Var("warna".into())), Box::new(Expr::Int(3)))
+        ),
+        other => panic!("expected Let, got {other:?}"),
+    }
+    // Not bound: the colour construct, as before.
+    let body = first_body("fungsi f() -> Kosong kesan Bersih { biar w = warna(1, 2, 3); () }");
+    match body {
+        Expr::Let(_, _, value, _) => assert!(!matches!(*value, Expr::App(..)), "{value:?}"),
+        other => panic!("expected Let, got {other:?}"),
+    }
+}

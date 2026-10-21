@@ -236,7 +236,7 @@ This is not a whitepaper. This is working software.
 | **SMT / Z3** | 37 properties of the security lattice and effect join, checked for exact `unsat` counts by `scripts/verify-smt.sh` (Z3 4.8.12) | Mechanized at that scope only (REQ-67a, `02_FORMAL/smt/SCOPED_SET.txt`) |
 | **TLA+ / Alloy** | 1 hand-written smoke spec each (5 TLC-checked theorems; 6 bounded-checked assertions) | Claim level `generated` until wired into CI |
 | **F\*** | 1 smoke module with 3 trivial lemmas | Lane retired (REQ-67g) |
-| **Lean 4 / Isabelle** | Nothing | The generated ports (Lean: 12,576 declarations, of which 215 ever elaborated) were archived; Isabelle is retired. A hand-written Lean re-proof of the core (REQ-67b) has not started |
+| **Lean 4 / Isabelle** | Nothing | The generated ports were archived (the Lean port at commit `fd23fbdb8` had 12,576 declarations, of which 215 ever elaborated); Isabelle is retired. A hand-written Lean re-proof of the core (REQ-67b) has not started |
 | **Verus / Kani / TV** | None | A few hand-written drafts, quarantined (`quarantined: true` in metrics.json) |
 
 **Honest scope:**
@@ -258,19 +258,18 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 18 in the compiler workspace (`03_PROTO`), plus the tooling workspace's own crates |
-| Test count | 3,616 tests in the compiler workspace, all passing (from `website/public/metrics.json`), plus the tooling workspace's own tests |
+| Test count | 3,641 tests in the compiler workspace, all passing (from `website/public/metrics.json`), plus the tooling workspace's own tests |
 | External dependencies | **0** third-party at runtime in the shipped compiler (dev/CI tools are separate, see Install) |
-| Lines of Rust | ~73,500 (proto) |
-| Standard library builtins | 88 across 9 modules |
+| Standard library builtins | 374 registered (Malay and English names counted separately), 342 of them compile; see [docs/api/STDLIB.md](docs/api/STDLIB.md) |
 
 **Crates:**
 
 | Crate | Purpose |
 |-------|---------|
-| `riinac` | Compiler driver — check, run, build, emit-c, emit-ir, repl, fmt, doc, lsp, verify, pkg |
-| `riina-lexer` | Tokenizer with 70+ bilingual keywords |
+| `riinac` | Compiler driver — check, run, build, emit-c, emit-ir, emit-core, test, doc, fmt, lsp, mcp, repl, verify, pkg |
+| `riina-lexer` | Tokenizer with 132 bilingual keywords |
 | `riina-parser` | AST construction |
-| `riina-types` | Type system definitions (22 types, 17 effects, 6 security levels) |
+| `riina-types` | Type system definitions (45 types, 19 effects, 6 security levels) |
 | `riina-typechecker` | Type inference and checking |
 | `riina-codegen` | IR lowering, C/WASM/mobile code generation, interpreter, FFI |
 | `riina-wasm` | WASM playground library (in-browser compiler via cdylib) |
@@ -291,17 +290,17 @@ This is not a whitepaper. This is working software.
 - **LSP server** — Diagnostics, hover info, keyword completion
 - **Package manager** — `riinac pkg init/add/remove/lock/build/publish/list/tree/clean`
 - **Verification gate** — `riinac verify --fast` (zero-trust: runs tests, clippy, Coq audit)
-- **Docker image** — Multi-stage build, ~85MB runtime image
+- **Docker image** — Multi-stage build
 - **Nix flake** — `nix run github:ib823/riina` or `nix develop` for full dev shell
 - **Release scripts** — `scripts/release.sh` (one-command release: bump, tag, tarball, GitHub Release, deploy website), `scripts/bump-version.sh`, `scripts/install.sh`
-- **Website** — 15-page site at [ib823.github.io/riina](https://ib823.github.io/riina/) — includes "Why Proof" executive page, 15 industry verticals, Releases page; deployed via `scripts/deploy-website.sh`
+- **Website** — 7-page site at [ib823.github.io/riina](https://ib823.github.io/riina/): Home, Evidence, Language, Architecture, Compliance (9 industry sectors), Playground and Docs (with the release history); deployed via `scripts/deploy-website.sh`
 - **REPL** — Interactive mode for experimentation
 
 ### Example Programs
 
 172 example `.rii` files across 20 category directories (security, effects, compliance, design patterns, FFI, AI context, JALINAN, showcase, and more).
 
-> **Parser-support caveat (honest):** Many of these examples — including most of `00_basics/` — use a multi-statement block-body function form that the *shipped* parser does not yet accept; 82 of the 172 currently pass `riinac check` (measured 2026-10-20; 14 that used method-call syntax RIINA does not have stopped passing when field access on non-records became a type error, and 2 when undeclared type names did). They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
+> **Parser-support caveat (honest):** Many of these examples use language forms the *shipped* compiler does not yet accept; 83 of the 172 currently pass `riinac check` (measured 2026-10-20). Until 2026-10-20, 14 more passed that used method-call syntax RIINA does not have (they stopped when field access on non-records became a type error), and 2 that used undeclared type names; 1 came back that day, when a variable named after a keyword became readable. They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
 
 ### Cryptographic Tooling
 
@@ -336,9 +335,9 @@ riina/
 │   └── ...                  (alloy, fstar, verus, kani, tv: hand-written drafts, quarantined or retired;
 │                             lean is empty pending REQ-67b — see metrics.json)
 │
-├── 03_PROTO/               Rust compiler (18 crates, 3,616 tests, 0 third-party runtime deps)
+├── 03_PROTO/               Rust compiler (18 crates, 3,641 tests, 0 third-party runtime deps)
 │   └── crates/
-│       ├── riinac/         Compiler driver (11 subcommands)
+│       ├── riinac/         Compiler driver (16 commands)
 │       ├── riina-lexer/    Tokenizer
 │       ├── riina-parser/   Parser
 │       ├── riina-types/    Type system
@@ -355,11 +354,11 @@ riina/
 │
 ├── 04_SPECS/               Language specifications, compliance specs
 ├── 05_TOOLING/             Crypto primitives, build system (Rust)
-├── 07_EXAMPLES/            172 example .rii files (82 pass `riinac check`)
+├── 07_EXAMPLES/            172 example .rii files (83 pass `riinac check`)
 ├── docs/                   Enterprise docs, multilingual READMEs
 ├── VERSION                 Semver source of truth
 ├── CHANGELOG.md            Public-facing changelog
-├── website/                15-page Vite/React website (Why Proof, Enterprise, Playground, etc.)
+├── website/                7-page Vite/React website (Evidence, Language, Compliance, Playground, etc.)
 ├── scripts/                Build, install, release, deploy, sync scripts
 └── riina-vscode/           VS Code extension
 ```
@@ -368,44 +367,44 @@ riina/
 
 ## Research Scope
 
-Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek letter tracks) has a corresponding Coq file in the active build, and every one compiles with 0 `Admitted` / 0 `Axiom` (the build has 29 `Parameter`s, the trusted hardware interface; no capstone theorem depends on them). That is all "Modelled" below claims: the theorems are about each file's own definitions of the domain, not a verification of the named real-world system (a 500-line file is a model of Raft/BFT/CRDT properties, not a verified distributed system), and they are not enforced by the compiler. Many are definitional — see the vacuity count above. Only the rows marked otherwise carry a stronger claim.
+The research tracks in `01_RESEARCH/` that have a Coq counterpart are listed below. Every file in the active build compiles with 0 `Admitted` / 0 `Axiom` (the build has 29 `Parameter`s, the trusted hardware interface; no capstone theorem depends on them). That is all "Modelled" below claims: the theorems are about each file's own definitions of the domain, not a verification of the named real-world system (the distribution file is a model of Raft/BFT/CRDT properties, not a verified distributed system), and they are not enforced by the compiler. Many are definitional — see the vacuity count above. Only the rows marked otherwise carry a stronger claim.
 
-| Track | Domain | Coq Proofs | Status |
-|-------|--------|-----------|--------|
-| A | Core type system, non-interference | 55 files (38K lines) | Type safety proven (closed); non-interference proven for the reference-free, recursion-free core (REQ-85); enforced by tests beyond it, not yet proven with references (REQ-89) |
-| R | Certified compilation (translation validation) | 1 file (955 lines) | Modelled |
-| S | Hardware contracts (CPU side-channel models) | 1 file (560 lines) | Modelled |
-| T | Hermetic build (binary bootstrap verification) | 1 file (502 lines) | Modelled |
-| U | Runtime guardian (verified micro-hypervisor) | 1 file (604 lines) | Modelled |
-| V | Termination guarantees (strong normalization — reference-free, `fix`-free core; general recursion is type-safe but not normalizing, REQ-44) | 6 files (3K lines) | Proven premise-free for that core (`ref_free_well_typed_SN`); false with higher-order references (Landin's knot, proven) |
-| W | Verified memory (separation logic) | 1 file (739 lines) | Modelled |
-| X | Concurrency (session types, data-race freedom) | 1 file (750 lines) | Modelled |
-| Y | Verified standard library | 1 file (780 lines) | Modelled |
-| Z | Declassification policy (budgets, robust) | 1 file (665 lines) | Modelled |
-| Σ | Verified persistent storage | 1 file (712 lines) | Modelled |
-| — | Industry compliance (15 jurisdictions) | 15 files (2K lines) | Modelled |
-| — | Domain security (timing, protocols, hardware, ...) | 183 files (76K lines) | Modelled |
-| Π | Verified performance (WCET, SIMD, lock-free) | 1 file (470 lines) | Modelled |
-| Δ | Verified distribution (Raft, BFT, CRDTs) | 1 file (500 lines) | Modelled |
-| Ω | Network defense (rate limiting, SYN cookies) | 1 file (530 lines) | Modelled |
-| Ψ | Operational security (Shamir, duress, dead man) | 1 file (560 lines) | Modelled |
-| L | FFI boundary safety, attack surface research | 1 file | Modelled |
-| — | Mobile OS security (27 subsystems) | 27 files | Modelled |
-| — | Security foundations (boot, IOMMU, crypto) | 11 files | Modelled |
-| — | UI/UX accessibility and safety | 7 files | Modelled |
-| — | Capital markets (order matching, settlement) | 1 file | Modelled |
-| — | Physical systems security (sensors, timing) | 1 file | Modelled |
+| Track | Domain | Status |
+|-------|--------|--------|
+| A | Core type system, non-interference | Type safety proven (closed); non-interference proven for the reference-free, recursion-free core (REQ-85); enforced by tests beyond it, not yet proven with references (REQ-89) |
+| R | Certified compilation (translation validation) | Modelled |
+| S | Hardware contracts (CPU side-channel models) | Modelled |
+| T | Hermetic build (binary bootstrap verification) | Modelled |
+| U | Runtime guardian (verified micro-hypervisor) | Modelled |
+| V | Termination guarantees (strong normalization — reference-free, `fix`-free core; general recursion is type-safe but not normalizing, REQ-44) | Proven premise-free for that core (`ref_free_well_typed_SN`); false with higher-order references (Landin's knot, proven) |
+| W | Verified memory (separation logic) | Modelled |
+| X | Concurrency (session types, data-race freedom) | Modelled |
+| Y | Verified standard library | Modelled |
+| Z | Declassification policy (budgets, robust) | Modelled |
+| Σ | Verified persistent storage | Modelled |
+| — | Industry compliance (jurisdiction models) | Modelled |
+| — | Domain security (timing, protocols, hardware, ...) | Modelled |
+| Π | Verified performance (WCET, SIMD, lock-free) | Modelled |
+| Δ | Verified distribution (Raft, BFT, CRDTs) | Modelled |
+| Ω | Network defense (rate limiting, SYN cookies) | Modelled |
+| Ψ | Operational security (Shamir, duress, dead man) | Modelled |
+| L | FFI boundary safety, attack surface research | Modelled |
+| — | Mobile OS security (subsystem models) | Modelled |
+| — | Security foundations (boot, IOMMU, crypto) | Modelled |
+| — | UI/UX accessibility and safety | Modelled |
+| — | Capital markets (order matching, settlement) | Modelled |
+| — | Physical systems security (sensors, timing) | Modelled |
 
 ---
 
 ## Current Status
 
 **Build:** Passing.
-**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3616 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3641 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 | Area | Status |
 |------|--------|
-| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,616 tests (plus the tooling workspace's own tests); the C/native backend is not formally verified — it is differential-tested against the interpreter; end-to-end security alignment still in progress |
+| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,641 tests (plus the tooling workspace's own tests); the C/native backend is not formally verified — it is differential-tested against the interpreter; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
 | Formal verification | **Coq active lane is the only real machine-checked verification** (0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them)). Of the other lanes only the scoped SMT set (37 properties) is mechanized; the rest hold single smoke artifacts or nothing, and the generated mirrors were archived — see `metrics.json`. No independent audit published yet |
 | WASM/mobile backends | Present as scaffolding, not full production backends |

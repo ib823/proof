@@ -390,6 +390,40 @@ fn reserved_keywords_are_rejected_and_soft_ones_are_names() {
     assert!(errs.is_empty(), "{} keyword(s) misdescribed:\n  {}", errs.len(), errs.join("\n  "));
 }
 
+/// A keyword spelling that can be bound as a name can also be read back. Eight
+/// construct keywords (`token`, `tulisan`, `paparan`, `baris`, `lajur`,
+/// `gabung`, `warna`, `gaya`) were accepted by `biar`, but every read parsed as
+/// the keyword's construct, so the binding was write-only. A bound name now
+/// shadows the construct.
+#[test]
+fn a_keyword_that_can_be_bound_can_be_read() {
+    let t = truth();
+    let mut errs = Vec::new();
+    for (tok, spellings) in &t.keywords {
+        for spelling in spellings {
+            let bind = format!("fungsi f() -> Nombor kesan Bersih {{ biar {spelling} = 1; 0 }}\n");
+            if !check(&bind).0 {
+                continue; // not accepted as a name at all
+            }
+            for read in [
+                spelling.to_string(),
+                format!("biar p = ({spelling}, 2); 0"),
+                format!("g({spelling})"),
+            ] {
+                let src = format!(
+                    "fungsi g(x: Nombor) -> Nombor kesan Bersih {{ x }}\n\
+                     fungsi f() -> Nombor kesan Bersih {{ biar {spelling} = 1; {read} }}\n"
+                );
+                let (ok, out) = check(&src);
+                if !ok {
+                    errs.push(format!("`{spelling}` ({tok}) binds but `{read}` fails: {}", out.trim()));
+                }
+            }
+        }
+    }
+    assert!(errs.is_empty(), "write-only keyword bindings:\n  {}", errs.join("\n  "));
+}
+
 /// The elaborations the page states, as the parser produces them. When the
 /// parser changes one of these, the page is re-read and this list updated.
 #[test]

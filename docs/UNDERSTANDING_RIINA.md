@@ -54,10 +54,10 @@ The constitution means nothing without a government to enforce it. Track B is RI
 - **Parser** — Arranges tokens into a structured tree (Abstract Syntax Tree) that represents the program's logic.
 - **Type Checker** — Verifies that the program obeys all type rules, security labels, and effect declarations. This is where the constitution's rules become enforceable law; the checker is tested against the Coq model, not proven to match it.
 - **Code Generator** — Translates the type-checked program into executable code. Currently targets C (native), WASM (web), Android (JNI), and iOS (Swift bridge); the WASM and mobile backends are scaffolding. The C/native backend is not formally verified; it is differential-tested against the interpreter.
-- **Standard Library** — 88 built-in functions across 9 modules (strings, lists, math, maps, sets, testing, time, files, JSON).
+- **Standard Library** — 374 registered builtins (Malay and English names counted separately): strings, lists, maps, sets, maths, time, files, JSON, networking, cryptography and more. `docs/api/STDLIB.md` lists each one and the backends that compile it.
 - **Developer Tools** — Formatter (`riina-fmt`), language server (`riina-lsp`), documentation generator (`riina-doc`), VS Code extension, package manager (`riina-pkg`), REPL.
 
-**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,616 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
+**Current state:** 18 crates (Rust packages) in the compiler workspace, 3,641 tests, all passing, plus the tooling workspace's own tests. 0 third-party runtime dependencies in the shipped compiler; development and CI use separate tools (Rocq toolchain, `cc`, `wasmtime`, `z3`, fuzz harnesses, NIST test vectors).
 
 ### Track C — The Legal Code (Specifications)
 
@@ -65,10 +65,10 @@ A constitution establishes principles; a legal code spells out specific rules. T
 
 **What it contains:**
 - Language grammar and syntax specification
-- Type system specification (CTSS v1.0.1)
+- Type system specification (CTSS)
 - Bahasa Melayu keyword mapping
-- 15 industry compliance specifications (PCI-DSS, HIPAA, GDPR, PDPA, and 11 others)
-- The master 8-phase materialization plan
+- 15 industry compliance specifications (PCI-DSS, HIPAA, GDPR, PDPA and others)
+- The original materialization plan (superseded: `RIINA_MASTER_PLAN.md` is the plan)
 
 ### Track F — Public Works (Tooling & Infrastructure)
 
@@ -177,9 +177,9 @@ RIINA was constructed in eight phases, each building on the previous:
 | Phase | Name | What It Built | Status |
 |-------|------|---------------|--------|
 | 1 | Compiler Completion | The core compiler: lexer, parser, type checker, code generator, REPL | Done |
-| 2 | Standard Library | 88 built-in functions across 9 modules | Done |
+| 2 | Standard Library | 374 registered builtins (see `docs/api/STDLIB.md`) | Done |
 | 3 | Formal Verification | Coq (mechanized): 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed; 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) | Stable |
-| 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, examples (172 today; 82 pass `riinac check`) | Done |
+| 4 | Developer Experience | Formatter, language server, doc generator, VS Code extension, examples (172 today; 83 pass `riinac check`) | Done |
 | 5 | Ecosystem | Package manager, CI/CD, Docker, Nix, release system, Proprietary license | Done |
 | 6 | Adoption | C FFI, demo apps, community setup, enterprise compliance-profile checks, public repository | Done |
 | 7 | Platform Universality | WASM backend, mobile backends (scaffolding), in-browser playground, backend differential tests | Done |
@@ -222,12 +222,12 @@ These numbers reflect the current verified state of the codebase:
 | Coq proofs (Qed, active build) | 1,679 core Qed; 9,719 model Qed (facts about their own definitions, not verified systems); 1,443 excluded Qed (vacuous patterns, examples, counterexamples or test files) |
 | Incomplete proofs (Admitted) | 0 |
 | Axioms (active build) | 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them) |
-| Active proof files | 334 |
-| Rust tests | 3,560 (compiler workspace), plus the tooling workspace's own tests |
+| Coq proof files | 375 Coq proof files (335 active) |
+| Rust tests | 3,641 tests (compiler workspace), plus the tooling workspace's own tests |
 | Compiler crates | 18 |
-| Example programs | 172 (82 pass `riinac check`) |
-| Standard library builtins | 88 |
-| Compliance profiles | 15 (3 with implemented heuristic checks; evidence toward a profile, not a conformity assessment or certification) |
+| Example programs | 172 (83 pass `riinac check`) |
+| Standard library builtins | 374 registered builtins, 342 of them compile |
+| Compliance profiles | 19 profiles, 606 heuristic rules in total (evidence toward a profile, not a conformity assessment or certification) |
 | Target platforms | 4 (native, WASM, Android, iOS; WASM and mobile are scaffolding) |
 | Independent audit | No independent audit published yet |
 

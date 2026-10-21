@@ -267,6 +267,15 @@ impl TypeError {
     #[must_use]
     pub fn fix_hint(&self) -> Option<String> {
         Some(match self {
+            TypeError::TypeMismatch { expected, found }
+            | TypeError::AnnotationMismatch { expected, found }
+                if sized_int_mix(expected, found) =>
+            {
+                "Sized integers (u8 … u64, i8 … i64) and Nombor do not mix. Write a sized \
+                 literal with its suffix (7i64, 0i64 - 5i64), and keep a value Nombor or \
+                 sized throughout: Nombor is unsigned and wraps, i64 is signed"
+                    .to_string()
+            }
             TypeError::TypeMismatch { expected, found } => {
                 format!(
                     "Convert with ke_nombor()/ke_teks()/ke_bool(), or change the annotation from {:?} to {:?}",
@@ -3974,17 +3983,14 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
         return true;
     }
 
-    // Sized integers interoperate with the default `Int` (numeric-tower slice):
-    // a plain integer literal may initialize a sized binding, and a sized value
-    // may be used where `Int` is expected. Same-width/signedness is the exact
-    // match above; differing sized types stay incompatible. Width-aware
-    // narrowing/overflow checking is a later numeric-tower phase.
-    if matches!(
-        (expected, found),
-        (Ty::Int, Ty::IntN { .. }) | (Ty::IntN { .. }, Ty::Int)
-    ) {
-        return true;
-    }
+    // Sized integers (`Ty::IntN`) do not stand in for `Int` (`Nombor`), nor
+    // the reverse: only the exact match above. They used to, in both
+    // directions, and the two have different runtime representations: an
+    // `i64` passed to a `Nombor` builtin crashed the interpreter
+    // (`mutlak(0i64 - 7i64)`) and printed 18446744073709551609 natively, and
+    // `biar x: i64 = 0 - 5` held the wrapped unsigned value, so `x / 2i64`
+    // was -2 interpreted and 9223372036854775805 natively. Write sized
+    // literals with their suffix (`7i64`).
 
     // ════════════════════════════════════════════════════════════════════
     // DOMAIN SECURITY: Taint Checking
@@ -4162,13 +4168,11 @@ fn strip_constant_time(ty: &Ty) -> (&Ty, bool) {
 
 /// Result type of integer arithmetic over two operand types (numeric tower).
 ///
-/// A sized operand (`Ty::IntN`) makes the result that same sized type, so the
-/// width propagates through `+`/`-`/`*`/`/`/`%` and the codegen/interpreter can
-/// wrap at the declared width. A plain `Int` literal adapts to the sized operand
-/// (`x: u8 + 1` is `u8`). Two sized operands must agree on width **and**
-/// signedness — `u8 + u16` is rejected (returns `None`), unlike the looser
-/// `Int`↔`IntN` initialiser compatibility, because silent width mixing would
-/// lose bits. Returns `None` when either operand is not an integer.
+/// Two sized operands (`Ty::IntN`) of the same width **and** signedness give
+/// that type, so the width propagates through `+`/`-`/`*`/`/`/`%` and the
+/// codegen/interpreter can wrap at the declared width. A sized operand does not
+/// mix with a plain `Int` (`x: u8 + 1` is rejected; write `x + 1u8`), nor with
+/// another width (`u8 + u16`): both return `None`, as does a non-integer.
 fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
     match (a, b) {
         (
@@ -4184,12 +4188,6 @@ fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
             bits: *b1,
             signed: *s1,
         }),
-        (Ty::IntN { bits, signed }, Ty::Int) | (Ty::Int, Ty::IntN { bits, signed }) => {
-            Some(Ty::IntN {
-                bits: *bits,
-                signed: *signed,
-            })
-        }
         (Ty::Int, Ty::Int) => Some(Ty::Int),
         // Arbitrary-precision integers form their own arithmetic domain; they do
         // not mix with fixed-width ints (convert explicitly via `besar`).
@@ -4204,17 +4202,34 @@ fn int_arith_result(a: &Ty, b: &Ty) -> Option<Ty> {
     }
 }
 
-/// True when both operands are sized integers (`Ty::IntN`) but disagree on width
-/// or signedness (e.g. `u8` and `u16`). Such a mix is rejected by arithmetic to
-/// avoid silently dropping bits; a sized type mixed with a plain `Int` is fine.
-fn mixed_int_width(a: &Ty, b: &Ty) -> bool {
+/// True when one side is a sized integer and the other a plain `Int`.
+fn sized_int_mix(a: &Ty, b: &Ty) -> bool {
     matches!(
         (a, b),
-        (
-            Ty::IntN { bits: b1, signed: s1 },
-            Ty::IntN { bits: b2, signed: s2 },
-        ) if b1 != b2 || s1 != s2
+        (Ty::Int, Ty::IntN { .. }) | (Ty::IntN { .. }, Ty::Int)
     )
+}
+
+/// The result type of an integer operator, or the error. Both operands are
+/// `Int`, or both the same sized type (see [`int_arith_result`]); `Any`
+/// matches either.
+fn int_operands(a: &Ty, b: &Ty) -> Result<Ty, TypeError> {
+    for t in [a, b] {
+        if !matches!(t, Ty::Int | Ty::IntN { .. } | Ty::Any) {
+            return Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: t.clone(),
+            });
+        }
+    }
+    match (a, b) {
+        (Ty::Any, Ty::Any) => Ok(Ty::Int),
+        (Ty::Any, t) | (t, Ty::Any) => Ok(t.clone()),
+        _ => int_arith_result(a, b).ok_or_else(|| TypeError::TypeMismatch {
+            expected: a.clone(),
+            found: b.clone(),
+        }),
+    }
 }
 
 // ============================================================================
@@ -5712,22 +5727,11 @@ fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Ty
                 Ok((label_result(Ty::Fixed), eff))
             } else if *inner1 == Ty::FixedBin && *inner2 == Ty::FixedBin {
                 Ok((label_result(Ty::FixedBin), eff))
-            } else if types_compatible(&Ty::Int, inner1)
-                && types_compatible(&Ty::Int, inner2)
+            } else if matches!(inner1, Ty::Int | Ty::IntN { .. })
+                && matches!(inner2, Ty::Int | Ty::IntN { .. })
             {
-                // Numeric tower: a sized operand propagates its width to the
-                // result; a plain `Int` literal adapts. Two sized operands of
-                // different width/signedness are rejected (silent bit loss).
-                if mixed_int_width(inner1, inner2) {
-                    return Err(TypeError::TypeMismatch {
-                        expected: inner1.clone(),
-                        found: inner2.clone(),
-                    });
-                }
-                Ok((
-                    label_result(int_arith_result(inner1, inner2).unwrap_or(Ty::Int)),
-                    eff,
-                ))
+                // Numeric tower: two `Int`s, or two of the same sized type.
+                Ok((label_result(int_operands(inner1, inner2)?), eff))
             } else if types_compatible(&Ty::String, inner1)
                 && types_compatible(&Ty::String, inner2)
             {
@@ -5773,30 +5777,8 @@ fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Ty
             {
                 return Ok((label_result(inner1.clone()), eff));
             }
-            if !types_compatible(&Ty::Int, inner1) {
-                return Err(TypeError::TypeMismatch {
-                    expected: Ty::Int,
-                    found: inner1.clone(),
-                });
-            }
-            if !types_compatible(&Ty::Int, inner2) {
-                return Err(TypeError::TypeMismatch {
-                    expected: Ty::Int,
-                    found: inner2.clone(),
-                });
-            }
-            // Numeric tower: reject mixing two different sized widths;
-            // otherwise propagate the sized width (a plain `Int` adapts).
-            if mixed_int_width(inner1, inner2) {
-                return Err(TypeError::TypeMismatch {
-                    expected: inner1.clone(),
-                    found: inner2.clone(),
-                });
-            }
-            Ok((
-                label_result(int_arith_result(inner1, inner2).unwrap_or(Ty::Int)),
-                eff,
-            ))
+            // Numeric tower: two `Int`s, or two of the same sized type.
+            Ok((label_result(int_operands(inner1, inner2)?), eff))
         }
         BinOp::Eq | BinOp::Ne => {
             if !types_compatible(inner1, inner2) {
@@ -5806,6 +5788,7 @@ fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Ty
                 });
             }
             if !types_compatible(&Ty::Int, inner1)
+                && !matches!(inner1, Ty::IntN { .. })
                 && !types_compatible(&Ty::Bool, inner1)
                 && !types_compatible(&Ty::String, inner1)
                 && *inner1 != Ty::BigInt
@@ -5830,18 +5813,8 @@ fn tc_bin_op(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Ty
             {
                 return Ok((label_result(Ty::Bool), eff));
             }
-            if !types_compatible(&Ty::Int, inner1) {
-                return Err(TypeError::TypeMismatch {
-                    expected: Ty::Int,
-                    found: inner1.clone(),
-                });
-            }
-            if !types_compatible(&Ty::Int, inner2) {
-                return Err(TypeError::TypeMismatch {
-                    expected: Ty::Int,
-                    found: inner2.clone(),
-                });
-            }
+            // Two `Int`s, or two of the same sized type.
+            int_operands(inner1, inner2)?;
             Ok((label_result(Ty::Bool), eff))
         }
         BinOp::And | BinOp::Or => {

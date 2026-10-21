@@ -17,7 +17,8 @@
 //! * a second input file silently replaced the first, so `riinac check
 //!   leaky.rii ok.rii` checked only `ok.rii` and exited 0;
 //! * an unknown command fell through to `check` on the next argument, so
-//!   `riinac emit-core x.rii` printed "Success!";
+//!   `riinac emit-core x.rii` printed "Success!" (a real command since
+//!   REQ-110, so `emit-coq` stands in for it below);
 //! * `--version`/`--help` were "Unknown option" and every banner said v0.1.0.
 
 use std::path::{Path, PathBuf};
@@ -249,7 +250,7 @@ fn a_second_input_file_is_refused_not_silently_dropped() {
 fn an_unknown_command_is_an_error_not_a_silent_check() {
     let sb = Sandbox::new("unknowncmd");
     sb.file("ok.rii", WELL_TYPED);
-    for cmd in ["emit-core", "chek", "totally-bogus"] {
+    for cmd in ["emit-coq", "chek", "totally-bogus"] {
         let out = riinac(&sb.dir, &[cmd, "ok.rii"]);
         let stderr = String::from_utf8_lossy(&out.stderr);
         assert!(!out.status.success(), "`riinac {cmd}` succeeded");

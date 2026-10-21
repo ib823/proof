@@ -896,11 +896,13 @@ mod tests {
     #[test]
     fn check_program_sized_int_function_typechecks() {
         // A function with a sized-integer (u8) parameter and return type
-        // type-checks; a plain integer literal is an accepted argument
-        // (IntN ↔ Int compatibility), and the program's type is the sized type.
+        // type-checks with a sized argument, and the program's type is the
+        // sized type. A plain integer is not a u8: it used to be accepted, and
+        // the two have different runtime representations.
         let (_, ty, _) =
-            check_program(&parse_program("fungsi id8(x: u8) -> u8 { x }\nid8(5)")).unwrap();
+            check_program(&parse_program("fungsi id8(x: u8) -> u8 { x }\nid8(5u8)")).unwrap();
         assert_eq!(ty, riina_types::Ty::IntN { bits: 8, signed: false });
+        assert!(check_program(&parse_program("fungsi id8(x: u8) -> u8 { x }\nid8(5)")).is_err());
     }
 
     #[test]

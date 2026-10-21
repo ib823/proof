@@ -209,10 +209,7 @@ fn extract_string(v: &Value, ctx: &str) -> Result<String> {
 }
 
 fn extract_int(v: &Value, ctx: &str) -> Result<u64> {
-    match v {
-        Value::Int(n) => Ok(*n),
-        _ => Err(type_err("int", v, ctx)),
-    }
+    v.as_unsigned().ok_or_else(|| type_err("non-negative int", v, ctx))
 }
 
 fn extract_list<'a>(v: &'a Value, ctx: &str) -> Result<&'a Vec<Value>> {
