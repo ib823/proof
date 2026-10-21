@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-21T01:02:50Z
-**Git SHA:** 425e22e25
+**Generated:** 2026-10-21T01:58:38Z
+**Git SHA:** fe3b97fa2
 **Mode:** full
 **Status:** PASS
 
@@ -8,11 +8,12 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3641 tests |
+| Rust Tests | PASS | 3648 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 335 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 335 .vo files compiled in 170s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 335 .vo files compiled in 169s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
+| Core Conformance (REQ-111) | PASS | 27 programs compared with Coq's type_check_fn: 15 both accept, 12 both reject, 0 soundness discrepancies, 0 type/effect mismatches, 0 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
 | Coq Aborts | PASS | 0 (target: 0) |
