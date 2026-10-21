@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-21T03:23:28Z
-**Git SHA:** 14ad9f94e
+**Generated:** 2026-10-21T04:01:08Z
+**Git SHA:** f4f0b9f9e
 **Mode:** full
 **Status:** PASS
 
@@ -8,12 +8,12 @@
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Rust Tests | PASS | 3653 tests |
+| Rust Tests | PASS | 3657 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 335 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 335 .vo files compiled in 171s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 335 .vo files compiled in 175s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
-| Core Conformance (REQ-111) | PASS | 10032 programs compared with Coq's type_check_fn: 4772 both accept, 5259 both reject, 1 soundness discrepancies, 0 type/effect mismatches, 0 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught; of these, 10000 generated (seed 16902841210617362147; RIINA_CONFORMANCE_SEED repeats a run): well-typed: 4500 BothAccept; type-error: 254 BothAccept, 2746 BothReject; flow-violation: 2500 BothReject; KNOWN soundness discrepancies awaiting a decision (1): accept_branch_on_secret.rii |
+| Core Conformance (REQ-111) | PASS | 15032 programs compared with Coq's type_check_fn: 5798 both accept, 9184 both reject, 0 soundness discrepancies, 0 type/effect mismatches, 49 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught; of these, 10000 generated (seed 12426345788963307435; RIINA_CONFORMANCE_SEED repeats a run): well-typed: 4500 BothAccept; type-error: 215 BothAccept, 2785 BothReject; flow-violation: 2500 BothReject; 5000 fuzzed mutants (1723 by flow or effect operators; 0 more left the core): 1065 BothAccept, 3886 BothReject, 49 Completeness; generated and fuzzed completeness gaps by riinac's error: [49 CapabilityViolation]; 1 programs in a KNOWN soundness class awaiting a decision: a branch on a secret (witness accept_branch_on_secret.rii): riinac accepts a branch whose condition is a Rahsia or labelled Bool and raises the branches' security level; Coq's T_If requires TBool, so such programs are outside the proofs. Found by the REQ-111 generator 2026-10-21 (494 of 10,000); the owner decides whether riinac rejects it or the core gains a security-raising If (REQ-99) |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
 | Coq Aborts | PASS | 0 (target: 0) |
