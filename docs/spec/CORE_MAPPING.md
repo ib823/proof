@@ -152,8 +152,8 @@ S1.2, S1.6).
 ### `Effect`
 
 The relative order of the effects both sides share is the same. The numbers
-are not: Rust's `Effect::level()` inserts `Mut` (1) and `Alloc` (3), so `Read`
-is 2 in Rust and 1 in Coq, `Write` 4 against 2, and so on up to `Gapura`
+are not. Rust's `Effect::level()` inserts `Mut` (1) and `Alloc` (3), so `Read`
+is 2 in Rust and 1 in Coq, `Write` is 4 against 2, and so on up to `Gapura`
 (18 against 16).
 
 | Rust | Coq | Status | Notes |

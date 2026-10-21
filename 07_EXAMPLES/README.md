@@ -7,7 +7,7 @@ This directory contains 172 `.rii` example files across 20 category directories.
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
 of the examples assume. As of this writing, **83 of the 172 examples pass
-`riinac check`** end-to-end (re-measured 2026-10-20; 19 of the 28 in `00_basics/`), and closing the
+`riinac check`** end-to-end (re-measured 2026-10-20), and closing the
 remaining gap is active work (`RIINA_MASTER_PLAN.md` REQ-55). The 2026-10-19 drop from 98 is
 honest: 14 examples call methods on lists and strings (`senarai.panjang()`, `xs.peta(f)`) —
 RIINA has no methods — and used to pass `check` only to fail when run (REQ-93). So is the
@@ -96,8 +96,8 @@ riinac run   examples.rii   # interpret
 
 ## Examples that currently pass `riinac check`
 
-The whole `00_basics/` directory (28 files) now type- and effect-checks, so those
-are the best starting points. Many files in `01_security/`, `02_effects/`,
+Most of `00_basics/` type- and effect-checks, so it is the best starting
+point. Many files in `01_security/`, `02_effects/`,
 `04_compliance/`, and `08_jalinan/` also pass. The exact set moves as the parser
 is extended, so regenerate it rather than trusting a hand-maintained list:
 

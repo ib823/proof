@@ -8,8 +8,8 @@ CAHAYA enforces UI correctness at the type level:
 
 - **Accessibility** — WCAG contrast ratios checked at compile time
 - **Layout safety** — Type-checked layout composition
-- **Aesthetic enforcement** — 7-layer aesthetic rules grounded in empirical research
-- **Honest scope** — ~60-70% of aesthetic quality is enforceable; human judgment remains essential
+- **Aesthetic enforcement** — layered aesthetic rules drawn from the CAHAYA research track
+- **Honest scope** — only part of aesthetic quality is enforceable; human judgment remains essential
 
 ## Quick Start
 

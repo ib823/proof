@@ -7,7 +7,7 @@ Thank you for your interest in RIINA. This guide covers how to contribute effect
 ## Prerequisites
 
 - **Rust** 1.94.1+ — `rustup install stable` (pinned in `rust-toolchain.toml`)
-- **Rocq 9.2** — Only needed for formal proof work (files use `From Stdlib`)
+- **Rocq 9.1.1** — Only needed for formal proof work (files use `From Stdlib`; install with `scripts/provision-coq.sh`)
 - No external dependencies required
 
 ## Getting Started
