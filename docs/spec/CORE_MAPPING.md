@@ -21,6 +21,33 @@ core cover the shipped language is REQ-99 (core calculus v2); until then
 `riinac emit-core` and assured mode reject `unmodelled` constructs (mandate R3,
 S1.2, S1.6).
 
+## `riinac emit-core`
+
+`riinac emit-core <file>` (or `--stdin`) prints the core term a program
+elaborates to (`Program::desugar`, then the Coq column of the tables below).
+The program is not type-checked first, so the differential gate (REQ-111) can
+compare riinac's verdict with the Coq checker's on any program.
+
+- **Form.** A constructor with arguments is `(Name arg …)` and one without is
+  `Name`, using exactly the constructors of the inductives in `Syntax.v`
+  (`expr`, `ty`, `session_type`, `effect`, `security_level`, `taint_source`,
+  `sanitizer`, `capability_kind`, `capability`). `nat` is decimal, `bool` is
+  `true`/`false`, a `string` or `ident` is `"…"`, and `list string` is
+  `(list "a" "b")`.
+- **Strings.** Printable ASCII is written as itself, except `"` and `\`, which
+  are `\"` and `\\`. Every other byte of the UTF-8 text is `\xHH`, in lower case.
+- **Canonical.** The text has one spelling per term, with single spaces. The
+  binary checks each term against the Coq signatures and parses its own output
+  back before printing it.
+- **Errors.** A construct this page marks `unmodelled`, a builtin, a `Let`
+  with a linearity qualifier, or a group of mutually recursive functions is an
+  error naming its row or section (`[CORE_MAPPING.md: Expr::BinOp]`). It is
+  never dropped or approximated (mandate R3).
+
+The core cannot yet express the corpus: 0 of the 83 checked examples emit.
+`riinac/tests/emit_core.rs` records that count and prints each example's first
+unmodelled construct.
+
 ## Status vocabulary
 
 | Status | Meaning |
@@ -52,8 +79,8 @@ S1.2, S1.6).
 | `Expr::Inr` | `EInr` | core | T_Inr |
 | `Expr::Case` | `ECase` | core | T_Case |
 | `Expr::If` | `EIf` | core | T_If |
-| `Expr::Let` | `ELet` | core | the optional linearity qualifier is unmodelled; Coq `ELet` has none |
-| `Expr::Ascribe` | `EApp`, `ELam`, `EVar` | elaborated | `e : T` (from `biar x: T = e` and a lambda's `-> T`) is `EApp (ELam y T (EVar y)) e`; the Rust checker also allows its subsumptions (e.g. a `Sanitized` value where plain text is expected) |
+| `Expr::Let` | `ELet` | core | the optional linearity qualifier is unmodelled; Coq `ELet` has none, so `emit-core` rejects a `Let` that carries one |
+| `Expr::Ascribe` | `EApp`, `ELam`, `EVar` | elaborated | `e : T` (from `biar x: T = e` and a lambda's `-> T`) is `EApp (ELam y T (EVar y)) e`, which `emit-core` writes with `y` = `"ascribed"` (bound only around its own use, so it captures nothing); the Rust checker also allows its subsumptions (e.g. a `Sanitized` value where plain text is expected) |
 | `Expr::Return` | — | unmodelled | early return (`pulang`); the core has no control effects |
 | `Expr::While` | — | unmodelled | loops (`selagi`, `ulang`, `untuk`) |
 | `Expr::Break` | — | unmodelled | `putus` |
@@ -73,7 +100,7 @@ S1.2, S1.6).
 | `Expr::Grant` | `EGrant` | core | T_Grant |
 | `Expr::Loc` | `ELoc` | core | run-time only, never in source |
 | `Expr::LetRec` | `ELet`, `EFix`, `ELam` | elaborated | `let rec f : T = e1 in e2` is `ELet f (EFix (ELam f T e1)) e2` (T_Fix, function types only) |
-| `Expr::LetRecGroup` | — | unmodelled | a mutually recursive group (every top-level `fungsi`); a single-function group is `LetRec`, but no encoding of a group of several into `EFix` is defined yet |
+| `Expr::LetRecGroup` | `ELet`, `EFix`, `ELam`, `EApp` | elaborated | a group of top-level functions (every run of `fungsi` declarations), every name in scope in every body. It is split into the strongly connected components of its calls and bound in dependency order (source order among independent functions): a function that calls itself is `ELet f (EFix (ELam f T e))`, as `LetRec` is; any other is `ELet f (e : T)`, so it stays in the `fix`-free fragment. Two or more mutually recursive functions have no encoding, and `emit-core` rejects them |
 | `Expr::BinOp` | — | unmodelled | arithmetic, comparison and logical operators; the core has no primitive operations |
 | `Expr::ListLit` | — | unmodelled | list literals; the core has `TList` but no list expressions |
 | `Expr::RecordLit` | — | unmodelled | records |
@@ -113,7 +140,7 @@ S1.2, S1.6).
 | `Ty::FixedBin` | — | unmodelled | Q-format fixed point |
 | `Ty::String` | `TString` | core | |
 | `Ty::Bytes` | `TBytes` | core | |
-| `Ty::Fn` | `TFn` | refined | Coq's latent effect is one `effect` in a total order; Rust's is an `EffectSet` with a per-category order. Rust accepts a subset of what the Coq order accepts (see `EffectSet` in `riina-types`) |
+| `Ty::Fn` | `TFn` | refined | Coq's latent effect is one `effect` in a total order; Rust's is an `EffectSet` with a per-category order. Rust accepts a subset of what the Coq order accepts (see `EffectSet` in `riina-types`). `emit-core` writes the set as its Coq join (the highest `effect_level`; the empty set is `EffPure`) |
 | `Ty::Prod` | `TProd` | core | |
 | `Ty::Sum` | `TSum` | core | |
 | `Ty::List` | `TList` | core | the type only; list expressions are unmodelled |

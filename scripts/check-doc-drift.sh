@@ -182,6 +182,9 @@ def load_truth():
         stem = os.path.basename(p[0]).split(".")[0].replace("Verification", "")
         parts[" ".join(re.findall(r"[A-Z][a-z]*", stem)).lower()] = int(p[1])
     t["smt"], t["smt_parts"] = smt, parts
+    ec = re.search(r"const EMIT_CORE_PASSING: usize = (\d+);",
+                   maybe("03_PROTO/crates/riinac/tests/emit_core.rs") or "")
+    t["emit_core_passing"] = int(ec.group(1)) if ec else None
     e2e = read("03_PROTO/crates/riinac/tests/end_to_end.rs")
     mm = re.search(r"const CORPUS_PASSING: usize = (\d+);", e2e)
     t["corpus_passing"] = int(mm.group(1)) if mm else None
@@ -334,6 +337,7 @@ EXAMPLES = claim(r"\b(\d+) (?:example programs|example \.rii files|\.rii files|e
                  r"|\bExample programs \| (\d+)\b|\bexamples \((\d+) today\b")
 PASSING = claim(r"\b(\d+) (?:of the (\d+) )?(?:examples |currently )?pass\b")
 CATEGORIES = claim(r"\b(\d+) category directories\b")
+EMITTED = claim(r"\b(\d+) of the (\d+) checked examples emit\b")
 
 
 def r_examples(line, t):
@@ -347,6 +351,11 @@ def r_examples(line, t):
             yield f"{mm.group(1)} examples pass check (end_to_end.rs CORPUS_PASSING = {t['corpus_passing']})"
         if mm.group(2) and int(mm.group(2)) != t["examples"]:
             yield f"'of the {mm.group(2)}' examples (metrics.json examples = {t['examples']})"
+    for n, m in EMITTED.findall(line):
+        if t.get("emit_core_passing") is not None and int(n) != t["emit_core_passing"]:
+            yield f"{n} examples emit core terms (emit_core.rs EMIT_CORE_PASSING = {t['emit_core_passing']})"
+        if t["corpus_passing"] is not None and int(m) != t["corpus_passing"]:
+            yield f"'of the {m} checked examples' (end_to_end.rs CORPUS_PASSING = {t['corpus_passing']})"
     for n in CATEGORIES.findall(line):
         if t.get("example_dirs") is not None and int(n) != t["example_dirs"]:
             yield f"{n} category directories (07_EXAMPLES has {t['example_dirs']})"
@@ -1002,7 +1011,7 @@ def self_test(t):
              keywords=132, types=45, effects=19, security_levels=6, commands=15, target_families=4,
              industry_specs=15, snippets=12, site_pages=7, site_sectors=9, protocol_steps=8,
              verify_levels=7, z3="4.8.12", sbom_third_party={"proto": 0, "tooling": 122}, example_dirs=20,
-             axiom_free_capstones=9, step_rules=40, rust_version="1.94.1", ledger_impl=False,
+             axiom_free_capstones=9, step_rules=40, emit_core_passing=0, rust_version="1.94.1", ledger_impl=False,
              claim_levels={"legend": ["generated", "mechanized"]},
              file_qed=lambda name: 109 if name == "VerifiedFileSystem.v" else None,
              rust_effect_level={"Mut": 1, "Alloc": 3, "Read": 2, "Write": 4, "Gapura": 18},
@@ -1015,7 +1024,8 @@ def self_test(t):
         "Rust compiler (19 crates)": r_crates, "| Compiler crates | 17 |": r_crates,
         "171 example programs": r_examples, "83 pass `riinac check`": r_examples,
         "**84 of the 171 examples pass": r_examples, "| Example programs | 170 (84 pass) |": r_examples,
-        "across 21 category directories": r_examples,
+        "across 21 category directories": r_examples, "1 of the 84 checked examples emit": r_examples,
+        "0 of the 83 checked examples emit": r_examples,
         "Rocq 9.2.1 build": r_rocq, "Rocq 9.2 — only for proof work": r_rocq,
         "a Rust toolchain (1.80+)": r_rust_toolchain, "- **Rust** 1.93.0+": r_rust_toolchain,
         "by verify-smt.sh (Z3 4.8.11)": r_rust_toolchain,
@@ -1069,6 +1079,7 @@ def self_test(t):
         "29 `Parameter`s (trusted interface)": r_parameters,
         "Rust compiler (18 crates)": r_crates, "172 example programs; 84 pass `riinac check`": r_examples,
         "**84 of the 172 examples pass": r_examples, "across 20 category directories": r_examples,
+        "0 of the 84 checked examples emit": r_examples,
         "Rocq 9.1.1": r_rocq, "a Rust toolchain (1.94+)": r_rust_toolchain,
         "- **Rust** 1.94.1+, Z3 4.8.12": r_rust_toolchain,
         "SMT scoped set: 37 properties (security lattice 25, effect join 12)": r_smt,

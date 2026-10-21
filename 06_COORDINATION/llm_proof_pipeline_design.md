@@ -1,6 +1,6 @@
 # RIINA LLM-Assisted Proof Pipeline v1.0.0
 
-**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3623 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3641 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 **Document ID:** RIINA_LLM_PROOF_PIPELINE_v1_0_0  
 **Version:** 1.0.0  
