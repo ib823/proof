@@ -264,6 +264,35 @@ impl Gen {
         if *ty == Ty::Bool && self.rng.chance(15) {
             return Expr::Deref(boxed(self.expr(ty, scope, d)));
         }
+        // A cell: `biar c = ruj e @Awam; c := e2; !c` (or `()` without
+        // `Baca`), so references and assignments are common wherever `Tulis`
+        // is allowed.
+        let read =
+            scope.may(Effect::Read) && matches!(ty, Ty::Unit | Ty::Bool | Ty::Int | Ty::String);
+        if scope.may(Effect::Write) && (read || *ty == Ty::Unit) && self.rng.chance(25) {
+            let t = if read { ty.clone() } else { self.base_ty() };
+            let init = self.expr(&t, scope, d);
+            let c = self.name("c");
+            scope.vars.push((
+                c.clone(),
+                Ty::Ref(Box::new(t.clone()), SecurityLevel::Public),
+            ));
+            let v = self.expr(&t, scope, d);
+            scope.vars.pop();
+            let assign = Expr::Assign(boxed(Expr::Var(c.clone())), boxed(v));
+            let rest = if read {
+                Expr::Deref(boxed(Expr::Var(c.clone())))
+            } else {
+                Expr::Unit
+            };
+            let u = self.name("u");
+            return Expr::Let(
+                c,
+                None,
+                boxed(Expr::Ref(boxed(init), SecurityLevel::Public)),
+                boxed(Expr::Let(u, None, boxed(assign), boxed(rest))),
+            );
+        }
         loop {
             match self.rng.below(15) {
                 // let x = e1 in e2
@@ -447,7 +476,13 @@ impl Gen {
     }
 
     fn declared(&mut self) -> EffectSet {
-        let mut set = EffectSet::PURE;
+        // Two in five functions are stateful (`kesan (Baca, Tulis)`), so
+        // references are common; the rest draw only from the pool.
+        let mut set = if self.rng.chance(40) {
+            EffectSet::PURE.join(Effect::Read).join(Effect::Write)
+        } else {
+            EffectSet::PURE
+        };
         for _ in 0..self.rng.below(3) {
             set = set.join(POOL[self.rng.below(POOL.len())]);
         }

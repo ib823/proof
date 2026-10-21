@@ -1,6 +1,6 @@
 # Research Track → Coq Proof Coverage Matrix
 
-**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3653 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3657 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 > Auto-generated: 2026-02-02
 > Method: `grep -c "^Qed\."` on each .v file; `find -name "*.md"` on each research dir

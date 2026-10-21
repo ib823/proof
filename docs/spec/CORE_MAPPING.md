@@ -47,11 +47,19 @@ compare riinac's verdict with the Coq checker's on any program.
 - **Conformance.** `riinac verify --full` and `--coq` type-check every
   emitted program in Coq too, with the executable checker `type_check_fn`
   (`foundations/TypeCheckFn.v`), and fail if Coq rejects a program riinac
-  accepts, or gives it another type or effect (REQ-111). The programs are the
-  fixtures in `riinac/tests/conformance/`, which are written to stay inside
-  the core, and 10,000 per run from a seeded generator
-  (`riinac/src/conformance_gen.rs`): well-typed programs, type errors, and
-  information-flow or effect violations.
+  accepts, or gives it another type or effect (REQ-111). The programs are:
+  - the fixtures in `riinac/tests/conformance/`, written to stay inside the
+    core;
+  - 10,000 per run from a seeded generator (`riinac/src/conformance_gen.rs`):
+    well-typed programs, type errors, and information-flow or effect
+    violations;
+  - 5,000 mutants per run of those (`riinac/src/conformance_fuzz.rs`), each
+    with one small change, such as a swapped projection, a renamed variable,
+    a raised reference level or a dropped declared effect.
+
+  A known class of discrepancy awaiting a decision (riinac's branch on a
+  secret, REQ-111) is reported on every run but does not fail it. Any other
+  discrepancy does.
 
 The core cannot yet express the corpus: 0 of the 83 checked examples emit.
 `riinac/tests/emit_core.rs` records that count and prints each example's first
@@ -106,7 +114,7 @@ unmodelled construct.
 | `Expr::Declassify` | `EDeclassify` | core | T_Declassify |
 | `Expr::Prove` | `EProve` | core | T_Prove |
 | `Expr::Require` | `ERequire` | core | T_Require; Rust also runs a capability gate at run time |
-| `Expr::Grant` | `EGrant` | core | T_Grant |
+| `Expr::Grant` | `EGrant` | refined | T_Grant. riinac also bounds a grant inside a function body by the capabilities the function holds: there `beri E` may only narrow, never add. Coq's T_Grant has no bound, so riinac is stricter. The REQ-111 fuzzer meets this as completeness gaps (`CapabilityViolation`) when it drops a declared effect that a `beri` relies on |
 | `Expr::Loc` | `ELoc` | core | run-time only, never in source |
 | `Expr::LetRec` | `ELet`, `EFix`, `ELam`, `ERequire` | elaborated | `let rec f : T = e1 in e2` is `ELet f (EFix (ELam f T e1)) e2` (T_Fix, function types only); a non-pure latent effect of `T` is required around each lambda body of `e1`, as for `LetRecGroup` |
 | `Expr::LetRecGroup` | `ELet`, `EFix`, `ELam`, `EApp` | elaborated | a group of top-level functions (every run of `fungsi` declarations), every name in scope in every body. It is split into the strongly connected components of its calls and bound in dependency order (source order among independent functions): a function that calls itself is `ELet f (EFix (ELam f T e))`, as `LetRec` is; any other is `ELet f (e : T)`, so it stays in the `fix`-free fragment. A declared effect `E` (each arrow of a `fungsi` type carries it) is written `ERequire E` around each lambda body: riinac checks a body against `E` as an upper bound, the core has no subeffecting, and `T_Require` joins `E` into the body's effect while `ST_RequireValue` steps to the value (REQ-111 found both a pure body under `kesan Tulis` and the outer arrow of a two-parameter effectful function rejected by Coq without it). Two or more mutually recursive functions have no encoding, and `emit-core` rejects them |
@@ -365,7 +373,7 @@ These have no Coq inductive; every variant is `unmodelled`.
 | `EProve` | `Expr::Prove` | core | |
 | `EFix` | — | coq-only | the target of `Expr::LetRec` |
 | `ERequire` | `Expr::Require` | core | |
-| `EGrant` | `Expr::Grant` | core | |
+| `EGrant` | `Expr::Grant` | refined | riinac bounds a grant inside a function (see `Expr::Grant`) |
 | `TUnit` | `Ty::Unit` | core | |
 | `TBool` | `Ty::Bool` | core | |
 | `TInt` | `Ty::Int` | core | |
