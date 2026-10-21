@@ -25,6 +25,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
+use crate::conformance_gen::Kind;
 use crate::emit_core::{self, Term};
 
 /// Where the programs come from: the example corpus and the conformance
@@ -34,8 +35,53 @@ pub const SOURCES: &[&str] = &["07_EXAMPLES", "03_PROTO/crates/riinac/tests/conf
 /// Programs riinac rejects and Coq accepts, each with the reason.
 pub const KNOWN_COMPLETENESS_GAPS: &[(&str, &str)] = &[];
 
+/// Programs riinac accepts and Coq rejects that are known and awaiting a
+/// decision, each with the reason. Every one is a soundness discrepancy: the
+/// gate reports each on every run, fails on any other, and fails when a listed
+/// one stops being a discrepancy, so the entry is removed when it is resolved.
+pub const KNOWN_SOUNDNESS_DISCREPANCIES: &[(&str, &str)] = &[(
+    "03_PROTO/crates/riinac/tests/conformance/accept_branch_on_secret.rii",
+    "riinac accepts a branch whose condition is Rahsia/Labeled Bool and raises the branches' \
+     security level; Coq's T_If requires TBool, so such programs are outside the proofs. \
+     Found by the REQ-111 generator 2026-10-21 (494 of 10,000); the owner decides whether \
+     riinac rejects it or the core gains a security-raising If (REQ-99)",
+)];
+
 /// A numeral larger than this is not compared: Coq's `nat` is unary.
 const MAX_NAT: u64 = 100_000;
+
+/// Generated programs per run (`RIINA_CONFORMANCE_COUNT` overrides it). The
+/// mandate asks for at least 10,000 per change (S1.4).
+pub const GENERATED_PER_RUN: usize = 10_000;
+
+/// The generator's seed: `RIINA_CONFORMANCE_SEED` if set, else derived from
+/// the commit being verified, so each change sees new programs and any run can
+/// be repeated.
+pub fn seed(repo: &Path) -> u64 {
+    if let Some(s) = std::env::var("RIINA_CONFORMANCE_SEED")
+        .ok()
+        .and_then(|v| v.parse().ok())
+    {
+        return s;
+    }
+    let head = std::process::Command::new("git")
+        .args(["-C", &repo.to_string_lossy(), "rev-parse", "HEAD"])
+        .output()
+        .ok()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .unwrap_or_default();
+    // FNV-1a of the commit id.
+    head.bytes().fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
+        (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)
+    })
+}
+
+fn generated_count() -> usize {
+    std::env::var("RIINA_CONFORMANCE_COUNT")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(GENERATED_PER_RUN)
+}
 
 /// riinac's verdict on a program.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,15 +94,25 @@ pub enum Verdict {
     Rejects,
 }
 
+/// Where a program came from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Origin {
+    /// A file under [`SOURCES`], or a planted control.
+    File,
+    /// The generator, with the kind of program it set out to make.
+    Generated(Kind),
+}
+
 /// One program to compare.
 #[derive(Debug, Clone)]
 pub struct Case {
     pub name: String,
+    pub origin: Origin,
     pub term: Term,
     pub riinac: Verdict,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Outcome {
     BothAccept,
     BothReject,
@@ -90,6 +146,7 @@ fn controls() -> Vec<(Case, Outcome)> {
         (
             Case {
                 name: "control: an accepted term".into(),
+                origin: Origin::File,
                 term: unit(),
                 riinac: accepts("TUnit"),
             },
@@ -98,6 +155,7 @@ fn controls() -> Vec<(Case, Outcome)> {
         (
             Case {
                 name: "control: an ill-typed term claimed accepted".into(),
+                origin: Origin::File,
                 term: ill,
                 riinac: accepts("TUnit"),
             },
@@ -106,6 +164,7 @@ fn controls() -> Vec<(Case, Outcome)> {
         (
             Case {
                 name: "control: a wrong type claimed".into(),
+                origin: Origin::File,
                 term: unit(),
                 riinac: accepts("TInt"),
             },
@@ -214,6 +273,11 @@ pub struct Report {
     pub unparsed: usize,
     /// The `expr` constructors the compared terms use.
     pub exercised: BTreeSet<&'static str>,
+    /// The generator's seed and, per kind, how each outcome came out.
+    pub seed: u64,
+    pub generated: BTreeMap<(Kind, Outcome), usize>,
+    /// Generated programs that did not emit: a generator bug.
+    pub generator_errors: Vec<String>,
 }
 
 impl Report {
@@ -237,15 +301,38 @@ impl Report {
         let mut out = Vec::new();
         for (name, o) in &self.compared {
             match o {
-                Outcome::Soundness => out.push(format!("SOUNDNESS: riinac accepts {name}, Coq rejects it")),
-                Outcome::Mismatch => {
-                    out.push(format!("SOUNDNESS: riinac and Coq give {name} different types or effects"))
+                Outcome::Soundness
+                    if KNOWN_SOUNDNESS_DISCREPANCIES.iter().any(|(n, _)| n == name) => {}
+                Outcome::Soundness => {
+                    out.push(format!("SOUNDNESS: riinac accepts {name}, Coq rejects it"))
                 }
-                Outcome::Completeness if !KNOWN_COMPLETENESS_GAPS.iter().any(|(n, _)| n == name) => out.push(format!(
-                    "completeness gap not tracked: Coq accepts {name}, riinac rejects it (list it in \
-                     conformance::KNOWN_COMPLETENESS_GAPS with the reason, or fix riinac)"
+                Outcome::Mismatch => out.push(format!(
+                    "SOUNDNESS: riinac and Coq give {name} different types or effects"
                 )),
+                // A generated program's name is not stable across seeds, so a
+                // generated gap is counted and reported, not listed.
+                Outcome::Completeness
+                    if !name.starts_with("gen:")
+                        && !KNOWN_COMPLETENESS_GAPS.iter().any(|(n, _)| n == name) =>
+                {
+                    out.push(format!(
+                        "completeness gap not tracked: Coq accepts {name}, riinac rejects it (list it in \
+                         conformance::KNOWN_COMPLETENESS_GAPS with the reason, or fix riinac)"
+                    ));
+                }
                 _ => {}
+            }
+        }
+        for e in &self.generator_errors {
+            out.push(format!("generator: {e}"));
+        }
+        for (known, _) in KNOWN_SOUNDNESS_DISCREPANCIES {
+            if !self
+                .compared
+                .iter()
+                .any(|(n, o)| n == known && *o == Outcome::Soundness)
+            {
+                out.push(format!("{known} is listed as a known soundness discrepancy but is not one now; remove it"));
             }
         }
         for (gap, _) in KNOWN_COMPLETENESS_GAPS {
@@ -278,8 +365,9 @@ fn rii_files(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
-/// riinac's verdict and the core term for each program under [`SOURCES`].
-pub fn collect(repo: &Path) -> (Vec<Case>, Report) {
+/// riinac's verdict and the core term for each program under [`SOURCES`],
+/// and for `generated` programs from the generator.
+pub fn collect(repo: &Path, generated: usize) -> (Vec<Case>, Report) {
     let builtins = riina_typechecker::register_builtin_types(&riina_typechecker::Context::new());
     let is_builtin = |x: &str| builtins.lookup(&x.to_string()).is_some();
     let mut report = Report::default();
@@ -329,7 +417,43 @@ pub fn collect(repo: &Path) -> (Vec<Case>, Report) {
                 }
             },
         };
-        cases.push(Case { name, term, riinac });
+        cases.push(Case {
+            name,
+            origin: Origin::File,
+            term,
+            riinac,
+        });
+    }
+    report.seed = seed(repo);
+    for g in crate::conformance_gen::generate(report.seed, generated) {
+        let term = match emit_core::elaborate(&g.program.clone().desugar(), &is_builtin) {
+            Ok(t) => t,
+            Err(u) => {
+                report
+                    .generator_errors
+                    .push(format!("{} does not emit: {u}", g.name));
+                continue;
+            }
+        };
+        let riinac = match riina_typechecker::check_program(&g.program) {
+            Err(_) => Verdict::Rejects,
+            Ok((_, ty, eff)) => match (emit_core::core_ty(&ty), emit_core::core_effect_set(eff)) {
+                (Ok(ty), Ok(eff)) => Verdict::Accepts { ty, eff },
+                (Err(u), _) | (_, Err(u)) => {
+                    report.generator_errors.push(format!(
+                        "{}: riinac's result is outside the core: {u}",
+                        g.name
+                    ));
+                    continue;
+                }
+            },
+        };
+        cases.push(Case {
+            name: g.name,
+            origin: Origin::Generated(g.kind),
+            term,
+            riinac,
+        });
     }
     (cases, report)
 }
@@ -337,7 +461,7 @@ pub fn collect(repo: &Path) -> (Vec<Case>, Report) {
 /// Run the comparison with `rocq` in `coq_dir` (whose `.vo` files must be
 /// built). An `Err` is a broken run, not a discrepancy.
 pub fn run(repo: &Path, coq_dir: &Path, rocq: &Path, scratch: &Path) -> Result<Report, String> {
-    let (cases, mut report) = collect(repo);
+    let (cases, mut report) = collect(repo, generated_count());
     let ctl = controls();
     let all: Vec<Case> = ctl
         .iter()
@@ -392,9 +516,11 @@ pub fn run(repo: &Path, coq_dir: &Path, rocq: &Path, scratch: &Path) -> Result<R
         }
     }
     for (case, v) in cases.iter().zip(&verdicts[ctl.len()..]) {
-        report
-            .compared
-            .push((case.name.clone(), classify(&case.riinac, *v)));
+        let outcome = classify(&case.riinac, *v);
+        if let Origin::Generated(kind) = case.origin {
+            *report.generated.entry((kind, outcome)).or_default() += 1;
+        }
+        report.compared.push((case.name.clone(), outcome));
         constructors(&case.term, &mut report.exercised);
     }
     Ok(report)
@@ -471,6 +597,9 @@ mod tests {
     #[test]
     fn an_untracked_gap_and_any_soundness_discrepancy_fail() {
         let mut r = Report::default();
+        for (known, _) in KNOWN_SOUNDNESS_DISCREPANCIES {
+            r.compared.push(((*known).to_string(), Outcome::Soundness));
+        }
         r.compared.push(("ok.rii".into(), Outcome::BothAccept));
         r.compared.push(("no.rii".into(), Outcome::BothReject));
         assert!(r.failures().is_empty());
@@ -479,6 +608,10 @@ mod tests {
         r.compared.push(("bad.rii".into(), Outcome::Soundness));
         r.compared.push(("ty.rii".into(), Outcome::Mismatch));
         assert_eq!(r.failures().len(), 3);
+        // A known discrepancy that is no longer one must be removed.
+        r.compared
+            .retain(|(n, _)| !KNOWN_SOUNDNESS_DISCREPANCIES.iter().any(|(k, _)| k == n));
+        assert_eq!(r.failures().len(), 3 + KNOWN_SOUNDNESS_DISCREPANCIES.len());
     }
 
     #[test]
@@ -486,7 +619,7 @@ mod tests {
         // The fixtures are written to stay inside the core: each must emit,
         // and its name says riinac's verdict.
         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
-        let (cases, report) = collect(&repo);
+        let (cases, report) = collect(&repo, 0);
         let fixtures: Vec<&Case> = cases
             .iter()
             .filter(|c| c.name.contains("tests/conformance/"))

@@ -486,7 +486,8 @@ pub const ASCRIBE_BINDER: &str = "ascribed";
 /// `is_builtin` names the builtins: a free name that is one has no Coq
 /// meaning and is an error.
 pub fn elaborate(e: &Expr, is_builtin: &dyn Fn(&str) -> bool) -> Result<Term, Unmodelled> {
-    Elab { is_builtin }.expr(e, &mut Vec::new())
+    let t = Elab { is_builtin }.expr(e, &mut Vec::new())?;
+    Ok(negations(t, &mut Vec::new()))
 }
 
 /// The core type of a Rust type (the `Ty` table of CORE_MAPPING).
@@ -674,8 +675,30 @@ impl Elab<'_> {
         scope: &mut Vec<Ident>,
     ) -> Result<Term, Unmodelled> {
         let t = self.ty(ty)?;
-        let b = self.bind(f, bound, scope)?;
+        let b = self.declared(self.bind(f, bound, scope)?, ty)?;
         Ok(c("EFix", vec![c("ELam", vec![s(f), t, b])]))
+    }
+
+    /// A function bound at a declared type `A1 -> … -> R` with latent effect
+    /// `E` at each arrow (`declared_fn_ty`). Rust checks each body against `E`
+    /// as an upper bound; Coq's core has no subeffecting, so its latent effect
+    /// is exactly the body's. Each lambda body is therefore written
+    /// `ERequire E body`: `T_Require` joins `E` into the body's effect, which
+    /// makes Coq's latent effect exactly `E` whenever riinac accepts the body,
+    /// and `ST_RequireValue` steps to the value, so nothing else changes. A
+    /// pure arrow needs no wrapper.
+    fn declared(&self, lam: Term, ty: &Ty) -> Result<Term, Unmodelled> {
+        let (Term::Ctor("ELam", mut args), Ty::Fn(_, ret, eff)) = (lam.clone(), ty) else {
+            return Ok(lam);
+        };
+        let body = self.declared(args.pop().expect("ELam has a body"), ret)?;
+        let body = if eff.is_pure() {
+            body
+        } else {
+            c("ERequire", vec![self.effect_set(*eff)?, body])
+        };
+        args.push(body);
+        Ok(Term::Ctor("ELam", args))
     }
 
     /// A top-level function group (`Program::desugar` makes one of every run
@@ -740,13 +763,11 @@ impl Elab<'_> {
             let (name, ty, _) = &group[i];
             // `bodies[i]` was elaborated with every group name in scope, so it
             // is already the body `e` of `EFix (ELam f T e)`.
+            let body = self.declared(bodies[i].clone(), ty)?;
             let bound = if deps[i].contains(&i) {
-                c(
-                    "EFix",
-                    vec![c("ELam", vec![s(name), self.ty(ty)?, bodies[i].clone()])],
-                )
+                c("EFix", vec![c("ELam", vec![s(name), self.ty(ty)?, body])])
             } else {
-                self.ascribe(bodies[i].clone(), ty)?
+                self.ascribe(body, ty)?
             };
             result = c("ELet", vec![s(name), bound, result]);
         }
@@ -1061,6 +1082,168 @@ fn collect_free(t: &Term, bound: &mut Vec<String>, out: &mut std::collections::B
     }
 }
 
+/// The names bound around a subterm, innermost last, with their core types
+/// where those are known.
+type TypeEnv = Vec<(String, Option<Term>)>;
+
+/// Resolve `!` (CORE_MAPPING `Expr::Deref`). riinac's checker, interpreter
+/// and both backends read `!e` as a dereference when `e` is a reference and
+/// as negation when it is a `Bool`; the core has only `EDeref`. So each
+/// `EDeref e` whose operand has core type `TBool` is written as `bukan e`'s
+/// term, `EIf e (EBool false) (EBool true)`.
+///
+/// The operand's type is read off the annotated term ([`type_of`]). A wrong
+/// answer cannot hide a discrepancy: it leaves a term Coq judges differently
+/// from riinac, and the REQ-111 gate reports that.
+fn negations(t: Term, env: &mut TypeEnv) -> Term {
+    let Term::Ctor(name, mut args) = t else {
+        return t;
+    };
+    let ident = |t: &Term| match t {
+        Term::Str(x) => x.clone(),
+        _ => String::new(),
+    };
+    let take = |slot: &mut Term| std::mem::replace(slot, Term::Nat(0));
+    let under = |x: String, ty: Option<Term>, body: &mut Term, env: &mut TypeEnv| {
+        env.push((x, ty));
+        *body = negations(take(body), env);
+        env.pop();
+    };
+    match name {
+        "ELam" => {
+            let (x, ty) = (ident(&args[0]), Some(args[1].clone()));
+            under(x, ty, &mut args[2], env);
+        }
+        "ELet" => {
+            args[1] = negations(take(&mut args[1]), env);
+            let (x, ty) = (ident(&args[0]), type_of(&args[1], env));
+            under(x, ty, &mut args[2], env);
+        }
+        "ECase" => {
+            args[0] = negations(take(&mut args[0]), env);
+            let (l, r) = match type_of(&args[0], env) {
+                Some(Term::Ctor("TSum", mut lr)) => {
+                    (Some(take(&mut lr[0])), Some(take(&mut lr[1])))
+                }
+                _ => (None, None),
+            };
+            let (x, y) = (ident(&args[1]), ident(&args[3]));
+            under(x, l, &mut args[2], env);
+            under(y, r, &mut args[4], env);
+        }
+        "EHandle" => {
+            args[0] = negations(take(&mut args[0]), env);
+            let (x, ty) = (ident(&args[1]), type_of(&args[0], env));
+            under(x, ty, &mut args[2], env);
+        }
+        "EDeref" => {
+            let e = negations(take(&mut args[0]), env);
+            if type_of(&e, env) == Some(c0("TBool")) {
+                return c(
+                    "EIf",
+                    vec![
+                        e,
+                        c("EBool", vec![Term::Bool(false)]),
+                        c("EBool", vec![Term::Bool(true)]),
+                    ],
+                );
+            }
+            args[0] = e;
+        }
+        _ => {
+            for a in &mut args {
+                *a = negations(take(a), env);
+            }
+        }
+    }
+    Term::Ctor(name, args)
+}
+
+/// The core type of `t` as Coq's `has_type` assigns it, read off the term's
+/// annotations, or `None` when it is not determined (an ill-typed term, or
+/// `ELoc`). Only the shape matters to [`negations`], so a function type's
+/// latent effect is not computed (it is written `EffPure`).
+fn type_of(t: &Term, env: &mut TypeEnv) -> Option<Term> {
+    let Term::Ctor(name, a) = t else { return None };
+    let ident = |i: usize| match &a[i] {
+        Term::Str(x) => x.clone(),
+        _ => String::new(),
+    };
+    let under = |x: String, ty: Option<Term>, body: &Term, env: &mut TypeEnv| {
+        env.push((x, ty));
+        let out = type_of(body, env);
+        env.pop();
+        out
+    };
+    let part = |ty: Option<Term>, ctor: &str, i: usize| match ty {
+        Some(Term::Ctor(n, mut parts)) if n == ctor => {
+            Some(std::mem::replace(&mut parts[i], Term::Nat(0)))
+        }
+        _ => None,
+    };
+    match *name {
+        "EUnit" | "EAssign" => Some(c0("TUnit")),
+        "EBool" => Some(c0("TBool")),
+        "EInt" => Some(c0("TInt")),
+        "EString" => Some(c0("TString")),
+        "EVar" => {
+            let x = ident(0);
+            env.iter()
+                .rev()
+                .find(|(y, _)| *y == x)
+                .and_then(|(_, ty)| ty.clone())
+        }
+        "ELam" => {
+            let body = under(ident(0), Some(a[1].clone()), &a[2], env)?;
+            Some(c("TFn", vec![a[1].clone(), body, c0("EffPure")]))
+        }
+        "EApp" => {
+            let f = type_of(&a[0], env);
+            part(f, "TFn", 1)
+        }
+        "EPair" => Some(c("TProd", vec![type_of(&a[0], env)?, type_of(&a[1], env)?])),
+        "EFst" | "ESnd" => {
+            let p = type_of(&a[0], env);
+            part(p, "TProd", usize::from(*name == "ESnd"))
+        }
+        "EInl" => Some(c("TSum", vec![type_of(&a[0], env)?, a[1].clone()])),
+        "EInr" => Some(c("TSum", vec![a[1].clone(), type_of(&a[0], env)?])),
+        "ECase" => {
+            let s = type_of(&a[0], env);
+            let (l, r) = (part(s.clone(), "TSum", 0), part(s, "TSum", 1));
+            under(ident(1), l, &a[2], env).or_else(|| under(ident(3), r, &a[4], env))
+        }
+        "EIf" => type_of(&a[1], env).or_else(|| type_of(&a[2], env)),
+        "ELet" => {
+            let bound = type_of(&a[1], env);
+            under(ident(0), bound, &a[2], env)
+        }
+        "EHandle" => {
+            let bound = type_of(&a[0], env);
+            under(ident(1), bound, &a[2], env)
+        }
+        "EPerform" | "ERequire" | "EGrant" => type_of(&a[1], env),
+        "ERef" => Some(c("TRef", vec![type_of(&a[0], env)?, a[1].clone()])),
+        "EDeref" => match type_of(&a[0], env)? {
+            Term::Ctor("TRef", mut p) => Some(std::mem::replace(&mut p[0], Term::Nat(0))),
+            b if b == c0("TBool") => Some(b),
+            _ => None,
+        },
+        "EClassify" => Some(c("TSecret", vec![type_of(&a[0], env)?])),
+        "EDeclassify" => {
+            let s = type_of(&a[0], env);
+            part(s, "TSecret", 0)
+        }
+        "EProve" => Some(c("TProof", vec![type_of(&a[0], env)?])),
+        // T_Fix: `EFix e : T` where `e : T -> T`.
+        "EFix" => {
+            let f = type_of(&a[0], env);
+            part(f, "TFn", 0)
+        }
+        _ => None,
+    }
+}
+
 /// A strongly connected component of two or more members, if the graph has
 /// one (`deps[i]` are the members `i` refers to; a self-loop is allowed).
 fn mutual_component(deps: &[Vec<usize>]) -> Option<Vec<usize>> {
@@ -1229,6 +1412,73 @@ mod tests {
             "{out}"
         );
         assert!(out.contains(r#"(ELet "utama" (EApp (ELam "ascribed" (TFn TUnit TUnit EffPure) (EVar "ascribed"))"#), "{out}");
+    }
+
+    /// riinac checks a declared effect as an upper bound; the core has no
+    /// subeffecting, so each lambda body of a declared function is wrapped in
+    /// `ERequire E` (REQ-111 found both cases: `kesan Tulis` on a pure body,
+    /// and the outer arrow of a two-parameter effectful function).
+    #[test]
+    fn a_declared_effect_is_required_at_every_arrow() {
+        let wr = EffectSet::single(Effect::Write);
+        let inner = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Unit), wr);
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(inner), wr);
+        let lam = Expr::Lam(
+            "a".into(),
+            Ty::Int,
+            Box::new(Expr::Lam("b".into(), Ty::Int, Box::new(Expr::Unit))),
+        );
+        let e = Expr::LetRecGroup(vec![("f".into(), fn_ty, lam)], Box::new(Expr::Unit));
+        assert_eq!(
+            el(&e),
+            r#"(ELet "f" (EApp (ELam "ascribed" (TFn TInt (TFn TInt TUnit EffWrite) EffWrite) (EVar "ascribed")) (ELam "a" TInt (ERequire EffWrite (ELam "b" TInt (ERequire EffWrite EUnit))))) EUnit)"#
+        );
+    }
+
+    /// `!` is a dereference on a reference and negation on a `Bool`, as in
+    /// riinac (REQ-111 found the negation written as `EDeref`).
+    #[test]
+    fn bang_on_a_bool_is_negation() {
+        let bang = |e: Expr| Expr::Deref(Box::new(e));
+        assert_eq!(
+            el(&bang(Expr::Bool(false))),
+            "(EIf (EBool false) (EBool false) (EBool true))"
+        );
+        // A reference to a Bool: the inner `!` reads it, the outer negates.
+        let r = Expr::Ref(Box::new(Expr::Bool(true)), SecurityLevel::Public);
+        assert_eq!(
+            el(&Expr::Let(
+                "r".into(),
+                None,
+                Box::new(r),
+                Box::new(bang(bang(Expr::Var("r".into()))))
+            )),
+            r#"(ELet "r" (ERef (EBool true) LPublic) (EIf (EDeref (EVar "r")) (EBool false) (EBool true)))"#
+        );
+        // Through a binder's annotation, a sum and an application.
+        let lam = Expr::Lam("b".into(), Ty::Bool, Box::new(bang(Expr::Var("b".into()))));
+        assert_eq!(
+            el(&lam),
+            r#"(ELam "b" TBool (EIf (EVar "b") (EBool false) (EBool true)))"#
+        );
+        let f = Expr::Lam("u".into(), Ty::Unit, Box::new(Expr::Bool(true)));
+        assert!(el(&bang(Expr::App(Box::new(f), Box::new(Expr::Unit)))).starts_with("(EIf (EApp"));
+        let sum = Ty::Sum(Box::new(Ty::Bool), Box::new(Ty::Int));
+        let case = Expr::Case(
+            Box::new(Expr::Inl(Box::new(Expr::Bool(true)), sum)),
+            "x".into(),
+            Box::new(bang(Expr::Var("x".into()))),
+            "y".into(),
+            Box::new(Expr::Bool(false)),
+        );
+        assert!(
+            el(&case).contains(r#"(EIf (EVar "x") (EBool false) (EBool true))"#),
+            "{}",
+            el(&case)
+        );
+        // An operand of no known type stays a dereference.
+        assert_eq!(el(&bang(Expr::Var("z".into()))), r#"(EDeref (EVar "z"))"#);
+        assert_eq!(el(&bang(Expr::Int(1))), "(EDeref (EInt 1))");
     }
 
     #[test]

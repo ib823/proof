@@ -1,0 +1,8 @@
+// `!` on a Bool is negation, and on a reference a read: here the inner `!`
+// reads the cell and the outer one negates. The core has no negation, so
+// emit-core writes the outer `!` as `bukan`'s `EIf b false true`; it used
+// to write `EDeref`, which Coq rejects (found by the REQ-111 generator).
+fungsi utama() -> Benar kesan (Baca, Tulis) {
+    biar r = ruj betul @Awam;
+    !!r
+}

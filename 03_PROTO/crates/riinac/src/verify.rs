@@ -1609,6 +1609,30 @@ fn check_core_conformance(coq_dir: &Path) -> CheckResult {
         report.exercised.len() + report.unexercised().len(),
         report.unexercised().join(", "),
     );
+    use crate::conformance_gen::Kind;
+    let mut by_kind = Vec::new();
+    for kind in [Kind::WellTyped, Kind::TypeError, Kind::FlowViolation] {
+        let cells: Vec<String> = report
+            .generated
+            .iter()
+            .filter(|((k, _), _)| *k == kind)
+            .map(|((_, o), n)| format!("{n} {o:?}"))
+            .collect();
+        by_kind.push(format!("{}: {}", kind.label(), cells.join(", ")));
+    }
+    let known: Vec<&str> = crate::conformance::KNOWN_SOUNDNESS_DISCREPANCIES
+        .iter()
+        .map(|(n, _)| n.rsplit('/').next().unwrap_or(n))
+        .collect();
+    let generated: usize = report.generated.values().sum();
+    let summary = format!(
+        "{summary}; of these, {generated} generated (seed {}; RIINA_CONFORMANCE_SEED repeats a run): {}; \
+         KNOWN soundness discrepancies awaiting a decision ({}): {}",
+        report.seed,
+        by_kind.join("; "),
+        known.len(),
+        known.join(", ")
+    );
     if failures.is_empty() {
         CheckResult { name, passed: true, blocking: true, details: summary }
     } else {
