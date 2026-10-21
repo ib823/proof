@@ -1,0 +1,3 @@
+// A function that declares more than its body performs: riinac reads the
+// declaration as an upper bound (written ERequire Tulis in the core).
+fungsi utama() -> () kesan Tulis { () }

@@ -47,8 +47,11 @@ compare riinac's verdict with the Coq checker's on any program.
 - **Conformance.** `riinac verify --full` and `--coq` type-check every
   emitted program in Coq too, with the executable checker `type_check_fn`
   (`foundations/TypeCheckFn.v`), and fail if Coq rejects a program riinac
-  accepts, or gives it another type or effect (REQ-111). The fixtures in
-  `riinac/tests/conformance/` are written to stay inside the core.
+  accepts, or gives it another type or effect (REQ-111). The programs are the
+  fixtures in `riinac/tests/conformance/`, which are written to stay inside
+  the core, and 10,000 per run from a seeded generator
+  (`riinac/src/conformance_gen.rs`): well-typed programs, type errors, and
+  information-flow or effect violations.
 
 The core cannot yet express the corpus: 0 of the 83 checked examples emit.
 `riinac/tests/emit_core.rs` records that count and prints each example's first
@@ -97,7 +100,7 @@ unmodelled construct.
 | `Expr::Perform` | `EPerform` | core | T_Perform |
 | `Expr::Handle` | `EHandle` | core | T_Handle |
 | `Expr::Ref` | `ERef` | core | T_Ref |
-| `Expr::Deref` | `EDeref` | core | T_Deref |
+| `Expr::Deref` | `EDeref`; `EIf` on a Bool | refined | T_Deref on a reference. `!` is also negation on a `Bool`: riinac types `!b` as `Bool`, and the interpreter and both backends negate. The core has no negation, so `emit-core` writes `bukan b`'s term, `EIf b (EBool false) (EBool true)`, choosing by the operand's core type (REQ-111's generator found the negation written as `EDeref`, 2026-10-21) |
 | `Expr::Assign` | `EAssign` | core | T_Assign |
 | `Expr::Classify` | `EClassify` | core | T_Classify |
 | `Expr::Declassify` | `EDeclassify` | core | T_Declassify |
@@ -105,8 +108,8 @@ unmodelled construct.
 | `Expr::Require` | `ERequire` | core | T_Require; Rust also runs a capability gate at run time |
 | `Expr::Grant` | `EGrant` | core | T_Grant |
 | `Expr::Loc` | `ELoc` | core | run-time only, never in source |
-| `Expr::LetRec` | `ELet`, `EFix`, `ELam` | elaborated | `let rec f : T = e1 in e2` is `ELet f (EFix (ELam f T e1)) e2` (T_Fix, function types only) |
-| `Expr::LetRecGroup` | `ELet`, `EFix`, `ELam`, `EApp` | elaborated | a group of top-level functions (every run of `fungsi` declarations), every name in scope in every body. It is split into the strongly connected components of its calls and bound in dependency order (source order among independent functions): a function that calls itself is `ELet f (EFix (ELam f T e))`, as `LetRec` is; any other is `ELet f (e : T)`, so it stays in the `fix`-free fragment. Two or more mutually recursive functions have no encoding, and `emit-core` rejects them |
+| `Expr::LetRec` | `ELet`, `EFix`, `ELam`, `ERequire` | elaborated | `let rec f : T = e1 in e2` is `ELet f (EFix (ELam f T e1)) e2` (T_Fix, function types only); a non-pure latent effect of `T` is required around each lambda body of `e1`, as for `LetRecGroup` |
+| `Expr::LetRecGroup` | `ELet`, `EFix`, `ELam`, `EApp` | elaborated | a group of top-level functions (every run of `fungsi` declarations), every name in scope in every body. It is split into the strongly connected components of its calls and bound in dependency order (source order among independent functions): a function that calls itself is `ELet f (EFix (ELam f T e))`, as `LetRec` is; any other is `ELet f (e : T)`, so it stays in the `fix`-free fragment. A declared effect `E` (each arrow of a `fungsi` type carries it) is written `ERequire E` around each lambda body: riinac checks a body against `E` as an upper bound, the core has no subeffecting, and `T_Require` joins `E` into the body's effect while `ST_RequireValue` steps to the value (REQ-111 found both a pure body under `kesan Tulis` and the outer arrow of a two-parameter effectful function rejected by Coq without it). Two or more mutually recursive functions have no encoding, and `emit-core` rejects them |
 | `Expr::BinOp` | — | unmodelled | arithmetic, comparison and logical operators; the core has no primitive operations |
 | `Expr::ListLit` | — | unmodelled | list literals; the core has `TList` but no list expressions |
 | `Expr::RecordLit` | — | unmodelled | records |
@@ -355,7 +358,7 @@ These have no Coq inductive; every variant is `unmodelled`.
 | `EPerform` | `Expr::Perform` | core | |
 | `EHandle` | `Expr::Handle` | core | |
 | `ERef` | `Expr::Ref` | core | |
-| `EDeref` | `Expr::Deref` | core | |
+| `EDeref` | `Expr::Deref` | refined | Rust's `!` is also negation on a `Bool` (see `Expr::Deref`) |
 | `EAssign` | `Expr::Assign` | core | |
 | `EClassify` | `Expr::Classify` | core | |
 | `EDeclassify` | `Expr::Declassify` | core | |
@@ -657,7 +660,7 @@ and the test holds the website's keyword list to the same rule.
 | `Nama(a, b)` (capitalized) | `Pair(String("Nama"), Pair(a, b))`, a tagged tuple |
 | `a::b`, `std::x` | `Var("a_b")`, `Var("x")`; `Ns::f` with a capitalized namespace is the builtin `f`. A path of three or more segments is error P0017 (it used to keep only the first and last) |
 | `+ - * / %`, `== != < <= > >=`, `&&`, `\|\|` | `BinOp`; `+` also concatenates strings |
-| `!e` | `Deref(e)` (dereference, not negation; negation is `bukan`) |
+| `!e` | `Deref(e)`: a dereference on a reference, negation on a `Bool` (riinac chooses by the operand's type; `bukan e` is the keyword form) |
 | unary `-e` | no production: write `0 - e` |
 | `a := b` | `Assign(a, b)` |
 | `x = e` | `SlotSet(x, e)` if `x` is a `biar ubah` slot; otherwise a new `Let(x, …)` that shadows `x` |

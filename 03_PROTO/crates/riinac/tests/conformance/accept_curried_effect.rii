@@ -1,0 +1,5 @@
+// A two-parameter function with a declared effect: every arrow of its type
+// carries the effect, including the one that only returns the inner function.
+fungsi tulis_dua(a: Nombor, b: Nombor) -> () kesan Tulis { laku Tulis () }
+
+fungsi utama() -> () kesan Tulis { tulis_dua(1, 2) }

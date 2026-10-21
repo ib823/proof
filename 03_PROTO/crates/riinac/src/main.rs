@@ -11,6 +11,7 @@
 
 mod c_toolchain;
 mod conformance;
+mod conformance_gen;
 mod diagnostics;
 mod emit_core;
 mod expect_update;
