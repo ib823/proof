@@ -14,7 +14,7 @@ security properties (see Verified State).
 - Repository: https://github.com/ib823/riina
 - License: RIINA Proprietary License (source publicly readable; not open source)
 
-## Verified State (generated from website/public/metrics.json, 2026-10-21)
+## Verified State (generated from website/public/metrics.json, 2026-10-22)
 
 IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
 other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,657 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,660 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is
@@ -187,7 +187,7 @@ riinac fmt        # Format a .rii file
 riinac lsp        # Start LSP server (stdio)
 riinac mcp        # Start MCP server for AI agents (stdio)
 riinac repl       # Interactive read-eval-print loop
-riinac verify     # Run verification gate [--fast|--full|--coq]
+riinac verify     # Run verification gate [--fast|--full|--coq|--nightly]
 riinac pkg        # Package manager (init/add/remove/lock/build/...)
 riinac help       # Print this help (also --help, -h)
 riinac version    # Print the compiler version (also --version, -V)

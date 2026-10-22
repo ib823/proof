@@ -191,6 +191,9 @@ def load_truth():
     fp = re.search(r"pub const FUZZED_PER_RUN: usize = ([\d_]+);",
                    maybe("03_PROTO/crates/riinac/src/conformance.rs") or "")
     t["fuzzed_per_run"] = int(fp.group(1).replace("_", "")) if fp else None
+    np_ = re.search(r"pub const NIGHTLY_PROGRAMS: usize = ([\d_]+);",
+                    maybe("03_PROTO/crates/riinac/src/conformance.rs") or "")
+    t["nightly_programs"] = int(np_.group(1).replace("_", "")) if np_ else None
     e2e = read("03_PROTO/crates/riinac/tests/end_to_end.rs")
     mm = re.search(r"const CORPUS_PASSING: usize = (\d+);", e2e)
     t["corpus_passing"] = int(mm.group(1)) if mm else None
@@ -671,6 +674,7 @@ GENERATED = claim(r"\b(\d{1,3}(?:,\d{3})+|\d+) (?:seeded |generated )?(?:program
 
 
 FUZZED = claim(r"\b(\d{1,3}(?:,\d{3})+|\d+) (?:fuzzed )?mutants per (?:gate )?run\b")
+NIGHTLY = claim(r"\bat least (\d{1,3}(?:,\d{3})+) programs\b")
 
 
 def r_conformance(line, t):
@@ -680,6 +684,9 @@ def r_conformance(line, t):
     for n in FUZZED.findall(line):
         if t.get("fuzzed_per_run") is not None and num(n) != t["fuzzed_per_run"]:
             yield f"{n} mutants per run (conformance.rs FUZZED_PER_RUN = {t['fuzzed_per_run']})"
+    for n in NIGHTLY.findall(line):
+        if t.get("nightly_programs") is not None and num(n) != t["nightly_programs"]:
+            yield f"at least {n} programs nightly (conformance.rs NIGHTLY_PROGRAMS = {t['nightly_programs']})"
 
 
 def r_core_mapping(line, t):
@@ -1032,7 +1039,7 @@ def self_test(t):
              keywords=132, types=45, effects=19, security_levels=6, commands=15, target_families=4,
              industry_specs=15, snippets=12, site_pages=7, site_sectors=9, protocol_steps=8,
              verify_levels=7, z3="4.8.12", sbom_third_party={"proto": 0, "tooling": 122}, example_dirs=20,
-             axiom_free_capstones=9, step_rules=40, emit_core_passing=0, generated_per_run=10000, fuzzed_per_run=5000,
+             axiom_free_capstones=9, step_rules=40, emit_core_passing=0, generated_per_run=10000, fuzzed_per_run=5000, nightly_programs=1000000,
              rust_version="1.94.1", ledger_impl=False,
              claim_levels={"legend": ["generated", "mechanized"]},
              file_qed=lambda name: 109 if name == "VerifiedFileSystem.v" else None,
@@ -1096,6 +1103,7 @@ def self_test(t):
         "a PROVEN-COMPILER property": r_claim_level,
         "and 9,000 per run from a seeded generator": r_conformance,
         "- 4,000 mutants per run of those": r_conformance,
+        "the same comparison on at least 100,000 programs": r_conformance,
         "type safety is proven for the shipped compiler": r_claim_level,
     }
     clean = {
@@ -1106,6 +1114,7 @@ def self_test(t):
         "0 of the 84 checked examples emit": r_examples,
         "and 10,000 per run from a seeded generator": r_conformance,
         "- 5,000 mutants per run of those": r_conformance,
+        "the same comparison on at least 1,000,000 programs": r_conformance,
         "Rocq 9.1.1": r_rocq, "a Rust toolchain (1.94+)": r_rust_toolchain,
         "- **Rust** 1.94.1+, Z3 4.8.12": r_rust_toolchain,
         "SMT scoped set: 37 properties (security lattice 25, effect join 12)": r_smt,

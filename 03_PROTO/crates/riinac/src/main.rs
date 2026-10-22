@@ -95,7 +95,7 @@ Commands:
   lsp        Start LSP server (stdio)
   mcp        Start MCP server for AI agents (stdio)
   repl       Interactive read-eval-print loop
-  verify     Run verification gate [--fast|--full|--coq]
+  verify     Run verification gate [--fast|--full|--coq|--nightly]
   pkg        Package manager (init/add/remove/lock/build/...)
   help       Print this help (also --help, -h)
   version    Print the compiler version (also --version, -V)
@@ -155,6 +155,7 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
                 "--fast" => verify::Mode::Fast,
                 "--full" => verify::Mode::Full,
                 "--coq" => verify::Mode::Coq,
+                "--nightly" => verify::Mode::Nightly,
                 other => {
                     eprintln!("Unknown verify flag: {other}");
                     usage();

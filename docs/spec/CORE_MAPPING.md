@@ -61,6 +61,12 @@ compare riinac's verdict with the Coq checker's on any program.
   secret, REQ-111) is reported on every run but does not fail it. Any other
   discrepancy does.
 
+  `riinac verify --nightly` runs the same comparison on at least 1,000,000
+  programs: batches of the per-run size, each from its own seed, compared in
+  parallel. CI runs it every night (`.github/workflows/conformance-nightly.yml`).
+  Each generated or fuzzed program's name carries its batch's seed, and
+  `RIINA_CONFORMANCE_SEED=0x<seed> riinac verify --coq` repeats that batch.
+
 The core cannot yet express the corpus: 0 of the 83 checked examples emit.
 `riinac/tests/emit_core.rs` records that count and prints each example's first
 unmodelled construct.

@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-21T04:33:40Z",
-  "generatedHuman": "October 21, 2026 at 04:33 UTC",
+  "generated": "2026-10-22T23:50:12Z",
+  "generatedHuman": "October 22, 2026 at 23:50 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "1b4d384fd",
+    "commit": "dbb333c98",
     "branch": "main"
   },
   "proofs": {
@@ -183,10 +183,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 3657,
-    "testsVerified": 3657,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 3660,
+    "testsVerified": 3660,
+    "testsEstimated": 3657,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 172,
