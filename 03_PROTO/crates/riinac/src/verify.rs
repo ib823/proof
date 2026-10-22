@@ -1620,17 +1620,31 @@ fn check_core_conformance(coq_dir: &Path) -> CheckResult {
             .collect();
         by_kind.push(format!("{}: {}", kind.label(), cells.join(", ")));
     }
-    let known: Vec<&str> = crate::conformance::KNOWN_SOUNDNESS_DISCREPANCIES
+    let known: Vec<String> = crate::conformance::KNOWN_SOUNDNESS_CLASSES
         .iter()
-        .map(|(n, _)| n.rsplit('/').next().unwrap_or(n))
+        .map(|k| format!("{} (witness {}): {}", k.name, k.witness.rsplit('/').next().unwrap_or(k.witness), k.reason))
         .collect();
     let generated: usize = report.generated.values().sum();
+    let mut fuzz_by_outcome: std::collections::BTreeMap<Outcome, usize> = std::collections::BTreeMap::new();
+    for ((_, o), n) in &report.fuzzed {
+        *fuzz_by_outcome.entry(*o).or_default() += n;
+    }
+    let fuzzed: usize = fuzz_by_outcome.values().sum();
+    let flow: usize = report.fuzzed.iter().filter(|((op, _), _)| op.is_flow()).map(|(_, n)| n).sum();
+    let fuzz_cells: Vec<String> = fuzz_by_outcome.iter().map(|(o, n)| format!("{n} {o:?}")).collect();
+    let gap_reasons: Vec<String> = report.gaps_by_reason.iter().map(|(why, n)| format!("{n} {why}")).collect();
     let summary = format!(
         "{summary}; of these, {generated} generated (seed {}; RIINA_CONFORMANCE_SEED repeats a run): {}; \
-         KNOWN soundness discrepancies awaiting a decision ({}): {}",
+         {fuzzed} fuzzed mutants ({flow} by flow or effect operators; {} more left the core): {}; \
+         generated and fuzzed completeness gaps by riinac's error: [{}]; \
+         {} programs in a KNOWN soundness class \
+         awaiting a decision: {}",
         report.seed,
         by_kind.join("; "),
-        known.len(),
+        report.fuzz_outside,
+        fuzz_cells.join(", "),
+        gap_reasons.join(", "),
+        report.count(Outcome::Known),
         known.join(", ")
     );
     if failures.is_empty() {
