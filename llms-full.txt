@@ -14,7 +14,7 @@ security properties (see Verified State).
 - Repository: https://github.com/ib823/riina
 - License: RIINA Proprietary License (source publicly readable; not open source)
 
-## Verified State (generated from website/public/metrics.json, 2026-10-22)
+## Verified State (generated from website/public/metrics.json, 2026-10-23)
 
 IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
 other lanes' machine-GENERATED corpora (from `scripts/generate-full-stack.py` /
