@@ -133,7 +133,9 @@ fn the_native_backend_computes_on_secrets_and_agrees_with_the_interpreter() {
 }
 
 /// The surface program from the assessment: accepted by the checker, and now
-/// run by both backends instead of failing at runtime.
+/// run by both backends instead of failing at runtime. Its branch on the
+/// secret comparison (`kalau sama`) is rejected since 2026-10-23, when RIINA
+/// started branching only on public values, so it is checked separately.
 #[test]
 fn the_surface_program_runs_under_run_and_build() {
     if !cc_available() {
@@ -149,11 +151,25 @@ fn the_surface_program_runs_under_run_and_build() {
          \x20   biar pin = sulit 1234;\n\
          \x20   biar d = pin + 1;\n\
          \x20   biar sama = (pin * 2) == 2468;\n\
+         \x20   cetak(\"ok\")\n\
+         }\n",
+    )
+    .unwrap();
+    let branch = dir.join("branch.rii");
+    std::fs::write(
+        &branch,
+        "fungsi utama() -> Unit kesan Tulis {\n\
+         \x20   biar pin = sulit 1234;\n\
+         \x20   biar sama = (pin * 2) == 2468;\n\
          \x20   biar tanda = kalau sama { 1 } lain { 0 };\n\
          \x20   cetak(\"ok\")\n\
          }\n",
     )
     .unwrap();
+    let check = Command::new(env!("CARGO_BIN_EXE_riinac")).arg("check").arg(&branch).output().unwrap();
+    let why = String::from_utf8_lossy(&check.stderr);
+    assert!(!check.status.success(), "a branch on a secret was accepted");
+    assert!(why.contains("branch condition"), "{why}");
     let run = Command::new(env!("CARGO_BIN_EXE_riinac")).arg("run").arg(&src).output().unwrap();
     assert!(run.status.success(), "run: {}", String::from_utf8_lossy(&run.stderr));
     let build = Command::new(env!("CARGO_BIN_EXE_riinac")).arg("build").arg(&src).output().unwrap();

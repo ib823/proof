@@ -106,6 +106,19 @@ fungsi utama() -> Unit kesan Rangkaian {
 }
 ```
 
+**Branching on a secret is a compile error.** `kalau`, `padan` and `selagi`
+decide only on public values *(enforced since 2026-10-23)*: which branch runs
+would itself reveal the secret, and the proved core types a condition only as
+a plain `Benar` (Coq `T_If`, `T_Case`). Declassify first, at an audited point.
+
+```riina error="Security violation in branch condition"
+fungsi utama() -> Unit kesan Tulis {
+    biar pin = sulit 1234;
+    biar sepadan = pin == 1234;
+    kalau sepadan { cetak("ok") } lain { cetak("salah") }   // COMPILE ERROR
+}
+```
+
 **Scope today.** References enforce no-read-up / no-write-down on security
 levels (`Typing.v` `T_Deref`/`T_Assign`, mirrored by the checker's
 `gate_b_parity` tests); print, network, file-write, and assertion sinks reject
@@ -254,7 +267,7 @@ guide has a bug.
 
 - [ ] Every function declares the narrowest `kesan` that compiles.
 - [ ] Secrets are `sulit` at birth; `dedah … dengan bukti …` only at audited
-      points; nothing secret is printed.
+      points; nothing secret is printed or branched on.
 - [ ] All external input (files today; network when it lands) flows through a
       sink-matched `sanitasi_*` before reaching a sink.
 - [ ] File paths are literals or validated plain strings — never tainted data.

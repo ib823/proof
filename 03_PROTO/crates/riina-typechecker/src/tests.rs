@@ -1424,7 +1424,8 @@ mod formalized_tests {
         let public_ref = Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public);
 
         // if (deref secret_ref) > 0 then public_ref := 1 else public_ref := 0
-        // The deref is fine, the comparison is fine, but the assignments are implicit flows.
+        // The deref is fine, the comparison is fine, but branching on it would
+        // make the assignments implicit flows.
         let cond = Expr::BinOp(BinOp::Gt, Box::new(deref), Box::new(Expr::Int(0)));
         let assign_then = Expr::Assign(Box::new(public_ref.clone()), Box::new(Expr::Int(1)));
         let assign_else = Expr::Assign(
@@ -1433,12 +1434,15 @@ mod formalized_tests {
         );
         let if_expr = Expr::If(Box::new(cond), Box::new(assign_then), Box::new(assign_else));
 
-        // Must fail with ImplicitFlowViolation
+        // Rejected at the branch: RIINA branches only on public values
+        // (2026-10-23), so the implicit flow cannot be written at all.
         match type_check_full(&mut ctx, &if_expr) {
-            Err(TypeError::ImplicitFlowViolation { .. }) => {
-                // Good: implicit flow prevented
-            }
-            other => panic!("Expected ImplicitFlowViolation, got {:?}", other),
+            Err(TypeError::SecurityViolation {
+                found: SecurityLevel::Secret,
+                context: "branch condition",
+                ..
+            }) => {}
+            other => panic!("Expected the secret branch to be rejected, got {:?}", other),
         }
     }
 
@@ -1496,16 +1500,16 @@ mod formalized_tests {
     #[test]
     fn test_implicit_flow_via_secret_comparison_in_public_context() {
         // THE CRITICAL IMPLICIT FLOW TEST:
-        // In a PUBLIC context, deref a Secret ref, compare with 0,
-        // branch on the result, and try to write to a public ref.
-        // This MUST be rejected — the branch condition is derived from
-        // secret data, so the branch executes at elevated Δ=Secret,
-        // and writing to a Public ref violates no-write-down.
+        // Deref a Secret ref, compare with 0, branch on the result, and
+        // try to write to a public ref. This MUST be rejected.
         //
         // Before A1 fix: this would PASS (bug — plain Bool condition
         // didn't carry the secret label, so branch Δ stayed Public).
         // After A1 fix: deref returns Labeled(Int, Secret), comparison
-        // returns Labeled(Bool, Secret), If elevates Δ to Secret.
+        // returns Labeled(Bool, Secret), If elevated Δ to Secret and the
+        // public write was an ImplicitFlowViolation. Since 2026-10-23
+        // RIINA branches only on public values, so the branch itself is
+        // rejected (as Coq's T_If, which needs a TBool, rejects it).
         let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
 
         // secret_ref : Ref(Int, Secret)
@@ -1525,13 +1529,12 @@ mod formalized_tests {
         let if_expr = Expr::If(Box::new(cond), Box::new(assign), Box::new(else_branch));
 
         match type_check_full(&mut ctx, &if_expr) {
-            Err(TypeError::ImplicitFlowViolation { .. }) => {
-                // Correct: implicit flow through secret-derived branch prevented
-            }
-            other => panic!(
-                "Expected ImplicitFlowViolation for secret-derived branch, got {:?}",
-                other
-            ),
+            Err(TypeError::SecurityViolation {
+                found: SecurityLevel::Secret,
+                context: "branch condition",
+                ..
+            }) => {}
+            other => panic!("Expected the secret-derived branch to be rejected, got {:?}", other),
         }
     }
 

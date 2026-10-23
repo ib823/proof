@@ -258,7 +258,7 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 18 in the compiler workspace (`03_PROTO`), plus the tooling workspace's own crates |
-| Test count | 3,660 tests in the compiler workspace, all passing (from `website/public/metrics.json`), plus the tooling workspace's own tests |
+| Test count | 3,659 tests in the compiler workspace, all passing (from `website/public/metrics.json`), plus the tooling workspace's own tests |
 | External dependencies | **0** third-party at runtime in the shipped compiler (dev/CI tools are separate, see Install) |
 | Standard library builtins | 374 registered (Malay and English names counted separately), 342 of them compile; see [docs/api/STDLIB.md](docs/api/STDLIB.md) |
 
@@ -335,7 +335,7 @@ riina/
 │   └── ...                  (alloy, fstar, verus, kani, tv: hand-written drafts, quarantined or retired;
 │                             lean is empty pending REQ-67b — see metrics.json)
 │
-├── 03_PROTO/               Rust compiler (18 crates, 3,660 tests, 0 third-party runtime deps)
+├── 03_PROTO/               Rust compiler (18 crates, 3,659 tests, 0 third-party runtime deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (16 commands)
 │       ├── riina-lexer/    Tokenizer
@@ -400,11 +400,11 @@ The research tracks in `01_RESEARCH/` that have a Coq counterpart are listed bel
 ## Current Status
 
 **Build:** Passing.
-**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3660 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
+**Verification:** Coq 1,679 core Qed, 9,719 model Qed, 1,443 excluded Qed (vacuous, example, counterexample or test); 0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted interface) — Coq is the only fully mechanized lane | 3659 Rust tests | other lanes: a scoped Z3 set and smoke artifacts (generated mirrors archived 2026-10-20; claim levels in metrics.json)
 
 | Area | Status |
 |------|--------|
-| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,660 tests (plus the tooling workspace's own tests); the C/native backend is not formally verified — it is differential-tested against the interpreter; end-to-end security alignment still in progress |
+| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 3,659 tests (plus the tooling workspace's own tests); the C/native backend is not formally verified — it is differential-tested against the interpreter; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
 | Formal verification | **Coq active lane is the only real machine-checked verification** (0 Admitted, 0 `Axiom`, 29 `Parameter`s (trusted hardware interface; none of the capstone theorems depends on them)). Of the other lanes only the scoped SMT set (37 properties) is mechanized; the rest hold single smoke artifacts or nothing, and the generated mirrors were archived — see `metrics.json`. No independent audit published yet |
 | WASM/mobile backends | Present as scaffolding, not full production backends |

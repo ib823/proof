@@ -31,7 +31,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-use riina_types::{Expr, Program, TopLevelDecl, Ty};
+use riina_types::Program;
 
 use crate::conformance_fuzz::Op;
 use crate::conformance_gen::Kind;
@@ -60,48 +60,13 @@ pub struct KnownClass {
 /// [`Outcome::Known`] instead of failing the gate; every other discrepancy
 /// fails it. Such a program is not otherwise compared, so a second bug in it
 /// stays hidden until the class is resolved; the counts are reported.
-pub const KNOWN_SOUNDNESS_CLASSES: &[KnownClass] = &[KnownClass {
-    name: "a branch on a secret",
-    witness: "03_PROTO/crates/riinac/tests/conformance/accept_branch_on_secret.rii",
-    reason: "riinac accepts a branch whose condition is a Rahsia or labelled Bool and raises \
-             the branches' security level; Coq's T_If requires TBool, so such programs are \
-             outside the proofs. Found by the REQ-111 generator 2026-10-21 (494 of 10,000); \
-             the owner decides whether riinac rejects it or the core gains a security-raising \
-             If (REQ-99)",
-    detect: branches_on_a_secret,
-}];
-
-/// The expressions of a program's declarations.
-fn bodies_mut(p: &mut Program) -> Vec<&mut Expr> {
-    p.decls
-        .iter_mut()
-        .filter_map(|d| match d {
-            TopLevelDecl::Function { body, .. } | TopLevelDecl::Test { body, .. } => {
-                Some(&mut **body)
-            }
-            TopLevelDecl::Binding { value, .. } => Some(&mut **value),
-            TopLevelDecl::Expr(e) => Some(&mut **e),
-            _ => None,
-        })
-        .collect()
-}
-
-/// Whether riinac accepts `program` only because a `kalau` branches on a
-/// secret: it rejects the program once every condition must be a plain Bool.
-pub fn branches_on_a_secret(program: &Program) -> bool {
-    let mut p = program.clone();
-    for body in bodies_mut(&mut p) {
-        crate::conformance_fuzz::for_each_mut(body, &mut |e| {
-            if let Expr::If(c, _, _) = e {
-                if !matches!(**c, Expr::Ascribe(_, Ty::Bool)) {
-                    let inner = std::mem::replace(&mut **c, Expr::Unit);
-                    **c = Expr::Ascribe(Box::new(inner), Ty::Bool);
-                }
-            }
-        });
-    }
-    riina_typechecker::check_program(&p).is_err()
-}
+///
+/// None is open. The first, a branch on a secret (found by the generator
+/// 2026-10-21: riinac raised the branches' security level where Coq's T_If
+/// needs a plain TBool), was resolved 2026-10-23 by riinac rejecting it
+/// (owner ruling); `reject_branch_on_secret.rii` and
+/// `reject_match_on_secret.rii` hold the result.
+pub const KNOWN_SOUNDNESS_CLASSES: &[KnownClass] = &[];
 
 /// A numeral larger than this is not compared: Coq's `nat` is unary.
 const MAX_NAT: u64 = 100_000;
@@ -958,31 +923,6 @@ mod tests {
         r.compared
             .retain(|(n, _, _)| !KNOWN_SOUNDNESS_CLASSES.iter().any(|k| k.witness == n));
         assert_eq!(r.failures().len(), 4 + KNOWN_SOUNDNESS_CLASSES.len());
-    }
-
-    fn parse(source: &str) -> Program {
-        riina_parser::Parser::new(source)
-            .parse_program()
-            .expect("parses")
-    }
-
-    #[test]
-    fn the_secret_branch_class_is_recognised_by_what_riinac_does() {
-        let secret = parse(
-            "fungsi utama() -> () kesan Bersih { biar h = kalau sulit betul { 1 } lain { 2 }; () }",
-        );
-        assert!(riina_typechecker::check_program(&secret).is_ok());
-        assert!(branches_on_a_secret(&secret));
-        let public = parse(
-            "fungsi utama() -> Nombor kesan Bersih { biar b = betul; kalau b { 1 } lain { 2 } }",
-        );
-        assert!(riina_typechecker::check_program(&public).is_ok());
-        assert!(!branches_on_a_secret(&public));
-        // `bukan` is an `If` too.
-        let negated = parse("fungsi utama() -> () kesan Bersih { biar h = bukan sulit betul; () }");
-        if riina_typechecker::check_program(&negated).is_ok() {
-            assert!(branches_on_a_secret(&negated));
-        }
     }
 
     #[test]

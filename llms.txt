@@ -47,7 +47,7 @@ sum counts across lanes: they count different things.
 - Verus / Kani / TV: hand-written drafts only, quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`; per-property
   claim levels: PROPERTY_LEDGER.md; what is trusted: TRUSTED_BASE.md.
-- Rust: 3,660 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
+- Rust: 3,659 tests pass in the compiler workspace (`03_PROTO`, 18 crates, 0
   third-party runtime dependencies). Dev/CI tools are separate: the Rocq
   toolchain, cc, wasmtime, z3 and the NIST test vectors.
 - Backends: the C/native backend is not formally verified; it is

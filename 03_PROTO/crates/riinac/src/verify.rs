@@ -1652,17 +1652,22 @@ fn check_core_conformance(coq_dir: &Path, nightly: bool) -> CheckResult {
          RIINA_CONFORMANCE_SEED=0x<seed> repeats a run, and a nightly batch's seed is in its programs' \
          names): {}; \
          {fuzzed} fuzzed mutants ({flow} by flow or effect operators; {} more left the core): {}; \
-         generated and fuzzed completeness gaps by riinac's error: [{}]; \
-         {} programs in a KNOWN soundness class \
-         awaiting a decision: {}",
+         generated and fuzzed completeness gaps by riinac's error: [{}]; {}",
         report.batches,
         report.seed,
         by_kind.join("; "),
         report.fuzz_outside,
         fuzz_cells.join(", "),
         gap_reasons.join(", "),
-        report.count(Outcome::Known),
-        known.join(", ")
+        if known.is_empty() {
+            "no known soundness class is open".to_string()
+        } else {
+            format!(
+                "{} programs in a KNOWN soundness class awaiting a decision: {}",
+                report.count(Outcome::Known),
+                known.join(", ")
+            )
+        }
     );
     if failures.is_empty() {
         CheckResult { name, passed: true, blocking: true, details: summary }

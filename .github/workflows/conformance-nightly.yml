@@ -52,8 +52,9 @@ concurrency:
 jobs:
   nightly:
     name: Conformance nightly (riinac vs Coq, >= 1,000,000 programs)
-    # Scheduled runs happen on the public mirror only, where Actions minutes
-    # are free; the private repository runs it only when dispatched by hand.
+    # Scheduled runs happen on the mirror only: ib823/proof would otherwise
+    # repeat the same hour-long run on the same content every night. There it
+    # runs only when dispatched by hand.
     if: github.repository == 'ib823/riina' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 240

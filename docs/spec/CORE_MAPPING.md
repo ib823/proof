@@ -57,9 +57,10 @@ compare riinac's verdict with the Coq checker's on any program.
     with one small change, such as a swapped projection, a renamed variable,
     a raised reference level or a dropped declared effect.
 
-  A known class of discrepancy awaiting a decision (riinac's branch on a
-  secret, REQ-111) is reported on every run but does not fail it. Any other
-  discrepancy does.
+  Every discrepancy fails the gate. A class awaiting a decision can be listed
+  in `conformance::KNOWN_SOUNDNESS_CLASSES` to be reported instead; none is
+  open. The one there was, riinac's branch on a secret, was closed on
+  2026-10-23 by riinac rejecting it.
 
   `riinac verify --nightly` runs the same comparison on at least 1,000,000
   programs: batches of the per-run size, each from its own seed, compared in
@@ -100,8 +101,8 @@ unmodelled construct.
 | `Expr::Snd` | `ESnd` | core | T_Snd |
 | `Expr::Inl` | `EInl` | refined | T_Inl. Rust's annotation is the whole sum type `A + B`, and the checker requires the payload to have type `A`; Coq's `EInl e B` carries only the other side and infers `A`. `emit-core` writes `EInl e B` ascribed to `A + B`, which keeps the check of `A` (found by the REQ-111 fixtures, 2026-10-21) |
 | `Expr::Inr` | `EInr` | refined | T_Inr. As `Inl`, mirrored: Rust's `Inr(e, A + B)` is Coq's `EInr e A` ascribed to `A + B` |
-| `Expr::Case` | `ECase` | core | T_Case |
-| `Expr::If` | `EIf` | core | T_If |
+| `Expr::Case` | `ECase` | core | T_Case. A scrutinee labelled above public is rejected (2026-10-23), as T_Case needs a plain `TSum`; riinac used to raise the arms' security level instead |
+| `Expr::If` | `EIf` | core | T_If. A condition labelled above public is rejected (2026-10-23), as T_If needs a plain `TBool`; riinac used to raise the branches' security level instead (found by REQ-111) |
 | `Expr::Let` | `ELet` | core | the optional linearity qualifier is unmodelled; Coq `ELet` has none, so `emit-core` rejects a `Let` that carries one |
 | `Expr::Ascribe` | `EApp`, `ELam`, `EVar` | elaborated | `e : T` (from `biar x: T = e` and a lambda's `-> T`) is `EApp (ELam y T (EVar y)) e`, which `emit-core` writes with `y` = `"ascribed"` (bound only around its own use, so it captures nothing); the Rust checker also allows its subsumptions (e.g. a `Sanitized` value where plain text is expected) |
 | `Expr::Return` | — | unmodelled | early return (`pulang`); the core has no control effects |
