@@ -3743,6 +3743,67 @@ mod formalized_tests {
     // mechanized `TaintSystemCorrectness.v` theorems {sql,command,ldap,xss_js}_
     // injection_impossible (a tainted/unsanitised value cannot reach a sink).
 
+    // RIINA branches only on sanitized values (owner ruling 2026-10-23), as
+    // Coq's T_If / T_Case need a plain TBool / TSum, never a TTainted one.
+    #[test]
+    fn a_branch_on_tainted_data_is_rejected_until_sanitized() {
+        // The shipped checker (`type_check_full`), not the legacy `type_check`.
+        let ctx = register_builtin_types(&Context::new());
+        let check = |e: &Expr| type_check_full(&mut ctx.to_typing_context(), e);
+        let tainted = |t: Ty| Ty::Tainted(Box::new(t), riina_types::TaintSource::UserInput);
+        let lam = |t: Ty, body: Expr| Expr::Lam("v".to_string(), t, Box::new(body));
+        let v = || Box::new(Expr::Var("v".to_string()));
+        let cases = [
+            (
+                lam(tainted(Ty::Bool), Expr::If(v(), Box::new(Expr::Int(1)), Box::new(Expr::Int(2)))),
+                "branch condition",
+            ),
+            (
+                lam(
+                    tainted(Ty::Sum(Box::new(Ty::Int), Box::new(Ty::Int))),
+                    Expr::Case(
+                        v(),
+                        "l".to_string(),
+                        Box::new(Expr::Int(1)),
+                        "r".to_string(),
+                        Box::new(Expr::Int(2)),
+                    ),
+                ),
+                "match scrutinee",
+            ),
+            (lam(tainted(Ty::Bool), Expr::While(v(), Box::new(Expr::Unit))), "loop condition"),
+        ];
+        for (e, want) in cases {
+            match check(&e) {
+                Err(TypeError::TaintedBranch { context, .. }) => assert_eq!(context, want),
+                other => panic!("{want}: expected a tainted branch to be rejected, got {other:?}"),
+            }
+        }
+        // The same branch on a plain Bool is fine.
+        let plain = lam(Ty::Bool, Expr::If(v(), Box::new(Expr::Int(1)), Box::new(Expr::Int(2))));
+        assert!(check(&plain).is_ok());
+    }
+
+    // A conversion moves taint, it does not remove it: `ke_teks(input)` used
+    // to be a plain String that a typed sink (`file_read`) and a branch
+    // accepted unsanitized (2026-10-23).
+    #[test]
+    fn a_conversion_keeps_its_arguments_taint() {
+        // The shipped checker (`type_check_full`), not the legacy `type_check`.
+        let ctx = register_builtin_types(&Context::new());
+        let check = |e: &Expr| type_check_full(&mut ctx.to_typing_context(), e);
+        let call = |f: &str, a: Expr| Expr::App(Box::new(Expr::Var(f.to_string())), Box::new(a));
+        let (t, _) = check(&call("ke_teks", read_line_tainted())).unwrap();
+        assert_eq!(t, Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput));
+        assert!(matches!(
+            check(&call("file_read", call("ke_teks", read_line_tainted()))),
+            Err(TypeError::TypeMismatch { .. })
+        ));
+        // Sanitized first, the conversion is a plain String again.
+        let (t, _) = check(&call("ke_teks", call("sanitize_sql", read_line_tainted()))).unwrap();
+        assert_eq!(t, Ty::String);
+    }
+
     fn read_line_tainted() -> Expr {
         Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
