@@ -47,7 +47,9 @@
 #   bash scripts/check-doc-drift.sh --self-test  # every rule catches a seeded fault
 # ============================================================================
 set -euo pipefail
-REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
+# The parent of scripts/, not `git rev-parse`: a hook in a worktree exports
+# GIT_DIR, and then `git -C scripts rev-parse --show-toplevel` answers scripts/.
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 exec python3 -I - "$REPO_ROOT" "$@" <<'PY'
 import glob
 import importlib.util
