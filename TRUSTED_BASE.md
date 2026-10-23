@@ -1,7 +1,7 @@
 # Trusted base
 
 > **Generated — do not edit by hand.** Regenerate with `python3 scripts/generate-ledgers.py`;
-> sizes and tool versions measured by `--capture` at commit `e788f601f`. REQ-103.
+> sizes and tool versions measured by `--capture` at commit `8840b0a92`. REQ-103.
 
 Everything a RIINA guarantee depends on that is not itself proven (mandate S1.11). Sizes
 are non-blank lines of Rust source, excluding test files.
@@ -14,17 +14,17 @@ are non-blank lines of Rust source, excluding test files.
 | Section premises | `well_typed_SN` | — | A CONDITIONAL capstone rests on premises; it is never a guarantee. |
 | Extraction toolchain | none yet: no Coq code is extracted (REQ-54 S3) | — | Will join the trusted base with assured mode (REQ-100). |
 | Rust toolchain | pinned 1.94.1 (`rust-toolchain.toml`); captured: rustc 1.94.1 (e408947bf 2026-03-25) | external | Compiles riinac. |
-| Elaboration and checking (riinac frontend) | lexer, parser, type checker, types | 20032 | Not proven to implement the Coq model; differential conformance is REQ-111. |
-| Interpreter | riina-codegen `interp.rs`, `value.rs`, builtins | 14498 | Reference for the backend differentials. |
-| C backend and runtime prelude | riina-codegen `lower.rs`, `ir.rs`, `emit.rs`; a minimal program emits 5705 lines of C | 13112 | Not formally verified; differential-tested (REQ-59). |
-| WASM backend | riina-codegen `wasm.rs`, `wasm_encode.rs` | 8728 | No runtime capability gate yet (REQ-114). |
+| Elaboration and checking (riinac frontend) | lexer, parser, type checker, types | 20583 | Not proven to implement the Coq model; differential conformance is REQ-111. |
+| Interpreter | riina-codegen `interp.rs`, `value.rs`, builtins | 14516 | Reference for the backend differentials. |
+| C backend and runtime prelude | riina-codegen `lower.rs`, `ir.rs`, `emit.rs`; a minimal program emits 5671 lines of C | 12993 | Not formally verified; differential-tested (REQ-59). |
+| WASM backend | riina-codegen `wasm.rs`, `wasm_encode.rs` | 8723 | No runtime capability gate yet (REQ-114). |
 | Builtins | 374 registered, 342 compile (`docs/api/STDLIB.md`) | in the interpreter and C backend rows | Builtin semantics are not modelled in Coq (REQ-99). |
 | C compiler | the host `cc`; captured: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 | external | Supported: gcc or clang on Linux and macOS; Windows only under WSL. MSVC is unsupported (the emitted C uses POSIX headers; owner ruling on REQ-102, option B). |
 | Package manager | riina-pkg | 6400 | Enforces manifest effect permissions (tested). |
-| Compliance checker | riina-compliance | 7721 | Heuristic rules; evidence, not certification. |
+| Compliance checker | riina-compliance | 7750 | Heuristic rules; evidence, not certification. |
 | Cryptography | riina-core (05_TOOLING) | 14704 | Experimental, not audited, not validated. |
-| Compiler driver | riinac | 7430 | Includes `riinac verify`. |
-| Operating system and hardware | the host OS, libc and CPU; captured host: Linux 6.18.44-fc-v139 x86_64 | external | No hardware-level guarantee; constant time holds only in the reduction-count model. |
+| Compiler driver | riinac | 11367 | Includes `riinac verify`. |
+| Operating system and hardware | the host OS, libc and CPU; captured host: Linux 6.18.44-fc-v153 x86_64 | external | No hardware-level guarantee; constant time holds only in the reduction-count model. |
 | Development and CI tools (not shipped) | wasmtime (wasmtime 27.0.0 (8eefa236f 2024-11-20)), z3 (Z3 version 4.8.12 - 64 bit) | external | Used by tests and the SMT lane only. |
 
 ## Trusted interface: the `Parameter` declarations

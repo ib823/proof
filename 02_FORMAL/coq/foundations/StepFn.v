@@ -129,7 +129,7 @@ Fixpoint expr_beq (a b : expr) {struct a} : bool :=
   match a, b with
   | EUnit, EUnit => true
   | EBool b1, EBool b2 => Bool.eqb b1 b2
-  | EInt n1, EInt n2 => Nat.eqb n1 n2
+  | EInt n1, EInt n2 => N.eqb n1 n2
   | EString s1, EString s2 => String.eqb s1 s2
   | ELoc l1, ELoc l2 => Nat.eqb l1 l2
   | EVar x1, EVar x2 => String.eqb x1 x2
@@ -183,6 +183,7 @@ Ltac eqb_core :=
          | Hb : String.eqb _ _ = true |- _ => apply String.eqb_eq in Hb
          | Hb : Bool.eqb _ _ = true |- _ => apply eqb_prop in Hb
          | Hb : Nat.eqb _ _ = true |- _ => apply Nat.eqb_eq in Hb
+         | Hb : N.eqb _ _ = true |- _ => apply N.eqb_eq in Hb
          end.
 
 Ltac eqb_finish := subst; f_equal; auto.

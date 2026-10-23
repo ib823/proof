@@ -265,7 +265,7 @@ Fixpoint expr_eqb (e1 e2 : expr) : bool :=
   match e1, e2 with
   | EUnit, EUnit => true
   | EBool b1, EBool b2 => Bool.eqb b1 b2
-  | EInt n1, EInt n2 => Nat.eqb n1 n2
+  | EInt n1, EInt n2 => N.eqb n1 n2
   | EString s1, EString s2 => String.eqb s1 s2
   | ELoc l1, ELoc l2 => Nat.eqb l1 l2
   | EVar x1, EVar x2 => String.eqb x1 x2
@@ -489,7 +489,7 @@ Lemma expr_eqb_bool : forall b, expr_eqb (EBool b) (EBool b) = true.
 Proof. intros b. simpl. apply Bool.eqb_reflx. Qed.
 
 Lemma expr_eqb_int : forall n, expr_eqb (EInt n) (EInt n) = true.
-Proof. intros n. simpl. apply PeanoNat.Nat.eqb_refl. Qed.
+Proof. intros n. simpl. apply N.eqb_refl. Qed.
 
 Lemma expr_eqb_string : forall s, expr_eqb (EString s) (EString s) = true.
 Proof. intros s. simpl. apply String.eqb_refl. Qed.

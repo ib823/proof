@@ -219,6 +219,9 @@ impl Gen {
         match ty {
             Ty::Unit => Expr::Unit,
             Ty::Bool => Expr::Bool(self.rng.chance(50)),
+            // Now and then any `u64`: the core's `EInt` is binary, so every
+            // value is compared.
+            Ty::Int if self.rng.chance(10) => Expr::Int(self.rng.next()),
             Ty::Int => Expr::Int(self.rng.below(20) as u64),
             Ty::String => Expr::String(format!("s{}", self.rng.below(10))),
             Ty::Prod(a, b) => Expr::Pair(boxed(self.literal(a)), boxed(self.literal(b))),

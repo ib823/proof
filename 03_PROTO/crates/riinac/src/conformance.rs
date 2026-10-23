@@ -68,7 +68,8 @@ pub struct KnownClass {
 /// `reject_match_on_secret.rii` hold the result.
 pub const KNOWN_SOUNDNESS_CLASSES: &[KnownClass] = &[];
 
-/// A numeral larger than this is not compared: Coq's `nat` is unary.
+/// A `nat` numeral larger than this is not compared: Coq's `nat` is unary.
+/// An `EInt` numeral is an `N`, which is binary, so it is not limited.
 const MAX_NAT: u64 = 100_000;
 
 /// Generated programs per run (`RIINA_CONFORMANCE_COUNT` overrides it). The
@@ -293,6 +294,7 @@ fn constructors(t: &Term, out: &mut BTreeSet<&'static str>) {
 
 fn largest_nat(t: &Term) -> u64 {
     match t {
+        Term::Ctor("EInt", _) => 0,
         Term::Nat(n) => *n,
         Term::Ctor(_, args) | Term::List(args) => args.iter().map(largest_nat).max().unwrap_or(0),
         _ => 0,

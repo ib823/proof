@@ -31,7 +31,7 @@ compare riinac's verdict with the Coq checker's on any program.
 - **Form.** A constructor with arguments is `(Name arg …)` and one without is
   `Name`, using exactly the constructors of the inductives in `Syntax.v`
   (`expr`, `ty`, `session_type`, `effect`, `security_level`, `taint_source`,
-  `sanitizer`, `capability_kind`, `capability`). `nat` is decimal, `bool` is
+  `sanitizer`, `capability_kind`, `capability`). `nat` and `N` are decimal, `bool` is
   `true`/`false`, a `string` or `ident` is `"…"`, and `list string` is
   `(list "a" "b")`.
 - **Strings.** Printable ASCII is written as itself, except `"` and `\`, which
@@ -90,7 +90,7 @@ unmodelled construct.
 |---|---|---|---|
 | `Expr::Unit` | `EUnit` | core | T_Unit |
 | `Expr::Bool` | `EBool` | core | T_Bool |
-| `Expr::Int` | `EInt` | core | Coq `nat` (unbounded, non-negative); Rust `u64`. Negative numbers and overflow are unmodelled |
+| `Expr::Int` | `EInt` | core | Coq `N` (binary, unbounded, non-negative); Rust `u64`. Negative numbers and overflow are unmodelled |
 | `Expr::IntN` | — | unmodelled | sized integers (`42u8`); separate model `foundations/SizedInt.v`, not part of the core |
 | `Expr::String` | `EString` | core | T_String |
 | `Expr::Var` | `EVar` | core | a free name that is a builtin (`cetak`) has no Coq meaning: see Builtins below |
@@ -356,7 +356,7 @@ These have no Coq inductive; every variant is `unmodelled`.
 |---|---|---|---|
 | `EUnit` | `Expr::Unit` | core | |
 | `EBool` | `Expr::Bool` | core | |
-| `EInt` | `Expr::Int` | core | `nat` against `u64` |
+| `EInt` | `Expr::Int` | core | `N` against `u64` |
 | `EString` | `Expr::String` | core | |
 | `ELoc` | `Expr::Loc` | core | |
 | `EVar` | `Expr::Var` | core | |

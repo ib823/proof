@@ -12,6 +12,9 @@
 From Stdlib Require Import Strings.String.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Arith.Arith.
+(* [N] is the payload of [EInt] (REQ-99). Exported, so its numerals and
+   lemmas reach every file that imports this one. *)
+From Stdlib Require Export NArith.BinNat.
 Import ListNotations.
 
 (** ** Identifiers *)
@@ -359,7 +362,7 @@ Inductive expr : Type :=
   (* Values *)
   | EUnit   : expr
   | EBool   : bool -> expr
-  | EInt    : nat -> expr
+  | EInt    : N -> expr       (* binary, so a u64 value computes (REQ-99) *)
   | EString : string -> expr
   | ELoc    : loc -> expr
   | EVar    : ident -> expr
@@ -408,6 +411,9 @@ Inductive expr : Type :=
   (* Capabilities *)
   | ERequire : effect -> expr -> expr        (* require ε in e *)
   | EGrant   : effect -> expr -> expr.       (* grant ε to e *)
+
+(* Numerals in an [EInt] are read as [N]: [EInt 5] is [EInt 5%N]. *)
+Arguments EInt _%_N_scope.
 
 (** ** Values
     

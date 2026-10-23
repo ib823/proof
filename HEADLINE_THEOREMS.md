@@ -2,7 +2,7 @@
 
 > **Generated — do not edit by hand.** Source: `04_SPECS/ledgers/headline_theorems.toml`,
 > the `KERNEL_CAPSTONES` list in `03_PROTO/crates/riinac/src/verify.rs` and the Coq
-> sources; `Print Assumptions` captured at commit `e788f601f`. Regenerate with
+> sources; `Print Assumptions` captured at commit `8840b0a92`. Regenerate with
 > `python3 scripts/generate-ledgers.py` (`--capture` re-measures). REQ-103.
 
 These are the only theorems public surfaces may cite as guarantees (mandate S2.4). Every

@@ -1,11 +1,11 @@
 {
-  "generated": "2026-10-23T03:11:59Z",
-  "generatedHuman": "October 23, 2026 at 03:11 UTC",
+  "generated": "2026-10-23T04:47:45Z",
+  "generatedHuman": "October 23, 2026 at 04:47 UTC",
   "version": "0.4.0",
   "session": 0,
   "git": {
-    "commit": "a30ae01bd",
-    "branch": "main"
+    "commit": "8840b0a92",
+    "branch": "req99-scope"
   },
   "proofs": {
     "admitted": 0,
@@ -185,8 +185,8 @@
   "rust": {
     "tests": 3661,
     "testsVerified": 3661,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 3658,
+    "testsSource": "cached_verified",
     "crates": 18
   },
   "examples": 172,

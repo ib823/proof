@@ -1,0 +1,6 @@
+// The largest Nombor, 2^64 - 1. The core's `EInt` is binary (`N`), so this is
+// compared like any other numeral; while `EInt` was unary `nat`, a numeral
+// this large could not be (REQ-99).
+fungsi utama() -> Nombor kesan Bersih {
+    18446744073709551615
+}

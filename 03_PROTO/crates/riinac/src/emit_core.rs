@@ -7,7 +7,7 @@
 //! (`02_FORMAL/coq/foundations/Syntax.v`) one-to-one, as an S-expression:
 //!
 //! * a constructor with arguments is `(Name arg …)`; one without is `Name`;
-//! * `nat` is decimal, `bool` is `true`/`false`;
+//! * `nat` and `N` are decimal, `bool` is `true`/`false`;
 //! * `string` and `ident` are `"…"`. Printable ASCII is written as itself,
 //!   except `"` and `\`, which are escaped as `\"` and `\\`. Every other byte
 //!   of the UTF-8 text is written as `\xHH`.
@@ -52,8 +52,8 @@ fn s(text: &str) -> Term {
 // The Coq signatures
 // --------------------------------------------------------------------------
 
-/// Argument sorts. The leaf sorts are Coq's `nat`, `bool`, `string` (which
-/// `ident` is) and `list string`.
+/// Argument sorts. The leaf sorts are Coq's `nat`, `N` (binary), `bool`,
+/// `string` (which `ident` is) and `list string`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Sort {
     Expr,
@@ -66,6 +66,7 @@ pub enum Sort {
     Cap,
     Session,
     Nat,
+    N,
     Bool,
     Str,
     StrList,
@@ -85,6 +86,7 @@ impl Sort {
             Self::Cap => "capability",
             Self::Session => "session_type",
             Self::Nat => "nat",
+            Self::N => "N",
             Self::Bool => "bool",
             Self::Str => "string",
             Self::StrList => "list string",
@@ -210,7 +212,7 @@ pub const SIGNATURES: &[(Sort, &str, &[Sort])] = &[
     (K::Session, "SessVar", &[K::Str]),
     (K::Expr, "EUnit", &[]),
     (K::Expr, "EBool", &[K::Bool]),
-    (K::Expr, "EInt", &[K::Nat]),
+    (K::Expr, "EInt", &[K::N]),
     (K::Expr, "EString", &[K::Str]),
     (K::Expr, "ELoc", &[K::Nat]),
     (K::Expr, "EVar", &[K::Str]),
@@ -248,9 +250,9 @@ fn signature(name: &str) -> Option<(Sort, &'static str, &'static [Sort])> {
 /// Check that `t` is a well-formed Coq term of sort `want`.
 pub fn validate(t: &Term, want: Sort) -> Result<(), String> {
     match (t, want) {
-        (Term::Nat(_), Sort::Nat) | (Term::Bool(_), Sort::Bool) | (Term::Str(_), Sort::Str) => {
-            Ok(())
-        }
+        (Term::Nat(_), Sort::Nat | Sort::N)
+        | (Term::Bool(_), Sort::Bool)
+        | (Term::Str(_), Sort::Str) => Ok(()),
         (Term::List(items), Sort::StrList) => items.iter().try_for_each(|i| validate(i, Sort::Str)),
         (Term::Ctor(name, args), _) => {
             let (sort, _, sig) =

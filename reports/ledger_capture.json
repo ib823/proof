@@ -1,6 +1,6 @@
 {
-  "commit": "e788f601f",
-  "emitted_c_lines_minimal_program": 5705,
+  "commit": "8840b0a92",
+  "emitted_c_lines_minimal_program": 5671,
   "print_assumptions": {
     "CT_001_branch_free": [],
     "accepts_uses_only_current": [],
@@ -38,19 +38,19 @@
     "x25519_rfc7748_vector1": []
   },
   "sizes_nonblank_lines": {
-    "c_backend": 13112,
-    "compliance": 7721,
+    "c_backend": 12993,
+    "compliance": 7750,
     "crypto": 14704,
-    "driver": 7430,
-    "frontend": 20032,
-    "interpreter": 14498,
+    "driver": 11367,
+    "frontend": 20583,
+    "interpreter": 14516,
     "package_manager": 6400,
-    "wasm_backend": 8728
+    "wasm_backend": 8723
   },
-  "sources_sha256": "2aa2969675dd7f4ed6242ec935c0b6fc298c3f0e00286978cde835fdaedfcc3c",
+  "sources_sha256": "1da16a543e0d6102c3313712ba885f6e267e2fe65b3347f135ca79725f84edd3",
   "tools": {
     "cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
-    "host": "Linux 6.18.44-fc-v139 x86_64",
+    "host": "Linux 6.18.44-fc-v153 x86_64",
     "rocq": "The Rocq Prover, version 9.1.1",
     "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
     "wasmtime": "wasmtime 27.0.0 (8eefa236f 2024-11-20)",
