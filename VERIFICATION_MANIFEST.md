@@ -1,6 +1,6 @@
 # RIINA Verification Manifest
-**Generated:** 2026-10-23T03:11:45Z
-**Git SHA:** a30ae01bd
+**Generated:** 2026-10-23T05:09:36Z
+**Git SHA:** befc0425e
 **Mode:** full
 **Status:** PASS
 
@@ -11,9 +11,9 @@
 | Rust Tests | PASS | 3661 tests |
 | Clippy | PASS | 0 warnings |
 | _CoqProject Completeness | PASS | all 335 .v files listed in _CoqProject |
-| Coq Compilation | PASS | 335 .vo files compiled in 246s; 0 warning(s) (budget 2) |
+| Coq Compilation | PASS | 335 .vo files compiled in 199s; 0 warning(s) (budget 2) |
 | Coq Kernel Assumptions | PASS | 10 capstones attested (9 unconditional, 9 axiom-free); axioms within reviewed whitelist (1 allowed: funext); well_typed_SN CONDITIONAL on 4 section premise(s) [env_reducible_closed, lambda_body_SN, store_values_are_values, stores_recursion_free] (REQ-84: section premises are refutable and the conclusion is false for the full calculus (well_typed_SN_conclusion_is_false, Landin's knot) — vacuous; the premise-free guarantee is ref_free_well_typed_SN) |
-| Core Conformance (REQ-111) | PASS | 15034 programs compared with Coq's type_check_fn: 5889 both accept, 9115 both reject, 0 soundness discrepancies, 0 type/effect mismatches, 30 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught; of these, 10000 generated in 1 batch(es) (seed 0x515cec0f5650c261; RIINA_CONFORMANCE_SEED=0x<seed> repeats a run, and a nightly batch's seed is in its programs' names): well-typed: 4500 BothAccept; type-error: 257 BothAccept, 2743 BothReject; flow-violation: 2500 BothReject; 5000 fuzzed mutants (1724 by flow or effect operators; 0 more left the core): 1114 BothAccept, 3856 BothReject, 30 Completeness; generated and fuzzed completeness gaps by riinac's error: [30 CapabilityViolation]; no known soundness class is open |
+| Core Conformance (REQ-111) | PASS | 15035 programs compared with Coq's type_check_fn: 5840 both accept, 9147 both reject, 0 soundness discrepancies, 0 type/effect mismatches, 48 completeness gaps (0 tracked); 116 programs outside the core (first constructs: Expr::BinOp 28, Ty::Any 17, Builtins 15, Expr::LetMut 15), 0 not compared, 55 unparsed; expr constructors exercised 26/27 (not: ELoc); planted controls caught; of these, 10000 generated in 1 batch(es) (seed 0x500fd0b2017af372; RIINA_CONFORMANCE_SEED=0x<seed> repeats a run, and a nightly batch's seed is in its programs' names): well-typed: 4500 BothAccept; type-error: 247 BothAccept, 2753 BothReject; flow-violation: 2500 BothReject; 5000 fuzzed mutants (1713 by flow or effect operators; 0 more left the core): 1074 BothAccept, 3878 BothReject, 48 Completeness; generated and fuzzed completeness gaps by riinac's error: [48 CapabilityViolation]; no known soundness class is open |
 | Coq Admits | PASS | 0 (target: 0) |
 | Coq Axioms | PASS | 0 (target: 0) |
 | Coq Aborts | PASS | 0 (target: 0) |
@@ -25,7 +25,7 @@
 | Isabelle sorry/oops | WARN | no Isabelle sources: the generated corpus was archived out of main on 2026-10-20 (owner ruling D6; preserved at commit fd23fbdb8). Nothing is verified in this lane |
 | F* Compilation | WARN | pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh) |
 | F* admit Scan | PASS | 0 admit in 1 files (0 lemmas) |
-| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 2s (5 theorems, local_active) |
+| TLA+ Compilation | PASS | Active spec TelusProcurementProtocol parsed and model checked in 3s (5 theorems, local_active) |
 | TLA+ Scan | PASS | 3 files (15 theorems) |
 | Alloy Compilation | PASS | Active model TelusProcurementAccessControl executed in 9s (6 checked assertions, local_active) |
 | Alloy Scan | PASS | 3 files (25 assertions) |
