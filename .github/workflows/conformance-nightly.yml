@@ -1,0 +1,80 @@
+# RIINA conformance nightly (REQ-111, mandate S1.4)
+#
+# The per-change gate (`riinac verify --coq`: verify.yml's coq job and the
+# pre-push hook) compares riinac with Coq's executable type checker on the
+# conformance fixtures, 10,000 generated programs and 5,000 mutants. THIS
+# workflow is the nightly half: `riinac verify --nightly` runs the same Coq
+# lane with that comparison at >= 1,000,000 programs, in batches of the
+# per-change size, each batch from its own seed, so every night compares
+# programs no per-change run has seen.
+#
+# Reproducibility: the log prints the run's seed and each batch's seed, and
+# every generated or fuzzed program's name carries its batch's seed. One
+# batch is re-run locally, exactly, with
+#     RIINA_CONFORMANCE_SEED=0x<batch seed> riinac verify --coq
+# and a whole night with RIINA_CONFORMANCE_SEED=0x<run seed> riinac verify --nightly.
+#
+# The release rule (REQ-106, REQ-111: the last 7 nightlies clean) is read from
+# this workflow's scheduled-run history on ib823/riina.
+#
+# A thin wrapper over the in-repo gate: it runs `riinac verify --nightly` and
+# nothing else, so it adds no check that riinac verify does not run.
+
+name: conformance-nightly
+
+on:
+  schedule:
+    # 02:41 UTC daily: off-peak, clear of fuzz-continuous (03:17).
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+    inputs:
+      programs:
+        description: "Programs to compare at least (RIINA_CONFORMANCE_PROGRAMS)"
+        required: false
+        default: "1000000"
+      seed:
+        description: "Run seed (RIINA_CONFORMANCE_SEED), decimal or 0x hex; set it to repeat a night"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  # Mirror verify.yml: riinac's checker recurses on the native stack.
+  RUST_MIN_STACK: "67108864"
+
+concurrency:
+  # Never overlap two nightlies.
+  group: conformance-nightly
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    name: Conformance nightly (riinac vs Coq, >= 1,000,000 programs)
+    # Scheduled runs happen on the mirror only: ib823/proof would otherwise
+    # repeat the same hour-long run on the same content every night. There it
+    # runs only when dispatched by hand.
+    if: github.repository == 'ib823/riina' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # The same pinned toolchain as verify.yml's coq job, provisioned by the
+      # same script (one definition of the pin for CI and local work).
+      - uses: ocaml/setup-ocaml@93303b622b2522e4411e295f9e77411a24912ac7 # v3
+        with:
+          ocaml-compiler: "4.14.2"
+      - name: Provision Rocq (pinned, fail-closed)
+        run: RIINA_COQ_USE_CURRENT_SWITCH=1 bash scripts/provision-coq.sh
+      - name: Verify the toolchain actually matches the pin
+        run: RIINA_COQ_USE_CURRENT_SWITCH=1 bash scripts/provision-coq.sh --check
+      - uses: dtolnay/rust-toolchain@b31b393ee3a9000c6a2886412d0787436f5b6d2d # 1.94.1
+      # Release: a million programs are checked by riinac before Coq sees them.
+      - name: Build riinac (release)
+        run: cargo build --release -p riinac --manifest-path 03_PROTO/Cargo.toml
+      - name: riinac verify --nightly
+        env:
+          RIINA_CONFORMANCE_PROGRAMS: ${{ github.event.inputs.programs || '1000000' }}
+          RIINA_CONFORMANCE_SEED: ${{ github.event.inputs.seed }}
+        run: opam exec -- 03_PROTO/target/release/riinac verify --nightly

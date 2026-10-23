@@ -19,8 +19,8 @@
 //!   a declassification given another proof, a secret passed where a public
 //!   value is expected, a secret stored in a public reference.
 //!
-//! No operator makes a branch on a secret on purpose: that is the known
-//! discrepancy `conformance::branches_on_a_secret` recognises.
+//! A mutant that comes to branch on a secret (a renamed variable, say) is
+//! rejected by both checkers: riinac branches only on public values.
 
 use riina_types::{Effect, EffectSet, Expr, Program, SecurityLevel, TopLevelDecl, Ty};
 

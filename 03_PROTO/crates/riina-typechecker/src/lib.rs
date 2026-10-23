@@ -78,6 +78,13 @@ pub enum TypeError {
         required_sanitizer: riina_types::Sanitizer,
         context: &'static str,
     },
+    /// A branch on a value still tainted by untrusted input: RIINA branches
+    /// only on sanitized values (owner ruling 2026-10-23), as Coq's T_If
+    /// needs a plain `TBool`, not a `TTainted` one.
+    TaintedBranch {
+        taint_source: riina_types::TaintSource,
+        context: &'static str,
+    },
     /// Wrong sanitizer used for sensitive sink
     /// Matches Coq XSSPrevention.v:74 (context-specific encoding)
     SanitizerMismatch {
@@ -208,6 +215,17 @@ impl std::fmt::Display for TypeError {
                     f,
                     "Taint violation in {}: {:?} data requires {:?} sanitization before use",
                     context, taint_source, required_sanitizer
+                )
+            }
+            TypeError::TaintedBranch {
+                taint_source,
+                context,
+            } => {
+                write!(
+                    f,
+                    "Taint violation in {}: {:?} data must be sanitized (a sanitasi_* builtin) \
+                     before branching on it",
+                    context, taint_source
                 )
             }
             TypeError::SanitizerMismatch {
@@ -373,6 +391,11 @@ impl TypeError {
             TypeError::SanitizerMismatch { expected, .. } => {
                 format!("Use the correct sanitizer for this context: {:?}", expected)
             }
+            TypeError::TaintedBranch { taint_source, .. } => format!(
+                "Sanitize the {:?} input before branching on it, with the sanitasi_* builtin \
+                 for how it is used. Example: biar bersih = sanitasi_sql(input);",
+                taint_source
+            ),
             TypeError::ConstantTimeViolation { context } => {
                 format!(
                     "Do not use ConstantTime values in {context}. \
@@ -428,6 +451,7 @@ impl TypeError {
             TypeError::LocationNotFound(_) => "T0010",
             TypeError::TaintViolation { .. } => "TAINT001",
             TypeError::SanitizerMismatch { .. } => "TAINT002",
+            TypeError::TaintedBranch { .. } => "TAINT003",
             TypeError::ConstantTimeViolation { .. } => "CT0001",
             TypeError::LinearityViolation { .. } => "LIN0001",
             TypeError::ExpectedActor(_) => "J0001",
@@ -452,6 +476,9 @@ impl TypeError {
             TypeError::SecurityViolation { context, .. } => match *context {
                 "dereference" => Some("T_Deref (Typing.v:178) — sl must flow to delta"),
                 "assignment" => Some("T_Assign (Typing.v:183) — sl must flow to delta"),
+                "branch condition" => Some("T_If (Typing.v) — the condition must be a public TBool"),
+                "match scrutinee" => Some("T_Case (Typing.v) — the scrutinee must be a public TSum"),
+                "loop condition" => Some("T_If (Typing.v) — a loop branches on its condition"),
                 _ => Some("Information flow lattice (Syntax.v:48)"),
             },
             TypeError::InvalidDeclassification { .. } => {
@@ -470,6 +497,9 @@ impl TypeError {
             }
             TypeError::SanitizerMismatch { .. } => {
                 Some("XSSPrevention.v:74 — context-specific encoding required")
+            }
+            TypeError::TaintedBranch { .. } => {
+                Some("T_If / T_Case (Typing.v) — the condition must be a plain TBool, not TTainted")
             }
             TypeError::ConstantTimeViolation { .. } => {
                 Some("ConstantTimeSecurity.v:56 — ct_safe predicate forbids branching on CT values")
@@ -3385,6 +3415,40 @@ fn peel(ty: &Ty) -> (&Ty, Latent) {
     }
 }
 
+/// RIINA branches only on public values (owner ruling 2026-10-23): a
+/// condition or scrutinee carrying a security label above `Awam` is rejected,
+/// not checked with a raised pc. The proved core agrees: Coq's T_If needs a
+/// `TBool` and T_Case a `TSum`, never a secret one (REQ-111 found the gap).
+/// Declassify first (`dedah … dengan bukti …`) to branch on a secret.
+fn reject_secret_branch(level: SecurityLevel, context: &'static str) -> Result<(), TypeError> {
+    if level == SecurityLevel::Public {
+        Ok(())
+    } else {
+        Err(TypeError::SecurityViolation {
+            found: level,
+            expected: SecurityLevel::Public,
+            context,
+        })
+    }
+}
+
+/// RIINA branches only on sanitized values (owner ruling 2026-10-23): a
+/// condition or scrutinee still tainted by untrusted input is rejected, as
+/// Coq's T_If needs a plain `TBool`, not a `TTainted` one (REQ-111 found the
+/// gap). Sanitize first (a `sanitasi_*` builtin).
+fn reject_tainted_branch(
+    taint: Option<riina_types::TaintSource>,
+    context: &'static str,
+) -> Result<(), TypeError> {
+    match taint {
+        None => Ok(()),
+        Some(taint_source) => Err(TypeError::TaintedBranch {
+            taint_source,
+            context,
+        }),
+    }
+}
+
 /// Re-attach erased data-flow info to a type: constant-time innermost, then
 /// taint, then the security label. Info the type already records is not
 /// duplicated.
@@ -5073,10 +5137,13 @@ fn tc_app(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeE
             }
             let ret_ty = internal_primitive_result(e1, &t2, *ret_ty)?;
             // The result re-carries what the argument erased and what
-            // the callee value itself carried. Taint only matters where
-            // the result can reach an `Any`-accepting sink.
+            // the callee value itself carried. A result with no data (`()`)
+            // carries no taint; any other keeps it, or `ke_teks(input)`
+            // would be a plain `Teks` that a typed sink (`fail_baca`) and a
+            // branch accept unsanitized (2026-10-23; it used to keep taint
+            // only for results containing `Any`).
             let mut carried = hidden.data().join(callee_wrap);
-            if !ty_contains_any(&ret_ty) {
+            if ret_ty == Ty::Unit {
                 carried.taint = None;
             }
             let ret_ty = rewrap(ret_ty, &carried);
@@ -5135,9 +5202,8 @@ fn tc_case(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Type
         unreachable!("tc_case is only called for Expr::Case")
     };
     let (t, eff) = type_check_full(ctx, e)?;
-    // A labeled / tainted / CT scrutinee is matched on its core type;
-    // its label raises the pc of both arms, and the arm binders keep
-    // every wrapper.
+    // A secret or tainted scrutinee is rejected; any other wrapper is
+    // matched on its core type.
     let (core, wrap) = peel(&t);
     // A2/M3: matching on a ConstantTime value branches on it.
     if wrap.ct {
@@ -5145,6 +5211,8 @@ fn tc_case(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Type
             context: "match scrutinee",
         });
     }
+    reject_secret_branch(wrap.level, "match scrutinee")?;
+    reject_tainted_branch(wrap.taint, "match scrutinee")?;
     // Normalize the scrutinee to a (left, right) pair of branch-binder
     // types. `Sum` is the native form; `Option<T>` is `(T, Unit)` (Ada
     // carries T, Tidak carries Unit); `Any` binds both as `Any`.
@@ -5156,7 +5224,7 @@ fn tc_case(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Type
     };
     match sum_arms {
         Some((t_left, t_right)) => {
-            let branch_delta = ctx.pc().join(wrap.level);
+            let branch_delta = ctx.pc();
             let linear = ctx.gamma.linear_snapshot();
 
             let mut ctx1 = ctx.extend_gamma(x.clone(), rewrap(t_left, &wrap));
@@ -5195,11 +5263,7 @@ fn tc_if(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeEr
     };
     let (t_cond, eff1) = type_check_full(ctx, cond)?;
 
-    // IFC: Accept both Bool and Labeled(Bool, level) as condition.
-    // Strip label to check inner type is Bool, but preserve the
-    // security level for branch elevation.
     let (inner_cond, cond_wrap) = peel(&t_cond);
-    let cond_label_level = cond_wrap.level;
 
     // A2: ConstantTime enforcement — reject CT values as branch conditions.
     // Branching on a ConstantTime value creates a timing side-channel
@@ -5211,6 +5275,8 @@ fn tc_if(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeEr
             context: "branch condition",
         });
     }
+    reject_secret_branch(cond_wrap.level, "branch condition")?;
+    reject_tainted_branch(cond_wrap.taint, "branch condition")?;
 
     // The condition must be Bool; `Any` (the wildcard, e.g. from a method
     // call or indexing that the structural checker types as Any) is also
@@ -5222,18 +5288,9 @@ fn tc_if(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), TypeEr
         });
     }
 
-    // IFC: Elevate Δ in branches based on condition's security level.
-    // If the condition was derived from high-security data (e.g.,
-    // comparing a secret-labeled value), the branches must execute at
-    // that elevated security level to prevent implicit flows through
-    // control structure.
-    //
-    // Before this fix, cond_level was always Public because t_cond
-    // was always Ty::Bool. Now Deref propagates labels and BinOp
-    // preserves them, so a comparison of secret data produces
-    // Labeled(Bool, Secret), and cond_label_level = Secret.
-    let cond_level = cond_label_level;
-    let branch_delta = ctx.pc().join(cond_level);
+    // The condition is public, so the branches run at the current pc (as
+    // in Coq's T_If, where Δ is unchanged).
+    let branch_delta = ctx.pc();
     let linear = ctx.gamma.linear_snapshot();
 
     let mut branch_ctx = ctx.clone();
@@ -5282,6 +5339,8 @@ fn tc_while(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Typ
                 context: "loop condition",
             });
         }
+        reject_secret_branch(cond_wrap.level, "loop condition")?;
+        reject_tainted_branch(cond_wrap.taint, "loop condition")?;
         if !matches!(inner_cond, Ty::Bool | Ty::Any) {
             return Err(TypeError::TypeMismatch {
                 expected: Ty::Bool,
@@ -5289,7 +5348,7 @@ fn tc_while(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, EffectSet), Typ
             });
         }
         let mut body_ctx = loop_ctx.clone();
-        body_ctx.delta = loop_pc.join(cond_wrap.level);
+        body_ctx.delta = loop_pc;
         let (_t_body, eff_body) = type_check_full(&mut body_ctx, body)?;
         reject_repeatable_use(&linear, "used inside a loop body, which may run more than once")?;
         if raise.get().leq(loop_pc) {

@@ -9,7 +9,7 @@
 3. Run `git status` — must be on `main` branch (or your assigned feature branch), check for dirty files
 4. Re-verify metrics by running the commands in `RIINA_MASTER_PLAN.md` Part 0 — do NOT trust the table below blindly
 
-## Current State (2026-10-21, generated from `website/public/metrics.json`)
+## Current State (2026-10-23, generated from `website/public/metrics.json`)
 
 | Metric | Value |
 |--------|-------|
@@ -19,7 +19,7 @@
 | Isabelle lemmas | 0 — lane retired (REQ-67g), corpus archived |
 | F* / TLA+ / Alloy / SMT | Hand-written artifacts only; SMT scoped set (37 properties) is mechanized; the rest are smoke-level (`metrics.json` is authoritative) |
 | Cross-prover total | None. Counts from different provers are never added together (ruling D6) |
-| Rust tests | 3,657 tests in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
+| Rust tests | 3,661 tests in `03_PROTO` (18 crates), all passing; `05_TOOLING` has its own suite |
 | Examples | 172 .rii files; 83 pass `riinac check` |
 | Claims | Coq mechanized; SMT mechanized at the REQ-67(a) scope (37 properties); TLA+/Alloy/Verus/Kani/TV generated (hand-written drafts, quarantined); F*/Isabelle retired; Lean empty |
 | Ledgers | `HEADLINE_THEOREMS.md`, `PROPERTY_LEDGER.md`, `TRUSTED_BASE.md`, `PROOF_STATUS.md`, `AXIOMS.md`, `docs/api/STDLIB.md` (all generated) |

@@ -43,6 +43,10 @@ pub enum Mode {
     /// CI's `coq` job so CI wraps this gate instead of a bare `make`. Does not
     /// write the verification manifest.
     Coq,
+    /// The Coq lane as `Coq` runs it, with the REQ-111 conformance comparison
+    /// at nightly scale (`conformance::NIGHTLY_PROGRAMS`, in parallel
+    /// batches) instead of the per-change batch. Does not write the manifest.
+    Nightly,
 }
 
 #[derive(Debug)]
@@ -1557,7 +1561,7 @@ fn check_kernel_assumptions(coq_dir: &Path) -> CheckResult {
 /// REQ-111, first slice: every program riinac can write in the core is type
 /// checked by riinac and by Coq's `type_check_fn`, and the verdicts must agree
 /// (see `conformance.rs`).
-fn check_core_conformance(coq_dir: &Path) -> CheckResult {
+fn check_core_conformance(coq_dir: &Path, nightly: bool) -> CheckResult {
     let name = "Core Conformance (REQ-111)".to_string();
     let rocq = match detect_coqc() {
         ToolStatus::Found(p) => match p.parent().map(|d| d.join("rocq")) {
@@ -1577,7 +1581,17 @@ fn check_core_conformance(coq_dir: &Path) -> CheckResult {
             return CheckResult { name, passed: false, blocking: true, details: format!("cannot create scratch dir: {e}") };
         }
     };
-    let result = crate::conformance::run(repo, coq_dir, &rocq, &scratch);
+    let result = if nightly {
+        let env = |var: &str| std::env::var(var).ok().and_then(|v| v.parse::<usize>().ok());
+        let programs = env("RIINA_CONFORMANCE_PROGRAMS").unwrap_or(crate::conformance::NIGHTLY_PROGRAMS);
+        let jobs = env("RIINA_CONFORMANCE_JOBS")
+            .unwrap_or_else(|| std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get));
+        let seed = crate::conformance::nightly_seed(repo);
+        eprintln!("  nightly: at least {programs} programs on {jobs} threads, seed 0x{seed:016x}");
+        crate::conformance::run_nightly(repo, coq_dir, &rocq, &scratch, seed, programs, jobs)
+    } else {
+        crate::conformance::run(repo, coq_dir, &rocq, &scratch)
+    };
     let _ = fs::remove_dir_all(&scratch);
     let report = match result {
         Ok(r) => r,
@@ -1634,23 +1648,37 @@ fn check_core_conformance(coq_dir: &Path) -> CheckResult {
     let fuzz_cells: Vec<String> = fuzz_by_outcome.iter().map(|(o, n)| format!("{n} {o:?}")).collect();
     let gap_reasons: Vec<String> = report.gaps_by_reason.iter().map(|(why, n)| format!("{n} {why}")).collect();
     let summary = format!(
-        "{summary}; of these, {generated} generated (seed {}; RIINA_CONFORMANCE_SEED repeats a run): {}; \
+        "{summary}; of these, {generated} generated in {} batch(es) (seed 0x{:016x}; \
+         RIINA_CONFORMANCE_SEED=0x<seed> repeats a run, and a nightly batch's seed is in its programs' \
+         names): {}; \
          {fuzzed} fuzzed mutants ({flow} by flow or effect operators; {} more left the core): {}; \
-         generated and fuzzed completeness gaps by riinac's error: [{}]; \
-         {} programs in a KNOWN soundness class \
-         awaiting a decision: {}",
+         generated and fuzzed completeness gaps by riinac's error: [{}]; {}",
+        report.batches,
         report.seed,
         by_kind.join("; "),
         report.fuzz_outside,
         fuzz_cells.join(", "),
         gap_reasons.join(", "),
-        report.count(Outcome::Known),
-        known.join(", ")
+        if known.is_empty() {
+            "no known soundness class is open".to_string()
+        } else {
+            format!(
+                "{} programs in a KNOWN soundness class awaiting a decision: {}",
+                report.count(Outcome::Known),
+                known.join(", ")
+            )
+        }
     );
     if failures.is_empty() {
         CheckResult { name, passed: true, blocking: true, details: summary }
     } else {
-        CheckResult { name, passed: false, blocking: true, details: format!("{}; {summary}", failures.join("; ")) }
+        // A regression can fail thousands of programs: name the first few.
+        const SHOWN: usize = 25;
+        let mut listed = failures.iter().take(SHOWN).cloned().collect::<Vec<_>>().join("; ");
+        if failures.len() > SHOWN {
+            listed.push_str(&format!("; … and {} more failures", failures.len() - SHOWN));
+        }
+        CheckResult { name, passed: false, blocking: true, details: format!("{listed}; {summary}") }
     }
 }
 
@@ -2877,8 +2905,9 @@ fn git_sha(repo: &Path) -> String {
 /// (it adds the Coq and other proof lanes), so its manifest is stronger evidence.
 fn mode_rank(mode: Mode) -> u8 {
     match mode {
-        // `--coq` never writes a manifest; ranked lowest for completeness.
-        Mode::Coq | Mode::Fast => 0,
+        // `--coq` and `--nightly` never write a manifest; ranked lowest for
+        // completeness.
+        Mode::Coq | Mode::Nightly | Mode::Fast => 0,
         Mode::Full => 1,
     }
 }
@@ -3076,6 +3105,11 @@ fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
         Mode::Coq => (
             "coq",
             "Scope: primary proof lane (Coq) only. No Rust tests.",
+        ),
+        Mode::Nightly => (
+            "nightly",
+            "Scope: primary proof lane (Coq) with the nightly REQ-111 conformance run. \
+             No Rust tests.",
         ),
     };
 
@@ -4014,7 +4048,7 @@ fn primary_verifier_result(status: ToolStatus) -> CheckResult {
 /// Entry point for `riinac verify`.
 /// The primary-lane (Coq) checks, shared by `--full` and `--coq` so the two can
 /// never diverge.
-fn coq_lane_checks(coq_dir: &Path) -> Vec<CheckResult> {
+fn coq_lane_checks(coq_dir: &Path, nightly: bool) -> Vec<CheckResult> {
     let mut results = vec![];
     eprintln!("Checking _CoqProject completeness...");
     results.push(verify_coqproject_completeness(coq_dir));
@@ -4026,7 +4060,7 @@ fn coq_lane_checks(coq_dir: &Path) -> Vec<CheckResult> {
     results.push(check_kernel_assumptions(coq_dir));
 
     eprintln!("Comparing riinac with Coq's type checker on the core programs (REQ-111)...");
-    results.push(check_core_conformance(coq_dir));
+    results.push(check_core_conformance(coq_dir, nightly));
 
     eprintln!("Scanning Coq proofs...");
     results.extend(scan_coq(coq_dir));
@@ -4045,9 +4079,9 @@ pub fn run(mode: Mode) -> i32 {
     eprintln!("RIINA verify ({:?} mode)", mode);
     eprintln!("Repo root: {}", repo.display());
 
-    if mode == Mode::Coq {
+    if mode == Mode::Coq || mode == Mode::Nightly {
         eprintln!("\n=== Coq Verification ===");
-        let results = coq_lane_checks(&repo.join("02_FORMAL").join("coq"));
+        let results = coq_lane_checks(&repo.join("02_FORMAL").join("coq"), mode == Mode::Nightly);
         let all_pass = results.iter().all(|r| r.passed || !r.blocking);
         eprintln!();
         for r in &results {
@@ -4098,7 +4132,7 @@ pub fn run(mode: Mode) -> i32 {
         // === Coq ===
         eprintln!("\n=== Coq Verification ===");
 
-        results.extend(coq_lane_checks(&coq_dir));
+        results.extend(coq_lane_checks(&coq_dir, false));
 
         // === Lean 4 ===
         eprintln!("\n=== Lean 4 Verification ===");

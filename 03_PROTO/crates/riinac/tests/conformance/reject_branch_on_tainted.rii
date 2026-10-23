@@ -1,0 +1,9 @@
+// A branch on untrusted input. riinac used to accept it; the Coq core's T_If
+// requires a plain Benar, not a tainted one. Rejected since 2026-10-23 (owner
+// ruling): sanitize input before branching on it.
+fungsi semak(x: Tercemar<Benar, UserInput>) -> Nombor kesan Bersih {
+    kalau x { 1 } lain { 2 }
+}
+fungsi utama() -> () kesan Bersih {
+    ()
+}
